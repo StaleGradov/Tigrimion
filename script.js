@@ -281,22 +281,162 @@ class HeroGame {
     }
 
     // Бонусы рас, профессий и саг
-    getBonuses() {
-        return {
-            races: {
-                elf: { bonus: {type: "escape_bonus", value: 1}, name: "Эльф", description: "Проворный и неуловимый" },
-                dwarf: { bonus: {type: "health_mult", value: 0.3}, name: "Гном", description: "Выносливый и крепкий" }
+// Бонусы рас, профессий и саг
+getBonuses() {
+    return {
+        races: {
+            elf: { 
+                bonus: {type: "escape_bonus", value: 1}, 
+                name: "Эльф", 
+                description: "Проворный и неуловимый" 
             },
-            classes: {
-                archer: { bonus: {type: "damage_mult", value: 0.2}, name: "Лучник", description: "Мастер дальнего боя" },
-                warrior: { bonus: {type: "damage_mult", value: 0.2}, name: "Воин", description: "Сильный и отважный" }
+            dwarf: { 
+                bonus: {type: "health_mult", value: 0.3}, 
+                name: "Гном", 
+                description: "Выносливый и крепкий" 
             },
-            sagas: {
-                vulkanor: { bonus: {type: "damage_mult", value: 0.2}, name: "Вулканор", description: "Прошедший огненные испытания" },
-                golden_egg: { bonus: {type: "health_mult", value: 0.3}, name: "Золотое Яйцо", description: "Обладатель древнего артефакта" }
+            halfling: { 
+                bonus: {type: "stealth_bonus", value: 1}, 
+                name: "Полурослик", 
+                description: "Маленький и незаметный" 
+            },
+            fairy: { 
+                bonus: {type: "luck_bonus", value: 1}, 
+                name: "Фея", 
+                description: "Везение и магия" 
+            },
+            laitar: { 
+                bonus: {type: "survival_bonus", value: 1}, 
+                name: "Лайтар", 
+                description: "Мастер выживания" 
+            },
+            ork: { 
+                bonus: {type: "damage_mult", value: 0.2}, 
+                name: "Орк", 
+                description: "Сильный и свирепый" 
+            },
+            human: { 
+                bonus: {type: "gold_mult", value: 0.3}, 
+                name: "Человек", 
+                description: "Предприимчивый и богатый" 
+            },
+            dragon: { 
+                bonus: {type: "armor_mult", value: 0.15}, 
+                name: "Дракон", 
+                description: "Могучий и защищённый" 
             }
-        };
-    }
+        },
+        classes: {
+            archer: { 
+                bonus: {type: "damage_mult", value: 0.2}, 
+                name: "Лучник", 
+                description: "Мастер дальнего боя" 
+            },
+            warrior: { 
+                bonus: {type: "damage_mult", value: 0.2}, 
+                name: "Воин", 
+                description: "Сильный и отважный" 
+            },
+            thief: { 
+                bonus: {type: "stealth_bonus", value: 1}, 
+                name: "Вор", 
+                description: "Тихий и незаметный" 
+            },
+            merchant: { 
+                bonus: {type: "gold_mult", value: 0.3}, 
+                name: "Торговец", 
+                description: "Искусный торговец" 
+            },
+            fighter: { 
+                bonus: {type: "luck_bonus", value: 1}, 
+                name: "Кулачный боец", 
+                description: "Удачливый боец" 
+            },
+            healer: { 
+                bonus: {type: "health_mult", value: 0.3}, 
+                name: "Знахарь", 
+                description: "Мастер исцеления" 
+            },
+            sorcerer: { 
+                bonus: {type: "escape_bonus", value: 1}, 
+                name: "Колдун", 
+                description: "Магическая защита" 
+            },
+            death_mage: { 
+                bonus: {type: "stealth_bonus", value: 1}, 
+                name: "Волхв смерти", 
+                description: "Тёмные искусства" 
+            },
+            hunter: { 
+                bonus: {type: "survival_bonus", value: 1}, 
+                name: "Охотник", 
+                description: "Следопыт и выживальщик" 
+            },
+            bounty_hunter: { 
+                bonus: {type: "damage_mult", value: 0.1}, 
+                name: "Охотник за головами", 
+                description: "Специалист по преследованию" 
+            },
+            gladiator: { 
+                bonus: {type: "damage_mult", value: 0.2}, 
+                name: "Гладиатор", 
+                description: "Мастер любого оружия" 
+            },
+            blacksmith: { 
+                bonus: {type: "armor_mult", value: 0.15}, 
+                name: "Кузнец", 
+                description: "Мастер брони" 
+            },
+            antiquarian: { 
+                bonus: {type: "gold_mult", value: 0.3}, 
+                name: "Искатель древностей", 
+                description: "Знаток сокровищ" 
+            }
+        },
+        sagas: {
+            golden_egg: { 
+                bonus: {type: "health_mult", value: 0.3}, 
+                name: "Золотое Яйцо", 
+                description: "Обладатель древнего артефакта" 
+            },
+            vulkanor: { 
+                bonus: {type: "damage_mult", value: 0.2}, 
+                name: "Вулканор", 
+                description: "Прошедший огненные испытания" 
+            },
+            well: { 
+                bonus: {type: "gold_mult", value: 0.3}, 
+                name: "Колодец", 
+                description: "Нашедший источник богатства" 
+            },
+            pets: { 
+                bonus: {type: "luck_bonus", value: 1}, 
+                name: "Питомцы", 
+                description: "Верные спутники приносят удачу" 
+            },
+            following_sun: { 
+                bonus: {type: "survival_bonus", value: 1}, 
+                name: "Вслед за солнцем", 
+                description: "Прошедший через пустыни" 
+            },
+            vampire_crown: { 
+                bonus: {type: "stealth_bonus", value: 1}, 
+                name: "Корона короля вампиров", 
+                description: "Носитель тёмной короны" 
+            },
+            tiger_eye: { 
+                bonus: {type: "armor_mult", value: 0.15}, 
+                name: "Желтый Глаз тигра", 
+                description: "Обладатель мистической защиты" 
+            },
+            sky_phenomena: { 
+                bonus: {type: "escape_bonus", value: 1}, 
+                name: "Небесные явления", 
+                description: "Свидетель небесных чудес" 
+            }
+        }
+    };
+}
 
     // Расчёт характеристик героя
     calculateHeroStats(hero) {
