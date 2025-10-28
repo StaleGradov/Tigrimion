@@ -11,6 +11,7 @@ body {
     color: white;
     line-height: 1.6;
     min-height: 100vh;
+    padding-bottom: 80px; /* Место для фиксированных кнопок */
 }
 
 .container {
@@ -58,6 +59,26 @@ body {
     color: #4cc9f0;
 }
 
+/* Информация о локации */
+.location-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid #4cc9f0;
+}
+
+.location-info h3 {
+    margin-bottom: 10px;
+    color: #4cc9f0;
+}
+
+.location-info img {
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 /* Основные характеристики */
 .stats-grid {
     display: grid;
@@ -72,6 +93,11 @@ body {
     border-radius: 10px;
     text-align: center;
     backdrop-filter: blur(5px);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:active {
+    transform: scale(0.95);
 }
 
 .stat-value {
@@ -86,6 +112,11 @@ body {
     margin-bottom: 20px;
 }
 
+.bonuses-section h3 {
+    margin-bottom: 10px;
+    color: #4cc9f0;
+}
+
 .bonus-item {
     background: rgba(255, 255, 255, 0.05);
     padding: 12px;
@@ -97,6 +128,7 @@ body {
 .bonus-empty {
     opacity: 0.6;
     font-style: italic;
+    border-left-color: #666;
 }
 
 /* Кнопки */
@@ -107,7 +139,7 @@ body {
     margin: 20px 0;
 }
 
-.btn-primary, .btn-secondary {
+.btn-primary, .btn-secondary, .btn-danger {
     padding: 15px;
     border: none;
     border-radius: 10px;
@@ -115,6 +147,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: center;
 }
 
 .btn-primary {
@@ -128,28 +161,39 @@ body {
     border: 2px solid #4cc9f0;
 }
 
-.btn-primary:active, .btn-secondary:active {
+.btn-danger {
+    background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+    color: white;
+}
+
+.btn-primary:active, .btn-secondary:active, .btn-danger:active {
     transform: scale(0.98);
 }
 
-/* Адаптивность для телефонов */
-@media (max-width: 480px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .hero-header {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .hero-stats {
-        justify-content: center;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
+/* Журнал событий */
+.battle-log {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.9em;
+}
+
+.log-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Списки выбора */
@@ -165,10 +209,23 @@ body {
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
+    border: 2px solid transparent;
 }
 
 .hero-option:active {
     background: rgba(76, 201, 240, 0.3);
+    border-color: #4cc9f0;
+    transform: scale(0.98);
+}
+
+.hero-option strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #4cc9f0;
+}
+
+.hero-option small {
+    opacity: 0.8;
 }
 
 /* Экран инвентаря */
@@ -188,10 +245,34 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .inventory-slot:active {
     background: rgba(76, 201, 240, 0.2);
+    border-color: #4cc9f0;
+    transform: scale(0.95);
+}
+
+/* Управление экранами */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Утилиты */
@@ -209,4 +290,112 @@ body {
 
 .mb-10 {
     margin-bottom: 10px;
+}
+
+/* Адаптивность для телефонов */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .hero-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(22, 33, 62, 0.95);
+        padding: 15px;
+        margin: 0;
+        border-top: 2px solid #4cc9f0;
+        backdrop-filter: blur(10px);
+    }
+    
+    body {
+        padding-bottom: 120px;
+    }
+}
+
+/* Специальные стили для монстров */
+.monster-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.monster-stat {
+    background: rgba(255, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+/* Индикаторы сравнения */
+.power-advantage {
+    color: #4ade80;
+    font-weight: bold;
+}
+
+.power-risk {
+    color: #f87171;
+    font-weight: bold;
+}
+
+/* Анимации для боя */
+@keyframes attack {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(10px); }
+    100% { transform: translateX(0); }
+}
+
+.attack-animation {
+    animation: attack 0.3s ease;
+}
+
+/* Стили для скроллбара */
+.battle-log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.battle-log::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.battle-log::-webkit-scrollbar-thumb {
+    background: #4cc9f0;
+    border-radius: 3px;
+}
+
+/* Эффекты при наведении (для десктопа) */
+@media (hover: hover) {
+    .hero-option:hover {
+        background: rgba(76, 201, 240, 0.2);
+        border-color: #4cc9f0;
+    }
+    
+    .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .inventory-slot:hover {
+        background: rgba(76, 201, 240, 0.1);
+        border-color: #4cc9f0;
+    }
 }
