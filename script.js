@@ -1080,26 +1080,54 @@ class HeroGame {
     }
 
     // Загрузка сохранения
-    loadSave() {
-        try {
-            const save = localStorage.getItem('heroGameSave');
-            if (save) {
-                const data = JSON.parse(save);
-                this.heroes = data.heroes || this.heroes;
-                this.currentLocation = data.currentLocation || null;
-                this.merchantsUnlocked = data.merchantsUnlocked || 1;
-                
-                if (data.currentHeroId) {
-                    this.currentHero = this.heroes.find(h => h.id === data.currentHeroId);
-                    if (this.currentHero) {
-                        this.showScreen('main');
-                        this.renderHeroScreen();
-                    }
+// Загрузка сохранения
+loadSave() {
+    try {
+        const save = localStorage.getItem('heroGameSave');
+        if (save) {
+            const data = JSON.parse(save);
+            
+            // Сохраняем только прогресс, а не сами данные героев
+            const savedHeroProgress = data.heroes || [];
+            const currentHeroId = data.currentHeroId;
+            
+            // Создаем карту прогресса героев
+            const progressMap = new Map();
+            savedHeroProgress.forEach(hero => {
+                progressMap.set(hero.id, {
+                    gold: hero.gold,
+                    level: hero.level,
+                    experience: hero.experience,
+                    inventory: hero.inventory,
+                    equipment: hero.equipment
+                });
+            });
+            
+            // Применяем прогресс к свежим данным из JSON
+            this.heroes = this.heroes.map(freshHero => {
+                const progress = progressMap.get(freshHero.id);
+                if (progress) {
+                    return {
+                        ...freshHero, // Базовые данные из JSON
+                        ...progress   // Прогресс из сохранения
+                    };
+                }
+                return freshHero; // Новый герой без прогресса
+            });
+            
+            this.currentLocation = data.currentLocation || null;
+            this.merchantsUnlocked = data.merchantsUnlocked || 1;
+            
+            if (currentHeroId) {
+                this.currentHero = this.heroes.find(h => h.id === currentHeroId);
+                if (this.currentHero) {
+                    this.showScreen('main');
+                    this.renderHeroScreen();
                 }
             }
-        } catch (error) {
-            console.error('Ошибка загрузки сохранения:', error);
         }
+    } catch (error) {
+        console.error('Ошибка загрузки сохранения:', error);
     }
 }
 
