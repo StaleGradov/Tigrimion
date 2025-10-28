@@ -279,7 +279,41 @@ class HeroGame {
             console.error('Ошибка загрузки данных:', error);
         }
     }
-
+// Сброс героя к базовым настройкам
+resetHero() {
+    if (!this.currentHero) return;
+    
+    // Базовая конфигурация для расы/класса/саги
+    const baseConfig = {
+        race: "human",
+        class: "warrior", 
+        saga: "golden_egg",
+        baseHealth: 100,
+        baseDamage: 20,
+        baseArmor: 10,
+        gold: 500,
+        level: 1,
+        experience: 0,
+        inventory: [],
+        equipment: {
+            main_hand: null,
+            chest: null
+        }
+    };
+    
+    // Сохраняем только имя и изображение
+    const heroName = this.currentHero.name;
+    const heroImage = this.currentHero.image;
+    
+    // Сбрасываем настройки
+    Object.assign(this.currentHero, baseConfig);
+    this.currentHero.name = heroName;
+    this.currentHero.image = heroImage;
+    
+    this.addToLog("🔄 Герой сброшен к базовым настройкам");
+    this.saveGame();
+    this.renderHeroScreen();
+}
     // Бонусы рас, профессий и саг
 // Бонусы рас, профессий и саг
 getBonuses() {
