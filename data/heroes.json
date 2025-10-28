@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "name": "Леголас",
+    "image": "images/heroes/legolas.jpg",
+    "race": "elf",
+    "class": "archer",
+    "saga": "vulkanor",
+    "baseHealth": 90,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 1000,
+    "level": 3,
+    "experience": 150,
+    "inventory": [1, 2],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+  {
+    "id": 2,
+    "name": "Гимли",
+    "image": "images/heroes/gimli.jpg",
+    "race": "dwarf", 
+    "class": "warrior",
+    "saga": "golden_egg",
+    "baseHealth": 120,
+    "baseDamage": 18,
+    "baseArmor": 15,
+    "gold": 800,
+    "level": 2,
+    "experience": 80,
+    "inventory": [3],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  }
+]
