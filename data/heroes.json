@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "Леголас",
-    "image": "images/heroes/legolas.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
     "race": "elf",
     "class": "archer",
     "saga": "vulkanor",
@@ -20,9 +20,9 @@
   },
   {
     "id": 2,
-    "name": "Гимли",
-    "image": "images/heroes/gimli.jpg",
-    "race": "dwarf", 
+    "name": "Гимли", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
+    "race": "dwarf",
     "class": "warrior",
     "saga": "golden_egg",
     "baseHealth": 120,
