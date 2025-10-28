@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Торин - Гном Кузнец</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    min-height: 100vh;
+    padding: 20px;
+    /* Фоновое изображение Торина */
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                url('https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torin.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .hero-header {
+            background: linear-gradient(135deg, #7f8c8d, #34495e);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .hero-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-left: 4px solid #e67e22;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #34495e;
+            margin: 25px 0 15px 0;
+            font-size: 1.3em;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #e67e22;
+        }
+        
+        .skill-item {
+            background: #ffeaa7;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+        }
+        
+        .bonus-item {
+            background: #fab1a0;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .craft-bonus {
+            background: #a29bfe;
+            color: white;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #6c5ce7;
+        }
+        
+        .mechanics-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .mechanics-list li {
+            background: #fff;
+            margin: 8px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e67e22;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .story-text {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+        
+        .video-container {
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            border-radius: 10px;
+        }
+        
+        .video-container iframe {
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        .bonus-summary {
+            background: #e67e22;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2em;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero-card">
+            <div class="hero-header">
+                <h1 class="hero-title">🔨 Торин</h1>
+                <p class="hero-subtitle">Гном Кузнец. Сага Вулканор. Часть 2. Создатель Вулканора.</p>
+            </div>
+            
+            <div class="section">
+                <h2>📊 Основные характеристики</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="emoji">❤️</span><strong>Здоровье:</strong> 190
+                    </div>
+                    <div class="stat-card">
+                        <span class="emoji">💰</span><strong>Золото:</strong> 9
+                    </div>
+                </div>
+                
+                <h3>🎯 Навыки</h3>
+                <div class="skill-item">
+                    <span class="emoji">❤️</span><strong>Здоровье:</strong> +1
+                </div>
+                <div class="skill-item">
+                    <span class="emoji">🛡️</span><strong>Броня:</strong> +1
+                </div>
+                <div class="skill-item">
+                    <span class="emoji">⚔️</span><strong>Урон:</strong> +1
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🧬 Раса: Гном</h2>
+                <div class="bonus-item">
+                    <span class="emoji">🛡️</span><strong>Бонус за расу:</strong> +30% к базовому здоровью
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>💼 Профессия: Кузнец</h2>
+                <div class="craft-bonus">
+                    <span class="emoji">⚒️</span><strong>Бонус профессии:</strong> +15% к броне
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📖 Сага: Вулканор</h2>
+                <div class="bonus-item">
+                    <span class="emoji">🔥</span><strong>Бонус за сагу:</strong> +20% к урону
+                </div>
+                
+                <div class="bonus-summary">
+                    🎯 Создатель легендарного металла Вулканор
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>📜 История</h2>
+                <div class="story-text">
+                    <p>Жил-был могучий кузнец-гном по имени Торин. Получил он однажды от своего друга, отважного первопроходчика в каменной штольне Йормунда, загадочную руду небесной синевы, которой не ведал никто прежде. Долго ломал голову Торин над её секретами, ибо ни пламень жаркого горна, ни молот не могли взять этот камень. Лежал тот дивный камень долгие годы в его мастерской, покуда Торин не решился отправиться к своему старому другу, мудрому эльфу-знахарю по имени Талмир.</p>
+
+                    <p>Долгое время провели они вместе, ища разгадку этой руды, но всякий раз их попытки оказывались тщетными. Судьба же решила иначе. В одну тёмную ночь послышалось грозное шептание ветра и треск деревьев, будто бы сама земля содрогалась под тяжестью шагов. Взглянув за окно, друзья узрели жуткое зрелище: величественные драконы летели к ним, опустошая всё на своём пути. Они поспешили укрыться в глубоких подземельях, оставив загадочный камень в доме. Когда же буря миновала, и пепел угас, стало ясно, что дом Талмира был уничтожен пламенем, а деревня лежала в руинах. Но где же была та самая руда? Нигде её не нашли. Только через много дней, когда Торин вернулся на пепелище, обнаружил он камень вновь, но уже изменённым, словно подвергшимся мощному воздействию жара. Тогда-то и понял он, что лишь дыхание драконов могло повлиять на эту руду. Так появился Вулканор, названный так в честь великого вулкана, близ которого был найден этот чудесный камень.</p>
+
+                    <p>Торин и Талмир придумали план по поимке дракона. С помощью огромного сеткомета, который, выпускал сеть с утяжелителями на концах, им удалось пленить великого дракона. В сеть были вплетены огнеупорные нити, которые дракон не мог прожечь своим дыханием, и разорвать когтями. В результате успешной засады эльфы захватили Малихора, могущественного дракона-колдуна. Под угрозой жизни тот согласился расплавить руду своим огнём и выполнил своё обещание.</p>
+
+                    <p>Когда работа была завершена, Торин окунул в раскалённую руду свой молот и два топора своего друга Йормунда, нашедшего руду, а Талмир – свой посох. Оба артефакта стали непревзойдёнными по своей силе и долговечности. Затем Малихора заковали в цепи, и стражу возглавил Калинор, отважнейший из воинов того времени.</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🎥 Видео-история Торина</h2>
+                <div class="video-container">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/V2jtgbj9sFM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
