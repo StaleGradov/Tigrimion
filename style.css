@@ -79,6 +79,52 @@ body {
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
+.location-risks {
+    margin-top: 10px;
+}
+
+.risk-badge {
+    background: rgba(220, 53, 69, 0.3);
+    color: #f87171;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+/* Панель расчётов */
+.calculations-panel {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(5px);
+    border-left: 4px solid #f59e0b;
+}
+
+.calculations-panel h3 {
+    margin-bottom: 15px;
+    color: #f59e0b;
+    font-size: 1.1em;
+}
+
+.calculation-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.calculation-row:last-child {
+    border-bottom: none;
+}
+
+.calculation-value {
+    font-weight: bold;
+    color: #4cc9f0;
+}
+
 /* Основные характеристики */
 .stats-grid {
     display: grid;
@@ -191,6 +237,16 @@ body {
     border-bottom: none;
 }
 
+/* Специальные стили для сообщений в логе */
+.log-entry:contains("✅") { color: #4ade80; }
+.log-entry:contains("❌") { color: #f87171; }
+.log-entry:contains("⚠️") { color: #fbbf24; }
+.log-entry:contains("💀") { color: #ef4444; font-weight: bold; }
+.log-entry:contains("☠️") { color: #ef4444; font-weight: bold; }
+.log-entry:contains("🎯") { color: #4cc9f0; }
+.log-entry:contains("💰") { color: #fbbf24; }
+.log-entry:contains("🎲") { color: #a78bfa; }
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
@@ -275,21 +331,45 @@ body {
     }
 }
 
-/* Утилиты */
-.hidden {
-    display: none !important;
+/* Индикаторы сравнения */
+.power-advantage {
+    color: #4ade80;
+    font-weight: bold;
 }
 
-.text-center {
-    text-align: center;
+.power-risk {
+    color: #f87171;
+    font-weight: bold;
 }
 
-.mt-10 {
-    margin-top: 10px;
+.success-text {
+    color: #4ade80;
+    font-weight: bold;
 }
 
-.mb-10 {
-    margin-bottom: 10px;
+.failure-text {
+    color: #f87171;
+    font-weight: bold;
+}
+
+.warning-text {
+    color: #fbbf24;
+    font-weight: bold;
+}
+
+/* Стили для скроллбара */
+.battle-log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.battle-log::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.battle-log::-webkit-scrollbar-thumb {
+    background: #4cc9f0;
+    border-radius: 3px;
 }
 
 /* Адаптивность для телефонов */
@@ -322,38 +402,26 @@ body {
         margin: 0;
         border-top: 2px solid #4cc9f0;
         backdrop-filter: blur(10px);
+        z-index: 1000;
     }
     
     body {
         padding-bottom: 120px;
     }
-}
-
-/* Специальные стили для монстров */
-.monster-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.monster-stat {
-    background: rgba(255, 0, 0, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    border: 1px solid rgba(255, 0, 0, 0.3);
-}
-
-/* Индикаторы сравнения */
-.power-advantage {
-    color: #4ade80;
-    font-weight: bold;
-}
-
-.power-risk {
-    color: #f87171;
-    font-weight: bold;
+    
+    .calculations-panel {
+        font-size: 0.9em;
+    }
+    
+    .calculation-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .calculation-value {
+        align-self: flex-end;
+    }
 }
 
 /* Анимации для боя */
@@ -367,19 +435,14 @@ body {
     animation: attack 0.3s ease;
 }
 
-/* Стили для скроллбара */
-.battle-log::-webkit-scrollbar {
-    width: 6px;
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
-.battle-log::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-.battle-log::-webkit-scrollbar-thumb {
-    background: #4cc9f0;
-    border-radius: 3px;
+.shake-animation {
+    animation: shake 0.5s ease;
 }
 
 /* Эффекты при наведении (для десктопа) */
@@ -398,4 +461,54 @@ body {
         background: rgba(76, 201, 240, 0.1);
         border-color: #4cc9f0;
     }
+}
+
+/* Стили для редкости предметов */
+.item-common { border-left-color: #6b7280; }
+.item-uncommon { border-left-color: #10b981; }
+.item-rare { border-left-color: #3b82f6; }
+.item-epic { border-left-color: #8b5cf6; }
+.item-legendary { border-left-color: #f59e0b; }
+
+/* Утилиты */
+.hidden {
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.mb-10 {
+    margin-bottom: 10px;
+}
+
+/* Стили для сообщений о смерти */
+.death-message {
+    background: rgba(220, 53, 69, 0.3);
+    border: 2px solid #dc3545;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+    text-align: center;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Стили для магазина */
+.merchant-level {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    margin-left: 10px;
 }
