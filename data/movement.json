@@ -1,0 +1,31 @@
+{
+  "styles": [
+    {
+      "id": "skip",
+      "name": "Пропуск Хода",
+      "movement": 0,
+      "stealthBonus": 2,
+      "escapeBonus": 2,
+      "canReroll": true,
+      "description": "Осторожное наблюдение за местностью"
+    },
+    {
+      "id": "stealth", 
+      "name": "Скрытное Передвижение",
+      "movement": 1,
+      "ignoresPenalties": true,
+      "stealthBonus": 2,
+      "escapeBonus": 2, 
+      "canReroll": true,
+      "description": "Тихие шаги в тени"
+    },
+    {
+      "id": "step",
+      "name": "Шаг",
+      "movement": 2, 
+      "minMovement": 1,
+      "stealthBonus": 1,
+      "description": "Обычный осмотрительный шаг"
+    }
+  ]
+}
