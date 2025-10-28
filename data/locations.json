@@ -1,0 +1,21 @@
+[
+  {
+    "id": 1,
+    "name": "Лавовые земли",
+    "image": "images/locations/lava.jpg",
+    "description": "Раскалённые пустоши с бурлящей лавой",
+    "movementPenalty": -2,
+    "escapePenalty": -2,
+    "stealthPenalty": -2,
+    "deathRisk": 4
+  },
+  {
+    "id": 2, 
+    "name": "Великие Луга",
+    "image": "images/locations/meadows.jpg",
+    "description": "Бескрайние зелёные просторы",
+    "movementBonus": 1,
+    "stealthBonus": 2,
+    "deathRisk": 20
+  }
+]
