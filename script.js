@@ -6,11 +6,14 @@ class HeroGame {
         this.monsters = [];
         this.locations = [];
         this.movementStyles = [];
+        this.merchants = [];
         
         this.currentHero = null;
         this.currentScreen = 'hero-select';
         this.currentLocation = null;
         this.currentMonster = null;
+        this.selectedMovement = null;
+        this.merchantsUnlocked = 1; // Начальное количество торговцев
         
         this.init();
     }
@@ -67,48 +70,84 @@ class HeroGame {
                 }
             ];
 
-            // Предметы
+            // Предметы (сгруппированы по торговцам)
             this.items = [
+                // Торговец 1 (базовые предметы)
                 {
                     id: 1,
+                    name: "Стальной Меч",
+                    type: "weapon",
+                    slot: "main_hand",
+                    image: "https://via.placeholder.com/100x100/333/fff?text=🗡️",
+                    icon: "https://via.placeholder.com/64x64/333/fff?text=🗡️",
+                    rarity: "common",
+                    fixed_damage: 15,
+                    bonus: {type: "damage_mult", value: 0.1},
+                    price: 150,
+                    requiredLevel: 1,
+                    merchant: 1,
+                    description: "Простой стальной меч"
+                },
+                {
+                    id: 2,
+                    name: "Кожаный Доспех",
+                    type: "armor",
+                    slot: "chest",
+                    image: "https://via.placeholder.com/100x100/333/fff?text=🛡️",
+                    icon: "https://via.placeholder.com/64x64/333/fff?text=🛡️",
+                    rarity: "common",
+                    fixed_armor: 10,
+                    bonus: {type: "health_mult", value: 0.1},
+                    price: 120,
+                    requiredLevel: 1,
+                    merchant: 1,
+                    description: "Лёгкий кожаный доспех"
+                },
+                // Торговец 2 (улучшенные предметы)
+                {
+                    id: 3,
                     name: "Меч Вулканора",
                     type: "weapon",
                     slot: "main_hand",
-                    image: "images/items/weapons/vulkanor_sword.jpg",
-                    icon: "images/items/icons/sword_icon.png",
+                    image: "https://via.placeholder.com/100x100/ff4400/fff?text=🔥",
+                    icon: "https://via.placeholder.com/64x64/ff4400/fff?text=🔥",
                     rarity: "rare",
                     fixed_damage: 25,
                     bonus: {type: "damage_mult", value: 0.2},
                     price: 300,
                     requiredLevel: 3,
+                    merchant: 2,
                     description: "Меч, выкованный в лавовых кузницах Вулканора"
                 },
                 {
-                    id: 2,
+                    id: 4,
                     name: "Лук Теней",
                     type: "weapon",
                     slot: "main_hand",
-                    image: "images/items/weapons/shadow_bow.jpg",
-                    icon: "images/items/icons/bow_icon.png",
+                    image: "https://via.placeholder.com/100x100/000/fff?text=🏹",
+                    icon: "https://via.placeholder.com/64x64/000/fff?text=🏹",
                     rarity: "uncommon",
                     fixed_damage: 20,
                     bonus: {type: "stealth_bonus", value: 1},
                     price: 250,
                     requiredLevel: 2,
+                    merchant: 2,
                     description: "Бесшумный лук для скрытных атак"
                 },
+                // Торговец 3 (эпические предметы)
                 {
-                    id: 3,
+                    id: 5,
                     name: "Доспех Гномов",
                     type: "armor",
                     slot: "chest",
-                    image: "images/items/armor/dwarf_armor.jpg",
-                    icon: "images/items/icons/armor_icon.png",
-                    rarity: "rare",
+                    image: "https://via.placeholder.com/100x100/ffd700/000?text=⭐",
+                    icon: "https://via.placeholder.com/64x64/ffd700/000?text=⭐",
+                    rarity: "epic",
                     fixed_armor: 15,
                     bonus: {type: "health_mult", value: 0.3},
                     price: 400,
                     requiredLevel: 3,
+                    merchant: 3,
                     description: "Прочная броня, украшенная рунами"
                 }
             ];
@@ -118,7 +157,7 @@ class HeroGame {
                 {
                     id: 1,
                     name: "Клещ",
-                    image: "https://via.placeholder.com/200x200/333/fff?text=Клещ",
+                    image: "https://via.placeholder.com/200x200/333/fff?text=🕷️",
                     health: 250,
                     armor: 10,
                     damage: 40,
@@ -130,7 +169,7 @@ class HeroGame {
                 {
                     id: 2,
                     name: "Гоблин",
-                    image: "https://via.placeholder.com/200x200/333/fff?text=Гоблин",
+                    image: "https://via.placeholder.com/200x200/333/fff?text=👹",
                     health: 80,
                     armor: 5,
                     damage: 25,
@@ -142,7 +181,7 @@ class HeroGame {
                 {
                     id: 3,
                     name: "Волк",
-                    image: "https://via.placeholder.com/200x200/333/fff?text=Волк",
+                    image: "https://via.placeholder.com/200x200/333/fff?text=🐺",
                     health: 60,
                     armor: 3,
                     damage: 30,
@@ -153,36 +192,39 @@ class HeroGame {
                 }
             ];
 
-            // Локации
+            // Локации (с шансом смерти)
             this.locations = [
                 {
                     id: 1,
                     name: "Лавовые земли",
-                    image: "https://via.placeholder.com/300x200/ff4400/fff?text=Лавовые+земли",
+                    image: "https://via.placeholder.com/300x200/ff4400/fff?text=🌋",
                     description: "Раскалённые пустоши с бурлящей лавой",
                     movementPenalty: -2,
                     escapePenalty: -2,
                     stealthPenalty: -2,
-                    deathRisk: 4
+                    deathRisk: 4, // 1 из 4 шанс смерти
+                    deathMessage: "Вы провалились в лавовую расщелину и погибли!"
                 },
                 {
                     id: 2,
                     name: "Великие Луга",
-                    image: "https://via.placeholder.com/300x200/44ff44/fff?text=Великие+Луга",
+                    image: "https://via.placeholder.com/300x200/44ff44/fff?text=🌿",
                     description: "Бескрайние зелёные просторы",
                     movementBonus: 1,
                     stealthBonus: 2,
-                    deathRisk: 20
+                    deathRisk: 20, // 1 из 20 шанс смерти
+                    deathMessage: "На вас напал стая голодных волков!"
                 },
                 {
                     id: 3,
                     name: "Древние Руины",
-                    image: "https://via.placeholder.com/300x200/888844/fff?text=Древние+Руины",
+                    image: "https://via.placeholder.com/300x200/888844/fff?text=🏛️",
                     description: "Заброшенные подземелья и гробницы",
                     movementPenalty: -1,
                     escapePenalty: -1,
                     stealthPenalty: -1,
-                    deathRisk: 6
+                    deathRisk: 6, // 1 из 6 шанс смерти
+                    deathMessage: "Потолок рухнул и похоронил вас под обломками!"
                 }
             ];
 
@@ -412,12 +454,14 @@ class HeroGame {
                 <div class="location-info">
                     <h3>📍 ${this.currentLocation.name}</h3>
                     <p>${this.currentLocation.description}</p>
-                    ${this.currentLocation.movementBonus ? `<p>📏 Движение: +${this.currentLocation.movementBonus}</p>` : ''}
-                    ${this.currentLocation.movementPenalty ? `<p>📏 Движение: ${this.currentLocation.movementPenalty}</p>` : ''}
-                    ${this.currentLocation.stealthBonus ? `<p>👻 Скрытность: +${this.currentLocation.stealthBonus}</p>` : ''}
-                    ${this.currentLocation.stealthPenalty ? `<p>👻 Скрытность: ${this.currentLocation.stealthPenalty}</p>` : ''}
+                    <div class="location-risks">
+                        ${this.currentLocation.deathRisk ? `<span class="risk-badge">☠️ Шанс смерти: 1/${this.currentLocation.deathRisk}</span>` : ''}
+                    </div>
                 </div>
                 ` : ''}
+
+                <!-- Панель расчётов -->
+                ${this.selectedMovement ? this.renderCalculationsPanel() : ''}
 
                 <!-- Характеристики -->
                 <div class="stats-grid">
@@ -476,6 +520,7 @@ class HeroGame {
                 <div class="action-buttons">
                     <button class="btn-primary" onclick="game.rollLocation()">🎲 Бросить локацию</button>
                     <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                    <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин (${this.merchantsUnlocked})</button>
                     <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
                 </div>
 
@@ -485,12 +530,94 @@ class HeroGame {
         `;
     }
 
+    // Панель расчётов
+    renderCalculationsPanel() {
+        if (!this.currentMonster || !this.selectedMovement) return '';
+        
+        const stats = this.calculateHeroStats(this.currentHero);
+        const movement = this.movementStyles.find(s => s.id === this.selectedMovement);
+        
+        // Расчёт дальности
+        let movementRange = typeof movement.movement === 'string' ? movement.movement : movement.movement;
+        if (this.currentLocation.movementBonus) {
+            movementRange = this.calculateMovementRange(movementRange, this.currentLocation.movementBonus);
+        }
+        if (this.currentLocation.movementPenalty && !movement.ignoresPenalties) {
+            movementRange = this.calculateMovementRange(movementRange, this.currentLocation.movementPenalty);
+        }
+
+        // Расчёт скрытности
+        let stealthChance = stats.skills.stealth;
+        if (movement.stealthBonus) stealthChance += movement.stealthBonus;
+        if (movement.stealthPenalty) stealthChance += movement.stealthPenalty;
+        if (this.currentLocation.stealthBonus) stealthChance += this.currentLocation.stealthBonus;
+        if (this.currentLocation.stealthPenalty) stealthChance += this.currentLocation.stealthPenalty;
+
+        // Расчёт побега
+        let escapeChance = stats.skills.escape;
+        if (movement.escapeBonus) escapeChance += movement.escapeBonus;
+        if (movement.escapePenalty) escapeChance += movement.escapePenalty;
+        if (this.currentLocation.escapeBonus) escapeChance += this.currentLocation.escapeBonus;
+        if (this.currentLocation.escapePenalty) escapeChance += this.currentLocation.escapePenalty;
+
+        return `
+            <div class="calculations-panel">
+                <h3>📊 Расчёты для ${this.currentMonster.name}:</h3>
+                <div class="calculation-row">
+                    <span>📏 Дальность хода:</span>
+                    <span class="calculation-value">${movementRange} клеток</span>
+                </div>
+                <div class="calculation-row">
+                    <span>👻 Шанс скрытности:</span>
+                    <span class="calculation-value">${this.calculateSuccessChance(stealthChance, 3)}%</span>
+                </div>
+                <div class="calculation-row">
+                    <span>🏃 Шанс побега:</span>
+                    <span class="calculation-value">${this.calculateSuccessChance(escapeChance, this.currentMonster.escapeDifficulty)}%</span>
+                </div>
+                <div class="calculation-row">
+                    <span>⚔️ Шанс победы:</span>
+                    <span class="calculation-value ${stats.power >= this.currentMonster.power ? 'power-advantage' : 'power-risk'}">
+                        ${stats.power >= this.currentMonster.power ? 'Высокий' : 'Низкий'}
+                    </span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Расчёт дальности хода
+    calculateMovementRange(base, modifier) {
+        if (typeof base === 'string') {
+            // Для dice notation типа "1d4"
+            const [count, dice] = base.split('d').map(Number);
+            const min = Math.max(1, count + modifier);
+            const max = dice + modifier;
+            return `${min}-${max}`;
+        } else {
+            return Math.max(1, base + modifier);
+        }
+    }
+
+    // Расчёт шанса успеха
+    calculateSuccessChance(bonusDice, targetNumber) {
+        // Простая формула: каждый d6 даёт ~16.7% шанс на успех
+        const baseChance = (7 - targetNumber) * 16.7;
+        const bonusChance = bonusDice * 16.7;
+        return Math.min(95, Math.max(5, Math.round(baseChance + bonusChance)));
+    }
+
     // Бросок локации
     rollLocation() {
         const roll = Math.floor(Math.random() * this.locations.length);
         this.currentLocation = this.locations[roll];
+        this.selectedMovement = null;
         
         this.addToLog(`🎲 Бросок локации: ${this.currentLocation.name}`);
+        this.addToLog(`📍 ${this.currentLocation.description}`);
+        if (this.currentLocation.deathRisk) {
+            this.addToLog(`⚠️ Опасность: шанс смерти 1/${this.currentLocation.deathRisk}`);
+        }
+        
         this.renderHeroScreen();
         this.showMovementSelection();
     }
@@ -521,10 +648,44 @@ class HeroGame {
     // Выбор движения
     selectMovement(styleId) {
         const style = this.movementStyles.find(s => s.id === styleId);
+        this.selectedMovement = styleId;
+        
         this.addToLog(`🚶 Выбрано: ${style.name}`);
+        
+        // Проверка шанса смерти
+        if (this.checkDeathRisk()) {
+            return; // Герой погиб
+        }
         
         // Встреча с монстром
         this.encounterMonster();
+    }
+
+    // Проверка шанса смерти
+    checkDeathRisk() {
+        if (!this.currentLocation.deathRisk) return false;
+        
+        const deathRoll = Math.floor(Math.random() * this.currentLocation.deathRisk) + 1;
+        if (deathRoll === 1) {
+            this.addToLog(`💀 КРИТИЧЕСКАЯ НЕУДАЧА!`);
+            this.addToLog(`☠️ ${this.currentLocation.deathMessage}`);
+            this.addToLog(`🏥 Вы погибли и возродились у последней таверны`);
+            
+            // Сброс прогресса (можно настроить штрафы)
+            this.currentLocation = null;
+            this.selectedMovement = null;
+            this.currentMonster = null;
+            this.saveGame();
+            
+            setTimeout(() => {
+                this.renderHeroScreen();
+            }, 3000);
+            
+            return true;
+        }
+        
+        this.addToLog(`✅ Вам повезло! Шанс смерти не сработал (выпало ${deathRoll})`);
+        return false;
     }
 
     // Встреча с монстром
@@ -533,6 +694,7 @@ class HeroGame {
         this.currentMonster = this.monsters[roll];
         
         this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
+        this.renderHeroScreen(); // Обновляем с панелью расчётов
         this.showMonsterEncounter();
     }
 
@@ -577,6 +739,7 @@ class HeroGame {
                     <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
                     <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
                     <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
                 </div>
             </div>
         `;
@@ -587,50 +750,161 @@ class HeroGame {
     // Начать бой
     startBattle() {
         this.addToLog(`⚔️ Начало боя с ${this.currentMonster.name}`);
-        // Здесь будет логика боя
-        this.simulateBattle();
+        const stats = this.calculateHeroStats(this.currentHero);
+        
+        if (stats.power >= this.currentMonster.power) {
+            this.addToLog(`🎯 Вы победили ${this.currentMonster.name}!`);
+            this.addToLog(`💰 Получено: ${this.currentMonster.reward} золота`);
+            this.currentHero.gold += this.currentMonster.reward;
+        } else {
+            this.addToLog(`💥 Вы проиграли бой с ${this.currentMonster.name}`);
+            this.addToLog(`🏥 Потеряно 20% здоровья`);
+            // Можно добавить потерю здоровья
+        }
+        
+        this.completeEncounter();
     }
 
     // Попытка скрыться
     attemptStealth() {
         const stats = this.calculateHeroStats(this.currentHero);
-        const stealthBonus = stats.skills.stealth;
+        let stealthBonus = stats.skills.stealth;
+        
+        // Учитываем бонусы/штрафы
+        const movement = this.movementStyles.find(s => s.id === this.selectedMovement);
+        if (movement.stealthBonus) stealthBonus += movement.stealthBonus;
+        if (movement.stealthPenalty) stealthBonus += movement.stealthPenalty;
+        if (this.currentLocation.stealthBonus) stealthBonus += this.currentLocation.stealthBonus;
+        if (this.currentLocation.stealthPenalty) stealthBonus += this.currentLocation.stealthPenalty;
         
         this.addToLog(`👻 Попытка скрыться... Бонус: +${stealthBonus}d6`);
-        // Здесь будет логика скрытности
-        this.addToLog(`✅ Успешно скрылись от ${this.currentMonster.name}`);
+        
+        // Симуляция броска
+        const stealthRoll = this.rollDice(stealthBonus, 3);
+        
+        if (stealthRoll.success) {
+            this.addToLog(`✅ Успешно скрылись от ${this.currentMonster.name}!`);
+        } else {
+            this.addToLog(`❌ Не удалось скрыться! Монстр вас заметил`);
+            // Можно добавить последствия
+        }
+        
         this.completeEncounter();
     }
 
     // Попытка побега
     attemptEscape() {
         const stats = this.calculateHeroStats(this.currentHero);
-        const escapeBonus = stats.skills.escape;
+        let escapeBonus = stats.skills.escape;
+        
+        // Учитываем бонусы/штрафы
+        const movement = this.movementStyles.find(s => s.id === this.selectedMovement);
+        if (movement.escapeBonus) escapeBonus += movement.escapeBonus;
+        if (movement.escapePenalty) escapeBonus += movement.escapePenalty;
+        if (this.currentLocation.escapeBonus) escapeBonus += this.currentLocation.escapeBonus;
+        if (this.currentLocation.escapePenalty) escapeBonus += this.currentLocation.escapePenalty;
         
         this.addToLog(`🏃 Попытка побега... Бонус: +${escapeBonus}d6`);
-        // Здесь будет логика побега
-        this.addToLog(`✅ Успешно сбежали от ${this.currentMonster.name}`);
+        
+        // Симуляция броска
+        const escapeRoll = this.rollDice(escapeBonus, this.currentMonster.escapeDifficulty);
+        
+        if (escapeRoll.success) {
+            this.addToLog(`✅ Успешно сбежали от ${this.currentMonster.name}!`);
+        } else {
+            this.addToLog(`❌ Не удалось сбежать! Придётся сражаться`);
+            // Автоматически начинаем бой
+            this.startBattle();
+            return;
+        }
+        
         this.completeEncounter();
     }
 
-    // Симуляция боя (упрощённая)
-    simulateBattle() {
-        this.addToLog(`🎯 Бой начался!`);
-        this.addToLog(`✅ Победа над ${this.currentMonster.name}!`);
-        this.addToLog(`💰 Получено: ${this.currentMonster.reward} золота`);
+    // Бросок кубиков
+    rollDice(bonusDice, targetNumber) {
+        let total = 0;
+        let rolls = [];
         
-        this.currentHero.gold += this.currentMonster.reward;
-        this.completeEncounter();
+        // Базовый бросок
+        const baseRoll = Math.floor(Math.random() * 6) + 1;
+        rolls.push(baseRoll);
+        total += baseRoll;
+        
+        // Бонусные броски
+        for (let i = 0; i < bonusDice; i++) {
+            const bonusRoll = Math.floor(Math.random() * 6) + 1;
+            rolls.push(bonusRoll);
+            total += bonusRoll;
+        }
+        
+        const success = total >= targetNumber;
+        
+        this.addToLog(`🎲 Бросок: [${rolls.join(', ')}] = ${total} (нужно ${targetNumber}+) - ${success ? 'УСПЕХ' : 'НЕУДАЧА'}`);
+        
+        return { success, total, rolls };
     }
 
     // Завершение встречи
     completeEncounter() {
         this.currentMonster = null;
+        this.selectedMovement = null;
         this.addToLog(`🏁 Встреча завершена`);
         this.saveGame();
         setTimeout(() => {
             this.renderHeroScreen();
         }, 2000);
+    }
+
+    // Показать магазин
+    showMerchant() {
+        const availableItems = this.items.filter(item => item.merchant <= this.merchantsUnlocked);
+        const merchantHTML = availableItems.map(item => `
+            <div class="hero-option" onclick="game.buyItem(${item.id})">
+                <strong>${item.name}</strong>
+                <div>${this.formatBonus(item.bonus)} | Урон: +${item.fixed_damage || 0} | Броня: +${item.fixed_armor || 0}</div>
+                <div>💰 ${item.price} золота | Ур. ${item.requiredLevel}</div>
+                <small>${item.description}</small>
+            </div>
+        `).join('');
+
+        const container = document.getElementById('app');
+        container.innerHTML += `
+            <div class="screen active" id="screen-merchant">
+                <h3 class="text-center">🏪 Магазин (Торговец ${this.merchantsUnlocked})</h3>
+                <div class="hero-list">
+                    ${merchantHTML || '<div class="text-center">Товаров нет</div>'}
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
+                </div>
+            </div>
+        `;
+
+        this.showScreen('merchant');
+    }
+
+    // Покупка предмета
+    buyItem(itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+
+        if (this.currentHero.gold < item.price) {
+            this.addToLog(`❌ Недостаточно золота для покупки ${item.name}`);
+            return;
+        }
+
+        if (this.currentHero.level < item.requiredLevel) {
+            this.addToLog(`❌ Недостаточный уровень для покупки ${item.name}`);
+            return;
+        }
+
+        this.currentHero.gold -= item.price;
+        this.currentHero.inventory.push(itemId);
+        
+        this.addToLog(`🛒 Куплено: ${item.name} за ${item.price} золота`);
+        this.saveGame();
+        this.showMerchant(); // Обновляем магазин
     }
 
     // Добавить запись в журнал
@@ -639,15 +913,10 @@ class HeroGame {
         if (log) {
             const entry = document.createElement('div');
             entry.className = 'log-entry';
-            entry.textContent = `[Ход ${this.getTurnNumber()}] ${message}`;
+            entry.textContent = message;
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         }
-    }
-
-    // Получить номер хода
-    getTurnNumber() {
-        return 1; // Временная заглушка
     }
 
     // Форматирование бонуса для отображения
@@ -694,7 +963,7 @@ class HeroGame {
             return `
                 <div class="hero-option" onclick="game.equipItem(${itemId})">
                     <strong>${item.name}</strong>
-                    <div>${this.formatBonus(item.bonus)}</div>
+                    <div>${this.formatBonus(item.bonus)} | Урон: +${item.fixed_damage || 0} | Броня: +${item.fixed_armor || 0}</div>
                     ${isEquipped ? '<small>✓ Надето</small>' : '<small>📦 В инвентаре</small>'}
                 </div>
             `;
@@ -747,7 +1016,8 @@ class HeroGame {
             localStorage.setItem('heroGameSave', JSON.stringify({
                 currentHeroId: this.currentHero.id,
                 heroes: this.heroes,
-                currentLocation: this.currentLocation
+                currentLocation: this.currentLocation,
+                merchantsUnlocked: this.merchantsUnlocked
             }));
         }
     }
@@ -760,6 +1030,7 @@ class HeroGame {
                 const data = JSON.parse(save);
                 this.heroes = data.heroes || this.heroes;
                 this.currentLocation = data.currentLocation || null;
+                this.merchantsUnlocked = data.merchantsUnlocked || 1;
                 
                 if (data.currentHeroId) {
                     this.currentHero = this.heroes.find(h => h.id === data.currentHeroId);
