@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Клещ",
+    "image": "images/monsters/tick.jpg",
+    "health": 250,
+    "armor": 10,
+    "damage": 40,
+    "power": 105,
+    "reward": 24,
+    "escapeDifficulty": 4,
+    "description": "Отвратительное существо, питающееся кровью..."
+  },
+  {
+    "id": 2,
+    "name": "Гоблин",
+    "image": "images/monsters/goblin.jpg", 
+    "health": 80,
+    "armor": 5,
+    "damage": 25,
+    "power": 68,
+    "reward": 15,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный гуманоид"
+  }
+]
