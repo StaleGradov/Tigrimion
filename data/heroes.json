@@ -36,5 +36,23 @@
       "main_hand": null,
       "chest": null
     }
+  },
+      "id": 3,
+    "name": "Калинор", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
+    "race": "elf",
+    "class": "warrior",
+    "saga": "vulkanor",
+    "baseHealth": 120,
+    "baseDamage": 18,
+    "baseArmor": 15,
+    "gold": 800,
+    "level": 2,
+    "experience": 80,
+    "inventory": [3],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
   }
 ]
