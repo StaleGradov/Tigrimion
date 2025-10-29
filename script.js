@@ -988,17 +988,32 @@ hideReward() {
         this.showMonsterActions();
     }
 
-    // Показать действия для монстра
-    showMonsterActions() {
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="action-buttons" style="margin-top: 15px;">
-                <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
-                <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
-            </div>
-        `;
+// Показать действия для монстра
+showMonsterActions() {
+    // Проверяем, что монстр еще существует
+    if (!this.currentMonster) {
+        return;
     }
+    
+    const container = document.getElementById('app');
+    
+    // Удаляем старые кнопки действий если они есть
+    const oldActions = container.querySelector('.monster-actions');
+    if (oldActions) {
+        oldActions.remove();
+    }
+    
+    // Добавляем новые кнопки действий
+    const actionsHTML = `
+        <div class="monster-actions" style="margin-top: 15px;">
+            <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
+            <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
+            <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+        </div>
+    `;
+    
+    container.innerHTML += actionsHTML;
+}
 
 // Начать бой
 startBattle() {
