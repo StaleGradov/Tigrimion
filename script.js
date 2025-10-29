@@ -470,10 +470,43 @@ renderHeroSelect() {
                     const stats = this.calculateHeroStats(hero);
                     const bonuses = this.getBonuses();
                     
+                    // Собираем все активные навыки
+                    const activeSkills = [];
+                    
+                    // Проверяем каждый навык и добавляем если значение > 0
+                    if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
+                    if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
+                    if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
+                    if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
+                    if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
+                    
+                    // Проверяем бонусы к характеристикам
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    
+                    // Аналогично для класса и саги
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+
                     return `
                         <div class="hero-option" onclick="game.selectHero(${hero.id})">
                             <div class="hero-option-image">
-                                <img src="${hero.image}" alt="${hero.name}">
+                                <img src="${hero.image}" alt="${hero.name}" onerror="console.error('❌ Ошибка загрузки изображения:', this.src)">
                             </div>
                             <div class="hero-option-info">
                                 <div class="hero-option-header">
@@ -492,12 +525,13 @@ renderHeroSelect() {
                                         <span>⚡ ${hero.experience}/100</span>
                                     </div>
                                 </div>
-                                <div class="hero-option-skills">
-                                    <span>🏃 +${stats.skills.escape}d6</span>
-                                    <span>👻 +${stats.skills.stealth}d6</span>
-                                    <span>🍀 +${stats.skills.luck}d6</span>
-                                    <span>🌿 +${stats.skills.survival}d6</span>
-                                </div>
+                                ${activeSkills.length > 0 ? `
+                                    <div class="hero-option-skills">
+                                        ${activeSkills.map(skill => `
+                                            <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
                                 <div class="hero-option-bonuses">
                                     <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
                                 </div>
