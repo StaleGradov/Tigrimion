@@ -789,3 +789,121 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* Стили для выбора героя с расширенной информацией */
+.hero-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.hero-level {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.hero-option-stats {
+    margin-bottom: 8px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+
+.stat-row span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Стили для навыков героев */
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.8em;
+}
+
+.hero-option-skills span {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 2px 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.hero-option-bonuses {
+    margin-top: 6px;
+    opacity: 0.8;
+}
+
+/* Для ПК - делаем навыки более компактными */
+@media (min-width: 769px) {
+    .hero-option-skills {
+        gap: 6px;
+    }
+    
+    .hero-option-skills span {
+        font-size: 0.75em;
+    }
+}
+
+/* Стили для изображений героев в списке выбора */
+.hero-option-image {
+    width: 80px;
+    height: 100px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #4cc9f0;
+}
+
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Для ПК - делаем изображения больше */
+@media (min-width: 769px) {
+    .hero-option-image {
+        width: 100px;
+        height: 120px;
+    }
+}
+
+/* Для мобильных */
+@media (max-width: 480px) {
+    .hero-option-image {
+        width: 70px;
+        height: 90px;
+    }
+    
+    .hero-option {
+        flex-direction: row;
+        text-align: left;
+        gap: 12px;
+    }
+    
+    .stat-row {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 15px;
+    }
+    
+    .hero-option-skills {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+}
