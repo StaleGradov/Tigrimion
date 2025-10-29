@@ -1159,39 +1159,60 @@ completeEncounter() {
         this.renderHeroScreen();
     }, 2000);
 }
-    // Показать магазин
-    showMerchant() {
-        const availableItems = this.items.filter(item => item.merchant <= this.merchantsUnlocked);
-        const merchantHTML = availableItems.map(item => `
-            <div class="hero-option" onclick="game.buyItem(${item.id})">
-                <div class="hero-option-image">
-                    <img src="${item.image}" alt="${item.name}">
+// Показать магазин
+showMerchant() {
+    const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
+    
+    const merchantHTML = availableItems.map(item => `
+        <div class="merchant-item">
+            <div class="merchant-item-image">
+                <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+            </div>
+            <div class="merchant-item-info">
+                <strong>${item.name}</strong>
+                <div class="item-stats">
+                    ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
+                    ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
+                    ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
+                    ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
                 </div>
-                <div class="hero-option-info">
-                    <strong>${item.name}</strong>
-                    <div>${this.formatBonus(item.bonus)}</div>
-                    <div>Урон: +${item.fixed_damage || 0} | Броня: +${item.fixed_armor || 0}</div>
-                    <div>💰 ${item.price} золота | Ур. ${item.requiredLevel}</div>
-                    <small>${item.description}</small>
+                <div class="item-price">
+                    <span>💰 Купить: ${item.price}</span>
+                    <span>💸 Продать: ${item.sellPrice}</span>
+                </div>
+                <small>${item.description}</small>
+                <div class="merchant-actions">
+                    <button class="btn-primary" onclick="game.buyItem(${item.id})">Купить</button>
+                    ${this.currentHero.inventory.includes(item.id) ? 
+                        `<button class="btn-secondary" onclick="game.sellItem(${item.id})">Продать</button>` : 
+                        ''
+                    }
                 </div>
             </div>
-        `).join('');
+        </div>
+    `).join('');
 
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="screen active" id="screen-merchant">
-                <h3 class="text-center">🏪 Магазин (Торговец ${this.merchantsUnlocked})</h3>
-                <div class="hero-list">
-                    ${merchantHTML || '<div class="text-center">Товаров нет</div>'}
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-merchant">
+            <h3 class="text-center">🏪 Магазин</h3>
+            <div class="hero-info" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>💰 Ваше золото: ${this.currentHero?.gold || 0}</span>
+                    <span>🎒 Свободно мест: ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
                 </div>
             </div>
-        `;
+            <div class="merchant-list">
+                ${merchantHTML || '<div class="text-center">Товаров нет</div>'}
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+            </div>
+        </div>
+    `;
 
-        this.showScreen('merchant');
-    }
+    this.showScreen('merchant');
+}
 
     // Покупка предмета
     buyItem(itemId) {
