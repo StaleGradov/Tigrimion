@@ -25,132 +25,90 @@ class HeroGame {
         this.renderHeroSelect();
     }
 
-    // Загрузка данных из JSON файлов
-    async loadGameData() {
-        try {
-            // Загружаем героев из JSON файла
-            const heroesResponse = await fetch('data/heroes.json');
-            this.heroes = await heroesResponse.json();
-
-            // Загружаем предметы
-            const itemsResponse = await fetch('data/items.json');
-            this.items = await itemsResponse.json();
-
-            // Загружаем монстров
-            const monstersResponse = await fetch('data/monsters.json');
-            this.monsters = await monstersResponse.json();
-
-            // Загружаем локации
-            const locationsResponse = await fetch('data/locations.json');
-            this.locations = await locationsResponse.json();
-
-            // Загружаем стили движения
-            const movementResponse = await fetch('data/movement.json');
-            const movementData = await movementResponse.json();
-            this.movementStyles = movementData.styles;
-
-            console.log('✅ Все данные загружены:', {
-                heroes: this.heroes.length,
-                items: this.items.length, 
-                monsters: this.monsters.length,
-                locations: this.locations.length,
-                movementStyles: this.movementStyles.length
-            });
-
-        } catch (error) {
-            console.error('❌ Ошибка загрузки данных:', error);
-            this.addToLog('❌ Ошибка загрузки данных игры');
-            
-            // Fallback - базовые данные если файлы не загрузились
-            this.loadFallbackData();
+  async function loadJSON(filePath) {
+    try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        return await response.json();
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки ${filePath}:`, error);
+        return null;
     }
+}
 
-    // Резервные данные если JSON файлы не доступны
-    loadFallbackData() {
-        this.heroes = [
-            {
-                "id": 1,
-                "name": "Резервный Герой",
-                "image": "https://via.placeholder.com/400x300/333/fff?text=Герой",
-                "race": "human",
-                "class": "warrior",
-                "saga": "golden_egg",
-                "baseHealth": 100,
-                "baseDamage": 20,
-                "baseArmor": 10,
-                "gold": 500,
-                "level": 1,
-                "experience": 0,
-                "inventory": [],
-                "equipment": {
-                    "main_hand": null,
-                    "chest": null
-                }
-            }
-        ];
-        
-        this.items = [
-            {
-                "id": 1,
-                "name": "Стальной Меч",
-                "type": "weapon",
-                "slot": "main_hand",
-                "image": "https://via.placeholder.com/300x200/333/fff?text=🗡️",
-                "icon": "https://via.placeholder.com/64x64/333/fff?text=🗡️",
-                "rarity": "common",
-                "fixed_damage": 15,
-                "bonus": {"type": "damage_mult", "value": 0.1},
-                "price": 150,
-                "requiredLevel": 1,
-                "merchant": 1,
-                "description": "Простой стальной меч"
-            }
-        ];
+async function loadGameData() {
+    try {
+        const [heroes, enemies, items] = await Promise.all([
+            loadJSON('data/heroes.json'),
+            loadJSON('data/enemies.json'),
+            loadJSON('data/items.json')
+        ]);
 
-        this.monsters = [
-            {
-                "id": 1,
-                "name": "Клещ",
-                "image": "https://via.placeholder.com/400x300/333/fff?text=🕷️",
-                "health": 250,
-                "armor": 10,
-                "damage": 40,
-                "power": 105,
-                "reward": 24,
-                "escapeDifficulty": 4,
-                "description": "Отвратительное существо, питающееся кровью..."
-            }
-        ];
-
-        this.locations = [
-            {
-                "id": 1,
-                "name": "Лавовые земли",
-                "image": "https://via.placeholder.com/400x300/ff4400/fff?text=🌋",
-                "description": "Раскалённые пустоши с бурлящей лавой",
-                "movementPenalty": -2,
-                "escapePenalty": -2,
-                "stealthPenalty": -2,
-                "deathRisk": 4,
-                "deathMessage": "Вы провалились в лавовую расщелину и погибли!"
-            }
-        ];
-
-        this.movementStyles = [
-            {
-                "id": "skip",
-                "name": "Пропуск Хода",
-                "movement": 0,
-                "stealthBonus": 2,
-                "escapeBonus": 2,
-                "canReroll": true,
-                "description": "Осторожное наблюдение за местностью"
-            }
-        ];
-
-        this.addToLog('⚠️ Загружены резервные данные');
+        // Если какой-то файл не загрузился, используем резервные данные
+        return {
+            heroes: heroes || getDefaultHeroes(),
+            enemies: enemies || getDefaultEnemies(),
+            items: items || getDefaultItems()
+        };
+    } catch (error) {
+        console.error('❌ Критическая ошибка загрузки данных:', error);
+        return getDefaultGameData();
     }
+}
+
+function getDefaultHeroes() {
+    return [
+        {
+            id: 1,
+            name: "Резервный герой",
+            health: 100,
+            maxHealth: 100,
+            attack: 10,
+            defense: 5,
+            speed: 5,
+            level: 1,
+            experience: 0,
+            skills: ["Базовый удар"]
+        }
+    ];
+}
+
+function getDefaultEnemies() {
+    return [
+        {
+            id: 1,
+            name: "Слабый монстр",
+            health: 30,
+            maxHealth: 30,
+            attack: 5,
+            defense: 2,
+            speed: 3,
+            experience: 5
+        }
+    ];
+}
+
+function getDefaultItems() {
+    return [
+        {
+            id: 1,
+            name: "Малое зелье здоровья",
+            type: "potion",
+            value: 20,
+            price: 25
+        }
+    ];
+}
+
+function getDefaultGameData() {
+    return {
+        heroes: getDefaultHeroes(),
+        enemies: getDefaultEnemies(),
+        items: getDefaultItems()
+    };
+}
 
     // Сброс героя к базовым настройкам с подтверждением
     resetHero() {
