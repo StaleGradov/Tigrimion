@@ -485,10 +485,21 @@ body {
         text-align: center;
     }
     
-    .hero-option-image {
-        width: 100px;
-        height: 120px;
-    }
+/* Стили для изображений героев в списке выбора */
+.hero-option-image {
+    width: 60px;  /* Было 60px */
+    height: 80px; /* Было 80px */
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #4cc9f0;
+}
+
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Важно: cover чтобы изображения не искажались */
+}
     
     .stat-row {
         flex-wrap: wrap;
@@ -609,9 +620,16 @@ body {
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 8px;
+    .hero-option-image {
+        width: 70px;  /* Чуть больше на мобильных для удобства */
+        height: 90px;
     }
+    
+    .hero-option {
+        flex-direction: row; /* Оставляем горизонтальное расположение */
+        text-align: left;
+    }
+}
     
     .equipment-section {
         grid-template-columns: 1fr;
