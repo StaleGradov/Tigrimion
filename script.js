@@ -25,7 +25,8 @@ class HeroGame {
         this.renderHeroSelect();
     }
 
-  async function loadJSON(filePath) {
+// Базовая функция загрузки JSON
+async function loadJSON(filePath) {
     try {
         const response = await fetch(filePath);
         if (!response.ok) {
