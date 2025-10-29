@@ -53,13 +53,25 @@ body {
     align-items: center;
     justify-content: center;
     border: 3px solid #4cc9f0;
+    position: relative;
 }
 
 .hero-image img, .location-image-large img, .monster-image-large img {
-    width: auto;
-    height: 100%;
     max-width: 100%;
-    object-fit: contain;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: scale-down;
+}
+
+/* Особый бордер для локации */
+.location-image-large {
+    border-color: #4ade80;
+}
+
+/* Особый бордер для монстра */
+.monster-image-large {
+    border-color: #f87171;
 }
 
 /* Особый бордер для локации */
