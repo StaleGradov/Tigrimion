@@ -914,13 +914,37 @@ body {
         margin: 0 auto; /* Центрируем */
     }
     
+   /* Стили для навыков героев */
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px; /* Уменьшили отступ между бонусами */
+    margin-bottom: 6px;
+    font-size: 0.85em; /* Увеличили размер шрифта */
+}
+
+.hero-option-skills span {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Увеличили отступ между иконкой и текстом */
+    background: rgba(76, 201, 240, 0.2);
+    padding: 4px 8px; /* Увеличили внутренние отступы */
+    border-radius: 12px;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    font-weight: 500; /* Сделали текст чуть жирнее */
+}
+
+/* Для ПК - делаем бонусы еще больше */
+@media (min-width: 769px) {
     .hero-option-skills {
-        gap: 6px;
+        gap: 5px; /* Еще меньше отступов на ПК */
     }
     
     .hero-option-skills span {
-        font-size: 0.75em;
+        font-size: 0.9em; /* Увеличили размер на ПК */
+        padding: 5px 10px; /* Больше отступов на ПК */
     }
+}
     
     .stat-row {
         justify-content: flex-start; /* Выравниваем по левому краю */
