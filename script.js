@@ -1214,28 +1214,70 @@ showMerchant() {
     this.showScreen('merchant');
 }
 
-    // Покупка предмета
-    buyItem(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
+// Покупка предмета
+buyItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
 
-        if (this.currentHero.gold < item.price) {
-            this.addToLog(`❌ Недостаточно золота для покупки ${item.name}`);
-            return;
-        }
-
-        if (this.currentHero.level < item.requiredLevel) {
-            this.addToLog(`❌ Недостаточный уровень для покупки ${item.name}`);
-            return;
-        }
-
-        this.currentHero.gold -= item.price;
-        this.currentHero.inventory.push(itemId);
-        
-        this.addToLog(`🛒 Куплено: ${item.name} за ${item.price} золота`);
-        this.saveGame();
-        this.showMerchant(); // Обновляем магазин
+    if (this.currentHero.gold < item.price) {
+        this.addToLog(`❌ Недостаточно золота для покупки ${item.name}`);
+        return;
     }
+
+    if (this.currentHero.level < item.requiredLevel) {
+        this.addToLog(`❌ Недостаточный уровень для покупки ${item.name}`);
+        return;
+    }
+
+    // Проверяем место в инвентаре
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog(`❌ Инвентарь полон! Максимум 10 предметов`);
+        return;
+    }
+
+    // Проверяем, есть ли уже такой предмет
+    if (this.currentHero.inventory.includes(itemId)) {
+        this.addToLog(`❌ У вас уже есть ${item.name}`);
+        return;
+    }
+
+    this.currentHero.gold -= item.price;
+    this.currentHero.inventory.push(itemId);
+    
+    this.addToLog(`🛒 Куплено: ${item.name} за ${item.price} золота`);
+    this.saveGame();
+    this.showMerchant(); // Обновляем магазин
+}
+
+    // Продать предмет
+sellItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Проверяем, есть ли предмет в инвентаре
+    if (!this.currentHero.inventory.includes(itemId)) {
+        this.addToLog(`❌ Предмет ${item.name} не найден в инвентаре`);
+        return;
+    }
+
+    // Убираем из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+    
+    // Добавляем золото
+    this.currentHero.gold += item.sellPrice;
+    
+    // Если предмет был экипирован, снимаем его
+    if (this.currentHero.equipment.main_hand === itemId) {
+        this.currentHero.equipment.main_hand = null;
+    }
+    if (this.currentHero.equipment.chest === itemId) {
+        this.currentHero.equipment.chest = null;
+    }
+
+    this.addToLog(`💰 Продано: ${item.name} за ${item.sellPrice} золота`);
+    this.saveGame();
+    this.showMerchant(); // Обновляем магазин
+}
 
     // Показать инвентарь
     showInventory() {
@@ -1276,31 +1318,53 @@ showMerchant() {
         this.showScreen('inventory');
     }
 
-    // Экипировать предмет
-    equipItem(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
+// Экипировать предмет
+equipItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
 
-        // Снимаем предыдущий предмет в этом слоте если есть
-        const currentEquipped = this.currentHero.equipment[item.slot];
-        if (currentEquipped) {
-            // Возвращаем в инвентарь
-            if (!this.currentHero.inventory.includes(currentEquipped)) {
-                this.currentHero.inventory.push(currentEquipped);
-            }
-        }
-
-        // Надеваем новый предмет
-        this.currentHero.equipment[item.slot] = itemId;
-        
-        // Убираем из инвентаря
-        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
-
-        this.addToLog(`🎯 Надето: ${item.name}`);
-        this.saveGame();
-        this.renderHeroScreen();
+    // Если это зелье - используем сразу
+    if (item.type === 'potion') {
+        this.usePotion(item);
+        return;
     }
 
+    // Для оружия и брони - стандартная экипировка
+    const currentEquipped = this.currentHero.equipment[item.slot];
+    if (currentEquipped) {
+        // Возвращаем в инвентарь
+        if (!this.currentHero.inventory.includes(currentEquipped)) {
+            this.currentHero.inventory.push(currentEquipped);
+        }
+    }
+
+    // Надеваем новый предмет
+    this.currentHero.equipment[item.slot] = itemId;
+    
+    // Убираем из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+
+    this.addToLog(`🎯 Надето: ${item.name}`);
+    this.saveGame();
+    this.renderHeroScreen();
+}
+
+// Использовать зелье
+usePotion(item) {
+    if (item.type !== 'potion') return;
+
+    // Используем эффект зелья
+    if (item.heal) {
+        this.currentHero.baseHealth += item.heal;
+        this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
+    }
+
+    // Убираем зелье из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== item.id);
+    
+    this.saveGame();
+    this.showInventory(); // Обновляем инвентарь
+}
     // Добавить запись в журнал
     addToLog(message) {
         const log = document.getElementById('battle-log');
