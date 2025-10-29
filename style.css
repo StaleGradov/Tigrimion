@@ -120,6 +120,7 @@ body {
     text-align: center;
 }
 
+/* Статистика героя в левой колонке */
 .hero-stats {
     display: flex;
     flex-direction: column;
@@ -133,6 +134,21 @@ body {
     justify-content: space-between;
     padding: 4px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Информация в колонках */
+.hero-info, .location-info, .monster-info, .reward-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.hero-info h2 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    color: #4cc9f0;
+    text-align: center;
 }
 
 .location-info h4, .monster-info h4 {
