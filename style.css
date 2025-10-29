@@ -907,3 +907,29 @@ body {
         gap: 10px;
     }
 }
+/* Для ПК - делаем элементы более компактными */
+@media (min-width: 769px) {
+    .hero-option {
+        max-width: 600px; /* Ограничиваем ширину карточек героев */
+        margin: 0 auto; /* Центрируем */
+    }
+    
+    .hero-option-skills {
+        gap: 6px;
+    }
+    
+    .hero-option-skills span {
+        font-size: 0.75em;
+    }
+    
+    .stat-row {
+        justify-content: flex-start; /* Выравниваем по левому краю */
+        gap: 20px; /* Увеличиваем отступы между элементами */
+    }
+    
+    .hero-option-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+}
