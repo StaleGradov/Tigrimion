@@ -907,20 +907,12 @@ body {
         gap: 10px;
     }
 }
-/* Для ПК - делаем элементы более компактными */
-@media (min-width: 769px) {
-    .hero-option {
-        max-width: 600px; /* Ограничиваем ширину карточек героев */
-        margin: 0 auto; /* Центрируем */
-    }
-    
 /* Альтернатива - более крупные бонусы */
 .hero-option-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px; /* Минимальные отступы */
+    gap: 5px;
     margin-bottom: 8px;
-    font-size: 0.9em; /* Крупный шрифт */
 }
 
 .hero-option-skills span {
@@ -928,21 +920,26 @@ body {
     align-items: center;
     gap: 4px;
     background: rgba(76, 201, 240, 0.25);
-    padding: 6px 10px; /* Большие отступы */
-    border-radius: 14px; /* Более скругленные углы */
-    border: 2px solid rgba(76, 201, 240, 0.4); /* Более толстая граница */
-    font-weight: 600; /* Жирный текст */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Легкая тень для объема */
+    padding: 6px 10px;
+    border-radius: 14px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 0.9em; /* Базовый размер для мобильных */
 }
 
-/* Для ПК */
+/* ДЛЯ ПК - ОЧЕНЬ КРУПНЫЕ БОНУСЫ */
 @media (min-width: 769px) {
     .hero-option-skills {
-        gap: 4px; /* Совсем маленькие отступы */
+        gap: 4px;
+        margin-bottom: 10px;
     }
     
     .hero-option-skills span {
-        font-size: 0.95em; /* Очень крупный текст */
-        padding: 6px 12px; /* Максимальные отступы */
+        font-size: 1.1em !important; /* Очень крупный текст */
+        padding: 10px 16px !important; /* Максимальные отступы */
+        gap: 6px;
+        border: 3px solid rgba(76, 201, 240, 0.5); /* Еще толще граница */
+        border-radius: 16px; /* Больше скругление */
     }
 }
