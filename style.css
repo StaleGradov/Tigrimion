@@ -424,59 +424,89 @@ body {
     color: #4cc9f0;
 }
 
-/* Списки выбора */
-.hero-list {
+/* Стили для выбора героя с расширенной информацией */
+.hero-option-header {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
 }
 
-.hero-option {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+.hero-level {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.hero-option-stats {
+    margin-bottom: 8px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+
+.stat-row span {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 4px;
 }
 
-.hero-option:active {
-    background: rgba(76, 201, 240, 0.3);
-    border-color: #4cc9f0;
-    transform: scale(0.98);
+.hero-option-skills {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 0.8em;
+    opacity: 0.9;
 }
 
-.hero-option-image {
-    width: 60px;
-    height: 80px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
+.hero-option-skills span {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 
-.hero-option-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.hero-option-info {
-    flex: 1;
-}
-
-.hero-option strong {
-    display: block;
-    margin-bottom: 5px;
-    color: #4cc9f0;
-}
-
-.hero-option small {
+.hero-option-bonuses {
+    margin-top: 6px;
     opacity: 0.8;
 }
 
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .hero-option {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero-option-image {
+        width: 100px;
+        height: 120px;
+    }
+    
+    .stat-row {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .hero-option-skills {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .hero-option-header {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
 /* Инвентарь */
 .inventory-grid {
     display: grid;
