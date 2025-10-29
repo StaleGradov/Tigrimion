@@ -1002,6 +1002,12 @@ hideReward() {
 
 // Начать бой
 startBattle() {
+    // Проверяем, что монстр еще существует (не был побежден)
+    if (!this.currentMonster) {
+        this.addToLog("❌ Монстр уже побежден!");
+        return;
+    }
+    
     this.addToLog(`⚔️ Начало боя с ${this.currentMonster.name}`);
     const stats = this.calculateHeroStats(this.currentHero);
     
@@ -1010,8 +1016,17 @@ startBattle() {
         this.addToLog(`💰 Получено: ${this.currentMonster.reward} золота`);
         this.currentHero.gold += this.currentMonster.reward;
         
+        // Сохраняем информацию о монстре перед очисткой
+        const defeatedMonster = this.currentMonster;
+        
+        // Очищаем монстра и движение
+        this.currentMonster = null;
+        this.selectedMovement = null;
+        
         // Показываем награду вместо монстра
-        this.showReward(this.currentMonster.reward);
+        this.showReward(defeatedMonster.reward);
+        
+        this.saveGame();
     } else {
         this.addToLog(`💥 Вы проиграли бой с ${this.currentMonster.name}`);
         this.addToLog(`🏥 Потеряно 20% здоровья`);
