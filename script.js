@@ -640,7 +640,12 @@ renderMonsterRewardColumn() {
     if (this.showReward) {
         return this.renderRewardDisplay();
     } else if (this.currentMonster) {
-        return this.renderMonsterDisplay();
+        const monsterDisplay = this.renderMonsterDisplay();
+        // Автоматически показываем кнопки действий когда рендерим монстра
+        setTimeout(() => {
+            this.showMonsterActions();
+        }, 100);
+        return monsterDisplay;
     } else {
         return `
             <div class="monster-info">
