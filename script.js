@@ -1141,17 +1141,24 @@ startBattle() {
         return { success, total, rolls };
     }
 
-    // Завершение встречи
-    completeEncounter() {
-        this.currentMonster = null;
-        this.selectedMovement = null;
-        this.addToLog(`🏁 Встреча завершена`);
-        this.saveGame();
-        setTimeout(() => {
-            this.renderHeroScreen();
-        }, 2000);
+// Завершение встречи
+completeEncounter() {
+    this.currentMonster = null;
+    this.selectedMovement = null;
+    
+    // Очищаем кнопки действий монстра
+    const container = document.getElementById('app');
+    const monsterActions = container.querySelector('.monster-actions');
+    if (monsterActions) {
+        monsterActions.remove();
     }
-
+    
+    this.addToLog(`🏁 Встреча завершена`);
+    this.saveGame();
+    setTimeout(() => {
+        this.renderHeroScreen();
+    }, 2000);
+}
     // Показать магазин
     showMerchant() {
         const availableItems = this.items.filter(item => item.merchant <= this.merchantsUnlocked);
