@@ -55,9 +55,10 @@ body {
 }
 
 .location-image-large img, .monster-image-large img {
-    width: 100%;
+    width: auto;
     height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 /* Картинка героя */
@@ -67,12 +68,16 @@ body {
     border-radius: 10px;
     overflow: hidden;
     border: 3px solid #4cc9f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero-image img {
-    width: 100%;
+    width: auto;
     height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    object-fit: contain;
 }
 
 /* Заголовки колонок */
