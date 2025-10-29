@@ -459,29 +459,56 @@ sellItem(itemId) {
         };
     }
 
-    // Рендер выбора героя
-    renderHeroSelect() {
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-hero-select">
-                <h2 class="text-center">Выберите героя</h2>
-                <div class="hero-list">
-                    ${this.heroes.map(hero => `
+// Рендер выбора героя
+renderHeroSelect() {
+    const container = document.getElementById('app');
+    container.innerHTML = `
+        <div class="screen active" id="screen-hero-select">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
+                ${this.heroes.map(hero => {
+                    const stats = this.calculateHeroStats(hero);
+                    const bonuses = this.getBonuses();
+                    
+                    return `
                         <div class="hero-option" onclick="game.selectHero(${hero.id})">
                             <div class="hero-option-image">
                                 <img src="${hero.image}" alt="${hero.name}">
                             </div>
                             <div class="hero-option-info">
-                                <strong>${hero.name}</strong>
-                                <div>Ур. ${hero.level} | 💰 ${hero.gold}</div>
-                                <small>${this.getBonuses().races[hero.race]?.name} - ${this.getBonuses().classes[hero.class]?.name}</small>
+                                <div class="hero-option-header">
+                                    <strong>${hero.name}</strong>
+                                    <span class="hero-level">Ур. ${hero.level}</span>
+                                </div>
+                                <div class="hero-option-stats">
+                                    <div class="stat-row">
+                                        <span>❤️ ${stats.health}</span>
+                                        <span>⚔️ ${stats.damage}</span>
+                                        <span>🛡️ ${stats.armor}</span>
+                                        <span>🌟 ${stats.power}</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span>💰 ${hero.gold}</span>
+                                        <span>⚡ ${hero.experience}/100</span>
+                                    </div>
+                                </div>
+                                <div class="hero-option-skills">
+                                    <span>🏃 +${stats.skills.escape}d6</span>
+                                    <span>👻 +${stats.skills.stealth}d6</span>
+                                    <span>🍀 +${stats.skills.luck}d6</span>
+                                    <span>🌿 +${stats.skills.survival}d6</span>
+                                </div>
+                                <div class="hero-option-bonuses">
+                                    <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
+                                </div>
                             </div>
                         </div>
-                    `).join('')}
-                </div>
+                    `;
+                }).join('')}
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     // Выбор героя
     selectHero(heroId) {
