@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": ",Бешенная Сорока",
+    "name": "Бешенная Сорока",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Soroka.jpg",
     "health": 120,
     "armor": 0,
