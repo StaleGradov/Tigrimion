@@ -30,7 +30,7 @@
     "escapePenalty": -2,
     "deathRisk": 8,
     "deathMessage": "Зыбучие пески затянули вас"
-  }
+  },
     {
     "id": 4,
     "name": "Болотные топи",
@@ -40,7 +40,7 @@
     "escapePenalty": -1,
     "deathRisk": 10,
     "deathMessage": "Вы провалились в болото"
-  }
+  },
     {
     "id": 5,
     "name": "Пещеры",
