@@ -729,6 +729,14 @@ showReward(amount) {
 hideReward() {
     this.showReward = false;
     this.lastReward = 0;
+    
+    // Очищаем кнопки действий монстра
+    const container = document.getElementById('app');
+    const monsterActions = container.querySelector('.monster-actions');
+    if (monsterActions) {
+        monsterActions.remove();
+    }
+    
     this.renderHeroScreen();
 }
     // Окно локации/монстра
