@@ -14,7 +14,7 @@ body {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 1200px;
     padding: 10px;
     margin: 0 auto;
 }
@@ -83,6 +83,528 @@ body {
     font-size: 1.1em;
     padding: 8px;
     background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+}
+
+/* Картинка награды */
+.reward-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4em;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 10px #ffd700; }
+    to { box-shadow: 0 0 20px #ffed4e, 0 0 30px #ffd700; }
+}
+
+/* Информация в колонках */
+.hero-info, .location-info, .monster-info, .reward-info {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    backdrop-filter: blur(5px);
+}
+
+.hero-info h2 {
+    font-size: 1.4em;
+    margin-bottom: 10px;
+    color: #4cc9f0;
+    text-align: center;
+}
+
+/* НОВЫЙ КОНТЕЙНЕР ДЛЯ РЕСУРСОВ И СТАТИСТИК ГЕРОЯ */
+.hero-resources-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+}
+
+/* Левая часть - ресурсы */
+.hero-resources {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.resource-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.resource-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.resource-value {
+    font-weight: bold;
+    color: #4cc9f0;
+    font-size: 1.1em;
+}
+
+/* Правая часть - основные характеристики */
+.hero-core-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.core-stat {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    border: 2px solid rgba(76, 201, 240, 0.3);
+}
+
+.core-stat-name {
+    font-size: 0.85em;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.core-stat-value {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #4cc9f0;
+}
+
+/* Бонусы в карточке героя (уменьшенные) */
+.bonuses-section {
+    margin-bottom: 20px;
+}
+
+.bonuses-section h3 {
+    margin-bottom: 10px;
+    color: #4cc9f0;
+}
+
+.bonus-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 6px;
+    border-left: 3px solid #4cc9f0;
+    font-size: 0.85em;
+}
+
+.bonus-empty {
+    opacity: 0.6;
+    font-style: italic;
+    border-left-color: #666;
+}
+
+/* Навыки */
+.skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.skill-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Кнопки */
+.action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+    color: white;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 2px solid #4cc9f0;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+    color: white;
+}
+
+.btn-primary:active, .btn-secondary:active, .btn-danger:active {
+    transform: scale(0.98);
+}
+
+/* Журнал событий */
+.battle-log {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.9em;
+}
+
+.log-entry {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Стили для экрана выбора героя */
+.hero-selection-screen {
+    padding: 20px;
+}
+
+.hero-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hero-option {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(76, 201, 240, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.hero-option:hover {
+    transform: translateY(-5px);
+    border-color: #4cc9f0;
+    box-shadow: 0 10px 25px rgba(76, 201, 240, 0.3);
+}
+
+.hero-option-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+/* УВЕЛИЧЕННЫЕ КАРТИНКИ ГЕРОЕВ В ВЫБОРЕ */
+.hero-option-image {
+    width: 120px;
+    height: 150px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 3px solid #4cc9f0;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hero-option-info {
+    flex: 1;
+}
+
+.hero-option-name {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #4cc9f0;
+    margin-bottom: 8px;
+}
+
+.hero-option-level {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+/* ОСНОВНЫЕ ХАРАКТЕРИСТИКИ В ВЫБОРЕ ГЕРОЯ */
+.hero-option-core-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.hero-option-stat {
+    text-align: center;
+}
+
+.hero-option-stat-value {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #4cc9f0;
+    display: block;
+}
+
+.hero-option-stat-name {
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
+/* БОНУСЫ В ВЫБОРЕ ГЕРОЯ - ОЧЕНЬ КРУПНЫЕ */
+.hero-option-bonuses {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 15px 0;
+}
+
+.hero-option-bonus {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(76, 201, 240, 0.25);
+    padding: 15px;
+    border-radius: 12px;
+    border: 3px solid rgba(76, 201, 240, 0.4);
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.hero-option-bonus:hover {
+    transform: scale(1.05);
+    border-color: #4cc9f0;
+    background: rgba(76, 201, 240, 0.35);
+}
+
+.hero-option-bonus-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+}
+
+.hero-option-bonus-text {
+    font-size: 1.1em;
+    color: white;
+}
+
+/* Навыки в выборе героя */
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.hero-option-skill {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Адаптивность для выбора героя */
+@media (max-width: 768px) {
+    .hero-selection-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .hero-option-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    .hero-option-image {
+        width: 100px;
+        height: 120px;
+    }
+    
+    .hero-option-core-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+    
+    .hero-option-stat-value {
+        font-size: 1.3em;
+    }
+    
+    .hero-option-bonuses {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .hero-option-bonus {
+        padding: 12px;
+    }
+    
+    .hero-option-bonus-text {
+        font-size: 1em;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .hero-option-core-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .hero-option-bonus {
+        padding: 10px;
+    }
+    
+    .hero-option-bonus-icon {
+        font-size: 1.5em;
+    }
+}
+
+/* Остальные стили остаются без изменений */
+.equipment-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.equipment-slot {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    backdrop-filter: blur(5px);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.equipment-slot.equipped {
+    border: 2px solid #4cc9f0;
+    background: rgba(76, 201, 240, 0.1);
+}
+
+.equipment-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.equipment-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.equipment-slot.empty .equipment-icon {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.equipment-slot.empty .equipment-icon::after {
+    content: "＋";
+    font-size: 2em;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Адаптивность основной игры */
+@media (max-width: 768px) {
+    .hero-layout {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .hero-resources-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .hero-core-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .location-column, .monster-column {
+        order: 2;
+    }
+    
+    .hero-column {
+        order: 1;
+    }
+    
+    .equipment-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Стили для скроллбара */
+.battle-log::-webkit-scrollbar {
+    width: 6px;
+}
+
+.battle-log::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.battle-log::-webkit-scrollbar-thumb {
+    background: #4cc9f0;
+    border-radius: 3px;
+}    background: rgba(255,255,255,0.1);
     border-radius: 8px;
 }
 
