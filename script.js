@@ -7,7 +7,8 @@ class HeroGame {
         this.locations = [];
         this.movementStyles = [];
         this.merchants = [];
-        
+        this.showReward = false;
+        this.lastReward = 0;
         this.currentHero = null;
         this.currentScreen = 'hero-select';
         this.currentLocation = null;
