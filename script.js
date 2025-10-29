@@ -534,7 +534,132 @@ renderHeroScreen() {
         </div>
     `;
 }
+// Рендер колонки локации
+renderLocationColumn() {
+    if (this.currentLocation) {
+        return `
+            <div class="location-info">
+                <div class="location-image-large">
+                    <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}">
+                </div>
+                <h4>${this.currentLocation.name}</h4>
+                <p>${this.currentLocation.description}</p>
+                <div class="location-effects">
+                    ${this.currentLocation.movementBonus ? `<div>📏 Движение: +${this.currentLocation.movementBonus}</div>` : ''}
+                    ${this.currentLocation.movementPenalty ? `<div>📏 Движение: ${this.currentLocation.movementPenalty}</div>` : ''}
+                    ${this.currentLocation.stealthBonus ? `<div>👻 Скрытность: +${this.currentLocation.stealthBonus}</div>` : ''}
+                    ${this.currentLocation.stealthPenalty ? `<div>👻 Скрытность: ${this.currentLocation.stealthPenalty}</div>` : ''}
+                    ${this.currentLocation.escapeBonus ? `<div>🏃 Побег: +${this.currentLocation.escapeBonus}</div>` : ''}
+                    ${this.currentLocation.escapePenalty ? `<div>🏃 Побег: ${this.currentLocation.escapePenalty}</div>` : ''}
+                </div>
+                ${this.currentLocation.deathRisk ? `<div class="risk-badge">☠️ Шанс смерти: 1/${this.currentLocation.deathRisk}</div>` : ''}
+            </div>
+        `;
+    } else {
+        return `
+            <div class="location-info">
+                <div class="location-image-large">
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <div style="font-size: 3em; margin-bottom: 10px;">🌍</div>
+                        <div>Бросьте кубик локации</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
 
+// Рендер колонки монстра/награды
+renderMonsterRewardColumn() {
+    if (this.showReward) {
+        return this.renderRewardDisplay();
+    } else if (this.currentMonster) {
+        return this.renderMonsterDisplay();
+    } else {
+        return `
+            <div class="monster-info">
+                <div class="monster-image-large">
+                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                        <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
+                        <div>Встретьте монстра</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Рендер награды
+renderRewardDisplay() {
+    return `
+        <div class="reward-info">
+            <div class="reward-image">
+                💰
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <h4>🎉 ПОБЕДА!</h4>
+                <p>Получено: ${this.lastReward} золота</p>
+                <button class="btn-primary" onclick="game.hideReward()">Продолжить</button>
+            </div>
+        </div>
+    `;
+}
+
+// Рендер монстра (обновленная версия)
+renderMonsterDisplay() {
+    if (!this.currentMonster) return '';
+    
+    const stats = this.calculateHeroStats(this.currentHero);
+    const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+    return `
+        <div class="monster-info">
+            <div class="monster-image-large">
+                <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}">
+            </div>
+            <h4>${this.currentMonster.name}</h4>
+            <p>${this.currentMonster.description}</p>
+            
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-card">
+                    <div>❤️ Здоровье</div>
+                    <div class="stat-value">${this.currentMonster.health}</div>
+                </div>
+                <div class="stat-card">
+                    <div>⚔️ Урон</div>
+                    <div class="stat-value">${this.currentMonster.damage}</div>
+                </div>
+                <div class="stat-card">
+                    <div>🛡️ Броня</div>
+                    <div class="stat-value">${this.currentMonster.armor}</div>
+                </div>
+                <div class="stat-card">
+                    <div>🌟 Мощь</div>
+                    <div class="stat-value">${this.currentMonster.power}</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 10px 0;">
+                <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                <p>💰 Награда: ${this.currentMonster.reward} золота</p>
+            </div>
+        </div>
+    `;
+}
+
+// Показать награду
+showReward(amount) {
+    this.showReward = true;
+    this.lastReward = amount;
+    this.renderHeroScreen();
+}
+
+// Скрыть награду
+hideReward() {
+    this.showReward = false;
+    this.lastReward = 0;
+    this.renderHeroScreen();
+}
     // Окно локации/монстра
     renderLocationMonsterContainer() {
         if (this.currentMonster) {
