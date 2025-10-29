@@ -12,9 +12,9 @@
     "description": "Отвратительное существо, питающееся падалью..."
   },
   {
-    "id": 2,
+    "id": 2, 
     "name": "Лиса",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg",
     "health": 160,
     "armor": 0,
     "damage": 20,
