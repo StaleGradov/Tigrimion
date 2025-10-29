@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Леголас",
+    "name": "Аргонат",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
     "race": "elf",
     "class": "archer",
@@ -20,7 +20,7 @@
   },
   {
     "id": 2,
-    "name": "Гимли", 
+    "name": "Торин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
     "race": "dwarf",
     "class": "warrior",
@@ -37,21 +37,23 @@
       "chest": null
     }
   },
-      "id": 3,
-    "name": "Калинор", 
+  {
+    "id": 3,
+    "name": "Новый Герой",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
-    "race": "elf",
-    "class": "warrior",
-    "saga": "vulkanor",
-    "baseHealth": 120,
-    "baseDamage": 18,
-    "baseArmor": 15,
-    "gold": 800,
+    "race": "human",
+    "class": "thief",
+    "saga": "vampire_crown",
+    "baseHealth": 85,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 600,
     "level": 2,
-    "experience": 80,
-    "inventory": [3],
+    "experience": 40,
+    "inventory": [],
     "equipment": {
       "main_hand": null,
       "chest": null
     }
+  }
 ]
