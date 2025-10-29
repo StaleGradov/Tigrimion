@@ -1,21 +1,33 @@
 [
   {
     "id": 1,
-    "name": "Лавовые земли",
-    "image": "images/locations/lava.jpg",
-    "description": "Раскалённые пустоши с бурлящей лавой",
-    "movementPenalty": -2,
-    "escapePenalty": -2,
-    "stealthPenalty": -2,
-    "deathRisk": 4
-  },
-  {
-    "id": 2, 
-    "name": "Великие Луга",
-    "image": "images/locations/meadows.jpg",
-    "description": "Бескрайние зелёные просторы",
+    "name": "Лесная тропа",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/forest.jpg",
+    "description": "Тихая лесная тропинка, окруженная древними деревьями",
     "movementBonus": 1,
     "stealthBonus": 2,
-    "deathRisk": 20
+    "escapeBonus": 1,
+    "deathRisk": 20,
+    "deathMessage": "Вы оступились и упали в глубокое ущелье"
+  },
+  {
+    "id": 2,
+    "name": "Горный перевал",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/mountains.jpg",
+    "description": "Крутой горный склон с опасными тропами",
+    "movementPenalty": -1,
+    "stealthPenalty": -1,
+    "deathRisk": 15,
+    "deathMessage": "Каменная лавина погребла вас под собой"
+  },
+  {
+    "id": 3,
+    "name": "Заброшенный город",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
+    "description": "Руины древнего города, полные тайн и опасностей",
+    "stealthBonus": 1,
+    "escapePenalty": -1,
+    "deathRisk": 10,
+    "deathMessage": "Древние ловушки сработали без предупреждения"
   }
 ]
