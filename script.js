@@ -117,7 +117,52 @@ async loadGameData() {
             }
         ];
     }
+// Использовать зелье
+usePotion(item) {
+    if (item.type !== 'potion') return;
 
+    // Используем эффект зелья
+    if (item.heal) {
+        this.currentHero.baseHealth += item.heal;
+        this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
+    }
+
+    // Убираем зелье из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== item.id);
+    
+    this.saveGame();
+    this.showInventory(); // Обновляем инвентарь
+}
+
+// Продать предмет
+sellItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Проверяем, есть ли предмет в инвентаре
+    if (!this.currentHero.inventory.includes(itemId)) {
+        this.addToLog(`❌ Предмет ${item.name} не найден в инвентаре`);
+        return;
+    }
+
+    // Убираем из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+    
+    // Добавляем золото
+    this.currentHero.gold += item.sellPrice;
+    
+    // Если предмет был экипирован, снимаем его
+    if (this.currentHero.equipment.main_hand === itemId) {
+        this.currentHero.equipment.main_hand = null;
+    }
+    if (this.currentHero.equipment.chest === itemId) {
+        this.currentHero.equipment.chest = null;
+    }
+
+    this.addToLog(`💰 Продано: ${item.name} за ${item.sellPrice} золота`);
+    this.saveGame();
+    this.showMerchant(); // Обновляем магазин
+}
     // Сброс героя к базовым настройкам с подтверждением
     resetHero() {
         if (!this.currentHero) return;
