@@ -619,15 +619,35 @@ body {
     }
 }
 
+/* Стили для изображений героев в списке выбора */
+.hero-option-image {
+    width: 80px;  /* Увеличим для ПК */
+    height: 100px; /* Сохраняем пропорции */
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #4cc9f0;
+}
+
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Обрезаем чтобы сохранить пропорции */
+}
+
+/* Для ПК - делаем изображения больше */
+@media (min-width: 769px) {
+    .hero-option-image {
+        width: 100px;
+        height: 120px;
+    }
+}
+
+/* Для мобильных */
 @media (max-width: 480px) {
     .hero-option-image {
-        width: 70px;  /* Чуть больше на мобильных для удобства */
+        width: 70px;
         height: 90px;
-    }
-    
-    .hero-option {
-        flex-direction: row; /* Оставляем горизонтальное расположение */
-        text-align: left;
     }
 }
     
