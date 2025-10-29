@@ -1,15 +1,15 @@
 [
   {
     "id": 1,
-    "name": "Аргонат",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
-    "race": "human",
-    "class": "archer",
+    "name": "Йормунд",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Yormund.jpg",
+    "race": "dwarf",
+    "class": "gladiator",
     "saga": "vulkanor",
-    "baseHealth": 120,
+    "baseHealth": 210,
     "baseDamage": 22,
     "baseArmor": 8,
-    "gold": 3.5,
+    "gold": 8,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -39,6 +39,25 @@
   },
   {
     "id": 3,
+    "name": "Талмир",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Talmir.jpg",
+    "race": "elf",
+    "class": "healer",
+    "saga": "vulkanor",
+    "baseHealth": 90,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 4.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+    {
+    "id": 4,
     "name": "Калинор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Calinor.jpg",
     "race": "elf",
@@ -55,5 +74,43 @@
       "main_hand": null,
       "chest": null
     }
-  }
+  },
+      {
+    "id": 5,
+    "name": "Малихор",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Malixor.jpg",
+    "race": "dragon",
+    "class": "sorcerer",
+    "saga": "vulkanor",
+    "baseHealth": 120,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 4,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+  {
+    "id": 6,
+    "name": "Аргонат",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
+    "race": "human",
+    "class": "archer",
+    "saga": "vulkanor",
+    "baseHealth": 120,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 3.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+} 
 ]
