@@ -18,98 +18,96 @@ class HeroGame {
         this.init();
     }
 
-    // Инициализация игры
-    async init() {
+     async init() {
         await this.loadGameData();
         this.loadSave();
         this.renderHeroSelect();
     }
 
-// Базовая функция загрузки JSON
-async function loadJSON(filePath) {
-    try {
-        const response = await fetch(filePath);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+    // Базовая функция загрузки JSON
+    async loadJSON(filePath) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки ${filePath}:`, error);
+            return null;
         }
-        return await response.json();
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки ${filePath}:`, error);
-        return null;
     }
-}
 
-async function loadGameData() {
-    try {
-        const [heroes, enemies, items] = await Promise.all([
-            loadJSON('data/heroes.json'),
-            loadJSON('data/enemies.json'),
-            loadJSON('data/items.json')
-        ]);
+    async loadGameData() {
+        try {
+            const [heroes, enemies, items] = await Promise.all([
+                this.loadJSON('data/heroes.json'),
+                this.loadJSON('data/enemies.json'),
+                this.loadJSON('data/items.json')
+            ]);
 
-        // Если какой-то файл не загрузился, используем резервные данные
-        return {
-            heroes: heroes || getDefaultHeroes(),
-            enemies: enemies || getDefaultEnemies(),
-            items: items || getDefaultItems()
-        };
-    } catch (error) {
-        console.error('❌ Критическая ошибка загрузки данных:', error);
-        return getDefaultGameData();
+            // Если какой-то файл не загрузился, используем резервные данные
+            this.heroes = heroes || this.getDefaultHeroes();
+            this.monsters = enemies || this.getDefaultEnemies();
+            this.items = items || this.getDefaultItems();
+
+            console.log('✅ Все данные загружены:', {
+                heroes: this.heroes,
+                monsters: this.monsters,
+                items: this.items
+            });
+
+        } catch (error) {
+            console.error('❌ Критическая ошибка загрузки данных:', error);
+            this.heroes = this.getDefaultHeroes();
+            this.monsters = this.getDefaultEnemies();
+            this.items = this.getDefaultItems();
+        }
     }
-}
 
-function getDefaultHeroes() {
-    return [
-        {
-            id: 1,
-            name: "Резервный герой",
-            health: 100,
-            maxHealth: 100,
-            attack: 10,
-            defense: 5,
-            speed: 5,
-            level: 1,
-            experience: 0,
-            skills: ["Базовый удар"]
-        }
-    ];
-}
+    getDefaultHeroes() {
+        return [
+            {
+                id: 1,
+                name: "Резервный герой",
+                health: 100,
+                maxHealth: 100,
+                attack: 10,
+                defense: 5,
+                speed: 5,
+                level: 1,
+                experience: 0,
+                skills: ["Базовый удар"]
+            }
+        ];
+    }
 
-function getDefaultEnemies() {
-    return [
-        {
-            id: 1,
-            name: "Слабый монстр",
-            health: 30,
-            maxHealth: 30,
-            attack: 5,
-            defense: 2,
-            speed: 3,
-            experience: 5
-        }
-    ];
-}
+    getDefaultEnemies() {
+        return [
+            {
+                id: 1,
+                name: "Слабый монстр",
+                health: 30,
+                maxHealth: 30,
+                attack: 5,
+                defense: 2,
+                speed: 3,
+                experience: 5
+            }
+        ];
+    }
 
-function getDefaultItems() {
-    return [
-        {
-            id: 1,
-            name: "Малое зелье здоровья",
-            type: "potion",
-            value: 20,
-            price: 25
-        }
-    ];
-}
-
-function getDefaultGameData() {
-    return {
-        heroes: getDefaultHeroes(),
-        enemies: getDefaultEnemies(),
-        items: getDefaultItems()
-    };
-}
+    getDefaultItems() {
+        return [
+            {
+                id: 1,
+                name: "Малое зелье здоровья",
+                type: "potion",
+                value: 20,
+                price: 25
+            }
+        ];
+    }
 
     // Сброс героя к базовым настройкам с подтверждением
     resetHero() {
