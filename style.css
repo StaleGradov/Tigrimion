@@ -923,37 +923,33 @@ body {
     font-size: 0.85em; /* Увеличили размер шрифта */
 }
 
+/* Компактный вариант - бонусы очень близко друг к другу */
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px; /* Минимальные отступы */
+    margin-bottom: 8px;
+    font-size: 0.85em;
+}
+
 .hero-option-skills span {
     display: flex;
     align-items: center;
-    gap: 4px; /* Увеличили отступ между иконкой и текстом */
+    gap: 3px;
     background: rgba(76, 201, 240, 0.2);
-    padding: 4px 8px; /* Увеличили внутренние отступы */
-    border-radius: 12px;
+    padding: 3px 8px;
+    border-radius: 10px;
     border: 1px solid rgba(76, 201, 240, 0.3);
-    font-weight: 500; /* Сделали текст чуть жирнее */
+    font-weight: 500;
 }
 
-/* Для ПК - делаем бонусы еще больше */
 @media (min-width: 769px) {
     .hero-option-skills {
-        gap: 5px; /* Еще меньше отступов на ПК */
+        gap: 2px; /* Почти вплотную */
     }
     
     .hero-option-skills span {
-        font-size: 0.9em; /* Увеличили размер на ПК */
-        padding: 5px 10px; /* Больше отступов на ПК */
-    }
-}
-    
-    .stat-row {
-        justify-content: flex-start; /* Выравниваем по левому краю */
-        gap: 20px; /* Увеличиваем отступы между элементами */
-    }
-    
-    .hero-option-stats {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+        font-size: 0.88em;
+        padding: 4px 9px;
     }
 }
