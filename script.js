@@ -451,7 +451,7 @@ async loadGameData() {
         this.currentScreen = screenName;
     }
 
-   // Рендер основного экрана героя
+// Рендер основного экрана героя
 renderHeroScreen() {
     if (!this.currentHero) return;
 
@@ -498,7 +498,6 @@ renderHeroScreen() {
                 </div>
             </div>
 
-            <!-- Остальная часть интерфейса остается без изменений -->
             <!-- Секция экипировки -->
             <div class="equipment-section">
                 <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
@@ -530,8 +529,74 @@ renderHeroScreen() {
                 </div>
             </div>
 
-            <!-- Характеристики и остальной интерфейс... -->
-            <!-- ... остальной код без изменений ... -->
+            <!-- Характеристики -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div>❤️ Здоровье</div>
+                    <div class="stat-value">${stats.health}</div>
+                </div>
+                <div class="stat-card">
+                    <div>⚔️ Урон</div>
+                    <div class="stat-value">${stats.damage}</div>
+                </div>
+                <div class="stat-card">
+                    <div>🛡️ Броня</div>
+                    <div class="stat-value">${stats.armor}</div>
+                </div>
+                <div class="stat-card">
+                    <div>🌟 Мощь</div>
+                    <div class="stat-value">${stats.power}</div>
+                </div>
+            </div>
+
+            <!-- Навыки -->
+            <div class="skills-grid">
+                <div class="skill-item">
+                    <div>🏃 Побег</div>
+                    <div class="stat-value">+${stats.skills.escape}d6</div>
+                </div>
+                <div class="skill-item">
+                    <div>👻 Скрытность</div>
+                    <div class="stat-value">+${stats.skills.stealth}d6</div>
+                </div>
+                <div class="skill-item">
+                    <div>🍀 Удача</div>
+                    <div class="stat-value">+${stats.skills.luck}d6</div>
+                </div>
+                <div class="skill-item">
+                    <div>🌿 Выживание</div>
+                    <div class="stat-value">+${stats.skills.survival}d6</div>
+                </div>
+            </div>
+
+            <!-- Бонусы -->
+            <div class="bonuses-section">
+                <h3>🎯 Бонусы:</h3>
+                <div class="bonus-item">
+                    <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
+                    (${this.formatBonus(stats.bonuses.race)})
+                </div>
+                <div class="bonus-item">
+                    <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
+                    (${this.formatBonus(stats.bonuses.class)})
+                </div>
+                <div class="bonus-item">
+                    <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
+                    (${this.formatBonus(stats.bonuses.saga)})
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="game.rollLocation()">🎲 Бросить локацию</button>
+                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин (${this.merchantsUnlocked})</button>
+                <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
+            </div>
+
+            <!-- Журнал событий -->
+            <div class="battle-log" id="battle-log"></div>
         </div>
     `;
 }
