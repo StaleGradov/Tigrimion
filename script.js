@@ -38,32 +38,40 @@ class HeroGame {
         }
     }
 
-    async loadGameData() {
-        try {
-            const [heroes, enemies, items] = await Promise.all([
-                this.loadJSON('data/heroes.json'),
-                this.loadJSON('data/enemies.json'),
-                this.loadJSON('data/items.json')
-            ]);
+async loadGameData() {
+    try {
+        const [heroes, enemies, items, locations, movement] = await Promise.all([
+            this.loadJSON('data/heroes.json'),
+            this.loadJSON('data/enemies.json'),
+            this.loadJSON('data/items.json'),
+            this.loadJSON('data/locations.json'),
+            this.loadJSON('data/movement.json')
+        ]);
 
-            // Если какой-то файл не загрузился, используем резервные данные
-            this.heroes = heroes || this.getDefaultHeroes();
-            this.monsters = enemies || this.getDefaultEnemies();
-            this.items = items || this.getDefaultItems();
+        // Если какой-то файл не загрузился, используем резервные данные
+        this.heroes = heroes || this.getDefaultHeroes();
+        this.monsters = enemies || this.getDefaultEnemies();
+        this.items = items || this.getDefaultItems();
+        this.locations = locations || this.getDefaultLocations();
+        this.movementStyles = movement || this.getDefaultMovement();
 
-            console.log('✅ Все данные загружены:', {
-                heroes: this.heroes,
-                monsters: this.monsters,
-                items: this.items
-            });
+        console.log('✅ Все данные загружены:', {
+            heroes: this.heroes,
+            monsters: this.monsters,
+            items: this.items,
+            locations: this.locations,
+            movementStyles: this.movementStyles
+        });
 
-        } catch (error) {
-            console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.heroes = this.getDefaultHeroes();
-            this.monsters = this.getDefaultEnemies();
-            this.items = this.getDefaultItems();
-        }
+    } catch (error) {
+        console.error('❌ Критическая ошибка загрузки данных:', error);
+        this.heroes = this.getDefaultHeroes();
+        this.monsters = this.getDefaultEnemies();
+        this.items = this.getDefaultItems();
+        this.locations = this.getDefaultLocations();
+        this.movementStyles = this.getDefaultMovement();
     }
+}
 
     getDefaultHeroes() {
         return [
