@@ -57,11 +57,21 @@ body {
 }
 
 .hero-image img, .location-image-large img, .monster-image-large img {
-    max-width: 100%;
-    max-height: 100%;
     width: auto;
     height: auto;
-    object-fit: scale-down;
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+}
+
+/* Особый бордер для локации */
+.location-image-large {
+    border-color: #4ade80;
+}
+
+/* Особый бордер для монстра */
+.monster-image-large {
+    border-color: #f87171;
 }
 
 /* Особый бордер для локации */
