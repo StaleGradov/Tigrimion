@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": ",Бешенная Сорока",
-    "image": "https://github.com/StaleGradov/Tigrimion/blob/GAME/Soroka.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Soroka.jpg",
     "health": 120,
     "armor": 0,
     "damage": 10,
@@ -14,7 +14,7 @@
   {
     "id": 2,
     "name": "Лиса",
-    "image": "https://github.com/StaleGradov/Tigrimion/blob/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
     "health": 160,
     "armor": 0,
     "damage": 20,
