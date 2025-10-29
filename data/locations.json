@@ -1,14 +1,14 @@
 [
   {
     "id": 1,
-    "name": "Лесная тропа",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/forest.jpg",
-    "description": "Тихая лесная тропинка, окруженная древними деревьями",
-    "movementBonus": 1,
-    "stealthBonus": 2,
-    "escapeBonus": 1,
-    "deathRisk": 20,
-    "deathMessage": "Вы оступились и упали в глубокое ущелье"
+    "name": "Лавовые земли",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lava.jpg",
+    "description": "Вы попадате в раскалённые, негостеприимные земли, где земля под ногами пышет жаром, а воздух дрожит от зноя. Реки огня и серные испарения делают это место смертельно опасным для неподготовленных. Разломы из которых выходит лава сейчас можно встретить в любом месте Тигримиона. Природа их появления непонятна, но ясно одно, что катаклизм изгнавший драконов с их земель, теперь достиг и Тигримиона. ",
+    "movementBonus": -2,
+    "stealthBonus": -2,
+    "escapeBonus": -2,
+    "deathRisk": 4,
+    "deathMessage": "Вы оступились и упали в глубокое ущелье, заполненное лавой"
   },
   {
     "id": 2,
