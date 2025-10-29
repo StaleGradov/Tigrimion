@@ -1,31 +1,26 @@
-{
-  "styles": [
-    {
-      "id": "skip",
-      "name": "Пропуск Хода",
-      "movement": 0,
-      "stealthBonus": 2,
-      "escapeBonus": 2,
-      "canReroll": true,
-      "description": "Осторожное наблюдение за местностью"
-    },
-    {
-      "id": "stealth", 
-      "name": "Скрытное Передвижение",
-      "movement": 1,
-      "ignoresPenalties": true,
-      "stealthBonus": 2,
-      "escapeBonus": 2, 
-      "canReroll": true,
-      "description": "Тихие шаги в тени"
-    },
-    {
-      "id": "step",
-      "name": "Шаг",
-      "movement": 2, 
-      "minMovement": 1,
-      "stealthBonus": 1,
-      "description": "Обычный осмотрительный шаг"
-    }
-  ]
-}
+[
+  {
+    "id": "stealth",
+    "name": "Скрытное передвижение",
+    "description": "Медленное и осторожное движение",
+    "movement": "1d3",
+    "stealthBonus": 2,
+    "escapePenalty": -1
+  },
+  {
+    "id": "normal",
+    "name": "Обычный шаг",
+    "description": "Стандартная скорость передвижения",
+    "movement": "1d4",
+    "stealthBonus": 0,
+    "escapeBonus": 0
+  },
+  {
+    "id": "fast",
+    "name": "Быстрый бег",
+    "description": "Быстрое передвижение с риском шума",
+    "movement": "1d6",
+    "stealthPenalty": -2,
+    "escapeBonus": 1
+  }
+]
