@@ -914,42 +914,35 @@ body {
         margin: 0 auto; /* Центрируем */
     }
     
-   /* Стили для навыков героев */
+/* Альтернатива - более крупные бонусы */
 .hero-option-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px; /* Уменьшили отступ между бонусами */
-    margin-bottom: 6px;
-    font-size: 0.85em; /* Увеличили размер шрифта */
-}
-
-/* Компактный вариант - бонусы очень близко друг к другу */
-.hero-option-skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px; /* Минимальные отступы */
+    gap: 5px; /* Минимальные отступы */
     margin-bottom: 8px;
-    font-size: 0.85em;
+    font-size: 0.9em; /* Крупный шрифт */
 }
 
 .hero-option-skills span {
     display: flex;
     align-items: center;
-    gap: 3px;
-    background: rgba(76, 201, 240, 0.2);
-    padding: 3px 8px;
-    border-radius: 10px;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-    font-weight: 500;
+    gap: 4px;
+    background: rgba(76, 201, 240, 0.25);
+    padding: 6px 10px; /* Большие отступы */
+    border-radius: 14px; /* Более скругленные углы */
+    border: 2px solid rgba(76, 201, 240, 0.4); /* Более толстая граница */
+    font-weight: 600; /* Жирный текст */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Легкая тень для объема */
 }
 
+/* Для ПК */
 @media (min-width: 769px) {
     .hero-option-skills {
-        gap: 2px; /* Почти вплотную */
+        gap: 4px; /* Совсем маленькие отступы */
     }
     
     .hero-option-skills span {
-        font-size: 0.88em;
-        padding: 4px 9px;
+        font-size: 0.95em; /* Очень крупный текст */
+        padding: 6px 12px; /* Максимальные отступы */
     }
 }
