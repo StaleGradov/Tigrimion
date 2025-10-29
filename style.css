@@ -74,26 +74,6 @@ body {
     border-color: #f87171;
 }
 
-/* Особый бордер для локации */
-.location-image-large {
-    border-color: #4ade80;
-}
-
-/* Особый бордер для монстра */
-.monster-image-large {
-    border-color: #f87171;
-}
-
-/* Особый бордер для локации */
-.location-image-large {
-    border-color: #4ade80;
-}
-
-/* Особый бордер для монстра */
-.monster-image-large {
-    border-color: #f87171;
-}
-
 /* Заголовки колонок */
 .column-title {
     text-align: center;
@@ -153,21 +133,6 @@ body {
     justify-content: space-between;
     padding: 4px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
-}
-
-/* Информация в колонках */
-.hero-info, .location-info, .monster-info, .reward-info {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 15px;
-    backdrop-filter: blur(5px);
-}
-
-.hero-info h2 {
-    font-size: 1.4em;
-    margin-bottom: 10px;
-    color: #4cc9f0;
-    text-align: center;
 }
 
 .location-info h4, .monster-info h4 {
@@ -286,7 +251,7 @@ body {
     margin: 5px 0;
 }
 
-/* Бонусы */
+/* Бонусы в карточке героя (уменьшенные) */
 .bonuses-section {
     margin-bottom: 20px;
 }
@@ -298,10 +263,11 @@ body {
 
 .bonus-item {
     background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    margin: 8px 0;
-    border-radius: 8px;
-    border-left: 4px solid #4cc9f0;
+    padding: 8px;
+    margin: 5px 0;
+    border-radius: 6px;
+    border-left: 3px solid #4cc9f0;
+    font-size: 0.85em;
 }
 
 .bonus-empty {
@@ -458,66 +424,56 @@ body {
     gap: 4px;
 }
 
-.hero-option-skills {
+/* БОНУСЫ В ВЫБОРЕ ГЕРОЯ - УВЕЛИЧЕННЫЕ */
+.hero-option-bonuses {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 6px;
-    font-size: 0.8em;
-    opacity: 0.9;
+    margin: 10px 0;
 }
 
-.hero-option-skills span {
+.hero-option-bonus {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
+    background: rgba(76, 201, 240, 0.25);
+    padding: 8px 12px;
+    border-radius: 16px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 0.95em;
 }
 
-.hero-option-bonuses {
-    margin-top: 6px;
-    opacity: 0.8;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 480px) {
-    .hero-option {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-/* Стили для изображений героев в списке выбора */
-.hero-option-image {
-    width: 60px;  /* Было 60px */
-    height: 80px; /* Было 80px */
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 2px solid #4cc9f0;
-}
-
-.hero-option-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Важно: cover чтобы изображения не искажались */
-}
-    
-    .stat-row {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 15px;
-    }
-    
-    .hero-option-skills {
-        flex-wrap: wrap;
-        justify-content: center;
+/* Для ПК - ОЧЕНЬ КРУПНЫЕ БОНУСЫ в выборе героя */
+@media (min-width: 769px) {
+    .hero-option-bonuses {
         gap: 10px;
+        margin: 12px 0;
     }
     
-    .hero-option-header {
-        flex-direction: column;
-        gap: 5px;
+    .hero-option-bonus {
+        font-size: 1.1em !important;
+        padding: 12px 18px !important;
+        gap: 8px;
+        border: 3px solid rgba(76, 201, 240, 0.5);
+        border-radius: 20px;
     }
 }
+
+/* Для мобильных - компактные бонусы в выборе героя */
+@media (max-width: 768px) {
+    .hero-option-bonuses {
+        gap: 6px;
+    }
+    
+    .hero-option-bonus {
+        font-size: 0.85em;
+        padding: 6px 10px;
+        gap: 4px;
+    }
+}
+
 /* Инвентарь */
 .inventory-grid {
     display: grid;
@@ -621,8 +577,8 @@ body {
 
 /* Стили для изображений героев в списке выбора */
 .hero-option-image {
-    width: 80px;  /* Увеличим для ПК */
-    height: 100px; /* Сохраняем пропорции */
+    width: 80px;
+    height: 100px;
     border-radius: 8px;
     overflow: hidden;
     flex-shrink: 0;
@@ -632,7 +588,7 @@ body {
 .hero-option-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Обрезаем чтобы сохранить пропорции */
+    object-fit: cover;
 }
 
 /* Для ПК - делаем изображения больше */
@@ -789,6 +745,7 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
 /* Стили для выбора героя с расширенной информацией */
 .hero-option-header {
     display: flex;
@@ -842,11 +799,6 @@ body {
     border: 1px solid rgba(76, 201, 240, 0.3);
 }
 
-.hero-option-bonuses {
-    margin-top: 6px;
-    opacity: 0.8;
-}
-
 /* Для ПК - делаем навыки более компактными */
 @media (min-width: 769px) {
     .hero-option-skills {
@@ -858,37 +810,8 @@ body {
     }
 }
 
-/* Стили для изображений героев в списке выбора */
-.hero-option-image {
-    width: 80px;
-    height: 100px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 2px solid #4cc9f0;
-}
-
-.hero-option-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Для ПК - делаем изображения больше */
-@media (min-width: 769px) {
-    .hero-option-image {
-        width: 100px;
-        height: 120px;
-    }
-}
-
 /* Для мобильных */
 @media (max-width: 480px) {
-    .hero-option-image {
-        width: 70px;
-        height: 90px;
-    }
-    
     .hero-option {
         flex-direction: row;
         text-align: left;
@@ -907,39 +830,108 @@ body {
         gap: 10px;
     }
 }
-/* Альтернатива - более крупные бонусы */
-.hero-option-skills {
+
+/* НОВЫЕ СТИЛИ ДЛЯ РАСПОЛОЖЕНИЯ СТАТИСТИК И БОНУСОВ */
+
+/* Контейнер для золота, уровня и энергии */
+.hero-resources {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 8px;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
 }
 
-.hero-option-skills span {
+.resource-item {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 4px;
-    background: rgba(76, 201, 240, 0.25);
-    padding: 6px 10px;
-    border-radius: 14px;
-    border: 2px solid rgba(76, 201, 240, 0.4);
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    font-size: 0.9em; /* Базовый размер для мобильных */
+    gap: 5px;
+    flex: 1;
 }
 
-/* ДЛЯ ПК - ОЧЕНЬ КРУПНЫЕ БОНУСЫ */
-@media (min-width: 769px) {
-    .hero-option-skills {
-        gap: 4px;
-        margin-bottom: 10px;
+.resource-icon {
+    font-size: 1.2em;
+}
+
+.resource-value {
+    font-weight: bold;
+    color: #4cc9f0;
+}
+
+/* Контейнер для основных характеристик и бонусов */
+.hero-main-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+/* Мобильная версия - вертикальное расположение */
+@media (max-width: 768px) {
+    .hero-main-stats {
+        grid-template-columns: 1fr;
     }
     
-    .hero-option-skills span {
-        font-size: 1.1em !important; /* Очень крупный текст */
-        padding: 10px 16px !important; /* Максимальные отступы */
-        gap: 6px;
-        border: 3px solid rgba(76, 201, 240, 0.5); /* Еще толще граница */
-        border-radius: 16px; /* Больше скругление */
+    .hero-resources {
+        flex-direction: column;
+        gap: 8px;
     }
+    
+    .resource-item {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+/* ПК версия - горизонтальное расположение */
+@media (min-width: 769px) {
+    .hero-main-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Стили для основных характеристик */
+.core-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.core-stat {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.core-stat-value {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #4cc9f0;
+    margin: 5px 0;
+}
+
+/* Стили для бонусов в основной карточке (уменьшенные) */
+.main-bonuses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.main-bonus {
+    background: rgba(76, 201, 240, 0.15);
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    font-size: 0.85em;
+}
+
+.main-bonus-value {
+    font-weight: bold;
+    color: #4cc9f0;
+    margin-top: 3px;
 }
