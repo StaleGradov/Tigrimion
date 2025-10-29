@@ -934,24 +934,24 @@ hideReward() {
         `;
     }
 
-    // Начать бой
-    startBattle() {
-        this.addToLog(`⚔️ Начало боя с ${this.currentMonster.name}`);
-        const stats = this.calculateHeroStats(this.currentHero);
+// Начать бой
+startBattle() {
+    this.addToLog(`⚔️ Начало боя с ${this.currentMonster.name}`);
+    const stats = this.calculateHeroStats(this.currentHero);
+    
+    if (stats.power >= this.currentMonster.power) {
+        this.addToLog(`🎯 Вы победили ${this.currentMonster.name}!`);
+        this.addToLog(`💰 Получено: ${this.currentMonster.reward} золота`);
+        this.currentHero.gold += this.currentMonster.reward;
         
-        if (stats.power >= this.currentMonster.power) {
-            this.addToLog(`🎯 Вы победили ${this.currentMonster.name}!`);
-            this.addToLog(`💰 Получено: ${this.currentMonster.reward} золота`);
-            this.currentHero.gold += this.currentMonster.reward;
-        } else {
-            this.addToLog(`💥 Вы проиграли бой с ${this.currentMonster.name}`);
-            this.addToLog(`🏥 Потеряно 20% здоровья`);
-            // Можно добавить потерю здоровья
-        }
-        
+        // Показываем награду вместо монстра
+        this.showReward(this.currentMonster.reward);
+    } else {
+        this.addToLog(`💥 Вы проиграли бой с ${this.currentMonster.name}`);
+        this.addToLog(`🏥 Потеряно 20% здоровья`);
         this.completeEncounter();
     }
-
+}
     // Попытка скрыться
     attemptStealth() {
         const stats = this.calculateHeroStats(this.currentHero);
