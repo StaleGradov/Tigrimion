@@ -85,7 +85,7 @@ class HeroGame {
     // Система уровней
     getLevelRequirements() {
         return {
-            1: 0,
+            1: 1,
             2: 100,
             3: 250,
             4: 500,
