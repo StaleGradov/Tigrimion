@@ -8,155 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <!-- Экран игры -->
-        <div id="game-screen" class="screen active">
-            <!-- Макет с тремя колонками -->
-            <div class="hero-layout">
-                <!-- Левая колонка - Герой -->
-                <div class="hero-column">
-                    <div class="column-title">🎯 Ваш Герой</div>
-                    <div class="hero-image">
-                        <img src="images/hero.jpg" alt="Герой">
-                    </div>
-                    
-                    <div class="hero-info">
-                        <h2>Воин</h2>
-                        
-                        <!-- НОВАЯ КОМПАКТНАЯ СТРУКТУРА ВСЕХ ПАРАМЕТРОВ -->
-                        <div class="hero-header-compact">
-                            <div class="hero-avatar-section">
-                                <div class="hero-avatar">
-                                    <img src="images/hero.jpg" alt="Герой">
-                                </div>
-                                <div class="hero-name">Воин</div>
-                            </div>
-                            
-                            <div class="hero-params-grid">
-                                <!-- Ресурсы -->
-                                <div class="param-group">
-                                    <div class="param-group-title">Ресурсы</div>
-                                    <div class="resource-row">
-                                        <div class="resource-name">💰 Золото</div>
-                                        <div class="resource-value">150</div>
-                                    </div>
-                                    <div class="resource-row">
-                                        <div class="resource-name">⭐ Уровень</div>
-                                        <div class="resource-value">5</div>
-                                    </div>
-                                    <div class="resource-row">
-                                        <div class="resource-name">⚡ Энергия</div>
-                                        <div class="resource-value">80/100</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Основные характеристики -->
-                                <div class="param-group">
-                                    <div class="param-group-title">Характеристики</div>
-                                    <div class="core-stat-row">
-                                        <div class="core-stat-name">❤️ Здоровье</div>
-                                        <div class="core-stat-value">150</div>
-                                    </div>
-                                    <div class="core-stat-row">
-                                        <div class="core-stat-name">⚔️ Урон</div>
-                                        <div class="core-stat-value">25-35</div>
-                                    </div>
-                                    <div class="core-stat-row">
-                                        <div class="core-stat-name">🛡️ Броня</div>
-                                        <div class="core-stat-value">15</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Бонусы -->
-                                <div class="param-group">
-                                    <div class="param-group-title">Бонусы</div>
-                                    <div class="bonus-row">
-                                        <div class="bonus-name">🎯 Точность</div>
-                                        <div class="bonus-value">+20%</div>
-                                    </div>
-                                    <div class="bonus-row">
-                                        <div class="bonus-name">🍀 Удача</div>
-                                        <div class="bonus-value">+15%</div>
-                                    </div>
-                                    <div class="bonus-row">
-                                        <div class="bonus-name">👣 Скрытность</div>
-                                        <div class="bonus-value">+10%</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Навыки -->
-                                <div class="param-group">
-                                    <div class="param-group-title">Навыки</div>
-                                    <div class="skill-row">
-                                        <div class="skill-name">🔥 Огненный шар</div>
-                                        <div class="skill-value">3 ур.</div>
-                                    </div>
-                                    <div class="skill-row">
-                                        <div class="skill-name">❄️ Ледяная стрела</div>
-                                        <div class="skill-value">2 ур.</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Экипировка -->
-                        <div class="equipment-section">
-                            <div class="equipment-slot equipped">
-                                <div class="equipment-icon">
-                                    <img src="images/sword.jpg" alt="Меч">
-                                </div>
-                                <div>Стальной меч</div>
-                            </div>
-                            <div class="equipment-slot equipped">
-                                <div class="equipment-icon">
-                                    <img src="images/armor.jpg" alt="Броня">
-                                </div>
-                                <div>Кожаная броня</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Кнопки действий -->
-                        <div class="action-buttons">
-                            <button class="btn-primary">⚔️ Атаковать</button>
-                            <button class="btn-secondary">🎒 Инвентарь</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Центральная колонка - Локация -->
-                <div class="location-column">
-                    <div class="column-title">🏔️ Локация</div>
-                    <div class="location-image-large">
-                        <img src="images/location.jpg" alt="Локация">
-                    </div>
-                    <div class="location-info">
-                        <h4>Темный Лес</h4>
-                        <p>Густой лес, полный опасностей и тайн.</p>
-                        <div class="risk-badge">⚠️ Средний риск</div>
-                    </div>
-                </div>
-
-                <!-- Правая колонка - Монстр -->
-                <div class="monster-column">
-                    <div class="column-title">👹 Противник</div>
-                    <div class="monster-image-large">
-                        <img src="images/monster.jpg" alt="Монстр">
-                    </div>
-                    <div class="monster-info">
-                        <h4>Гоблин-воин</h4>
-                        <p>Мелкий, но опасный противник.</p>
-                        
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div>❤️ Здоровье</div>
-                                <div class="stat-value">80</div>
-                            </div>
-                            <div class="stat-card">
-                                <div>⚔️ Урон</div>
-                                <div class="stat-value">15-25</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div id="app">
+            <!-- Игра загрузится сюда -->
+            <div class="text-center">
+                <h1>🚀 Hero Game</h1>
+                <p>Загрузка игры...</p>
             </div>
         </div>
     </div>
@@ -164,3 +20,5 @@
     <script src="script.js"></script>
 </body>
 </html>
+
+вот мой старый индех Файл, что написать вместо него. Давай пойдем по порядку
