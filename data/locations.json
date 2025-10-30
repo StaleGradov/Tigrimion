@@ -50,6 +50,7 @@
     "deathRisk": 12,
     "deathMessage": "Произошло обрушение пещеры"
   },
+  {
       "id": 6,
     "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
@@ -59,6 +60,7 @@
     "deathRisk": 10,
     "deathMessage": "Вы провалились в болото"
   },
+  {
       "id": 7,
     "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
@@ -68,6 +70,7 @@
     "deathRisk": 10,
     "deathMessage": "Вы провалились в болото"
   },
+  {
       "id": 8,
     "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
@@ -77,6 +80,7 @@
     "deathRisk": 10,
     "deathMessage": "Вы провалились в болото"
   },
+  {
       "id": 9,
     "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
@@ -86,6 +90,7 @@
     "deathRisk": 10,
     "deathMessage": "Вы провалились в болото"
   },
+  {
       "id": 10,
     "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
