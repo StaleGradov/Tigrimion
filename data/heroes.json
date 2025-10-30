@@ -1,5 +1,5 @@
 [
-{
+  {
     "id": 1,
     "name": "Йормунд",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Yormund.jpg",
@@ -18,8 +18,8 @@
       "chest": null
     },
     "unlocked": true,
-    "healthRegen": 1.67
-},
+    "healthRegen": 1.0
+  },
   {
     "id": 2,
     "name": "Торин",
@@ -37,7 +37,8 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 1.5
   },
   {
     "id": 3,
@@ -56,9 +57,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 2.0
   },
-    {
+  {
     "id": 4,
     "name": "Калинор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Calinor.jpg",
@@ -75,9 +77,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 2.5
   },
-      {
+  {
     "id": 5,
     "name": "Малихор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Malixor.jpg",
@@ -94,9 +97,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 3.0
   },
-        {
+  {
     "id": 6,
     "name": "Бреакс",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Breaks.jpg",
@@ -113,9 +117,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 3.5
   },
-        {
+  {
     "id": 7,
     "name": "Джейк",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Jeik.jpg",
@@ -132,9 +137,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 4.0
   },
-        {
+  {
     "id": 8,
     "name": "Торгул",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torgul.jpg",
@@ -151,9 +157,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 4.5
   },
-        {
+  {
     "id": 9,
     "name": "Краггар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kraggar.jpg",
@@ -170,9 +177,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 5.0
   },
-        {
+  {
     "id": 10,
     "name": "Серена",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Serena.jpg",
@@ -189,9 +197,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 5.5
   },
-        {
+  {
     "id": 11,
     "name": "Азами",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Azami.jpg",
@@ -208,9 +217,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 6.0
   },
-          {
+  {
     "id": 12,
     "name": "Аргонат",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
@@ -227,7 +237,8 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 6.5
   },
   {
     "id": 13,
@@ -246,9 +257,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
-}, 
-    {
+    },
+    "healthRegen": 7.0
+  },
+  {
     "id": 14,
     "name": "Берти Берри",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Berty.jpg",
@@ -265,9 +277,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 7.5
   },
-        {
+  {
     "id": 15,
     "name": "Родерик Феттербат",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Roderick.jpg",
@@ -284,9 +297,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
-},
-        {
+    },
+    "healthRegen": 8.0
+  },
+  {
     "id": 16,
     "name": "Урзак",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Urzak.jpg",
@@ -303,9 +317,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
-},
-        {
+    },
+    "healthRegen": 8.5
+  },
+  {
     "id": 17,
     "name": "Кайден",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kaiden.jpg",
@@ -322,9 +337,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
-},
-        {
+    },
+    "healthRegen": 9.0
+  },
+  {
     "id": 18,
     "name": "Зугар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Zugar.jpg",
@@ -341,9 +357,10 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 9.5
   },
-          {
+  {
     "id": 19,
     "name": "Люминея",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lyminea.jpg",
@@ -360,10 +377,11 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 10.0
   },
-            {
-    "id": 19,
+  {
+    "id": 20,
     "name": "Рагнар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ragnar.jpg",
     "race": "dwarf",
@@ -379,6 +397,7 @@
     "equipment": {
       "main_hand": null,
       "chest": null
-    }
+    },
+    "healthRegen": 10.5
   }
 ]
