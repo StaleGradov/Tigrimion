@@ -51,36 +51,44 @@ class HeroGame {
         }
     }
 
-    async loadGameData() {
-        try {
-            const [heroes, enemies, items, mapsData, locationsData, movement] = await Promise.all([
-                this.loadJSON('data/heroes.json'),
-                this.loadJSON('data/enemies.json'),
-                this.loadJSON('data/items.json'),
-                this.loadJSON('data/maps.json'),
-                this.loadJSON('data/locations.json'),
-                this.loadJSON('data/movement.json')
-            ]);
+  async loadGameData() {
+    try {
+        const [heroes, enemies, items, mapsData, locationsData, movement] = await Promise.all([
+            this.loadJSON('data/heroes.json'),
+            this.loadJSON('data/enemies.json'),
+            this.loadJSON('data/items.json'),
+            this.loadJSON('data/maps.json'),
+            this.loadJSON('data/locations.json'),
+            this.loadJSON('data/movement.json')
+        ]);
 
-            this.heroes = heroes || this.getDefaultHeroes();
-            this.monsters = enemies || this.getDefaultEnemies();
-            this.items = items || this.getDefaultItems();
-            this.maps = mapsData || this.getDefaultMaps();
-            this.locations = locationsData || this.getDefaultLocations();
-            this.movementStyles = movement || this.getDefaultMovement();
+        this.heroes = heroes || this.getDefaultHeroes();
+        this.monsters = enemies || this.getDefaultEnemies();
+        this.items = items || this.getDefaultItems();
+        this.maps = mapsData || this.getDefaultMaps();
+        this.locations = locationsData || this.getDefaultLocations();
+        this.movementStyles = movement || this.getDefaultMovement();
 
-            console.log('✅ Все данные загружены');
-
-        } catch (error) {
-            console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.heroes = this.getDefaultHeroes();
-            this.monsters = this.getDefaultEnemies();
-            this.items = this.getDefaultItems();
-            this.maps = this.getDefaultMaps();
-            this.locations = this.getDefaultLocations();
-            this.movementStyles = this.getDefaultMovement();
+        // ПРИНУДИТЕЛЬНО РАЗБЛОКИРУЕМ ПЕРВОГО ГЕРОЯ
+        if (this.heroes.length > 0) {
+            const firstHero = this.heroes.find(h => h.id === 1);
+            if (firstHero) {
+                firstHero.unlocked = true;
+            }
         }
+
+        console.log('✅ Все данные загружены');
+
+    } catch (error) {
+        console.error('❌ Критическая ошибка загрузки данных:', error);
+        this.heroes = this.getDefaultHeroes();
+        this.monsters = this.getDefaultEnemies();
+        this.items = this.getDefaultItems();
+        this.maps = this.getDefaultMaps();
+        this.locations = this.getDefaultLocations();
+        this.movementStyles = this.getDefaultMovement();
     }
+}
 
     // Система уровней
     getLevelRequirements() {
