@@ -1,14 +1,3 @@
-console.log('🚀 Script.js загружен!');
-
-// Отладочная информация
-console.log('🔍 Проверка окружения:');
-console.log('- document.readyState:', document.readyState);
-console.log('- window.game:', window.game);
-console.log('- HeroGame class defined:', typeof HeroGame);
-console.log('- DOM elements:', {
-    app: document.getElementById('app'),
-    body: document.body
-});
 // Основной класс игры
 class HeroGame {
     constructor() {
@@ -1848,3 +1837,15 @@ showScreen(screenName) {
         }
     }
 }
+
+console.log('🚀 Script.js загружен!');
+
+// Отладочная информация
+console.log('🔍 Проверка окружения:');
+console.log('- document.readyState:', document.readyState);
+console.log('- window.game:', window.game);
+console.log('- HeroGame class defined:', typeof HeroGame);
+console.log('- DOM elements:', {
+    app: document.getElementById('app'),
+    body: document.body
+});
