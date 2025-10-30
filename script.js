@@ -31,11 +31,21 @@ class HeroGame {
         this.init();
     }
 
-    async init() {
-        await this.loadGameData();
-        this.loadSave();
-        this.renderHeroSelect();
+async init() {
+    await this.loadGameData();
+    this.loadSave();
+    
+    // ГАРАНТИРУЕМ ЧТО ПЕРВЫЙ ГЕРОЙ РАЗБЛОКИРОВАН
+    if (this.heroes.length > 0) {
+        const firstHero = this.heroes.find(h => h.id === 1);
+        if (firstHero) {
+            firstHero.unlocked = true;
+        }
     }
+    
+    this.checkHeroUnlocks();
+    this.renderHeroSelect();
+}
 
     // Базовая функция загрузки JSON
     async loadJSON(filePath) {
