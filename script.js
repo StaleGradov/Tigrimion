@@ -586,89 +586,91 @@ class HeroGame {
         return Math.floor(currentHealth);
     }
 
-    // Рендер выбора героя
-    renderHeroSelect() {
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-hero-select">
-                <h2 class="text-center">Выберите героя</h2>
-                <div class="hero-list">
-                    ${this.heroes.map(hero => {
-                        const stats = this.calculateHeroStats(hero);
-                        const bonuses = this.getBonuses();
-                        
-                        const activeSkills = [];
-                        
-                        if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
-                        if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
-                        if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
-                        if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
-                        if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
-                        
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+ renderHeroSelect() {
+    const container = document.getElementById('app');
+    container.innerHTML = `
+        <div class="screen active" id="screen-hero-select">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
+                ${this.heroes.map(hero => {
+                    // ПЕРВЫЙ ГЕРОЙ ВСЕГДА ДОСТУПЕН, остальные по unlocked
+                    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+                    
+                    const stats = this.calculateHeroStats(hero);
+                    const bonuses = this.getBonuses();
+                    
+                    const activeSkills = [];
+                    
+                    if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
+                    if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
+                    if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
+                    if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
+                    if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
+                    
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                    
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                    
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
+                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
+                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
+                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
 
-                        return `
-                            <div class="hero-option ${hero.unlocked ? '' : 'locked'}" 
-                                 onclick="${hero.unlocked ? `game.selectHero(${hero.id})` : ''}">
-                                <div class="hero-option-image">
-                                    <img src="${hero.image}" alt="${hero.name}">
-                                    ${!hero.unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                                </div>
-                                <div class="hero-option-info">
-                                    <div class="hero-option-header">
-                                        <strong>${hero.name}</strong>
-                                        <span class="hero-level">Ур. ${hero.level}</span>
-                                    </div>
-                                    <div class="hero-option-stats">
-                                        <div class="stat-row">
-                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                            <span>⚔️ ${stats.damage}</span>
-                                            <span>🛡️ ${stats.armor}</span>
-                                            <span>🌟 ${stats.power}</span>
-                                        </div>
-                                        <div class="stat-row">
-                                            <span>💰 ${hero.gold}</span>
-                                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
-                                        </div>
-                                    </div>
-                                    ${activeSkills.length > 0 ? `
-                                        <div class="hero-option-skills">
-                                            ${activeSkills.map(skill => `
-                                                <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
-                                            `).join('')}
-                                        </div>
-                                    ` : ''}
-                                    <div class="hero-option-bonuses">
-                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
-                                    </div>
-                                    ${!hero.unlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
-                                </div>
+                    return `
+                        <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                             onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
+                            <div class="hero-option-image">
+                                <img src="${hero.image}" alt="${hero.name}">
+                                ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                             </div>
-                        `;
-                    }).join('')}
-                </div>
+                            <div class="hero-option-info">
+                                <div class="hero-option-header">
+                                    <strong>${hero.name}</strong>
+                                    <span class="hero-level">Ур. ${hero.level}</span>
+                                </div>
+                                <div class="hero-option-stats">
+                                    <div class="stat-row">
+                                        <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                        <span>⚔️ ${stats.damage}</span>
+                                        <span>🛡️ ${stats.armor}</span>
+                                        <span>🌟 ${stats.power}</span>
+                                    </div>
+                                    <div class="stat-row">
+                                        <span>💰 ${hero.gold}</span>
+                                        <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
+                                    </div>
+                                </div>
+                                ${activeSkills.length > 0 ? `
+                                    <div class="hero-option-skills">
+                                        ${activeSkills.map(skill => `
+                                            <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                <div class="hero-option-bonuses">
+                                    <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
+                                </div>
+                                ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
-        `;
-    }
+        </div>
+    `;
+}
 
     // Выбор героя
     selectHero(heroId) {
