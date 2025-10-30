@@ -583,7 +583,39 @@ renderHeroScreen() {
                     </div>
                     <div class="hero-info">
                         <h2>${this.currentHero.name}</h2>
-                        <div class="hero-stats">
+                        <div class="hero-main-stats">
+                            <div class="main-stat">
+                                <span class="stat-icon">❤️</span>
+                                <span class="stat-value">${stats.health}</span>
+                            </div>
+                            <div class="main-stat">
+                                <span class="stat-icon">⚔️</span>
+                                <span class="stat-value">${stats.damage}</span>
+                            </div>
+                            <div class="main-stat">
+                                <span class="stat-icon">🛡️</span>
+                                <span class="stat-value">${stats.armor}</span>
+                            </div>
+                            <div class="main-stat">
+                                <span class="stat-icon">🌟</span>
+                                <span class="stat-value">${stats.power}</span>
+                            </div>
+                        </div>
+                        <div class="hero-secondary-stats">
+                            <div class="skill-badge">
+                                <span>🏃 ${stats.skills.escape}d6</span>
+                            </div>
+                            <div class="skill-badge">
+                                <span>👻 ${stats.skills.stealth}d6</span>
+                            </div>
+                            <div class="skill-badge">
+                                <span>🍀 ${stats.skills.luck}d6</span>
+                            </div>
+                            <div class="skill-badge">
+                                <span>🌿 ${stats.skills.survival}d6</span>
+                            </div>
+                        </div>
+                        <div class="hero-progress">
                             <span>Ур. ${this.currentHero.level}</span>
                             <span>💰 ${this.currentHero.gold}</span>
                             <span>⚡ ${this.currentHero.experience}/100</span>
@@ -632,46 +664,6 @@ renderHeroScreen() {
                         <div>${armor ? armor.name : 'Пусто'}</div>
                         ${armor ? `<small>${this.formatBonus(armor.bonus)}</small>` : ''}
                     </div>
-                </div>
-            </div>
-
-            <!-- Характеристики -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div>❤️ Здоровье</div>
-                    <div class="stat-value">${stats.health}</div>
-                </div>
-                <div class="stat-card">
-                    <div>⚔️ Урон</div>
-                    <div class="stat-value">${stats.damage}</div>
-                </div>
-                <div class="stat-card">
-                    <div>🛡️ Броня</div>
-                    <div class="stat-value">${stats.armor}</div>
-                </div>
-                <div class="stat-card">
-                    <div>🌟 Мощь</div>
-                    <div class="stat-value">${stats.power}</div>
-                </div>
-            </div>
-
-            <!-- Навыки -->
-            <div class="skills-grid">
-                <div class="skill-item">
-                    <div>🏃 Побег</div>
-                    <div class="stat-value">+${stats.skills.escape}d6</div>
-                </div>
-                <div class="skill-item">
-                    <div>👻 Скрытность</div>
-                    <div class="stat-value">+${stats.skills.stealth}d6</div>
-                </div>
-                <div class="skill-item">
-                    <div>🍀 Удача</div>
-                    <div class="stat-value">+${stats.skills.luck}d6</div>
-                </div>
-                <div class="skill-item">
-                    <div>🌿 Выживание</div>
-                    <div class="stat-value">+${stats.skills.survival}d6</div>
                 </div>
             </div>
 
