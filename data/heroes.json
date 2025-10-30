@@ -18,7 +18,7 @@
       "chest": null
     },
     "unlocked": true,
-    "healthRegen": 100/60
+    "healthRegen": 100/60,
   },
   {
     "id": 2,
