@@ -43,7 +43,9 @@ async init() {
         }
     }
     
-    this.checkHeroUnlocks();
+    // Откладываем checkHeroUnlocks до выбора героя
+    // this.checkHeroUnlocks();
+    
     this.renderHeroSelect();
 }
 
