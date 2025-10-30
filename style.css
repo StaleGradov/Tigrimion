@@ -48,7 +48,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 140px; /* Фиксированная высота для компактности */
+    height: 140px;
 }
 
 .hero-option:hover {
@@ -77,7 +77,7 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-width: 0; /* Для правильного обрезания текста */
+    min-width: 0;
 }
 
 .hero-option-header {
@@ -614,15 +614,52 @@ body {
     margin-bottom: 15px;
 }
 
-/* Адаптивность */
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
+    .hero-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 10px;
+    }
+    
+    .hero-option {
+        height: 140px;
+        flex-direction: row;
+        padding: 10px;
+    }
+    
+    .hero-option-image {
+        width: 100px;
+        height: 100px;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+    
+    .hero-option-info {
+        text-align: left;
+    }
+    
+    .hero-option-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .stat-row {
+        font-size: 0.85em;
+    }
+    
+    .hero-option-skills {
+        justify-content: flex-start;
+    }
+    
     .hero-layout {
         grid-template-columns: 1fr;
         gap: 15px;
     }
     
-    .hero-list {
-        grid-template-columns: 1fr;
+    .hero-main-stats,
+    .hero-secondary-stats {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .action-buttons {
@@ -633,18 +670,21 @@ body {
     .merchant-list {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
-    
-    .hero-main-stats,
-    .hero-secondary-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .equipment-section {
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .hero-list {
         grid-template-columns: 1fr;
     }
     
-    .monster-actions {
-        flex-direction: column;
+    .hero-option {
+        height: 140px;
+    }
+    
+    .hero-option-image {
+        width: 90px;
+        height: 90px;
     }
 }
 
