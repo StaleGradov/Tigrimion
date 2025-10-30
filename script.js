@@ -1,3 +1,37 @@
+// ======== ЗАЩИТА ОТ КРИПТО-РАСШИРЕНИЙ ========
+(function() {
+    'use strict';
+    
+    // Блокируем крипто-объекты
+    const blockProperties = ['ethereum', 'web3', 'ton', 'solana', 'coinbase', 'pelagus'];
+    
+    blockProperties.forEach(prop => {
+        try {
+            Object.defineProperty(window, prop, {
+                get: () => undefined,
+                set: () => {},
+                configurable: false
+            });
+        } catch (e) {
+            console.log('🔒 Заблокирован:', prop);
+        }
+    });
+    
+    // Блокируем postMessage от расширений
+    const originalPostMessage = window.postMessage;
+    window.postMessage = function(message, targetOrigin, transfer) {
+        if (message && typeof message === 'object' && 
+            (message.type?.includes('extension') || message.method?.includes('wallet') || message.jsonrpc)) {
+            console.log('🔒 Блокирован message от расширения');
+            return;
+        }
+        return originalPostMessage.apply(this, arguments);
+    };
+    
+    console.log('🛡️ Защита от крипто-расширений активирована');
+})();
+
+
 // Основной класс игры
 class HeroGame {
     constructor() {
