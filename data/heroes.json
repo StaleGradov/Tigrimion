@@ -1,5 +1,5 @@
 [
-  {
+{
     "id": 1,
     "name": "Йормунд",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Yormund.jpg",
@@ -18,8 +18,8 @@
       "chest": null
     },
     "unlocked": true,
-    "healthRegen": 100/60,
-  },
+    "healthRegen": 1.67
+},
   {
     "id": 2,
     "name": "Торин",
