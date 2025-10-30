@@ -32,24 +32,23 @@ body {
     text-align: center;
 }
 
-/* Более компактный список героев - ДЛЯ ПК */
+/* Более компактный список героев */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 столбцов на ПК */
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 12px;
     padding: 10px;
 }
 
 .hero-option {
     display: flex;
-    flex-direction: column; /* Вертикальное расположение на ПК */
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     padding: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 200px; /* Увеличили высоту на 40% (было 140px) */
+    height: 140px; /* Фиксированная высота для компактности */
 }
 
 .hero-option:hover {
@@ -59,10 +58,10 @@ body {
 }
 
 .hero-option-image {
-    width: 80px; /* Немного уменьшили для вертикального расположения */
-    height: 80px;
-    margin: 0 auto 8px; /* Центрируем изображение */
+    width: 100px;
+    height: 100px;
     flex-shrink: 0;
+    margin-right: 12px;
 }
 
 .hero-option-image img {
@@ -78,30 +77,27 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-width: 0;
-    text-align: center; /* Центрируем текст для вертикального layout */
+    min-width: 0; /* Для правильного обрезания текста */
 }
 
 .hero-option-header {
     display: flex;
-    flex-direction: column; /* Вертикальное расположение заголовка */
-    align-items: center;
+    justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 6px;
-    gap: 4px;
 }
 
 .hero-option-header strong {
-    font-size: 1em; /* Немного уменьшили шрифт */
+    font-size: 1.1em;
     color: #ffd700;
-    line-height: 1.2;
 }
 
 .hero-level {
     background: #4cc9f0;
     color: #1a1a2e;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 0.8em;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.9em;
     font-weight: bold;
 }
 
@@ -112,36 +108,32 @@ body {
 .stat-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 3px;
-    font-size: 0.8em; /* Уменьшили шрифт статистики */
-    gap: 4px;
+    margin-bottom: 4px;
+    font-size: 0.9em;
 }
 
 .stat-row span {
     white-space: nowrap;
-    flex: 1;
-    text-align: center;
 }
 
 .hero-option-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
     margin-bottom: 6px;
-    justify-content: center;
 }
 
 .hero-option-skills span {
     background: rgba(76, 201, 240, 0.2);
-    padding: 2px 4px;
-    border-radius: 6px;
-    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.8em;
     border: 1px solid #4cc9f0;
 }
 
 .hero-option-bonuses small {
     color: rgba(255, 255, 255, 0.7);
-    font-size: 0.75em;
+    font-size: 0.8em;
     display: block;
     white-space: nowrap;
     overflow: hidden;
@@ -622,87 +614,15 @@ body {
     margin-bottom: 15px;
 }
 
-/* Адаптивность для мобильных устройств */
+/* Адаптивность */
 @media (max-width: 768px) {
-    .hero-list {
-        grid-template-columns: repeat(2, 1fr); /* 2 столбца на маленьких планшетах */
-        gap: 10px;
-    }
-    
-    .hero-option {
-        height: 160px; /* Увеличили высоту на мобильных */
-        flex-direction: row; /* Горизонтальное расположение на мобильных */
-        padding: 10px;
-    }
-    
-    .hero-option-image {
-        width: 70px;
-        height: 70px;
-        margin-right: 10px;
-        margin-bottom: 0;
-    }
-    
-    .hero-option-info {
-        text-align: left; /* Выравнивание по левому краю на мобильных */
-    }
-    
-    .hero-option-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
-    }
-    
-    .stat-row {
-        font-size: 0.85em;
-    }
-    
-    .hero-option-skills {
-        justify-content: flex-start;
-    }
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-    .hero-list {
-        grid-template-columns: 1fr;
-    }
-    
-    .hero-option {
-        height: 140px;
-    }
-    
-    .hero-option-image {
-        width: 60px;
-        height: 60px;
-    }
-}
-
-/* Адаптивность для разных размеров экранов */
-@media (max-width: 1200px) {
-    .hero-list {
-        grid-template-columns: repeat(4, 1fr); /* 4 столбца на ноутбуках */
-    }
-}
-
-@media (max-width: 992px) {
-    .hero-list {
-        grid-template-columns: repeat(3, 1fr); /* 3 столбца на планшетах */
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-list {
-        grid-template-columns: repeat(2, 1fr); /* 2 столбца на маленьких планшетах */
-    }
-    
     .hero-layout {
         grid-template-columns: 1fr;
         gap: 15px;
     }
     
-    .hero-main-stats,
-    .hero-secondary-stats {
-        grid-template-columns: repeat(2, 1fr);
+    .hero-list {
+        grid-template-columns: 1fr;
     }
     
     .action-buttons {
@@ -713,11 +633,18 @@ body {
     .merchant-list {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
-}
-
-@media (max-width: 576px) {
-    .hero-list {
-        grid-template-columns: 1fr; /* 1 столбец на телефонах */
+    
+    .hero-main-stats,
+    .hero-secondary-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .equipment-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .monster-actions {
+        flex-direction: column;
     }
 }
 
