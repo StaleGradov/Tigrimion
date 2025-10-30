@@ -94,8 +94,122 @@
       "chest": null
     }
   },
-  {
+        {
     "id": 6,
+    "name": "Бреакс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Breaks.jpg",
+    "race": "laitar",
+    "class": "fighter",
+    "saga": "vulkanor",
+    "baseHealth": 130,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 7,
+    "name": "Джейк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Jeik.jpg",
+    "race": "laitar",
+    "class": "merchant",
+    "saga": "vulkanor",
+    "baseHealth": 65,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 10,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 8,
+    "name": "Торгул",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torgul.jpg",
+    "race": "orc",
+    "class": "thief",
+    "saga": "vulkanor",
+    "baseHealth": 125,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 8,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 9,
+    "name": "Краггар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kraggar.jpg",
+    "race": "orc",
+    "class": "death_mage",
+    "saga": "vulkanor",
+    "baseHealth": 130,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 1.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 10,
+    "name": "Серена",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Serena.jpg",
+    "race": "fairy",
+    "class": "antiquarian",
+    "saga": "vulkanor",
+    "baseHealth": 70,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 7.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 11,
+    "name": "Азами",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Azami.jpg",
+    "race": "fairy",
+    "class": "hunter",
+    "saga": "vulkanor",
+    "baseHealth": 90,
+    "baseDamage": 25,
+    "baseArmor": 6,
+    "gold": 3.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+          {
+    "id": 12,
     "name": "Аргонат",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
     "race": "human",
@@ -105,6 +219,25 @@
     "baseDamage": 22,
     "baseArmor": 8,
     "gold": 3.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+  {
+    "id": 13,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 75,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 7.2,
     "level": 1,
     "experience": 0,
     "inventory": [],
