@@ -690,13 +690,36 @@ async init() {
     `;
 }
 
-    // Выбор героя
-    selectHero(heroId) {
-        this.currentHero = this.heroes.find(h => h.id === heroId);
-        this.showScreen('main');
-        this.renderHeroScreen();
-        this.saveGame();
+// Выбор героя
+selectHero(heroId) {
+    console.log('Выбор героя:', heroId); // Для отладки
+    
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) {
+        console.error('Герой не найден:', heroId);
+        return;
     }
+    
+    // Проверяем разблокирован ли герой
+    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    if (!isUnlocked) {
+        console.log('Герой заблокирован:', hero.name);
+        return;
+    }
+    
+    this.currentHero = hero;
+    this.showScreen('main');
+    this.renderHeroScreen();
+    this.saveGame();
+    
+    console.log('Герой выбран:', hero.name);
+}
+
+// Показать экран
+showScreen(screenName) {
+    this.currentScreen = screenName;
+    console.log('Переход на экран:', screenName);
+}
 
     // Показать экран
     showScreen(screenName) {
