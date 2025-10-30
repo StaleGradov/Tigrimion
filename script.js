@@ -6,8 +6,6 @@ class HeroGame {
         this.monsters = [];
         this.maps = [];
         this.locations = [];
-        this.movementStyles = [];
-        this.merchants = [];
         
         this.showReward = false;
         this.lastReward = 0;
@@ -16,7 +14,6 @@ class HeroGame {
         this.currentMap = null;
         this.currentLocation = null;
         this.currentMonster = null;
-        this.selectedMovement = null;
         
         // Новые свойства для боя
         this.battleActive = false;
@@ -25,8 +22,8 @@ class HeroGame {
         this.lastHealthUpdate = Date.now();
         this.healthRegenRate = 100 / 60;
         
-        // Общий инвентарь
-        this.globalInventory = [];
+        // Прогресс убийств монстров
+        this.monsterKills = {};
         
         this.init();
     }
@@ -53,13 +50,12 @@ class HeroGame {
 
     async loadGameData() {
         try {
-            const [heroes, enemies, items, mapsData, locationsData, movement] = await Promise.all([
+            const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
                 this.loadJSON('data/heroes.json'),
                 this.loadJSON('data/enemies.json'),
                 this.loadJSON('data/items.json'),
                 this.loadJSON('data/maps.json'),
-                this.loadJSON('data/locations.json'),
-                this.loadJSON('data/movement.json')
+                this.loadJSON('data/locations.json')
             ]);
 
             this.heroes = heroes || this.getDefaultHeroes();
@@ -67,7 +63,6 @@ class HeroGame {
             this.items = items || this.getDefaultItems();
             this.maps = mapsData || this.getDefaultMaps();
             this.locations = locationsData || this.getDefaultLocations();
-            this.movementStyles = movement || this.getDefaultMovement();
 
             console.log('✅ Все данные загружены');
 
@@ -78,7 +73,6 @@ class HeroGame {
             this.items = this.getDefaultItems();
             this.maps = this.getDefaultMaps();
             this.locations = this.getDefaultLocations();
-            this.movementStyles = this.getDefaultMovement();
         }
     }
 
@@ -165,6 +159,35 @@ class HeroGame {
         });
     }
 
+    // Проверка доступности локации
+    isLocationUnlocked(locationLevel) {
+        if (locationLevel === 10) return true; // Первая локация всегда доступна
+        
+        const nextLocation = locationLevel + 1;
+        if (!this.monsterKills[nextLocation]) return false;
+        
+        // Проверяем, убиты ли все монстры в предыдущей локации
+        const location = this.locations.find(l => l.level === nextLocation);
+        if (!location) return false;
+        
+        const [minId, maxId] = location.monsterRange;
+        for (let i = minId; i <= maxId; i++) {
+            if (!this.monsterKills[nextLocation][i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Отметить убийство монстра
+    markMonsterKill(locationLevel, monsterId) {
+        if (!this.monsterKills[locationLevel]) {
+            this.monsterKills[locationLevel] = {};
+        }
+        this.monsterKills[locationLevel][monsterId] = true;
+        this.saveGame();
+    }
+
     // Данные по умолчанию
     getDefaultHeroes() {
         return [
@@ -221,14 +244,29 @@ class HeroGame {
         return [
             {
                 id: 1,
-                name: "Слабый монстр",
+                name: "Слабый гоблин",
                 health: 30,
                 maxHealth: 30,
                 attack: 5,
                 defense: 2,
                 speed: 3,
-                experience: 5,
-                reward: 10
+                experience: 10,
+                reward: 15,
+                image: "images/monsters/goblin.jpg",
+                description: "Мелкий и противный"
+            },
+            {
+                id: 2, 
+                name: "Волк",
+                health: 25,
+                maxHealth: 25,
+                attack: 8,
+                defense: 1,
+                speed: 6,
+                experience: 12,
+                reward: 18,
+                image: "images/monsters/wolf.jpg",
+                description: "Быстрый и опасный"
             }
         ];
     }
@@ -241,7 +279,18 @@ class HeroGame {
                 type: "potion",
                 value: 20,
                 price: 25,
-                heal: 20
+                heal: 20,
+                image: "images/items/potion.jpg"
+            },
+            {
+                id: 2,
+                name: "Простой меч",
+                type: "weapon",
+                slot: "main_hand",
+                fixed_damage: 5,
+                price: 100,
+                sellPrice: 50,
+                image: "images/items/sword.jpg"
             }
         ];
     }
@@ -263,62 +312,6 @@ class HeroGame {
                 description: "Мирный сельский край", 
                 multiplier: 1.5, 
                 unlocked: false 
-            },
-            { 
-                id: 3, 
-                name: "Фелисар", 
-                image: "images/maps/felisar.jpg", 
-                description: "Лесные тропики", 
-                multiplier: 2.0, 
-                unlocked: false 
-            },
-            { 
-                id: 4, 
-                name: "Илверин", 
-                image: "images/maps/ilverin.jpg", 
-                description: "Зачарованный лес", 
-                multiplier: 2.5, 
-                unlocked: false 
-            },
-            { 
-                id: 5, 
-                name: "Варгош", 
-                image: "images/maps/vargosh.jpg", 
-                description: "Вулканические земли", 
-                multiplier: 3.0, 
-                unlocked: false 
-            },
-            { 
-                id: 6, 
-                name: "Дунгарн", 
-                image: "images/maps/dungarn.jpg", 
-                description: "Подземные пещеры", 
-                multiplier: 3.5, 
-                unlocked: false 
-            },
-            { 
-                id: 7, 
-                name: "Люминэль", 
-                image: "images/maps/luminel.jpg", 
-                description: "Сверкающие равнины", 
-                multiplier: 4.0, 
-                unlocked: false 
-            },
-            { 
-                id: 8, 
-                name: "Астрарион", 
-                image: "images/maps/astarion.jpg", 
-                description: "Небесные просторы", 
-                multiplier: 4.5, 
-                unlocked: false 
-            },
-            { 
-                id: 9, 
-                name: "Эльфарион", 
-                image: "images/maps/elfarion.jpg", 
-                description: "Древнее королевство эльфов", 
-                multiplier: 5.0, 
-                unlocked: false 
             }
         ];
     }
@@ -330,103 +323,20 @@ class HeroGame {
                 name: "Начальные земли", 
                 description: "Мягкий климат, слабые монстры", 
                 image: "images/locations/level10.jpg",
-                monsterRange: [1, 10], 
+                monsterRange: [1, 2], // Только 2 монстра для теста
                 artifactChance: 0.005, 
-                relicChance: 0.0005 
+                relicChance: 0.0005,
+                unlocked: true
             },
             { 
                 level: 9, 
                 name: "Глубокий лес", 
                 description: "Густые заросли", 
                 image: "images/locations/level9.jpg",
-                monsterRange: [1, 20], 
+                monsterRange: [1, 3], 
                 artifactChance: 0.01, 
-                relicChance: 0.001 
-            },
-            { 
-                level: 8, 
-                name: "Скалистые утесы", 
-                description: "Крутые обрывы", 
-                image: "images/locations/level8.jpg",
-                monsterRange: [1, 30], 
-                artifactChance: 0.015, 
-                relicChance: 0.0015 
-            },
-            { 
-                level: 7, 
-                name: "Заброшенные руины", 
-                description: "Древние постройки", 
-                image: "images/locations/level7.jpg",
-                monsterRange: [1, 40], 
-                artifactChance: 0.02, 
-                relicChance: 0.002 
-            },
-            { 
-                level: 6, 
-                name: "Темные пещеры", 
-                description: "Мрак и опасность", 
-                image: "images/locations/level6.jpg",
-                monsterRange: [1, 50], 
-                artifactChance: 0.025, 
-                relicChance: 0.0025 
-            },
-            { 
-                level: 5, 
-                name: "Магические земли", 
-                description: "Сила магии", 
-                image: "images/locations/level5.jpg",
-                monsterRange: [1, 60], 
-                artifactChance: 0.03, 
-                relicChance: 0.003 
-            },
-            { 
-                level: 4, 
-                name: "Ледяные пустоши", 
-                description: "Вечная мерзлота", 
-                image: "images/locations/level4.jpg",
-                monsterRange: [1, 70], 
-                artifactChance: 0.035, 
-                relicChance: 0.0035 
-            },
-            { 
-                level: 3, 
-                name: "Огненные земли", 
-                description: "Жар и пламя", 
-                image: "images/locations/level3.jpg",
-                monsterRange: [1, 80], 
-                artifactChance: 0.04, 
-                relicChance: 0.004 
-            },
-            { 
-                level: 2, 
-                name: "Небесные пути", 
-                description: "Высоко в облаках", 
-                image: "images/locations/level2.jpg",
-                monsterRange: [1, 90], 
-                artifactChance: 0.045, 
-                relicChance: 0.0045 
-            },
-            { 
-                level: 1, 
-                name: "Тронный зал", 
-                description: "Обитель могущественных существ", 
-                image: "images/locations/level1.jpg",
-                monsterRange: [1, 100], 
-                artifactChance: 0.05, 
-                relicChance: 0.005 
-            }
-        ];
-    }
-
-    getDefaultMovement() {
-        return [
-            {
-                id: "walk",
-                name: "Пешком",
-                description: "Обычная ходьба",
-                movement: 2,
-                stealthBonus: 0,
-                escapeBonus: 0
+                relicChance: 0.001,
+                unlocked: false
             }
         ];
     }
@@ -435,39 +345,16 @@ class HeroGame {
     getBonuses() {
         return {
             races: {
-                elf: { bonus: {type: "escape_bonus", value: 1}, name: "Эльф", description: "Проворный и неуловимый" },
-                dwarf: { bonus: {type: "health_mult", value: 0.3}, name: "Гном", description: "Выносливый и крепкий" },
-                halfling: { bonus: {type: "stealth_bonus", value: 1}, name: "Полурослик", description: "Маленький и незаметный" },
-                fairy: { bonus: {type: "luck_bonus", value: 1}, name: "Фея", description: "Везение и магия" },
-                laitar: { bonus: {type: "survival_bonus", value: 1}, name: "Лайтар", description: "Мастер выживания" },
-                ork: { bonus: {type: "damage_mult", value: 0.2}, name: "Орк", description: "Сильный и свирепый" },
                 human: { bonus: {type: "gold_mult", value: 0.3}, name: "Человек", description: "Предприимчивый и богатый" },
-                dragon: { bonus: {type: "armor_mult", value: 0.15}, name: "Дракон", description: "Могучий и защищённый" }
+                elf: { bonus: {type: "escape_bonus", value: 1}, name: "Эльф", description: "Проворный и неуловимый" }
             },
             classes: {
-                archer: { bonus: {type: "damage_mult", value: 0.2}, name: "Лучник", description: "Мастер дальнего боя" },
                 warrior: { bonus: {type: "damage_mult", value: 0.2}, name: "Воин", description: "Сильный и отважный" },
-                thief: { bonus: {type: "stealth_bonus", value: 1}, name: "Вор", description: "Тихий и незаметный" },
-                merchant: { bonus: {type: "gold_mult", value: 0.3}, name: "Торговец", description: "Искусный торговец" },
-                fighter: { bonus: {type: "luck_bonus", value: 1}, name: "Кулачный боец", description: "Удачливый боец" },
-                healer: { bonus: {type: "health_mult", value: 0.3}, name: "Знахарь", description: "Мастер исцеления" },
-                sorcerer: { bonus: {type: "escape_bonus", value: 1}, name: "Колдун", description: "Магическая защита" },
-                death_mage: { bonus: {type: "stealth_bonus", value: 1}, name: "Волхв смерти", description: "Тёмные искусства" },
-                hunter: { bonus: {type: "survival_bonus", value: 1}, name: "Охотник", description: "Следопыт и выживальщик" },
-                bounty_hunter: { bonus: {type: "damage_mult", value: 0.1}, name: "Охотник за головами", description: "Специалист по преследованию" },
-                gladiator: { bonus: {type: "damage_mult", value: 0.2}, name: "Гладиатор", description: "Мастер любого оружия" },
-                blacksmith: { bonus: {type: "armor_mult", value: 0.15}, name: "Кузнец", description: "Мастер брони" },
-                antiquarian: { bonus: {type: "gold_mult", value: 0.3}, name: "Искатель древностей", description: "Знаток сокровищ" }
+                archer: { bonus: {type: "damage_mult", value: 0.2}, name: "Лучник", description: "Мастер дальнего боя" }
             },
             sagas: {
                 golden_egg: { bonus: {type: "health_mult", value: 0.3}, name: "Золотое Яйцо", description: "Обладатель древнего артефакта" },
-                vulkanor: { bonus: {type: "damage_mult", value: 0.2}, name: "Вулканор", description: "Прошедший огненные испытания" },
-                well: { bonus: {type: "gold_mult", value: 0.3}, name: "Колодец", description: "Нашедший источник богатства" },
-                pets: { bonus: {type: "luck_bonus", value: 1}, name: "Питомцы", description: "Верные спутники приносят удачу" },
-                following_sun: { bonus: {type: "survival_bonus", value: 1}, name: "Вслед за солнцем", description: "Прошедший через пустыни" },
-                vampire_crown: { bonus: {type: "stealth_bonus", value: 1}, name: "Корона короля вампиров", description: "Носитель тёмной короны" },
-                tiger_eye: { bonus: {type: "armor_mult", value: 0.15}, name: "Желтый Глаз тигра", description: "Обладатель мистической защиты" },
-                sky_phenomena: { bonus: {type: "escape_bonus", value: 1}, name: "Небесные явления", description: "Свидетель небесных чудес" }
+                vulkanor: { bonus: {type: "damage_mult", value: 0.2}, name: "Вулканор", description: "Прошедший огненные испытания" }
             }
         };
     }
@@ -523,26 +410,6 @@ class HeroGame {
 
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
 
-        const skills = {
-            escape: 0,
-            stealth: 0,
-            luck: 0,
-            survival: 0,
-            wealth: 0
-        };
-
-        allBonuses.forEach(bonus => {
-            if (bonus.type.includes('_bonus')) {
-                const skill = bonus.type.replace('_bonus', '');
-                if (skills.hasOwnProperty(skill)) {
-                    skills[skill] += bonus.value;
-                }
-            }
-            else if (bonus.type === 'gold_mult') {
-                skills.wealth += bonus.value;
-            }
-        });
-
         const currentHealth = this.getCurrentHealth();
 
         return {
@@ -552,7 +419,6 @@ class HeroGame {
             damage: Math.round(damage),
             armor: Math.round(armor),
             power: power,
-            skills: skills,
             bonuses: {
                 race: raceBonus,
                 class: classBonus,
@@ -596,41 +462,12 @@ class HeroGame {
                     ${this.heroes.map(hero => {
                         const stats = this.calculateHeroStats(hero);
                         const bonuses = this.getBonuses();
-                        
-                        const activeSkills = [];
-                        
-                        if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
-                        if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
-                        if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
-                        if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
-                        if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
-                        
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                        
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                        
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
-                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
-                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
-                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
 
                         return `
                             <div class="hero-option ${hero.unlocked ? '' : 'locked'}" 
                                  onclick="${hero.unlocked ? `game.selectHero(${hero.id})` : ''}">
                                 <div class="hero-option-image">
-                                    <img src="${hero.image}" alt="${hero.name}">
+                                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='images/heroes/default.jpg'">
                                     ${!hero.unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                                 </div>
                                 <div class="hero-option-info">
@@ -650,15 +487,8 @@ class HeroGame {
                                             <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
                                         </div>
                                     </div>
-                                    ${activeSkills.length > 0 ? `
-                                        <div class="hero-option-skills">
-                                            ${activeSkills.map(skill => `
-                                                <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
-                                            `).join('')}
-                                        </div>
-                                    ` : ''}
                                     <div class="hero-option-bonuses">
-                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
+                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name}</small>
                                     </div>
                                     ${!hero.unlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
                                 </div>
@@ -673,6 +503,10 @@ class HeroGame {
     // Выбор героя
     selectHero(heroId) {
         this.currentHero = this.heroes.find(h => h.id === heroId);
+        // Автоматически выбираем первую карту и локацию
+        this.currentMap = this.maps.find(m => m.unlocked);
+        this.currentLocation = this.locations.find(l => l.unlocked);
+        
         this.showScreen('main');
         this.renderHeroScreen();
         this.saveGame();
@@ -707,7 +541,7 @@ class HeroGame {
                     <div class="hero-column">
                         <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
                         <div class="hero-image">
-                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='images/heroes/default.jpg'">
                         </div>
                         <div class="hero-info">
                             <h2>${this.currentHero.name}</h2>
@@ -745,13 +579,13 @@ class HeroGame {
 
                     <!-- Центральная колонка - Карта -->
                     <div class="map-column">
-                        <div class="column-title">🗺️ ВЫБОР КАРТЫ</div>
+                        <div class="column-title">🗺️ КАРТА</div>
                         ${this.renderMapSelection()}
                     </div>
 
                     <!-- Правая колонка - Локация -->
                     <div class="location-column">
-                        <div class="column-title">📍 ВЫБОР ЛОКАЦИИ</div>
+                        <div class="column-title">📍 ЛОКАЦИЯ</div>
                         ${this.renderLocationSelection()}
                     </div>
                 </div>
@@ -759,8 +593,8 @@ class HeroGame {
                 <!-- Нижняя часть - монстр/бой -->
                 <div class="battle-section">
                     <div class="monster-reward-column">
-                        <div class="column-title">🎭 ВРАГ / 🎁 НАГРАДА</div>
-                        ${this.renderMonsterRewardColumn()}
+                        <div class="column-title">🎭 ВРАГ</div>
+                        ${this.renderMonsterColumn()}
                     </div>
                 </div>
 
@@ -768,51 +602,32 @@ class HeroGame {
                 <div class="equipment-section">
                     <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                         <div class="equipment-icon">
-                            ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}">` : ''}
+                            ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : ''}
                         </div>
                         <div>
                             <strong>⚔️ Оружие</strong>
                             <div>${weapon ? weapon.name : 'Пусто'}</div>
-                            ${weapon ? `<small>${this.formatBonus(weapon.bonus)}</small>` : ''}
                         </div>
                     </div>
                     
                     <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                         <div class="equipment-icon">
-                            ${armor ? `<img src="${armor.image}" alt="${armor.name}">` : ''}
+                            ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : ''}
                         </div>
                         <div>
                             <strong>🛡️ Броня</strong>
                             <div>${armor ? armor.name : 'Пусто'}</div>
-                            ${armor ? `<small>${this.formatBonus(armor.bonus)}</small>` : ''}
                         </div>
-                    </div>
-                </div>
-
-                <!-- Бонусы -->
-                <div class="bonuses-section">
-                    <h3>🎯 Бонусы:</h3>
-                    <div class="bonus-item">
-                        <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
-                        (${this.formatBonus(stats.bonuses.race)})
-                    </div>
-                    <div class="bonus-item">
-                        <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
-                        (${this.formatBonus(stats.bonuses.class)})
-                    </div>
-                    <div class="bonus-item">
-                        <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
-                        (${this.formatBonus(stats.bonuses.saga)})
                     </div>
                 </div>
 
                 <!-- Кнопки действий -->
                 <div class="action-buttons">
-                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                    <button class="btn-primary" onclick="game.encounterMonster()">🎲 Искать монстра</button>
+                    <button class="btn-secondary" onclick="game.showLocationSelection()">📍 Сменить локацию</button>
                     <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
                     <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
                     <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
-                    <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
                 </div>
 
                 <!-- Журнал событий -->
@@ -831,14 +646,13 @@ class HeroGame {
             return `
                 <div class="map-info">
                     <div class="map-image-large">
-                        <img src="${this.currentMap.image}" alt="${this.currentMap.name}">
+                        <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='images/maps/default.jpg'">
                     </div>
                     <h4>${this.currentMap.name}</h4>
                     <p>${this.currentMap.description}</p>
                     <div class="map-multiplier">
-                        Множитель силы: x${this.currentMap.multiplier}
+                        Сложность: x${this.currentMap.multiplier}
                     </div>
-                    <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
                 </div>
             `;
         } else {
@@ -847,10 +661,9 @@ class HeroGame {
                     <div class="map-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">🗺️</div>
-                            <div>Выберите карту</div>
+                            <div>Карта не выбрана</div>
                         </div>
                     </div>
-                    <button class="btn-primary" onclick="game.showMapSelection()">Выбрать карту</button>
                 </div>
             `;
         }
@@ -859,19 +672,18 @@ class HeroGame {
     // Рендер выбора локации
     renderLocationSelection() {
         if (this.currentLocation) {
+            const progress = this.getLocationProgress(this.currentLocation.level);
             return `
                 <div class="location-info">
                     <div class="location-image-large">
-                        <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}">
+                        <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='images/locations/default.jpg'">
                     </div>
                     <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
                     <p>${this.currentLocation.description}</p>
                     <div class="location-stats">
+                        <div>Прогресс: ${progress}%</div>
                         <div>Монстры: №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
-                        <div>Артефакты: ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
-                        <div>Реликвии: ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
                     </div>
-                    <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
                 </div>
             `;
         } else {
@@ -880,20 +692,37 @@ class HeroGame {
                     <div class="location-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">📍</div>
-                            <div>Выберите локацию</div>
+                            <div>Локация не выбрана</div>
                         </div>
                     </div>
-                    <button class="btn-primary" onclick="game.showLocationSelection()">Выбрать локацию</button>
                 </div>
             `;
         }
     }
 
-    // Рендер колонки монстра/награды
-    renderMonsterRewardColumn() {
-        if (this.showReward) {
-            return this.renderRewardDisplay();
-        } else if (this.currentMonster) {
+    // Получить прогресс локации
+    getLocationProgress(locationLevel) {
+        if (!this.monsterKills[locationLevel]) return 0;
+        
+        const location = this.locations.find(l => l.level === locationLevel);
+        if (!location) return 0;
+        
+        const [minId, maxId] = location.monsterRange;
+        const totalMonsters = maxId - minId + 1;
+        let killedMonsters = 0;
+        
+        for (let i = minId; i <= maxId; i++) {
+            if (this.monsterKills[locationLevel][i]) {
+                killedMonsters++;
+            }
+        }
+        
+        return Math.round((killedMonsters / totalMonsters) * 100);
+    }
+
+    // Рендер колонки монстра
+    renderMonsterColumn() {
+        if (this.currentMonster) {
             const monsterDisplay = this.renderMonsterDisplay();
             setTimeout(() => {
                 this.showMonsterActions();
@@ -905,28 +734,12 @@ class HeroGame {
                     <div class="monster-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
-                            <div>Встретьте монстра</div>
+                            <div>Нажмите "Искать монстра"</div>
                         </div>
                     </div>
                 </div>
             `;
         }
-    }
-
-    // Рендер награды
-    renderRewardDisplay() {
-        return `
-            <div class="reward-info">
-                <div class="reward-image">
-                    💰
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <h4>🎉 ПОБЕДА!</h4>
-                    <p>Получено: ${this.lastReward} золота</p>
-                    <button class="btn-primary" onclick="game.hideReward()">Продолжить</button>
-                </div>
-            </div>
-        `;
     }
 
     // Рендер монстра
@@ -939,7 +752,7 @@ class HeroGame {
         return `
             <div class="monster-info">
                 <div class="monster-image-large">
-                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}">
+                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='images/monsters/default.jpg'">
                 </div>
                 <h4>${this.currentMonster.name}</h4>
                 <p>${this.currentMonster.description}</p>
@@ -971,66 +784,28 @@ class HeroGame {
         `;
     }
 
-    // Показать выбор карты
-    showMapSelection() {
-        const mapsHTML = this.maps.map(map => `
-            <div class="map-option ${map.unlocked ? '' : 'locked'}" 
-                 onclick="${map.unlocked ? `game.selectMap(${map.id})` : ''}">
-                <div class="map-option-image">
-                    <img src="${map.image}" alt="${map.name}">
-                    ${!map.unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                </div>
-                <div class="map-option-info">
-                    <strong>${map.name}</strong>
-                    <div>${map.description}</div>
-                    <small>Множитель: x${map.multiplier}</small>
-                    ${!map.unlocked ? '<small class="locked-text">Недоступно</small>' : ''}
-                </div>
-            </div>
-        `).join('');
-
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="screen active" id="screen-map-select">
-                <h3 class="text-center">🗺️ Выберите карту</h3>
-                <div class="maps-grid">
-                    ${mapsHTML}
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
-                </div>
-            </div>
-        `;
-
-        this.showScreen('map-select');
-    }
-
-    // Выбор карты
-    selectMap(mapId) {
-        this.currentMap = this.maps.find(m => m.id === mapId);
-        this.addToLog(`🗺️ Выбрана карта: ${this.currentMap.name}`);
-        this.renderHeroScreen();
-    }
-
     // Показать выбор локации
     showLocationSelection() {
-        if (!this.currentMap) {
-            this.addToLog('❌ Сначала выберите карту');
-            return;
-        }
-
-        const locationsHTML = this.locations.map(location => `
-            <div class="location-option" onclick="game.selectLocation(${location.level})">
-                <div class="location-option-image">
-                    <img src="${location.image}" alt="${location.name}">
+        const locationsHTML = this.locations.map(location => {
+            const unlocked = this.isLocationUnlocked(location.level);
+            const progress = this.getLocationProgress(location.level);
+            
+            return `
+                <div class="location-option ${unlocked ? '' : 'locked'}" 
+                     onclick="${unlocked ? `game.selectLocation(${location.level})` : ''}">
+                    <div class="location-option-image">
+                        <img src="${location.image}" alt="${location.name}" onerror="this.src='images/locations/default.jpg'">
+                        ${!unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                    </div>
+                    <div class="location-option-info">
+                        <strong>${location.name} (Ур. ${location.level})</strong>
+                        <div>${location.description}</div>
+                        <small>Прогресс: ${progress}%</small>
+                        ${!unlocked ? '<small class="locked-text">Завершите предыдущую локацию</small>' : ''}
+                    </div>
                 </div>
-                <div class="location-option-info">
-                    <strong>${location.name} (Ур. ${location.level})</strong>
-                    <div>${location.description}</div>
-                    <small>Монстры: №${location.monsterRange[0]}-${location.monsterRange[1]}</small>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         const container = document.getElementById('app');
         container.innerHTML += `
@@ -1055,20 +830,12 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // Начать путешествие
-    startAdventure() {
-        if (!this.currentMap || !this.currentLocation) {
-            this.addToLog('❌ Сначала выберите карту и локацию');
-            return;
-        }
-
-        this.addToLog(`🚀 Начато путешествие по карте ${this.currentMap.name}, локация: ${this.currentLocation.name}`);
-        this.encounterMonster();
-    }
-
     // Встреча с монстром
     encounterMonster() {
-        if (!this.currentLocation || !this.currentMap) return;
+        if (!this.currentLocation) {
+            this.addToLog('❌ Сначала выберите локацию');
+            return;
+        }
 
         const [minId, maxId] = this.currentLocation.monsterRange;
         const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
@@ -1079,13 +846,14 @@ class HeroGame {
         }
 
         // Применяем множитель карты
+        const mapMultiplier = this.currentMap ? this.currentMap.multiplier : 1;
         this.currentMonster = {
             ...monster,
-            health: Math.round(monster.health * this.currentMap.multiplier),
-            damage: Math.round(monster.damage * this.currentMap.multiplier),
-            armor: Math.round(monster.armor * this.currentMap.multiplier),
-            reward: Math.round(monster.reward * this.currentMap.multiplier),
-            power: Math.round(monster.power * this.currentMap.multiplier)
+            health: Math.round(monster.health * mapMultiplier),
+            damage: Math.round(monster.damage * mapMultiplier),
+            armor: Math.round(monster.armor * mapMultiplier),
+            reward: Math.round(monster.reward * mapMultiplier),
+            power: Math.round((monster.health + monster.damage * 2 + monster.armor * 1.5) * mapMultiplier)
         };
 
         this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
@@ -1105,16 +873,12 @@ class HeroGame {
         
         const actionsHTML = `
             <div class="monster-actions" style="margin-top: 15px;">
-                <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
-                <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                <button class="btn-primary" onclick="game.startBattle()">⚔️ Атаковать</button>
             </div>
         `;
         
         container.innerHTML += actionsHTML;
     }
-
-    // ========== СИСТЕМА БОЯ ==========
 
     // Начать бой
     startBattle() {
@@ -1154,7 +918,7 @@ class HeroGame {
                     <!-- Герой -->
                     <div class="combatant hero-combatant">
                         <div class="combatant-image">
-                            <img src="${this.getRaceImage(this.currentHero.race)}" alt="${this.currentHero.race}">
+                            <img src="${this.getRaceImage(this.currentHero.race)}" alt="${this.currentHero.race}" onerror="this.src='images/races/default.jpg'">
                         </div>
                         <div class="combatant-info">
                             <h4>${this.currentHero.name}</h4>
@@ -1176,7 +940,7 @@ class HeroGame {
                     <!-- Монстр -->
                     <div class="combatant monster-combatant">
                         <div class="combatant-image">
-                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}">
+                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='images/monsters/default.jpg'">
                         </div>
                         <div class="combatant-info">
                             <h4>${this.currentMonster.name}</h4>
@@ -1206,9 +970,6 @@ class HeroGame {
                     <button class="btn-battle-attack" onclick="game.battleAttack()">
                         ⚔️ Нанести удар
                     </button>
-                    <button class="btn-battle-escape" onclick="game.attemptEscapeFromBattle()">
-                        🏃 Попытаться сбежать
-                    </button>
                 </div>
             </div>
         `;
@@ -1224,16 +985,12 @@ class HeroGame {
     // Получить изображение расы
     getRaceImage(race) {
         const raceImages = {
-            human: 'images/races/human.png',
-            elf: 'images/races/elf.png',
-            dwarf: 'images/races/dwarf.png',
-            ork: 'images/races/ork.png',
-            dragon: 'images/races/dragon.png',
-            halfling: 'images/races/halfling.png',
-            fairy: 'images/races/fairy.png',
-            laitar: 'images/races/laitar.png'
+            human: 'images/races/human.jpg',
+            elf: 'images/races/elf.jpg',
+            dwarf: 'images/races/dwarf.jpg',
+            ork: 'images/races/ork.jpg'
         };
-        return raceImages[race] || 'images/races/human.png';
+        return raceImages[race] || 'images/races/default.jpg';
     }
 
     // Атака в бою
@@ -1294,14 +1051,15 @@ class HeroGame {
             
             this.addExperience(experienceGained);
             
+            // Отмечаем убийство монстра
+            this.markMonsterKill(this.currentLocation.level, this.currentMonster.id);
+            
             this.addBattleLog({
                 message: `🎉 ПОБЕДА! Получено ${reward} золота и ${experienceGained} опыта`,
                 type: 'victory'
             });
             
             this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
-            
-            this.checkSpecialDrops();
             
         } else {
             this.addBattleLog({
@@ -1314,156 +1072,10 @@ class HeroGame {
         
         this.battleActive = false;
         this.currentMonster = null;
-        this.selectedMovement = null;
         
         setTimeout(() => {
             this.renderHeroScreen();
         }, 3000);
-    }
-
-    // Проверка дропа особых предметов
-    checkSpecialDrops() {
-        if (!this.currentLocation) return;
-        
-        if (Math.random() < this.currentLocation.artifactChance) {
-            this.dropArtifact();
-        }
-        
-        if (Math.random() < this.currentLocation.relicChance) {
-            this.dropRelic();
-        }
-    }
-
-    // Дроп артефакта
-    dropArtifact() {
-        this.addToLog(`✨ Найден редкий артефакт!`);
-    }
-
-    // Дроп реликвии
-    dropRelic() {
-        this.addToLog(`🌟 Найдена легендарная реликвия!`);
-    }
-
-    // Побег из боя
-    attemptEscapeFromBattle() {
-        const stats = this.calculateHeroStats(this.currentHero);
-        const escapeRoll = this.rollDice(stats.skills.escape, 10);
-        
-        if (escapeRoll.success) {
-            this.addBattleLog({
-                message: `🏃 Успешный побег из боя!`,
-                type: 'escape'
-            });
-            this.battleActive = false;
-            this.completeEncounter();
-        } else {
-            this.addBattleLog({
-                message: `❌ Не удалось сбежать! Монстр атакует`,
-                type: 'escape-failed'
-            });
-            const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-            this.currentHero.currentHealth -= monsterDamage;
-            
-            if (this.currentHero.currentHealth <= 0) {
-                this.endBattle(false);
-            } else {
-                this.saveGame();
-                this.renderBattleScreen();
-            }
-        }
-    }
-
-    // ========== КОНЕЦ СИСТЕМЫ БОЯ ==========
-
-    // Попытка скрыться
-    attemptStealth() {
-        const stats = this.calculateHeroStats(this.currentHero);
-        const stealthRoll = this.rollDice(stats.skills.stealth, 8);
-        
-        if (stealthRoll.success) {
-            this.addToLog(`✅ Успешно скрылись от ${this.currentMonster.name}!`);
-        } else {
-            this.addToLog(`❌ Не удалось скрыться! Монстр вас заметил`);
-        }
-        
-        this.completeEncounter();
-    }
-
-    // Попытка побега
-    attemptEscape() {
-        const stats = this.calculateHeroStats(this.currentHero);
-        const escapeRoll = this.rollDice(stats.skills.escape, 10);
-        
-        if (escapeRoll.success) {
-            this.addToLog(`✅ Успешно сбежали от ${this.currentMonster.name}!`);
-        } else {
-            this.addToLog(`❌ Не удалось сбежать! Придётся сражаться`);
-            this.startBattle();
-            return;
-        }
-        
-        this.completeEncounter();
-    }
-
-    // Бросок кубиков
-    rollDice(bonusDice, targetNumber) {
-        let total = 0;
-        let rolls = [];
-        
-        const baseRoll = Math.floor(Math.random() * 6) + 1;
-        rolls.push(baseRoll);
-        total += baseRoll;
-        
-        for (let i = 0; i < bonusDice; i++) {
-            const bonusRoll = Math.floor(Math.random() * 6) + 1;
-            rolls.push(bonusRoll);
-            total += bonusRoll;
-        }
-        
-        const success = total >= targetNumber;
-        
-        this.addToLog(`🎲 Бросок: [${rolls.join(', ')}] = ${total} (нужно ${targetNumber}+) - ${success ? 'УСПЕХ' : 'НЕУДАЧА'}`);
-        
-        return { success, total, rolls };
-    }
-
-    // Завершение встречи
-    completeEncounter() {
-        this.currentMonster = null;
-        this.selectedMovement = null;
-        
-        const container = document.getElementById('app');
-        const monsterActions = container.querySelector('.monster-actions');
-        if (monsterActions) {
-            monsterActions.remove();
-        }
-        
-        this.addToLog(`🏁 Встреча завершена`);
-        this.saveGame();
-        setTimeout(() => {
-            this.renderHeroScreen();
-        }, 2000);
-    }
-
-    // Показать награду
-    showReward(amount) {
-        this.showReward = true;
-        this.lastReward = amount;
-        this.renderHeroScreen();
-    }
-
-    // Скрыть награду
-    hideReward() {
-        this.showReward = false;
-        this.lastReward = 0;
-        
-        const container = document.getElementById('app');
-        const monsterActions = container.querySelector('.monster-actions');
-        if (monsterActions) {
-            monsterActions.remove();
-        }
-        
-        this.renderHeroScreen();
     }
 
     // Показать магазин
@@ -1481,19 +1093,12 @@ class HeroGame {
                         ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
                         ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
                         ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
-                        ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
                     </div>
                     <div class="item-price">
-                        <span>💰 Купить: ${item.price}</span>
-                        <span>💸 Продать: ${item.sellPrice}</span>
+                        <span>💰 Цена: ${item.price}</span>
                     </div>
-                    <small>${item.description}</small>
                     <div class="merchant-actions">
                         <button class="btn-primary" onclick="game.buyItem(${item.id})">Купить</button>
-                        ${this.currentHero.inventory.includes(item.id) ? 
-                            `<button class="btn-secondary" onclick="game.sellItem(${item.id})">Продать</button>` : 
-                            ''
-                        }
                     </div>
                 </div>
             </div>
@@ -1506,7 +1111,6 @@ class HeroGame {
                 <div class="hero-info" style="margin-bottom: 15px;">
                     <div style="display: flex; justify-content: space-between;">
                         <span>💰 Ваше золото: ${this.currentHero?.gold || 0}</span>
-                        <span>🎒 Свободно мест: ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
                     </div>
                 </div>
                 <div class="merchant-list">
@@ -1536,40 +1140,10 @@ class HeroGame {
             return;
         }
 
-        if (this.currentHero.inventory.includes(itemId)) {
-            this.addToLog(`❌ У вас уже есть ${item.name}`);
-            return;
-        }
-
         this.currentHero.gold -= item.price;
         this.currentHero.inventory.push(itemId);
         
         this.addToLog(`🛒 Куплено: ${item.name} за ${item.price} золота`);
-        this.saveGame();
-        this.showMerchant();
-    }
-
-    // Продать предмет
-    sellItem(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-
-        if (!this.currentHero.inventory.includes(itemId)) {
-            this.addToLog(`❌ Предмет ${item.name} не найден в инвентаре`);
-            return;
-        }
-
-        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
-        this.currentHero.gold += item.sellPrice;
-        
-        if (this.currentHero.equipment.main_hand === itemId) {
-            this.currentHero.equipment.main_hand = null;
-        }
-        if (this.currentHero.equipment.chest === itemId) {
-            this.currentHero.equipment.chest = null;
-        }
-
-        this.addToLog(`💰 Продано: ${item.name} за ${item.sellPrice} золота`);
         this.saveGame();
         this.showMerchant();
     }
@@ -1587,10 +1161,9 @@ class HeroGame {
             return `
                 <div class="inventory-item" onclick="game.equipItem(${itemId})">
                     <div class="inventory-item-image">
-                        <img src="${item.image}" alt="${item.name}">
+                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
                     </div>
                     <strong>${item.name}</strong>
-                    <div>${this.formatBonus(item.bonus)}</div>
                     <div>Урон: +${item.fixed_damage || 0} | Броня: +${item.fixed_armor || 0}</div>
                     ${isEquipped ? '<small>✓ Надето</small>' : '<small>📦 В инвентаре</small>'}
                 </div>
@@ -1643,7 +1216,10 @@ class HeroGame {
         if (item.type !== 'potion') return;
 
         if (item.heal) {
-            this.currentHero.baseHealth += item.heal;
+            this.currentHero.currentHealth = Math.min(
+                this.currentHero.baseHealth,
+                this.currentHero.currentHealth + item.heal
+            );
             this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
         }
 
@@ -1705,29 +1281,6 @@ class HeroGame {
         }
     }
 
-    // Форматирование бонуса
-    formatBonus(bonus) {
-        if (!bonus || bonus.type === 'none') return 'Нет бонуса';
-        
-        const bonusNames = {
-            'health_mult': '+% к здоровью',
-            'damage_mult': '+% к урону', 
-            'armor_mult': '+% к броне',
-            'gold_mult': '+% к золоту',
-            'escape_bonus': 'Побег +',
-            'stealth_bonus': 'Скрытность +',
-            'luck_bonus': 'Удача +',
-            'survival_bonus': 'Выживание +'
-        };
-
-        const value = bonus.type.includes('_mult') ? 
-            Math.round(bonus.value * 100) : bonus.value;
-            
-        return bonusNames[bonus.type] ? 
-            `${bonusNames[bonus.type]}${value}${bonus.type.includes('_mult') ? '%' : ''}` : 
-            `Бонус: ${value}`;
-    }
-
     // Сохранение игры
     saveGame() {
         if (this.currentHero) {
@@ -1737,7 +1290,7 @@ class HeroGame {
                 currentMap: this.currentMap,
                 currentLocation: this.currentLocation,
                 lastHealthUpdate: this.lastHealthUpdate,
-                globalInventory: this.globalInventory
+                monsterKills: this.monsterKills
             }));
         }
     }
@@ -1776,10 +1329,10 @@ class HeroGame {
                     return freshHero;
                 });
                 
-                this.currentMap = data.currentMap || null;
-                this.currentLocation = data.currentLocation || null;
+                this.currentMap = data.currentMap || this.maps.find(m => m.unlocked);
+                this.currentLocation = data.currentLocation || this.locations.find(l => l.unlocked);
                 this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
-                this.globalInventory = data.globalInventory || [];
+                this.monsterKills = data.monsterKills || {};
                 
                 if (currentHeroId) {
                     this.currentHero = this.heroes.find(h => h.id === currentHeroId);
