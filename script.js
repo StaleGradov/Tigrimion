@@ -1849,3 +1849,31 @@ console.log('- DOM elements:', {
     app: document.getElementById('app'),
     body: document.body
 });
+// ========== ЗАПУСК ИГРЫ ==========
+console.log('🚀 Script.js загружен!');
+
+// Отладочная информация
+console.log('🔍 Проверка окружения:');
+console.log('- document.readyState:', document.readyState);
+console.log('- window.game:', window.game);
+console.log('- HeroGame class defined:', typeof HeroGame);
+console.log('- DOM elements:', {
+    app: document.getElementById('app'),
+    body: document.body
+});
+
+// Создание экземпляра игры
+let game;
+
+// Запускаем игру когда DOM готов
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ DOM загружен');
+        game = new HeroGame();
+        window.game = game; // Делаем глобально доступным
+    });
+} else {
+    console.log('✅ DOM уже готов');
+    game = new HeroGame();
+    window.game = game; // Делаем глобально доступным
+}
