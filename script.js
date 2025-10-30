@@ -163,26 +163,28 @@ async init() {
         this.checkHeroUnlocks();
     }
 
-    checkHeroUnlocks() {
-        const heroUnlockLevels = {
-            2: 10,
-            3: 15,
-            4: 20,
-            5: 25,
-            6: 30,
-            7: 35,
-            8: 40
-        };
-        
-        Object.entries(heroUnlockLevels).forEach(([heroId, requiredLevel]) => {
-            const hero = this.heroes.find(h => h.id === parseInt(heroId));
-            if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
-                hero.unlocked = true;
-                this.addToLog(`🔓 Разблокирован новый герой: ${hero.name}!`);
-            }
-        });
-    }
-
+checkHeroUnlocks() {
+    // Если нет текущего героя, выходим
+    if (!this.currentHero) return;
+    
+    const heroUnlockLevels = {
+        2: 10,
+        3: 15,
+        4: 20,
+        5: 25,
+        6: 30,
+        7: 35,
+        8: 40
+    };
+    
+    Object.entries(heroUnlockLevels).forEach(([heroId, requiredLevel]) => {
+        const hero = this.heroes.find(h => h.id === parseInt(heroId));
+        if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
+            hero.unlocked = true;
+            this.addToLog(`🔓 Разблокирован новый герой: ${hero.name}!`);
+        }
+    });
+}
     // Данные по умолчанию
     getDefaultHeroes() {
         return [
