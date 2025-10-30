@@ -58,21 +58,22 @@ class HeroGame {
                 this.loadJSON('data/locations.json')
             ]);
 
-            this.heroes = heroes || this.getDefaultHeroes();
-            this.monsters = enemies || this.getDefaultEnemies();
-            this.items = items || this.getDefaultItems();
-            this.maps = mapsData || this.getDefaultMaps();
-            this.locations = locationsData || this.getDefaultLocations();
+            // Просто присваиваем данные из JSON
+            this.heroes = heroes || [];
+            this.monsters = enemies || [];
+            this.items = items || [];
+            this.maps = mapsData || [];
+            this.locations = locationsData || [];
 
-            console.log('✅ Все данные загружены');
+            console.log('✅ Все данные загружены из JSON файлов');
 
         } catch (error) {
             console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.heroes = this.getDefaultHeroes();
-            this.monsters = this.getDefaultEnemies();
-            this.items = this.getDefaultItems();
-            this.maps = this.getDefaultMaps();
-            this.locations = this.getDefaultLocations();
+            this.heroes = [];
+            this.monsters = [];
+            this.items = [];
+            this.maps = [];
+            this.locations = [];
         }
     }
 
@@ -188,173 +189,159 @@ class HeroGame {
         this.saveGame();
     }
 
-    // Данные по умолчанию
-    getDefaultHeroes() {
-        return [
-            {
-                id: 1,
-                name: "Начальный герой",
-                image: "images/heroes/hero1.jpg",
-                race: "human",
-                class: "warrior",
-                saga: "golden_egg",
-                baseHealth: 100,
-                baseDamage: 20,
-                baseArmor: 10,
-                gold: 500,
-                level: 1,
-                experience: 0,
-                healthRegen: 100/60,
-                inventory: [],
-                equipment: {
-                    main_hand: null,
-                    chest: null
-                },
-                unlocked: true,
-                story: "Простой воин из далекой деревни...",
-                videoUrl: "https://youtube.com/embed/..."
-            },
-            {
-                id: 2,
-                name: "Опытный искатель",
-                image: "images/heroes/hero2.jpg",
-                race: "elf",
-                class: "archer",
-                saga: "vulkanor",
-                baseHealth: 120,
-                baseDamage: 25,
-                baseArmor: 8,
-                gold: 0,
-                level: 1,
-                experience: 0,
-                healthRegen: 100/45,
-                inventory: [],
-                equipment: {
-                    main_hand: null,
-                    chest: null
-                },
-                unlocked: false,
-                story: "Эльфийский следопыт с острым взглядом...",
-                videoUrl: "https://youtube.com/embed/..."
-            }
-        ];
-    }
-
-    getDefaultEnemies() {
-        return [
-            {
-                id: 1,
-                name: "Слабый гоблин",
-                health: 30,
-                maxHealth: 30,
-                attack: 5,
-                defense: 2,
-                speed: 3,
-                experience: 10,
-                reward: 15,
-                image: "images/monsters/goblin.jpg",
-                description: "Мелкий и противный"
-            },
-            {
-                id: 2, 
-                name: "Волк",
-                health: 25,
-                maxHealth: 25,
-                attack: 8,
-                defense: 1,
-                speed: 6,
-                experience: 12,
-                reward: 18,
-                image: "images/monsters/wolf.jpg",
-                description: "Быстрый и опасный"
-            }
-        ];
-    }
-
-    getDefaultItems() {
-        return [
-            {
-                id: 1,
-                name: "Малое зелье здоровья",
-                type: "potion",
-                value: 20,
-                price: 25,
-                heal: 20,
-                image: "images/items/potion.jpg"
-            },
-            {
-                id: 2,
-                name: "Простой меч",
-                type: "weapon",
-                slot: "main_hand",
-                fixed_damage: 5,
-                price: 100,
-                sellPrice: 50,
-                image: "images/items/sword.jpg"
-            }
-        ];
-    }
-
-    getDefaultMaps() {
-        return [
-            { 
-                id: 1, 
-                name: "Арканиум", 
-                image: "images/maps/arcanium.jpg", 
-                description: "Земля древней магии", 
-                multiplier: 1.0, 
-                unlocked: true 
-            },
-            { 
-                id: 2, 
-                name: "Хобблтон", 
-                image: "images/maps/hobbleton.jpg", 
-                description: "Мирный сельский край", 
-                multiplier: 1.5, 
-                unlocked: false 
-            }
-        ];
-    }
-
-    getDefaultLocations() {
-        return [
-            { 
-                level: 10, 
-                name: "Начальные земли", 
-                description: "Мягкий климат, слабые монстры", 
-                image: "images/locations/level10.jpg",
-                monsterRange: [1, 2], // Только 2 монстра для теста
-                artifactChance: 0.005, 
-                relicChance: 0.0005,
-                unlocked: true
-            },
-            { 
-                level: 9, 
-                name: "Глубокий лес", 
-                description: "Густые заросли", 
-                image: "images/locations/level9.jpg",
-                monsterRange: [1, 3], 
-                artifactChance: 0.01, 
-                relicChance: 0.001,
-                unlocked: false
-            }
-        ];
-    }
-
     // Бонусы рас, профессий и саг
     getBonuses() {
         return {
             races: {
-                human: { bonus: {type: "gold_mult", value: 0.3}, name: "Человек", description: "Предприимчивый и богатый" },
-                elf: { bonus: {type: "escape_bonus", value: 1}, name: "Эльф", description: "Проворный и неуловимый" }
+                elf: { 
+                    bonus: {type: "escape_bonus", value: 1}, 
+                    name: "Эльф", 
+                    description: "Проворный и неуловимый" 
+                },
+                dwarf: { 
+                    bonus: {type: "health_mult", value: 0.3}, 
+                    name: "Гном", 
+                    description: "Выносливый и крепкий" 
+                },
+                halfling: { 
+                    bonus: {type: "stealth_bonus", value: 1}, 
+                    name: "Полурослик", 
+                    description: "Маленький и незаметный" 
+                },
+                fairy: { 
+                    bonus: {type: "luck_bonus", value: 1}, 
+                    name: "Фея", 
+                    description: "Везение и магия" 
+                },
+                laitar: { 
+                    bonus: {type: "survival_bonus", value: 1}, 
+                    name: "Лайтар", 
+                    description: "Мастер выживания" 
+                },
+                ork: { 
+                    bonus: {type: "damage_mult", value: 0.2}, 
+                    name: "Орк", 
+                    description: "Сильный и свирепый" 
+                },
+                human: { 
+                    bonus: {type: "gold_mult", value: 0.3}, 
+                    name: "Человек", 
+                    description: "Предприимчивый и богатый" 
+                },
+                dragon: { 
+                    bonus: {type: "armor_mult", value: 0.15}, 
+                    name: "Дракон", 
+                    description: "Могучий и защищённый" 
+                }
             },
             classes: {
-                warrior: { bonus: {type: "damage_mult", value: 0.2}, name: "Воин", description: "Сильный и отважный" },
-                archer: { bonus: {type: "damage_mult", value: 0.2}, name: "Лучник", description: "Мастер дальнего боя" }
+                archer: { 
+                    bonus: {type: "damage_mult", value: 0.2}, 
+                    name: "Лучник", 
+                    description: "Мастер дальнего боя" 
+                },
+                warrior: { 
+                    bonus: {type: "damage_mult", value: 0.2}, 
+                    name: "Воин", 
+                    description: "Сильный и отважный" 
+                },
+                thief: { 
+                    bonus: {type: "stealth_bonus", value: 1}, 
+                    name: "Вор", 
+                    description: "Тихий и незаметный" 
+                },
+                merchant: { 
+                    bonus: {type: "gold_mult", value: 0.3}, 
+                    name: "Торговец", 
+                    description: "Искусный торговец" 
+                },
+                fighter: { 
+                    bonus: {type: "luck_bonus", value: 1}, 
+                    name: "Кулачный боец", 
+                    description: "Удачливый боец" 
+                },
+                healer: { 
+                    bonus: {type: "health_mult", value: 0.3}, 
+                    name: "Знахарь", 
+                    description: "Мастер исцеления" 
+                },
+                sorcerer: { 
+                    bonus: {type: "escape_bonus", value: 1}, 
+                    name: "Колдун", 
+                    description: "Магическая защита" 
+                },
+                death_mage: { 
+                    bonus: {type: "stealth_bonus", value: 1}, 
+                    name: "Волхв смерти", 
+                    description: "Тёмные искусства" 
+                },
+                hunter: { 
+                    bonus: {type: "survival_bonus", value: 1}, 
+                    name: "Охотник", 
+                    description: "Следопыт и выживальщик" 
+                },
+                bounty_hunter: { 
+                    bonus: {type: "damage_mult", value: 0.1}, 
+                    name: "Охотник за головами", 
+                    description: "Специалист по преследованию" 
+                },
+                gladiator: { 
+                    bonus: {type: "damage_mult", value: 0.2}, 
+                    name: "Гладиатор", 
+                    description: "Мастер любого оружия" 
+                },
+                blacksmith: { 
+                    bonus: {type: "armor_mult", value: 0.15}, 
+                    name: "Кузнец", 
+                    description: "Мастер брони" 
+                },
+                antiquarian: { 
+                    bonus: {type: "gold_mult", value: 0.3}, 
+                    name: "Искатель древностей", 
+                    description: "Знаток сокровищ" 
+                }
             },
             sagas: {
-                golden_egg: { bonus: {type: "health_mult", value: 0.3}, name: "Золотое Яйцо", description: "Обладатель древнего артефакта" },
-                vulkanor: { bonus: {type: "damage_mult", value: 0.2}, name: "Вулканор", description: "Прошедший огненные испытания" }
+                golden_egg: { 
+                    bonus: {type: "health_mult", value: 0.3}, 
+                    name: "Золотое Яйцо", 
+                    description: "Обладатель древнего артефакта" 
+                },
+                vulkanor: { 
+                    bonus: {type: "damage_mult", value: 0.2}, 
+                    name: "Вулканор", 
+                    description: "Прошедший огненные испытания" 
+                },
+                well: { 
+                    bonus: {type: "gold_mult", value: 0.3}, 
+                    name: "Колодец", 
+                    description: "Нашедший источник богатства" 
+                },
+                pets: { 
+                    bonus: {type: "luck_bonus", value: 1}, 
+                    name: "Питомцы", 
+                    description: "Верные спутники приносят удачу" 
+                },
+                following_sun: { 
+                    bonus: {type: "survival_bonus", value: 1}, 
+                    name: "Вслед за солнцем", 
+                    description: "Прошедший через пустыни" 
+                },
+                vampire_crown: { 
+                    bonus: {type: "stealth_bonus", value: 1}, 
+                    name: "Корона короля вампиров", 
+                    description: "Носитель тёмной короны" 
+                },
+                tiger_eye: { 
+                    bonus: {type: "armor_mult", value: 0.15}, 
+                    name: "Желтый Глаз тигра", 
+                    description: "Обладатель мистической защиты" 
+                },
+                sky_phenomena: { 
+                    bonus: {type: "escape_bonus", value: 1}, 
+                    name: "Небесные явления", 
+                    description: "Свидетель небесных чудес" 
+                }
             }
         };
     }
@@ -410,6 +397,27 @@ class HeroGame {
 
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
 
+        // Навыки
+        const skills = {
+            escape: 0,
+            stealth: 0,
+            luck: 0,
+            survival: 0,
+            wealth: 0
+        };
+
+        allBonuses.forEach(bonus => {
+            if (bonus.type.includes('_bonus')) {
+                const skill = bonus.type.replace('_bonus', '');
+                if (skills.hasOwnProperty(skill)) {
+                    skills[skill] += bonus.value;
+                }
+            }
+            else if (bonus.type === 'gold_mult') {
+                skills.wealth += bonus.value;
+            }
+        });
+
         const currentHealth = this.getCurrentHealth();
 
         return {
@@ -419,6 +427,7 @@ class HeroGame {
             damage: Math.round(damage),
             armor: Math.round(armor),
             power: power,
+            skills: skills,
             bonuses: {
                 race: raceBonus,
                 class: classBonus,
@@ -462,6 +471,21 @@ class HeroGame {
                     ${this.heroes.map(hero => {
                         const stats = this.calculateHeroStats(hero);
                         const bonuses = this.getBonuses();
+                        
+                        const activeSkills = [];
+                        
+                        if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
+                        if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
+                        if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
+                        if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
+                        if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
+                        
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
+                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
+                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
+                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
 
                         return `
                             <div class="hero-option ${hero.unlocked ? '' : 'locked'}" 
@@ -487,8 +511,15 @@ class HeroGame {
                                             <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
                                         </div>
                                     </div>
+                                    ${activeSkills.length > 0 ? `
+                                        <div class="hero-option-skills">
+                                            ${activeSkills.map(skill => `
+                                                <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
                                     <div class="hero-option-bonuses">
-                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name}</small>
+                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
                                     </div>
                                     ${!hero.unlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
                                 </div>
@@ -618,6 +649,23 @@ class HeroGame {
                             <strong>🛡️ Броня</strong>
                             <div>${armor ? armor.name : 'Пусто'}</div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Бонусы -->
+                <div class="bonuses-section">
+                    <h3>🎯 Бонусы:</h3>
+                    <div class="bonus-item">
+                        <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
+                        (${this.formatBonus(stats.bonuses.race)})
+                    </div>
+                    <div class="bonus-item">
+                        <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
+                        (${this.formatBonus(stats.bonuses.class)})
+                    </div>
+                    <div class="bonus-item">
+                        <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
+                        (${this.formatBonus(stats.bonuses.saga)})
                     </div>
                 </div>
 
@@ -1279,6 +1327,29 @@ class HeroGame {
             log.appendChild(entry);
             log.scrollTop = log.scrollHeight;
         }
+    }
+
+    // Форматирование бонуса
+    formatBonus(bonus) {
+        if (!bonus || bonus.type === 'none') return 'Нет бонуса';
+        
+        const bonusNames = {
+            'health_mult': '+% к здоровью',
+            'damage_mult': '+% к урону', 
+            'armor_mult': '+% к броне',
+            'gold_mult': '+% к золоту',
+            'escape_bonus': 'Побег +',
+            'stealth_bonus': 'Скрытность +',
+            'luck_bonus': 'Удача +',
+            'survival_bonus': 'Выживание +'
+        };
+
+        const value = bonus.type.includes('_mult') ? 
+            Math.round(bonus.value * 100) : bonus.value;
+            
+        return bonusNames[bonus.type] ? 
+            `${bonusNames[bonus.type]}${value}${bonus.type.includes('_mult') ? '%' : ''}` : 
+            `Бонус: ${value}`;
     }
 
     // Сохранение игры
