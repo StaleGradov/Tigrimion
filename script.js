@@ -365,99 +365,103 @@ sellItem(itemId) {
         };
     }
 
-    // Расчёт характеристик героя
-    calculateHeroStats(hero) {
-        const bonuses = this.getBonuses();
-        
-        // Получаем бонусы
-        const raceBonus = bonuses.races[hero.race]?.bonus || {type: "none", value: 0};
-        const classBonus = bonuses.classes[hero.class]?.bonus || {type: "none", value: 0};
-        const sagaBonus = bonuses.sagas[hero.saga]?.bonus || {type: "none", value: 0};
-        
-        // Бонусы от экипировки
-        let weaponBonus = {type: "none", value: 0};
-        let armorBonus = {type: "none", value: 0};
-        
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            weaponBonus = weapon?.bonus || {type: "none", value: 0};
-        }
-        
-        if (hero.equipment.chest) {
-            const armor = this.items.find(item => item.id === hero.equipment.chest);
-            armorBonus = armor?.bonus || {type: "none", value: 0};
-        }
-
-        // Собираем все бонусы
-        const allBonuses = [raceBonus, classBonus, sagaBonus, weaponBonus, armorBonus];
-
-        // База
-        let health = hero.baseHealth;
-        let damage = hero.baseDamage;
-        let armor = hero.baseArmor;
-
-        // Добавляем фиксированные значения от экипировки
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            damage += weapon?.fixed_damage || 0;
-        }
-        
-        if (hero.equipment.chest) {
-            const armorItem = this.items.find(item => item.id === hero.equipment.chest);
-            armor += armorItem?.fixed_armor || 0;
-        }
-
-        // Применяем множители
-        allBonuses.forEach(bonus => {
-            switch(bonus.type) {
-                case 'health_mult':
-                    health *= (1 + bonus.value);
-                    break;
-                case 'damage_mult':
-                    damage *= (1 + bonus.value);
-                    break;
-                case 'armor_mult':
-                    armor *= (1 + bonus.value);
-                    break;
-            }
-        });
-
-        // Рассчитываем мочь
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-
-        // Собираем навыки
-        const skills = {
-            escape: 0,
-            stealth: 0,
-            luck: 0,
-            survival: 0,
-            wealth: 0
-        };
-
-        allBonuses.forEach(bonus => {
-            if (bonus.type.includes('_bonus')) {
-                const skill = bonus.type.replace('_bonus', '');
-                if (skills.hasOwnProperty(skill)) {
-                    skills[skill] += bonus.value;
-                }
-            }
-        });
-
-        return {
-            health: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
-            power: power,
-            skills: skills,
-            bonuses: {
-                race: raceBonus,
-                class: classBonus,
-                saga: sagaBonus,
-                weapon: weaponBonus,
-                armor: armorBonus
-            }
-        };
+   // Расчёт характеристик героя
+calculateHeroStats(hero) {
+    const bonuses = this.getBonuses();
+    
+    // Получаем бонусы
+    const raceBonus = bonuses.races[hero.race]?.bonus || {type: "none", value: 0};
+    const classBonus = bonuses.classes[hero.class]?.bonus || {type: "none", value: 0};
+    const sagaBonus = bonuses.sagas[hero.saga]?.bonus || {type: "none", value: 0};
+    
+    // Бонусы от экипировки
+    let weaponBonus = {type: "none", value: 0};
+    let armorBonus = {type: "none", value: 0};
+    
+    if (hero.equipment.main_hand) {
+        const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
+        weaponBonus = weapon?.bonus || {type: "none", value: 0};
     }
+    
+    if (hero.equipment.chest) {
+        const armor = this.items.find(item => item.id === hero.equipment.chest);
+        armorBonus = armor?.bonus || {type: "none", value: 0};
+    }
+
+    // Собираем все бонусы
+    const allBonuses = [raceBonus, classBonus, sagaBonus, weaponBonus, armorBonus];
+
+    // База
+    let health = hero.baseHealth;
+    let damage = hero.baseDamage;
+    let armor = hero.baseArmor;
+
+    // Добавляем фиксированные значения от экипировки
+    if (hero.equipment.main_hand) {
+        const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
+        damage += weapon?.fixed_damage || 0;
+    }
+    
+    if (hero.equipment.chest) {
+        const armorItem = this.items.find(item => item.id === hero.equipment.chest);
+        armor += armorItem?.fixed_armor || 0;
+    }
+
+    // Применяем множители
+    allBonuses.forEach(bonus => {
+        switch(bonus.type) {
+            case 'health_mult':
+                health *= (1 + bonus.value);
+                break;
+            case 'damage_mult':
+                damage *= (1 + bonus.value);
+                break;
+            case 'armor_mult':
+                armor *= (1 + bonus.value);
+                break;
+        }
+    });
+
+    // Рассчитываем мочь
+    const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+
+    // Собираем навыки - ИСПРАВЛЕННАЯ ЛОГИКА
+    const skills = {
+        escape: 0,
+        stealth: 0,
+        luck: 0,
+        survival: 0,
+        wealth: 0  // Добавляем навык богатства
+    };
+
+    allBonuses.forEach(bonus => {
+        if (bonus.type.includes('_bonus')) {
+            const skill = bonus.type.replace('_bonus', '');
+            if (skills.hasOwnProperty(skill)) {
+                skills[skill] += bonus.value;
+            }
+        }
+        // ДОБАВЛЯЕМ: бонусы gold_mult тоже добавляются в навык wealth
+        else if (bonus.type === 'gold_mult') {
+            skills.wealth += bonus.value;
+        }
+    });
+
+    return {
+        health: Math.round(health),
+        damage: Math.round(damage),
+        armor: Math.round(armor),
+        power: power,
+        skills: skills,
+        bonuses: {
+            race: raceBonus,
+            class: classBonus,
+            saga: sagaBonus,
+            weapon: weaponBonus,
+            armor: armorBonus
+        }
+    };
+}
 
 // Рендер выбора героя
 renderHeroSelect() {
