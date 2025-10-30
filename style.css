@@ -32,7 +32,7 @@ body {
     text-align: center;
 }
 
-/* Список героев с эффектом выезжающей информации */
+/* Список героев */
 .hero-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -370,15 +370,15 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Сетка локаций */
-.locations-grid {
+/* Сетка карт и локаций */
+.maps-grid, .locations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
     padding: 15px;
 }
 
-.location-option {
+.map-option, .location-option {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     padding: 15px;
@@ -388,22 +388,22 @@ body {
     text-align: center;
 }
 
-.location-option:hover {
+.map-option:hover, .location-option:hover {
     border-color: #4cc9f0;
     transform: translateY(-2px);
 }
 
-.location-option.locked {
+.map-option.locked {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.location-option.locked:hover {
+.map-option.locked:hover {
     border-color: transparent;
     transform: none;
 }
 
-.location-option-image {
+.map-option-image, .location-option-image {
     width: 100%;
     height: 120px;
     border-radius: 8px;
@@ -412,13 +412,13 @@ body {
     position: relative;
 }
 
-.location-option-image img {
+.map-option-image img, .location-option-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.location-option-info {
+.map-option-info, .location-option-info {
     font-size: 0.9em;
 }
 
@@ -895,6 +895,17 @@ body {
     transform: translateY(-2px);
 }
 
+.btn-battle-escape {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-battle-escape:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
 /* Адаптивность */
 @media (max-width: 768px) {
     .hero-layout {
@@ -902,7 +913,7 @@ body {
         gap: 15px;
     }
     
-    .hero-list, .locations-grid {
+    .hero-list, .maps-grid, .locations-grid {
         grid-template-columns: 1fr;
     }
     
