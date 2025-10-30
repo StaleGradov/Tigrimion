@@ -346,7 +346,7 @@
     "name": "Люминея",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lyminea.jpg",
     "race": "fairy",
-    "class": "soucerer",
+    "class": "sorcerer",
     "saga": "vampire_crown",
     "baseHealth": 70,
     "baseDamage": 32,
