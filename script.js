@@ -1,36 +1,54 @@
-// ======== ЗАЩИТА ОТ КРИПТО-РАСШИРЕНИЙ ========
+// ======== АГРЕССИВНАЯ ЗАЩИТА ОТ КРИПТО-РАСШИРЕНИЙ ========
 (function() {
     'use strict';
     
-    // Блокируем крипто-объекты
-    const blockProperties = ['ethereum', 'web3', 'ton', 'solana', 'coinbase', 'pelagus'];
+    // Блокируем ВСЕ возможные крипто-объекты
+    const cryptoProps = [
+        'ethereum', 'web3', 'ton', 'solana', 'coinbase', 'pelagus',
+        'binance', 'trust', 'phantom', 'tron', 'polkadot', 'avalanche',
+        'cardano', 'algorand', 'cosmos', 'terra', 'flow', 'hedera',
+        'tezos', 'elrond', 'near', 'mina', 'celo', 'oasis', 'skale'
+    ];
     
-    blockProperties.forEach(prop => {
+    cryptoProps.forEach(prop => {
         try {
             Object.defineProperty(window, prop, {
                 get: () => undefined,
                 set: () => {},
-                configurable: false
+                configurable: false,
+                enumerable: false
             });
         } catch (e) {
-            console.log('🔒 Заблокирован:', prop);
+            // Игнорируем ошибки
         }
     });
     
-    // Блокируем postMessage от расширений
+    // Блокируем Content Scripts расширений
+    const originalAppendChild = Element.prototype.appendChild;
+    Element.prototype.appendChild = function(element) {
+        if (element.tagName === 'SCRIPT' && element.src && 
+            (element.src.includes('extension') || element.src.includes('inpage.js'))) {
+            console.log('🔒 Блокирован скрипт расширения:', element.src);
+            return element;
+        }
+        return originalAppendChild.call(this, element);
+    };
+    
+    // Блокируем postMessage полностью для расширений
     const originalPostMessage = window.postMessage;
     window.postMessage = function(message, targetOrigin, transfer) {
-        if (message && typeof message === 'object' && 
-            (message.type?.includes('extension') || message.method?.includes('wallet') || message.jsonrpc)) {
-            console.log('🔒 Блокирован message от расширения');
+        const msgStr = JSON.stringify(message).toLowerCase();
+        const blockedKeywords = ['extension', 'wallet', 'crypto', 'blockchain', 'jsonrpc', 'metamask'];
+        
+        if (blockedKeywords.some(keyword => msgStr.includes(keyword))) {
+            console.log('🔒 Блокирован крипто-message');
             return;
         }
         return originalPostMessage.apply(this, arguments);
     };
     
-    console.log('🛡️ Защита от крипто-расширений активирована');
+    console.log('🛡️ Усиленная защита активирована');
 })();
-
 
 // Основной класс игры
 class HeroGame {
