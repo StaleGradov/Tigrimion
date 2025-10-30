@@ -359,5 +359,24 @@
       "main_hand": null,
       "chest": null
     }
+  },
+            {
+    "id": 19,
+    "name": "Рагнар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ragnar.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 180,
+    "baseDamage": 10,
+    "baseArmor": 7,
+    "gold": 4,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
   }
 ]
