@@ -1,0 +1,74 @@
+[
+  { 
+    "id": 1, 
+    "name": "Арканиум", 
+    "image": "images/maps/arcanium.jpg", 
+    "description": "Земля древней магии", 
+    "multiplier": 1.0, 
+    "unlocked": true 
+  },
+  { 
+    "id": 2, 
+    "name": "Эльфарион", 
+    "image": "images/maps/elfarion.jpg", 
+    "description": "Древнее королевство эльфов", 
+    "multiplier": 1.5, 
+    "unlocked": false 
+  },
+  { 
+    "id": 3, 
+    "name": "Хобблтон", 
+    "image": "images/maps/hobbleton.jpg", 
+    "description": "Мирный сельский край", 
+    "multiplier": 2.0, 
+    "unlocked": false 
+  },
+  { 
+    "id": 4, 
+    "name": "Фелисар", 
+    "image": "images/maps/felisar.jpg", 
+    "description": "Лесные тропики", 
+    "multiplier": 2.5, 
+    "unlocked": false 
+  },
+  { 
+    "id": 5, 
+    "name": "Илверин", 
+    "image": "images/maps/ilverin.jpg", 
+    "description": "Зачарованный лес", 
+    "multiplier": 3.0, 
+    "unlocked": false 
+  },
+  { 
+    "id": 6, 
+    "name": "Варгош", 
+    "image": "images/maps/vargosh.jpg", 
+    "description": "Вулканические земли", 
+    "multiplier": 3.5, 
+    "unlocked": false 
+  },
+  { 
+    "id": 7, 
+    "name": "Дунгарн", 
+    "image": "images/maps/dungarn.jpg", 
+    "description": "Подземные пещеры", 
+    "multiplier": 4.0, 
+    "unlocked": false 
+  },
+  { 
+    "id": 8, 
+    "name": "Люминэль", 
+    "image": "images/maps/luminel.jpg", 
+    "description": "Сверкающие равнины", 
+    "multiplier": 4.5, 
+    "unlocked": false 
+  },
+  { 
+    "id": 9, 
+    "name": "Астрарион", 
+    "image": "images/maps/astarion.jpg", 
+    "description": "Небесные просторы", 
+    "multiplier": 5.0, 
+    "unlocked": false 
+  }
+]
