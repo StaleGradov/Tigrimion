@@ -245,5 +245,100 @@
       "main_hand": null,
       "chest": null
     }
-} 
+}, 
+    {
+    "id": 14,
+    "name": "Берти Берри",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Berty.jpg",
+    "race": "halfling",
+    "class": "healer",
+    "saga": "vampire_crowm",
+    "baseHealth": 85,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 2.7,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  },
+        {
+    "id": 15,
+    "name": "Родерик Феттербат",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Roderick.jpg",
+    "race": "halfling",
+    "class": "warrior",
+    "saga": "vampire_crowm",
+    "baseHealth": 125,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 2.2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+},
+        {
+    "id": 16,
+    "name": "Урзак",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Urzak.jpg",
+    "race": "orc",
+    "class": "antiquarian",
+    "saga": "vampire_crowm",
+    "baseHealth": 150,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+},
+        {
+    "id": 17,
+    "name": "Кайден",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kaiden.jpg",
+    "race": "human",
+    "class": "thief",
+    "saga": "vampire_crowm",
+    "baseHealth": 105,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 8.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+},
+        {
+    "id": 18,
+    "name": "Зугар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Zugar.jpg",
+    "race": "orc",
+    "class": "hunter",
+    "saga": "vampire_crowm",
+    "baseHealth": 170,
+    "baseDamage": 22,
+    "baseArmor": 8,
+    "gold": 2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
+  }
 ]
