@@ -340,5 +340,24 @@
       "main_hand": null,
       "chest": null
     }
+  },
+          {
+    "id": 19,
+    "name": "Люминея",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lyminea.jpg",
+    "race": "fairy",
+    "class": "soucerer",
+    "saga": "vampire_crown",
+    "baseHealth": 70,
+    "baseDamage": 32,
+    "baseArmor": 11,
+    "gold": 1,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    }
   }
 ]
