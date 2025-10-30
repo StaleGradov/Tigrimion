@@ -1840,9 +1840,3 @@ showScreen(screenName) {
         }
     }
 }
-
-// Создание экземпляра игры
-let game;
-document.addEventListener('DOMContentLoaded', () => {
-    game = new HeroGame();
-});
