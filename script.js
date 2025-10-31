@@ -22,8 +22,24 @@ class HeroGame {
         this.lastHealthUpdate = Date.now();
         this.healthInterval = null;
         
+        // Результат боя
+        this.battleResult = null;
+        
         // Общий инвентарь
         this.globalInventory = [];
+        
+        // Видео для разных элементов
+        this.videos = {
+            hero: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            map: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            location: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+        };
+        
+        this.showVideo = {
+            hero: false,
+            map: false,
+            location: false
+        };
         
         // Система прогресса локаций
         this.locationProgress = {
@@ -634,9 +650,20 @@ class HeroGame {
                     <!-- Колонка 1: Герой -->
                     <div class="hero-column">
                         <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
-                        <div class="hero-image">
-                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        </div>
+                        
+                        ${this.showVideo.hero ? `
+                            <div class="video-container">
+                                <iframe src="${this.videos.hero}?autoplay=1" 
+                                        allow="autoplay; encrypted-media" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                        ` : `
+                            <div class="hero-image" onclick="game.toggleVideo('hero')">
+                                <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                            </div>
+                        `}
+                        
                         <div class="hero-info">
                             <h2>${this.currentHero.name}</h2>
                             
@@ -649,7 +676,7 @@ class HeroGame {
                                         ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
                                     </div>
                                 </div>
-                                <div class="health-regen">
+                                <div style="font-size: 0.8em; color: rgba(255,255,255,0.7);">
                                     ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
                                 </div>
                             </div>
@@ -744,6 +771,10 @@ class HeroGame {
 
     // Рендер колонки монстра
     renderMonsterColumn() {
+        if (this.battleResult) {
+            return this.renderBattleResult();
+        }
+        
         if (this.currentMonster) {
             const stats = this.calculateHeroStats(this.currentHero);
             const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
@@ -775,7 +806,7 @@ class HeroGame {
                         </div>
                     </div>
                     
-                    <div style="text-align: center; margin: 8px 0;">
+                    <div style="text-align: center; margin: 8px 0; font-size: 0.9em;">
                         <p><strong>Сравнение:</strong> ${powerComparison}</p>
                         <p>💰 Награда: ${this.currentMonster.reward} золота</p>
                     </div>
@@ -801,6 +832,37 @@ class HeroGame {
                     <div style="text-align: center; margin-top: 10px;">
                         <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
                     </div>
+                </div>
+            `;
+        }
+    }
+
+    // Рендер результата боя
+    renderBattleResult() {
+        if (!this.battleResult) return '';
+        
+        const { victory, reward, experience } = this.battleResult;
+        
+        if (victory) {
+            return `
+                <div class="battle-result">
+                    <div class="battle-result-image">🎉</div>
+                    <h4>ПОБЕДА!</h4>
+                    <p>Вы победили ${this.battleResult.monsterName}!</p>
+                    <div class="reward-amount">
+                        +${reward} золота<br>
+                        +${experience} опыта
+                    </div>
+                    <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="battle-result">
+                    <div class="battle-result-image">💀</div>
+                    <h4>ПОРАЖЕНИЕ</h4>
+                    <p>Вы проиграли бой с ${this.battleResult.monsterName}</p>
+                    <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
                 </div>
             `;
         }
@@ -876,12 +938,21 @@ class HeroGame {
         if (this.currentMap) {
             return `
                 <div class="map-info">
-                    <div class="map-image-large">
-                        <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    </div>
+                    ${this.showVideo.map ? `
+                        <div class="video-container">
+                            <iframe src="${this.videos.map}?autoplay=1" 
+                                    allow="autoplay; encrypted-media" 
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    ` : `
+                        <div class="map-image-large" onclick="game.toggleVideo('map')">
+                            <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    `}
                     <h4>${this.currentMap.name}</h4>
                     <p>${this.currentMap.description}</p>
-                    <div class="map-multiplier">
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px; border-radius: 5px; margin: 6px 0; font-size: 0.9em;">
                         Множитель силы: x${this.currentMap.multiplier}
                     </div>
                     <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
@@ -910,12 +981,21 @@ class HeroGame {
             
             return `
                 <div class="location-info">
-                    <div class="location-image-large">
-                        <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    </div>
+                    ${this.showVideo.location ? `
+                        <div class="video-container">
+                            <iframe src="${this.videos.location}?autoplay=1" 
+                                    allow="autoplay; encrypted-media" 
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    ` : `
+                        <div class="location-image-large" onclick="game.toggleVideo('location')">
+                            <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                    `}
                     <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
                     <p>${this.currentLocation.description}</p>
-                    <div class="location-stats">
+                    <div style="background: rgba(255,255,255,0.1); padding: 6px; border-radius: 5px; margin: 6px 0; font-size: 0.9em;">
                         <div>Монстры: №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
                         <div>Артефакты: ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
                         <div>Реликвии: ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
@@ -937,6 +1017,12 @@ class HeroGame {
                 </div>
             `;
         }
+    }
+
+    // Переключение видео
+    toggleVideo(type) {
+        this.showVideo[type] = !this.showVideo[type];
+        this.renderHeroScreen();
     }
 
     // Показать выбор локации с проверкой доступности
@@ -1055,6 +1141,7 @@ class HeroGame {
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
+        this.battleResult = null;
         
         if (!this.currentHero.currentHealth) {
             this.currentHero.currentHealth = this.calculateMaxHealth();
@@ -1139,6 +1226,13 @@ class HeroGame {
             
             this.checkSpecialDrops();
             
+            this.battleResult = {
+                victory: true,
+                reward: reward,
+                experience: experienceGained,
+                monsterName: this.currentMonster.name
+            };
+            
         } else {
             this.addBattleLog({
                 message: `💀 ПОРАЖЕНИЕ! Герой повержен`,
@@ -1146,11 +1240,22 @@ class HeroGame {
             });
             
             this.addToLog(`💥 Проигран бой с ${this.currentMonster.name}`);
+            
+            this.battleResult = {
+                victory: false,
+                monsterName: this.currentMonster.name
+            };
         }
         
         this.battleActive = false;
         this.currentMonster = null;
         this.renderHeroScreen(); // Перерендериваем для обновления интерфейса
+    }
+
+    // Продолжить после боя
+    continueAfterBattle() {
+        this.battleResult = null;
+        this.renderHeroScreen();
     }
 
     // Обновление здоровья (ИСПРАВЛЕННЫЙ метод)
@@ -1318,6 +1423,7 @@ class HeroGame {
     completeEncounter() {
         this.currentMonster = null;
         this.battleActive = false;
+        this.battleResult = null;
         
         this.addToLog(`🏁 Встреча завершена`);
         this.saveGame();
@@ -1650,7 +1756,8 @@ class HeroGame {
                 currentLocation: this.currentLocation,
                 lastHealthUpdate: this.lastHealthUpdate,
                 globalInventory: this.globalInventory,
-                locationProgress: this.locationProgress
+                locationProgress: this.locationProgress,
+                showVideo: this.showVideo
             }));
         }
     }
@@ -1694,6 +1801,7 @@ class HeroGame {
                 this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
                 this.globalInventory = data.globalInventory || [];
                 this.locationProgress = data.locationProgress || this.locationProgress;
+                this.showVideo = data.showVideo || this.showVideo;
                 
                 if (currentHeroId) {
                     this.currentHero = this.heroes.find(h => h.id === currentHeroId);
