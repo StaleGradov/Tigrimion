@@ -6,8 +6,6 @@ class HeroGame {
         this.monsters = [];
         this.maps = [];
         this.locations = [];
-        this.movementStyles = [];
-        this.merchants = [];
         
         this.showReward = false;
         this.lastReward = 0;
@@ -16,24 +14,19 @@ class HeroGame {
         this.currentMap = null;
         this.currentLocation = null;
         this.currentMonster = null;
-        this.selectedMovement = null;
         
-        // Новые свойства для боя
+        // Свойства для боя
         this.battleActive = false;
         this.battleRound = 0;
         this.battleLog = [];
         this.lastHealthUpdate = Date.now();
-        this.healthRegenRate = 100 / 60;
         
         // Общий инвентарь
         this.globalInventory = [];
-        class HeroGame {
-    constructor() {
-        // ... существующий код
         
         // Система прогресса локаций
         this.locationProgress = {
-            10: { unlocked: true, monstersKilled: 0, totalMonsters: 10 }, // Начальная локация
+            10: { unlocked: true, monstersKilled: 0, totalMonsters: 10 },
             9: { unlocked: false, monstersKilled: 0, totalMonsters: 15 },
             8: { unlocked: false, monstersKilled: 0, totalMonsters: 20 },
             7: { unlocked: false, monstersKilled: 0, totalMonsters: 25 },
@@ -48,24 +41,20 @@ class HeroGame {
         this.init();
     }
 
-
-async init() {
-    await this.loadGameData();
-    this.loadSave();
-    
-    // ГАРАНТИРУЕМ ЧТО ПЕРВЫЙ ГЕРОЙ РАЗБЛОКИРОВАН
-    if (this.heroes.length > 0) {
-        const firstHero = this.heroes.find(h => h.id === 1);
-        if (firstHero) {
-            firstHero.unlocked = true;
+    async init() {
+        await this.loadGameData();
+        this.loadSave();
+        
+        // Гарантируем что первый герой разблокирован
+        if (this.heroes.length > 0) {
+            const firstHero = this.heroes.find(h => h.id === 1);
+            if (firstHero) {
+                firstHero.unlocked = true;
+            }
         }
+        
+        this.renderHeroSelect();
     }
-    
-    // Откладываем checkHeroUnlocks до выбора героя
-    // this.checkHeroUnlocks();
-    
-    this.renderHeroSelect();
-}
 
     // Базовая функция загрузки JSON
     async loadJSON(filePath) {
@@ -81,44 +70,107 @@ async init() {
         }
     }
 
-  async loadGameData() {
-    try {
-        const [heroes, enemies, items, mapsData, locationsData, movement] = await Promise.all([
-            this.loadJSON('data/heroes.json'),
-            this.loadJSON('data/enemies.json'),
-            this.loadJSON('data/items.json'),
-            this.loadJSON('data/maps.json'),
-            this.loadJSON('data/locations.json'),
-            this.loadJSON('data/movement.json')
-        ]);
+    async loadGameData() {
+        try {
+            const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
+                this.loadJSON('data/heroes.json'),
+                this.loadJSON('data/enemies.json'),
+                this.loadJSON('data/items.json'),
+                this.loadJSON('data/maps.json'),
+                this.loadJSON('data/locations.json')
+            ]);
 
-        this.heroes = heroes || this.getDefaultHeroes();
-        this.monsters = enemies || this.getDefaultEnemies();
-        this.items = items || this.getDefaultItems();
-        this.maps = mapsData || this.getDefaultMaps();
-        this.locations = locationsData || this.getDefaultLocations();
-        this.movementStyles = movement || this.getDefaultMovement();
+            this.heroes = heroes || [];
+            this.monsters = enemies || [];
+            this.items = items || [];
+            this.maps = mapsData || [];
+            this.locations = locationsData || [];
 
-        // ПРИНУДИТЕЛЬНО РАЗБЛОКИРУЕМ ПЕРВОГО ГЕРОЯ
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
+            // Принудительно разблокируем первого героя
+            if (this.heroes.length > 0) {
+                const firstHero = this.heroes.find(h => h.id === 1);
+                if (firstHero) {
+                    firstHero.unlocked = true;
+                }
             }
+
+            console.log('✅ Все данные загружены:', {
+                heroes: this.heroes.length,
+                monsters: this.monsters.length,
+                items: this.items.length,
+                maps: this.maps.length,
+                locations: this.locations.length
+            });
+
+        } catch (error) {
+            console.error('❌ Критическая ошибка загрузки данных:', error);
+            // В случае ошибки создаем минимальные данные для работы
+            this.createFallbackData();
         }
-
-        console.log('✅ Все данные загружены');
-
-    } catch (error) {
-        console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.heroes = this.getDefaultHeroes();
-        this.monsters = this.getDefaultEnemies();
-        this.items = this.getDefaultItems();
-        this.maps = this.getDefaultMaps();
-        this.locations = this.getDefaultLocations();
-        this.movementStyles = this.getDefaultMovement();
     }
-}
+
+    // Создание минимальных данных при ошибке загрузки
+    createFallbackData() {
+        this.heroes = [{
+            id: 1,
+            name: "Начальный герой",
+            image: "images/heroes/hero1.jpg",
+            race: "human",
+            class: "warrior",
+            saga: "golden_egg",
+            baseHealth: 100,
+            baseDamage: 20,
+            baseArmor: 10,
+            gold: 500,
+            level: 1,
+            experience: 0,
+            healthRegen: 100/60,
+            inventory: [],
+            equipment: { main_hand: null, chest: null },
+            unlocked: true,
+            story: "Простой воин из далекой деревни..."
+        }];
+
+        this.monsters = [{
+            id: 1,
+            name: "Слабый монстр",
+            health: 30,
+            maxHealth: 30,
+            attack: 5,
+            defense: 2,
+            speed: 3,
+            experience: 5,
+            reward: 10
+        }];
+
+        this.items = [{
+            id: 1,
+            name: "Малое зелье здоровья",
+            type: "potion",
+            value: 20,
+            price: 25,
+            heal: 20
+        }];
+
+        this.maps = [{
+            id: 1, 
+            name: "Арканиум", 
+            image: "images/maps/arcanium.jpg", 
+            description: "Земля древней магии", 
+            multiplier: 1.0, 
+            unlocked: true 
+        }];
+
+        this.locations = [{
+            level: 10, 
+            name: "Начальные земли", 
+            description: "Мягкий климат, слабые монстры", 
+            image: "images/locations/level10.jpg",
+            monsterRange: [1, 10], 
+            artifactChance: 0.005, 
+            relicChance: 0.0005 
+        }];
+    }
 
     // Система уровней
     getLevelRequirements() {
@@ -183,292 +235,26 @@ async init() {
         this.checkHeroUnlocks();
     }
 
-checkHeroUnlocks() {
-    // Если нет текущего героя, выходим
-    if (!this.currentHero) return;
-    
-    const heroUnlockLevels = {
-        2: 10,
-        3: 15,
-        4: 20,
-        5: 25,
-        6: 30,
-        7: 35,
-        8: 40
-    };
-    
-    Object.entries(heroUnlockLevels).forEach(([heroId, requiredLevel]) => {
-        const hero = this.heroes.find(h => h.id === parseInt(heroId));
-        if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
-            hero.unlocked = true;
-            this.addToLog(`🔓 Разблокирован новый герой: ${hero.name}!`);
-        }
-    });
-}
-    // Данные по умолчанию
-    getDefaultHeroes() {
-        return [
-            {
-                id: 1,
-                name: "Начальный герой",
-                image: "images/heroes/hero1.jpg",
-                race: "human",
-                class: "warrior",
-                saga: "golden_egg",
-                baseHealth: 100,
-                baseDamage: 20,
-                baseArmor: 10,
-                gold: 500,
-                level: 1,
-                experience: 0,
-                healthRegen: 100/60,
-                inventory: [],
-                equipment: {
-                    main_hand: null,
-                    chest: null
-                },
-                unlocked: true,
-                story: "Простой воин из далекой деревни...",
-                videoUrl: "https://youtube.com/embed/..."
-            },
-            {
-                id: 2,
-                name: "Опытный искатель",
-                image: "images/heroes/hero2.jpg",
-                race: "elf",
-                class: "archer",
-                saga: "vulkanor",
-                baseHealth: 120,
-                baseDamage: 25,
-                baseArmor: 8,
-                gold: 0,
-                level: 1,
-                experience: 0,
-                healthRegen: 100/45,
-                inventory: [],
-                equipment: {
-                    main_hand: null,
-                    chest: null
-                },
-                unlocked: false,
-                story: "Эльфийский следопыт с острым взглядом...",
-                videoUrl: "https://youtube.com/embed/..."
+    checkHeroUnlocks() {
+        if (!this.currentHero) return;
+        
+        const heroUnlockLevels = {
+            2: 10,
+            3: 15,
+            4: 20,
+            5: 25,
+            6: 30,
+            7: 35,
+            8: 40
+        };
+        
+        Object.entries(heroUnlockLevels).forEach(([heroId, requiredLevel]) => {
+            const hero = this.heroes.find(h => h.id === parseInt(heroId));
+            if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
+                hero.unlocked = true;
+                this.addToLog(`🔓 Разблокирован новый герой: ${hero.name}!`);
             }
-        ];
-    }
-
-    getDefaultEnemies() {
-        return [
-            {
-                id: 1,
-                name: "Слабый монстр",
-                health: 30,
-                maxHealth: 30,
-                attack: 5,
-                defense: 2,
-                speed: 3,
-                experience: 5,
-                reward: 10
-            }
-        ];
-    }
-
-    getDefaultItems() {
-        return [
-            {
-                id: 1,
-                name: "Малое зелье здоровья",
-                type: "potion",
-                value: 20,
-                price: 25,
-                heal: 20
-            }
-        ];
-    }
-
-    getDefaultMaps() {
-        return [
-            { 
-                id: 1, 
-                name: "Арканиум", 
-                image: "images/maps/arcanium.jpg", 
-                description: "Земля древней магии", 
-                multiplier: 1.0, 
-                unlocked: true 
-            },
-            { 
-                id: 2, 
-                name: "Хобблтон", 
-                image: "images/maps/hobbleton.jpg", 
-                description: "Мирный сельский край", 
-                multiplier: 1.5, 
-                unlocked: false 
-            },
-            { 
-                id: 3, 
-                name: "Фелисар", 
-                image: "images/maps/felisar.jpg", 
-                description: "Лесные тропики", 
-                multiplier: 2.0, 
-                unlocked: false 
-            },
-            { 
-                id: 4, 
-                name: "Илверин", 
-                image: "images/maps/ilverin.jpg", 
-                description: "Зачарованный лес", 
-                multiplier: 2.5, 
-                unlocked: false 
-            },
-            { 
-                id: 5, 
-                name: "Варгош", 
-                image: "images/maps/vargosh.jpg", 
-                description: "Вулканические земли", 
-                multiplier: 3.0, 
-                unlocked: false 
-            },
-            { 
-                id: 6, 
-                name: "Дунгарн", 
-                image: "images/maps/dungarn.jpg", 
-                description: "Подземные пещеры", 
-                multiplier: 3.5, 
-                unlocked: false 
-            },
-            { 
-                id: 7, 
-                name: "Люминэль", 
-                image: "images/maps/luminel.jpg", 
-                description: "Сверкающие равнины", 
-                multiplier: 4.0, 
-                unlocked: false 
-            },
-            { 
-                id: 8, 
-                name: "Астрарион", 
-                image: "images/maps/astarion.jpg", 
-                description: "Небесные просторы", 
-                multiplier: 4.5, 
-                unlocked: false 
-            },
-            { 
-                id: 9, 
-                name: "Эльфарион", 
-                image: "images/maps/elfarion.jpg", 
-                description: "Древнее королевство эльфов", 
-                multiplier: 5.0, 
-                unlocked: false 
-            }
-        ];
-    }
-
-    getDefaultLocations() {
-        return [
-            { 
-                level: 10, 
-                name: "Начальные земли", 
-                description: "Мягкий климат, слабые монстры", 
-                image: "images/locations/level10.jpg",
-                monsterRange: [1, 10], 
-                artifactChance: 0.005, 
-                relicChance: 0.0005 
-            },
-            { 
-                level: 9, 
-                name: "Глубокий лес", 
-                description: "Густые заросли", 
-                image: "images/locations/level9.jpg",
-                monsterRange: [1, 20], 
-                artifactChance: 0.01, 
-                relicChance: 0.001 
-            },
-            { 
-                level: 8, 
-                name: "Скалистые утесы", 
-                description: "Крутые обрывы", 
-                image: "images/locations/level8.jpg",
-                monsterRange: [1, 30], 
-                artifactChance: 0.015, 
-                relicChance: 0.0015 
-            },
-            { 
-                level: 7, 
-                name: "Заброшенные руины", 
-                description: "Древние постройки", 
-                image: "images/locations/level7.jpg",
-                monsterRange: [1, 40], 
-                artifactChance: 0.02, 
-                relicChance: 0.002 
-            },
-            { 
-                level: 6, 
-                name: "Темные пещеры", 
-                description: "Мрак и опасность", 
-                image: "images/locations/level6.jpg",
-                monsterRange: [1, 50], 
-                artifactChance: 0.025, 
-                relicChance: 0.0025 
-            },
-            { 
-                level: 5, 
-                name: "Магические земли", 
-                description: "Сила магии", 
-                image: "images/locations/level5.jpg",
-                monsterRange: [1, 60], 
-                artifactChance: 0.03, 
-                relicChance: 0.003 
-            },
-            { 
-                level: 4, 
-                name: "Ледяные пустоши", 
-                description: "Вечная мерзлота", 
-                image: "images/locations/level4.jpg",
-                monsterRange: [1, 70], 
-                artifactChance: 0.035, 
-                relicChance: 0.0035 
-            },
-            { 
-                level: 3, 
-                name: "Огненные земли", 
-                description: "Жар и пламя", 
-                image: "images/locations/level3.jpg",
-                monsterRange: [1, 80], 
-                artifactChance: 0.04, 
-                relicChance: 0.004 
-            },
-            { 
-                level: 2, 
-                name: "Небесные пути", 
-                description: "Высоко в облаках", 
-                image: "images/locations/level2.jpg",
-                monsterRange: [1, 90], 
-                artifactChance: 0.045, 
-                relicChance: 0.0045 
-            },
-            { 
-                level: 1, 
-                name: "Тронный зал", 
-                description: "Обитель могущественных существ", 
-                image: "images/locations/level1.jpg",
-                monsterRange: [1, 100], 
-                artifactChance: 0.05, 
-                relicChance: 0.005 
-            }
-        ];
-    }
-
-    getDefaultMovement() {
-        return [
-            {
-                id: "walk",
-                name: "Пешком",
-                description: "Обычная ходьба",
-                movement: 2,
-                stealthBonus: 0,
-                escapeBonus: 0
-            }
-        ];
+        });
     }
 
     // Бонусы рас, профессий и саг
@@ -626,122 +412,109 @@ checkHeroUnlocks() {
         return Math.floor(currentHealth);
     }
 
- renderHeroSelect() {
-    const container = document.getElementById('app');
-    container.innerHTML = `
-        <div class="screen active" id="screen-hero-select">
-            <h2 class="text-center">Выберите героя</h2>
-            <div class="hero-list">
-                ${this.heroes.map(hero => {
-                    // ПЕРВЫЙ ГЕРОЙ ВСЕГДА ДОСТУПЕН, остальные по unlocked
-                    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
-                    
-                    const stats = this.calculateHeroStats(hero);
-                    const bonuses = this.getBonuses();
-                    
-                    const activeSkills = [];
-                    
-                    if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
-                    if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
-                    if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
-                    if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
-                    if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
-                    
-                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
-                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
-                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                    if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
-                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-                    
-                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
-                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
-                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                    if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
-                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-                    
-                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
-                        activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
-                        activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-                    if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
-                        activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+    renderHeroSelect() {
+        const container = document.getElementById('app');
+        container.innerHTML = `
+            <div class="screen active" id="screen-hero-select">
+                <h2 class="text-center">Выберите героя</h2>
+                <div class="hero-list">
+                    ${this.heroes.map(hero => {
+                        const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+                        const stats = this.calculateHeroStats(hero);
+                        const bonuses = this.getBonuses();
+                        
+                        const activeSkills = [];
+                        
+                        if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
+                        if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
+                        if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
+                        if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
+                        if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
+                        
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
+                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
+                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                        if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
+                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
+                        
+                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
+                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
+                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                        if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
+                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
+                        
+                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
+                            activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
+                            activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
+                        if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
+                            activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
 
-                    return `
-                        <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                             onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
-                            <div class="hero-option-image">
-                                <img src="${hero.image}" alt="${hero.name}">
-                                ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                        return `
+                            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                                 onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
+                                <div class="hero-option-image">
+                                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                                </div>
+                                <div class="hero-option-info">
+                                    <div class="hero-option-header">
+                                        <strong>${hero.name}</strong>
+                                        <span class="hero-level">Ур. ${hero.level}</span>
+                                    </div>
+                                    <div class="hero-option-stats">
+                                        <div class="stat-row">
+                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                            <span>⚔️ ${stats.damage}</span>
+                                            <span>🛡️ ${stats.armor}</span>
+                                            <span>🌟 ${stats.power}</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>💰 ${hero.gold}</span>
+                                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
+                                        </div>
+                                    </div>
+                                    ${activeSkills.length > 0 ? `
+                                        <div class="hero-option-skills">
+                                            ${activeSkills.map(skill => `
+                                                <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                    <div class="hero-option-bonuses">
+                                        <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
+                                    </div>
+                                    ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
+                                </div>
                             </div>
-                            <div class="hero-option-info">
-                                <div class="hero-option-header">
-                                    <strong>${hero.name}</strong>
-                                    <span class="hero-level">Ур. ${hero.level}</span>
-                                </div>
-                                <div class="hero-option-stats">
-                                    <div class="stat-row">
-                                        <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                        <span>⚔️ ${stats.damage}</span>
-                                        <span>🛡️ ${stats.armor}</span>
-                                        <span>🌟 ${stats.power}</span>
-                                    </div>
-                                    <div class="stat-row">
-                                        <span>💰 ${hero.gold}</span>
-                                        <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
-                                    </div>
-                                </div>
-                                ${activeSkills.length > 0 ? `
-                                    <div class="hero-option-skills">
-                                        ${activeSkills.map(skill => `
-                                            <span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>
-                                        `).join('')}
-                                    </div>
-                                ` : ''}
-                                <div class="hero-option-bonuses">
-                                    <small>${bonuses.races[hero.race]?.name} - ${bonuses.classes[hero.class]?.name} - ${bonuses.sagas[hero.saga]?.name}</small>
-                                </div>
-                                ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+                        `;
+                    }).join('')}
+                </div>
             </div>
-        </div>
-    `;
-}
-
-// Выбор героя
-selectHero(heroId) {
-    console.log('Выбор героя:', heroId); // Для отладки
-    
-    const hero = this.heroes.find(h => h.id === heroId);
-    if (!hero) {
-        console.error('Герой не найден:', heroId);
-        return;
+        `;
     }
-    
-    // Проверяем разблокирован ли герой
-    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
-    if (!isUnlocked) {
-        console.log('Герой заблокирован:', hero.name);
-        return;
-    }
-    
-    this.currentHero = hero;
-    this.showScreen('main');
-    this.renderHeroScreen();
-    this.saveGame();
-    
-    console.log('Герой выбран:', hero.name);
-}
 
-// Показать экран
-showScreen(screenName) {
-    this.currentScreen = screenName;
-    console.log('Переход на экран:', screenName);
-}
+    // Выбор героя
+    selectHero(heroId) {
+        const hero = this.heroes.find(h => h.id === heroId);
+        if (!hero) {
+            console.error('Герой не найден:', heroId);
+            return;
+        }
+        
+        const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+        if (!isUnlocked) {
+            console.log('Герой заблокирован:', hero.name);
+            return;
+        }
+        
+        this.currentHero = hero;
+        this.showScreen('main');
+        this.renderHeroScreen();
+        this.saveGame();
+    }
 
     // Показать экран
     showScreen(screenName) {
@@ -766,13 +539,12 @@ showScreen(screenName) {
         const container = document.getElementById('app');
         container.innerHTML = `
             <div class="screen active" id="screen-main">
-                <!-- Новый макет с тремя колонками -->
                 <div class="hero-layout">
                     <!-- Левая колонка - Герой -->
                     <div class="hero-column">
                         <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
                         <div class="hero-image">
-                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="hero-info">
                             <h2>${this.currentHero.name}</h2>
@@ -833,7 +605,7 @@ showScreen(screenName) {
                 <div class="equipment-section">
                     <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                         <div class="equipment-icon">
-                            ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}">` : ''}
+                            ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : ''}
                         </div>
                         <div>
                             <strong>⚔️ Оружие</strong>
@@ -844,7 +616,7 @@ showScreen(screenName) {
                     
                     <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                         <div class="equipment-icon">
-                            ${armor ? `<img src="${armor.image}" alt="${armor.name}">` : ''}
+                            ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : ''}
                         </div>
                         <div>
                             <strong>🛡️ Броня</strong>
@@ -896,7 +668,7 @@ showScreen(screenName) {
             return `
                 <div class="map-info">
                     <div class="map-image-large">
-                        <img src="${this.currentMap.image}" alt="${this.currentMap.name}">
+                        <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     </div>
                     <h4>${this.currentMap.name}</h4>
                     <p>${this.currentMap.description}</p>
@@ -924,10 +696,13 @@ showScreen(screenName) {
     // Рендер выбора локации
     renderLocationSelection() {
         if (this.currentLocation) {
+            const progress = this.locationProgress[this.currentLocation.level];
+            const progressText = progress ? `Прогресс: ${progress.monstersKilled}/${progress.totalMonsters}` : '';
+            
             return `
                 <div class="location-info">
                     <div class="location-image-large">
-                        <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}">
+                        <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     </div>
                     <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
                     <p>${this.currentLocation.description}</p>
@@ -935,6 +710,7 @@ showScreen(screenName) {
                         <div>Монстры: №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
                         <div>Артефакты: ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
                         <div>Реликвии: ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
+                        ${progressText ? `<div>${progressText}</div>` : ''}
                     </div>
                     <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
                 </div>
@@ -954,148 +730,35 @@ showScreen(screenName) {
         }
     }
 
-    // Рендер колонки монстра/награды
-    renderMonsterRewardColumn() {
-        if (this.showReward) {
-            return this.renderRewardDisplay();
-        } else if (this.currentMonster) {
-            const monsterDisplay = this.renderMonsterDisplay();
-            setTimeout(() => {
-                this.showMonsterActions();
-            }, 100);
-            return monsterDisplay;
-        } else {
-            return `
-                <div class="monster-info">
-                    <div class="monster-image-large">
-                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
-                            <div>Встретьте монстра</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    // Рендер награды
-    renderRewardDisplay() {
-        return `
-            <div class="reward-info">
-                <div class="reward-image">
-                    💰
-                </div>
-                <div style="text-align: center; margin-top: 10px;">
-                    <h4>🎉 ПОБЕДА!</h4>
-                    <p>Получено: ${this.lastReward} золота</p>
-                    <button class="btn-primary" onclick="game.hideReward()">Продолжить</button>
-                </div>
-            </div>
-        `;
-    }
-
-    // Рендер монстра
-    renderMonsterDisplay() {
-        if (!this.currentMonster) return '';
-        
-        const stats = this.calculateHeroStats(this.currentHero);
-        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
-
-        return `
-            <div class="monster-info">
-                <div class="monster-image-large">
-                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}">
-                </div>
-                <h4>${this.currentMonster.name}</h4>
-                <p>${this.currentMonster.description}</p>
-                
-                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
-                    <div class="stat-card">
-                        <div>❤️ Здоровье</div>
-                        <div class="stat-value">${this.currentMonster.health}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>⚔️ Урон</div>
-                        <div class="stat-value">${this.currentMonster.damage}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>🛡️ Броня</div>
-                        <div class="stat-value">${this.currentMonster.armor}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>🌟 Мощь</div>
-                        <div class="stat-value">${this.currentMonster.power}</div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin: 10px 0;">
-                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
-                    <p>💰 Награда: ${this.currentMonster.reward} золота</p>
-                </div>
-            </div>
-        `;
-    }
-
-    // Показать выбор карты
-    showMapSelection() {
-        const mapsHTML = this.maps.map(map => `
-            <div class="map-option ${map.unlocked ? '' : 'locked'}" 
-                 onclick="${map.unlocked ? `game.selectMap(${map.id})` : ''}">
-                <div class="map-option-image">
-                    <img src="${map.image}" alt="${map.name}">
-                    ${!map.unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                </div>
-                <div class="map-option-info">
-                    <strong>${map.name}</strong>
-                    <div>${map.description}</div>
-                    <small>Множитель: x${map.multiplier}</small>
-                    ${!map.unlocked ? '<small class="locked-text">Недоступно</small>' : ''}
-                </div>
-            </div>
-        `).join('');
-
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="screen active" id="screen-map-select">
-                <h3 class="text-center">🗺️ Выберите карту</h3>
-                <div class="maps-grid">
-                    ${mapsHTML}
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
-                </div>
-            </div>
-        `;
-
-        this.showScreen('map-select');
-    }
-
-    // Выбор карты
-    selectMap(mapId) {
-        this.currentMap = this.maps.find(m => m.id === mapId);
-        this.addToLog(`🗺️ Выбрана карта: ${this.currentMap.name}`);
-        this.renderHeroScreen();
-    }
-
-    // Показать выбор локации
+    // Показать выбор локации с проверкой доступности
     showLocationSelection() {
         if (!this.currentMap) {
             this.addToLog('❌ Сначала выберите карту');
             return;
         }
 
-        const locationsHTML = this.locations.map(location => `
-            <div class="location-option" onclick="game.selectLocation(${location.level})">
-                <div class="location-option-image">
-                    <img src="${location.image}" alt="${location.name}">
+        const locationsHTML = this.locations.map(location => {
+            const progress = this.locationProgress[location.level];
+            const isUnlocked = progress ? progress.unlocked : false;
+            const progressText = progress ? `(${progress.monstersKilled}/${progress.totalMonsters})` : '';
+
+            return `
+                <div class="location-option ${isUnlocked ? '' : 'locked'}" 
+                     onclick="${isUnlocked ? `game.selectLocation(${location.level})` : ''}">
+                    <div class="location-option-image">
+                        <img src="${location.image}" alt="${location.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                    </div>
+                    <div class="location-option-info">
+                        <strong>${location.name} (Ур. ${location.level})</strong>
+                        <div>${location.description}</div>
+                        <small>Монстры: №${location.monsterRange[0]}-${location.monsterRange[1]}</small>
+                        ${isUnlocked ? `<small>Прогресс: ${progressText}</small>` : ''}
+                        ${!isUnlocked ? '<small class="locked-text">Завершите предыдущую локацию</small>' : ''}
+                    </div>
                 </div>
-                <div class="location-option-info">
-                    <strong>${location.name} (Ур. ${location.level})</strong>
-                    <div>${location.description}</div>
-                    <small>Монстры: №${location.monsterRange[0]}-${location.monsterRange[1]}</small>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
         const container = document.getElementById('app');
         container.innerHTML += `
@@ -1140,7 +803,7 @@ showScreen(screenName) {
         
         let monster = this.monsters.find(m => m.id === monsterId);
         if (!monster) {
-            monster = this.monsters[0]; // fallback
+            monster = this.monsters[0];
         }
 
         // Применяем множитель карты
@@ -1150,7 +813,7 @@ showScreen(screenName) {
             damage: Math.round(monster.damage * this.currentMap.multiplier),
             armor: Math.round(monster.armor * this.currentMap.multiplier),
             reward: Math.round(monster.reward * this.currentMap.multiplier),
-            power: Math.round(monster.power * this.currentMap.multiplier)
+            power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
         };
 
         this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
@@ -1219,7 +882,7 @@ showScreen(screenName) {
                     <!-- Герой -->
                     <div class="combatant hero-combatant">
                         <div class="combatant-image">
-                            <img src="${this.getRaceImage(this.currentHero.race)}" alt="${this.currentHero.race}">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="combatant-info">
                             <h4>${this.currentHero.name}</h4>
@@ -1241,7 +904,7 @@ showScreen(screenName) {
                     <!-- Монстр -->
                     <div class="combatant monster-combatant">
                         <div class="combatant-image">
-                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}">
+                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="combatant-info">
                             <h4>${this.currentMonster.name}</h4>
@@ -1284,21 +947,6 @@ showScreen(screenName) {
             existingBattle.remove();
         }
         container.innerHTML += battleHTML;
-    }
-
-    // Получить изображение расы
-    getRaceImage(race) {
-        const raceImages = {
-            human: 'images/races/human.png',
-            elf: 'images/races/elf.png',
-            dwarf: 'images/races/dwarf.png',
-            ork: 'images/races/ork.png',
-            dragon: 'images/races/dragon.png',
-            halfling: 'images/races/halfling.png',
-            fairy: 'images/races/fairy.png',
-            laitar: 'images/races/laitar.png'
-        };
-        return raceImages[race] || 'images/races/human.png';
     }
 
     // Атака в бою
@@ -1359,6 +1007,11 @@ showScreen(screenName) {
             
             this.addExperience(experienceGained);
             
+            // ОБНОВЛЯЕМ ПРОГРЕСС ЛОКАЦИИ
+            if (this.currentLocation) {
+                this.updateLocationProgress();
+            }
+            
             this.addBattleLog({
                 message: `🎉 ПОБЕДА! Получено ${reward} золота и ${experienceGained} опыта`,
                 type: 'victory'
@@ -1379,11 +1032,49 @@ showScreen(screenName) {
         
         this.battleActive = false;
         this.currentMonster = null;
-        this.selectedMovement = null;
         
         setTimeout(() => {
             this.renderHeroScreen();
         }, 3000);
+    }
+
+    // Обновление прогресса локации
+    updateLocationProgress() {
+        if (!this.currentLocation) return;
+        
+        const locationLevel = this.currentLocation.level;
+        const progress = this.locationProgress[locationLevel];
+        
+        if (progress) {
+            progress.monstersKilled++;
+            
+            // Проверяем завершение локации
+            if (progress.monstersKilled >= progress.totalMonsters) {
+                this.completeLocation(locationLevel);
+            }
+            
+            this.saveGame();
+        }
+    }
+
+    // Завершение локации и открытие следующей
+    completeLocation(locationLevel) {
+        const nextLocationLevel = locationLevel - 1;
+        const nextProgress = this.locationProgress[nextLocationLevel];
+        
+        if (nextProgress) {
+            nextProgress.unlocked = true;
+            this.addToLog(`🎉 Локация "${this.getLocationName(locationLevel)}" завершена!`);
+            this.addToLog(`🔓 Открыта новая локация: "${this.getLocationName(nextLocationLevel)}"`);
+        }
+        
+        this.saveGame();
+    }
+
+    // Вспомогательная функция для получения названия локации
+    getLocationName(level) {
+        const location = this.locations.find(l => l.level === level);
+        return location ? location.name : `Локация ${level}`;
     }
 
     // Проверка дропа особых предметов
@@ -1495,7 +1186,6 @@ showScreen(screenName) {
     // Завершение встречи
     completeEncounter() {
         this.currentMonster = null;
-        this.selectedMovement = null;
         
         const container = document.getElementById('app');
         const monsterActions = container.querySelector('.monster-actions');
@@ -1508,6 +1198,129 @@ showScreen(screenName) {
         setTimeout(() => {
             this.renderHeroScreen();
         }, 2000);
+    }
+
+    // Рендер колонки монстра/награды
+    renderMonsterRewardColumn() {
+        if (this.showReward) {
+            return this.renderRewardDisplay();
+        } else if (this.currentMonster) {
+            const monsterDisplay = this.renderMonsterDisplay();
+            setTimeout(() => {
+                this.showMonsterActions();
+            }, 100);
+            return monsterDisplay;
+        } else {
+            return `
+                <div class="monster-info">
+                    <div class="monster-image-large">
+                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
+                            <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
+                            <div>Встретьте монстра</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Рендер награды
+    renderRewardDisplay() {
+        return `
+            <div class="reward-info">
+                <div class="reward-image">
+                    💰
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <h4>🎉 ПОБЕДА!</h4>
+                    <p>Получено: ${this.lastReward} золота</p>
+                    <button class="btn-primary" onclick="game.hideReward()">Продолжить</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Рендер монстра
+    renderMonsterDisplay() {
+        if (!this.currentMonster) return '';
+        
+        const stats = this.calculateHeroStats(this.currentHero);
+        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+        return `
+            <div class="monster-info">
+                <div class="monster-image-large">
+                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                </div>
+                <h4>${this.currentMonster.name}</h4>
+                <p>${this.currentMonster.description}</p>
+                
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="stat-card">
+                        <div>❤️ Здоровье</div>
+                        <div class="stat-value">${this.currentMonster.health}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>⚔️ Урон</div>
+                        <div class="stat-value">${this.currentMonster.damage}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>🛡️ Броня</div>
+                        <div class="stat-value">${this.currentMonster.armor}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>🌟 Мощь</div>
+                        <div class="stat-value">${this.currentMonster.power}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 10px 0;">
+                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                    <p>💰 Награда: ${this.currentMonster.reward} золота</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Показать выбор карты
+    showMapSelection() {
+        const mapsHTML = this.maps.map(map => `
+            <div class="map-option ${map.unlocked ? '' : 'locked'}" 
+                 onclick="${map.unlocked ? `game.selectMap(${map.id})` : ''}">
+                <div class="map-option-image">
+                    <img src="${map.image}" alt="${map.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    ${!map.unlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                </div>
+                <div class="map-option-info">
+                    <strong>${map.name}</strong>
+                    <div>${map.description}</div>
+                    <small>Множитель: x${map.multiplier}</small>
+                    ${!map.unlocked ? '<small class="locked-text">Недоступно</small>' : ''}
+                </div>
+            </div>
+        `).join('');
+
+        const container = document.getElementById('app');
+        container.innerHTML += `
+            <div class="screen active" id="screen-map-select">
+                <h3 class="text-center">🗺️ Выберите карту</h3>
+                <div class="maps-grid">
+                    ${mapsHTML}
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+                </div>
+            </div>
+        `;
+
+        this.showScreen('map-select');
+    }
+
+    // Выбор карты
+    selectMap(mapId) {
+        this.currentMap = this.maps.find(m => m.id === mapId);
+        this.addToLog(`🗺️ Выбрана карта: ${this.currentMap.name}`);
+        this.renderHeroScreen();
     }
 
     // Показать награду
@@ -1550,7 +1363,7 @@ showScreen(screenName) {
                     </div>
                     <div class="item-price">
                         <span>💰 Купить: ${item.price}</span>
-                        <span>💸 Продать: ${item.sellPrice}</span>
+                        <span>💸 Продать: ${item.sellPrice || Math.floor(item.price * 0.5)}</span>
                     </div>
                     <small>${item.description}</small>
                     <div class="merchant-actions">
@@ -1625,7 +1438,7 @@ showScreen(screenName) {
         }
 
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
-        this.currentHero.gold += item.sellPrice;
+        this.currentHero.gold += (item.sellPrice || Math.floor(item.price * 0.5));
         
         if (this.currentHero.equipment.main_hand === itemId) {
             this.currentHero.equipment.main_hand = null;
@@ -1634,7 +1447,7 @@ showScreen(screenName) {
             this.currentHero.equipment.chest = null;
         }
 
-        this.addToLog(`💰 Продано: ${item.name} за ${item.sellPrice} золота`);
+        this.addToLog(`💰 Продано: ${item.name} за ${item.sellPrice || Math.floor(item.price * 0.5)} золота`);
         this.saveGame();
         this.showMerchant();
     }
@@ -1652,7 +1465,7 @@ showScreen(screenName) {
             return `
                 <div class="inventory-item" onclick="game.equipItem(${itemId})">
                     <div class="inventory-item-image">
-                        <img src="${item.image}" alt="${item.name}">
+                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
                     </div>
                     <strong>${item.name}</strong>
                     <div>${this.formatBonus(item.bonus)}</div>
@@ -1688,14 +1501,19 @@ showScreen(screenName) {
             return;
         }
 
-        const currentEquipped = this.currentHero.equipment[item.slot];
+        // Определяем слот предмета
+        let slot = 'main_hand'; // по умолчанию
+        if (item.type === 'armor') slot = 'chest';
+        if (item.slot) slot = item.slot;
+
+        const currentEquipped = this.currentHero.equipment[slot];
         if (currentEquipped) {
             if (!this.currentHero.inventory.includes(currentEquipped)) {
                 this.currentHero.inventory.push(currentEquipped);
             }
         }
 
-        this.currentHero.equipment[item.slot] = itemId;
+        this.currentHero.equipment[slot] = itemId;
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
 
         this.addToLog(`🎯 Надето: ${item.name}`);
@@ -1708,7 +1526,8 @@ showScreen(screenName) {
         if (item.type !== 'potion') return;
 
         if (item.heal) {
-            this.currentHero.baseHealth += item.heal;
+            const stats = this.calculateHeroStats(this.currentHero);
+            this.currentHero.currentHealth = Math.min(stats.maxHealth, this.currentHero.currentHealth + item.heal);
             this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
         }
 
@@ -1802,7 +1621,8 @@ showScreen(screenName) {
                 currentMap: this.currentMap,
                 currentLocation: this.currentLocation,
                 lastHealthUpdate: this.lastHealthUpdate,
-                globalInventory: this.globalInventory
+                globalInventory: this.globalInventory,
+                locationProgress: this.locationProgress
             }));
         }
     }
@@ -1845,6 +1665,7 @@ showScreen(screenName) {
                 this.currentLocation = data.currentLocation || null;
                 this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
                 this.globalInventory = data.globalInventory || [];
+                this.locationProgress = data.locationProgress || this.locationProgress;
                 
                 if (currentHeroId) {
                     this.currentHero = this.heroes.find(h => h.id === currentHeroId);
@@ -1860,29 +1681,8 @@ showScreen(screenName) {
     }
 }
 
-console.log('🚀 Script.js загружен!');
-
-// Отладочная информация
-console.log('🔍 Проверка окружения:');
-console.log('- document.readyState:', document.readyState);
-console.log('- window.game:', window.game);
-console.log('- HeroGame class defined:', typeof HeroGame);
-console.log('- DOM elements:', {
-    app: document.getElementById('app'),
-    body: document.body
-});
 // ========== ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
-
-// Отладочная информация
-console.log('🔍 Проверка окружения:');
-console.log('- document.readyState:', document.readyState);
-console.log('- window.game:', window.game);
-console.log('- HeroGame class defined:', typeof HeroGame);
-console.log('- DOM elements:', {
-    app: document.getElementById('app'),
-    body: document.body
-});
 
 // Создание экземпляра игры
 let game;
