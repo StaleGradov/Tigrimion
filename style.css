@@ -35,6 +35,160 @@ body {
     text-align: center;
 }
 
+/* Список героев - ОБНОВЛЕННЫЙ СТИЛЬ */
+.hero-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+    padding: 30px;
+    width: 100%;
+}
+
+.hero-option {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    height: 480px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.hero-option:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.hero-option.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.hero-option.locked:hover {
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+.hero-option-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 13px;
+    transition: all 0.3s ease;
+}
+
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    z-index: 2;
+}
+
+.hero-option-info {
+    position: absolute;
+    bottom: -70%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 15px;
+    border-radius: 0 0 13px 13px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border-top: 2px solid #4cc9f0;
+    z-index: 3;
+}
+
+.hero-option:hover .hero-option-info {
+    bottom: 0;
+}
+
+.hero-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hero-option-header strong {
+    font-size: 1.3em;
+    color: #ffd700;
+}
+
+.hero-level {
+    background: #4cc9f0;
+    color: #1a1a2e;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.hero-option-stats {
+    margin-bottom: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 1em;
+}
+
+.stat-row span {
+    white-space: nowrap;
+}
+
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.hero-option-skills span {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    border: 1px solid #4cc9f0;
+}
+
+.hero-option-bonuses small {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+    display: block;
+    text-align: center;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.locked-text {
+    color: #ff6b6b;
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
 /* НОВЫЙ МАКЕТ - 4 РАВНЫХ КОЛОНКИ */
 .hero-layout {
     display: grid;
@@ -87,10 +241,10 @@ body {
     border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
-/* Общие стили для всех изображений */
+/* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ИЗОБРАЖЕНИЙ - КРУПНЕЕ */
 .hero-image, .monster-image-large, .map-image-large, .location-image-large {
     width: 100%;
-    height: 200px;
+    height: 250px; /* Увеличили высоту */
     border-radius: 10px;
     overflow: hidden;
     background: rgba(255,255,255,0.1);
@@ -98,6 +252,7 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
+    border: 3px solid currentColor;
 }
 
 .hero-image img, .monster-image-large img, .map-image-large img, .location-image-large img {
@@ -108,28 +263,65 @@ body {
     object-fit: contain;
 }
 
-/* Стили для основной информации */
+/* СТИЛИ ДЛЯ ВИДЕО */
+.video-container {
+    width: 100%;
+    height: 250px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.3);
+    border: 3px solid currentColor;
+    position: relative;
+}
+
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1em;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-placeholder:hover {
+    background: rgba(0, 0, 0, 0.6);
+    color: #4cc9f0;
+}
+
+/* Стили для основной информации - БОЛЕЕ КОМПАКТНЫЕ */
 .hero-info, .monster-info, .map-info, .location-info {
     text-align: center;
-    padding: 15px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9em;
 }
 
 .hero-info h2, .monster-info h4, .map-info h4, .location-info h4 {
     color: #ffd700;
-    margin-bottom: 10px;
-    font-size: 1.3em;
+    margin-bottom: 8px;
+    font-size: 1.2em;
 }
 
 /* Стили для здоровья */
 .health-display {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .health-bar-container {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .health-bar {
@@ -138,7 +330,7 @@ body {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -150,15 +342,15 @@ body {
 
 .health-text {
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 /* Основные характеристики героя */
 .hero-main-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 12px;
+    gap: 6px;
+    margin-bottom: 10px;
 }
 
 .main-stat {
@@ -166,19 +358,20 @@ body {
     flex-direction: column;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
+    padding: 6px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.85em;
 }
 
 .stat-icon {
-    font-size: 1.2em;
+    font-size: 1.1em;
     margin-bottom: 2px;
 }
 
 .stat-value {
     font-weight: bold;
-    font-size: 1em;
+    font-size: 0.9em;
     color: #4cc9f0;
 }
 
@@ -186,19 +379,20 @@ body {
 .equipment-section {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 12px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .equipment-slot {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.05);
-    padding: 10px;
+    padding: 8px;
     border-radius: 6px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
     transition: all 0.3s ease;
+    font-size: 0.85em;
 }
 
 .equipment-slot:hover {
@@ -207,9 +401,9 @@ body {
 }
 
 .equipment-icon {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
+    width: 35px;
+    height: 35px;
+    margin-right: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -224,7 +418,7 @@ body {
     height: 6px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
-    margin: 6px 0;
+    margin: 5px 0;
     overflow: hidden;
 }
 
@@ -239,67 +433,69 @@ body {
     display: flex;
     justify-content: space-around;
     background: rgba(255, 255, 255, 0.05);
-    padding: 8px;
+    padding: 6px;
     border-radius: 6px;
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: rgba(255, 255, 255, 0.8);
 }
 
 /* Бонусы */
 .bonuses-section {
     background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
+    padding: 12px;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85em;
 }
 
 .bonuses-section h3 {
     color: #ffd700;
-    margin-bottom: 8px;
-    font-size: 1.2em;
+    margin-bottom: 6px;
+    font-size: 1.1em;
 }
 
 .bonus-item {
-    margin-bottom: 5px;
-    padding: 3px 0;
+    margin-bottom: 4px;
+    padding: 2px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 /* СТИЛИ ДЛЯ КОЛОНКИ МОНСТРА */
 .monster-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin: 10px 0;
+    gap: 6px;
+    margin: 8px 0;
 }
 
 .monster-stat-card {
     background: rgba(255, 255, 255, 0.05);
-    padding: 8px;
+    padding: 6px;
     border-radius: 6px;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85em;
 }
 
 .monster-stat-value {
     font-weight: bold;
     color: #4cc9f0;
-    font-size: 1em;
+    font-size: 0.9em;
 }
 
-/* КНОПКИ ДЕЙСТВИЙ ДЛЯ МОНСТРА - ТЕПЕРЬ В КОЛОНКЕ МОНСТРА */
+/* КНОПКИ ДЕЙСТВИЙ ДЛЯ МОНСТРА */
 .monster-actions {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 10px;
+    gap: 6px;
+    margin-top: 8px;
 }
 
 .monster-actions button {
-    padding: 12px 16px;
-    font-size: 1em;
+    padding: 10px 14px;
+    font-size: 0.9em;
     font-weight: bold;
     border: none;
     border-radius: 6px;
@@ -333,7 +529,7 @@ body {
 .battle-in-monster-column {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
-    padding: 12px;
+    padding: 10px;
     margin-top: 8px;
 }
 
@@ -341,44 +537,44 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
     border-bottom: 1px solid rgba(76, 201, 240, 0.3);
 }
 
 .battle-header h4 {
     color: #ffd700;
     margin: 0;
-    font-size: 1em;
+    font-size: 0.95em;
 }
 
 .battle-round {
     background: rgba(76, 201, 240, 0.3);
-    padding: 3px 8px;
+    padding: 2px 6px;
     border-radius: 10px;
-    font-size: 0.8em;
+    font-size: 0.75em;
     font-weight: bold;
 }
 
 .battle-combatants-compact {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 12px;
+    gap: 10px;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .combatant-compact {
     text-align: center;
-    padding: 8px;
+    padding: 6px;
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.05);
 }
 
 .combatant-image-compact {
-    width: 60px;
-    height: 60px;
-    margin: 0 auto 6px;
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 4px;
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid currentColor;
@@ -392,11 +588,11 @@ body {
 
 .health-bar-compact {
     position: relative;
-    height: 12px;
+    height: 10px;
     background: rgba(0, 0, 0, 0.5);
-    border-radius: 6px;
+    border-radius: 5px;
     overflow: hidden;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -406,7 +602,7 @@ body {
 }
 
 .vs-compact {
-    font-size: 1em;
+    font-size: 0.9em;
     font-weight: bold;
     color: #ffd700;
 }
@@ -414,34 +610,66 @@ body {
 .battle-log-compact {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 5px;
-    padding: 6px;
-    max-height: 80px;
+    padding: 5px;
+    max-height: 60px;
     overflow-y: auto;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.75em;
 }
 
 .battle-log-entry-compact {
-    padding: 3px 0;
+    padding: 2px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.75em;
 }
 
 .battle-actions-compact {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     justify-content: center;
 }
 
 .btn-battle-attack-compact, .btn-battle-escape-compact {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: none;
-    border-radius: 6px;
+    border-radius: 5px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9em;
+    font-size: 0.85em;
     flex: 1;
+}
+
+/* СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА БОЯ */
+.battle-result {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.battle-result-image {
+    font-size: 2.5em;
+    margin-bottom: 8px;
+}
+
+.battle-result h4 {
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-size: 1.1em;
+}
+
+.reward-amount {
+    background: rgba(255, 215, 0, 0.2);
+    padding: 6px 10px;
+    border-radius: 5px;
+    margin: 8px 0;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 0.9em;
 }
 
 /* Кнопки действий вверху страницы */
@@ -510,15 +738,15 @@ body {
     font-size: 0.85em;
 }
 
-/* Стили для выбора героев, карт, локаций */
-.hero-list, .maps-grid, .locations-grid {
+/* Стили для выбора карт, локаций */
+.maps-grid, .locations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 15px;
     padding: 15px;
 }
 
-.hero-option, .map-option, .location-option {
+.map-option, .location-option {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 15px;
@@ -528,7 +756,7 @@ body {
     text-align: center;
 }
 
-.hero-option:hover, .map-option:hover, .location-option:hover {
+.map-option:hover, .location-option:hover {
     border-color: #4cc9f0;
     transform: translateY(-2px);
 }
