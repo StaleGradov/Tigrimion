@@ -14,8 +14,8 @@ body {
 }
 
 .container {
-    max-width: 2000px; /* Увеличили до 2000px */
-    padding: 15px; /* Увеличили padding */
+    max-width: 2000px;
+    padding: 15px;
     margin: 0 auto;
 }
 
@@ -32,12 +32,12 @@ body {
     text-align: center;
 }
 
-/* Список героев - ЕЩЕ ШИРЕ */
+/* Список героев */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Увеличили до 450px */
-    gap: 30px; /* Увеличили gap */
-    padding: 30px; /* Увеличили padding */
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+    padding: 30px;
 }
 
 .hero-option {
@@ -47,7 +47,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 480px; /* Увеличили высоту */
+    height: 480px;
     overflow: hidden;
 }
 
@@ -124,16 +124,16 @@ body {
 }
 
 .hero-option-header strong {
-    font-size: 1.3em; /* Увеличили шрифт */
+    font-size: 1.3em;
     color: #ffd700;
 }
 
 .hero-level {
     background: #4cc9f0;
     color: #1a1a2e;
-    padding: 4px 12px; /* Увеличили padding */
+    padding: 4px 12px;
     border-radius: 15px;
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
     font-weight: bold;
 }
 
@@ -145,7 +145,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
 }
 
 .stat-row span {
@@ -161,15 +161,15 @@ body {
 
 .hero-option-skills span {
     background: rgba(76, 201, 240, 0.3);
-    padding: 4px 10px; /* Увеличили padding */
+    padding: 4px 10px;
     border-radius: 10px;
-    font-size: 0.9em; /* Увеличили шрифт */
+    font-size: 0.9em;
     border: 1px solid #4cc9f0;
 }
 
 .hero-option-bonuses small {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9em; /* Увеличили шрифт */
+    font-size: 0.9em;
     display: block;
     text-align: center;
     padding-top: 5px;
@@ -180,52 +180,52 @@ body {
     color: #ff6b6b;
     display: block;
     margin-top: 5px;
-    font-size: 0.9em; /* Увеличили шрифт */
+    font-size: 0.9em;
     text-align: center;
 }
 
-/* НОВЫЙ МАКЕТ - еще шире */
+/* Макет */
 .hero-layout {
     display: grid;
-    grid-template-columns: 1.8fr 2.2fr 2.2fr; /* Увеличили пропорции */
-    gap: 30px; /* Увеличили gap */
-    margin-bottom: 25px; /* Увеличили отступ */
+    grid-template-columns: 1.8fr 2.2fr 2.2fr;
+    gap: 30px;
+    margin-bottom: 25px;
     align-items: start;
 }
 
-/* Левая колонка - герой (расширим) */
+/* Левая колонка - герой */
 .hero-column {
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Увеличили gap */
+    gap: 25px;
 }
 
 /* Центральная и правая колонки - карта и локация */
 .map-column, .location-column {
     display: flex;
     flex-direction: column;
-    gap: 25px; /* Увеличили gap */
+    gap: 25px;
 }
 
-/* Общие стили для всех изображений - УВЕЛИЧИВАЕМ В 2.5 РАЗА */
+/* Общие стили для всех изображений */
 .hero-image, .map-image-large, .location-image-large, .monster-image-large {
     width: 100%;
-    height: 450px; /* УВЕЛИЧИЛИ ДО 450px */
-    border-radius: 12px; /* Увеличили радиус */
+    height: 450px;
+    border-radius: 12px;
     overflow: hidden;
     background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 4px solid #4cc9f0; /* Увеличили бордер */
+    border: 4px solid #4cc9f0;
     position: relative;
 }
 
 .hero-image img, .map-image-large img, .location-image-large img, .monster-image-large img {
     width: auto;
     height: auto;
-    max-width: 98%; /* Увеличили максимальную ширину */
-    max-height: 98%; /* Увеличили максимальную высоту */
+    max-width: 98%;
+    max-height: 98%;
     object-fit: contain;
 }
 
@@ -250,8 +250,8 @@ body {
     font-weight: bold;
     margin-bottom: 5px;
     color: #ffd700;
-    font-size: 1.3em; /* Увеличили шрифт */
-    padding: 12px; /* Увеличили padding */
+    font-size: 1.3em;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 1px solid rgba(255, 215, 0, 0.3);
@@ -260,7 +260,7 @@ body {
 /* Стили для основной информации героя */
 .hero-info {
     text-align: center;
-    padding: 25px; /* Увеличили padding */
+    padding: 25px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -269,7 +269,7 @@ body {
 .hero-info h2 {
     color: #ffd700;
     margin-bottom: 15px;
-    font-size: 1.8em; /* Увеличили шрифт */
+    font-size: 1.8em;
 }
 
 .health-display {
@@ -298,21 +298,21 @@ body {
 
 .health-text {
     font-weight: bold;
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
 }
 
 .health-regen {
     background: rgba(76, 201, 240, 0.2);
-    padding: 6px 10px; /* Увеличили padding */
+    padding: 6px 10px;
     border-radius: 6px;
-    font-size: 0.9em; /* Увеличили шрифт */
+    font-size: 0.9em;
     border: 1px solid #4cc9f0;
 }
 
 .hero-main-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px; /* Увеличили gap */
+    gap: 12px;
     margin-bottom: 15px;
 }
 
@@ -321,19 +321,19 @@ body {
     flex-direction: column;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px; /* Увеличили padding */
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .stat-icon {
-    font-size: 1.4em; /* Увеличили шрифт */
+    font-size: 1.4em;
     margin-bottom: 2px;
 }
 
 .stat-value {
     font-weight: bold;
-    font-size: 1.2em; /* Увеличили шрифт */
+    font-size: 1.2em;
     color: #4cc9f0;
 }
 
@@ -341,7 +341,7 @@ body {
 .equipment-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px; /* Увеличили gap */
+    gap: 15px;
     margin-bottom: 15px;
 }
 
@@ -349,7 +349,7 @@ body {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.05);
-    padding: 12px; /* Увеличили padding */
+    padding: 12px;
     border-radius: 8px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
@@ -367,9 +367,9 @@ body {
 }
 
 .equipment-icon {
-    width: 50px; /* Увеличили размер */
-    height: 50px; /* Увеличили размер */
-    margin-right: 12px; /* Увеличили отступ */
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -405,16 +405,16 @@ body {
     display: flex;
     justify-content: space-around;
     background: rgba(255, 255, 255, 0.05);
-    padding: 10px; /* Увеличили padding */
+    padding: 10px;
     border-radius: 8px;
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
     color: rgba(255, 255, 255, 0.8);
 }
 
 /* Информация о карте и локации */
 .map-info, .location-info, .monster-info, .reward-info {
     background: rgba(255, 255, 255, 0.05);
-    padding: 25px; /* Увеличили padding */
+    padding: 25px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
@@ -423,18 +423,18 @@ body {
 .map-info h4, .location-info h4, .monster-info h4 {
     color: #ffd700;
     margin-bottom: 10px;
-    font-size: 1.4em; /* Увеличили шрифт */
+    font-size: 1.4em;
 }
 
 .map-multiplier, .location-stats {
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px; /* Увеличили padding */
+    padding: 10px;
     border-radius: 6px;
     margin: 10px 0;
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
 }
 
-/* Секция боя - ПОДНИМАЕМ ВЫШЕ */
+/* Секция боя - ПЕРЕМЕЩАЕМ ВВЕРХ */
 .battle-section {
     margin-top: 20px;
     order: -1;
@@ -442,29 +442,56 @@ body {
 
 .monster-reward-column {
     background: rgba(255, 255, 255, 0.05);
-    padding: 25px; /* Увеличили padding */
+    padding: 25px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Действия монстра - ПОДНИМАЕМ ВЫШЕ */
+/* Действия монстра - ПЕРЕМЕЩАЕМ В ОКНО МОНСТРА */
 .monster-actions {
     display: flex;
-    gap: 12px; /* Увеличили gap */
+    gap: 12px;
     justify-content: center;
-    margin-top: 15px;
+    margin-top: 20px;
+    margin-bottom: 15px;
 }
 
 .monster-actions button {
-    padding: 14px 24px; /* Увеличили кнопки */
-    font-size: 1.1em; /* Увеличили шрифт */
+    padding: 14px 24px;
+    font-size: 1.1em;
     font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.monster-actions .btn-primary {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    color: white;
+}
+
+.monster-actions .btn-primary:hover {
+    background: linear-gradient(135deg, #3aa8d0, #3251d4);
+    transform: translateY(-2px);
+}
+
+.monster-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.monster-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 /* Бонусы */
 .bonuses-section {
     background: rgba(255, 255, 255, 0.05);
-    padding: 25px; /* Увеличили padding */
+    padding: 25px;
     border-radius: 10px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -473,14 +500,14 @@ body {
 .bonuses-section h3 {
     color: #ffd700;
     margin-bottom: 10px;
-    font-size: 1.4em; /* Увеличили шрифт */
+    font-size: 1.4em;
 }
 
 .bonus-item {
     margin-bottom: 6px;
     padding: 4px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
 }
 
 .bonus-item:last-child {
@@ -488,20 +515,20 @@ body {
     margin-bottom: 0;
 }
 
-/* Кнопки действий - ПОДНИМАЕМ ВЫШЕ */
+/* Кнопки действий */
 .action-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Увеличили минимальную ширину */
-    gap: 12px; /* Увеличили gap */
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
     margin-bottom: 20px;
     order: -2;
 }
 
 .btn-primary, .btn-secondary, .btn-danger {
-    padding: 14px 24px; /* Увеличили padding */
+    padding: 14px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 1.1em; /* Увеличили шрифт */
+    font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -739,18 +766,18 @@ body {
     color: #ffd700;
 }
 
-/* Сетка карт и локаций - УВЕЛИЧИВАЕМ */
+/* Сетка карт и локаций */
 .maps-grid, .locations-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Увеличили минимальную ширину */
-    gap: 20px; /* Увеличили gap */
-    padding: 20px; /* Увеличили padding */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
 }
 
 .map-option, .location-option {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
-    padding: 20px; /* Увеличили padding */
+    padding: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
@@ -774,7 +801,7 @@ body {
 
 .map-option-image, .location-option-image {
     width: 100%;
-    height: 200px; /* Увеличили с 150px до 200px */
+    height: 200px;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 10px;
@@ -788,7 +815,7 @@ body {
 }
 
 .map-option-info, .location-option-info {
-    font-size: 1em; /* Увеличили шрифт */
+    font-size: 1em;
 }
 
 /* Инвентарь */
