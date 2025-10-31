@@ -2,7 +2,7 @@
   { 
     "id": 1, 
     "name": "Арканиум", 
-    "image": "images/maps/arcanium.jpg", 
+    "image": "images/maps/Arkanium.jpg", 
     "description": "Земля древней магии", 
     "multiplier": 1.0, 
     "unlocked": true 
