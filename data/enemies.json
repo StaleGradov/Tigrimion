@@ -1,26 +1,122 @@
 [
   {
     "id": 1,
-    "name": "Бешенная Сорока",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Soroka.jpg",
+    "name": "Бешеная Сорока",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Soroka.jpg",
     "health": 120,
     "armor": 0,
     "damage": 10,
     "power": 27,
     "reward": 0.01,
     "escapeDifficulty": 4,
-    "description": "Отвратительное существо, питающееся падалью..."
+    "description": "Агрессивная птица с безумным блеском в глазах. Её острый клюв и когти представляют неожиданную угрозу для неосторожных путников."
   },
   {
-    "id": 2, 
+    "id": 2,
     "name": "Лиса",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Lisa.jpg", 
     "health": 160,
     "armor": 0,
     "damage": 20,
     "power": 46,
     "reward": 0.01,
     "escapeDifficulty": 3,
-    "description": "Мелкий и противный зверёк"
+    "description": "Хитрый и проворный хищник, использующий тактику засад и внезапных атак из зарослей."
+  },
+  {
+    "id": 3,
+    "name": "Бродячий Пёс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
+    "health": 200,
+    "armor": 5,
+    "damage": 30,
+    "power": 46,
+    "reward": 0.01,
+    "escapeDifficulty": 3,
+    "description": "Одичавший пёс со стальными мышцами и смертоносными клыками. Охотится стаями, выжидая момент для атаки."
+  },
+  {
+    "id": 4,
+    "name": "Волк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Wolf.jpg", 
+    "health": 240,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.012,
+    "escapeDifficulty": 3,
+    "description": "Серый охотник лесов, чья скорость и координация в стае делают его грозным противником даже для опытных воинов."
+  },
+  {
+    "id": 5,
+    "name": "Кабан",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Kaban.jpg", 
+    "health": 320,
+    "armor": 10,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.014,
+    "escapeDifficulty": 3,
+    "description": "Мощное животное с толстой шкурой и острыми клыками. Атакует яростно и без предупреждения, снося всё на своём пути."
+  },
+  {
+    "id": 6,
+    "name": "Тигр",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Tigr.jpg", 
+    "health": 360,
+    "armor": 10,
+    "damage": 50,
+    "power": 46,
+    "reward": 0.03,
+    "escapeDifficulty": 3,
+    "description": "Величественный и смертоносный хищник джунглей. Его грация скрывает невероятную силу и безжалостность."
+  },
+  {
+    "id": 7,
+    "name": "Медведь",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Bear.jpg", 
+    "health": 440,
+    "armor": 15,
+    "damage": 60,
+    "power": 46,
+    "reward": 0.035,
+    "escapeDifficulty": 3,
+    "description": "Исполинский хозяин леса. Его мощные лапы способны сломать дерево, а ярость в бою не знает границ."
+  },
+  {
+    "id": 8,
+    "name": "Мамонт",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Mamont.jpg", 
+    "health": 800,
+    "armor": 20,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.04,
+    "escapeDifficulty": 3,
+    "description": "Древний гигант ледникового периода. Его размеры внушают страх, а бивни разрывают любую броню."
+  },
+  {
+    "id": 9,
+    "name": "Горный Лев",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Leo.jpg", 
+    "health": 320,
+    "armor": 10,
+    "damage": 50,
+    "power": 46,
+    "reward": 0.025,
+    "escapeDifficulty": 3,
+    "description": "Проворный охотник горных вершин. Его прыжки с утёсов стремительны, а когти остры как бритва."
+  },
+  {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
   }
 ]
