@@ -20,6 +20,7 @@ class HeroGame {
         this.battleRound = 0;
         this.battleLog = [];
         this.lastHealthUpdate = Date.now();
+        this.healthInterval = null;
         
         // Общий инвентарь
         this.globalInventory = [];
@@ -104,7 +105,6 @@ class HeroGame {
 
         } catch (error) {
             console.error('❌ Критическая ошибка загрузки данных:', error);
-            // В случае ошибки создаем минимальные данные для работы
             this.createFallbackData();
         }
     }
@@ -225,7 +225,7 @@ class HeroGame {
         this.currentHero.baseDamage += damageIncrease;
         this.currentHero.baseArmor += armorIncrease;
         
-        this.currentHero.currentHealth = this.currentHero.baseHealth;
+        this.currentHero.currentHealth = this.calculateMaxHealth();
         
         this.addToLog(`🎉 Уровень повышен! Теперь уровень ${newLevel}`);
         this.addToLog(`❤️ +${healthIncrease} здоровья`);
@@ -296,6 +296,50 @@ class HeroGame {
                 sky_phenomena: { bonus: {type: "escape_bonus", value: 1}, name: "Небесные явления", description: "Свидетель небесных чудес" }
             }
         };
+    }
+
+    // Метод для расчета максимального здоровья
+    calculateMaxHealth() {
+        if (!this.currentHero) return 0;
+        
+        const bonuses = this.getBonuses();
+        const raceBonus = bonuses.races[this.currentHero.race]?.bonus || {type: "none", value: 0};
+        const classBonus = bonuses.classes[this.currentHero.class]?.bonus || {type: "none", value: 0};
+        const sagaBonus = bonuses.sagas[this.currentHero.saga]?.bonus || {type: "none", value: 0};
+        
+        const levelMultiplier = 1 + (this.currentHero.level - 1) * 0.1;
+        let health = this.currentHero.baseHealth * levelMultiplier;
+
+        // Применяем бонусы к здоровью
+        [raceBonus, classBonus, sagaBonus].forEach(bonus => {
+            if (bonus.type === 'health_mult') {
+                health *= (1 + bonus.value);
+            }
+        });
+
+        return Math.round(health);
+    }
+
+    // Новый метод для отображения здоровья в реальном времени
+    getCurrentHealthForDisplay() {
+        if (!this.currentHero) return 0;
+        
+        const now = Date.now();
+        const timePassed = (now - this.lastHealthUpdate) / 1000;
+        
+        if (!this.currentHero.currentHealth) {
+            this.currentHero.currentHealth = this.calculateMaxHealth();
+        }
+        
+        let currentHealth = this.currentHero.currentHealth;
+        const maxHealth = this.calculateMaxHealth();
+        
+        if (currentHealth < maxHealth) {
+            const healthToRegen = timePassed * (this.currentHero.healthRegen || 100/60);
+            currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
+        }
+        
+        return currentHealth;
     }
 
     // Расчёт характеристик героя
@@ -369,11 +413,12 @@ class HeroGame {
             }
         });
 
-        const currentHealth = this.getCurrentHealth();
+        // Текущее здоровье рассчитывается отдельно
+        const currentHealth = this.getCurrentHealthForDisplay();
 
         return {
             health: Math.round(health),
-            currentHealth: currentHealth,
+            currentHealth: Math.floor(currentHealth),
             maxHealth: Math.round(health),
             damage: Math.round(damage),
             armor: Math.round(armor),
@@ -387,29 +432,6 @@ class HeroGame {
                 armor: armorBonus
             }
         };
-    }
-
-    // Система здоровья с регенерацией
-    getCurrentHealth() {
-        if (!this.currentHero) return 0;
-        
-        const now = Date.now();
-        const timePassed = (now - this.lastHealthUpdate) / 1000;
-        const healthToRegen = timePassed * this.currentHero.healthRegen;
-        
-        let currentHealth = this.currentHero.currentHealth || this.currentHero.baseHealth;
-        
-        if (currentHealth < this.currentHero.baseHealth) {
-            currentHealth = Math.min(
-                this.currentHero.baseHealth,
-                currentHealth + healthToRegen
-            );
-            this.currentHero.currentHealth = currentHealth;
-            this.lastHealthUpdate = now;
-            this.saveGame();
-        }
-        
-        return Math.floor(currentHealth);
     }
 
     renderHeroSelect() {
@@ -466,7 +488,7 @@ class HeroGame {
                                     </div>
                                     <div class="hero-option-stats">
                                         <div class="stat-row">
-                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                            <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay())}/${this.calculateMaxHealth()}</span>
                                             <span>⚔️ ${stats.damage}</span>
                                             <span>🛡️ ${stats.armor}</span>
                                             <span>🌟 ${stats.power}</span>
@@ -519,6 +541,33 @@ class HeroGame {
     // Показать экран
     showScreen(screenName) {
         this.currentScreen = screenName;
+        if (this.healthInterval) {
+            clearInterval(this.healthInterval);
+            this.healthInterval = null;
+        }
+    }
+
+    // Новая функция для анимации здоровья
+    startHealthAnimation() {
+        if (!this.currentHero) return;
+
+        const updateHealthDisplay = () => {
+            const stats = this.calculateHeroStats(this.currentHero);
+            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+            
+            const healthFill = document.querySelector('.health-bar-fill');
+            const currentHealthEl = document.getElementById('current-health');
+            const maxHealthEl = document.getElementById('max-health');
+            
+            if (healthFill && currentHealthEl && maxHealthEl) {
+                healthFill.style.width = `${healthPercent}%`;
+                currentHealthEl.textContent = stats.currentHealth;
+                maxHealthEl.textContent = stats.maxHealth;
+            }
+        };
+
+        // Обновляем отображение здоровья каждую секунду
+        this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
     // Рендер основного экрана героя
@@ -536,6 +585,9 @@ class HeroGame {
         const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
         const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
 
+        // Рассчитываем процент здоровья для прогресс-бара
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+
         const container = document.getElementById('app');
         container.innerHTML = `
             <div class="screen active" id="screen-main">
@@ -548,11 +600,23 @@ class HeroGame {
                         </div>
                         <div class="hero-info">
                             <h2>${this.currentHero.name}</h2>
-                            <div class="hero-main-stats">
-                                <div class="main-stat">
-                                    <span class="stat-icon">❤️</span>
-                                    <span class="stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
+                            
+                            <!-- Анимированная шкала здоровья -->
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
+                                    </div>
                                 </div>
+                                <div class="health-regen">
+                                    ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
+                                </div>
+                            </div>
+
+                            <div class="hero-main-stats">
                                 <div class="main-stat">
                                     <span class="stat-icon">⚔️</span>
                                     <span class="stat-value">${stats.damage}</span>
@@ -566,9 +630,7 @@ class HeroGame {
                                     <span class="stat-value">${stats.power}</span>
                                 </div>
                             </div>
-                            <div class="hero-regen">
-                                <span>⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин</span>
-                            </div>
+                            
                             <div class="level-progress">
                                 <div class="level-progress-fill" style="width: ${expProgress}%"></div>
                             </div>
@@ -657,6 +719,9 @@ class HeroGame {
             </div>
         `;
 
+        // Запускаем анимацию обновления здоровья
+        this.startHealthAnimation();
+
         if (this.battleActive) {
             this.renderBattleScreen();
         }
@@ -693,7 +758,8 @@ class HeroGame {
         }
     }
 
-    // Рендер выбора локации
+
+                            // Рендер выбора локации
     renderLocationSelection() {
         if (this.currentLocation) {
             const progress = this.locationProgress[this.currentLocation.level];
@@ -853,8 +919,7 @@ class HeroGame {
         this.battleLog = [];
         
         if (!this.currentHero.currentHealth) {
-            const stats = this.calculateHeroStats(this.currentHero);
-            this.currentHero.currentHealth = stats.health;
+            this.currentHero.currentHealth = this.calculateMaxHealth();
         }
         
         this.currentMonster.currentHealth = this.currentMonster.health;
@@ -904,7 +969,7 @@ class HeroGame {
                     <!-- Монстр -->
                     <div class="combatant monster-combatant">
                         <div class="combatant-image">
-                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI5MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                         </div>
                         <div class="combatant-info">
                             <h4>${this.currentMonster.name}</h4>
@@ -972,7 +1037,7 @@ class HeroGame {
         
         // Ход монстра
         const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-        this.currentHero.currentHealth -= monsterDamage;
+        this.updateHealth(-monsterDamage);
         
         this.addBattleLog({
             message: `👹 ${this.currentMonster.name} наносит ${monsterDamage} урона!`,
@@ -1036,6 +1101,24 @@ class HeroGame {
         setTimeout(() => {
             this.renderHeroScreen();
         }, 3000);
+    }
+
+    // Обновление здоровья
+    updateHealth(change) {
+        if (!this.currentHero) return;
+        
+        if (!this.currentHero.currentHealth) {
+            this.currentHero.currentHealth = this.calculateMaxHealth();
+        }
+        
+        this.currentHero.currentHealth += change;
+        const maxHealth = this.calculateMaxHealth();
+        
+        // Ограничиваем здоровье в пределах 0 - максимум
+        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
+        
+        this.lastHealthUpdate = Date.now();
+        this.saveGame();
     }
 
     // Обновление прогресса локации
@@ -1118,7 +1201,7 @@ class HeroGame {
                 type: 'escape-failed'
             });
             const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-            this.currentHero.currentHealth -= monsterDamage;
+            this.updateHealth(-monsterDamage);
             
             if (this.currentHero.currentHealth <= 0) {
                 this.endBattle(false);
@@ -1526,8 +1609,7 @@ class HeroGame {
         if (item.type !== 'potion') return;
 
         if (item.heal) {
-            const stats = this.calculateHeroStats(this.currentHero);
-            this.currentHero.currentHealth = Math.min(stats.maxHealth, this.currentHero.currentHealth + item.heal);
+            this.updateHealth(item.heal);
             this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
         }
 
