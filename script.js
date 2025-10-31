@@ -225,6 +225,7 @@ class HeroGame {
         this.currentHero.baseDamage += damageIncrease;
         this.currentHero.baseArmor += armorIncrease;
         
+        // Восстанавливаем здоровье до нового максимума
         this.currentHero.currentHealth = this.calculateMaxHealth();
         
         this.addToLog(`🎉 Уровень повышен! Теперь уровень ${newLevel}`);
@@ -298,7 +299,7 @@ class HeroGame {
         };
     }
 
-    // Метод для расчета максимального здоровья
+    // Метод для расчета максимального здоровья (с учетом всех бонусов)
     calculateMaxHealth(hero = this.currentHero) {
         if (!hero) return 0;
         
@@ -307,11 +308,27 @@ class HeroGame {
         const classBonus = bonuses.classes[hero.class]?.bonus || {type: "none", value: 0};
         const sagaBonus = bonuses.sagas[hero.saga]?.bonus || {type: "none", value: 0};
         
+        let weaponBonus = {type: "none", value: 0};
+        let armorBonus = {type: "none", value: 0};
+        
+        if (hero.equipment.main_hand) {
+            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
+            weaponBonus = weapon?.bonus || {type: "none", value: 0};
+        }
+        
+        if (hero.equipment.chest) {
+            const armor = this.items.find(item => item.id === hero.equipment.chest);
+            armorBonus = armor?.bonus || {type: "none", value: 0};
+        }
+
+        const allBonuses = [raceBonus, classBonus, sagaBonus, weaponBonus, armorBonus];
+
+        // База с учетом уровня
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
         let health = hero.baseHealth * levelMultiplier;
 
-        // Применяем бонусы к здоровью
-        [raceBonus, classBonus, sagaBonus].forEach(bonus => {
+        // Бонусы к здоровью
+        allBonuses.forEach(bonus => {
             if (bonus.type === 'health_mult') {
                 health *= (1 + bonus.value);
             }
@@ -320,7 +337,7 @@ class HeroGame {
         return Math.round(health);
     }
 
-    // Новый метод для отображения здоровья в реальном времени
+    // Новый метод для отображения здоровья в реальном времени (ИСПРАВЛЕННЫЙ)
     getCurrentHealthForDisplay(hero = this.currentHero) {
         if (!hero) return 0;
         
@@ -337,6 +354,13 @@ class HeroGame {
         if (currentHealth < maxHealth) {
             const healthToRegen = timePassed * (hero.healthRegen || 100/60);
             currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
+            
+            // Обновляем время только если была регенерация
+            if (currentHealth > hero.currentHealth) {
+                this.lastHealthUpdate = now;
+                hero.currentHealth = currentHealth;
+                this.saveGame();
+            }
         }
         
         return currentHealth;
@@ -413,7 +437,7 @@ class HeroGame {
             }
         });
 
-        // Текущее здоровье рассчитывается отдельно
+        // Текущее здоровье рассчитывается с учетом регенерации
         const currentHealth = this.getCurrentHealthForDisplay(hero);
 
         return {
@@ -732,7 +756,7 @@ class HeroGame {
         if (this.currentMap) {
             return `
                 <div class="map-info">
-                    <div class="map-image">
+                    <div class="map-image-large">
                         <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     </div>
                     <h4>${this.currentMap.name}</h4>
@@ -746,7 +770,7 @@ class HeroGame {
         } else {
             return `
                 <div class="map-info">
-                    <div class="map-image">
+                    <div class="map-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">🗺️</div>
                             <div>Выберите карту</div>
@@ -766,7 +790,7 @@ class HeroGame {
             
             return `
                 <div class="location-info">
-                    <div class="location-image">
+                    <div class="location-image-large">
                         <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     </div>
                     <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
@@ -783,7 +807,7 @@ class HeroGame {
         } else {
             return `
                 <div class="location-info">
-                    <div class="location-image">
+                    <div class="location-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">📍</div>
                             <div>Выберите локацию</div>
@@ -944,30 +968,31 @@ class HeroGame {
                 
                 <div class="battle-combatants-compact">
                     <!-- Герой -->
-                    <div class="combatant-compact">
-                        <div class="combatant-image-compact">
+                    <div class="combatant-compact" style="border: 2px solid #4cc9f0;">
+                        <div class="combatant-image-compact" style="border-color: #4cc9f0;">
                             <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="combatant-info-compact">
                             <div class="health-bar-compact">
-                                <div class="health-bar-fill-compact" style="width: ${heroHealthPercent}%"></div>
+                                <div class="health-bar-fill-compact" style="width: ${heroHealthPercent}%; background: linear-gradient(90deg, #4ade80, #22c55e);"></div>
                             </div>
                             <div class="health-text-compact">${Math.ceil(this.currentHero.currentHealth)}/${stats.maxHealth}</div>
+                            <div>⚔️${stats.damage} 🛡️${stats.armor}</div>
                         </div>
                     </div>
                     
                     <div class="vs-compact">VS</div>
-                    
-                    <!-- Монстр -->
-                    <div class="combatant-compact">
-                        <div class="combatant-image-compact">
+                                        <!-- Монстр -->
+                    <div class="combatant-compact" style="border: 2px solid #f87171;">
+                        <div class="combatant-image-compact" style="border-color: #f87171;">
                             <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="combatant-info-compact">
                             <div class="health-bar-compact">
-                                <div class="health-bar-fill-compact" style="width: ${monsterHealthPercent}%"></div>
+                                <div class="health-bar-fill-compact" style="width: ${monsterHealthPercent}%; background: linear-gradient(90deg, #f87171, #ef4444);"></div>
                             </div>
                             <div class="health-text-compact">${Math.ceil(this.currentMonster.currentHealth)}/${this.currentMonster.health}</div>
+                            <div>⚔️${this.currentMonster.damage} 🛡️${this.currentMonster.armor}</div>
                         </div>
                     </div>
                 </div>
@@ -1095,6 +1120,8 @@ class HeroGame {
 
     // Показать награду в колонке монстра
     showRewardInMonsterColumn(reward) {
+        const experienceGained = Math.max(10, Math.floor(this.currentMonster.power / 2));
+        
         const monsterColumn = document.querySelector('.monster-reward-column');
         if (monsterColumn) {
             monsterColumn.innerHTML = `
@@ -1107,7 +1134,8 @@ class HeroGame {
                         <h4>🎉 ПОБЕДА!</h4>
                         <p>Вы победили ${this.currentMonster ? this.currentMonster.name : 'монстра'}!</p>
                         <div class="reward-amount">
-                            +${reward} золота
+                            +${reward} золота<br>
+                            +${experienceGained} опыта
                         </div>
                         <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
                     </div>
@@ -1141,7 +1169,7 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // Обновление здоровья
+    // Обновление здоровья (ИСПРАВЛЕННЫЙ метод)
     updateHealth(change) {
         if (!this.currentHero) return;
         
@@ -1152,7 +1180,7 @@ class HeroGame {
         this.currentHero.currentHealth += change;
         const maxHealth = this.calculateMaxHealth();
         
-        // Ограничиваем здоровье в пределах 0 - максимум
+        // Ограничиваем здоровье в пределах 0 - максимум (с учетом всех бонусов)
         this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
         
         this.lastHealthUpdate = Date.now();
@@ -1332,7 +1360,7 @@ class HeroGame {
         } else {
             return `
                 <div class="monster-info">
-                    <div class="monster-image">
+                    <div class="monster-image-large">
                         <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
                             <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
                             <div>Встретьте монстра</div>
@@ -1352,8 +1380,8 @@ class HeroGame {
 
         return `
             <div class="monster-info">
-                <div class="monster-image">
-                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                <div class="monster-image-large">
+                                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                 </div>
                 <h4>${this.currentMonster.name}</h4>
                 <p>${this.currentMonster.description}</p>
@@ -1597,6 +1625,14 @@ class HeroGame {
 
         this.currentHero.equipment[slot] = itemId;
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+
+        // При экипировке предмета с бонусом к здоровью, обновляем текущее здоровье
+        if (item.bonus && item.bonus.type === 'health_mult') {
+            const oldMaxHealth = this.calculateMaxHealth({...this.currentHero, equipment: {...this.currentHero.equipment, [slot]: currentEquipped}});
+            const newMaxHealth = this.calculateMaxHealth();
+            const healthRatio = this.currentHero.currentHealth / oldMaxHealth;
+            this.currentHero.currentHealth = Math.floor(newMaxHealth * healthRatio);
+        }
 
         this.addToLog(`🎯 Надето: ${item.name}`);
         this.saveGame();
