@@ -30,9 +30,9 @@ class HeroGame {
         
         // Видео для разных элементов
         this.videos = {
-            hero: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            map: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            location: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+            hero: 'https://www.youtube.com/watch?v=mfziNIhX9mo',
+            map: 'https://www.youtube.com/watch?v=4gSmkjlEO_Q',
+            location: 'https://www.youtube.com/watch?v=ytr51kwNLPo'
         };
         
         this.showVideo = {
