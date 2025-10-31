@@ -134,13 +134,18 @@ class HeroGame {
         this.monsters = [{
             id: 1,
             name: "Слабый монстр",
+            image: "images/monsters/monster1.jpg",
+            description: "Слабый противник для начала",
             health: 30,
             maxHealth: 30,
+            damage: 5,
             attack: 5,
             defense: 2,
+            armor: 2,
             speed: 3,
             experience: 5,
-            reward: 10
+            reward: 10,
+            power: 15
         }];
 
         this.items = [{
@@ -149,7 +154,9 @@ class HeroGame {
             type: "potion",
             value: 20,
             price: 25,
-            heal: 20
+            heal: 20,
+            image: "images/items/potion1.jpg",
+            description: "Восстанавливает 20 здоровья"
         }];
 
         this.maps = [{
@@ -594,162 +601,275 @@ class HeroGame {
         this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
-    // Рендер основного экрана героя
-renderHeroScreen() {
-    if (!this.currentHero) return;
+    // Рендер основного экрана героя с 4 колонками
+    renderHeroScreen() {
+        if (!this.currentHero) return;
 
-    const stats = this.calculateHeroStats(this.currentHero);
-    const bonuses = this.getBonuses();
+        const stats = this.calculateHeroStats(this.currentHero);
+        const bonuses = this.getBonuses();
 
-    const weapon = this.currentHero.equipment.main_hand ? 
-        this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-    const armor = this.currentHero.equipment.chest ? 
-        this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
+        const weapon = this.currentHero.equipment.main_hand ? 
+            this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
+        const armor = this.currentHero.equipment.chest ? 
+            this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
 
-    const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
-    const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
+        const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
+        const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
 
-    // Рассчитываем процент здоровья для прогресс-бара
-    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-
-    const container = document.getElementById('app');
-    container.innerHTML = `
-        <div class="screen active" id="screen-main">
-            <!-- Кнопки действий - ТЕПЕРЬ В САМОМ ВЕРХУ -->
-            <div class="action-buttons">
-                <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
-                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
-                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
-                <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
-                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
-            </div>
-
-            <!-- Секция боя - ТЕПЕРЬ ВЫШЕ ОСНОВНОГО КОНТЕНТА -->
-            <div class="battle-section">
-                <div class="monster-reward-column">
-                    <div class="column-title">🎭 ВРАГ / 🎁 НАГРАДА</div>
-                    ${this.renderMonsterRewardColumn()}
+        const container = document.getElementById('app');
+        container.innerHTML = `
+            <div class="screen active" id="screen-main">
+                <!-- Кнопки действий -->
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                    <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                    <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
+                    <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
+                    <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
                 </div>
-            </div>
 
-            <div class="hero-layout">
-                <!-- Левая колонка - Герой (РАСШИРЕНА) -->
-                <div class="hero-column">
-                    <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
-                    <div class="hero-image">
-                        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    </div>
-                    <div class="hero-info">
-                        <h2>${this.currentHero.name}</h2>
-                        
-                        <!-- Анимированная шкала здоровья -->
-                        <div class="health-display">
-                            <div class="health-bar-container">
-                                <div class="health-bar">
-                                    <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
-                                </div>
-                                <div class="health-text">
-                                    ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
-                                </div>
-                            </div>
-                            <div class="health-regen">
-                                ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
-                            </div>
+                <!-- 4 КОЛОНКИ: ГЕРОЙ, МОНСТР, КАРТА, ЛОКАЦИЯ -->
+                <div class="hero-layout">
+                    <!-- Колонка 1: Герой -->
+                    <div class="hero-column">
+                        <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
+                        <div class="hero-image">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
+                        <div class="hero-info">
+                            <h2>${this.currentHero.name}</h2>
+                            
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
+                                    </div>
+                                </div>
+                                <div class="health-regen">
+                                    ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
+                                </div>
+                            </div>
 
-                        <div class="hero-main-stats">
-                            <div class="main-stat">
-                                <span class="stat-icon">⚔️</span>
-                                <span class="stat-value">${stats.damage}</span>
-                            </div>
-                            <div class="main-stat">
-                                <span class="stat-icon">🛡️</span>
-                                <span class="stat-value">${stats.armor}</span>
-                            </div>
-                            <div class="main-stat">
-                                <span class="stat-icon">🌟</span>
-                                <span class="stat-value">${stats.power}</span>
-                            </div>
-                        </div>
-                        
-                        <!-- ЭКИПИРОВКА ПЕРЕМЕЩЕНА СЮДА -->
-                        <div class="equipment-section">
-                            <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-                                <div class="equipment-icon">
-                                    ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : ''}
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <span class="stat-icon">⚔️</span>
+                                    <span class="stat-value">${stats.damage}</span>
                                 </div>
-                                <div>
-                                    <strong>⚔️ Оружие</strong>
-                                    <div>${weapon ? weapon.name : 'Пусто'}</div>
-                                    ${weapon ? `<small>${this.formatBonus(weapon.bonus)}</small>` : ''}
+                                <div class="main-stat">
+                                    <span class="stat-icon">🛡️</span>
+                                    <span class="stat-value">${stats.armor}</span>
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🌟</span>
+                                    <span class="stat-value">${stats.power}</span>
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-                                <div class="equipment-icon">
-                                    ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : ''}
+                            <div class="equipment-section">
+                                <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
+                                    <div class="equipment-icon">
+                                        ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : ''}
+                                    </div>
+                                    <div>
+                                        <strong>⚔️ Оружие</strong>
+                                        <div>${weapon ? weapon.name : 'Пусто'}</div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <strong>🛡️ Броня</strong>
-                                    <div>${armor ? armor.name : 'Пусто'}</div>
-                                    ${armor ? `<small>${this.formatBonus(armor.bonus)}</small>` : ''}
+                                
+                                <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
+                                    <div class="equipment-icon">
+                                        ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : ''}
+                                    </div>
+                                    <div>
+                                        <strong>🛡️ Броня</strong>
+                                        <div>${armor ? armor.name : 'Пусто'}</div>
+                                    </div>
                                 </div>
                             </div>
+                            
+                            <div class="level-progress">
+                                <div class="level-progress-fill" style="width: ${expProgress}%"></div>
+                            </div>
+                            <div class="hero-progress">
+                                <span>Ур. ${this.currentHero.level}</span>
+                                <span>💰 ${this.currentHero.gold}</span>
+                                <span>⚡ ${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                            </div>
                         </div>
-                        
-                        <div class="level-progress">
-                            <div class="level-progress-fill" style="width: ${expProgress}%"></div>
-                        </div>
-                        <div class="hero-progress">
-                            <span>Ур. ${this.currentHero.level}</span>
-                            <span>💰 ${this.currentHero.gold}</span>
-                            <span>⚡ ${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+
+                        <div class="bonuses-section">
+                            <h3>🎯 Бонусы:</h3>
+                            <div class="bonus-item">
+                                <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
+                            </div>
+                            <div class="bonus-item">
+                                <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
+                            </div>
+                            <div class="bonus-item">
+                                <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Бонусы -->
-                    <div class="bonuses-section">
-                        <h3>🎯 Бонусы:</h3>
-                        <div class="bonus-item">
-                            <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
-                            (${this.formatBonus(stats.bonuses.race)})
-                        </div>
-                        <div class="bonus-item">
-                            <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
-                            (${this.formatBonus(stats.bonuses.class)})
-                        </div>
-                        <div class="bonus-item">
-                            <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
-                            (${this.formatBonus(stats.bonuses.saga)})
-                        </div>
+                    <!-- Колонка 2: Монстр -->
+                    <div class="monster-column">
+                        <div class="column-title">🎭 ВРАГ</div>
+                        ${this.renderMonsterColumn()}
+                    </div>
+
+                    <!-- Колонка 3: Карта -->
+                    <div class="map-column">
+                        <div class="column-title">🗺️ КАРТА</div>
+                        ${this.renderMapSelection()}
+                    </div>
+
+                    <!-- Колонка 4: Локация -->
+                    <div class="location-column">
+                        <div class="column-title">📍 ЛОКАЦИЯ</div>
+                        ${this.renderLocationSelection()}
                     </div>
                 </div>
 
-                <!-- Центральная колонка - Карта -->
-                <div class="map-column">
-                    <div class="column-title">🗺️ ВЫБОР КАРТЫ</div>
-                    ${this.renderMapSelection()}
-                </div>
+                <!-- Журнал событий -->
+                <div class="battle-log" id="battle-log"></div>
+            </div>
+        `;
 
-                <!-- Правая колонка - Локация -->
-                <div class="location-column">
-                    <div class="column-title">📍 ВЫБОР ЛОКАЦИИ</div>
-                    ${this.renderLocationSelection()}
+        this.startHealthAnimation();
+    }
+
+    // Рендер колонки монстра
+    renderMonsterColumn() {
+        if (this.currentMonster) {
+            const stats = this.calculateHeroStats(this.currentHero);
+            const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+            return `
+                <div class="monster-info">
+                    <div class="monster-image-large">
+                        <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <h4>${this.currentMonster.name}</h4>
+                    <p>${this.currentMonster.description}</p>
+                    
+                    <div class="monster-stats-grid">
+                        <div class="monster-stat-card">
+                            <div>❤️ Здоровье</div>
+                            <div class="monster-stat-value">${this.currentMonster.health}</div>
+                        </div>
+                        <div class="monster-stat-card">
+                            <div>⚔️ Урон</div>
+                            <div class="monster-stat-value">${this.currentMonster.damage}</div>
+                        </div>
+                        <div class="monster-stat-card">
+                            <div>🛡️ Броня</div>
+                            <div class="monster-stat-value">${this.currentMonster.armor}</div>
+                        </div>
+                        <div class="monster-stat-card">
+                            <div>🌟 Мощь</div>
+                            <div class="monster-stat-value">${this.currentMonster.power}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin: 8px 0;">
+                        <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                        <p>💰 Награда: ${this.currentMonster.reward} золота</p>
+                    </div>
+
+                    <!-- КНОПКИ ДЕЙСТВИЙ ПЕРЕМЕЩЕНЫ СЮДА -->
+                    <div class="monster-actions">
+                        <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
+                        <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
+                        <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                    </div>
+                </div>
+                ${this.battleActive ? this.renderBattleInMonsterColumn() : ''}
+            `;
+        } else {
+            return `
+                <div class="monster-info">
+                    <div class="monster-image-large">
+                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
+                            <div style="font-size: 2.5em; margin-bottom: 10px;">⚔️</div>
+                            <div>Встретьте монстра в путешествии</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 10px;">
+                        <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    // Рендер боя в колонке монстра
+    renderBattleInMonsterColumn() {
+        if (!this.battleActive) return '';
+        
+        const stats = this.calculateHeroStats(this.currentHero);
+        const heroHealthPercent = (this.currentHero.currentHealth / stats.maxHealth) * 100;
+        const monsterHealthPercent = (this.currentMonster.currentHealth / this.currentMonster.health) * 100;
+        
+        return `
+            <div class="battle-in-monster-column">
+                <div class="battle-header">
+                    <h4>⚔️ БОЙ</h4>
+                    <div class="battle-round">Раунд: ${this.battleRound}</div>
+                </div>
+                
+                <div class="battle-combatants-compact">
+                    <!-- Герой -->
+                    <div class="combatant-compact" style="border: 2px solid #4cc9f0;">
+                        <div class="combatant-image-compact" style="border-color: #4cc9f0;">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                        <div class="combatant-info-compact">
+                            <div class="health-bar-compact">
+                                <div class="health-bar-fill-compact" style="width: ${heroHealthPercent}%; background: linear-gradient(90deg, #4ade80, #22c55e);"></div>
+                            </div>
+                            <div class="health-text-compact">${Math.ceil(this.currentHero.currentHealth)}/${stats.maxHealth}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="vs-compact">VS</div>
+                    
+                    <!-- Монстр -->
+                    <div class="combatant-compact" style="border: 2px solid #f87171;">
+                        <div class="combatant-image-compact" style="border-color: #f87171;">
+                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        </div>
+                        <div class="combatant-info-compact">
+                            <div class="health-bar-compact">
+                                <div class="health-bar-fill-compact" style="width: ${monsterHealthPercent}%; background: linear-gradient(90deg, #f87171, #ef4444);"></div>
+                            </div>
+                            <div class="health-text-compact">${Math.ceil(this.currentMonster.currentHealth)}/${this.currentMonster.health}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Лог боя -->
+                <div class="battle-log-compact">
+                    ${this.battleLog.slice(-3).map(entry => `
+                        <div class="battle-log-entry-compact ${entry.type || ''}">${entry.message}</div>
+                    `).join('')}
+                </div>
+                
+                <!-- Кнопки действий в бою -->
+                <div class="battle-actions-compact">
+                    <button class="btn-battle-attack-compact" onclick="game.battleAttack()">
+                        ⚔️ Атака
+                    </button>
+                    <button class="btn-battle-escape-compact" onclick="game.attemptEscapeFromBattle()">
+                        🏃 Бегство
+                    </button>
                 </div>
             </div>
-
-            <!-- Журнал событий -->
-            <div class="battle-log" id="battle-log"></div>
-        </div>
-    `;
-
-    // Запускаем анимацию обновления здоровья
-    this.startHealthAnimation();
-
-    if (this.battleActive) {
-        this.renderBattleInMonsterColumn();
+        `;
     }
-}
 
     // Рендер выбора карты
     renderMapSelection() {
@@ -771,8 +891,8 @@ renderHeroScreen() {
             return `
                 <div class="map-info">
                     <div class="map-image-large">
-                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 3em; margin-bottom: 10px;">🗺️</div>
+                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
+                            <div style="font-size: 2.5em; margin-bottom: 10px;">🗺️</div>
                             <div>Выберите карту</div>
                         </div>
                     </div>
@@ -808,8 +928,8 @@ renderHeroScreen() {
             return `
                 <div class="location-info">
                     <div class="location-image-large">
-                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 3em; margin-bottom: 10px;">📍</div>
+                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
+                            <div style="font-size: 2.5em; margin-bottom: 10px;">📍</div>
                             <div>Выберите локацию</div>
                         </div>
                     </div>
@@ -880,90 +1000,53 @@ renderHeroScreen() {
         }
 
         this.addToLog(`🚀 Начато путешествие по карте ${this.currentMap.name}, локация: ${this.currentLocation.name}`);
-        this.encounterMonster();
+        
+        // Добавляем небольшую задержку для лучшего UX
+        setTimeout(() => {
+            this.encounterMonster();
+        }, 1000);
     }
 
-// В классе HeroGame находим метод encounterMonster и исправляем его:
-
-// Встреча с монстром
-encounterMonster() {
-    if (!this.currentLocation || !this.currentMap) {
-        console.error('❌ Не выбрана локация или карта');
-        return;
-    }
-
-    const [minId, maxId] = this.currentLocation.monsterRange;
-    
-    // Фиксим баг: проверяем что диапазон монстров существует
-    if (!minId || !maxId) {
-        console.error('❌ Неверный диапазон монстров в локации:', this.currentLocation);
-        return;
-    }
-    
-    const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
-    
-    let monster = this.monsters.find(m => m.id === monsterId);
-    if (!monster) {
-        // Если монстр не найден, берем первого доступного
-        monster = this.monsters[0];
-        if (!monster) {
-            console.error('❌ Нет доступных монстров');
+    // Встреча с монстром
+    encounterMonster() {
+        if (!this.currentLocation || !this.currentMap) {
+            console.error('❌ Не выбрана локация или карта');
             return;
         }
-    }
 
-    // Применяем множитель карты
-    this.currentMonster = {
-        ...monster,
-        health: Math.round(monster.health * this.currentMap.multiplier),
-        damage: Math.round(monster.damage * this.currentMap.multiplier),
-        armor: Math.round(monster.armor * this.currentMap.multiplier),
-        reward: Math.round(monster.reward * this.currentMap.multiplier),
-        power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
-    };
-
-    this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
-    this.renderHeroScreen();
-    this.showMonsterActions();
-}
-
-// Также проверяем метод startAdventure:
-startAdventure() {
-    if (!this.currentMap || !this.currentLocation) {
-        this.addToLog('❌ Сначала выберите карту и локацию');
-        return;
-    }
-
-    this.addToLog(`🚀 Начато путешествие по карте ${this.currentMap.name}, локация: ${this.currentLocation.name}`);
-    
-    // Добавляем небольшую задержку для лучшего UX
-    setTimeout(() => {
-        this.encounterMonster();
-    }, 1000);
-}
-
-    // Показать действия для монстра
-    showMonsterActions() {
-        if (!this.currentMonster) return;
+        const [minId, maxId] = this.currentLocation.monsterRange;
         
-        const container = document.getElementById('app');
-        const oldActions = container.querySelector('.monster-actions');
-        if (oldActions) {
-            oldActions.remove();
+        // Фиксим баг: проверяем что диапазон монстров существует
+        if (!minId || !maxId) {
+            console.error('❌ Неверный диапазон монстров в локации:', this.currentLocation);
+            return;
         }
         
-        const actionsHTML = `
-            <div class="monster-actions" style="margin-top: 15px;">
-                <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
-                <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
-            </div>
-        `;
+        const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
         
-        container.innerHTML += actionsHTML;
-    }
+        let monster = this.monsters.find(m => m.id === monsterId);
+        if (!monster) {
+            // Если монстр не найден, берем первого доступного
+            monster = this.monsters[0];
+            if (!monster) {
+                console.error('❌ Нет доступных монстров');
+                return;
+            }
+        }
 
-    // ========== СИСТЕМА БОЯ В ОКНЕ МОНСТРА ==========
+        // Применяем множитель карты
+        this.currentMonster = {
+            ...monster,
+            health: Math.round(monster.health * this.currentMap.multiplier),
+            damage: Math.round(monster.damage * this.currentMap.multiplier),
+            armor: Math.round(monster.armor * this.currentMap.multiplier),
+            reward: Math.round(monster.reward * this.currentMap.multiplier),
+            power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
+        };
+
+        this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
+        this.renderHeroScreen(); // Перерендериваем весь экран чтобы обновить колонку монстра
+    }
 
     // Начать бой
     startBattle() {
@@ -980,82 +1063,7 @@ startAdventure() {
         this.currentMonster.currentHealth = this.currentMonster.health;
         
         this.addToLog(`⚔️ Начало боя с ${this.currentMonster.name}!`);
-        this.renderBattleInMonsterColumn();
-    }
-
-    // Рендер боя в колонке монстра
-    renderBattleInMonsterColumn() {
-        if (!this.battleActive) return;
-        
-        const stats = this.calculateHeroStats(this.currentHero);
-        const heroHealthPercent = (this.currentHero.currentHealth / stats.maxHealth) * 100;
-        const monsterHealthPercent = (this.currentMonster.currentHealth / this.currentMonster.health) * 100;
-        
-        const battleHTML = `
-            <div class="battle-in-monster-column">
-                <div class="battle-header">
-                    <h4>⚔️ БОЙ С ${this.currentMonster.name.toUpperCase()}</h4>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
-                </div>
-                
-                <div class="battle-combatants-compact">
-                    <!-- Герой -->
-                    <div class="combatant-compact" style="border: 2px solid #4cc9f0;">
-                        <div class="combatant-image-compact" style="border-color: #4cc9f0;">
-                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        </div>
-                        <div class="combatant-info-compact">
-                            <div class="health-bar-compact">
-                                <div class="health-bar-fill-compact" style="width: ${heroHealthPercent}%; background: linear-gradient(90deg, #4ade80, #22c55e);"></div>
-                            </div>
-                            <div class="health-text-compact">${Math.ceil(this.currentHero.currentHealth)}/${stats.maxHealth}</div>
-                            <div>⚔️${stats.damage} 🛡️${stats.armor}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="vs-compact">VS</div>
-                                        <!-- Монстр -->
-                    <div class="combatant-compact" style="border: 2px solid #f87171;">
-                        <div class="combatant-image-compact" style="border-color: #f87171;">
-                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        </div>
-                        <div class="combatant-info-compact">
-                            <div class="health-bar-compact">
-                                <div class="health-bar-fill-compact" style="width: ${monsterHealthPercent}%; background: linear-gradient(90deg, #f87171, #ef4444);"></div>
-                            </div>
-                            <div class="health-text-compact">${Math.ceil(this.currentMonster.currentHealth)}/${this.currentMonster.health}</div>
-                            <div>⚔️${this.currentMonster.damage} 🛡️${this.currentMonster.armor}</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Лог боя -->
-                <div class="battle-log-compact">
-                    ${this.battleLog.slice(-3).map(entry => `
-                        <div class="battle-log-entry-compact ${entry.type || ''}">${entry.message}</div>
-                    `).join('')}
-                </div>
-                
-                <!-- Кнопки действий -->
-                <div class="battle-actions-compact">
-                    <button class="btn-battle-attack-compact" onclick="game.battleAttack()">
-                        ⚔️ Атака
-                    </button>
-                    <button class="btn-battle-escape-compact" onclick="game.attemptEscapeFromBattle()">
-                        🏃 Бегство
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        // Заменяем содержимое колонки монстра на бой
-        const monsterColumn = document.querySelector('.monster-reward-column');
-        if (monsterColumn) {
-            monsterColumn.innerHTML = `
-                <div class="column-title">⚔️ БОЙ</div>
-                ${battleHTML}
-            `;
-        }
+        this.renderHeroScreen(); // Перерендериваем для отображения боя
     }
 
     // Атака в бою
@@ -1094,7 +1102,7 @@ startAdventure() {
         }
         
         this.saveGame();
-        this.renderBattleInMonsterColumn();
+        this.renderHeroScreen(); // Перерендериваем для обновления боя
     }
 
     // Добавить запись в лог боя
@@ -1131,9 +1139,6 @@ startAdventure() {
             
             this.checkSpecialDrops();
             
-            // Показываем награду в колонке монстра
-            this.showRewardInMonsterColumn(reward);
-            
         } else {
             this.addBattleLog({
                 message: `💀 ПОРАЖЕНИЕ! Герой повержен`,
@@ -1141,64 +1146,11 @@ startAdventure() {
             });
             
             this.addToLog(`💥 Проигран бой с ${this.currentMonster.name}`);
-            
-            // Показываем поражение в колонке монстра
-            this.showDefeatInMonsterColumn();
         }
         
         this.battleActive = false;
         this.currentMonster = null;
-    }
-
-    // Показать награду в колонке монстра
-    showRewardInMonsterColumn(reward) {
-        const experienceGained = Math.max(10, Math.floor(this.currentMonster.power / 2));
-        
-        const monsterColumn = document.querySelector('.monster-reward-column');
-        if (monsterColumn) {
-            monsterColumn.innerHTML = `
-                <div class="column-title">🎁 НАГРАДА</div>
-                <div class="reward-display">
-                    <div class="reward-image-large">
-                        💰
-                    </div>
-                    <div class="reward-info">
-                        <h4>🎉 ПОБЕДА!</h4>
-                        <p>Вы победили ${this.currentMonster ? this.currentMonster.name : 'монстра'}!</p>
-                        <div class="reward-amount">
-                            +${reward} золота<br>
-                            +${experienceGained} опыта
-                        </div>
-                        <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    // Показать поражение в колонке монстра
-    showDefeatInMonsterColumn() {
-        const monsterColumn = document.querySelector('.monster-reward-column');
-        if (monsterColumn) {
-            monsterColumn.innerHTML = `
-                <div class="column-title">💀 ПОРАЖЕНИЕ</div>
-                <div class="defeat-display">
-                    <div class="defeat-image">
-                        💀
-                    </div>
-                    <div class="defeat-info">
-                        <h4>Вы проиграли бой!</h4>
-                        <p>Герой повержен и нуждается в лечении.</p>
-                        <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    // Продолжить после боя
-    continueAfterBattle() {
-        this.renderHeroScreen();
+        this.renderHeroScreen(); // Перерендериваем для обновления интерфейса
     }
 
     // Обновление здоровья (ИСПРАВЛЕННЫЙ метод)
@@ -1305,12 +1257,10 @@ startAdventure() {
                 this.endBattle(false);
             } else {
                 this.saveGame();
-                this.renderBattleInMonsterColumn();
+                this.renderHeroScreen();
             }
         }
     }
-
-    // ========== КОНЕЦ СИСТЕМЫ БОЯ ==========
 
     // Попытка скрыться
     attemptStealth() {
@@ -1367,82 +1317,11 @@ startAdventure() {
     // Завершение встречи
     completeEncounter() {
         this.currentMonster = null;
-        
-        const container = document.getElementById('app');
-        const monsterActions = container.querySelector('.monster-actions');
-        if (monsterActions) {
-            monsterActions.remove();
-        }
+        this.battleActive = false;
         
         this.addToLog(`🏁 Встреча завершена`);
         this.saveGame();
-        setTimeout(() => {
-            this.renderHeroScreen();
-        }, 2000);
-    }
-
-    // Рендер колонки монстра/награды
-    renderMonsterRewardColumn() {
-        if (this.currentMonster) {
-            const monsterDisplay = this.renderMonsterDisplay();
-            setTimeout(() => {
-                this.showMonsterActions();
-            }, 100);
-            return monsterDisplay;
-        } else {
-            return `
-                <div class="monster-info">
-                    <div class="monster-image-large">
-                        <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 3em; margin-bottom: 10px;">⚔️</div>
-                            <div>Встретьте монстра</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-    }
-
-    // Рендер монстра
-    renderMonsterDisplay() {
-        if (!this.currentMonster) return '';
-        
-        const stats = this.calculateHeroStats(this.currentHero);
-        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
-
-        return `
-            <div class="monster-info">
-                <div class="monster-image-large">
-                                    <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                </div>
-                <h4>${this.currentMonster.name}</h4>
-                <p>${this.currentMonster.description}</p>
-                
-                <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
-                    <div class="stat-card">
-                        <div>❤️ Здоровье</div>
-                        <div class="stat-value">${this.currentMonster.health}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>⚔️ Урон</div>
-                        <div class="stat-value">${this.currentMonster.damage}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>🛡️ Броня</div>
-                        <div class="stat-value">${this.currentMonster.armor}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div>🌟 Мощь</div>
-                        <div class="stat-value">${this.currentMonster.power}</div>
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin: 10px 0;">
-                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
-                    <p>💰 Награда: ${this.currentMonster.reward} золота</p>
-                </div>
-            </div>
-        `;
+        this.renderHeroScreen();
     }
 
     // Показать выбор карты
