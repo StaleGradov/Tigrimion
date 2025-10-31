@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "Бешенная Сорока",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Soroka.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Soroka.jpg",
     "health": 120,
     "armor": 0,
     "damage": 10,
@@ -14,7 +14,7 @@
   {
     "id": 2,
     "name": "Лиса",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Lisa.jpg", 
     "health": 160,
     "armor": 0,
     "damage": 20,
@@ -26,7 +26,7 @@
     {
     "id": 3,
     "name": "Бродячий Пёс",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 200,
     "armor": 5,
     "damage": 30,
