@@ -14,8 +14,8 @@ body {
 }
 
 .container {
-    max-width: 1800px; /* Увеличили с 1600px до 1800px */
-    padding: 10px;
+    max-width: 2000px; /* Увеличили до 2000px */
+    padding: 15px; /* Увеличили padding */
     margin: 0 auto;
 }
 
@@ -35,9 +35,9 @@ body {
 /* Список героев - ЕЩЕ ШИРЕ */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); /* Увеличили с 350px до 400px */
-    gap: 25px; /* Увеличили gap */
-    padding: 25px; /* Увеличили padding */
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Увеличили до 450px */
+    gap: 30px; /* Увеличили gap */
+    padding: 30px; /* Увеличили padding */
 }
 
 .hero-option {
@@ -47,7 +47,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 420px; /* Увеличили высоту */
+    height: 480px; /* Увеличили высоту */
     overflow: hidden;
 }
 
@@ -187,9 +187,9 @@ body {
 /* НОВЫЙ МАКЕТ - еще шире */
 .hero-layout {
     display: grid;
-    grid-template-columns: 1.5fr 2fr 2fr; /* Увеличили пропорции */
-    gap: 25px; /* Увеличили gap */
-    margin-bottom: 20px;
+    grid-template-columns: 1.8fr 2.2fr 2.2fr; /* Увеличили пропорции */
+    gap: 30px; /* Увеличили gap */
+    margin-bottom: 25px; /* Увеличили отступ */
     align-items: start;
 }
 
@@ -197,35 +197,35 @@ body {
 .hero-column {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Увеличили gap */
+    gap: 25px; /* Увеличили gap */
 }
 
 /* Центральная и правая колонки - карта и локация */
 .map-column, .location-column {
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Увеличили gap */
+    gap: 25px; /* Увеличили gap */
 }
 
-/* Общие стили для всех изображений - УВЕЛИЧИВАЕМ В 2 РАЗА */
+/* Общие стили для всех изображений - УВЕЛИЧИВАЕМ В 2.5 РАЗА */
 .hero-image, .map-image-large, .location-image-large, .monster-image-large {
     width: 100%;
-    height: 350px; /* УВЕЛИЧИЛИ В 2 РАЗА с 220px до 350px */
-    border-radius: 10px;
+    height: 450px; /* УВЕЛИЧИЛИ ДО 450px */
+    border-radius: 12px; /* Увеличили радиус */
     overflow: hidden;
     background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid #4cc9f0;
+    border: 4px solid #4cc9f0; /* Увеличили бордер */
     position: relative;
 }
 
 .hero-image img, .map-image-large img, .location-image-large img, .monster-image-large img {
     width: auto;
     height: auto;
-    max-width: 95%;
-    max-height: 95%;
+    max-width: 98%; /* Увеличили максимальную ширину */
+    max-height: 98%; /* Увеличили максимальную высоту */
     object-fit: contain;
 }
 
@@ -250,8 +250,8 @@ body {
     font-weight: bold;
     margin-bottom: 5px;
     color: #ffd700;
-    font-size: 1.2em; /* Увеличили шрифт */
-    padding: 10px; /* Увеличили padding */
+    font-size: 1.3em; /* Увеличили шрифт */
+    padding: 12px; /* Увеличили padding */
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 1px solid rgba(255, 215, 0, 0.3);
@@ -260,7 +260,7 @@ body {
 /* Стили для основной информации героя */
 .hero-info {
     text-align: center;
-    padding: 20px; /* Увеличили padding */
+    padding: 25px; /* Увеличили padding */
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -269,7 +269,7 @@ body {
 .hero-info h2 {
     color: #ffd700;
     margin-bottom: 15px;
-    font-size: 1.6em; /* Увеличили шрифт */
+    font-size: 1.8em; /* Увеличили шрифт */
 }
 
 .health-display {
@@ -414,7 +414,7 @@ body {
 /* Информация о карте и локации */
 .map-info, .location-info, .monster-info, .reward-info {
     background: rgba(255, 255, 255, 0.05);
-    padding: 20px; /* Увеличили padding */
+    padding: 25px; /* Увеличили padding */
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
@@ -423,7 +423,7 @@ body {
 .map-info h4, .location-info h4, .monster-info h4 {
     color: #ffd700;
     margin-bottom: 10px;
-    font-size: 1.3em; /* Увеличили шрифт */
+    font-size: 1.4em; /* Увеличили шрифт */
 }
 
 .map-multiplier, .location-stats {
@@ -442,7 +442,7 @@ body {
 
 .monster-reward-column {
     background: rgba(255, 255, 255, 0.05);
-    padding: 20px; /* Увеличили padding */
+    padding: 25px; /* Увеличили padding */
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -464,7 +464,7 @@ body {
 /* Бонусы */
 .bonuses-section {
     background: rgba(255, 255, 255, 0.05);
-    padding: 20px; /* Увеличили padding */
+    padding: 25px; /* Увеличили padding */
     border-radius: 10px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -473,7 +473,7 @@ body {
 .bonuses-section h3 {
     color: #ffd700;
     margin-bottom: 10px;
-    font-size: 1.3em; /* Увеличили шрифт */
+    font-size: 1.4em; /* Увеличили шрифт */
 }
 
 .bonus-item {
