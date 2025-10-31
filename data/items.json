@@ -5,9 +5,9 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/rusty_sword.jpg",
     "type": "weapon",
     "slot": "main_hand",
-    "fixed_damage": 5,
+    "fixed_damage": 50,
     "bonus": {"type": "damage_mult", "value": 0.1},
-    "price": 50,
+    "price": 0.5,
     "sellPrice": 25,
     "requiredLevel": 1,
     "description": "Старый ржавый меч, но лучше чем ничего"
@@ -44,9 +44,9 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/leather_armor.jpg",
     "type": "armor",
     "slot": "chest",
-    "fixed_armor": 5,
+    "fixed_armor": 15,
     "bonus": {"type": "health_mult", "value": 0.1},
-    "price": 70,
+    "price": 0.7,
     "sellPrice": 35,
     "requiredLevel": 1,
     "description": "Простая кожаная броня"
