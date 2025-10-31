@@ -43,7 +43,7 @@ class HeroGame {
         // Видео для карт и локаций
         this.videos = {
             map: 'https://www.youtube.com/watch?v=4gSmkjlEO_Q',
-            location: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+            location: 'https://www.youtube.com/watch?v=ytr51kwNLPo'
         };
         
         this.showVideo = {
