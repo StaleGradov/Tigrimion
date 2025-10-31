@@ -29,11 +29,31 @@ class HeroGame {
         this.globalInventory = [];
         
         // Видео для разных элементов
-        this.videos = {
-            hero: 'https://www.youtube.com/watch?v=mfziNIhX9mo',
-            map: 'https://www.youtube.com/watch?v=4gSmkjlEO_Q',
-            location: 'https://www.youtube.com/watch?v=ytr51kwNLPo'
-        };
+        // Видео для каждого героя (примеры - замените на реальные видео)
+    this.heroVideos = {
+        1: 'https://www.youtube.com/watch?v=mfziNIhX9mo', // Герой 1
+        2: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 2  
+        3: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 3
+        4: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 4
+        5: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 5
+        6: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 6
+        7: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 7
+        8: 'https://www.youtube.com/embed/dQw4w9WgXcQ'  // Герой 8
+    };
+    
+    // Видео для карт и локаций
+    this.videos = {
+        map: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        location: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    };
+    
+    this.showVideo = {
+        hero: false,
+        map: false,
+        location: false
+    };
+}
+
         
         this.showVideo = {
             hero: false,
@@ -617,8 +637,7 @@ class HeroGame {
         this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
-  // Рендер основного экрана героя с картинками на весь экран
-renderHeroScreen() {
+ renderHeroScreen() {
     if (!this.currentHero) return;
 
     const stats = this.calculateHeroStats(this.currentHero);
@@ -633,22 +652,24 @@ renderHeroScreen() {
     const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
     const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
 
-    // Получаем URL картинок для фонов
+    // Получаем URL картинок и видео
     const heroBackground = this.currentHero.image;
-    const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
-    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
-    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
+    const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
+    
+    const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
+    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
 
     const container = document.getElementById('app');
     container.innerHTML = `
         <div class="screen active" id="screen-main">
             <!-- Кнопки действий -->
             <div class="action-buttons">
-                <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
                 <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
                 <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
-                <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
-                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
+                <button class="btn-danger" onclick="game.resetHero()">🔄 Сброс</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
             </div>
 
             <!-- 4 КОЛОНКИ С КАРТИНКАМИ НА ВЕСЬ ЭКРАН -->
@@ -657,7 +678,7 @@ renderHeroScreen() {
                 <div class="hero-column" style="background-image: url('${heroBackground}')">
                     ${this.showVideo.hero ? `
                         <div class="video-container">
-                            <iframe src="${this.videos.hero}?autoplay=1" 
+                            <iframe src="${heroVideo}?autoplay=1&mute=1" 
                                     allow="autoplay; encrypted-media" 
                                     allowfullscreen>
                             </iframe>
@@ -665,25 +686,25 @@ renderHeroScreen() {
                     ` : ''}
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
+                        <div class="column-title">🎯 ${this.currentHero.name}</div>
                         ${!this.showVideo.hero ? `
-                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Включить видео</button>
-                        ` : ''}
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Видео</button>
+                        ` : `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🖼️ Фото</button>
+                        `}
                         
                         <div class="hero-info">
-                            <h2>${this.currentHero.name}</h2>
-                            
                             <div class="health-display">
                                 <div class="health-bar-container">
                                     <div class="health-bar">
                                         <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
                                     </div>
                                     <div class="health-text">
-                                        ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
                                     </div>
                                 </div>
                                 <div class="health-regen">
-                                    ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
+                                    ⚡ ${Math.round(this.currentHero.healthRegen * 60)}/мин
                                 </div>
                             </div>
 
@@ -708,7 +729,7 @@ renderHeroScreen() {
                                         ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : '⚔️'}
                                     </div>
                                     <div>
-                                        <strong>Оружие</strong>
+                                        <div><strong>Оружие</strong></div>
                                         <div>${weapon ? weapon.name : 'Пусто'}</div>
                                     </div>
                                 </div>
@@ -718,7 +739,7 @@ renderHeroScreen() {
                                         ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : '🛡️'}
                                     </div>
                                     <div>
-                                        <strong>Броня</strong>
+                                        <div><strong>Броня</strong></div>
                                         <div>${armor ? armor.name : 'Пусто'}</div>
                                     </div>
                                 </div>
@@ -728,19 +749,19 @@ renderHeroScreen() {
                                 <div class="level-progress-fill" style="width: ${expProgress}%"></div>
                             </div>
                             <div class="hero-progress">
-                                <span>Ур. ${this.currentHero.level}</span>
-                                <span>💰 ${this.currentHero.gold}</span>
-                                <span>⚡ ${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                                <span>Ур.${this.currentHero.level}</span>
+                                <span>💰${this.currentHero.gold}</span>
+                                <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
                             </div>
                         </div>
 
                         <div class="bonuses-section">
-                            <h3>🎯 Бонусы:</h3>
+                            <h3>🎯 Бонусы</h3>
                             <div class="bonus-item">
                                 <strong>Раса:</strong> ${bonuses.races[this.currentHero.race]?.name} 
                             </div>
                             <div class="bonus-item">
-                                <strong>Профессия:</strong> ${bonuses.classes[this.currentHero.class]?.name}
+                                <strong>Класс:</strong> ${bonuses.classes[this.currentHero.class]?.name}
                             </div>
                             <div class="bonus-item">
                                 <strong>Сага:</strong> ${bonuses.sagas[this.currentHero.saga]?.name}
@@ -753,7 +774,7 @@ renderHeroScreen() {
                 <div class="monster-column" style="background-image: url('${monsterBackground}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">🎭 ВРАГ</div>
+                        <div class="column-title">🎭 Враг</div>
                         ${this.renderMonsterColumn()}
                     </div>
                 </div>
@@ -762,7 +783,7 @@ renderHeroScreen() {
                 <div class="map-column" style="background-image: url('${mapBackground}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">🗺️ КАРТА</div>
+                        <div class="column-title">🗺️ Карта</div>
                         ${this.renderMapSelection()}
                     </div>
                 </div>
@@ -771,7 +792,7 @@ renderHeroScreen() {
                 <div class="location-column" style="background-image: url('${locationBackground}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">📍 ЛОКАЦИЯ</div>
+                        <div class="column-title">📍 Локация</div>
                         ${this.renderLocationSelection()}
                     </div>
                 </div>
@@ -783,6 +804,12 @@ renderHeroScreen() {
     `;
 
     this.startHealthAnimation();
+}
+
+// В методе toggleVideo обновите для использования правильного видео героя
+toggleVideo(type) {
+    this.showVideo[type] = !this.showVideo[type];
+    this.renderHeroScreen();
 }
 
 // Обновите метод renderMonsterColumn:
