@@ -19,28 +19,31 @@ body {
     padding: 20px;
 }
 
-/* Экран выбора героя */
+/* Экран выбора героя - ВЕРНУЛ КАК БЫЛО */
 .hero-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     margin-top: 20px;
 }
 
 .hero-option {
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 15px;
-    padding: 20px;
+    border-radius: 10px;
+    padding: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    display: flex;
+    gap: 15px;
+    align-items: center;
 }
 
 .hero-option:hover:not(.locked) {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
     border-color: #4ECDC4;
-    box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.3);
 }
 
 .hero-option.locked {
@@ -50,11 +53,11 @@ body {
 
 .hero-option-image {
     position: relative;
-    width: 100%;
-    height: 200px;
-    border-radius: 10px;
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .hero-option-image img {
@@ -73,58 +76,64 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3em;
+    font-size: 1.5em;
+}
+
+.hero-option-info {
+    flex: 1;
 }
 
 .hero-option-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .hero-level {
     background: #4ECDC4;
     color: #000;
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 2px 8px;
+    border-radius: 12px;
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 0.8em;
 }
 
 .hero-option-stats {
-    margin: 10px 0;
+    margin: 8px 0;
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 0.9em;
+    margin-bottom: 4px;
+    font-size: 0.85em;
 }
 
 .hero-option-skills {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 10px 0;
+    gap: 6px;
+    margin: 8px 0;
 }
 
 .hero-option-skills span {
     background: rgba(78, 205, 196, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.75em;
 }
 
 .hero-option-bonuses {
-    margin-top: 10px;
+    margin-top: 8px;
     color: #ccc;
+    font-size: 0.8em;
 }
 
 .locked-text {
     color: #ff6b6b;
     font-weight: bold;
+    font-size: 0.8em;
 }
 
 /* Главный экран */
@@ -151,7 +160,8 @@ body {
     color: #4ECDC4;
 }
 
-.hero-image {
+/* Исправленные изображения - полное отображение */
+.hero-image, .map-image, .location-image, .monster-image {
     width: 100%;
     height: 200px;
     border-radius: 10px;
@@ -159,10 +169,11 @@ body {
     margin-bottom: 15px;
 }
 
-.hero-image img {
+.hero-image img, .map-image img, .location-image img, .monster-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Изменил на contain чтобы изображения отображались полностью */
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* Анимированная шкала здоровья */
@@ -177,20 +188,18 @@ body {
 
 .health-bar {
     width: 100%;
-    height: 24px;
+    height: 20px;
     background: rgba(255, 0, 0, 0.3);
-    border-radius: 12px;
+    border-radius: 10px;
     overflow: hidden;
     border: 2px solid #444;
-    position: relative;
 }
 
 .health-bar-fill {
     height: 100%;
     background: linear-gradient(90deg, #ff0000, #ff6b6b);
-    border-radius: 10px;
+    border-radius: 8px;
     transition: width 0.5s ease-in-out;
-    position: relative;
 }
 
 .health-text {
@@ -198,7 +207,6 @@ body {
     font-weight: bold;
     color: white;
     margin-top: 5px;
-    font-size: 1.1em;
 }
 
 .health-regen {
@@ -217,27 +225,27 @@ body {
 
 .main-stat {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    border-radius: 8px;
     padding: 10px;
     text-align: center;
 }
 
 .stat-icon {
-    font-size: 1.5em;
+    font-size: 1.2em;
     display: block;
 }
 
 .stat-value {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: bold;
     color: #4ECDC4;
 }
 
 .level-progress {
     width: 100%;
-    height: 8px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
+    border-radius: 3px;
     margin: 10px 0;
     overflow: hidden;
 }
@@ -245,36 +253,22 @@ body {
 .level-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #4ECDC4, #00b4db);
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.3s ease;
 }
 
 .hero-progress {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: #ccc;
 }
 
 /* Карты и локации */
-.map-image-large, .location-image-large {
-    width: 100%;
-    height: 150px;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 15px;
-}
-
-.map-image-large img, .location-image-large img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
 .map-multiplier {
     background: rgba(255, 193, 7, 0.2);
-    padding: 8px 12px;
-    border-radius: 8px;
+    padding: 6px 10px;
+    border-radius: 6px;
     margin: 10px 0;
     text-align: center;
     font-weight: bold;
@@ -282,10 +276,10 @@ body {
 
 .location-stats {
     background: rgba(255, 255, 255, 0.1);
-    padding: 10px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     margin: 10px 0;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 /* Секция монстра/награды */
@@ -297,37 +291,187 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.monster-image-large {
-    width: 100%;
-    height: 200px;
+.monster-reward-column {
+    min-height: 400px;
+}
+
+/* Бой в колонке монстра */
+.battle-in-monster-column {
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
-    overflow: hidden;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.battle-header h4 {
+    color: #ff6b6b;
+    margin: 0;
+}
+
+.battle-round {
+    background: rgba(255, 107, 107, 0.2);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+.battle-combatants-compact {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 15px;
+    align-items: center;
     margin-bottom: 15px;
 }
 
-.monster-image-large img {
+.combatant-compact {
+    text-align: center;
+}
+
+.combatant-image-compact {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 8px;
+    border: 2px solid #4ECDC4;
+}
+
+.combatant-image-compact img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.stats-grid {
-    display: grid;
-    gap: 10px;
-    margin: 15px 0;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.stat-value {
+.vs-compact {
     font-size: 1.2em;
     font-weight: bold;
+    color: #ff6b6b;
+}
+
+.health-bar-compact {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 0, 0, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.health-bar-fill-compact {
+    height: 100%;
+    background: linear-gradient(90deg, #ff0000, #ff6b6b);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.health-text-compact {
+    font-size: 0.8em;
+    color: #ccc;
+}
+
+.battle-log-compact {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 15px;
+    max-height: 100px;
+    overflow-y: auto;
+    font-size: 0.8em;
+}
+
+.battle-log-entry-compact {
+    margin-bottom: 4px;
+    padding: 3px;
+    border-radius: 3px;
+    font-size: 0.75em;
+}
+
+.battle-log-entry-compact.hero-attack {
+    background: rgba(78, 205, 196, 0.2);
     color: #4ECDC4;
+}
+
+.battle-log-entry-compact.monster-attack {
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+}
+
+.battle-log-entry-compact.victory {
+    background: rgba(46, 204, 113, 0.3);
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.battle-log-entry-compact.defeat {
+    background: rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.battle-actions-compact {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.btn-battle-attack-compact, .btn-battle-escape-compact {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-battle-attack-compact {
+    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+    color: #fff;
+}
+
+.btn-battle-escape-compact {
+    background: linear-gradient(135deg, #4ECDC4, #00b4db);
+    color: #000;
+}
+
+.btn-battle-attack-compact:hover, .btn-battle-escape-compact:hover {
+    transform: translateY(-2px);
+}
+
+/* Отображение награды */
+.reward-display, .defeat-display {
+    text-align: center;
+    padding: 20px;
+}
+
+.reward-image-large, .defeat-image {
+    font-size: 4em;
+    margin-bottom: 15px;
+}
+
+.reward-info h4, .defeat-info h4 {
+    color: #4ECDC4;
+    margin-bottom: 10px;
+}
+
+.reward-amount {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #FFD700;
+    margin: 10px 0;
+}
+
+.defeat-info h4 {
+    color: #ff6b6b;
 }
 
 /* Экипировка */
@@ -404,7 +548,7 @@ body {
     margin-bottom: 20px;
 }
 
-.btn-primary, .btn-secondary, .btn-danger, .btn-battle-attack, .btn-battle-escape {
+.btn-primary, .btn-secondary, .btn-danger {
     padding: 12px 20px;
     border: none;
     border-radius: 8px;
@@ -431,29 +575,9 @@ body {
     color: #fff;
 }
 
-.btn-battle-attack {
-    background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
-    color: #fff;
-}
-
-.btn-battle-escape {
-    background: linear-gradient(135deg, #4ECDC4, #00b4db);
-    color: #000;
-}
-
-.btn-primary:hover, .btn-battle-attack:hover, .btn-battle-escape:hover {
+.btn-primary:hover, .btn-secondary:hover, .btn-danger:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-}
-
-.btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
 }
 
 /* Журнал событий */
@@ -461,10 +585,10 @@ body {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
     padding: 15px;
-    max-height: 200px;
+    max-height: 150px;
     overflow-y: auto;
     font-family: 'Courier New', monospace;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .log-entry {
@@ -478,98 +602,10 @@ body {
     border-bottom: none;
 }
 
-/* Экран боя */
-.battle-screen {
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 15px;
-    padding: 20px;
-    margin-top: 20px;
-    backdrop-filter: blur(10px);
-}
-
-.battle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.battle-combatants {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 20px;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.combatant {
-    text-align: center;
-}
-
-.combatant-image {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin: 0 auto 10px;
-    border: 3px solid #4ECDC4;
-}
-
-.combatant-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.vs {
-    font-size: 2em;
-    font-weight: bold;
-    color: #ff6b6b;
-}
-
-.battle-log-container {
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.battle-log-entry {
-    margin-bottom: 5px;
-    padding: 5px;
-    border-radius: 4px;
-}
-
-.battle-log-entry.hero-attack {
-    background: rgba(78, 205, 196, 0.2);
-    color: #4ECDC4;
-}
-
-.battle-log-entry.monster-attack {
-    background: rgba(255, 107, 107, 0.2);
-    color: #ff6b6b;
-}
-
-.battle-log-entry.victory {
-    background: rgba(46, 204, 113, 0.3);
-    color: #2ecc71;
-    font-weight: bold;
-}
-
-.battle-log-entry.defeat {
-    background: rgba(231, 76, 60, 0.3);
-    color: #e74c3c;
-    font-weight: bold;
-}
-
 /* Выбор карт и локаций */
 .maps-grid, .locations-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 15px;
     margin: 20px 0;
 }
@@ -654,7 +690,7 @@ body {
     flex-wrap: wrap;
     gap: 8px;
     margin: 8px 0;
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .item-stats span {
@@ -679,7 +715,27 @@ body {
 .merchant-actions button {
     flex: 1;
     padding: 8px 12px;
-    font-size: 0.9em;
+    font-size: 0.85em;
+}
+
+/* Статистика монстра */
+.stats-grid {
+    display: grid;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #4ECDC4;
 }
 
 /* Утилиты */
@@ -693,17 +749,6 @@ body {
 
 .screen.active {
     display: block;
-}
-
-/* Анимации */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-.pulse {
-    animation: pulse 2s infinite;
 }
 
 /* Адаптивность */
@@ -724,12 +769,12 @@ body {
         grid-template-columns: 1fr;
     }
     
-    .battle-combatants {
+    .battle-combatants-compact {
         grid-template-columns: 1fr;
         gap: 10px;
     }
     
-    .vs {
+    .vs-compact {
         order: -1;
         margin-bottom: 10px;
     }
@@ -737,21 +782,31 @@ body {
     .maps-grid, .locations-grid {
         grid-template-columns: 1fr;
     }
+    
+    .hero-option {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .hero-option-image {
+        width: 100px;
+        height: 100px;
+    }
 }
 
 /* Скроллбар */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
     background: #4ECDC4;
-    border-radius: 4px;
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
