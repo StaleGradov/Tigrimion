@@ -617,52 +617,58 @@ class HeroGame {
         this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
-    // Рендер основного экрана героя с 4 колонками
-    renderHeroScreen() {
-        if (!this.currentHero) return;
+  // Рендер основного экрана героя с картинками на весь экран
+renderHeroScreen() {
+    if (!this.currentHero) return;
 
-        const stats = this.calculateHeroStats(this.currentHero);
-        const bonuses = this.getBonuses();
+    const stats = this.calculateHeroStats(this.currentHero);
+    const bonuses = this.getBonuses();
 
-        const weapon = this.currentHero.equipment.main_hand ? 
-            this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-        const armor = this.currentHero.equipment.chest ? 
-            this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
+    const weapon = this.currentHero.equipment.main_hand ? 
+        this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
+    const armor = this.currentHero.equipment.chest ? 
+        this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
 
-        const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
-        const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
-        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+    const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
+    const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
+    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
 
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-main">
-                <!-- Кнопки действий -->
-                <div class="action-buttons">
-                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
-                    <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
-                    <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
-                    <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
-                    <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
-                </div>
+    // Получаем URL картинок для фонов
+    const heroBackground = this.currentHero.image;
+    const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
+    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
 
-                <!-- 4 КОЛОНКИ: ГЕРОЙ, МОНСТР, КАРТА, ЛОКАЦИЯ -->
-                <div class="hero-layout">
-                    <!-- Колонка 1: Герой -->
-                    <div class="hero-column">
+    const container = document.getElementById('app');
+    container.innerHTML = `
+        <div class="screen active" id="screen-main">
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
+                <button class="btn-danger" onclick="game.resetHero()">🔄 Сбросить героя</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Сменить героя</button>
+            </div>
+
+            <!-- 4 КОЛОНКИ С КАРТИНКАМИ НА ВЕСЬ ЭКРАН -->
+            <div class="hero-layout">
+                <!-- Колонка 1: Герой -->
+                <div class="hero-column" style="background-image: url('${heroBackground}')">
+                    ${this.showVideo.hero ? `
+                        <div class="video-container">
+                            <iframe src="${this.videos.hero}?autoplay=1" 
+                                    allow="autoplay; encrypted-media" 
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    ` : ''}
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
                         <div class="column-title">🎯 ВАШ ГЕРОЙ</div>
-                        
-                        ${this.showVideo.hero ? `
-                            <div class="video-container">
-                                <iframe src="${this.videos.hero}?autoplay=1" 
-                                        allow="autoplay; encrypted-media" 
-                                        allowfullscreen>
-                                </iframe>
-                            </div>
-                        ` : `
-                            <div class="hero-image" onclick="game.toggleVideo('hero')">
-                                <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                            </div>
-                        `}
+                        ${!this.showVideo.hero ? `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Включить видео</button>
+                        ` : ''}
                         
                         <div class="hero-info">
                             <h2>${this.currentHero.name}</h2>
@@ -676,7 +682,7 @@ class HeroGame {
                                         ❤️ <span id="current-health">${stats.currentHealth}</span> / <span id="max-health">${stats.maxHealth}</span>
                                     </div>
                                 </div>
-                                <div style="font-size: 0.8em; color: rgba(255,255,255,0.7);">
+                                <div class="health-regen">
                                     ⚡ Регенерация: ${Math.round(this.currentHero.healthRegen * 60)}/мин
                                 </div>
                             </div>
@@ -699,20 +705,20 @@ class HeroGame {
                             <div class="equipment-section">
                                 <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                                     <div class="equipment-icon">
-                                        ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : ''}
+                                        ${weapon ? `<img src="${weapon.image}" alt="${weapon.name}" onerror="this.style.display='none'">` : '⚔️'}
                                     </div>
                                     <div>
-                                        <strong>⚔️ Оружие</strong>
+                                        <strong>Оружие</strong>
                                         <div>${weapon ? weapon.name : 'Пусто'}</div>
                                     </div>
                                 </div>
                                 
                                 <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                                     <div class="equipment-icon">
-                                        ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : ''}
+                                        ${armor ? `<img src="${armor.image}" alt="${armor.name}" onerror="this.style.display='none'">` : '🛡️'}
                                     </div>
                                     <div>
-                                        <strong>🛡️ Броня</strong>
+                                        <strong>Броня</strong>
                                         <div>${armor ? armor.name : 'Пусто'}</div>
                                     </div>
                                 </div>
@@ -741,101 +747,104 @@ class HeroGame {
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Колонка 2: Монстр -->
-                    <div class="monster-column">
+                <!-- Колонка 2: Монстр -->
+                <div class="monster-column" style="background-image: url('${monsterBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
                         <div class="column-title">🎭 ВРАГ</div>
                         ${this.renderMonsterColumn()}
                     </div>
+                </div>
 
-                    <!-- Колонка 3: Карта -->
-                    <div class="map-column">
+                <!-- Колонка 3: Карта -->
+                <div class="map-column" style="background-image: url('${mapBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
                         <div class="column-title">🗺️ КАРТА</div>
                         ${this.renderMapSelection()}
                     </div>
+                </div>
 
-                    <!-- Колонка 4: Локация -->
-                    <div class="location-column">
+                <!-- Колонка 4: Локация -->
+                <div class="location-column" style="background-image: url('${locationBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
                         <div class="column-title">📍 ЛОКАЦИЯ</div>
                         ${this.renderLocationSelection()}
                     </div>
                 </div>
+            </div>
 
-                <!-- Журнал событий -->
-                <div class="battle-log" id="battle-log"></div>
+            <!-- Журнал событий -->
+            <div class="battle-log" id="battle-log"></div>
+        </div>
+    `;
+
+    this.startHealthAnimation();
+}
+
+// Обновите метод renderMonsterColumn:
+renderMonsterColumn() {
+    if (this.battleResult) {
+        return this.renderBattleResult();
+    }
+    
+    if (this.currentMonster) {
+        const stats = this.calculateHeroStats(this.currentHero);
+        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+        return `
+            <div class="monster-info">
+                <h4>${this.currentMonster.name}</h4>
+                <p>${this.currentMonster.description}</p>
+                
+                <div class="monster-stats-grid">
+                    <div class="monster-stat-card">
+                        <div>❤️ Здоровье</div>
+                        <div class="monster-stat-value">${this.currentMonster.health}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>⚔️ Урон</div>
+                        <div class="monster-stat-value">${this.currentMonster.damage}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🛡️ Броня</div>
+                        <div class="monster-stat-value">${this.currentMonster.armor}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🌟 Мощь</div>
+                        <div class="monster-stat-value">${this.currentMonster.power}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 12px 0; font-size: 1em;">
+                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                    <p>💰 Награда: ${this.currentMonster.reward} золота</p>
+                </div>
+
+                <!-- КНОПКИ ДЕЙСТВИЙ -->
+                <div class="monster-actions">
+                    <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
+                    <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
+                    <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                </div>
+            </div>
+            ${this.battleActive ? this.renderBattleInMonsterColumn() : ''}
+        `;
+    } else {
+        return `
+            <div class="monster-info" style="text-align: center; padding: 20px;">
+                <h4>Врага нет</h4>
+                <p>Начните путешествие, чтобы встретить противника</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                </div>
             </div>
         `;
-
-        this.startHealthAnimation();
     }
-
-    // Рендер колонки монстра
-    renderMonsterColumn() {
-        if (this.battleResult) {
-            return this.renderBattleResult();
-        }
-        
-        if (this.currentMonster) {
-            const stats = this.calculateHeroStats(this.currentHero);
-            const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
-
-            return `
-                <div class="monster-info">
-                    <div class="monster-image-large">
-                        <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    </div>
-                    <h4>${this.currentMonster.name}</h4>
-                    <p>${this.currentMonster.description}</p>
-                    
-                    <div class="monster-stats-grid">
-                        <div class="monster-stat-card">
-                            <div>❤️ Здоровье</div>
-                            <div class="monster-stat-value">${this.currentMonster.health}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>⚔️ Урон</div>
-                            <div class="monster-stat-value">${this.currentMonster.damage}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>🛡️ Броня</div>
-                            <div class="monster-stat-value">${this.currentMonster.armor}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>🌟 Мощь</div>
-                            <div class="monster-stat-value">${this.currentMonster.power}</div>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 8px 0; font-size: 0.9em;">
-                        <p><strong>Сравнение:</strong> ${powerComparison}</p>
-                        <p>💰 Награда: ${this.currentMonster.reward} золота</p>
-                    </div>
-
-                    <!-- КНОПКИ ДЕЙСТВИЙ ПЕРЕМЕЩЕНЫ СЮДА -->
-                    <div class="monster-actions">
-                        <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                        <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
-                        <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
-                    </div>
-                </div>
-                ${this.battleActive ? this.renderBattleInMonsterColumn() : ''}
-            `;
-        } else {
-            return `
-                <div class="monster-info">
-                    <div class="monster-image-large">
-                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 2.5em; margin-bottom: 10px;">⚔️</div>
-                            <div>Встретьте монстра в путешествии</div>
-                        </div>
-                    </div>
-                    <div style="text-align: center; margin-top: 10px;">
-                        <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
-                    </div>
-                </div>
-            `;
-        }
-    }
+}
 
     // Рендер результата боя
     renderBattleResult() {
@@ -933,91 +942,72 @@ class HeroGame {
         `;
     }
 
-    // Рендер выбора карты
-    renderMapSelection() {
-        if (this.currentMap) {
-            return `
-                <div class="map-info">
-                    ${this.showVideo.map ? `
-                        <div class="video-container">
-                            <iframe src="${this.videos.map}?autoplay=1" 
-                                    allow="autoplay; encrypted-media" 
-                                    allowfullscreen>
-                            </iframe>
-                        </div>
-                    ` : `
-                        <div class="map-image-large" onclick="game.toggleVideo('map')">
-                            <img src="${this.currentMap.image}" alt="${this.currentMap.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        </div>
-                    `}
-                    <h4>${this.currentMap.name}</h4>
-                    <p>${this.currentMap.description}</p>
-                    <div style="background: rgba(255,255,255,0.1); padding: 6px; border-radius: 5px; margin: 6px 0; font-size: 0.9em;">
-                        Множитель силы: x${this.currentMap.multiplier}
-                    </div>
-                    <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
+  // Обновите метод renderMapSelection:
+renderMapSelection() {
+    if (this.currentMap) {
+        return `
+            <div class="map-info">
+                ${this.showVideo.map ? `
+                    <button class="video-toggle" onclick="game.toggleVideo('map')">🖼️ Показать картинку</button>
+                ` : `
+                    <button class="video-toggle" onclick="game.toggleVideo('map')">🎬 Включить видео</button>
+                `}
+                <h4>${this.currentMap.name}</h4>
+                <p>${this.currentMap.description}</p>
+                <div style="background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; margin: 10px 0; border: 2px solid rgba(74, 222, 128, 0.5);">
+                    <strong>Множитель силы: x${this.currentMap.multiplier}</strong>
                 </div>
-            `;
-        } else {
-            return `
-                <div class="map-info">
-                    <div class="map-image-large">
-                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 2.5em; margin-bottom: 10px;">🗺️</div>
-                            <div>Выберите карту</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="game.showMapSelection()">Выбрать карту</button>
+                <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="map-info" style="text-align: center; padding: 20px;">
+                <h4>Карта не выбрана</h4>
+                <p>Выберите карту для путешествия</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.showMapSelection()">🗺️ Выбрать карту</button>
                 </div>
-            `;
-        }
+            </div>
+        `;
     }
-
-    // Рендер выбора локации
-    renderLocationSelection() {
-        if (this.currentLocation) {
-            const progress = this.locationProgress[this.currentLocation.level];
-            const progressText = progress ? `Прогресс: ${progress.monstersKilled}/${progress.totalMonsters}` : '';
-            
-            return `
-                <div class="location-info">
-                    ${this.showVideo.location ? `
-                        <div class="video-container">
-                            <iframe src="${this.videos.location}?autoplay=1" 
-                                    allow="autoplay; encrypted-media" 
-                                    allowfullscreen>
-                            </iframe>
-                        </div>
-                    ` : `
-                        <div class="location-image-large" onclick="game.toggleVideo('location')">
-                            <img src="${this.currentLocation.image}" alt="${this.currentLocation.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        </div>
-                    `}
-                    <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
-                    <p>${this.currentLocation.description}</p>
-                    <div style="background: rgba(255,255,255,0.1); padding: 6px; border-radius: 5px; margin: 6px 0; font-size: 0.9em;">
-                        <div>Монстры: №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
-                        <div>Артефакты: ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
-                        <div>Реликвии: ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
-                        ${progressText ? `<div>${progressText}</div>` : ''}
-                    </div>
-                    <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
+}
+   // Обновите метод renderLocationSelection:
+renderLocationSelection() {
+    if (this.currentLocation) {
+        const progress = this.locationProgress[this.currentLocation.level];
+        const progressText = progress ? `Прогресс: ${progress.monstersKilled}/${progress.totalMonsters}` : '';
+        
+        return `
+            <div class="location-info">
+                ${this.showVideo.location ? `
+                    <button class="video-toggle" onclick="game.toggleVideo('location')">🖼️ Показать картинку</button>
+                ` : `
+                    <button class="video-toggle" onclick="game.toggleVideo('location')">🎬 Включить видео</button>
+                `}
+                <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
+                <p>${this.currentLocation.description}</p>
+                <div style="background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; margin: 10px 0; border: 2px solid rgba(245, 158, 11, 0.5);">
+                    <div><strong>Монстры:</strong> №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
+                    <div><strong>Артефакты:</strong> ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
+                    <div><strong>Реликвии:</strong> ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
+                    ${progressText ? `<div><strong>${progressText}</strong></div>` : ''}
                 </div>
-            `;
-        } else {
-            return `
-                <div class="location-info">
-                    <div class="location-image-large">
-                        <div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.5);">
-                            <div style="font-size: 2.5em; margin-bottom: 10px;">📍</div>
-                            <div>Выберите локацию</div>
-                        </div>
-                    </div>
-                    <button class="btn-primary" onclick="game.showLocationSelection()">Выбрать локацию</button>
+                <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="location-info" style="text-align: center; padding: 20px;">
+                <h4>Локация не выбрана</h4>
+                <p>Выберите локацию для исследования</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.showLocationSelection()">📍 Выбрать локацию</button>
                 </div>
-            `;
-        }
+            </div>
+        `;
     }
+}
 
     // Переключение видео
     toggleVideo(type) {
