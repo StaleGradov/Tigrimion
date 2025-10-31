@@ -208,7 +208,7 @@ body {
 }
 
 /* Общие стили для всех изображений */
-.hero-image, .map-image-large, .location-image-large, .monster-image-large {
+.hero-image, .map-image-large, .location-image-large {
     width: 100%;
     height: 450px;
     border-radius: 12px;
@@ -218,6 +218,20 @@ body {
     align-items: center;
     justify-content: center;
     border: 4px solid #4cc9f0;
+    position: relative;
+}
+
+/* УМЕНЬШАЕМ КАРТИНКУ МОНСТРА */
+.monster-image-large {
+    width: 100%;
+    height: 250px; /* Уменьшили с 450px до 250px */
+    border-radius: 12px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #f87171;
     position: relative;
 }
 
@@ -237,11 +251,6 @@ body {
 /* Особый бордер для локации */
 .location-image-large {
     border-color: #f59e0b;
-}
-
-/* Особый бордер для монстра */
-.monster-image-large {
-    border-color: #f87171;
 }
 
 /* Заголовки колонок */
@@ -440,14 +449,16 @@ body {
     order: -1;
 }
 
+/* УМЕНЬШАЕМ ОКНО ВРАГ/НАГРАДА */
 .monster-reward-column {
     background: rgba(255, 255, 255, 0.05);
-    padding: 25px;
+    padding: 20px; /* Уменьшили padding */
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 400px; /* Минимальная высота */
 }
 
-/* Действия монстра - ПЕРЕМЕЩАЕМ В ОКНО МОНСТРА */
+/* Действия монстра - В ОКНЕ МОНСТРА */
 .monster-actions {
     display: flex;
     gap: 12px;
@@ -586,11 +597,11 @@ body {
     border-bottom: none;
 }
 
-/* Стили для компактного боя в колонке монстра */
+/* Стили для компактного боя в колонке монстра - УВЕЛИЧИВАЕМ ИКОНКИ */
 .battle-in-monster-column {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
-    padding: 12px;
+    padding: 15px;
     margin-top: 10px;
 }
 
@@ -598,7 +609,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     padding-bottom: 8px;
     border-bottom: 1px solid rgba(76, 201, 240, 0.3);
 }
@@ -606,39 +617,40 @@ body {
 .battle-header h4 {
     color: #ffd700;
     margin: 0;
-    font-size: 1em;
+    font-size: 1.1em;
 }
 
 .battle-round {
     background: rgba(76, 201, 240, 0.3);
-    padding: 3px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.8em;
+    font-size: 0.9em;
     font-weight: bold;
 }
 
 .battle-combatants-compact {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
-    gap: 10px;
+    gap: 20px; /* Увеличили gap */
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
 }
 
 .combatant-compact {
     text-align: center;
-    padding: 8px;
-    border-radius: 8px;
+    padding: 12px; /* Увеличили padding */
+    border-radius: 10px;
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* УВЕЛИЧИВАЕМ ИКОНКИ В БОЮ */
 .combatant-image-compact {
-    width: 50px;
-    height: 50px;
-    margin: 0 auto 6px;
+    width: 80px; /* Увеличили с 50px до 80px */
+    height: 80px; /* Увеличили с 50px до 80px */
+    margin: 0 auto 10px; /* Увеличили отступ */
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid currentColor;
+    border: 3px solid currentColor; /* Увеличили бордер */
 }
 
 .combatant-image-compact img {
@@ -648,16 +660,16 @@ body {
 }
 
 .combatant-info-compact {
-    font-size: 0.8em;
+    font-size: 0.9em; /* Увеличили шрифт */
 }
 
 .health-bar-compact {
     position: relative;
-    height: 12px;
+    height: 14px; /* Увеличили высоту */
     background: rgba(0, 0, 0, 0.5);
-    border-radius: 6px;
+    border-radius: 7px;
     overflow: hidden;
-    margin-bottom: 4px;
+    margin-bottom: 6px; /* Увеличили отступ */
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -667,32 +679,32 @@ body {
 }
 
 .health-text-compact {
-    font-size: 0.75em;
+    font-size: 0.85em; /* Увеличили шрифт */
     font-weight: bold;
     color: white;
 }
 
 .vs-compact {
-    font-size: 1em;
+    font-size: 1.2em; /* Увеличили шрифт */
     font-weight: bold;
     color: #ffd700;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
 }
 
 .battle-log-compact {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 6px;
-    padding: 6px;
-    max-height: 80px;
+    padding: 8px; /* Увеличили padding */
+    max-height: 100px; /* Увеличили высоту */
     overflow-y: auto;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .battle-log-entry-compact {
-    padding: 3px 0;
+    padding: 4px 0; /* Увеличили padding */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.75em;
+    font-size: 0.8em; /* Увеличили шрифт */
 }
 
 .battle-log-entry-compact:last-child {
@@ -701,18 +713,18 @@ body {
 
 .battle-actions-compact {
     display: flex;
-    gap: 8px;
+    gap: 10px; /* Увеличили gap */
     justify-content: center;
 }
 
 .btn-battle-attack-compact, .btn-battle-escape-compact {
-    padding: 10px 16px;
+    padding: 12px 20px; /* Увеличили padding */
     border: none;
-    border-radius: 6px;
+    border-radius: 8px; /* Увеличили радиус */
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9em;
+    font-size: 1em; /* Увеличили шрифт */
     flex: 1;
 }
 
