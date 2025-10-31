@@ -14,7 +14,7 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1600px; /* Увеличили с 1200px до 1600px */
     padding: 10px;
     margin: 0 auto;
 }
@@ -32,12 +32,12 @@ body {
     text-align: center;
 }
 
-/* Список героев */
+/* Список героев - СДЕЛАЕМ ШИРЕ */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); /* Увеличили с 300px */
+    gap: 20px; /* Увеличили gap */
+    padding: 20px; /* Увеличили padding */
 }
 
 .hero-option {
@@ -47,7 +47,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 350px;
+    height: 380px; /* Немного увеличили высоту */
     overflow: hidden;
 }
 
@@ -184,16 +184,16 @@ body {
     text-align: center;
 }
 
-/* Новый макет с тремя колонками */
+/* НОВЫЙ МАКЕТ - перераспределяем элементы */
 .hero-layout {
     display: grid;
-    grid-template-columns: 1fr 2fr 2fr;
-    gap: 15px;
+    grid-template-columns: 1.2fr 1.8fr 1.8fr; /* Увеличили пропорции */
+    gap: 20px; /* Увеличили gap */
     margin-bottom: 20px;
     align-items: start;
 }
 
-/* Левая колонка - герой */
+/* Левая колонка - герой (расширим) */
 .hero-column {
     display: flex;
     flex-direction: column;
@@ -204,13 +204,13 @@ body {
 .map-column, .location-column {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px; /* Увеличили gap */
 }
 
 /* Общие стили для всех изображений */
 .hero-image, .map-image-large, .location-image-large, .monster-image-large {
     width: 100%;
-    height: 200px;
+    height: 220px; /* Увеличили с 200px до 220px */
     border-radius: 10px;
     overflow: hidden;
     background: rgba(255,255,255,0.1);
@@ -257,10 +257,10 @@ body {
     border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
-/* Стили для основной информации героя */
+/* Стили для основной информации героя - ПЕРЕМЕЩАЕМ ЭКИПИРОВКУ СЮДА */
 .hero-info {
     text-align: center;
-    padding: 10px;
+    padding: 15px; /* Увеличили padding */
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -268,16 +268,16 @@ body {
 
 .hero-info h2 {
     color: #ffd700;
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* Увеличили отступ */
     font-size: 1.4em;
 }
 
 .health-display {
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* Увеличили отступ */
 }
 
 .health-bar-container {
-    margin-bottom: 5px;
+    margin-bottom: 8px; /* Увеличили отступ */
 }
 
 .health-bar {
@@ -286,7 +286,7 @@ body {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 5px;
+    margin-bottom: 8px; /* Увеличили отступ */
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -312,8 +312,8 @@ body {
 .hero-main-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 10px; /* Увеличили gap */
+    margin-bottom: 15px; /* Увеличили отступ */
 }
 
 .main-stat {
@@ -321,7 +321,7 @@ body {
     flex-direction: column;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
+    padding: 8px; /* Увеличили padding */
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -337,13 +337,60 @@ body {
     color: #4cc9f0;
 }
 
+/* Секция экипировки ПЕРЕМЕЩЕНА В КОЛОНКУ ГЕРОЯ */
+.equipment-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.equipment-slot {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.equipment-slot:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #4cc9f0;
+}
+
+.equipment-slot.equipped {
+    border-color: #4cc9f0;
+    background: rgba(76, 201, 240, 0.1);
+}
+
+.equipment-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.equipment-icon img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
 /* Прогресс бар уровня */
 .level-progress {
     width: 100%;
     height: 8px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    margin: 5px 0;
+    margin: 8px 0; /* Увеличили отступ */
     overflow: hidden;
 }
 
@@ -358,7 +405,7 @@ body {
     display: flex;
     justify-content: space-around;
     background: rgba(255, 255, 255, 0.05);
-    padding: 6px;
+    padding: 8px; /* Увеличили padding */
     border-radius: 8px;
     font-size: 0.9em;
     color: rgba(255, 255, 255, 0.8);
@@ -375,7 +422,7 @@ body {
 
 .map-info h4, .location-info h4, .monster-info h4 {
     color: #ffd700;
-    margin-bottom: 8px;
+    margin-bottom: 10px; /* Увеличили отступ */
 }
 
 .map-multiplier, .location-stats {
@@ -386,9 +433,10 @@ body {
     font-size: 0.9em;
 }
 
-/* Секция боя */
+/* Секция боя - ПОДНИМАЕМ ВЫШЕ */
 .battle-section {
     margin-top: 20px;
+    order: -1; /* Перемещаем секцию боя ВВЕРХ */
 }
 
 .monster-reward-column {
@@ -396,6 +444,123 @@ body {
     padding: 15px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Действия монстра - ПОДНИМАЕМ ВЫШЕ */
+.monster-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.monster-actions button {
+    padding: 12px 20px; /* Увеличили кнопки */
+    font-size: 1em;
+    font-weight: bold;
+}
+
+/* Бонусы */
+.bonuses-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bonuses-section h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+.bonus-item {
+    margin-bottom: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.bonus-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+/* Кнопки действий - ПОДНИМАЕМ ВЫШЕ */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+    order: -2; /* Перемещаем кнопки действий ЕЩЕ ВЫШЕ */
+}
+
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #3aa8d0, #3251d4);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+}
+
+/* Журнал событий */
+.battle-log {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.log-entry {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.9em;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* ОСНОВНОЙ КОНТЕЙНЕР - перераспределяем порядок элементов */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
 
 /* Стили для компактного боя в колонке монстра */
@@ -630,148 +795,6 @@ body {
     font-size: 0.9em;
 }
 
-/* Секция экипировки */
-.equipment-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.equipment-slot {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.equipment-slot:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #4cc9f0;
-}
-
-.equipment-slot.equipped {
-    border-color: #4cc9f0;
-    background: rgba(76, 201, 240, 0.1);
-}
-
-.equipment-icon {
-    width: 50px;
-    height: 50px;
-    margin-right: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.equipment-icon img {
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-}
-
-/* Бонусы */
-.bonuses-section {
-    background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bonuses-section h3 {
-    color: #ffd700;
-    margin-bottom: 10px;
-}
-
-.bonus-item {
-    margin-bottom: 6px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bonus-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-/* Кнопки действий */
-.action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-.btn-primary, .btn-secondary, .btn-danger {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #3aa8d0, #3251d4);
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-}
-
-/* Журнал событий */
-.battle-log {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    padding: 15px;
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.log-entry {
-    padding: 6px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9em;
-}
-
-.log-entry:last-child {
-    border-bottom: none;
-}
-
 /* Инвентарь */
 .inventory-grid {
     display: grid;
@@ -873,19 +896,6 @@ body {
     font-size: 0.9em;
 }
 
-/* Действия монстра */
-.monster-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-.monster-actions button {
-    padding: 10px 16px;
-    font-size: 0.95em;
-}
-
 /* Статистика монстра */
 .stats-grid {
     display: grid;
@@ -908,6 +918,11 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+    .container {
+        max-width: 100%;
+        padding: 5px;
+    }
+    
     .hero-layout {
         grid-template-columns: 1fr;
         gap: 15px;
