@@ -883,32 +883,64 @@ renderHeroScreen() {
         this.encounterMonster();
     }
 
-    // Встреча с монстром
-    encounterMonster() {
-        if (!this.currentLocation || !this.currentMap) return;
+// В классе HeroGame находим метод encounterMonster и исправляем его:
 
-        const [minId, maxId] = this.currentLocation.monsterRange;
-        const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
-        
-        let monster = this.monsters.find(m => m.id === monsterId);
-        if (!monster) {
-            monster = this.monsters[0];
-        }
-
-        // Применяем множитель карты
-        this.currentMonster = {
-            ...monster,
-            health: Math.round(monster.health * this.currentMap.multiplier),
-            damage: Math.round(monster.damage * this.currentMap.multiplier),
-            armor: Math.round(monster.armor * this.currentMap.multiplier),
-            reward: Math.round(monster.reward * this.currentMap.multiplier),
-            power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
-        };
-
-        this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
-        this.renderHeroScreen();
-        this.showMonsterActions();
+// Встреча с монстром
+encounterMonster() {
+    if (!this.currentLocation || !this.currentMap) {
+        console.error('❌ Не выбрана локация или карта');
+        return;
     }
+
+    const [minId, maxId] = this.currentLocation.monsterRange;
+    
+    // Фиксим баг: проверяем что диапазон монстров существует
+    if (!minId || !maxId) {
+        console.error('❌ Неверный диапазон монстров в локации:', this.currentLocation);
+        return;
+    }
+    
+    const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
+    
+    let monster = this.monsters.find(m => m.id === monsterId);
+    if (!monster) {
+        // Если монстр не найден, берем первого доступного
+        monster = this.monsters[0];
+        if (!monster) {
+            console.error('❌ Нет доступных монстров');
+            return;
+        }
+    }
+
+    // Применяем множитель карты
+    this.currentMonster = {
+        ...monster,
+        health: Math.round(monster.health * this.currentMap.multiplier),
+        damage: Math.round(monster.damage * this.currentMap.multiplier),
+        armor: Math.round(monster.armor * this.currentMap.multiplier),
+        reward: Math.round(monster.reward * this.currentMap.multiplier),
+        power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
+    };
+
+    this.addToLog(`🎭 Встречен: ${this.currentMonster.name}`);
+    this.renderHeroScreen();
+    this.showMonsterActions();
+}
+
+// Также проверяем метод startAdventure:
+startAdventure() {
+    if (!this.currentMap || !this.currentLocation) {
+        this.addToLog('❌ Сначала выберите карту и локацию');
+        return;
+    }
+
+    this.addToLog(`🚀 Начато путешествие по карте ${this.currentMap.name}, локация: ${this.currentLocation.name}`);
+    
+    // Добавляем небольшую задержку для лучшего UX
+    setTimeout(() => {
+        this.encounterMonster();
+    }, 1000);
+}
 
     // Показать действия для монстра
     showMonsterActions() {
