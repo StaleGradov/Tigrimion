@@ -22,5 +22,101 @@
     "reward": 0.01,
     "escapeDifficulty": 3,
     "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 3,
+    "name": "Бродячий Пёс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 200,
+    "armor": 5,
+    "damage": 30,
+    "power": 46,
+    "reward": 0.01,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 4,
+    "name": "Волк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 240,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.012,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 5,
+    "name": "Кабан",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 320,
+    "armor": 10,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.014,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 6,
+    "name": "Тигр",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 360,
+    "armor": 10,
+    "damage": 50,
+    "power": 46,
+    "reward": 0.03,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 7,
+    "name": "Медведь",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 440,
+    "armor": 15,
+    "damage": 60,
+    "power": 46,
+    "reward": 0.035,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 8,
+    "name": "Мамонт",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 800,
+    "armor": 20,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.04,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 9,
+    "name": "Горный Лев",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 320,
+    "armor": 10,
+    "damage": 50,
+    "power": 46,
+    "reward": 0.025,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
+  },
+    {
+    "id": 10,
+    "name": "Лиса",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Мелкий и противный зверёк"
   }
 ]
