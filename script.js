@@ -30,7 +30,7 @@ class HeroGame {
         
         // Видео для каждого героя (примеры - замените на реальные видео)
         this.heroVideos = {
-            1: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 1
+            1: 'https://www.youtube.com/watch?v=mfziNIhX9mo', // Герой 1
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 2  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 3
             4: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 4
