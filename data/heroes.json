@@ -399,5 +399,125 @@
       "chest": null
     },
     "healthRegen": 10.5
+  },
+    {
+    "id": 21,
+    "name": "Рекс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Reks.jpg",
+    "race": "laitar",
+    "class": "bounty_hunter",
+    "saga": "vampire_crown",
+    "baseHealth": 95,
+    "baseDamage": 27,
+    "baseArmor": 5,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 11
+  },
+    {
+    "id": 22,
+    "name": "Хаггард",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Haggard.jpg",
+    "race": "human",
+    "class": "death_mage",
+    "saga": "vampire_crown",
+    "baseHealth": 110,
+    "baseDamage": 24,
+    "baseArmor": 10,
+    "gold": 2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 11.5
+  },
+    {
+    "id": 23,
+    "name": "Хельякар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Heliakar.jpg",
+    "race": "elf",
+    "class": "blacksmith",
+    "saga": "vampire_crown",
+    "baseHealth": 130,
+    "baseDamage": 20,
+    "baseArmor": 4,
+    "gold": 7,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 12
+  },
+    {
+    "id": 24,
+    "name": "Рафаэль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Rafael.jpg",
+    "race": "dragon",
+    "class": "merchant",
+    "saga": "vampire_crown",
+    "baseHealth": 120,
+    "baseDamage": 22,
+    "baseArmor": 1,
+    "gold": 10.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 10.5
+  },
+    {
+    "id": 25,
+    "name": "Карнок",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Karnoc.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 185,
+    "baseDamage": 9,
+    "baseArmor": 6,
+    "gold": 5.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 10.5
+  },
+      {
+    "id": 26,
+    "name": "АрвенДил",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/ArvenDil.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 150,
+    "baseDamage": 16,
+    "baseArmor": 5,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 10.5
   }
 ]
