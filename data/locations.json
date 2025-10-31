@@ -1,27 +1,27 @@
 [
   {
     "level": 10,
-    "name": "Лавовые земли",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lava.jpg",
-    "description": "Вы попадате в раскалённые, негостеприимные земли, где земля под ногами пышет жаром, а воздух дрожит от зноя. Реки огня и серные испарения делают это место смертельно опасным для неподготовленных.",
+    "name": "Волшебные Поляны",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Poliani.jpg",
+    "description": "Разбросанные среди обычного леса, эти поляны — оазисы чистой, нефильтрованной магии. Воздух на них звенит, как хрусталь, и переливается всеми цветами радуги. Трава под ногами мягкая и светящаяся, а цветы никогда не вянут. Здесь время течет иначе, а самые невероятные желания могут найти почву для исполнения. Это места силы, покоя и неожиданных чудес, но даже у самого прекрасного цветка могут быть шипы. ",
     "monsterRange": [1, 10],
     "artifactChance": 0.005,
     "relicChance": 0.0005
   },
   {
     "level": 9,
-    "name": "Заброшенный город",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ryiny.jpg",
-    "description": "Мёртвый каменный лес из обвалившихся колонн и потрескавшихся ступеней. Воздух неподвижен, тяжел и пахнет прахом, плесенью и забытыми веками.",
+    "name": "Болотные топи",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
+    "description": "Густой, ядовитый туман клубится над черной, стоячей водой. Воздух тяжел и насыщен запахом гниения и сероводорода.",
     "monsterRange": [1, 20],
     "artifactChance": 0.01,
     "relicChance": 0.001
   },
   {
     "level": 8,
-    "name": "Пустыня",
+    "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Бескрайнее море раскаленного песка под безжалостным, палящим солнцем. Воздух дрожит от зноя, обжигая легкие при каждом вдохе.",
+    "description": "Густой, ядовитый туман клубится над черной, стоячей водой. Воздух тяжел и насыщен запахом гниения и сероводорода.",
     "monsterRange": [1, 30],
     "artifactChance": 0.015,
     "relicChance": 0.0015
@@ -37,54 +37,54 @@
   },
   {
     "level": 6,
-    "name": "Пещеры",
+    "name": "Горный перевал",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Глубокие, извилистые тоннели, уходящие в непроглядную тьму недр. Воздух холодный и спертый, пахнет сыростью, камнем и чем-то древним.",
+    "description": "Крутые скалистые склоны, обдуваемые ледяными ветрами. Каждый шаг по узким тропам может стать последним.",
     "monsterRange": [1, 50],
     "artifactChance": 0.025,
     "relicChance": 0.0025
   },
   {
     "level": 5,
-    "name": "Горный перевал",
+    "name": "Пещеры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Крутые скалистые склоны, обдуваемые ледяными ветрами. Каждый шаг по узким тропам может стать последним.",
+    "description": "Глубокие, извилистые тоннели, уходящие в непроглядную тьму недр. Воздух холодный и спертый, пахнет сыростью, камнем и чем-то древним.",
     "monsterRange": [1, 60],
     "artifactChance": 0.03,
     "relicChance": 0.003
   },
   {
     "level": 4,
-    "name": "Древний лес",
+    "name": "Болотные топи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Густой, первобытный лес, где деревья сплетаются в непроходимые заросли, а воздух наполнен магией древних времен.",
+    "description": "Густой, ядовитый туман клубится над черной, стоячей водой. Воздух тяжел и насыщен запахом гниения и сероводорода.",
     "monsterRange": [1, 70],
     "artifactChance": 0.035,
     "relicChance": 0.0035
   },
   {
     "level": 3,
-    "name": "Ледяные пустоши",
+    "name": "Пустыня",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Бескрайние просторы вечной мерзлоты, где ледяной ветер пронизывает до костей, а снежные бури скрывают древние тайны.",
+    "description": "Бескрайнее море раскаленного песка под безжалостным, палящим солнцем. Воздух дрожит от зноя, обжигая легкие при каждом вдохе.",
     "monsterRange": [1, 80],
     "artifactChance": 0.04,
     "relicChance": 0.004
   },
   {
     "level": 2,
-    "name": "Магические земли",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Земли, где сама магия пульсирует в воздухе, искажая реальность и привлекая могущественных существ.",
+    "name": "Заброшенный город",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ryiny.jpg",
+    "description": "Мёртвый каменный лес из обвалившихся колонн и потрескавшихся ступеней. Воздух неподвижен, тяжел и пахнет прахом, плесенью и забытыми веками.",
     "monsterRange": [1, 90],
     "artifactChance": 0.045,
     "relicChance": 0.0045
   },
   {
     "level": 1,
-    "name": "Тронный зал",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/city.jpg",
-    "description": "Обитель могущественных существ, где решаются судьбы миров и хранятся величайшие сокровища.",
+    "name": "Лавовые земли",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lava.jpg",
+    "description": "Вы попадате в раскалённые, негостеприимные земли, где земля под ногами пышет жаром, а воздух дрожит от зноя. Реки огня и серные испарения делают это место смертельно опасным для неподготовленных.",
     "monsterRange": [1, 100],
     "artifactChance": 0.05,
     "relicChance": 0.005
