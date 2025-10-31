@@ -478,7 +478,7 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 10.5
+    "healthRegen": 12.5
   },
     {
     "id": 25,
@@ -498,7 +498,7 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 10.5
+    "healthRegen": 13
   },
       {
     "id": 26,
@@ -518,6 +518,6 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 10.5
+    "healthRegen": 13.5
   }
 ]
