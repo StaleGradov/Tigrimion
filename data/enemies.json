@@ -119,7 +119,7 @@
     "escapeDifficulty": 3,
     "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
   },
-    {
+  {
     "id": 11,
     "name": "Неопытный Разбойник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Razboinik.jpg", 
@@ -129,9 +129,9 @@
     "power": 46,
     "reward": 0.028,
     "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+    "description": "Молодой разбойник, только начинающий свой преступный путь. Опасен в группе, но неопытен в одиночку."
   },
-    {
+  {
     "id": 12,
     "name": "Вампир",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Vampire.jpg", 
@@ -141,102 +141,42 @@
     "power": 46,
     "reward": 0.05,
     "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+    "description": "Древнее ночное создание, питающееся жизненной силой живых. Быстр, силён и почти бессмертен."
   },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
+  {
+    "id": 13,
+    "name": "Гоблин",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Goblin.jpg", 
+    "health": 180,
     "armor": 5,
-    "damage": 40,
+    "damage": 25,
     "power": 46,
-    "reward": 0.02,
+    "reward": 0.015,
     "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+    "description": "Мелкий, но хитрый гуманоид. Предпочитает атаковать из засады и в численном превосходстве."
   },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
+  {
+    "id": 14,
+    "name": "Орк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Ork.jpg", 
+    "health": 400,
+    "armor": 15,
+    "damage": 45,
     "power": 46,
-    "reward": 0.02,
+    "reward": 0.032,
     "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+    "description": "Мощный воин с зелёной кожей. Силён и вынослив, но не слишком умен в тактике."
   },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
+  {
+    "id": 15,
+    "name": "Тролль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Troll.jpg", 
+    "health": 600,
+    "armor": 25,
+    "damage": 55,
     "power": 46,
-    "reward": 0.02,
+    "reward": 0.045,
     "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
-  },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
-    "power": 46,
-    "reward": 0.02,
-    "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
-  }
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
-    "power": 46,
-    "reward": 0.02,
-    "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
-  },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
-    "power": 46,
-    "reward": 0.02,
-    "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
-  },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
-    "power": 46,
-    "reward": 0.02,
-    "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
-  },
-    {
-    "id": 10,
-    "name": "Лютоволк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
-    "health": 300,
-    "armor": 5,
-    "damage": 40,
-    "power": 46,
-    "reward": 0.02,
-    "escapeDifficulty": 3,
-    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+    "description": "Огромное существо с быстрой регенерацией. Глуп, но невероятно силён в ближнем бою."
   }
 ]
