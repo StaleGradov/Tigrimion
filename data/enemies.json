@@ -118,5 +118,125 @@
     "reward": 0.02,
     "escapeDifficulty": 3,
     "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 11,
+    "name": "Неопытный Разбойник",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Razboinik.jpg", 
+    "health": 240,
+    "armor": 20,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.028,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 12,
+    "name": "Вампир",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Vampire.jpg", 
+    "health": 800,
+    "armor": 30,
+    "damage": 70,
+    "power": 46,
+    "reward": 0.05,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  }
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
+  },
+    {
+    "id": 10,
+    "name": "Лютоволк",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
+    "health": 300,
+    "armor": 5,
+    "damage": 40,
+    "power": 46,
+    "reward": 0.02,
+    "escapeDifficulty": 3,
+    "description": "Арктический хищник с ледяным взглядом. Вынослив и безжалостен, способен преследовать добычу многие мили."
   }
 ]
