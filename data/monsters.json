@@ -38,7 +38,7 @@
     {
     "id": 4,
     "name": "Волк",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 240,
     "armor": 5,
     "damage": 40,
@@ -50,7 +50,7 @@
     {
     "id": 5,
     "name": "Кабан",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 320,
     "armor": 10,
     "damage": 40,
@@ -62,7 +62,7 @@
     {
     "id": 6,
     "name": "Тигр",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 360,
     "armor": 10,
     "damage": 50,
@@ -74,7 +74,7 @@
     {
     "id": 7,
     "name": "Медведь",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 440,
     "armor": 15,
     "damage": 60,
@@ -86,7 +86,7 @@
     {
     "id": 8,
     "name": "Мамонт",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 800,
     "armor": 20,
     "damage": 40,
@@ -98,7 +98,7 @@
     {
     "id": 9,
     "name": "Горный Лев",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 320,
     "armor": 10,
     "damage": 50,
@@ -110,7 +110,7 @@
     {
     "id": 10,
     "name": "Лиса",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/Lisa.jpg", 
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 300,
     "armor": 5,
     "damage": 40,
