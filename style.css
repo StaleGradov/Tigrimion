@@ -13,9 +13,8 @@ body {
     min-height: 100vh;
 }
 
-/* ИГРА ЗАНИМАЕТ 100% ШИРИНЫ ЭКРАНА */
 .container {
-    width: 100%;
+    max-width: 2000px;
     padding: 15px;
     margin: 0 auto;
 }
@@ -33,14 +32,12 @@ body {
     text-align: center;
 }
 
-/* Список героев - улучшенная адаптивность */
+/* Список героев */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    max-width: 95%;
-    margin: 0 auto;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+    padding: 30px;
 }
 
 .hero-option {
@@ -50,7 +47,7 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 420px;
+    height: 480px;
     overflow: hidden;
 }
 
@@ -127,16 +124,16 @@ body {
 }
 
 .hero-option-header strong {
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: #ffd700;
 }
 
 .hero-level {
     background: #4cc9f0;
     color: #1a1a2e;
-    padding: 4px 10px;
+    padding: 4px 12px;
     border-radius: 15px;
-    font-size: 0.9em;
+    font-size: 1em;
     font-weight: bold;
 }
 
@@ -148,7 +145,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .stat-row span {
@@ -164,15 +161,15 @@ body {
 
 .hero-option-skills span {
     background: rgba(76, 201, 240, 0.3);
-    padding: 3px 8px;
+    padding: 4px 10px;
     border-radius: 10px;
-    font-size: 0.8em;
+    font-size: 0.9em;
     border: 1px solid #4cc9f0;
 }
 
 .hero-option-bonuses small {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 0.8em;
+    font-size: 0.9em;
     display: block;
     text-align: center;
     padding-top: 5px;
@@ -183,55 +180,52 @@ body {
     color: #ff6b6b;
     display: block;
     margin-top: 5px;
-    font-size: 0.8em;
+    font-size: 0.9em;
     text-align: center;
 }
 
-/* УЛУЧШЕННЫЙ МАКЕТ ДЛЯ ЭКРАНА ГЕРОЯ */
+/* Макет */
 .hero-layout {
     display: grid;
-    grid-template-columns: 1.2fr 1.8fr 1.8fr; /* Увеличил центральные колонки */
-    gap: 20px;
-    margin-bottom: 20px;
+    grid-template-columns: 1.8fr 2.2fr 2.2fr;
+    gap: 30px;
+    margin-bottom: 25px;
     align-items: start;
-    max-width: 98%;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 /* Левая колонка - герой */
 .hero-column {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 25px;
 }
 
 /* Центральная и правая колонки - карта и локация */
 .map-column, .location-column {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 25px;
 }
 
-/* УВЕЛИЧЕННЫЕ ИЗОБРАЖЕНИЯ - занимают больше места */
+/* Общие стили для всех изображений */
 .hero-image, .map-image-large, .location-image-large {
     width: 100%;
-    height: 320px; /* Увеличил высоту */
-    border-radius: 10px;
+    height: 450px;
+    border-radius: 12px;
     overflow: hidden;
     background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid #4cc9f0;
+    border: 4px solid #4cc9f0;
     position: relative;
 }
 
 .hero-image img, .map-image-large img, .location-image-large img {
     width: auto;
     height: auto;
-    max-width: 98%; /* Увеличил максимальную ширину */
-    max-height: 98%; /* Увеличил максимальную высоту */
+    max-width: 98%;
+    max-height: 98%;
     object-fit: contain;
 }
 
@@ -251,8 +245,8 @@ body {
     font-weight: bold;
     margin-bottom: 5px;
     color: #ffd700;
-    font-size: 1.1em;
-    padding: 8px;
+    font-size: 1.3em;
+    padding: 12px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 1px solid rgba(255, 215, 0, 0.3);
@@ -261,7 +255,7 @@ body {
 /* Стили для основной информации героя */
 .hero-info {
     text-align: center;
-    padding: 15px;
+    padding: 25px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -269,16 +263,16 @@ body {
 
 .hero-info h2 {
     color: #ffd700;
-    margin-bottom: 10px;
-    font-size: 1.4em;
+    margin-bottom: 15px;
+    font-size: 1.8em;
 }
 
 .health-display {
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .health-bar-container {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .health-bar {
@@ -287,7 +281,7 @@ body {
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -299,22 +293,22 @@ body {
 
 .health-text {
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .health-regen {
     background: rgba(76, 201, 240, 0.2);
-    padding: 4px 8px;
+    padding: 6px 10px;
     border-radius: 6px;
-    font-size: 0.8em;
+    font-size: 0.9em;
     border: 1px solid #4cc9f0;
 }
 
 .hero-main-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 12px;
+    margin-bottom: 15px;
 }
 
 .main-stat {
@@ -322,19 +316,19 @@ body {
     flex-direction: column;
     align-items: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .stat-icon {
-    font-size: 1.2em;
+    font-size: 1.4em;
     margin-bottom: 2px;
 }
 
 .stat-value {
     font-weight: bold;
-    font-size: 1.1em;
+    font-size: 1.2em;
     color: #4cc9f0;
 }
 
@@ -342,7 +336,7 @@ body {
 .equipment-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 15px;
     margin-bottom: 15px;
 }
 
@@ -350,7 +344,7 @@ body {
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.05);
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
@@ -368,9 +362,9 @@ body {
 }
 
 .equipment-icon {
-    width: 40px;
-    height: 40px;
-    margin-right: 10px;
+    width: 50px;
+    height: 50px;
+    margin-right: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -391,7 +385,7 @@ body {
     height: 8px;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    margin: 5px 0;
+    margin: 8px 0;
     overflow: hidden;
 }
 
@@ -406,16 +400,16 @@ body {
     display: flex;
     justify-content: space-around;
     background: rgba(255, 255, 255, 0.05);
-    padding: 6px;
+    padding: 10px;
     border-radius: 8px;
-    font-size: 0.9em;
+    font-size: 1em;
     color: rgba(255, 255, 255, 0.8);
 }
 
 /* Информация о карте и локации */
 .map-info, .location-info, .reward-info {
     background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
+    padding: 25px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
@@ -423,38 +417,37 @@ body {
 
 .map-info h4, .location-info h4 {
     color: #ffd700;
-    margin-bottom: 8px;
-    font-size: 1.2em;
+    margin-bottom: 10px;
+    font-size: 1.4em;
 }
 
 .map-multiplier, .location-stats {
     background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
+    padding: 10px;
     border-radius: 6px;
     margin: 10px 0;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
-/* ПОЛНОСТЬЮ ПЕРЕРАБОТАННАЯ СЕКЦИЯ БОЯ */
+/* Секция боя - ПЕРЕМЕЩАЕМ ВВЕРХ */
 .battle-section {
     margin-top: 20px;
-    max-width: 98%;
-    margin-left: auto;
-    margin-right: auto;
+    order: -1;
 }
 
+/* НОВЫЙ МАКЕТ ДЛЯ ОКНА ВРАГ/НАГРАДА */
 .monster-reward-column {
     background: rgba(255, 255, 255, 0.05);
     padding: 20px;
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: 500px;
 }
 
-/* СОВЕРШЕННО НОВЫЙ МАКЕТ ДЛЯ БОЯ */
-.battle-container {
+.monster-container {
     display: grid;
-    grid-template-columns: 300px 1fr 280px; /* Картинка | Информация | Кнопки */
-    gap: 20px;
+    grid-template-columns: 1.2fr 1fr; /* Картинка слева, информация справа */
+    gap: 25px;
     align-items: start;
 }
 
@@ -467,14 +460,15 @@ body {
 
 .monster-image-large {
     width: 100%;
-    height: 250px;
-    border-radius: 10px;
+    height: 350px; /* Увеличили картинку */
+    border-radius: 12px;
     overflow: hidden;
     background: rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 3px solid #f87171;
+    border: 4px solid #f87171;
+    position: relative;
 }
 
 .monster-image-large img {
@@ -485,60 +479,48 @@ body {
     object-fit: contain;
 }
 
-/* ЦЕНТРАЛЬНАЯ ЧАСТЬ - ИНФОРМАЦИЯ О МОНСТРЕ */
+/* ИНФОРМАЦИЯ О МОНСТРЕ СПРАВА */
 .monster-info-section {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
-.monster-header {
-    text-align: center;
-    margin-bottom: 10px;
+.monster-basic-info {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.monster-header h4 {
+.monster-basic-info h4 {
     color: #ffd700;
-    font-size: 1.5em;
-    margin-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    text-align: center;
 }
 
 .monster-description {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.95em;
-    text-align: center;
-    line-height: 1.4;
-}
-
-/* ХАРАКТЕРИСТИКИ МОНСТРА В ВИДЕ КОМПАКТНЫХ ИКОНОК */
-.monster-stats-compact {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
     margin-bottom: 15px;
-}
-
-.monster-stat-compact {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: all 0.3s ease;
-}
-
-.monster-stat-compact:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateY(-2px);
-}
-
-.monster-stat-icon {
-    font-size: 1.3em;
-    margin-right: 10px;
-    min-width: 25px;
     text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Статистика монстра */
+.monster-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.monster-stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .monster-stat-value {
@@ -547,61 +529,55 @@ body {
     font-size: 1.1em;
 }
 
-/* ОЦЕНКА ПОБЕДЫ И НАГРАДА */
+/* Оценка победы и награда */
 .victory-assessment {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
     padding: 15px;
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.victory-assessment h5 {
+    color: #ffd700;
+    margin-bottom: 8px;
+    font-size: 1.1em;
 }
 
 .power-comparison {
     font-weight: bold;
     font-size: 1.1em;
-    text-align: center;
-    margin-bottom: 10px;
+    margin: 10px 0;
     padding: 8px;
     border-radius: 6px;
     background: rgba(76, 201, 240, 0.2);
 }
 
-.reward-info-compact {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.reward-info {
     background: rgba(255, 215, 0, 0.1);
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
     border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
-/* ПРАВАЯ ЧАСТЬ - КНОПКИ ДЕЙСТВИЙ В БОЮ */
-.monster-actions-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
+/* КНОПКИ ДЕЙСТВИЙ В ОКНЕ МОНСТРА */
 .monster-actions {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 10px;
 }
 
 .monster-actions button {
-    padding: 14px 16px;
-    font-size: 1.1em;
+    padding: 16px 24px;
+    font-size: 1.2em;
     font-weight: bold;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
-    min-height: 55px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .monster-actions .btn-primary {
@@ -612,7 +588,6 @@ body {
 .monster-actions .btn-primary:hover {
     background: linear-gradient(135deg, #dc2626, #b91c1c);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
 }
 
 .monster-actions .btn-secondary {
@@ -626,21 +601,10 @@ body {
     transform: translateY(-2px);
 }
 
-.monster-actions .btn-success {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-.monster-actions .btn-success:hover {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-}
-
 /* Бонусы */
 .bonuses-section {
     background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
+    padding: 25px;
     border-radius: 10px;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -649,14 +613,14 @@ body {
 .bonuses-section h3 {
     color: #ffd700;
     margin-bottom: 10px;
-    font-size: 1.2em;
+    font-size: 1.4em;
 }
 
 .bonus-item {
     margin-bottom: 6px;
     padding: 4px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.9em;
+    font-size: 1em;
 }
 
 .bonus-item:last-child {
@@ -664,30 +628,24 @@ body {
     margin-bottom: 0;
 }
 
-/* Кнопки общих действий */
+/* Кнопки действий */
 .action-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
-    max-width: 98%;
-    margin-left: auto;
-    margin-right: auto;
+    order: -2;
 }
 
-.btn-primary, .btn-secondary, .btn-danger, .btn-success {
-    padding: 14px 20px;
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 14px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 1em;
+    font-size: 1.1em;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .btn-primary {
@@ -698,7 +656,6 @@ body {
 .btn-primary:hover {
     background: linear-gradient(135deg, #3aa8d0, #3251d4);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
 }
 
 .btn-secondary {
@@ -720,18 +677,6 @@ body {
 .btn-danger:hover {
     background: linear-gradient(135deg, #dc2626, #b91c1c);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
-}
-
-.btn-success {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-.btn-success:hover {
-    background: linear-gradient(135deg, #059669, #047857);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
 }
 
 /* Журнал событий */
@@ -742,111 +687,397 @@ body {
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    max-width: 98%;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 20px;
 }
 
 .log-entry {
-    padding: 8px 0;
+    padding: 6px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.9em;
-    line-height: 1.4;
 }
 
 .log-entry:last-child {
     border-bottom: none;
 }
 
-/* АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ - ПЕРЕРАБОТАНА */
-@media (max-width: 1024px) {
-    .hero-layout {
-        grid-template-columns: 1fr;
-        gap: 15px;
-        max-width: 100%;
-    }
-    
-    .battle-container {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .monster-actions {
-        grid-template-columns: repeat(2, 1fr);
-    }
+/* Стили для компактного боя в колонке монстра - УВЕЛИЧИВАЕМ ИКОНКИ */
+.battle-in-monster-column {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
 }
 
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.battle-header h4 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.battle-round {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.battle-combatants-compact {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.combatant-compact {
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* УВЕЛИЧИВАЕМ ИКОНКИ В БОЮ */
+.combatant-image-compact {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid currentColor;
+}
+
+.combatant-image-compact img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.combatant-info-compact {
+    font-size: 0.9em;
+}
+
+.health-bar-compact {
+    position: relative;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 7px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.health-bar-fill-compact {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.health-text-compact {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: white;
+}
+
+.vs-compact {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.battle-log-compact {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    padding: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battle-log-entry-compact {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8em;
+}
+
+.battle-log-entry-compact:last-child {
+    border-bottom: none;
+}
+
+.battle-actions-compact {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-battle-attack-compact, .btn-battle-escape-compact {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1em;
+    flex: 1;
+}
+
+.btn-battle-attack-compact {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-battle-attack-compact:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+}
+
+.btn-battle-escape-compact {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-battle-escape-compact:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Стили для отображения награды */
+.reward-display, .defeat-display {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.reward-image-large, .defeat-image {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+.reward-info h4, .defeat-info h4 {
+    color: #ffd700;
+    margin-bottom: 8px;
+}
+
+.reward-amount {
+    background: rgba(255, 215, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 10px 0;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* Сетка карт и локаций */
+.maps-grid, .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.map-option, .location-option {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-align: center;
+}
+
+.map-option:hover, .location-option:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.map-option.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.map-option.locked:hover {
+    border-color: transparent;
+    transform: none;
+}
+
+.map-option-image, .location-option-image {
+    width: 100%;
+    height: 200px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.map-option-image img, .location-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.map-option-info, .location-option-info {
+    font-size: 1em;
+}
+
+/* Инвентарь */
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.inventory-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.inventory-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.inventory-item-image {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.inventory-item-image img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+/* Магазин */
+.merchant-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.merchant-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.merchant-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #4cc9f0;
+}
+
+.merchant-item-image {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.merchant-item-image img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+}
+
+.item-stats, .item-price {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 0.9em;
+}
+
+.merchant-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.merchant-actions button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+/* Адаптивность */
 @media (max-width: 768px) {
     .container {
-        padding: 10px;
-    }
-    
-    .hero-list {
-        grid-template-columns: 1fr;
-        padding: 10px;
         max-width: 100%;
-    }
-    
-    .hero-option {
-        height: 350px;
-    }
-    
-    .action-buttons {
-        grid-template-columns: 1fr;
-        max-width: 100%;
-    }
-    
-    .monster-image-large {
-        height: 200px;
-    }
-    
-    .monster-stats-compact {
-        grid-template-columns: 1fr;
-    }
-    
-    .monster-actions {
-        grid-template-columns: 1fr;
-    }
-    
-    .battle-log {
-        max-width: 100%;
-        max-height: 150px;
-    }
-    
-    /* Уменьшаем кнопки на мобильных */
-    .btn-primary, .btn-secondary, .btn-danger, .btn-success {
-        padding: 12px 15px;
-        min-height: 45px;
-        font-size: 0.95em;
-    }
-    
-    .monster-actions button {
-        padding: 12px 15px;
-        min-height: 50px;
-        font-size: 1em;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
         padding: 5px;
     }
     
     .hero-layout {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .hero-list, .maps-grid, .locations-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .inventory-grid,
+    .merchant-list {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .hero-main-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .equipment-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .monster-actions, .battle-actions-compact {
+        flex-direction: column;
+    }
+    
+    .battle-combatants-compact {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
         gap: 10px;
     }
     
-    .hero-image, .map-image-large, .location-image-large {
-        height: 200px;
-    }
-    
-    .battle-section {
-        max-width: 100%;
-    }
-    
-    .monster-reward-column {
-        padding: 15px;
+    .vs-compact {
+        order: 2;
     }
 }
 
