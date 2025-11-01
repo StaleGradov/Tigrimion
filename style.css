@@ -1,1041 +1,1083 @@
 /* Базовые сбросы стилей */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+    margin: 0; /* Убираем внешние отступы у всех элементов */
+    padding: 0; /* Убираем внутренние отступы у всех элементов */
+    box-sizing: border-box; /* Размеры элементов включают padding и border */
 }
 
+/* Стили для тела документа */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
-    line-height: 1.6;
-    min-height: 100vh;
-    width: 100vw;
-    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Шрифт текста */
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Градиентный фон */
+    color: white; /* Цвет текста */
+    line-height: 1.6; /* Межстрочный интервал */
+    min-height: 100vh; /* Минимальная высота на весь экран */
+    width: 100vw; /* Ширина на весь экран */
+    overflow-x: hidden; /* Скрываем горизонтальную прокрутку */
 }
 
+/* Основной контейнер */
 .container {
-    width: 100%;
-    max-width: none;
-    padding: 15px;
-    margin: 0;
+    width: 100%; /* Ширина на весь экран */
+    max-width: none; /* Убираем ограничение максимальной ширины */
+    padding: 15px; /* Внутренние отступы */
+    margin: 0; /* Убираем внешние отступы */
 }
 
-/* Экраны */
+/* Стили для экранов (страниц) */
 .screen {
-    display: none;
+    display: none; /* Скрываем все экраны по умолчанию */
 }
 
 .screen.active {
-    display: block;
+    display: block; /* Показываем активный экран */
 }
 
+/* Класс для центрирования текста */
 .text-center {
-    text-align: center;
+    text-align: center; /* Выравнивание текста по центру */
 }
 
-/* Список героев */
+/* Сетка для списка героев */
 .hero-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-    gap: 30px;
-    padding: 30px;
-    width: 100%;
+    display: grid; /* Используем CSS Grid для сетки */
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Автоподбор колонок, мин. 450px */
+    gap: 30px; /* Расстояние между карточками */
+    padding: 30px; /* Внутренние отступы сетки */
+    width: 100%; /* Ширина на весь контейнер */
 }
 
+/* Стили для карточки героя */
 .hero-option {
-    position: relative;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    height: 480px;
-    overflow: hidden;
-    width: 100%;
+    position: relative; /* Для позиционирования внутренних элементов */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+    border-radius: 15px; /* Закругленные углы */
+    cursor: pointer; /* Курсор-указатель при наведении */
+    transition: all 0.3s ease; /* Плавные переходы для всех свойств */
+    border: 2px solid transparent; /* Прозрачная рамка */
+    height: 480px; /* Фиксированная высота карточки */
+    overflow: hidden; /* Скрываем выходящее за границы содержимое */
+    width: 100%; /* Ширина на всю ячейку сетки */
 }
 
+/* Эффекты при наведении на карточку героя */
 .hero-option:hover {
-    border-color: #4cc9f0;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border-color: #4cc9f0; /* Синяя рамка при наведении */
+    transform: translateY(-5px); /* Поднимаем карточку вверх */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Тень при наведении */
 }
 
+/* Стили для заблокированных героев */
 .hero-option.locked {
-    opacity: 0.6;
-    cursor: not-allowed;
+    opacity: 0.6; /* Полупрозрачность */
+    cursor: not-allowed; /* Курсор "недоступно" */
 }
 
+/* Убираем эффекты наведения для заблокированных героев */
 .hero-option.locked:hover {
-    border-color: transparent;
-    transform: none;
-    box-shadow: none;
+    border-color: transparent; /* Прозрачная рамка */
+    transform: none; /* Без трансформации */
+    box-shadow: none; /* Без тени */
 }
 
+/* Контейнер для изображения героя */
 .hero-option-image {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    width: 100%; /* Ширина на всю карточку */
+    height: 100%; /* Высота на всю карточку */
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; /* Прижимаем к верху */
+    left: 0; /* Прижимаем к левому краю */
 }
 
+/* Стили для самого изображения героя */
 .hero-option-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 13px;
-    transition: all 0.3s ease;
+    width: 100%; /* Ширина на весь контейнер */
+    height: 100%; /* Высота на весь контейнер */
+    object-fit: cover; /* Обрезаем изображение чтобы заполнить контейнер */
+    border-radius: 13px; /* Закругленные углы */
+    transition: all 0.3s ease; /* Плавные переходы */
 }
 
+/* Наложение для заблокированных героев */
 .locked-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 3em;
-    z-index: 2;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; left: 0; right: 0; bottom: 0; /* Растягиваем на всю карточку */
+    background: rgba(0, 0, 0, 0.7); /* Темное полупрозрачное наложение */
+    display: flex; /* Flex для центрирования */
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
+    font-size: 3em; /* Большой размер иконки */
+    z-index: 2; /* Поверх изображения */
 }
 
+/* Панель с информацией о герое (появляется при наведении) */
 .hero-option-info {
-    position: absolute;
-    bottom: -70%;
-    left: 0;
-    right: 0;
-    background: rgba(26, 26, 46, 0.95);
-    padding: 15px;
-    border-radius: 0 0 13px 13px;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    border-top: 2px solid #4cc9f0;
-    z-index: 3;
+    position: absolute; /* Абсолютное позиционирование */
+    bottom: -70%; /* Скрываем панель снизу */
+    left: 0; right: 0; /* Растягиваем по ширине */
+    background: rgba(26, 26, 46, 0.95); /* Темный полупрозрачный фон */
+    padding: 15px; /* Внутренние отступы */
+    border-radius: 0 0 13px 13px; /* Закругляем только нижние углы */
+    transition: all 0.3s ease; /* Плавное появление */
+    backdrop-filter: blur(10px); /* Размытие фона */
+    border-top: 2px solid #4cc9f0; /* Синяя верхняя рамка */
+    z-index: 3; /* Поверх всех элементов карточки */
 }
 
+/* Показываем панель информации при наведении */
 .hero-option:hover .hero-option-info {
-    bottom: 0;
+    bottom: 0; /* Поднимаем панель вверх */
 }
 
+/* Шапка карточки героя (имя и уровень) */
 .hero-option-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+    display: flex; /* Flex для размещения элементов в строку */
+    justify-content: space-between; /* Распределяем пространство между */
+    align-items: center; /* Выравниваем по центру по вертикали */
+    margin-bottom: 10px; /* Отступ снизу */
 }
 
+/* Имя героя в карточке */
 .hero-option-header strong {
-    font-size: 1.3em;
-    color: #ffd700;
+    font-size: 1.3em; /* Размер шрифта */
+    color: #ffd700; /* Золотой цвет */
 }
 
+/* Бейдж уровня героя */
 .hero-level {
-    background: #4cc9f0;
-    color: #1a1a2e;
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 1em;
-    font-weight: bold;
+    background: #4cc9f0; /* Синий фон */
+    color: #1a1a2e; /* Темно-синий текст */
+    padding: 4px 12px; /* Внутренние отступы */
+    border-radius: 15px; /* Закругленная форма */
+    font-size: 1em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
 }
 
+/* Сетка характеристик героя */
 .hero-option-stats {
-    margin-bottom: 10px;
+    margin-bottom: 10px; /* Отступ снизу */
 }
 
+/* Строка характеристики */
 .stat-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    font-size: 1em;
+    display: flex; /* Flex для размещения в строку */
+    justify-content: space-between; /* Название и значение по краям */
+    margin-bottom: 5px; /* Отступ между строками */
+    font-size: 1em; /* Размер шрифта */
 }
 
+/* Элементы в строке характеристики */
 .stat-row span {
-    white-space: nowrap;
+    white-space: nowrap; /* Запрещаем перенос текста */
 }
 
+/* Контейнер для навыков героя */
 .hero-option-skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    margin-bottom: 8px;
+    display: flex; /* Flex для размещения в строку */
+    flex-wrap: wrap; /* Разрешаем перенос на новую строку */
+    gap: 5px; /* Расстояние между навыками */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
+/* Бейдж навыка */
 .hero-option-skills span {
-    background: rgba(76, 201, 240, 0.3);
-    padding: 4px 10px;
-    border-radius: 10px;
-    font-size: 0.9em;
-    border: 1px solid #4cc9f0;
+    background: rgba(76, 201, 240, 0.3); /* Полупрозрачный синий фон */
+    padding: 4px 10px; /* Внутренние отступы */
+    border-radius: 10px; /* Закругленные углы */
+    font-size: 0.9em; /* Размер шрифта */
+    border: 1px solid #4cc9f0; /* Синяя рамка */
 }
 
+/* Текст с бонусами */
 .hero-option-bonuses small {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9em;
-    display: block;
-    text-align: center;
-    padding-top: 5px;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8); /* Полупрозрачный белый текст */
+    font-size: 0.9em; /* Размер шрифта */
+    display: block; /* Блочный элемент */
+    text-align: center; /* Центрируем текст */
+    padding-top: 5px; /* Отступ сверху */
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия */
 }
 
+/* Текст для заблокированных героев */
 .locked-text {
-    color: #ff6b6b;
-    display: block;
-    margin-top: 5px;
-    font-size: 0.9em;
-    text-align: center;
+    color: #ff6b6b; /* Красный цвет текста */
+    display: block; /* Блочный элемент */
+    margin-top: 5px; /* Отступ сверху */
+    font-size: 0.9em; /* Размер шрифта */
+    text-align: center; /* Центрируем текст */
 }
 
-/* НОВЫЙ МАКЕТ - 4 РАВНЫХ КОЛОНКИ С КАРТИНКАМИ НА ВЕСЬ ЭКРАН */
+/* ОСНОВНОЙ МАКЕТ - 4 КОЛОНКИ */
 .hero-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
-    align-items: start;
-    min-height: 75vh;
+    display: grid; /* CSS Grid для макета */
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 равные колонки */
+    gap: 12px; /* Расстояние между колонками */
+    margin-bottom: 20px; /* Отступ снизу */
+    align-items: start; /* Выравниваем по верху */
+    min-height: 75vh; /* Минимальная высота на 75% экрана */
 }
 
 /* ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КОЛОНОК */
 .hero-column, .monster-column, .map-column, .location-column {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    min-height: 550px;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border: 2px solid;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    position: relative; /* Для позиционирования внутренних элементов */
+    border-radius: 10px; /* Закругленные углы */
+    overflow: hidden; /* Скрываем выходящее за границы */
+    min-height: 550px; /* Минимальная высота колонки */
+    background-size: cover; /* Фон покрывает всю область */
+    background-position: center; /* Центрируем фон */
+    background-repeat: no-repeat; /* Запрещаем повторение фона */
+    border: 2px solid; /* Рамка */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4); /* Тень */
 }
 
 /* ЦВЕТА РАМОК ДЛЯ КАЖДОЙ КОЛОНКИ */
-.hero-column {
-    border-color: #4cc9f0;
-}
+.hero-column { border-color: #4cc9f0; } /* Синяя рамка для героя */
+.monster-column { border-color: #f87171; } /* Красная рамка для монстра */
+.map-column { border-color: #4ade80; } /* Зеленая рамка для карты */
+.location-column { border-color: #f59e0b; } /* Оранжевая рамка для локации */
 
-.monster-column {
-    border-color: #f87171;
-}
-
-.map-column {
-    border-color: #4ade80;
-}
-
-.location-column {
-    border-color: #f59e0b;
-}
-
-/* ОСНОВНАЯ КАРТИНКА ДЛЯ КАЖДОЙ КОЛОНКИ */
+/* ФОН КАЖДОЙ КОЛОНКИ */
 .column-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 1;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; left: 0; /* В левом верхнем углу */
+    width: 100%; height: 100%; /* На всю колонку */
+    object-fit: cover; /* Обрезаем изображение чтобы заполнить */
+    z-index: 1; /* Под основным контентом */
 }
 
-/* ОВЕРЛЕЙ ДЛЯ ЧИТАЕМОСТИ ТЕКСТА */
+/* ПОЛУПРОЗРАЧНОЕ НАЛОЖЕНИЕ ДЛЯ ЧИТАЕМОСТИ ТЕКСТА */
 .column-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; left: 0; /* В левом верхнем углу */
+    width: 100%; height: 100%; /* На всю колонку */
+    background: linear-gradient( /* Градиентное наложение */
         to bottom,
-        rgba(0, 0, 0, 0.8) 0%,
-        rgba(0, 0, 0, 0.3) 20%,
-        rgba(0, 0, 0, 0.2) 60%,
-        rgba(0, 0, 0, 0.7) 100%
+        rgba(0, 0, 0, 0.8) 0%, /* Темный сверху */
+        rgba(0, 0, 0, 0.3) 20%, /* Светлее */
+        rgba(0, 0, 0, 0.2) 60%, /* Еще светлее */
+        rgba(0, 0, 0, 0.7) 100% /* Темный снизу */
     );
-    z-index: 2;
+    z-index: 2; /* Поверх фона, под контентом */
 }
 
 /* КОНТЕЙНЕР ДЛЯ КОНТЕНТА НА КАРТИНКЕ */
 .column-content {
-    position: relative;
-    z-index: 3;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 12px;
-    color: white;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    position: relative; /* Относительное позиционирование */
+    z-index: 3; /* Поверх всех слоев */
+    height: 100%; /* На всю высоту колонки */
+    display: flex; /* Flexbox для размещения элементов */
+    flex-direction: column; /* Вертикальное направление */
+    padding: 12px; /* Внутренние отступы */
+    color: white; /* Белый текст */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); /* Тень текста для читаемости */
 }
 
-/* Заголовки колонок - УМЕНЬШЕНЫ */
+/* Заголовки колонок */
 .column-title {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #ffd700;
-    font-size: 1em;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    backdrop-filter: blur(8px);
+    text-align: center; /* Центрируем текст */
+    font-weight: bold; /* Жирный шрифт */
+    margin-bottom: 10px; /* Отступ снизу */
+    color: #ffd700; /* Золотой цвет */
+    font-size: 1em; /* Размер шрифта */
+    padding: 8px; /* Внутренние отступы */
+    background: rgba(0, 0, 0, 0.7); /* Темный полупрозрачный фон */
+    border-radius: 6px; /* Закругленные углы */
+    border: 1px solid rgba(255, 215, 0, 0.4); /* Золотая рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
 }
 
 /* СТИЛИ ДЛЯ ВИДЕО */
 .video-container {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
+    width: 100%; height: 100%; /* На всю колонку */
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; left: 0; /* В левом верхнем углу */
+    z-index: 1; /* Под основным контентом */
 }
 
 .video-container iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
+    width: 100%; height: 100%; /* На весь контейнер */
+    border: none; /* Убираем рамку */
 }
 
+/* Кнопка переключения видео */
 .video-toggle {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 4;
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid #4cc9f0;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.8em;
-    transition: all 0.3s ease;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 8px; right: 8px; /* В правом верхнем углу */
+    z-index: 4; /* Поверх всех элементов */
+    background: rgba(0, 0, 0, 0.8); /* Темный фон */
+    border: 1px solid #4cc9f0; /* Синяя рамка */
+    color: white; /* Белый текст */
+    padding: 6px 10px; /* Внутренние отступы */
+    border-radius: 5px; /* Закругленные углы */
+    cursor: pointer; /* Курсор-указатель */
+    font-size: 0.8em; /* Размер шрифта */
+    transition: all 0.3s ease; /* Плавные переходы */
 }
 
 .video-toggle:hover {
-    background: rgba(76, 201, 240, 0.3);
+    background: rgba(76, 201, 240, 0.3); /* Синий фон при наведении */
 }
 
 /* Стили для основной информации героя */
 .hero-info {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(76, 201, 240, 0.4);
-    backdrop-filter: blur(8px);
-    margin-bottom: 10px;
-    width: fit-content; /* ✅ Зона характеристик компактная */
-    min-width: 250px;
-    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+    background: rgba(0, 0, 0, 0.7); /* Темный полупрозрачный фон */
+    padding: 10px; /* Внутренние отступы */
+    border-radius: 8px; /* Закругленные углы */
+    border: 1px solid rgba(76, 201, 240, 0.4); /* Синяя рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
+    margin-bottom: 10px; /* Отступ снизу */
+    width: fit-content; /* Ширина по содержимому */
+    min-width: 250px; /* Минимальная ширина */
+    align-self: flex-start; /* Прижимаем к левому краю */
 }
 
+/* Имя героя - КОМПАКТНАЯ ВЕРСИЯ */
 .hero-info h2 {
-    color: #ffd700;
-    margin: 0; /* убираем нижний отступ */
-    font-size: 1em; /* уменьшаем размер текста */
-    text-align: left; /* прижимаем текст влево */
+    color: #ffd700; /* Золотой цвет текста */
+    margin: 0; /* Убираем отступы */
+    font-size: 1em; /* Уменьшенный размер текста */
+    text-align: left; /* Выравнивание по левому краю */
     
-    /* делаем подложку равной тексту */
-    display: inline-block; /* чтобы фон был только вокруг текста */
-    background: rgba(0, 0, 0, 0.7);
-    padding: 4px 8px; /* уменьшаем отступы */
-    border-radius: 6px;
-    border: 1px solid rgba(76, 201, 240, 0.4);
-    backdrop-filter: blur(8px);
-    white-space: nowrap; /* чтобы текст не переносился */
+    /* Подложка равная размеру текста */
+    display: inline-block; /* Ширина по содержимому */
+    background: rgba(0, 0, 0, 0.7); /* Темный фон */
+    padding: 4px 8px; /* Компактные отступы */
+    border-radius: 6px; /* Закругленные углы */
+    border: 1px solid rgba(76, 201, 240, 0.4); /* Синяя рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
+    white-space: nowrap; /* Запрещаем перенос текста */
 }
 
+/* Отображение здоровья */
 .health-display {
-    margin-bottom: 8px;
-    width: 100%; /* Здоровье остается на всю ширину колонки */
+    margin-bottom: 8px; /* Отступ снизу */
+    width: 100%; /* На всю ширину колонки */
 }
 
+/* Контейнер для полоски здоровья */
 .health-bar-container {
-    margin-bottom: 6px;
+    margin-bottom: 6px; /* Отступ снизу */
 }
 
+/* Полоска здоровья */
 .health-bar {
-    position: relative;
-    height: 16px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative; /* Для позиционирования внутренних элементов */
+    height: 16px; /* Высота полоски */
+    background: rgba(0, 0, 0, 0.7); /* Темный фон */
+    border-radius: 8px; /* Закругленные углы */
+    overflow: hidden; /* Скрываем выходящее за границы */
+    margin-bottom: 6px; /* Отступ снизу */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Белая рамка */
 }
 
+/* Заполненная часть полоски здоровья */
 .health-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4ade80, #22c55e);
-    transition: width 0.3s ease;
-    box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+    height: 100%; /* На всю высоту контейнера */
+    background: linear-gradient(90deg, #4ade80, #22c55e); /* Зеленый градиент */
+    transition: width 0.3s ease; /* Плавное изменение ширины */
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.4); /* Свечение */
 }
 
+/* Текст здоровья */
 .health-text {
-    font-weight: bold;
-    font-size: 0.85em;
-    text-align: center;
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 0.85em; /* Размер шрифта */
+    text-align: center; /* Центрируем текст */
 }
 
+/* Регенерация здоровья */
 .health-regen {
-    background: rgba(76, 201, 240, 0.3);
-    padding: 6px 12px;
-    border-radius: 5px;
-    font-size: 0.8em;
-    border: 1px solid #4cc9f0;
-    text-align: center;
-    margin-top: 6px;
-    width: fit-content; /* ✅ Исправлено: занимает только нужное место */
-    margin-left: auto;
-    margin-right: auto;
+    background: rgba(76, 201, 240, 0.3); /* Синий полупрозрачный фон */
+    padding: 6px 12px; /* Внутренние отступы */
+    border-radius: 5px; /* Закругленные углы */
+    font-size: 0.8em; /* Размер шрифта */
+    border: 1px solid #4cc9f0; /* Синяя рамка */
+    text-align: center; /* Центрируем текст */
+    margin-top: 6px; /* Отступ сверху */
+    width: fit-content; /* Ширина по содержимому */
+    margin-left: auto; margin-right: auto; /* Центрируем блок */
 }
 
+/* Основные характеристики героя */
 .hero-main-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 8px;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+    gap: 6px; /* Расстояние между ячейками */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
+/* Карточка характеристики */
 .main-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
-    font-size: 0.85em;
+    display: flex; /* Flex для вертикального размещения */
+    flex-direction: column; /* Вертикальное направление */
+    align-items: center; /* Центрируем по горизонтали */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+    padding: 6px; /* Внутренние отступы */
+    border-radius: 6px; /* Закругленные углы */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    backdrop-filter: blur(4px); /* Легкое размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
 }
 
+/* Иконка характеристики */
 .stat-icon {
-    font-size: 1.1em;
-    margin-bottom: 2px;
+    font-size: 1.1em; /* Размер иконки */
+    margin-bottom: 2px; /* Отступ снизу */
 }
 
+/* Значение характеристики */
 .stat-value {
-    font-weight: bold;
-    font-size: 0.95em;
-    color: #4cc9f0;
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 0.95em; /* Размер шрифта */
+    color: #4cc9f0; /* Синий цвет */
 }
 
-/* Экипировка - УМЕНЬШЕНА */
+/* Секция экипировки */
 .equipment-section {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 6px;
-    margin-bottom: 8px;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: 1fr; /* Одна колонка */
+    gap: 6px; /* Расстояние между слотами */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
+/* Слот экипировки */
 .equipment-slot {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(4px);
-    font-size: 0.85em;
+    display: flex; /* Flex для размещения элементов в строку */
+    align-items: center; /* Выравниваем по центру по вертикали */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+    padding: 8px; /* Внутренние отступы */
+    border-radius: 6px; /* Закругленные углы */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    cursor: pointer; /* Курсор-указатель */
+    transition: all 0.3s ease; /* Плавные переходы */
+    backdrop-filter: blur(4px); /* Размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
 }
 
+/* Эффекты при наведении на слот экипировки */
 .equipment-slot:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #4cc9f0;
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.15); /* Светлее фон */
+    border-color: #4cc9f0; /* Синяя рамка */
+    transform: translateY(-1px); /* Поднимаем слегка */
 }
 
+/* Иконка экипировки */
 .equipment-icon {
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.9em;
+    width: 32px; height: 32px; /* Фиксированный размер */
+    margin-right: 8px; /* Отступ справа */
+    display: flex; /* Flex для центрирования */
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон */
+    border-radius: 5px; /* Закругленные углы */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    font-size: 0.9em; /* Размер иконки */
 }
 
-/* Прогресс уровня - УМЕНЬШЕН */
+/* Полоска прогресса уровня */
 .level-progress {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin: 6px 0;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%; /* На всю ширину */
+    height: 6px; /* Тонкая полоска */
+    background: rgba(255, 255, 255, 0.1); /* Светлый фон */
+    border-radius: 3px; /* Закругленные углы */
+    margin: 6px 0; /* Отступы сверху и снизу */
+    overflow: hidden; /* Скрываем выходящее за границы */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
 }
 
+/* Заполненная часть прогресса уровня */
 .level-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #4cc9f0, #4361ee);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    box-shadow: 0 0 6px rgba(76, 201, 240, 0.4);
+    height: 100%; /* На всю высоту */
+    background: linear-gradient(90deg, #4cc9f0, #4361ee); /* Синий градиент */
+    border-radius: 3px; /* Закругленные углы */
+    transition: width 0.3s ease; /* Плавное изменение ширины */
+    box-shadow: 0 0 6px rgba(76, 201, 240, 0.4); /* Свечение */
 }
 
+/* Панель прогресса героя */
 .hero-progress {
-    display: flex;
-    justify-content: space-around;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
-    border-radius: 6px;
-    font-size: 0.8em;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
+    display: flex; /* Flex для размещения в строку */
+    justify-content: space-around; /* Равномерное распределение */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон */
+    padding: 6px; /* Внутренние отступы */
+    border-radius: 6px; /* Закругленные углы */
+    font-size: 0.8em; /* Размер шрифта */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    backdrop-filter: blur(4px); /* Размытие фона */
 }
 
-/* Бонусы - УМЕНЬШЕНЫ И ПРИЖАТЫ К ЛЕВОМУ КРАЮ */
+/* Секция бонусов */
 .bonuses-section {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    backdrop-filter: blur(8px);
-    font-size: 0.85em;
-    width: fit-content; /* ✅ Зона бонусов компактная */
-    min-width: 200px;
-    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+    background: rgba(0, 0, 0, 0.7); /* Темный полупрозрачный фон */
+    padding: 10px; /* Внутренние отступы */
+    border-radius: 8px; /* Закругленные углы */
+    margin-bottom: 10px; /* Отступ снизу */
+    border: 1px solid rgba(255, 215, 0, 0.4); /* Золотая рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
+    width: fit-content; /* Ширина по содержимому */
+    min-width: 200px; /* Минимальная ширина */
+    align-self: flex-start; /* Прижимаем к левому краю */
 }
 
+/* Заголовок бонусов */
 .bonuses-section h3 {
-    color: #ffd700;
-    margin-bottom: 6px;
-    font-size: 1em;
-    text-align: center;
+    color: #ffd700; /* Золотой цвет */
+    margin-bottom: 6px; /* Отступ снизу */
+    font-size: 1em; /* Размер шрифта */
+    text-align: center; /* Центрируем текст */
 }
 
+/* Элемент бонуса */
 .bonus-item {
-    margin-bottom: 4px;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.8em;
+    margin-bottom: 4px; /* Отступ снизу */
+    padding: 3px 0; /* Внутренние отступы сверху и снизу */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия */
+    font-size: 0.8em; /* Размер шрифта */
 }
 
-/* СТИЛИ ДЛЯ КОЛОНКИ МОНСТРА - УМЕНЬШЕНЫ */
+/* Сетка характеристик монстра */
 .monster-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin: 8px 0;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: 1fr 1fr; /* 2 колонки */
+    gap: 6px; /* Расстояние между ячейками */
+    margin: 8px 0; /* Отступы сверху и снизу */
 }
 
+/* Карточка характеристики монстра */
 .monster-stat-card {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 6px;
-    border-radius: 6px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
-    font-size: 0.8em;
+    background: rgba(0, 0, 0, 0.7); /* Темный фон */
+    padding: 6px; /* Внутренние отступы */
+    border-radius: 6px; /* Закругленные углы */
+    text-align: center; /* Центрируем текст */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    backdrop-filter: blur(4px); /* Размытие фона */
+    font-size: 0.8em; /* Размер шрифта */
 }
 
+/* Значение характеристики монстра */
 .monster-stat-value {
-    font-weight: bold;
-    color: #4cc9f0;
-    font-size: 0.9em;
+    font-weight: bold; /* Жирный шрифт */
+    color: #4cc9f0; /* Синий цвет */
+    font-size: 0.9em; /* Размер шрифта */
 }
 
-/* КНОПКИ ДЕЙСТВИЙ ДЛЯ МОНСТРА - УМЕНЬШЕНЫ */
+/* Кнопки действий для монстра */
 .monster-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 10px;
+    display: flex; /* Flex для вертикального размещения */
+    flex-direction: column; /* Вертикальное направление */
+    gap: 6px; /* Расстояние между кнопками */
+    margin-top: 10px; /* Отступ сверху */
 }
 
+/* Общие стили для кнопок монстра */
 .monster-actions button {
-    padding: 8px 12px;
-    font-size: 0.9em;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    backdrop-filter: blur(4px);
-    border: 1px solid;
+    padding: 8px 12px; /* Внутренние отступы */
+    font-size: 0.9em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    border: none; /* Убираем стандартную рамку */
+    border-radius: 6px; /* Закругленные углы */
+    cursor: pointer; /* Курсор-указатель */
+    transition: all 0.3s ease; /* Плавные переходы */
+    text-align: center; /* Центрируем текст */
+    backdrop-filter: blur(4px); /* Размытие фона */
+    border: 1px solid; /* Рамка */
 }
 
+/* Основная кнопка (атака) */
 .monster-actions .btn-primary {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
-    color: white;
-    border-color: #dc2626;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8)); /* Красный градиент */
+    color: white; /* Белый текст */
+    border-color: #dc2626; /* Красная рамка */
 }
 
 .monster-actions .btn-primary:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9)); /* Темнее градиент */
+    transform: translateY(-1px); /* Поднимаем кнопку */
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); /* Тень */
 }
 
+/* Вторичная кнопка */
 .monster-actions .btn-secondary {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15); /* Полупрозрачный белый */
+    color: white; /* Белый текст */
+    border-color: rgba(255, 255, 255, 0.3); /* Белая рамка */
 }
 
 .monster-actions .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.25); /* Светлее фон */
+    transform: translateY(-1px); /* Поднимаем кнопку */
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15); /* Тень */
 }
 
-/* Стили для боя в колонке монстра - УМЕНЬШЕНЫ */
+/* Стили для боя в колонке монстра */
 .battle-in-monster-column {
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 10px;
-    margin-top: 10px;
-    border: 1px solid rgba(248, 113, 113, 0.4);
-    backdrop-filter: blur(8px);
-    font-size: 0.85em;
+    background: rgba(0, 0, 0, 0.8); /* Темный фон */
+    border-radius: 8px; /* Закругленные углы */
+    padding: 10px; /* Внутренние отступы */
+    margin-top: 10px; /* Отступ сверху */
+    border: 1px solid rgba(248, 113, 113, 0.4); /* Красная рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
 }
 
+/* Шапка боя */
 .battle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(76, 201, 240, 0.4);
+    display: flex; /* Flex для размещения в строку */
+    justify-content: space-between; /* Элементы по краям */
+    align-items: center; /* Выравнивание по центру */
+    margin-bottom: 8px; /* Отступ снизу */
+    padding-bottom: 6px; /* Отступ снизу внутри */
+    border-bottom: 1px solid rgba(76, 201, 240, 0.4); /* Синяя разделительная линия */
 }
 
 .battle-header h4 {
-    color: #ffd700;
-    margin: 0;
-    font-size: 1em;
+    color: #ffd700; /* Золотой цвет */
+    margin: 0; /* Убираем отступы */
+    font-size: 1em; /* Размер шрифта */
 }
 
+/* Бейдж номера раунда */
 .battle-round {
-    background: rgba(76, 201, 240, 0.3);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-weight: bold;
-    border: 1px solid #4cc9f0;
+    background: rgba(76, 201, 240, 0.3); /* Синий фон */
+    padding: 4px 8px; /* Внутренние отступы */
+    border-radius: 12px; /* Закругленная форма */
+    font-size: 0.8em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    border: 1px solid #4cc9f0; /* Синяя рамка */
 }
 
+/* Компактное отображение участников боя */
 .battle-combatants-compact {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 8px;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: 1fr auto 1fr; /* Герой VS Монстр */
+    gap: 10px; /* Расстояние между элементами */
+    align-items: center; /* Выравнивание по центру */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
+/* Карточка участника боя */
 .combatant-compact {
-    text-align: center;
-    padding: 8px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid;
-    backdrop-filter: blur(4px);
-    font-size: 0.85em;
+    text-align: center; /* Центрируем текст */
+    padding: 8px; /* Внутренние отступы */
+    border-radius: 8px; /* Закругленные углы */
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный фон */
+    border: 1px solid; /* Рамка */
+    backdrop-filter: blur(4px); /* Размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
 }
 
+/* Аватар участника боя */
 .combatant-image-compact {
-    width: 50px;
-    height: 50px;
-    margin: 0 auto 6px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid currentColor;
+    width: 50px; height: 50px; /* Фиксированный размер */
+    margin: 0 auto 6px; /* Центрируем и отступ снизу */
+    border-radius: 50%; /* Круглая форма */
+    overflow: hidden; /* Скрываем выходящее за границы */
+    border: 2px solid currentColor; /* Рамка цвета текста */
 }
 
 .combatant-image-compact img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    width: 100%; height: 100%; /* На весь контейнер */
+    object-fit: cover; /* Обрезаем изображение */
 }
 
+/* Компактная полоска здоровья */
 .health-bar-compact {
-    position: relative;
-    height: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative; /* Для позиционирования */
+    height: 10px; /* Тонкая полоска */
+    background: rgba(0, 0, 0, 0.7); /* Темный фон */
+    border-radius: 5px; /* Закругленные углы */
+    overflow: hidden; /* Скрываем выходящее за границы */
+    margin-bottom: 4px; /* Отступ снизу */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
 }
 
+/* Заполненная часть компактной полоски здоровья */
 .health-bar-fill-compact {
-    height: 100%;
-    transition: width 0.3s ease;
+    height: 100%; /* На всю высоту */
+    transition: width 0.3s ease; /* Плавное изменение ширины */
 }
 
+/* Надпись VS между участниками */
 .vs-compact {
-    font-size: 1em;
-    font-weight: bold;
-    color: #ffd700;
-    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+    font-size: 1em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    color: #ffd700; /* Золотой цвет */
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6); /* Свечение */
 }
 
+/* Лог боя компактный */
 .battle-log-compact {
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 5px;
-    padding: 6px;
-    max-height: 60px;
-    overflow-y: auto;
-    margin-bottom: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.75em;
+    background: rgba(0, 0, 0, 0.6); /* Темный фон */
+    border-radius: 5px; /* Закругленные углы */
+    padding: 6px; /* Внутренние отступы */
+    max-height: 60px; /* Ограничиваем высоту */
+    overflow-y: auto; /* Прокрутка по вертикали */
+    margin-bottom: 8px; /* Отступ снизу */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    font-size: 0.75em; /* Размер шрифта */
 }
 
+/* Запись в логе боя */
 .battle-log-entry-compact {
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.75em;
+    padding: 3px 0; /* Отступы сверху и снизу */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия */
+    font-size: 0.75em; /* Размер шрифта */
 }
 
+/* Кнопки действий в бою */
 .battle-actions-compact {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
+    display: flex; /* Flex для размещения в строку */
+    gap: 6px; /* Расстояние между кнопками */
+    justify-content: center; /* Центрируем кнопки */
 }
 
+/* Общие стили для кнопок боя */
 .btn-battle-attack-compact, .btn-battle-escape-compact {
-    padding: 6px 10px;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85em;
-    flex: 1;
-    backdrop-filter: blur(4px);
-    border: 1px solid;
+    padding: 6px 10px; /* Внутренние отступы */
+    border: none; /* Убираем стандартную рамку */
+    border-radius: 5px; /* Закругленные углы */
+    font-weight: bold; /* Жирный шрифт */
+    cursor: pointer; /* Курсор-указатель */
+    transition: all 0.3s ease; /* Плавные переходы */
+    font-size: 0.85em; /* Размер шрифта */
+    flex: 1; /* Равная ширина */
+    backdrop-filter: blur(4px); /* Размытие фона */
+    border: 1px solid; /* Рамка */
 }
 
+/* Кнопка атаки в бою */
 .btn-battle-attack-compact {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
-    color: white;
-    border-color: #dc2626;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8)); /* Красный градиент */
+    color: white; /* Белый текст */
+    border-color: #dc2626; /* Красная рамка */
 }
 
 .btn-battle-attack-compact:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
-    transform: translateY(-1px);
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9)); /* Темнее градиент */
+    transform: translateY(-1px); /* Поднимаем кнопку */
 }
 
+/* Кнопка побега из боя */
 .btn-battle-escape-compact {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15); /* Полупрозрачный белый */
+    color: white; /* Белый текст */
+    border-color: rgba(255, 255, 255, 0.3); /* Белая рамка */
 }
 
 .btn-battle-escape-compact:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.25); /* Светлее фон */
+    transform: translateY(-1px); /* Поднимаем кнопку */
 }
 
-/* СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА БОЯ - УМЕНЬШЕНЫ */
+/* Стили для отображения результата боя */
 .battle-result {
-    text-align: center;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.85);
-    border-radius: 8px;
-    border: 2px solid;
-    backdrop-filter: blur(10px);
-    margin: 8px 0;
-    font-size: 0.9em;
+    text-align: center; /* Центрируем текст */
+    padding: 15px; /* Внутренние отступы */
+    background: rgba(0, 0, 0, 0.85); /* Темный фон */
+    border-radius: 8px; /* Закругленные углы */
+    border: 2px solid; /* Рамка */
+    backdrop-filter: blur(10px); /* Размытие фона */
+    margin: 8px 0; /* Отступы сверху и снизу */
+    font-size: 0.9em; /* Размер шрифта */
 }
 
+/* Иконка результата боя */
 .battle-result-image {
-    font-size: 2em;
-    margin-bottom: 8px;
+    font-size: 2em; /* Большой размер иконки */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
 .battle-result h4 {
-    color: #ffd700;
-    margin-bottom: 6px;
-    font-size: 1.1em;
+    color: #ffd700; /* Золотой цвет */
+    margin-bottom: 6px; /* Отступ снизу */
+    font-size: 1.1em; /* Размер шрифта */
 }
 
+/* Отображение награды */
 .reward-amount {
-    background: rgba(255, 215, 0, 0.25);
-    padding: 8px 10px;
-    border-radius: 6px;
-    margin: 8px 0;
-    border: 1px solid rgba(255, 215, 0, 0.5);
-    font-weight: bold;
-    color: #ffd700;
-    font-size: 0.9em;
+    background: rgba(255, 215, 0, 0.25); /* Золотой фон */
+    padding: 8px 10px; /* Внутренние отступы */
+    border-radius: 6px; /* Закругленные углы */
+    margin: 8px 0; /* Отступы сверху и снизу */
+    border: 1px solid rgba(255, 215, 0, 0.5); /* Золотая рамка */
+    font-weight: bold; /* Жирный шрифт */
+    color: #ffd700; /* Золотой текст */
+    font-size: 0.9em; /* Размер шрифта */
 }
 
-/* Кнопки действий вверху страницы - УМЕНЬШЕНЫ */
+/* Кнопки действий вверху страницы */
 .action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px;
-    margin-bottom: 15px;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Автоподбор колонок */
+    gap: 8px; /* Расстояние между кнопками */
+    margin-bottom: 15px; /* Отступ снизу */
 }
 
+/* Общие стили для кнопок */
 .btn-primary, .btn-secondary, .btn-danger {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.95em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    border: 1px solid;
-    backdrop-filter: blur(4px);
+    padding: 10px 16px; /* Внутренние отступы */
+    border: none; /* Убираем стандартную рамку */
+    border-radius: 6px; /* Закругленные углы */
+    font-size: 0.95em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
+    cursor: pointer; /* Курсор-указатель */
+    transition: all 0.3s ease; /* Плавные переходы */
+    text-align: center; /* Центрируем текст */
+    border: 1px solid; /* Рамка */
+    backdrop-filter: blur(4px); /* Размытие фона */
 }
 
+/* Основная кнопка */
 .btn-primary {
-    background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(67, 97, 238, 0.8));
-    color: white;
-    border-color: #4cc9f0;
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(67, 97, 238, 0.8)); /* Синий градиент */
+    color: white; /* Белый текст */
+    border-color: #4cc9f0; /* Синяя рамка */
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, rgba(58, 168, 208, 0.9), rgba(50, 81, 212, 0.9));
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
+    background: linear-gradient(135deg, rgba(58, 168, 208, 0.9), rgba(50, 81, 212, 0.9)); /* Темнее градиент */
+    transform: translateY(-1px); /* Поднимаем кнопку */
+    box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3); /* Тень */
 }
 
+/* Вторичная кнопка */
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.15); /* Полупрозрачный белый */
+    color: white; /* Белый текст */
+    border-color: rgba(255, 255, 255, 0.3); /* Белая рамка */
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.25); /* Светлее фон */
+    transform: translateY(-1px); /* Поднимаем кнопку */
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15); /* Тень */
 }
 
+/* Опасная кнопка */
 .btn-danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
-    color: white;
-    border-color: #dc2626;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8)); /* Красный градиент */
+    color: white; /* Белый текст */
+    border-color: #dc2626; /* Красная рамка */
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9)); /* Темнее градиент */
+    transform: translateY(-1px); /* Поднимаем кнопку */
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); /* Тень */
 }
 
-/* Журнал событий - УМЕНЬШЕН */
+/* Основной журнал событий */
 .battle-log {
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 10px;
-    max-height: 120px;
-    overflow-y: auto;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    font-size: 0.85em;
+    background: rgba(0, 0, 0, 0.8); /* Темный фон */
+    border-radius: 8px; /* Закругленные углы */
+    padding: 10px; /* Внутренние отступы */
+    max-height: 120px; /* Ограничиваем высоту */
+    overflow-y: auto; /* Прокрутка по вертикали */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Белая рамка */
+    backdrop-filter: blur(8px); /* Размытие фона */
+    font-size: 0.85em; /* Размер шрифта */
 }
 
+/* Запись в журнале событий */
 .log-entry {
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.8em;
+    padding: 4px 0; /* Отступы сверху и снизу */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия */
+    font-size: 0.8em; /* Размер шрифта */
 }
 
-/* Стили для выбора карт, локаций */
+/* Сетки для выбора карт и локаций */
 .maps-grid, .locations-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 12px;
-    padding: 12px;
+    display: grid; /* CSS Grid для сетки */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Автоподбор колонок */
+    gap: 12px; /* Расстояние между элементами */
+    padding: 12px; /* Внутренние отступы */
 }
 
+/* Карточки карт и локаций */
 .map-option, .location-option {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    text-align: center;
+    background: rgba(255, 255, 255, 0.05); /* Полупрозрачный фон */
+    border-radius: 8px; /* Закругленные углы */
+    padding: 12px; /* Внутренние отступы */
+    cursor: pointer; /* Курсор-указатель */
+    transition: all 0.3s ease; /* Плавные переходы */
+    border: 2px solid transparent; /* Прозрачная рамка */
+    text-align: center; /* Центрируем текст */
 }
 
+/* Эффекты при наведении на карты и локации */
 .map-option:hover, .location-option:hover {
-    border-color: #4cc9f0;
-    transform: translateY(-2px);
+    border-color: #4cc9f0; /* Синяя рамка */
+    transform: translateY(-2px); /* Поднимаем карточку */
 }
 
-/* Адаптивность - УЛУЧШЕНА ДЛЯ МОБИЛЬНЫХ */
+/* Адаптивность для планшетов и маленьких экранов */
 @media (max-width: 1200px) {
     .hero-layout {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-        gap: 10px;
+        grid-template-columns: 1fr 1fr; /* 2 колонки вместо 4 */
+        grid-template-rows: auto auto; /* 2 строки */
+        gap: 10px; /* Меньшее расстояние */
     }
     
     .hero-column, .monster-column, .map-column, .location-column {
-        min-height: 400px;
+        min-height: 400px; /* Меньшая высота */
     }
     
     .column-content {
-        padding: 8px;
+        padding: 8px; /* Меньшие отступы */
     }
     
     .hero-info, .bonuses-section {
-        padding: 8px;
+        padding: 8px; /* Меньшие отступы */
     }
 }
 
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
     .container {
-        padding: 8px;
+        padding: 8px; /* Меньшие отступы */
     }
     
     .hero-layout {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        grid-template-columns: 1fr; /* 1 колонка */
+        gap: 8px; /* Меньшее расстояние */
     }
     
     .hero-column, .monster-column, .map-column, .location-column {
-        min-height: 350px;
+        min-height: 350px; /* Еще меньшая высота */
     }
     
     .column-content {
-        padding: 6px;
+        padding: 6px; /* Еще меньшие отступы */
     }
     
     .hero-info, .bonuses-section {
-        padding: 6px;
-        font-size: 0.8em;
-        min-width: 200px;
+        padding: 6px; /* Меньшие отступы */
+        font-size: 0.8em; /* Меньший шрифт */
+        min-width: 200px; /* Меньшая минимальная ширина */
     }
     
     .hero-info h2 {
-        font-size: 1em;
+        font-size: 1em; /* Размер шрифта имени */
     }
     
     .health-bar {
-        height: 14px;
+        height: 14px; /* Тоньше полоска здоровья */
     }
     
     .main-stat {
-        padding: 4px;
-        font-size: 0.75em;
+        padding: 4px; /* Меньшие отступы */
+        font-size: 0.75em; /* Меньший шрифт */
     }
     
     .equipment-slot {
-        padding: 6px;
-        font-size: 0.75em;
+        padding: 6px; /* Меньшие отступы */
+        font-size: 0.75em; /* Меньший шрифт */
     }
     
     .equipment-icon {
-        width: 28px;
-        height: 28px;
+        width: 28px; height: 28px; /* Меньшие иконки */
     }
     
     .monster-actions button {
-        padding: 6px 10px;
-        font-size: 0.8em;
+        padding: 6px 10px; /* Меньшие кнопки */
+        font-size: 0.8em; /* Меньший шрифт */
     }
     
     .action-buttons {
-        grid-template-columns: 1fr;
-        gap: 6px;
+        grid-template-columns: 1fr; /* 1 колонка для кнопок */
+        gap: 6px; /* Меньшее расстояние */
     }
     
     .btn-primary, .btn-secondary, .btn-danger {
-        padding: 8px 12px;
-        font-size: 0.9em;
+        padding: 8px 12px; /* Меньшие кнопки */
+        font-size: 0.9em; /* Меньший шрифт */
     }
     
     .hero-list, .maps-grid, .locations-grid {
-        grid-template-columns: 1fr;
-        padding: 15px;
-        gap: 15px;
+        grid-template-columns: 1fr; /* 1 колонка */
+        padding: 15px; /* Отступы */
+        gap: 15px; /* Расстояние */
     }
     
     .battle-combatants-compact {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-        gap: 8px;
+        grid-template-columns: 1fr; /* Вертикальное расположение */
+        grid-template-rows: auto auto auto; /* 3 строки */
+        gap: 8px; /* Расстояние */
     }
     
     .vs-compact {
-        order: 2;
+        order: 2; /* Меняем порядок VS */
     }
 }
 
-/* ЕЩЁ БОЛЬШЕ УМЕНЬШЕНИЕ ДЛЯ ОЧЕНЬ МАЛЕНЬКИХ ЭКРАНОВ */
+/* Адаптивность для очень маленьких экранов */
 @media (max-width: 480px) {
     .container {
-        padding: 5px;
+        padding: 5px; /* Минимальные отступы */
     }
     
     .hero-layout {
-        gap: 6px;
+        gap: 6px; /* Минимальное расстояние */
     }
     
     .hero-column, .monster-column, .map-column, .location-column {
-        min-height: 300px;
+        min-height: 300px; /* Минимальная высота */
     }
     
     .column-content {
-        padding: 4px;
+        padding: 4px; /* Минимальные отступы */
     }
     
     .column-title {
-        font-size: 0.9em;
-        padding: 6px;
-        margin-bottom: 6px;
+        font-size: 0.9em; /* Меньший заголовок */
+        padding: 6px; /* Меньшие отступы */
+        margin-bottom: 6px; /* Меньший отступ */
     }
     
     .hero-info, .bonuses-section {
-        padding: 5px;
-        font-size: 0.75em;
-        min-width: 180px;
+        padding: 5px; /* Минимальные отступы */
+        font-size: 0.75em; /* Минимальный шрифт */
+        min-width: 180px; /* Минимальная ширина */
     }
     
     .health-bar {
-        height: 12px;
+        height: 12px; /* Самая тонкая полоска */
     }
     
     .health-text {
-        font-size: 0.75em;
+        font-size: 0.75em; /* Меньший текст */
     }
     
     .main-stat {
-        padding: 3px;
-        font-size: 0.7em;
+        padding: 3px; /* Минимальные отступы */
+        font-size: 0.7em; /* Минимальный шрифт */
     }
     
     .stat-icon {
-        font-size: 1em;
+        font-size: 1em; /* Размер иконки */
     }
     
     .stat-value {
-        font-size: 0.85em;
+        font-size: 0.85em; /* Размер значения */
     }
 }
 
-/* Скроллбар */
+/* Стилизация скроллбара */
 ::-webkit-scrollbar {
-    width: 4px;
+    width: 4px; /* Тонкий скроллбар */
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.1); /* Светлый трек */
+    border-radius: 2px; /* Закругленные углы */
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #4cc9f0;
-    border-radius: 2px;
+    background: #4cc9f0; /* Синий ползунок */
+    border-radius: 2px; /* Закругленные углы */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #3aa8d0;
+    background: #3aa8d0; /* Темнее синий при наведении */
 }
