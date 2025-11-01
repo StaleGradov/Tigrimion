@@ -1074,7 +1074,39 @@ debugUnlockAllHeroes() {
     });
     this.renderHeroSelect();
 }
+// Глобальные функции для отладки (добавьте в конец файла)
+window.debugGame = function() {
+    if (window.game) {
+        console.log('=== ДЕБАГ ИНФОРМАЦИЯ ===');
+        console.log('🎮 Состояние игры:');
+        console.log('- Текущий герой:', game.currentHero?.name || 'Нет');
+        console.log('- Текущий экран:', game.currentScreen);
+        console.log('- Всего героев:', game.heroes.length);
+        
+        game.heroes.forEach((hero, index) => {
+            console.log(`Герой ${index + 1}: ${hero.name} (ID: ${hero.id}) - разблокирован: ${hero.unlocked}`);
+        });
+        
+        // Проверяем обработчики событий
+        const heroOptions = document.querySelectorAll('.hero-option');
+        console.log('- Найдено элементов .hero-option:', heroOptions.length);
+        
+        heroOptions.forEach((option, index) => {
+            console.log(`  Элемент ${index}:`, {
+                classList: option.classList.toString(),
+                onclick: option.getAttribute('onclick')
+            });
+        });
+    } else {
+        console.log('❌ Игра не инициализирована');
+    }
+};
 
+window.unlockAll = function() {
+    if (window.game) {
+        game.debugUnlockAllHeroes();
+    }
+};
     // Показать экран
     showScreen(screenName) {
         this.currentScreen = screenName;
