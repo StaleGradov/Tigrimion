@@ -28,19 +28,18 @@ class HeroGame {
         // Общий инвентарь
         this.globalInventory = [];
         
-        // Видео для каждого героя (примеры - замените на реальные видео)
+        // Видео для каждого героя
         this.heroVideos = {
-            1: 'https://www.youtube.com/watch?v=mfziNIhX9mo', // Герой 1
-            2: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 2  
-            3: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 3
-            4: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 4
-            5: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 5
-            6: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 6
-            7: 'https://www.youtube.com/embed/dQw4w9WgXcQ', // Герой 7
-            8: 'https://www.youtube.com/embed/dQw4w9WgXcQ'  // Герой 8
+            1: 'https://www.youtube.com/watch?v=mfziNIhX9mo',
+            2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
+            3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            4: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            5: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            6: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            7: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            8: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
         };
         
-        // Видео для карт и локаций
         this.videos = {
             map: 'https://www.youtube.com/watch?v=4gSmkjlEO_Q',
             location: 'https://www.youtube.com/watch?v=ytr51kwNLPo'
@@ -73,9 +72,8 @@ class HeroGame {
         await this.loadGameData();
         this.loadSave();
         
-        // Гарантируем что первый герой разблокирован
         if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(function(h) { return h.id === 1; });
+            const firstHero = this.heroes.find(h => h.id === 1);
             if (firstHero) {
                 firstHero.unlocked = true;
             }
@@ -84,7 +82,6 @@ class HeroGame {
         this.renderHeroSelect();
     }
 
-    // Базовая функция загрузки JSON
     async loadJSON(filePath) {
         try {
             const response = await fetch(filePath);
@@ -114,9 +111,8 @@ class HeroGame {
             this.maps = mapsData || [];
             this.locations = locationsData || [];
 
-            // Принудительно разблокируем первого героя
             if (this.heroes.length > 0) {
-                const firstHero = this.heroes.find(function(h) { return h.id === 1; });
+                const firstHero = this.heroes.find(h => h.id === 1);
                 if (firstHero) {
                     firstHero.unlocked = true;
                 }
@@ -136,7 +132,6 @@ class HeroGame {
         }
     }
 
-    // Создание минимальных данных при ошибке загрузки
     createFallbackData() {
         this.heroes = [{
             id: 1,
@@ -204,6 +199,107 @@ class HeroGame {
             artifactChance: 0.005, 
             relicChance: 0.0005 
         }];
+    }
+
+    // НОВАЯ СИСТЕМА БОНУСОВ
+    getBonuses() {
+        return {
+            races: {
+                elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%" },
+                halfling: { type: "crit_chance", value: 0.2, name: "Полурослик", description: "20% шанс двойного урона" },
+                human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота за противника" },
+                laitar: { type: "vampirism", value: 0.05, name: "Лайтар", description: "5% урона восстанавливает здоровье" },
+                ork: { type: "health_regen_mult", value: 0.3, name: "Орк", description: "+30% к регенерации здоровья" },
+                dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью" },
+                dragon: { type: "armor_mult", value: 0.15, name: "Дракон", description: "+15% к броне" },
+                fairy: { type: "armor_penetration", value: 0.25, name: "Фея", description: "25% шанс игнорировать броню" }
+            },
+            classes: {
+                hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню" },
+                warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне" },
+                bounty_hunter: { type: "crit_chance", value: 0.2, name: "Охотник за головами", description: "20% шанс двойного урона" },
+                merchant: { type: "gold_mult", value: 0.3, name: "Торговец", description: "+30% золота за противника" },
+                thief: { type: "gold_mult", value: 0.3, name: "Вор", description: "+30% золота за противника" },
+                fighter: { type: "health_regen_mult", value: 0.3, name: "Кулачный боец", description: "+30% к регенерации" },
+                antiquarian: { type: "gold_mult", value: 0.3, name: "Искатель древностей", description: "+30% золота за противника" },
+                death_mage: { type: "vampirism", value: 0.05, name: "Волхв смерти", description: "5% урона восстанавливает здоровье" },
+                sorcerer: { type: "damage_mult", value: 0.2, name: "Колдун", description: "Урон +20%" },
+                archer: { type: "crit_chance", value: 0.2, name: "Лучник", description: "20% шанс двойного урона" },
+                healer: { type: "health_mult", value: 0.3, name: "Знахарь", description: "+30% к здоровью" },
+                gladiator: { type: "damage_mult", value: 0.2, name: "Гладиатор", description: "Урон +20%" },
+                blacksmith: { type: "armor_mult", value: 0.15, name: "Кузнец", description: "+15% к броне" }
+            },
+            sagas: {
+                golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью" },
+                vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню" },
+                well: { type: "gold_mult", value: 0.3, name: "Колодец", description: "+30% золота за противника" },
+                pets: { type: "damage_mult", value: 0.2, name: "Питомец", description: "Урон +20%" },
+                following_sun: { type: "health_regen_mult", value: 0.3, name: "Вслед за солнцем", description: "+30% к регенерации" },
+                vampire_crown: { type: "vampirism", value: 0.05, name: "Корона короля вампиров", description: "5% урона восстанавливает здоровье" },
+                tiger_eye: { type: "crit_chance", value: 0.2, name: "Желтый Глаз тигра", description: "20% шанс двойного урона" },
+                sky_phenomena: { type: "armor_mult", value: 0.15, name: "Небесные явления", description: "+15% к броне" }
+            }
+        };
+    }
+
+    // Сбор всех активных бонусов
+    getAllActiveBonuses(hero) {
+        hero = hero || this.currentHero;
+        if (!hero) return [];
+        
+        const bonuses = this.getBonuses();
+        const activeBonuses = [];
+        
+        // Бонусы расы, класса и саги
+        if (bonuses.races[hero.race]) {
+            activeBonuses.push(bonuses.races[hero.race]);
+        }
+        if (bonuses.classes[hero.class]) {
+            activeBonuses.push(bonuses.classes[hero.class]);
+        }
+        if (bonuses.sagas[hero.saga]) {
+            activeBonuses.push(bonuses.sagas[hero.saga]);
+        }
+        
+        // Бонусы от экипировки
+        if (hero.equipment.main_hand) {
+            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
+            if (weapon && weapon.bonus) {
+                activeBonuses.push(weapon.bonus);
+            }
+        }
+        
+        if (hero.equipment.chest) {
+            const armor = this.items.find(item => item.id === hero.equipment.chest);
+            if (armor && armor.bonus) {
+                activeBonuses.push(armor.bonus);
+            }
+        }
+        
+        return activeBonuses;
+    }
+
+    // Расчет суммарных бонусов по типам
+    calculateTotalBonuses(hero) {
+        const activeBonuses = this.getAllActiveBonuses(hero);
+        const totals = {
+            health_mult: 0,
+            damage_mult: 0,
+            armor_mult: 0,
+            gold_mult: 0,
+            health_regen_mult: 0,
+            crit_chance: 0,
+            armor_penetration: 0,
+            vampirism: 0
+        };
+        
+        activeBonuses.forEach(bonus => {
+            if (totals.hasOwnProperty(bonus.type)) {
+                totals[bonus.type] += bonus.value;
+            }
+        });
+        
+        return totals;
     }
 
     // Система уровней
@@ -283,104 +379,229 @@ class HeroGame {
             8: 40
         };
         
-        Object.keys(heroUnlockLevels).forEach(function(heroId) {
+        Object.keys(heroUnlockLevels).forEach(heroId => {
             const requiredLevel = heroUnlockLevels[heroId];
-            const hero = this.heroes.find(function(h) { return h.id === parseInt(heroId); });
+            const hero = this.heroes.find(h => h.id === parseInt(heroId));
             if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
                 hero.unlocked = true;
                 this.addToLog('🔓 Разблокирован новый герой: ' + hero.name + '!');
             }
-        }.bind(this));
+        });
     }
 
-    // Бонусы рас, профессий и саг
-    getBonuses() {
-        return {
-            races: {
-                elf: { bonus: {type: "escape_bonus", value: 1}, name: "Эльф", description: "Проворный и неуловимый" },
-                dwarf: { bonus: {type: "health_mult", value: 0.3}, name: "Гном", description: "Выносливый и крепкий" },
-                halfling: { bonus: {type: "stealth_bonus", value: 1}, name: "Полурослик", description: "Маленький и незаметный" },
-                fairy: { bonus: {type: "luck_bonus", value: 1}, name: "Фея", description: "Везение и магия" },
-                laitar: { bonus: {type: "survival_bonus", value: 1}, name: "Лайтар", description: "Мастер выживания" },
-                ork: { bonus: {type: "damage_mult", value: 0.2}, name: "Орк", description: "Сильный и свирепый" },
-                human: { bonus: {type: "gold_mult", value: 0.3}, name: "Человек", description: "Предприимчивый и богатый" },
-                dragon: { bonus: {type: "armor_mult", value: 0.15}, name: "Дракон", description: "Могучий и защищённый" }
-            },
-            classes: {
-                archer: { bonus: {type: "damage_mult", value: 0.2}, name: "Лучник", description: "Мастер дальнего боя" },
-                warrior: { bonus: {type: "damage_mult", value: 0.2}, name: "Воин", description: "Сильный и отважный" },
-                thief: { bonus: {type: "stealth_bonus", value: 1}, name: "Вор", description: "Тихий и незаметный" },
-                merchant: { bonus: {type: "gold_mult", value: 0.3}, name: "Торговец", description: "Искусный торговец" },
-                fighter: { bonus: {type: "luck_bonus", value: 1}, name: "Кулачный боец", description: "Удачливый боец" },
-                healer: { bonus: {type: "health_mult", value: 0.3}, name: "Знахарь", description: "Мастер исцеления" },
-                sorcerer: { bonus: {type: "escape_bonus", value: 1}, name: "Колдун", description: "Магическая защита" },
-                death_mage: { bonus: {type: "stealth_bonus", value: 1}, name: "Волхв смерти", description: "Тёмные искусства" },
-                hunter: { bonus: {type: "survival_bonus", value: 1}, name: "Охотник", description: "Следопыт и выживальщик" },
-                bounty_hunter: { bonus: {type: "damage_mult", value: 0.1}, name: "Охотник за головами", description: "Специалист по преследованию" },
-                gladiator: { bonus: {type: "damage_mult", value: 0.2}, name: "Гладиатор", description: "Мастер любого оружия" },
-                blacksmith: { bonus: {type: "armor_mult", value: 0.15}, name: "Кузнец", description: "Мастер брони" },
-                antiquarian: { bonus: {type: "gold_mult", value: 0.3}, name: "Искатель древностей", description: "Знаток сокровищ" }
-            },
-            sagas: {
-                golden_egg: { bonus: {type: "health_mult", value: 0.3}, name: "Золотое Яйцо", description: "Обладатель древнего артефакта" },
-                vulkanor: { bonus: {type: "damage_mult", value: 0.2}, name: "Вулканор", description: "Прошедший огненные испытания" },
-                well: { bonus: {type: "gold_mult", value: 0.3}, name: "Колодец", description: "Нашедший источник богатства" },
-                pets: { bonus: {type: "luck_bonus", value: 1}, name: "Питомцы", description: "Верные спутники приносят удачу" },
-                following_sun: { bonus: {type: "survival_bonus", value: 1}, name: "Вслед за солнцем", description: "Прошедший через пустыни" },
-                vampire_crown: { bonus: {type: "stealth_bonus", value: 1}, name: "Корона короля вампиров", description: "Носитель тёмной короны" },
-                tiger_eye: { bonus: {type: "armor_mult", value: 0.15}, name: "Желтый Глаз тигра", description: "Обладатель мистической защиты" },
-                sky_phenomena: { bonus: {type: "escape_bonus", value: 1}, name: "Небесные явления", description: "Свидетель небесных чудес" }
-            }
-        };
-    }
-
-    // Вспомогательная функция для безопасного доступа к свойствам
-    getSafe(obj, path, defaultValue) {
-        return path.split('.').reduce(function(o, p) {
-            return o ? o[p] : defaultValue;
-        }, obj);
-    }
-
-    // Метод для расчета максимального здоровья (с учетом всех бонусов)
+    // НОВЫЙ РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ АДДИТИВНЫХ БОНУСОВ
     calculateMaxHealth(hero) {
         hero = hero || this.currentHero;
         if (!hero) return 0;
         
-        const bonuses = this.getBonuses();
-        const raceBonus = this.getSafe(bonuses.races, hero.race, {bonus: {type: "none", value: 0}}).bonus;
-        const classBonus = this.getSafe(bonuses.classes, hero.class, {bonus: {type: "none", value: 0}}).bonus;
-        const sagaBonus = this.getSafe(bonuses.sagas, hero.saga, {bonus: {type: "none", value: 0}}).bonus;
+        const totals = this.calculateTotalBonuses(hero);
         
-        let weaponBonus = {type: "none", value: 0};
-        let armorBonus = {type: "none", value: 0};
-        
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(function(item) { return item.id === hero.equipment.main_hand; });
-            weaponBonus = weapon && weapon.bonus ? weapon.bonus : {type: "none", value: 0};
-        }
-        
-        if (hero.equipment.chest) {
-            const armor = this.items.find(function(item) { return item.id === hero.equipment.chest; });
-            armorBonus = armor && armor.bonus ? armor.bonus : {type: "none", value: 0};
-        }
-
-        const allBonuses = [raceBonus, classBonus, sagaBonus, weaponBonus, armorBonus];
-
         // База с учетом уровня
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
         let health = hero.baseHealth * levelMultiplier;
-
-        // Бонусы к здоровью
-        allBonuses.forEach(function(bonus) {
-            if (bonus.type === 'health_mult') {
-                health *= (1 + bonus.value);
-            }
-        });
-
+        
+        // Аддитивные бонусы от базы
+        health += hero.baseHealth * totals.health_mult;
+        
         return Math.round(health);
     }
 
-    // Новый метод для отображения здоровья в реальном времени (ИСПРАВЛЕННЫЙ)
+    calculateHeroStats(hero) {
+        hero = hero || this.currentHero;
+        if (!hero) return {};
+        
+        const totals = this.calculateTotalBonuses(hero);
+        
+        // База с учетом уровня
+        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+        let baseHealth = hero.baseHealth * levelMultiplier;
+        let baseDamage = hero.baseDamage * levelMultiplier;
+        let baseArmor = hero.baseArmor * levelMultiplier;
+        
+        // Аддитивные бонусы от базы
+        let health = baseHealth + (hero.baseHealth * totals.health_mult);
+        let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
+        let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
+        
+        // Экипировка
+        if (hero.equipment.main_hand) {
+            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
+            damage += (weapon && weapon.fixed_damage) ? weapon.fixed_damage : 0;
+        }
+        
+        if (hero.equipment.chest) {
+            const armorItem = this.items.find(item => item.id === hero.equipment.chest);
+            armor += (armorItem && armorItem.fixed_armor) ? armorItem.fixed_armor : 0;
+        }
+        
+        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+        
+        // Текущее здоровье с учетом регенерации
+        const currentHealth = this.getCurrentHealthForDisplay(hero);
+        
+        return {
+            health: Math.round(health),
+            currentHealth: Math.floor(currentHealth),
+            maxHealth: Math.round(health),
+            damage: Math.round(damage),
+            armor: Math.round(armor),
+            power: power,
+            bonuses: totals,
+            baseHealth: Math.round(baseHealth),
+            baseDamage: Math.round(baseDamage),
+            baseArmor: Math.round(baseArmor)
+        };
+    }
+
+    // НОВАЯ МЕХАНИКА КРИТИЧЕСКОГО УДАРА
+    calculateAttackDamage(isHeroAttack = true) {
+        const stats = this.calculateHeroStats();
+        const totals = this.calculateTotalBonuses();
+        
+        let baseDamage = stats.damage;
+        let isCritical = false;
+        let isArmorPenetrated = false;
+        let finalDamage = baseDamage;
+        
+        // Проверка крита
+        if (isHeroAttack && Math.random() < totals.crit_chance) {
+            isCritical = true;
+            finalDamage *= 2; // Двойной урон при крите
+            this.addBattleLog({
+                message: '💥 КРИТИЧЕСКИЙ УДАР! Двойной урон!',
+                type: 'critical'
+            });
+        }
+        
+        // Проверка пенетрации
+        if (isHeroAttack && Math.random() < totals.armor_penetration) {
+            isArmorPenetrated = true;
+            this.addBattleLog({
+                message: '⚡ ПРОНИКНОВЕНИЕ! Броня противника проигнорирована!',
+                type: 'penetration'
+            });
+        }
+        
+        return {
+            damage: Math.round(finalDamage),
+            isCritical,
+            isArmorPenetrated
+        };
+    }
+
+    // ОБНОВЛЕННАЯ МЕХАНИКА БОЯ С НОВЫМИ БОНУСАМИ
+    battleAttack() {
+        if (!this.battleActive) return;
+        
+        this.battleRound++;
+        const stats = this.calculateHeroStats(this.currentHero);
+        const totals = this.calculateTotalBonuses();
+        
+        // Ход героя
+        const heroAttack = this.calculateAttackDamage(true);
+        let monsterDamageReduction = heroAttack.isArmorPenetrated ? 0 : this.currentMonster.armor;
+        const heroDamage = Math.max(1, heroAttack.damage - monsterDamageReduction);
+        
+        this.currentMonster.currentHealth -= heroDamage;
+        
+        this.addBattleLog({
+            message: `🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!` + 
+                     (heroAttack.isCritical ? ' 💥' : '') +
+                     (heroAttack.isArmorPenetrated ? ' ⚡' : ''),
+            type: 'hero-attack'
+        });
+        
+        // Вампиризм - восстановление здоровья от урона
+        if (totals.vampirism > 0 && heroDamage > 0) {
+            const healAmount = Math.round(heroDamage * totals.vampirism);
+            this.updateHealth(healAmount);
+            this.addBattleLog({
+                message: `🩸 Вампиризм! +${healAmount} здоровья`,
+                type: 'vampirism'
+            });
+        }
+        
+        if (this.currentMonster.currentHealth <= 0) {
+            this.endBattle(true);
+            return;
+        }
+        
+        // Ход монстра
+        const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
+        this.updateHealth(-monsterDamage);
+        
+        this.addBattleLog({
+            message: '👹 ' + this.currentMonster.name + ' наносит ' + monsterDamage + ' урона!',
+            type: 'monster-attack'
+        });
+        
+        if (this.currentHero.currentHealth <= 0) {
+            this.endBattle(false);
+            return;
+        }
+        
+        this.saveGame();
+        this.renderHeroScreen();
+    }
+
+    // ОБНОВЛЕННОЕ ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ
+    endBattle(victory) {
+        if (victory) {
+            const totals = this.calculateTotalBonuses();
+            const baseReward = this.currentMonster.reward;
+            const goldMultiplier = 1 + totals.gold_mult;
+            const reward = Math.round(baseReward * goldMultiplier);
+            
+            this.currentHero.gold += reward;
+            this.lastReward = reward;
+            
+            const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
+            const experienceGained = baseExperience;
+            
+            this.addExperience(experienceGained);
+            
+            // Обновляем прогресс локации
+            if (this.currentLocation) {
+                this.updateLocationProgress();
+            }
+            
+            this.addBattleLog({
+                message: `🎉 ПОБЕДА! Получено ${reward} золота (база: ${baseReward} + бонусы) и ${experienceGained} опыта`,
+                type: 'victory'
+            });
+            
+            this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
+            
+            this.checkSpecialDrops();
+            
+            this.battleResult = {
+                victory: true,
+                reward: reward,
+                experience: experienceGained,
+                monsterName: this.currentMonster.name
+            };
+            
+        } else {
+            // ГЕРОЙ УМЕР - здоровье сбрасывается в 0
+            this.currentHero.currentHealth = 0;
+            this.addBattleLog({
+                message: '💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье сброшено.',
+                type: 'defeat'
+            });
+            
+            this.addToLog('💥 Проигран бой с ' + this.currentMonster.name + '. Здоровье восстанавливается с 0.');
+            
+            this.battleResult = {
+                victory: false,
+                monsterName: this.currentMonster.name
+            };
+        }
+        
+        this.battleActive = false;
+        this.currentMonster = null;
+        this.renderHeroScreen();
+    }
+
     getCurrentHealthForDisplay(hero) {
         hero = hero || this.currentHero;
         if (!hero) return 0;
@@ -395,11 +616,14 @@ class HeroGame {
         let currentHealth = hero.currentHealth;
         const maxHealth = this.calculateMaxHealth(hero);
         
-        if (currentHealth < maxHealth) {
-            const healthToRegen = timePassed * (hero.healthRegen || 100/60);
+        // Регенерация здоровья (только если герой жив)
+        if (currentHealth < maxHealth && currentHealth > 0) {
+            const totals = this.calculateTotalBonuses(hero);
+            const regenMultiplier = 1 + totals.health_regen_mult;
+            const baseRegen = hero.healthRegen || 100/60;
+            const healthToRegen = timePassed * baseRegen * regenMultiplier;
             currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
             
-            // Обновляем время только если была регенерация
             if (currentHealth > hero.currentHealth) {
                 this.lastHealthUpdate = now;
                 hero.currentHealth = currentHealth;
@@ -410,138 +634,38 @@ class HeroGame {
         return currentHealth;
     }
 
-    // Расчёт характеристик героя
-    calculateHeroStats(hero) {
-        hero = hero || this.currentHero;
-        const bonuses = this.getBonuses();
+    updateHealth(change) {
+        if (!this.currentHero) return;
         
-        const raceBonus = this.getSafe(bonuses.races, hero.race, {bonus: {type: "none", value: 0}}).bonus;
-        const classBonus = this.getSafe(bonuses.classes, hero.class, {bonus: {type: "none", value: 0}}).bonus;
-        const sagaBonus = this.getSafe(bonuses.sagas, hero.saga, {bonus: {type: "none", value: 0}}).bonus;
-        
-        let weaponBonus = {type: "none", value: 0};
-        let armorBonus = {type: "none", value: 0};
-        
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(function(item) { return item.id === hero.equipment.main_hand; });
-            weaponBonus = weapon && weapon.bonus ? weapon.bonus : {type: "none", value: 0};
+        if (!this.currentHero.currentHealth) {
+            this.currentHero.currentHealth = this.calculateMaxHealth();
         }
         
-        if (hero.equipment.chest) {
-            const armor = this.items.find(function(item) { return item.id === hero.equipment.chest; });
-            armorBonus = armor && armor.bonus ? armor.bonus : {type: "none", value: 0};
-        }
-
-        const allBonuses = [raceBonus, classBonus, sagaBonus, weaponBonus, armorBonus];
-
-        // База с учетом уровня
-        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-        let health = hero.baseHealth * levelMultiplier;
-        let damage = hero.baseDamage * levelMultiplier;
-        let armor = hero.baseArmor * levelMultiplier;
-
-        // Экипировка
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(function(item) { return item.id === hero.equipment.main_hand; });
-            damage += (weapon && weapon.fixed_damage) ? weapon.fixed_damage : 0;
-        }
+        this.currentHero.currentHealth += change;
+        const maxHealth = this.calculateMaxHealth();
         
-        if (hero.equipment.chest) {
-            const armorItem = this.items.find(function(item) { return item.id === hero.equipment.chest; });
-            armor += (armorItem && armorItem.fixed_armor) ? armorItem.fixed_armor : 0;
-        }
-
-        // Бонусы
-        allBonuses.forEach(function(bonus) {
-            switch(bonus.type) {
-                case 'health_mult': health *= (1 + bonus.value); break;
-                case 'damage_mult': damage *= (1 + bonus.value); break;
-                case 'armor_mult': armor *= (1 + bonus.value); break;
-            }
-        });
-
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-
-        const skills = {
-            escape: 0,
-            stealth: 0,
-            luck: 0,
-            survival: 0,
-            wealth: 0
-        };
-
-        allBonuses.forEach(function(bonus) {
-            if (bonus.type && bonus.type.includes('_bonus')) {
-                const skill = bonus.type.replace('_bonus', '');
-                if (skills.hasOwnProperty(skill)) {
-                    skills[skill] += bonus.value;
-                }
-            }
-            else if (bonus.type === 'gold_mult') {
-                skills.wealth += bonus.value;
-            }
-        });
-
-        // Текущее здоровье рассчитывается с учетом регенерации
-        const currentHealth = this.getCurrentHealthForDisplay(hero);
-
-        return {
-            health: Math.round(health),
-            currentHealth: Math.floor(currentHealth),
-            maxHealth: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
-            power: power,
-            skills: skills,
-            bonuses: {
-                race: raceBonus,
-                class: classBonus,
-                saga: sagaBonus,
-                weapon: weaponBonus,
-                armor: armorBonus
-            }
-        };
+        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
+        
+        this.lastHealthUpdate = Date.now();
+        this.saveGame();
     }
 
     renderHeroSelect() {
         const container = document.getElementById('app');
-        const heroesHTML = this.heroes.map(function(hero) {
+        const heroesHTML = this.heroes.map(hero => {
             const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
             const stats = this.calculateHeroStats(hero);
             const bonuses = this.getBonuses();
             
-            const activeSkills = [];
+            const activeBonuses = this.getAllActiveBonuses(hero);
+            const bonusDisplay = activeBonuses.map(bonus => {
+                const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
+                return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
+            }).join('');
             
-            if (stats.skills.stealth > 0) activeSkills.push({icon: '👻', name: 'Скрытность', value: stats.skills.stealth});
-            if (stats.skills.escape > 0) activeSkills.push({icon: '🏃', name: 'Побег', value: stats.skills.escape});
-            if (stats.skills.luck > 0) activeSkills.push({icon: '🍀', name: 'Удача', value: stats.skills.luck});
-            if (stats.skills.survival > 0) activeSkills.push({icon: '🌿', name: 'Выживание', value: stats.skills.survival});
-            if (stats.skills.wealth > 0) activeSkills.push({icon: '💰', name: 'Богатство', value: stats.skills.wealth});
-            
-            if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('health_mult')) 
-                activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-            if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('damage_mult')) 
-                activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-            if (stats.bonuses.race.value > 0 && stats.bonuses.race.type.includes('armor_mult')) 
-                activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.race.value * 100) + '%'});
-            
-            if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('health_mult')) 
-                activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-            if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('damage_mult')) 
-                activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-            if (stats.bonuses.class.value > 0 && stats.bonuses.class.type.includes('armor_mult')) 
-                activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.class.value * 100) + '%'});
-            
-            if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('health_mult')) 
-                activeSkills.push({icon: '❤️', name: 'Здоровье', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-            if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('damage_mult')) 
-                activeSkills.push({icon: '⚔️', name: 'Урон', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-            if (stats.bonuses.saga.value > 0 && stats.bonuses.saga.type.includes('armor_mult')) 
-                activeSkills.push({icon: '🛡️', name: 'Броня', value: Math.round(stats.bonuses.saga.value * 100) + '%'});
-
-            const raceName = this.getSafe(bonuses.races, hero.race, {name: 'Неизвестно'}).name;
-            const className = this.getSafe(bonuses.classes, hero.class, {name: 'Неизвестно'}).name;
-            const sagaName = this.getSafe(bonuses.sagas, hero.saga, {name: 'Неизвестно'}).name;
+            const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
+            const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
+            const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
 
             return `
                 <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
@@ -567,11 +691,9 @@ class HeroGame {
                                 <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
                             </div>
                         </div>
-                        ${activeSkills.length > 0 ? `
+                        ${bonusDisplay ? `
                             <div class="hero-option-skills">
-                                ${activeSkills.map(function(skill) {
-                                    return `<span title="${skill.name}">${skill.icon} ${skill.value}${typeof skill.value === 'number' ? 'd6' : ''}</span>`;
-                                }).join('')}
+                                ${bonusDisplay}
                             </div>
                         ` : ''}
                         <div class="hero-option-bonuses">
@@ -581,7 +703,7 @@ class HeroGame {
                     </div>
                 </div>
             `;
-        }.bind(this)).join('');
+        }).join('');
 
         container.innerHTML = `
             <div class="screen active" id="screen-hero-select">
@@ -593,9 +715,23 @@ class HeroGame {
         `;
     }
 
+    getBonusIcon(bonusType) {
+        const icons = {
+            'health_mult': '❤️',
+            'damage_mult': '⚔️',
+            'armor_mult': '🛡️',
+            'gold_mult': '💰',
+            'health_regen_mult': '⚡',
+            'crit_chance': '💥',
+            'armor_penetration': '⚡',
+            'vampirism': '🩸'
+        };
+        return icons[bonusType] || '🎯';
+    }
+
     // Выбор героя
     selectHero(heroId) {
-        const hero = this.heroes.find(function(h) { return h.id === heroId; });
+        const hero = this.heroes.find(h => h.id === heroId);
         if (!hero) {
             console.error('Герой не найден:', heroId);
             return;
@@ -626,7 +762,7 @@ class HeroGame {
     startHealthAnimation() {
         if (!this.currentHero) return;
 
-        const updateHealthDisplay = function() {
+        const updateHealthDisplay = () => {
             const stats = this.calculateHeroStats(this.currentHero);
             const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
             
@@ -639,23 +775,24 @@ class HeroGame {
                 currentHealthEl.textContent = stats.currentHealth;
                 maxHealthEl.textContent = stats.maxHealth;
             }
-        }.bind(this);
+        };
 
         // Обновляем отображение здоровья каждую секунду
         this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
-    // Рендер основного экрана героя с картинками на весь экран
+    // Рендер основного экрана героя
     renderHeroScreen() {
         if (!this.currentHero) return;
 
         const stats = this.calculateHeroStats(this.currentHero);
         const bonuses = this.getBonuses();
+        const activeBonuses = this.getAllActiveBonuses();
 
         const weapon = this.currentHero.equipment.main_hand ? 
-            this.items.find(function(item) { return item.id === this.currentHero.equipment.main_hand; }.bind(this)) : null;
+            this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
         const armor = this.currentHero.equipment.chest ? 
-            this.items.find(function(item) { return item.id === this.currentHero.equipment.chest; }.bind(this)) : null;
+            this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
 
         const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
         const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
@@ -669,9 +806,9 @@ class HeroGame {
         const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
         const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
 
-        const raceName = this.getSafe(bonuses.races, this.currentHero.race, {name: 'Неизвестно'}).name;
-        const className = this.getSafe(bonuses.classes, this.currentHero.class, {name: 'Неизвестно'}).name;
-        const sagaName = this.getSafe(bonuses.sagas, this.currentHero.saga, {name: 'Неизвестно'}).name;
+        const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
+        const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
+        const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
 
         const container = document.getElementById('app');
         container.innerHTML = `
@@ -717,7 +854,7 @@ class HeroGame {
                                         </div>
                                     </div>
                                     <div class="health-regen">
-                                        ⚡ ${Math.round(this.currentHero.healthRegen * 60)}/мин
+                                        ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
                                     </div>
                                 </div>
 
@@ -725,10 +862,12 @@ class HeroGame {
                                     <div class="main-stat">
                                         <span class="stat-icon">⚔️</span>
                                         <span class="stat-value">${stats.damage}</span>
+                                        ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
                                     </div>
                                     <div class="main-stat">
                                         <span class="stat-icon">🛡️</span>
                                         <span class="stat-value">${stats.armor}</span>
+                                        ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
                                     </div>
                                     <div class="main-stat">
                                         <span class="stat-icon">🌟</span>
@@ -769,7 +908,14 @@ class HeroGame {
                             </div>
 
                             <div class="bonuses-section">
-                                <h3>🎯 Бонусы</h3>
+                                <h3>🎯 Активные бонусы</h3>
+                                <div class="bonus-display">
+                                    ${activeBonuses.map(bonus => `
+                                        <div class="bonus-badge" title="${bonus.description}">
+                                            ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                        </div>
+                                    `).join('')}
+                                </div>
                                 <div class="bonus-item">
                                     <strong>Раса:</strong> ${raceName} 
                                 </div>
@@ -819,7 +965,9 @@ class HeroGame {
         this.startHealthAnimation();
     }
 
-    // Рендер колонки монстра
+    // Остальные методы (renderMonsterColumn, renderMapSelection и т.д.) остаются аналогичными оригинальным,
+    // но используют новые системы расчета. Для экономии места оставлю их как есть.
+
     renderMonsterColumn() {
         if (this.battleResult) {
             return this.renderBattleResult();
@@ -880,7 +1028,6 @@ class HeroGame {
         }
     }
 
-    // Рендер результата боя
     renderBattleResult() {
         if (!this.battleResult) return '';
         
@@ -913,7 +1060,6 @@ class HeroGame {
         }
     }
 
-    // Рендер боя в колонке монстра
     renderBattleInMonsterColumn() {
         if (!this.battleActive) return '';
         
@@ -960,7 +1106,7 @@ class HeroGame {
                 
                 <!-- Лог боя -->
                 <div class="battle-log-compact">
-                    ${this.battleLog.slice(-3).map(function(entry) {
+                    ${this.battleLog.slice(-3).map(entry => {
                         return '<div class="battle-log-entry-compact ' + (entry.type || '') + '">' + entry.message + '</div>';
                     }).join('')}
                 </div>
@@ -978,7 +1124,6 @@ class HeroGame {
         `;
     }
 
-    // Рендер выбора карты
     renderMapSelection() {
         if (this.currentMap) {
             return `
@@ -1009,7 +1154,6 @@ class HeroGame {
         }
     }
 
-    // Рендер выбора локации
     renderLocationSelection() {
         if (this.currentLocation) {
             const progress = this.locationProgress[this.currentLocation.level];
@@ -1046,20 +1190,25 @@ class HeroGame {
         }
     }
 
-    // Переключение видео
+    // Остальные методы (toggleVideo, showLocationSelection, selectLocation, startAdventure, encounterMonster, 
+    // startBattle, addBattleLog, continueAfterBattle, updateLocationProgress, completeLocation, getLocationName,
+    // checkSpecialDrops, dropArtifact, dropRelic, attemptEscapeFromBattle, attemptStealth, attemptEscape,
+    // rollDice, completeEncounter, showMapSelection, selectMap, showMerchant, buyItem, sellItem, showInventory,
+    // equipItem, usePotion, resetHero, addToLog, formatBonus, saveGame, loadSave) 
+    // остаются практически без изменений от оригинального кода
+
     toggleVideo(type) {
         this.showVideo[type] = !this.showVideo[type];
         this.renderHeroScreen();
     }
 
-    // Показать выбор локации с проверкой доступности
     showLocationSelection() {
         if (!this.currentMap) {
             this.addToLog('❌ Сначала выберите карту');
             return;
         }
 
-        const locationsHTML = this.locations.map(function(location) {
+        const locationsHTML = this.locations.map(location => {
             const progress = this.locationProgress[location.level];
             const isUnlocked = progress ? progress.unlocked : false;
             const progressText = progress ? '(' + progress.monstersKilled + '/' + progress.totalMonsters + ')' : '';
@@ -1080,7 +1229,7 @@ class HeroGame {
                     </div>
                 </div>
             `;
-        }.bind(this)).join('');
+        }).join('');
 
         const container = document.getElementById('app');
         container.innerHTML += `
@@ -1098,14 +1247,12 @@ class HeroGame {
         this.showScreen('location-select');
     }
 
-    // Выбор локации
     selectLocation(level) {
-        this.currentLocation = this.locations.find(function(l) { return l.level === level; });
+        this.currentLocation = this.locations.find(l => l.level === level);
         this.addToLog('📍 Выбрана локация: ' + this.currentLocation.name + ' (Ур. ' + level + ')');
         this.renderHeroScreen();
     }
 
-    // Начать путешествие
     startAdventure() {
         if (!this.currentMap || !this.currentLocation) {
             this.addToLog('❌ Сначала выберите карту и локацию');
@@ -1114,13 +1261,11 @@ class HeroGame {
 
         this.addToLog('🚀 Начато путешествие по карте ' + this.currentMap.name + ', локация: ' + this.currentLocation.name);
         
-        // Добавляем небольшую задержку для лучшего UX
-        setTimeout(function() {
+        setTimeout(() => {
             this.encounterMonster();
-        }.bind(this), 1000);
+        }, 1000);
     }
 
-    // Встреча с монстром
     encounterMonster() {
         if (!this.currentLocation || !this.currentMap) {
             console.error('❌ Не выбрана локация или карта');
@@ -1130,7 +1275,6 @@ class HeroGame {
         const minId = this.currentLocation.monsterRange[0];
         const maxId = this.currentLocation.monsterRange[1];
         
-        // Фиксим баг: проверяем что диапазон монстров существует
         if (!minId || !maxId) {
             console.error('❌ Неверный диапазон монстров в локации:', this.currentLocation);
             return;
@@ -1138,9 +1282,8 @@ class HeroGame {
         
         const monsterId = Math.floor(Math.random() * (maxId - minId + 1)) + minId;
         
-        let monster = this.monsters.find(function(m) { return m.id === monsterId; });
+        let monster = this.monsters.find(m => m.id === monsterId);
         if (!monster) {
-            // Если монстр не найден, берем первого доступного
             monster = this.monsters[0];
             if (!monster) {
                 console.error('❌ Нет доступных монстров');
@@ -1148,7 +1291,6 @@ class HeroGame {
             }
         }
 
-        // Применяем множитель карты
         this.currentMonster = {
             id: monster.id,
             name: monster.name,
@@ -1162,10 +1304,9 @@ class HeroGame {
         };
 
         this.addToLog('🎭 Встречен: ' + this.currentMonster.name);
-        this.renderHeroScreen(); // Перерендериваем весь экран чтобы обновить колонку монстра
+        this.renderHeroScreen();
     }
 
-    // Начать бой
     startBattle() {
         if (!this.currentMonster || this.battleActive) return;
         
@@ -1181,49 +1322,9 @@ class HeroGame {
         this.currentMonster.currentHealth = this.currentMonster.health;
         
         this.addToLog('⚔️ Начало боя с ' + this.currentMonster.name + '!');
-        this.renderHeroScreen(); // Перерендериваем для отображения боя
+        this.renderHeroScreen();
     }
 
-    // Атака в бою
-    battleAttack() {
-        if (!this.battleActive) return;
-        
-        this.battleRound++;
-        const stats = this.calculateHeroStats(this.currentHero);
-        
-        // Ход героя
-        const heroDamage = Math.max(1, stats.damage - this.currentMonster.armor);
-        this.currentMonster.currentHealth -= heroDamage;
-        
-        this.addBattleLog({
-            message: '🗡️ ' + this.currentHero.name + ' наносит ' + heroDamage + ' урона!',
-            type: 'hero-attack'
-        });
-        
-        if (this.currentMonster.currentHealth <= 0) {
-            this.endBattle(true);
-            return;
-        }
-        
-        // Ход монстра
-        const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-        this.updateHealth(-monsterDamage);
-        
-        this.addBattleLog({
-            message: '👹 ' + this.currentMonster.name + ' наносит ' + monsterDamage + ' урона!',
-            type: 'monster-attack'
-        });
-        
-        if (this.currentHero.currentHealth <= 0) {
-            this.endBattle(false);
-            return;
-        }
-        
-        this.saveGame();
-        this.renderHeroScreen(); // Перерендериваем для обновления боя
-    }
-
-    // Добавить запись в лог боя
     addBattleLog(entry) {
         this.battleLog.push(entry);
         if (this.battleLog.length > 10) {
@@ -1231,83 +1332,11 @@ class HeroGame {
         }
     }
 
-    // Завершение боя
-    endBattle(victory) {
-        if (victory) {
-            const reward = this.currentMonster.reward;
-            this.currentHero.gold += reward;
-            this.lastReward = reward;
-            
-            const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
-            const experienceGained = baseExperience;
-            
-            this.addExperience(experienceGained);
-            
-            // ОБНОВЛЯЕМ ПРОГРЕСС ЛОКАЦИИ
-            if (this.currentLocation) {
-                this.updateLocationProgress();
-            }
-            
-            this.addBattleLog({
-                message: '🎉 ПОБЕДА! Получено ' + reward + ' золота и ' + experienceGained + ' опыта',
-                type: 'victory'
-            });
-            
-            this.addToLog('🎯 Побежден ' + this.currentMonster.name + '! Получено ' + reward + ' золота и ' + experienceGained + ' опыта');
-            
-            this.checkSpecialDrops();
-            
-            this.battleResult = {
-                victory: true,
-                reward: reward,
-                experience: experienceGained,
-                monsterName: this.currentMonster.name
-            };
-            
-        } else {
-            this.addBattleLog({
-                message: '💀 ПОРАЖЕНИЕ! Герой повержен',
-                type: 'defeat'
-            });
-            
-            this.addToLog('💥 Проигран бой с ' + this.currentMonster.name);
-            
-            this.battleResult = {
-                victory: false,
-                monsterName: this.currentMonster.name
-            };
-        }
-        
-        this.battleActive = false;
-        this.currentMonster = null;
-        this.renderHeroScreen(); // Перерендериваем для обновления интерфейса
-    }
-
-    // Продолжить после боя
     continueAfterBattle() {
         this.battleResult = null;
         this.renderHeroScreen();
     }
 
-    // Обновление здоровья (ИСПРАВЛЕННЫЙ метод)
-    updateHealth(change) {
-        if (!this.currentHero) return;
-        
-        if (!this.currentHero.currentHealth) {
-            this.currentHero.currentHealth = this.calculateMaxHealth();
-        }
-        
-        this.currentHero.currentHealth += change;
-        const maxHealth = this.calculateMaxHealth();
-        
-        // Ограничиваем здоровье в пределах 0 - максимум (с учетом всех бонусов)
-        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-        
-        this.lastHealthUpdate = Date.now();
-        this.saveGame();
-    }
-
-    // Обновление прогресса локации
     updateLocationProgress() {
         if (!this.currentLocation) return;
         
@@ -1317,7 +1346,6 @@ class HeroGame {
         if (progress) {
             progress.monstersKilled++;
             
-            // Проверяем завершение локации
             if (progress.monstersKilled >= progress.totalMonsters) {
                 this.completeLocation(locationLevel);
             }
@@ -1326,7 +1354,6 @@ class HeroGame {
         }
     }
 
-    // Завершение локации и открытие следующей
     completeLocation(locationLevel) {
         const nextLocationLevel = locationLevel - 1;
         const nextProgress = this.locationProgress[nextLocationLevel];
@@ -1340,13 +1367,11 @@ class HeroGame {
         this.saveGame();
     }
 
-    // Вспомогательная функция для получения названия локации
     getLocationName(level) {
-        const location = this.locations.find(function(l) { return l.level === level; });
+        const location = this.locations.find(l => l.level === level);
         return location ? location.name : 'Локация ' + level;
     }
 
-    // Проверка дропа особых предметов
     checkSpecialDrops() {
         if (!this.currentLocation) return;
         
@@ -1359,20 +1384,17 @@ class HeroGame {
         }
     }
 
-    // Дроп артефакта
     dropArtifact() {
         this.addToLog('✨ Найден редкий артефакт!');
     }
 
-    // Дроп реликвии
     dropRelic() {
         this.addToLog('🌟 Найдена легендарная реликвия!');
     }
 
-    // Побег из боя
     attemptEscapeFromBattle() {
         const stats = this.calculateHeroStats(this.currentHero);
-        const escapeRoll = this.rollDice(stats.skills.escape, 10);
+        const escapeRoll = this.rollDice(stats.skills?.escape || 0, 10);
         
         if (escapeRoll.success) {
             this.addBattleLog({
@@ -1398,10 +1420,9 @@ class HeroGame {
         }
     }
 
-    // Попытка скрыться
     attemptStealth() {
         const stats = this.calculateHeroStats(this.currentHero);
-        const stealthRoll = this.rollDice(stats.skills.stealth, 8);
+        const stealthRoll = this.rollDice(stats.skills?.stealth || 0, 8);
         
         if (stealthRoll.success) {
             this.addToLog(`✅ Успешно скрылись от ${this.currentMonster.name}!`);
@@ -1412,10 +1433,9 @@ class HeroGame {
         this.completeEncounter();
     }
 
-    // Попытка побега
     attemptEscape() {
         const stats = this.calculateHeroStats(this.currentHero);
-        const escapeRoll = this.rollDice(stats.skills.escape, 10);
+        const escapeRoll = this.rollDice(stats.skills?.escape || 0, 10);
         
         if (escapeRoll.success) {
             this.addToLog(`✅ Успешно сбежали от ${this.currentMonster.name}!`);
@@ -1428,7 +1448,6 @@ class HeroGame {
         this.completeEncounter();
     }
 
-    // Бросок кубиков
     rollDice(bonusDice, targetNumber) {
         let total = 0;
         let rolls = [];
@@ -1450,7 +1469,6 @@ class HeroGame {
         return { success, total, rolls };
     }
 
-    // Завершение встречи
     completeEncounter() {
         this.currentMonster = null;
         this.battleActive = false;
@@ -1461,7 +1479,6 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // Показать выбор карты
     showMapSelection() {
         const mapsHTML = this.maps.map(map => `
             <div class="map-option ${map.unlocked ? '' : 'locked'}" 
@@ -1495,14 +1512,12 @@ class HeroGame {
         this.showScreen('map-select');
     }
 
-    // Выбор карты
     selectMap(mapId) {
         this.currentMap = this.maps.find(m => m.id === mapId);
         this.addToLog(`🗺️ Выбрана карта: ${this.currentMap.name}`);
         this.renderHeroScreen();
     }
 
-    // Показать магазин
     showMerchant() {
         const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
         
@@ -1557,7 +1572,6 @@ class HeroGame {
         this.showScreen('merchant');
     }
 
-    // Покупка предмета
     buyItem(itemId) {
         const item = this.items.find(i => i.id === itemId);
         if (!item) return;
@@ -1585,7 +1599,6 @@ class HeroGame {
         this.showMerchant();
     }
 
-    // Продать предмет
     sellItem(itemId) {
         const item = this.items.find(i => i.id === itemId);
         if (!item) return;
@@ -1610,7 +1623,6 @@ class HeroGame {
         this.showMerchant();
     }
 
-    // Показать инвентарь
     showInventory() {
         if (!this.currentHero) return;
 
@@ -1649,7 +1661,6 @@ class HeroGame {
         this.showScreen('inventory');
     }
 
-    // Экипировать предмет
     equipItem(itemId) {
         const item = this.items.find(i => i.id === itemId);
         if (!item) return;
@@ -1659,8 +1670,7 @@ class HeroGame {
             return;
         }
 
-        // Определяем слот предмета
-        let slot = 'main_hand'; // по умолчанию
+        let slot = 'main_hand';
         if (item.type === 'armor') slot = 'chest';
         if (item.slot) slot = item.slot;
 
@@ -1674,7 +1684,6 @@ class HeroGame {
         this.currentHero.equipment[slot] = itemId;
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
 
-        // При экипировке предмета с бонусом к здоровью, обновляем текущее здоровье
         if (item.bonus && item.bonus.type === 'health_mult') {
             const oldMaxHealth = this.calculateMaxHealth({...this.currentHero, equipment: {...this.currentHero.equipment, [slot]: currentEquipped}});
             const newMaxHealth = this.calculateMaxHealth();
@@ -1687,7 +1696,6 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // Использовать зелье
     usePotion(item) {
         if (item.type !== 'potion') return;
 
@@ -1702,7 +1710,6 @@ class HeroGame {
         this.showInventory();
     }
 
-    // Сброс героя
     resetHero() {
         if (!this.currentHero) return;
         
@@ -1742,7 +1749,6 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // Добавить запись в журнал
     addToLog(message) {
         const log = document.getElementById('battle-log');
         if (log) {
@@ -1754,30 +1760,28 @@ class HeroGame {
         }
     }
 
-    // Форматирование бонуса
     formatBonus(bonus) {
         if (!bonus || bonus.type === 'none') return 'Нет бонуса';
         
         const bonusNames = {
-            'health_mult': '+% к здоровью',
-            'damage_mult': '+% к урону', 
-            'armor_mult': '+% к броне',
-            'gold_mult': '+% к золоту',
-            'escape_bonus': 'Побег +',
-            'stealth_bonus': 'Скрытность +',
-            'luck_bonus': 'Удача +',
-            'survival_bonus': 'Выживание +'
+            'health_mult': 'Здоровье',
+            'damage_mult': 'Урон', 
+            'armor_mult': 'Броня',
+            'gold_mult': 'Золото',
+            'health_regen_mult': 'Регенерация',
+            'crit_chance': 'Криты',
+            'armor_penetration': 'Пенетрация',
+            'vampirism': 'Вампиризм'
         };
 
         const value = bonus.type.includes('_mult') ? 
-            Math.round(bonus.value * 100) : bonus.value;
+            Math.round(bonus.value * 100) : Math.round(bonus.value * 100);
             
         return bonusNames[bonus.type] ? 
-            `${bonusNames[bonus.type]}${value}${bonus.type.includes('_mult') ? '%' : ''}` : 
-            `Бонус: ${value}`;
+            `${bonusNames[bonus.type]} +${value}%` : 
+            `Бонус: +${value}%`;
     }
 
-    // Сохранение игры
     saveGame() {
         if (this.currentHero) {
             localStorage.setItem('heroGameSave', JSON.stringify({
@@ -1793,7 +1797,6 @@ class HeroGame {
         }
     }
 
-    // Загрузка сохранения
     loadSave() {
         try {
             const save = localStorage.getItem('heroGameSave');
@@ -1851,18 +1854,16 @@ class HeroGame {
 // ========== ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
 
-// Создание экземпляра игры
 let game;
 
-// Запускаем игру когда DOM готов
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ DOM загружен');
         game = new HeroGame();
-        window.game = game; // Делаем глобально доступным
+        window.game = game;
     });
 } else {
     console.log('✅ DOM уже готов');
     game = new HeroGame();
-    window.game = game; // Делаем глобально доступным
+    window.game = game;
 }
