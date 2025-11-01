@@ -762,6 +762,88 @@ body {
     font-size: 0.9em;
 }
 
+/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ КАРТЫ - КОМПАКТНАЯ */
+.map-info {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    width: fit-content; /* ✅ Зона карты компактная */
+    min-width: 200px;
+    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+}
+
+.map-info h4 {
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-size: 0.9em; /* ✅ Уменьшаем текст */
+    text-align: center;
+}
+
+.map-info p {
+    margin-bottom: 8px;
+    font-size: 0.8em; /* ✅ Уменьшаем текст */
+    text-align: left;
+}
+
+/* Множитель силы - компактный */
+.map-multiplier {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.75em; /* ✅ Уменьшаем текст */
+    text-align: center;
+    width: fit-content; /* ✅ Занимает только нужное место */
+}
+
+/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ ЛОКАЦИИ - КОМПАКТНАЯ */
+.location-info {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
+    width: fit-content; /* ✅ Зона локации компактная */
+    min-width: 200px;
+    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+}
+
+.location-info h4 {
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-size: 0.9em; /* ✅ Уменьшаем текст */
+    text-align: center;
+}
+
+.location-info p {
+    margin-bottom: 8px;
+    font-size: 0.8em; /* ✅ Уменьшаем текст */
+    text-align: left;
+}
+
+/* Информационные блоки в локации - компактные */
+.location-stats {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.75em; /* ✅ Уменьшаем текст */
+    text-align: left;
+    width: fit-content; /* ✅ Занимает только нужное место */
+}
+
+/* Кнопки в карте/локации */
+.map-info button, .location-info button {
+    width: 100%;
+    margin-top: 8px;
+    font-size: 0.8em; /* ✅ Уменьшаем текст кнопок */
+    padding: 6px 10px;
+}
+
 /* Кнопки действий вверху страницы - УМЕНЬШЕНЫ */
 .action-buttons {
     display: grid;
@@ -876,7 +958,7 @@ body {
         padding: 8px;
     }
     
-    .hero-info, .bonuses-section {
+    .hero-info, .bonuses-section, .map-info, .location-info {
         padding: 8px;
     }
 }
@@ -899,7 +981,7 @@ body {
         padding: 6px;
     }
     
-    .hero-info, .bonuses-section {
+    .hero-info, .bonuses-section, .map-info, .location-info {
         padding: 6px;
         font-size: 0.8em;
         min-width: 200px;
@@ -958,6 +1040,11 @@ body {
     .vs-compact {
         order: 2;
     }
+    
+    .map-multiplier, .location-stats {
+        font-size: 0.7em;
+        padding: 5px 8px;
+    }
 }
 
 /* ЕЩЁ БОЛЬШЕ УМЕНЬШЕНИЕ ДЛЯ ОЧЕНЬ МАЛЕНЬКИХ ЭКРАНОВ */
@@ -984,7 +1071,7 @@ body {
         margin-bottom: 6px;
     }
     
-    .hero-info, .bonuses-section {
+    .hero-info, .bonuses-section, .map-info, .location-info {
         padding: 5px;
         font-size: 0.75em;
         min-width: 180px;
@@ -1009,6 +1096,24 @@ body {
     
     .stat-value {
         font-size: 0.85em;
+    }
+    
+    .map-info h4, .location-info h4 {
+        font-size: 0.85em;
+    }
+    
+    .map-info p, .location-info p {
+        font-size: 0.75em;
+    }
+    
+    .map-multiplier, .location-stats {
+        font-size: 0.65em;
+        padding: 4px 6px;
+    }
+    
+    .map-info button, .location-info button {
+        font-size: 0.75em;
+        padding: 5px 8px;
     }
 }
 
