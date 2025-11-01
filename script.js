@@ -1007,106 +1007,74 @@ class HeroGame {
                 </div>
             </div>
         `;
-    } // <--- ДОБАВЬТЕ ЭТУ ЗАКРЫВАЮЩУЮ СКОБКУ!
-
-// Выбор героя - ДЕБАГ ВЕРСИЯ
-selectHero(heroId) {
-    console.log('=== НАЧАЛО selectHero ===');
-    console.log('🖱️ Нажатие на героя ID:', heroId);
-    console.log('📊 Всего героев:', this.heroes.length);
-    
-    // Выводим информацию о всех героях
-    this.heroes.forEach((hero, index) => {
-        console.log(`Герой ${index + 1}:`, {
-            id: hero.id,
-            name: hero.name,
-            unlocked: hero.unlocked,
-            hasUnlockedProperty: hero.hasOwnProperty('unlocked')
-        });
-    });
-
-    const hero = this.heroes.find(h => h.id === heroId);
-    console.log('🔍 Найденный герой:', hero);
-    
-    if (!hero) {
-        console.error('❌ Герой не найден в массиве heroes');
-        return;
     }
 
-    // Детальная проверка разблокировки
-    console.log('🔓 Проверка разблокировки:');
-    console.log('- hero.unlocked:', hero.unlocked);
-    console.log('- typeof hero.unlocked:', typeof hero.unlocked);
-    console.log('- hero.id === 1:', hero.id === 1);
-    
-    const isUnlocked = hero.unlocked === true || hero.id === 1;
-    console.log('- Итоговая isUnlocked:', isUnlocked);
-
-    if (!isUnlocked) {
-        console.log('❌ Герой заблокирован:', hero.name);
-        alert('Этот герой еще заблокирован!');
-        return;
-    }
-
-    console.log('✅ Герой разблокирован, продолжаем...');
-    
-    this.currentHero = hero;
-    console.log('📝 Текущий герой установлен:', this.currentHero.name);
-    
-    this.showScreen('main');
-    console.log('🖥️ Экран переключен на main');
-    
-    this.renderHeroScreen();
-    console.log('🎨 Отрисовка экрана героя');
-    
-    this.saveGame();
-    console.log('💾 Игра сохранена');
-    
-    console.log('=== КОНЕЦ selectHero ===');
-}
-
-// И добавьте этот метод для отладки (вставьте в класс HeroGame после selectHero)
-debugUnlockAllHeroes() {
-    console.log('🔓 Принудительная разблокировка всех героев');
-    this.heroes.forEach(hero => {
-        hero.unlocked = true;
-        console.log(`- ${hero.name} разблокирован`);
-    });
-    this.renderHeroSelect();
-}
-// Глобальные функции для отладки (добавьте в конец файла)
-window.debugGame = function() {
-    if (window.game) {
-        console.log('=== ДЕБАГ ИНФОРМАЦИЯ ===');
-        console.log('🎮 Состояние игры:');
-        console.log('- Текущий герой:', game.currentHero?.name || 'Нет');
-        console.log('- Текущий экран:', game.currentScreen);
-        console.log('- Всего героев:', game.heroes.length);
+    // Выбор героя - ДЕБАГ ВЕРСИЯ
+    selectHero(heroId) {
+        console.log('=== НАЧАЛО selectHero ===');
+        console.log('🖱️ Нажатие на героя ID:', heroId);
+        console.log('📊 Всего героев:', this.heroes.length);
         
-        game.heroes.forEach((hero, index) => {
-            console.log(`Герой ${index + 1}: ${hero.name} (ID: ${hero.id}) - разблокирован: ${hero.unlocked}`);
-        });
-        
-        // Проверяем обработчики событий
-        const heroOptions = document.querySelectorAll('.hero-option');
-        console.log('- Найдено элементов .hero-option:', heroOptions.length);
-        
-        heroOptions.forEach((option, index) => {
-            console.log(`  Элемент ${index}:`, {
-                classList: option.classList.toString(),
-                onclick: option.getAttribute('onclick')
+        // Выводим информацию о всех героях
+        this.heroes.forEach((hero, index) => {
+            console.log(`Герой ${index + 1}:`, {
+                id: hero.id,
+                name: hero.name,
+                unlocked: hero.unlocked,
+                hasUnlockedProperty: hero.hasOwnProperty('unlocked')
             });
         });
-    } else {
-        console.log('❌ Игра не инициализирована');
-    }
-};
 
-window.unlockAll = function() {
-    if (window.game) {
-        game.debugUnlockAllHeroes();
+        const hero = this.heroes.find(h => h.id === heroId);
+        console.log('🔍 Найденный герой:', hero);
+        
+        if (!hero) {
+            console.error('❌ Герой не найден в массиве heroes');
+            return;
+        }
+
+        // Детальная проверка разблокировки
+        console.log('🔓 Проверка разблокировки:');
+        console.log('- hero.unlocked:', hero.unlocked);
+        console.log('- typeof hero.unlocked:', typeof hero.unlocked);
+        console.log('- hero.id === 1:', hero.id === 1);
+        
+        const isUnlocked = hero.unlocked === true || hero.id === 1;
+        console.log('- Итоговая isUnlocked:', isUnlocked);
+
+        if (!isUnlocked) {
+            console.log('❌ Герой заблокирован:', hero.name);
+            alert('Этот герой еще заблокирован!');
+            return;
+        }
+
+        console.log('✅ Герой разблокирован, продолжаем...');
+        
+        this.currentHero = hero;
+        console.log('📝 Текущий герой установлен:', this.currentHero.name);
+        
+        this.showScreen('main');
+        console.log('🖥️ Экран переключен на main');
+        
+        this.renderHeroScreen();
+        console.log('🎨 Отрисовка экрана героя');
+        
+        this.saveGame();
+        console.log('💾 Игра сохранена');
+        
+        console.log('=== КОНЕЦ selectHero ===');
     }
-};
+
+    // И добавьте этот метод для отладки (вставьте в класс HeroGame после selectHero)
+    debugUnlockAllHeroes() {
+        console.log('🔓 Принудительная разблокировка всех героев');
+        this.heroes.forEach(hero => {
+            hero.unlocked = true;
+            console.log(`- ${hero.name} разблокирован`);
+        });
+        this.renderHeroSelect();
+    }
+
     // Показать экран
     showScreen(screenName) {
         this.currentScreen = screenName;
@@ -2184,6 +2152,12 @@ window.debugGame = function() {
         console.log('- Текущий экран:', game.currentScreen);
     } else {
         console.log('❌ Игра не инициализирована');
+    }
+};
+
+window.unlockAll = function() {
+    if (window.game) {
+        game.debugUnlockAllHeroes();
     }
 };
 
