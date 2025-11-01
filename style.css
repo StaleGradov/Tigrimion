@@ -269,7 +269,7 @@ body {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
 }
 
-/* Заголовки колонок */
+/* Заголовки колонок - УМЕНЬШЕНЫ */
 .column-title {
     text-align: center;
     font-weight: bold;
@@ -318,9 +318,7 @@ body {
     background: rgba(76, 201, 240, 0.3);
 }
 
-/* ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ КОМПАКТНЫХ ПОДЛОЖЕК */
-
-/* Основной контейнер информации героя */
+/* Стили для основной информации героя */
 .hero-info {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
@@ -328,12 +326,21 @@ body {
     border: 1px solid rgba(76, 201, 240, 0.4);
     backdrop-filter: blur(8px);
     margin-bottom: 10px;
-    width: 100%; /* Оставляем на всю ширину колонки */
+    width: fit-content; /* ✅ Зона характеристик компактная */
+    min-width: 250px;
+    align-self: flex-start; /* ✅ Прижимаем к левому краю */
 }
 
-/* Здоровье и регенерация - компактные */
+.hero-info h2 {
+    color: #ffd700;
+    margin-bottom: 8px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
 .health-display {
     margin-bottom: 8px;
+    width: 100%; /* Здоровье остается на всю ширину колонки */
 }
 
 .health-bar-container {
@@ -363,7 +370,6 @@ body {
     text-align: center;
 }
 
-/* ИСПРАВЛЕННАЯ регенерация здоровья - теперь компактная */
 .health-regen {
     background: rgba(76, 201, 240, 0.3);
     padding: 6px 12px;
@@ -372,7 +378,7 @@ body {
     border: 1px solid #4cc9f0;
     text-align: center;
     margin-top: 6px;
-    width: fit-content; /* ✅ Теперь занимает только нужное место */
+    width: fit-content; /* ✅ Исправлено: занимает только нужное место */
     margin-left: auto;
     margin-right: auto;
 }
@@ -407,7 +413,7 @@ body {
     color: #4cc9f0;
 }
 
-/* Экипировка */
+/* Экипировка - УМЕНЬШЕНА */
 .equipment-section {
     display: grid;
     grid-template-columns: 1fr;
@@ -447,7 +453,7 @@ body {
     font-size: 0.9em;
 }
 
-/* Прогресс уровня */
+/* Прогресс уровня - УМЕНЬШЕН */
 .level-progress {
     width: 100%;
     height: 6px;
@@ -477,7 +483,7 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* Бонусы */
+/* Бонусы - УМЕНЬШЕНЫ И ПРИЖАТЫ К ЛЕВОМУ КРАЮ */
 .bonuses-section {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
@@ -486,6 +492,9 @@ body {
     border: 1px solid rgba(255, 215, 0, 0.4);
     backdrop-filter: blur(8px);
     font-size: 0.85em;
+    width: fit-content; /* ✅ Зона бонусов компактная */
+    min-width: 200px;
+    align-self: flex-start; /* ✅ Прижимаем к левому краю */
 }
 
 .bonuses-section h3 {
@@ -502,7 +511,7 @@ body {
     font-size: 0.8em;
 }
 
-/* СТИЛИ ДЛЯ КОЛОНКИ МОНСТРА */
+/* СТИЛИ ДЛЯ КОЛОНКИ МОНСТРА - УМЕНЬШЕНЫ */
 .monster-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -526,7 +535,7 @@ body {
     font-size: 0.9em;
 }
 
-/* КНОПКИ ДЕЙСТВИЙ ДЛЯ МОНСТРА */
+/* КНОПКИ ДЕЙСТВИЙ ДЛЯ МОНСТРА - УМЕНЬШЕНЫ */
 .monster-actions {
     display: flex;
     flex-direction: column;
@@ -571,7 +580,7 @@ body {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
 }
 
-/* Стили для боя в колонке монстра */
+/* Стили для боя в колонке монстра - УМЕНЬШЕНЫ */
 .battle-in-monster-column {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
@@ -719,7 +728,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА БОЯ */
+/* СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ РЕЗУЛЬТАТА БОЯ - УМЕНЬШЕНЫ */
 .battle-result {
     text-align: center;
     padding: 15px;
@@ -753,7 +762,7 @@ body {
     font-size: 0.9em;
 }
 
-/* Кнопки действий вверху страницы */
+/* Кнопки действий вверху страницы - УМЕНЬШЕНЫ */
 .action-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -810,7 +819,7 @@ body {
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
-/* Журнал событий */
+/* Журнал событий - УМЕНЬШЕН */
 .battle-log {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
@@ -851,7 +860,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Адаптивность */
+/* Адаптивность - УЛУЧШЕНА ДЛЯ МОБИЛЬНЫХ */
 @media (max-width: 1200px) {
     .hero-layout {
         grid-template-columns: 1fr 1fr;
@@ -893,6 +902,7 @@ body {
     .hero-info, .bonuses-section {
         padding: 6px;
         font-size: 0.8em;
+        min-width: 200px;
     }
     
     .hero-info h2 {
@@ -950,6 +960,7 @@ body {
     }
 }
 
+/* ЕЩЁ БОЛЬШЕ УМЕНЬШЕНИЕ ДЛЯ ОЧЕНЬ МАЛЕНЬКИХ ЭКРАНОВ */
 @media (max-width: 480px) {
     .container {
         padding: 5px;
@@ -976,6 +987,7 @@ body {
     .hero-info, .bonuses-section {
         padding: 5px;
         font-size: 0.75em;
+        min-width: 180px;
     }
     
     .health-bar {
