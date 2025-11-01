@@ -333,9 +333,18 @@ body {
 
 .hero-info h2 {
     color: #ffd700;
-    margin-bottom: 8px;
-    font-size: 1.2em;
-    text-align: center;
+    margin: 0; /* убираем нижний отступ */
+    font-size: 1em; /* уменьшаем размер текста */
+    text-align: left; /* прижимаем текст влево */
+    
+    /* делаем подложку равной тексту */
+    display: inline-block; /* чтобы фон был только вокруг текста */
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px; /* уменьшаем отступы */
+    border-radius: 6px;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(8px);
+    white-space: nowrap; /* чтобы текст не переносился */
 }
 
 .health-display {
