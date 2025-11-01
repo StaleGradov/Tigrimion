@@ -527,37 +527,92 @@ body {
     text-align: center;
 }
 
-/* Элемент бонуса */
-.bonus-item {
-    margin-bottom: 4px;
-    padding: 3px 0;
+/* НОВЫЕ СТИЛИ ДЛЯ ГРУПП БОНУСОВ */
+.bonus-source-group {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.8em;
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ СИСТЕМЫ БОНУСОВ */
+.bonus-source-group:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.bonus-source-title {
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #4cc9f0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Цвета для разных типов бонусов */
+.race-bonus {
+    background: rgba(76, 201, 240, 0.3);
+    border: 1px solid #4cc9f0;
+}
+
+.class-bonus {
+    background: rgba(74, 222, 128, 0.3);
+    border: 1px solid #4ade80;
+}
+
+.saga-bonus {
+    background: rgba(245, 158, 11, 0.3);
+    border: 1px solid #f59e0b;
+}
+
+.equipment-bonus {
+    background: rgba(168, 85, 247, 0.3);
+    border: 1px solid #a855f7;
+}
+
+.no-bonuses {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    font-size: 0.8em;
+    padding: 10px;
+}
 
 /* Отображение активных бонусов */
 .bonus-display {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    margin: 8px 0;
+    margin: 4px 0;
 }
 
 .bonus-badge {
-    background: rgba(76, 201, 240, 0.3);
     padding: 3px 8px;
     border-radius: 8px;
     font-size: 0.75em;
-    border: 1px solid #4cc9f0;
     white-space: nowrap;
     transition: all 0.3s ease;
 }
 
 .bonus-badge:hover {
-    background: rgba(76, 201, 240, 0.5);
     transform: translateY(-1px);
+}
+
+.race-bonus:hover {
+    background: rgba(76, 201, 240, 0.5);
+}
+
+.class-bonus:hover {
+    background: rgba(74, 222, 128, 0.5);
+}
+
+.saga-bonus:hover {
+    background: rgba(245, 158, 11, 0.5);
+}
+
+.equipment-bonus:hover {
+    background: rgba(168, 85, 247, 0.5);
 }
 
 /* Отображение бонусов в характеристиках */
@@ -1005,6 +1060,99 @@ body {
     transform: translateY(-2px);
 }
 
+/* НОВЫЕ СТИЛИ ДЛЯ ПРОГРЕССА ЛОКАЦИЙ */
+.location-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.location-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    transition: width 0.3s ease;
+}
+
+/* Мини-прогресс для карточек локаций */
+.location-progress-mini {
+    margin-top: 8px;
+}
+
+.location-progress-text {
+    font-size: 0.8em;
+    margin-bottom: 4px;
+    color: #f59e0b;
+}
+
+.location-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.location-progress-fill-mini {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    transition: width 0.3s ease;
+}
+
+/* Стили для отображения бонусов в инвентаре и магазине */
+.merchant-item, .inventory-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.merchant-item:hover, .inventory-item:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.item-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.item-price {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    font-weight: bold;
+}
+
+.merchant-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+/* Анимация для появления новых бонусов */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.new-bonus {
+    animation: fadeInUp 0.5s ease-out;
+}
+
 /* Адаптивность для планшетов и маленьких экранов */
 @media (max-width: 1200px) {
     .hero-layout {
@@ -1196,74 +1344,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #3aa8d0;
-}
-
-/* Дополнительные стили для новых механик */
-
-/* Стили для отображения бонусов в инвентаре и магазине */
-.merchant-item, .inventory-item {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-}
-
-.merchant-item:hover, .inventory-item:hover {
-    border-color: #4cc9f0;
-    transform: translateY(-2px);
-}
-
-.item-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0;
-    font-size: 0.85em;
-}
-
-.item-price {
-    display: flex;
-    justify-content: space-between;
-    margin: 8px 0;
-    font-weight: bold;
-}
-
-.merchant-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-/* Анимация для появления новых бонусов */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.new-bonus {
-    animation: fadeInUp 0.5s ease-out;
-}
-
-/* Стили для отображения прогресса локаций */
-.location-progress {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 8px 0;
-}
-
-.location-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #f59e0b, #d97706);
-    transition: width 0.3s ease;
 }
