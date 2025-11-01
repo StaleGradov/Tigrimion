@@ -589,61 +589,62 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
-    endBattle(victory) {
-        if (victory) {
-            const totals = this.calculateTotalBonuses();
-            const baseReward = this.currentMonster.reward;
-            const goldMultiplier = 1 + totals.gold_mult;
-            const reward = Math.round(baseReward * goldMultiplier);
-            
-            this.currentHero.gold += reward;
-            this.lastReward = reward;
-            
-            const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
-            const experienceGained = baseExperience;
-            
-            this.addExperience(experienceGained);
-            
-            // ОБНОВЛЯЕМ ПРОГРЕСС ЛОКАЦИИ - НОВАЯ ЛОГИКА
-            this.updateLocationProgress(this.currentMonster.id);
-            
-            this.addBattleLog({
-                message: `🎉 ПОБЕДА! Получено ${reward} золота (база: ${baseReward} + бонусы) и ${experienceGained} опыта`,
-                type: 'victory'
-            });
-            
-            this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
-            
-            this.checkSpecialDrops();
-            
-            this.battleResult = {
-                victory: true,
-                reward: reward,
-                experience: experienceGained,
-                monsterName: this.currentMonster.name
-            };
-            
-        } else {
-            // ГЕРОЙ УМЕР - здоровье сбрасывается в 0
-            this.currentHero.currentHealth = 0;
-            this.addBattleLog({
-                message: '💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье сброшено.',
-                type: 'defeat'
-            });
-            
-            this.addToLog('💥 Проигран бой с ' + this.currentMonster.name + '. Здоровье восстанавливается с 0.');
-            
-            this.battleResult = {
-                victory: false,
-                monsterName: this.currentMonster.name
-            };
-        }
+ // ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
+endBattle(victory) {
+    if (victory) {
+        const totals = this.calculateTotalBonuses();
+        const baseReward = this.currentMonster.reward;
+        const goldMultiplier = 1 + totals.gold_mult;
+        const reward = Math.round(baseReward * goldMultiplier);
         
-        this.battleActive = false;
-        this.currentMonster = null;
-        this.renderHeroScreen();
+        this.currentHero.gold += reward;
+        this.lastReward = reward;
+        
+        const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
+        const experienceGained = baseExperience;
+        
+        this.addExperience(experienceGained);
+        
+        // ОБНОВЛЯЕМ ПРОГРЕСС ЛОКАЦИИ - НОВАЯ ЛОГИКА
+        this.updateLocationProgress(this.currentMonster.id);
+        
+        this.addBattleLog({
+            message: `🎉 ПОБЕДА! Получено ${reward} золота (база: ${baseReward} + бонусы) и ${experienceGained} опыта`,
+            type: 'victory'
+        });
+        
+        this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
+        
+        this.checkSpecialDrops();
+        
+        this.battleResult = {
+            victory: true,
+            reward: reward,
+            experience: experienceGained,
+            monsterName: this.currentMonster.name
+        };
+        
+    } else {
+        // ГЕРОЙ УМЕР - здоровье сбрасывается до 1 единицы
+        this.currentHero.currentHealth = 1; // ВОССТАНОВЛЕНИЕ С 1 ЕДИНИЦЫ ЗДОРОВЬЯ
+        
+        this.addBattleLog({
+            message: '💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстанавливается с 1 единицы.',
+            type: 'defeat'
+        });
+        
+        this.addToLog('💥 Проигран бой с ' + this.currentMonster.name + '. Здоровье восстанавливается с 1 единицы.');
+        
+        this.battleResult = {
+            victory: false,
+            monsterName: this.currentMonster.name
+        };
     }
+    
+    this.battleActive = false;
+    this.currentMonster = null;
+    this.renderHeroScreen();
+}
 
     // НОВАЯ ФУНКЦИЯ: Обновление прогресса локации
     updateLocationProgress(monsterId) {
@@ -704,53 +705,61 @@ class HeroGame {
         this.saveGame();
     }
 
-    getCurrentHealthForDisplay(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return 0;
-        
-        const now = Date.now();
-        const timePassed = (now - this.lastHealthUpdate) / 1000;
-        
-        if (!hero.currentHealth) {
-            hero.currentHealth = this.calculateMaxHealth(hero);
-        }
-        
-        let currentHealth = hero.currentHealth;
-        const maxHealth = this.calculateMaxHealth(hero);
-        
-        // Регенерация здоровья (только если герой жив)
-        if (currentHealth < maxHealth && currentHealth > 0) {
-            const totals = this.calculateTotalBonuses(hero);
-            const regenMultiplier = 1 + totals.health_regen_mult;
-            const baseRegen = hero.healthRegen || 100/60;
-            const healthToRegen = timePassed * baseRegen * regenMultiplier;
-            currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
-            
-            if (currentHealth > hero.currentHealth) {
-                this.lastHealthUpdate = now;
-                hero.currentHealth = currentHealth;
-                this.saveGame();
-            }
-        }
-        
-        return currentHealth;
+getCurrentHealthForDisplay(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return 0;
+    
+    const now = Date.now();
+    const timePassed = (now - this.lastHealthUpdate) / 1000;
+    
+    // Если здоровье не установлено, устанавливаем максимальное
+    if (!hero.currentHealth) {
+        hero.currentHealth = this.calculateMaxHealth(hero);
     }
+    
+    let currentHealth = hero.currentHealth;
+    const maxHealth = this.calculateMaxHealth(hero);
+    
+    // Регенерация здоровья (только если герой жив и здоровье больше 0)
+    if (currentHealth > 0 && currentHealth < maxHealth) {
+        const totals = this.calculateTotalBonuses(hero);
+        const regenMultiplier = 1 + totals.health_regen_mult;
+        const baseRegen = hero.healthRegen || 100/60;
+        const healthToRegen = timePassed * baseRegen * regenMultiplier;
+        currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
+        
+        if (currentHealth > hero.currentHealth) {
+            this.lastHealthUpdate = now;
+            hero.currentHealth = currentHealth;
+            this.saveGame();
+        }
+    }
+    
+    // Гарантируем, что здоровье никогда не будет меньше 1, если герой жив
+    if (currentHealth <= 0 && this.currentHero) {
+        currentHealth = 1;
+        hero.currentHealth = 1;
+    }
+    
+    return currentHealth;
+}
 
-    updateHealth(change) {
-        if (!this.currentHero) return;
-        
-        if (!this.currentHero.currentHealth) {
-            this.currentHero.currentHealth = this.calculateMaxHealth();
-        }
-        
-        this.currentHero.currentHealth += change;
-        const maxHealth = this.calculateMaxHealth();
-        
-        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-        
-        this.lastHealthUpdate = Date.now();
-        this.saveGame();
+ updateHealth(change) {
+    if (!this.currentHero) return;
+    
+    if (!this.currentHero.currentHealth) {
+        this.currentHero.currentHealth = this.calculateMaxHealth();
     }
+    
+    this.currentHero.currentHealth += change;
+    const maxHealth = this.calculateMaxHealth();
+    
+    // Ограничиваем здоровье: минимум 1 (если герой жив), максимум - максимальное здоровье
+    this.currentHero.currentHealth = Math.max(1, Math.min(maxHealth, this.currentHero.currentHealth));
+    
+    this.lastHealthUpdate = Date.now();
+    this.saveGame();
+}
 
     renderHeroSelect() {
         const container = document.getElementById('app');
@@ -1520,33 +1529,40 @@ class HeroGame {
         this.addToLog('🌟 Найдена легендарная реликвия!');
     }
 
-    attemptEscapeFromBattle() {
-        const stats = this.calculateHeroStats(this.currentHero);
-        const escapeRoll = this.rollDice(stats.skills?.escape || 0, 10);
+attemptEscapeFromBattle() {
+    const stats = this.calculateHeroStats(this.currentHero);
+    const escapeRoll = this.rollDice(stats.skills?.escape || 0, 10);
+    
+    if (escapeRoll.success) {
+        this.addBattleLog({
+            message: '🏃 Успешный побег из боя!',
+            type: 'escape'
+        });
+        this.battleActive = false;
+        this.completeEncounter();
+    } else {
+        this.addBattleLog({
+            message: '❌ Не удалось сбежать! Монстр атакует',
+            type: 'escape-failed'
+        });
+        const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
+        this.updateHealth(-monsterDamage);
         
-        if (escapeRoll.success) {
+        if (this.currentHero.currentHealth <= 0) {
+            // При смерти в попытке побега тоже устанавливаем здоровье в 1
+            this.currentHero.currentHealth = 1;
             this.addBattleLog({
-                message: '🏃 Успешный побег из боя!',
-                type: 'escape'
+                message: '💀 Герой повержен! Здоровье восстанавливается с 1 единицы.',
+                type: 'defeat'
             });
             this.battleActive = false;
-            this.completeEncounter();
+            this.currentMonster = null;
         } else {
-            this.addBattleLog({
-                message: '❌ Не удалось сбежать! Монстр атакует',
-                type: 'escape-failed'
-            });
-            const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-            this.updateHealth(-monsterDamage);
-            
-            if (this.currentHero.currentHealth <= 0) {
-                this.endBattle(false);
-            } else {
-                this.saveGame();
-                this.renderHeroScreen();
-            }
+            this.saveGame();
+            this.renderHeroScreen();
         }
     }
+}
 
     attemptStealth() {
         const stats = this.calculateHeroStats(this.currentHero);
