@@ -544,63 +544,65 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // ОБНОВЛЕННОЕ ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ
-    endBattle(victory) {
-        if (victory) {
-            const totals = this.calculateTotalBonuses();
-            const baseReward = this.currentMonster.reward;
-            const goldMultiplier = 1 + totals.gold_mult;
-            const reward = Math.round(baseReward * goldMultiplier);
-            
-            this.currentHero.gold += reward;
-            this.lastReward = reward;
-            
-            const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
-            const experienceGained = baseExperience;
-            
-            this.addExperience(experienceGained);
-            
-            // Обновляем прогресс локации
-            if (this.currentLocation) {
-                this.updateLocationProgress();
-            }
-            
-            this.addBattleLog({
-                message: `🎉 ПОБЕДА! Получено ${reward} золота (база: ${baseReward} + бонусы) и ${experienceGained} опыта`,
-                type: 'victory'
-            });
-            
-            this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
-            
-            this.checkSpecialDrops();
-            
-            this.battleResult = {
-                victory: true,
-                reward: reward,
-                experience: experienceGained,
-                monsterName: this.currentMonster.name
-            };
-            
-        } else {
-            // ГЕРОЙ УМЕР - здоровье сбрасывается в 0
-            this.currentHero.currentHealth = 0;
-            this.addBattleLog({
-                message: '💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье сброшено.',
-                type: 'defeat'
-            });
-            
-            this.addToLog('💥 Проигран бой с ' + this.currentMonster.name + '. Здоровье восстанавливается с 0.');
-            
-            this.battleResult = {
-                victory: false,
-                monsterName: this.currentMonster.name
-            };
+// ОБНОВЛЕННОЕ ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ
+endBattle(victory) {
+    if (victory) {
+        const totals = this.calculateTotalBonuses();
+        const baseReward = this.currentMonster.reward;
+        const goldMultiplier = 1 + totals.gold_mult;
+        const reward = Math.round(baseReward * goldMultiplier);
+        
+        this.currentHero.gold += reward;
+        this.lastReward = reward;
+        
+        const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
+        const experienceGained = baseExperience;
+        
+        this.addExperience(experienceGained);
+        
+        // Обновляем прогресс локации
+        if (this.currentLocation) {
+            this.updateLocationProgress();
         }
         
-        this.battleActive = false;
-        this.currentMonster = null;
-        this.renderHeroScreen();
+        this.addBattleLog({
+            message: `🎉 ПОБЕДА! Получено ${reward} золота (база: ${baseReward} + бонусы) и ${experienceGained} опыта`,
+            type: 'victory'
+        });
+        
+        this.addToLog(`🎯 Побежден ${this.currentMonster.name}! Получено ${reward} золота и ${experienceGained} опыта`);
+        
+        this.checkSpecialDrops();
+        
+        this.battleResult = {
+            victory: true,
+            reward: reward,
+            experience: experienceGained,
+            monsterName: this.currentMonster.name
+        };
+        
+    } else {
+        // ГЕРОЙ УМЕР - здоровье сбрасывается в 0 и начинает восстанавливаться с нуля
+        this.currentHero.currentHealth = 0;
+        this.lastHealthUpdate = Date.now(); // Сбрасываем таймер регенерации
+        
+        this.addBattleLog({
+            message: '💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье сброшено и начинает восстанавливаться с 0.',
+            type: 'defeat'
+        });
+        
+        this.addToLog('💥 Проигран бой с ' + this.currentMonster.name + '. Здоровье восстанавливается с 0.');
+        
+        this.battleResult = {
+            victory: false,
+            monsterName: this.currentMonster.name
+        };
     }
+    
+    this.battleActive = false;
+    this.currentMonster = null;
+    this.renderHeroScreen();
+}
 
     getCurrentHealthForDisplay(hero) {
         hero = hero || this.currentHero;
