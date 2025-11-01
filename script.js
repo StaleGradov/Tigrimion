@@ -590,7 +590,7 @@ battleAttack() {
     this.renderHeroScreen();
 }
 
- // ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
+// ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
 endBattle(victory) {
     if (victory) {
         const totals = this.calculateTotalBonuses();
@@ -640,11 +640,13 @@ endBattle(victory) {
             victory: false,
             monsterName: this.currentMonster.name
         };
-        
-        // Бой завершается, монстр исчезает
-        this.battleActive = false;
-        this.currentMonster = null;
     }
+    
+    // ВСЕГДА ЗАВЕРШАЕМ БОЙ И ОЧИЩАЕМ СОСТОЯНИЕ
+    this.battleActive = false;
+    this.currentMonster = null;
+    this.battleRound = 0;
+    this.battleLog = [];
     
     this.saveGame();
     this.renderHeroScreen();
@@ -1127,65 +1129,72 @@ updateHealth(change) {
         this.startHealthAnimation();
     }
 
-    renderMonsterColumn() {
-        if (this.battleResult) {
-            return this.renderBattleResult();
-        }
-        
-        if (this.currentMonster) {
-            const stats = this.calculateHeroStats(this.currentHero);
-            const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
-
-            return `
-                <div class="monster-info">
-                    <h4>${this.currentMonster.name}</h4>
-                    <p>${this.currentMonster.description}</p>
-                    
-                    <div class="monster-stats-grid">
-                        <div class="monster-stat-card">
-                            <div>❤️ Здоровье</div>
-                            <div class="monster-stat-value">${this.currentMonster.health}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>⚔️ Урон</div>
-                            <div class="monster-stat-value">${this.currentMonster.damage}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>🛡️ Броня</div>
-                            <div class="monster-stat-value">${this.currentMonster.armor}</div>
-                        </div>
-                        <div class="monster-stat-card">
-                            <div>🌟 Мощь</div>
-                            <div class="monster-stat-value">${this.currentMonster.power}</div>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: center; margin: 12px 0; font-size: 1em;">
-                        <p><strong>Сравнение:</strong> ${powerComparison}</p>
-                        <p>💰 Награда: ${this.currentMonster.reward} золота</p>
-                    </div>
-
-                    <!-- КНОПКИ ДЕЙСТВИЙ -->
-                    <div class="monster-actions">
-                        <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                        <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
-                        <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
-                    </div>
-                </div>
-                ${this.battleActive ? this.renderBattleInMonsterColumn() : ''}
-            `;
-        } else {
-            return `
-                <div class="monster-info" style="text-align: center; padding: 20px;">
-                    <h4>Врага нет</h4>
-                    <p>Начните путешествие, чтобы встретить противника</p>
-                    <div style="margin-top: 20px;">
-                        <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
-                    </div>
-                </div>
-            `;
-        }
+  renderMonsterColumn() {
+    // ЕСЛИ ЕСТЬ РЕЗУЛЬТАТ БОЯ - ПОКАЗЫВАЕМ ЕГО
+    if (this.battleResult) {
+        return this.renderBattleResult();
     }
+    
+    // ЕСЛИ БОЙ АКТИВЕН - ПОКАЗЫВАЕМ ИНТЕРФЕЙС БОЯ
+    if (this.battleActive && this.currentMonster) {
+        return this.renderBattleInMonsterColumn();
+    }
+    
+    // ЕСЛИ ЕСТЬ МОНСТР, НО БОЙ НЕ АКТИВЕН - ПОКАЗЫВАЕМ ИНФОРМАЦИЮ О МОНСТРЕ
+    if (this.currentMonster && !this.battleActive) {
+        const stats = this.calculateHeroStats(this.currentHero);
+        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+        return `
+            <div class="monster-info">
+                <h4>${this.currentMonster.name}</h4>
+                <p>${this.currentMonster.description}</p>
+                
+                <div class="monster-stats-grid">
+                    <div class="monster-stat-card">
+                        <div>❤️ Здоровье</div>
+                        <div class="monster-stat-value">${this.currentMonster.health}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>⚔️ Урон</div>
+                        <div class="monster-stat-value">${this.currentMonster.damage}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🛡️ Броня</div>
+                        <div class="monster-stat-value">${this.currentMonster.armor}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🌟 Мощь</div>
+                        <div class="monster-stat-value">${this.currentMonster.power}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 12px 0; font-size: 1em;">
+                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                    <p>💰 Награда: ${this.currentMonster.reward} золота</p>
+                </div>
+
+                <!-- КНОПКИ ДЕЙСТВИЙ -->
+                <div class="monster-actions">
+                    <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
+                    <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
+                    <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                </div>
+            </div>
+        `;
+    } else {
+        // ЕСЛИ МОНСТРА НЕТ - ПОКАЗЫВАЕМ ПРИГЛАШЕНИЕ К ПУТЕШЕСТВИЮ
+        return `
+            <div class="monster-info" style="text-align: center; padding: 20px;">
+                <h4>Врага нет</h4>
+                <p>Начните путешествие, чтобы встретить противника</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                </div>
+            </div>
+        `;
+    }
+}
 
     renderBattleResult() {
         if (!this.battleResult) return '';
@@ -1478,24 +1487,24 @@ updateHealth(change) {
         this.renderHeroScreen();
     }
 
-    startBattle() {
-        if (!this.currentMonster || this.battleActive) return;
-        
-        this.battleActive = true;
-        this.battleRound = 0;
-        this.battleLog = [];
-        this.battleResult = null;
-        
-        if (!this.currentHero.currentHealth) {
-            this.currentHero.currentHealth = this.calculateMaxHealth();
-        }
-        
-        this.currentMonster.currentHealth = this.currentMonster.health;
-        
-        this.addToLog('⚔️ Начало боя с ' + this.currentMonster.name + '!');
-        this.renderHeroScreen();
+startBattle() {
+    if (!this.currentMonster || this.battleActive) return;
+    
+    this.battleActive = true;
+    this.battleRound = 0;
+    this.battleLog = [];
+    this.battleResult = null; // СБРАСЫВАЕМ РЕЗУЛЬТАТ ПРЕДЫДУЩЕГО БОЯ
+    
+    if (!this.currentHero.currentHealth) {
+        this.currentHero.currentHealth = this.calculateMaxHealth();
     }
-
+    
+    // ВОССТАНАВЛИВАЕМ ЗДОРОВЬЕ МОНСТРА ДО МАКСИМУМА
+    this.currentMonster.currentHealth = this.currentMonster.health;
+    
+    this.addToLog('⚔️ Начало боя с ' + this.currentMonster.name + '!');
+    this.renderHeroScreen();
+}
     addBattleLog(entry) {
         this.battleLog.push(entry);
         if (this.battleLog.length > 10) {
@@ -1503,10 +1512,16 @@ updateHealth(change) {
         }
     }
 
-    continueAfterBattle() {
-        this.battleResult = null;
-        this.renderHeroScreen();
-    }
+continueAfterBattle() {
+    // ПОЛНОСТЬЮ СБРАСЫВАЕМ СОСТОЯНИЕ БОЯ
+    this.battleResult = null;
+    this.battleActive = false;
+    this.currentMonster = null;
+    this.battleRound = 0;
+    this.battleLog = [];
+    
+    this.renderHeroScreen();
+}
 
     getLocationName(level) {
         const location = this.locations.find(l => l.level === level);
