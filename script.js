@@ -636,21 +636,26 @@ endBattle(victory) {
     return currentHealth;
 }
 
-    updateHealth(change) {
-        if (!this.currentHero) return;
-        
-        if (!this.currentHero.currentHealth) {
-            this.currentHero.currentHealth = this.calculateMaxHealth();
-        }
-        
-        this.currentHero.currentHealth += change;
-        const maxHealth = this.calculateMaxHealth();
-        
-        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-        
-        this.lastHealthUpdate = Date.now();
-        this.saveGame();
+  updateHealth(change) {
+    if (!this.currentHero) return;
+    
+    if (!this.currentHero.currentHealth) {
+        this.currentHero.currentHealth = this.calculateMaxHealth();
     }
+    
+    this.currentHero.currentHealth += change;
+    const maxHealth = this.calculateMaxHealth();
+    
+    // Ограничиваем здоровье в пределах 0 - максимум
+    this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
+    
+    // Обновляем время регенерации только если здоровье изменилось
+    if (change !== 0) {
+        this.lastHealthUpdate = Date.now();
+    }
+    
+    this.saveGame();
+}
 
     renderHeroSelect() {
         const container = document.getElementById('app');
