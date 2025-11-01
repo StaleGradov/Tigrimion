@@ -1,1137 +1,1307 @@
-// Основной класс игры
-class HeroGame {
-    constructor() {
-        this.heroes = [];
-        this.items = [];
-        this.monsters = [];
-        this.maps = [];
-        this.locations = [];
-        
-        this.showReward = false;
-        this.lastReward = 0;
-        this.currentHero = null;
-        this.currentScreen = 'hero-select';
-        this.currentMap = null;
-        this.currentLocation = null;
-        this.currentMonster = null;
-        
-        // Свойства для боя
-        this.battleActive = false;
-        this.battleRound = 0;
-        this.battleLog = [];
-        this.lastHealthUpdate = Date.now();
-        this.healthInterval = null;
-        
-        // Результат боя
-        this.battleResult = null;
-        
-        // Общий инвентарь
-        this.globalInventory = [];
-        
-        // Видео для каждого героя
-        this.heroVideos = {
-            1: 'https://www.youtube.com/embed/mfziNIhX9mo',
-            2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
-            3: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
-        };
-        
-        this.videos = {
-            map: 'https://www.youtube.com/embed/4gSmkjlEO_Q',
-            location: 'https://www.youtube.com/embed/ytr51kwNLPo'
-        };
-        
-        this.showVideo = {
-            hero: false,
-            map: false,
-            location: false
-        };
-        
-        // Новая система прогресса локаций
-        this.locationProgress = {
-            10: { unlocked: true, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Начальные земли" },
-            9: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Лесные тропы" },
-            8: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Горные ущелья" },
-            7: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Подземелья" },
-            6: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Болота" },
-            5: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Вулканы" },
-            4: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Ледяные пустоши" },
-            3: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Небесные острова" },
-            2: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Храмы древних" },
-            1: { unlocked: false, monstersKilled: Array(10).fill(0), totalMonsters: 10, name: "Тронный зал" }
-        };
-        
-        this.init();
+/* Базовые сбросы стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Стили для тела документа */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    line-height: 1.6;
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Основной контейнер */
+.container {
+    width: 100%;
+    max-width: none;
+    padding: 15px;
+    margin: 0;
+}
+
+/* Стили для экранов (страниц) */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Класс для центрирования текста */
+.text-center {
+    text-align: center;
+}
+
+/* Сетка для списка героев */
+.hero-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 30px;
+    padding: 30px;
+    width: 100%;
+}
+
+/* Стили для карточки героя */
+.hero-option {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    height: 480px;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* Эффекты при наведении на карточку героя */
+.hero-option:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для заблокированных героев */
+.hero-option.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Убираем эффекты наведения для заблокированных героев */
+.hero-option.locked:hover {
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Контейнер для изображения героя */
+.hero-option-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Стили для самого изображения героя */
+.hero-option-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 13px;
+    transition: all 0.3s ease;
+}
+
+/* Наложение для заблокированных героев */
+.locked-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    z-index: 2;
+}
+
+/* Панель с информацией о герое (появляется при наведении) */
+.hero-option-info {
+    position: absolute;
+    bottom: -70%;
+    left: 0; right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 15px;
+    border-radius: 0 0 13px 13px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border-top: 2px solid #4cc9f0;
+    z-index: 3;
+}
+
+/* Показываем панель информации при наведении */
+.hero-option:hover .hero-option-info {
+    bottom: 0;
+}
+
+/* Шапка карточки героя (имя и уровень) */
+.hero-option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Имя героя в карточке */
+.hero-option-header strong {
+    font-size: 1.3em;
+    color: #ffd700;
+}
+
+/* Бейдж уровня героя */
+.hero-level {
+    background: #4cc9f0;
+    color: #1a1a2e;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+/* Сетка характеристик героя */
+.hero-option-stats {
+    margin-bottom: 10px;
+}
+
+/* Строка характеристики */
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 1em;
+}
+
+/* Элементы в строке характеристики */
+.stat-row span {
+    white-space: nowrap;
+}
+
+/* Контейнер для навыков героя */
+.hero-option-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+/* Бейдж навыка */
+.hero-option-skills span {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    border: 1px solid #4cc9f0;
+}
+
+/* Текст с бонусами */
+.hero-option-bonuses small {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+    display: block;
+    text-align: center;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Текст для заблокированных героев */
+.locked-text {
+    color: #ff6b6b;
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+/* ОСНОВНОЙ МАКЕТ - 4 КОЛОНКИ */
+.hero-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: start;
+    min-height: 75vh;
+}
+
+/* ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КОЛОНКИ */
+.hero-column, .monster-column, .map-column, .location-column {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 550px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 2px solid;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ЦВЕТА РАМОК ДЛЯ КАЖДОЙ КОЛОНКИ */
+.hero-column { border-color: #4cc9f0; }
+.monster-column { border-color: #f87171; }
+.map-column { border-color: #4ade80; }
+.location-column { border-color: #f59e0b; }
+
+/* ФОН КАЖДОЙ КОЛОНКИ */
+.column-background {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+/* ПОЛУПРОЗРАЧНОЕ НАЛОЖЕНИЕ ДЛЯ ЧИТАЕМОСТИ ТЕКСТА */
+.column-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.8) 0%,
+        rgba(0, 0, 0, 0.3) 20%,
+        rgba(0, 0, 0, 0.2) 60%,
+        rgba(0, 0, 0, 0.7) 100%
+    );
+    z-index: 2;
+}
+
+/* КОНТЕЙНЕР ДЛЯ КОНТЕНТА НА КАРТИНКЕ */
+.column-content {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Заголовки колонок */
+.column-title {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #ffd700;
+    font-size: 1em;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    backdrop-filter: blur(8px);
+}
+
+/* СТИЛИ ДЛЯ ВИДЕО */
+.video-container {
+    width: 100%; height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 1;
+}
+
+.video-container iframe {
+    width: 100%; height: 100%;
+    border: none;
+}
+
+/* Кнопка переключения видео */
+.video-toggle {
+    position: absolute;
+    top: 8px; right: 8px;
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.8);
+    border: 1px solid #4cc9f0;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+}
+
+.video-toggle:hover {
+    background: rgba(76, 201, 240, 0.3);
+}
+
+/* Стили для основной информации героя */
+.hero-info {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(8px);
+    margin-bottom: 10px;
+    width: fit-content;
+    min-width: 250px;
+    align-self: flex-start;
+}
+
+/* Имя героя - КОМПАКТНАЯ ВЕРСИЯ */
+.hero-info h2 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1em;
+    text-align: left;
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(8px);
+    white-space: nowrap;
+}
+
+/* Отображение здоровья */
+.health-display {
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+/* Контейнер для полоски здоровья */
+.health-bar-container {
+    margin-bottom: 6px;
+}
+
+/* Полоска здоровья */
+.health-bar {
+    position: relative;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Заполненная часть полоски здоровья */
+.health-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+/* Текст здоровья */
+.health-text {
+    font-weight: bold;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+/* Регенерация здоровья */
+.health-regen {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 6px 12px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    border: 1px solid #4cc9f0;
+    text-align: center;
+    margin-top: 6px;
+    width: fit-content;
+    margin-left: auto; margin-right: auto;
+}
+
+/* Основные характеристики героя */
+.hero-main-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+/* Карточка характеристики */
+.main-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    font-size: 0.85em;
+    position: relative;
+}
+
+/* Иконка характеристики */
+.stat-icon {
+    font-size: 1.1em;
+    margin-bottom: 2px;
+}
+
+/* Значение характеристики */
+.stat-value {
+    font-weight: bold;
+    font-size: 0.95em;
+    color: #4cc9f0;
+}
+
+/* Бонус к характеристике */
+.bonus-value {
+    color: #4ade80;
+    font-size: 0.7em;
+    margin-left: 5px;
+    font-weight: bold;
+}
+
+/* Секция экипировки */
+.equipment-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+/* Слот экипировки */
+.equipment-slot {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    font-size: 0.85em;
+}
+
+/* Эффекты при наведении на слот экипировки */
+.equipment-slot:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #4cc9f0;
+    transform: translateY(-1px);
+}
+
+/* Иконка экипировки */
+.equipment-icon {
+    width: 32px; height: 32px;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9em;
+}
+
+/* Полоска прогресса уровня */
+.level-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 6px 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Заполненная часть прогресса уровня */
+.level-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 6px rgba(76, 201, 240, 0.4);
+}
+
+/* Панель прогресса героя */
+.hero-progress {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+}
+
+/* Секция бонусов */
+.bonuses-section {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    backdrop-filter: blur(8px);
+    font-size: 0.85em;
+    width: fit-content;
+    min-width: 200px;
+    align-self: flex-start;
+}
+
+/* Заголовок бонусов */
+.bonuses-section h3 {
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-size: 1em;
+    text-align: center;
+}
+
+/* Элемент бонуса */
+.bonus-item {
+    margin-bottom: 4px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.8em;
+}
+
+/* НОВЫЕ СТИЛИ ДЛЯ СИСТЕМЫ БОНУСОВ */
+
+/* Группировка бонусов по источникам */
+.bonus-source-group {
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.bonus-source-group:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.bonus-source-title {
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 5px;
+    font-size: 0.8em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Отображение активных бонусов */
+.bonus-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 8px 0;
+}
+
+.bonus-badge {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 0.75em;
+    border: 1px solid #4cc9f0;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.bonus-badge:hover {
+    background: rgba(76, 201, 240, 0.5);
+    transform: translateY(-1px);
+}
+
+/* Цвета для разных типов бонусов */
+.race-bonus {
+    background: rgba(76, 201, 240, 0.3);
+    border-color: #4cc9f0;
+}
+
+.class-bonus {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
+}
+
+.saga-bonus {
+    background: rgba(245, 158, 11, 0.3);
+    border-color: #f59e0b;
+}
+
+.weapon-bonus {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+}
+
+.armor-bonus {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: #a855f7;
+}
+
+/* Сетка характеристик монстра */
+.monster-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 8px 0;
+}
+
+/* Карточка характеристики монстра */
+.monster-stat-card {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 6px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    font-size: 0.8em;
+}
+
+/* Значение характеристики монстра */
+.monster-stat-value {
+    font-weight: bold;
+    color: #4cc9f0;
+    font-size: 0.9em;
+}
+
+/* Кнопки действий для монстра */
+.monster-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+/* Общие стили для кнопок монстра */
+.monster-actions button {
+    padding: 8px 12px;
+    font-size: 0.9em;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    border: 1px solid;
+}
+
+/* Основная кнопка (атака) */
+.monster-actions .btn-primary {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
+    color: white;
+    border-color: #dc2626;
+}
+
+.monster-actions .btn-primary:hover {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* Вторичная кнопка */
+.monster-actions .btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.monster-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+/* Стили для боя в колонке монстра */
+.battle-in-monster-column {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    backdrop-filter: blur(8px);
+    font-size: 0.85em;
+}
+
+/* Шапка боя */
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.4);
+}
+
+.battle-header h4 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1em;
+}
+
+/* Бейдж номера раунда */
+.battle-round {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: bold;
+    border: 1px solid #4cc9f0;
+}
+
+/* Компактное отображение участников боя */
+.battle-combatants-compact {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* Карточка участника боя */
+.combatant-compact {
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid;
+    backdrop-filter: blur(4px);
+    font-size: 0.85em;
+}
+
+/* Аватар участника боя */
+.combatant-image-compact {
+    width: 50px; height: 50px;
+    margin: 0 auto 6px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid currentColor;
+}
+
+.combatant-image-compact img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+
+/* Компактная полоска здоровья */
+.health-bar-compact {
+    position: relative;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Заполненная часть компактной полоски здоровья */
+.health-bar-fill-compact {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+/* Надпись VS между участниками */
+.vs-compact {
+    font-size: 1em;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+/* Лог боя компактный */
+.battle-log-compact {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    padding: 6px;
+    max-height: 60px;
+    overflow-y: auto;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.75em;
+}
+
+/* НОВЫЕ СТИЛИ ДЛЯ СПЕЦ-ЭФФЕКТОВ В ЛОГЕ БОЯ */
+
+/* Запись в логе боя */
+.battle-log-entry-compact {
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.75em;
+    transition: all 0.3s ease;
+}
+
+/* Критический удар */
+.battle-log-entry-compact.critical {
+    color: #ff6b6b;
+    font-weight: bold;
+    animation: pulse 0.5s ease-in-out;
+}
+
+/* Пенетрация */
+.battle-log-entry-compact.penetration {
+    color: #4cc9f0;
+    font-weight: bold;
+}
+
+/* Вампиризм */
+.battle-log-entry-compact.vampirism {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+/* Атака героя */
+.battle-log-entry-compact.hero-attack {
+    color: #4ade80;
+}
+
+/* Атака монстра */
+.battle-log-entry-compact.monster-attack {
+    color: #f87171;
+}
+
+/* Побег */
+.battle-log-entry-compact.escape {
+    color: #f59e0b;
+}
+
+/* Победа */
+.battle-log-entry-compact.victory {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Поражение */
+.battle-log-entry-compact.defeat {
+    color: #9ca3af;
+}
+
+/* Анимация пульсации для критов */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Кнопки действий в бою */
+.battle-actions-compact {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+/* Общие стили для кнопок боя */
+.btn-battle-attack-compact, .btn-battle-escape-compact {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    flex: 1;
+    backdrop-filter: blur(4px);
+    border: 1px solid;
+}
+
+/* Кнопка атаки в бою */
+.btn-battle-attack-compact {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
+    color: white;
+    border-color: #dc2626;
+}
+
+.btn-battle-attack-compact:hover {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
+    transform: translateY(-1px);
+}
+
+/* Кнопка побега из боя */
+.btn-battle-escape-compact {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-battle-escape-compact:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+}
+
+/* Стили для отображения результата боя */
+.battle-result {
+    text-align: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 8px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+    margin: 8px 0;
+    font-size: 0.9em;
+}
+
+/* Иконка результата боя */
+.battle-result-image {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+
+.battle-result h4 {
+    color: #ffd700;
+    margin-bottom: 6px;
+    font-size: 1.1em;
+}
+
+/* Отображение награды */
+.reward-amount {
+    background: rgba(255, 215, 0, 0.25);
+    padding: 8px 10px;
+    border-radius: 6px;
+    margin: 8px 0;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 0.9em;
+}
+
+/* Кнопки действий вверху страницы */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+/* Общие стили для кнопок */
+.btn-primary, .btn-secondary, .btn-danger {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    border: 1px solid;
+    backdrop-filter: blur(4px);
+}
+
+/* Основная кнопка */
+.btn-primary {
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(67, 97, 238, 0.8));
+    color: white;
+    border-color: #4cc9f0;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, rgba(58, 168, 208, 0.9), rgba(50, 81, 212, 0.9));
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
+}
+
+/* Вторичная кнопка */
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+}
+
+/* Опасная кнопка */
+.btn-danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
+    color: white;
+    border-color: #dc2626;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+/* Основной журнал событий */
+.battle-log {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 120px;
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    font-size: 0.85em;
+}
+
+/* Запись в журнале событий */
+.log-entry {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.8em;
+}
+
+/* Сетки для выбора карт и локаций */
+.maps-grid, .locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    padding: 12px;
+}
+
+/* Карточки карт и локаций */
+.map-option, .location-option {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-align: center;
+}
+
+/* Эффекты при наведении на карты и локации */
+.map-option:hover, .location-option:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+/* Стили для прогресса локаций */
+.location-progress {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    margin: 5px 0;
+    overflow: hidden;
+}
+
+.location-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Адаптивность для планшетов и маленьких экранов */
+@media (max-width: 1200px) {
+    .hero-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
     }
-
-    async init() {
-        await this.loadGameData();
-        this.loadSave();
-        
-        // Гарантируем, что первый герой всегда разблокирован
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-        
-        this.renderHeroSelect();
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 400px;
     }
-
-    async loadJSON(filePath) {
-        try {
-            const response = await fetch(filePath);
-            if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
-            return await response.json();
-        } catch (error) {
-            console.error('Ошибка загрузки ' + filePath + ':', error);
-            return null;
-        }
+    
+    .column-content {
+        padding: 8px;
     }
-
-    async loadGameData() {
-        try {
-            const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
-                this.loadJSON('data/heroes.json'),
-                this.loadJSON('data/enemies.json'),
-                this.loadJSON('data/items.json'),
-                this.loadJSON('data/maps.json'),
-                this.loadJSON('data/locations.json')
-            ]);
-
-            this.heroes = heroes || [];
-            this.monsters = enemies || [];
-            this.items = items || [];
-            this.maps = mapsData || [];
-            this.locations = locationsData || [];
-
-            if (this.heroes.length === 0) {
-                this.createFallbackData();
-            }
-
-            if (this.heroes.length > 0) {
-                const firstHero = this.heroes.find(h => h.id === 1);
-                if (firstHero) firstHero.unlocked = true;
-            }
-
-        } catch (error) {
-            console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.createFallbackData();
-        }
+    
+    .hero-info, .bonuses-section {
+        padding: 8px;
     }
-
-    createFallbackData() {
-        console.log('🔄 Создание фолбэк данных...');
-        
-        this.heroes = [
-            {
-                id: 1, name: "Начальный герой", image: "https://via.placeholder.com/300x400/333/fff?text=Hero+1",
-                race: "human", class: "warrior", saga: "golden_egg", baseHealth: 100, baseDamage: 20, baseArmor: 10,
-                gold: 500, level: 1, experience: 0, healthRegen: 100/60, inventory: [], 
-                equipment: { main_hand: null, chest: null }, unlocked: true,
-                story: "Простой воин из далекой деревни..."
-            },
-            {
-                id: 2, name: "Эльфийский лучник", image: "https://via.placeholder.com/300x400/336/fff?text=Hero+2",
-                race: "elf", class: "archer", saga: "pets", baseHealth: 80, baseDamage: 25, baseArmor: 8,
-                gold: 0, level: 1, experience: 0, healthRegen: 80/60, inventory: [],
-                equipment: { main_hand: null, chest: null }, unlocked: false,
-                story: "Искусный стрелок из древнего леса"
-            }
-        ];
-
-        // Создаем монстров
-        this.monsters = [];
-        for (let i = 1; i <= 100; i++) {
-            this.monsters.push({
-                id: i, name: `Монстр ${i}`, image: "https://via.placeholder.com/300x400/633/fff?text=Monster",
-                description: `Монстр уровня ${Math.ceil(i/10)}`, health: 20 + (i * 3), maxHealth: 20 + (i * 3),
-                damage: 5 + i, attack: 5 + i, defense: 2 + Math.floor(i/2), armor: 2 + Math.floor(i/3),
-                speed: 3 + Math.floor(i/5), experience: 5 + (i * 2), reward: 10 + (i * 3), power: 15 + (i * 4)
-            });
-        }
-
-        this.items = [
-            {
-                id: 1, name: "Малое зелье здоровья", type: "potion", value: 20, price: 25, heal: 20,
-                image: "https://via.placeholder.com/50x50/393/fff?text=Potion", description: "Восстанавливает 20 здоровья"
-            },
-            {
-                id: 2, name: "Стальной меч", type: "weapon", value: 50, price: 100, fixed_damage: 10,
-                image: "https://via.placeholder.com/50x50/663/fff?text=Sword", description: "Простой но надежный меч",
-                bonus: { type: "damage_mult", value: 0.1 }
-            }
-        ];
-
-        this.maps = [
-            { id: 1, name: "Арканиум", image: "https://via.placeholder.com/400x600/363/fff?text=Map", 
-              description: "Земля древней магии", multiplier: 1.0, unlocked: true }
-        ];
-
-        // Создаем локации
-        this.locations = [];
-        const locationNames = {
-            10: "Начальные земли", 9: "Лесные тропы", 8: "Горные ущелья", 7: "Подземелья",
-            6: "Болота", 5: "Вулканы", 4: "Ледяные пустоши", 3: "Небесные острова",
-            2: "Храмы древних", 1: "Тронный зал"
-        };
-
-        for (let level = 10; level >= 1; level--) {
-            this.locations.push({
-                level: level, name: locationNames[level], description: `Локация уровня ${level}`,
-                image: "https://via.placeholder.com/400x600/663/fff?text=Location",
-                monsterRange: [((10 - level) * 10 + 1), ((10 - level) * 10 + 10)],
-                artifactChance: 0.005 + (0.001 * (10 - level)),
-                relicChance: 0.0005 + (0.0001 * (10 - level))
-            });
-        }
+    
+    .bonus-display {
+        gap: 3px;
     }
-
-    // НОВАЯ СИСТЕМА БОНУСОВ
-    getBonuses() {
-        return {
-            races: {
-                elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%" },
-                human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота" },
-                dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью" }
-            },
-            classes: {
-                warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне" },
-                archer: { type: "crit_chance", value: 0.2, name: "Лучник", description: "20% шанс двойного урона" },
-                blacksmith: { type: "armor_mult", value: 0.15, name: "Кузнец", description: "+15% к броне" }
-            },
-            sagas: {
-                golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйце", description: "+30% к здоровью" },
-                pets: { type: "damage_mult", value: 0.2, name: "Питомец", description: "Урон +20%" },
-                vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню" }
-            }
-        };
-    }
-
-    // Сбор всех активных бонусов с источниками
-    getBonusesWithSources(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return [];
-        
-        const bonuses = this.getBonuses();
-        const bonusesWithSources = [];
-        
-        if (bonuses.races[hero.race]) {
-            bonusesWithSources.push({ ...bonuses.races[hero.race], source: 'race', sourceName: bonuses.races[hero.race].name });
-        }
-        if (bonuses.classes[hero.class]) {
-            bonusesWithSources.push({ ...bonuses.classes[hero.class], source: 'class', sourceName: bonuses.classes[hero.class].name });
-        }
-        if (bonuses.sagas[hero.saga]) {
-            bonusesWithSources.push({ ...bonuses.sagas[hero.saga], source: 'saga', sourceName: bonuses.sagas[hero.saga].name });
-        }
-        
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            if (weapon && weapon.bonus) {
-                bonusesWithSources.push({ ...weapon.bonus, source: 'weapon', sourceName: weapon.name });
-            }
-        }
-        
-        if (hero.equipment.chest) {
-            const armor = this.items.find(item => item.id === hero.equipment.chest);
-            if (armor && armor.bonus) {
-                bonusesWithSources.push({ ...armor.bonus, source: 'armor', sourceName: armor.name });
-            }
-        }
-        
-        return bonusesWithSources;
-    }
-
-    // Расчет суммарных бонусов по типам
-    calculateTotalBonuses(hero) {
-        const activeBonuses = this.getBonusesWithSources(hero);
-        const totals = {
-            health_mult: 0, damage_mult: 0, armor_mult: 0, gold_mult: 0,
-            health_regen_mult: 0, crit_chance: 0, armor_penetration: 0, vampirism: 0
-        };
-        
-        activeBonuses.forEach(bonus => {
-            if (totals.hasOwnProperty(bonus.type)) {
-                totals[bonus.type] += bonus.value;
-            }
-        });
-        
-        return totals;
-    }
-
-    // Система уровней
-    getLevelRequirements() {
-        return { 1: 1, 2: 100, 3: 250, 4: 500, 5: 1000, 6: 2000, 7: 4000, 8: 8000, 9: 16000, 10: 32000 };
-    }
-
-    addExperience(amount) {
-        if (!this.currentHero) return;
-        
-        const oldLevel = this.currentHero.level;
-        this.currentHero.experience += amount;
-        
-        const levelRequirements = this.getLevelRequirements();
-        let newLevel = oldLevel;
-        
-        while (this.currentHero.experience >= levelRequirements[newLevel + 1] && levelRequirements[newLevel + 1]) {
-            newLevel++;
-        }
-        
-        if (newLevel > oldLevel) {
-            this.levelUp(newLevel);
-        }
-        
-        this.saveGame();
-    }
-
-    levelUp(newLevel) {
-        const levelsGained = newLevel - this.currentHero.level;
-        this.currentHero.level = newLevel;
-        
-        const healthIncrease = 10 * levelsGained;
-        const damageIncrease = 2 * levelsGained;
-        const armorIncrease = 1 * levelsGained;
-        
-        this.currentHero.baseHealth += healthIncrease;
-        this.currentHero.baseDamage += damageIncrease;
-        this.currentHero.baseArmor += armorIncrease;
-        
-        this.currentHero.currentHealth = this.calculateMaxHealth();
-        
-        this.addToLog('🎉 Уровень повышен! Теперь уровень ' + newLevel);
-        this.checkHeroUnlocks();
-    }
-
-    checkHeroUnlocks() {
-        if (!this.currentHero) return;
-        
-        const heroUnlockLevels = { 2: 10, 3: 15 };
-        
-        Object.keys(heroUnlockLevels).forEach(heroId => {
-            const requiredLevel = heroUnlockLevels[heroId];
-            const hero = this.heroes.find(h => h.id === parseInt(heroId));
-            if (hero && !hero.unlocked && this.currentHero.level >= requiredLevel) {
-                hero.unlocked = true;
-                this.addToLog('🔓 Разблокирован новый герой: ' + hero.name + '!');
-            }
-        });
-    }
-
-    // НОВЫЙ РАСЧЕТ ХАРАКТЕРИСТИК
-    calculateMaxHealth(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return 0;
-        
-        const totals = this.calculateTotalBonuses(hero);
-        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-        let health = hero.baseHealth * levelMultiplier;
-        health += hero.baseHealth * totals.health_mult;
-        
-        return Math.round(health);
-    }
-
-    calculateHeroStats(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return {};
-        
-        const totals = this.calculateTotalBonuses(hero);
-        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-        
-        let baseHealth = hero.baseHealth * levelMultiplier;
-        let baseDamage = hero.baseDamage * levelMultiplier;
-        let baseArmor = hero.baseArmor * levelMultiplier;
-        
-        let health = baseHealth + (hero.baseHealth * totals.health_mult);
-        let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
-        let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
-        
-        // Экипировка
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            damage += (weapon && weapon.fixed_damage) ? weapon.fixed_damage : 0;
-        }
-        
-        if (hero.equipment.chest) {
-            const armorItem = this.items.find(item => item.id === hero.equipment.chest);
-            armor += (armorItem && armorItem.fixed_armor) ? armorItem.fixed_armor : 0;
-        }
-        
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-        const currentHealth = this.getCurrentHealthForDisplay(hero);
-        
-        return {
-            health: Math.round(health),
-            currentHealth: Math.floor(currentHealth),
-            maxHealth: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
-            power: power,
-            bonuses: totals,
-            baseHealth: Math.round(baseHealth),
-            baseDamage: Math.round(baseDamage),
-            baseArmor: Math.round(baseArmor)
-        };
-    }
-
-    // НОВАЯ МЕХАНИКА КРИТИЧЕСКОГО УДАРА
-    calculateAttackDamage(isHeroAttack = true) {
-        const stats = this.calculateHeroStats();
-        const totals = this.calculateTotalBonuses(this.currentHero); // ИСПРАВЛЕНО
-        
-        let baseDamage = stats.damage;
-        let isCritical = false;
-        let isArmorPenetrated = false;
-        let finalDamage = baseDamage;
-        
-        if (isHeroAttack && Math.random() < totals.crit_chance) {
-            isCritical = true;
-            finalDamage *= 2;
-            this.addBattleLog({ message: '💥 КРИТИЧЕСКИЙ УДАР! Двойной урон!', type: 'critical' });
-        }
-        
-        if (isHeroAttack && Math.random() < totals.armor_penetration) {
-            isArmorPenetrated = true;
-            this.addBattleLog({ message: '⚡ ПРОНИКНОВЕНИЕ! Броня противника проигнорирована!', type: 'penetration' });
-        }
-        
-        return { damage: Math.round(finalDamage), isCritical, isArmorPenetrated };
-    }
-
-    // ОБНОВЛЕННАЯ МЕХАНИКА БОЯ
-    battleAttack() {
-        if (!this.battleActive) return;
-        
-        this.battleRound++;
-        const stats = this.calculateHeroStats(this.currentHero);
-        const totals = this.calculateTotalBonuses(this.currentHero); // ИСПРАВЛЕНО
-        
-        // Ход героя
-        const heroAttack = this.calculateAttackDamage(true);
-        let monsterDamageReduction = heroAttack.isArmorPenetrated ? 0 : this.currentMonster.armor;
-        const heroDamage = Math.max(1, heroAttack.damage - monsterDamageReduction);
-        
-        this.currentMonster.currentHealth -= heroDamage;
-        
-        this.addBattleLog({
-            message: `🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!` + 
-                     (heroAttack.isCritical ? ' 💥' : '') +
-                     (heroAttack.isArmorPenetrated ? ' ⚡' : ''),
-            type: 'hero-attack'
-        });
-        
-        // Вампиризм
-        if (totals.vampirism > 0 && heroDamage > 0) {
-            const healAmount = Math.round(heroDamage * totals.vampirism);
-            this.updateHealth(healAmount);
-            this.addBattleLog({ message: `🩸 Вампиризм! +${healAmount} здоровья`, type: 'vampirism' });
-        }
-        
-        if (this.currentMonster.currentHealth <= 0) {
-            this.endBattle(true);
-            return;
-        }
-        
-        // Ход монстра
-        const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-        this.updateHealth(-monsterDamage);
-        
-        this.addBattleLog({
-            message: '👹 ' + this.currentMonster.name + ' наносит ' + monsterDamage + ' урона!',
-            type: 'monster-attack'
-        });
-        
-        if (this.currentHero.currentHealth <= 0) {
-            this.endBattle(false);
-            return;
-        }
-        
-        this.saveGame();
-        this.renderHeroScreen();
-    }
-
-    // ОБНОВЛЕННОЕ ЗАВЕРШЕНИЕ БОЯ
-    endBattle(victory) {
-        if (victory) {
-            const totals = this.calculateTotalBonuses(this.currentHero); // ИСПРАВЛЕНО
-            const baseReward = this.currentMonster.reward;
-            const goldMultiplier = 1 + totals.gold_mult;
-            const reward = Math.round(baseReward * goldMultiplier);
-            
-            this.currentHero.gold += reward;
-            this.lastReward = reward;
-            
-            const baseExperience = Math.max(10, Math.floor(this.currentMonster.power / 2));
-            const experienceGained = baseExperience;
-            
-            this.addExperience(experienceGained);
-            
-            if (this.currentLocation) {
-                this.updateLocationProgress();
-            }
-            
-            this.addBattleLog({
-                message: `🎉 ПОБЕДА! Получено ${reward} золота и ${experienceGained} опыта`,
-                type: 'victory'
-            });
-            
-            this.battleResult = { victory: true, reward: reward, experience: experienceGained, monsterName: this.currentMonster.name };
-            
-        } else {
-            this.currentHero.currentHealth = 0;
-            this.lastHealthUpdate = Date.now();
-            
-            this.addBattleLog({ message: '💀 ПОРАЖЕНИЕ! Герой повержен.', type: 'defeat' });
-            this.battleResult = { victory: false, monsterName: this.currentMonster.name };
-        }
-        
-        this.battleActive = false;
-        this.currentMonster = null;
-        this.renderHeroScreen();
-    }
-
-    getCurrentHealthForDisplay(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return 0;
-        
-        const now = Date.now();
-        const timePassed = (now - this.lastHealthUpdate) / 1000;
-        
-        if (!hero.currentHealth) {
-            hero.currentHealth = this.calculateMaxHealth(hero);
-        }
-        
-        let currentHealth = hero.currentHealth;
-        const maxHealth = this.calculateMaxHealth(hero);
-        
-        if (currentHealth < maxHealth) {
-            const totals = this.calculateTotalBonuses(hero); // ИСПРАВЛЕНО
-            const regenMultiplier = 1 + totals.health_regen_mult;
-            const baseRegen = hero.healthRegen || 100/60;
-            const healthToRegen = timePassed * baseRegen * regenMultiplier;
-            currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
-            
-            if (currentHealth > hero.currentHealth) {
-                this.lastHealthUpdate = now;
-                hero.currentHealth = currentHealth;
-                this.saveGame();
-            }
-        }
-        
-        return currentHealth;
-    }
-
-    updateHealth(change) {
-        if (!this.currentHero) return;
-        
-        if (!this.currentHero.currentHealth) {
-            this.currentHero.currentHealth = this.calculateMaxHealth();
-        }
-        
-        this.currentHero.currentHealth += change;
-        const maxHealth = this.calculateMaxHealth();
-        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-        
-        if (change !== 0) {
-            this.lastHealthUpdate = Date.now();
-        }
-        
-        this.saveGame();
-    }
-
-    // ВСТРЕЧА МОНСТРА
-    encounterMonster() {
-        if (!this.currentLocation || !this.currentMap) {
-            console.error('❌ Не выбрана локация или карта');
-            return;
-        }
-
-        const locationLevel = this.currentLocation.level;
-        const startMonsterId = (10 - locationLevel) * 10 + 1;
-        const endMonsterId = startMonsterId + 9;
-        const monsterId = Math.floor(Math.random() * 10) + startMonsterId;
-        
-        let monster = this.monsters.find(m => m.id === monsterId);
-        if (!monster) {
-            monster = this.monsters.find(m => m.id >= startMonsterId && m.id <= endMonsterId);
-            if (!monster) return;
-        }
-
-        this.currentMonster = {
-            ...monster,
-            currentHealth: Math.round(monster.health * this.currentMap.multiplier),
-            health: Math.round(monster.health * this.currentMap.multiplier),
-            damage: Math.round(monster.damage * this.currentMap.multiplier),
-            armor: Math.round(monster.armor * this.currentMap.multiplier),
-            reward: Math.round(monster.reward * this.currentMap.multiplier),
-            power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
-        };
-
-        this.addToLog('🎭 Встречен: ' + this.currentMonster.name);
-        this.renderHeroScreen();
-    }
-
-    // ОБНОВЛЕНИЕ ПРОГРЕССА ЛОКАЦИИ
-    updateLocationProgress() {
-        if (!this.currentLocation || !this.currentMonster) return;
-        
-        const locationLevel = this.currentLocation.level;
-        const progress = this.locationProgress[locationLevel];
-        
-        if (progress) {
-            const monsterIndex = this.currentMonster.id - ((10 - locationLevel) * 10 + 1);
-            if (monsterIndex >= 0 && monsterIndex < 10) {
-                progress.monstersKilled[monsterIndex]++;
-                const allMonstersKilled = progress.monstersKilled.every(kills => kills > 0);
-                if (allMonstersKilled) {
-                    this.completeLocation(locationLevel);
-                }
-                this.saveGame();
-            }
-        }
-    }
-
-    completeLocation(locationLevel) {
-        const nextLocationLevel = locationLevel - 1;
-        const nextProgress = this.locationProgress[nextLocationLevel];
-        if (nextProgress) {
-            nextProgress.unlocked = true;
-            this.addToLog('🎉 Локация "' + this.getLocationName(locationLevel) + '" завершена!');
-            this.addToLog('🔓 Открыта новая локация: "' + this.getLocationName(nextLocationLevel) + '"');
-        }
-        this.saveGame();
-    }
-
-    getLocationName(level) {
-        const location = this.locations.find(l => l.level === level);
-        return location ? location.name : 'Локация ' + level;
-    }
-
-    getBonusIcon(bonusType) {
-        const icons = {
-            'health_mult': '❤️', 'damage_mult': '⚔️', 'armor_mult': '🛡️', 'gold_mult': '💰',
-            'health_regen_mult': '⚡', 'crit_chance': '💥', 'armor_penetration': '⚡', 'vampirism': '🩸'
-        };
-        return icons[bonusType] || '🎯';
-    }
-
-    renderHeroSelect() {
-        const container = document.getElementById('app');
-        if (!container) {
-            console.error('❌ Контейнер app не найден!');
-            return;
-        }
-
-        const heroesHTML = this.heroes.map(hero => {
-            const isUnlocked = hero.unlocked === true;
-            const stats = this.calculateHeroStats(hero);
-            const bonuses = this.getBonuses();
-            
-            const activeBonuses = this.getBonusesWithSources(hero);
-            const bonusDisplay = activeBonuses.map(bonus => {
-                const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
-                return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
-            }).join('');
-            
-            const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
-            const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
-            const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
-
-            return `
-                <div class="hero-option ${isUnlocked ? '' : 'locked'}" onclick="game.selectHero(${hero.id})">
-                    <div class="hero-option-image">
-                        <img src="${hero.image}" alt="${hero.name}">
-                        ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                    </div>
-                    <div class="hero-option-info">
-                        <div class="hero-option-header">
-                            <strong>${hero.name}</strong>
-                            <span class="hero-level">Ур. ${hero.level}</span>
-                        </div>
-                        <div class="hero-option-stats">
-                            <div class="stat-row">
-                                <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
-                                <span>⚔️ ${stats.damage}</span>
-                                <span>🛡️ ${stats.armor}</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>💰 ${hero.gold}</span>
-                                <span>🌟 ${stats.power}</span>
-                            </div>
-                        </div>
-                        ${bonusDisplay ? `<div class="hero-option-skills">${bonusDisplay}</div>` : ''}
-                        <div class="hero-option-bonuses">
-                            <small>${raceName} - ${className} - ${sagaName}</small>
-                        </div>
-                        ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        container.innerHTML = `
-            <div class="screen active" id="screen-hero-select">
-                <h2 class="text-center">Выберите героя</h2>
-                <div class="hero-list">${heroesHTML}</div>
-            </div>
-        `;
-    }
-
-    selectHero(heroId) {
-        console.log('Выбор героя:', heroId);
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) return;
-
-        const isUnlocked = hero.unlocked === true || hero.id === 1;
-        if (!isUnlocked) {
-            alert('Этот герой еще заблокирован!');
-            return;
-        }
-
-        this.currentHero = hero;
-        this.showScreen('main');
-        this.renderHeroScreen();
-        this.saveGame();
-    }
-
-    showScreen(screenName) {
-        this.currentScreen = screenName;
-        if (this.healthInterval) {
-            clearInterval(this.healthInterval);
-            this.healthInterval = null;
-        }
-    }
-
-    startHealthAnimation() {
-        if (!this.currentHero) return;
-        this.healthInterval = setInterval(() => {
-            const stats = this.calculateHeroStats(this.currentHero);
-            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-            const healthFill = document.querySelector('.health-bar-fill');
-            const currentHealthEl = document.getElementById('current-health');
-            const maxHealthEl = document.getElementById('max-health');
-            if (healthFill && currentHealthEl && maxHealthEl) {
-                healthFill.style.width = healthPercent + '%';
-                currentHealthEl.textContent = stats.currentHealth;
-                maxHealthEl.textContent = stats.maxHealth;
-            }
-        }, 1000);
-    }
-
-    renderHeroScreen() {
-        if (!this.currentHero) return;
-        const stats = this.calculateHeroStats(this.currentHero);
-        const activeBonuses = this.getBonusesWithSources();
-        const bonusesBySource = {
-            race: activeBonuses.filter(b => b.source === 'race'),
-            class: activeBonuses.filter(b => b.source === 'class'),
-            saga: activeBonuses.filter(b => b.source === 'saga'),
-            weapon: activeBonuses.filter(b => b.source === 'weapon'),
-            armor: activeBonuses.filter(b => b.source === 'armor')
-        };
-
-        const weapon = this.currentHero.equipment.main_hand ? this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-        const armor = this.currentHero.equipment.chest ? this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
-        const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
-        const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
-        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-main">
-                <div class="action-buttons">
-                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
-                    <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
-                    <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
-                    <button class="btn-danger" onclick="game.resetHero()">🔄 Сброс</button>
-                    <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
-                </div>
-
-                <div class="hero-layout">
-                    <!-- Колонка 1: Герой -->
-                    <div class="hero-column" style="background-image: url('${this.currentHero.image}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🎯 ${this.currentHero.name}</div>
-                            <div class="hero-info">
-                                <div class="health-display">
-                                    <div class="health-bar-container">
-                                        <div class="health-bar">
-                                            <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
-                                        </div>
-                                        <div class="health-text">
-                                            ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="hero-main-stats">
-                                    <div class="main-stat"><span class="stat-icon">⚔️</span><span class="stat-value">${stats.damage}</span></div>
-                                    <div class="main-stat"><span class="stat-icon">🛡️</span><span class="stat-value">${stats.armor}</span></div>
-                                    <div class="main-stat"><span class="stat-icon">🌟</span><span class="stat-value">${stats.power}</span></div>
-                                </div>
-                                <div class="level-progress"><div class="level-progress-fill" style="width: ${expProgress}%"></div></div>
-                                <div class="hero-progress">
-                                    <span>Ур.${this.currentHero.level}</span>
-                                    <span>💰${this.currentHero.gold}</span>
-                                    <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Колонка 2: Монстр -->
-                    <div class="monster-column" style="background-image: url('${this.currentMonster ? this.currentMonster.image : 'https://via.placeholder.com/400x600/633/fff?text=No+Monster'}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🎭 Враг</div>
-                            ${this.renderMonsterColumn()}
-                        </div>
-                    </div>
-
-                    <!-- Колонка 3: Карта -->
-                    <div class="map-column" style="background-image: url('${this.currentMap ? this.currentMap.image : 'https://via.placeholder.com/400x600/363/fff?text=No+Map'}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🗺️ Карта</div>
-                            ${this.renderMapSelection()}
-                        </div>
-                    </div>
-
-                    <!-- Колонка 4: Локация -->
-                    <div class="location-column" style="background-image: url('${this.currentLocation ? this.currentLocation.image : 'https://via.placeholder.com/400x600/663/fff?text=No+Location'}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">📍 Локация</div>
-                            ${this.renderLocationSelection()}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="battle-log" id="battle-log"></div>
-            </div>
-        `;
-
-        this.startHealthAnimation();
-    }
-
-    renderMonsterColumn() {
-        if (this.battleResult) {
-            return this.renderBattleResult();
-        }
-        
-        if (this.currentMonster) {
-            const stats = this.calculateHeroStats(this.currentHero);
-            const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
-
-            return `
-                <div class="monster-info">
-                    <h4>${this.currentMonster.name}</h4>
-                    <div class="monster-stats-grid">
-                        <div class="monster-stat-card"><div>❤️ Здоровье</div><div class="monster-stat-value">${this.currentMonster.health}</div></div>
-                        <div class="monster-stat-card"><div>⚔️ Урон</div><div class="monster-stat-value">${this.currentMonster.damage}</div></div>
-                        <div class="monster-stat-card"><div>🛡️ Броня</div><div class="monster-stat-value">${this.currentMonster.armor}</div></div>
-                        <div class="monster-stat-card"><div>🌟 Мощь</div><div class="monster-stat-value">${this.currentMonster.power}</div></div>
-                    </div>
-                    <div style="text-align: center; margin: 12px 0;">
-                        <p><strong>Сравнение:</strong> ${powerComparison}</p>
-                        <p>💰 Награда: ${this.currentMonster.reward} золота</p>
-                    </div>
-                    <div class="monster-actions">
-                        <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
-                    </div>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="monster-info" style="text-align: center; padding: 20px;">
-                    <h4>Врага нет</h4>
-                    <p>Начните путешествие, чтобы встретить противника</p>
-                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
-                </div>
-            `;
-        }
-    }
-
-    renderBattleResult() {
-        if (!this.battleResult) return '';
-        const victory = this.battleResult.victory;
-        
-        if (victory) {
-            return `
-                <div class="battle-result">
-                    <div class="battle-result-image">🎉</div>
-                    <h4>ПОБЕДА!</h4>
-                    <p>Вы победили ${this.battleResult.monsterName}!</p>
-                    <div class="reward-amount">+${this.battleResult.reward} золота<br>+${this.battleResult.experience} опыта</div>
-                    <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="battle-result">
-                    <div class="battle-result-image">💀</div>
-                    <h4>ПОРАЖЕНИЕ</h4>
-                    <p>Вы проиграли бой с ${this.battleResult.monsterName}</p>
-                    <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
-                </div>
-            `;
-        }
-    }
-
-    renderMapSelection() {
-        if (this.currentMap) {
-            return `
-                <div class="map-info">
-                    <h4>${this.currentMap.name}</h4>
-                    <p>${this.currentMap.description}</p>
-                    <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="map-info" style="text-align: center;">
-                    <h4>Карта не выбрана</h4>
-                    <button class="btn-primary" onclick="game.showMapSelection()">🗺️ Выбрать карту</button>
-                </div>
-            `;
-        }
-    }
-
-    renderLocationSelection() {
-        if (this.currentLocation) {
-            const progress = this.locationProgress[this.currentLocation.level];
-            const killedCount = progress ? progress.monstersKilled.filter(kills => kills > 0).length : 0;
-            
-            return `
-                <div class="location-info">
-                    <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
-                    <p>Прогресс: ${killedCount}/10 монстров убито</p>
-                    <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="location-info" style="text-align: center;">
-                    <h4>Локация не выбрана</h4>
-                    <button class="btn-primary" onclick="game.showLocationSelection()">📍 Выбрать локацию</button>
-                </div>
-            `;
-        }
-    }
-
-    startAdventure() {
-        if (!this.currentMap || !this.currentLocation) {
-            this.addToLog('❌ Сначала выберите карту и локацию');
-            return;
-        }
-        this.addToLog('🚀 Начато путешествие');
-        setTimeout(() => this.encounterMonster(), 1000);
-    }
-
-    startBattle() {
-        if (!this.currentMonster || this.battleActive) return;
-        this.battleActive = true;
-        this.battleRound = 0;
-        this.battleLog = [];
-        this.battleResult = null;
-        this.currentMonster.currentHealth = this.currentMonster.health;
-        this.addToLog('⚔️ Начало боя с ' + this.currentMonster.name + '!');
-        this.renderHeroScreen();
-    }
-
-    addBattleLog(entry) {
-        this.battleLog.push(entry);
-        if (this.battleLog.length > 10) this.battleLog.shift();
-    }
-
-    continueAfterBattle() {
-        this.battleResult = null;
-        this.renderHeroScreen();
-    }
-
-    addToLog(message) {
-        const log = document.getElementById('battle-log');
-        if (log) {
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.textContent = message;
-            log.appendChild(entry);
-            log.scrollTop = log.scrollHeight;
-        }
-    }
-
-    showMapSelection() {
-        const mapsHTML = this.maps.map(map => `
-            <div class="map-option ${map.unlocked ? '' : 'locked'}" onclick="${map.unlocked ? `game.selectMap(${map.id})` : ''}">
-                <div class="map-option-image"><img src="${map.image}" alt="${map.name}"></div>
-                <div class="map-option-info">
-                    <strong>${map.name}</strong>
-                    <div>${map.description}</div>
-                    <small>Множитель: x${map.multiplier}</small>
-                </div>
-            </div>
-        `).join('');
-
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-map-select">
-                <h3 class="text-center">🗺️ Выберите карту</h3>
-                <div class="maps-grid">${mapsHTML}</div>
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
-            </div>
-        `;
-    }
-
-    selectMap(mapId) {
-        this.currentMap = this.maps.find(m => m.id === mapId);
-        this.addToLog(`🗺️ Выбрана карта: ${this.currentMap.name}`);
-        this.renderHeroScreen();
-    }
-
-    showLocationSelection() {
-        if (!this.currentMap) {
-            this.addToLog('❌ Сначала выберите карту');
-            return;
-        }
-
-        const locationsHTML = this.locations.map(location => {
-            const progress = this.locationProgress[location.level];
-            const isUnlocked = progress ? progress.unlocked : false;
-            const killedCount = progress ? progress.monstersKilled.filter(kills => kills > 0).length : 0;
-
-            return `
-                <div class="location-option ${isUnlocked ? '' : 'locked'}" onclick="${isUnlocked ? 'game.selectLocation(' + location.level + ')' : ''}">
-                    <div class="location-option-image"><img src="${location.image}" alt="${location.name}"></div>
-                    <div class="location-option-info">
-                        <strong>${location.name} (Ур. ${location.level})</strong>
-                        ${isUnlocked ? `<div class="location-progress"><div class="location-progress-fill" style="width: ${(killedCount / 10) * 100}%"></div></div>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-location-select">
-                <h3 class="text-center">📍 Выберите локацию</h3>
-                <div class="locations-grid">${locationsHTML}</div>
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
-            </div>
-        `;
-    }
-
-    selectLocation(level) {
-        this.currentLocation = this.locations.find(l => l.level === level);
-        this.addToLog('📍 Выбрана локация: ' + this.currentLocation.name);
-        this.renderHeroScreen();
-    }
-
-    showInventory() {
-        if (!this.currentHero) return;
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-inventory">
-                <h3 class="text-center">🎒 Инвентарь</h3>
-                <div class="inventory-grid">${this.currentHero.inventory.length ? 'Предметы...' : 'Инвентарь пуст'}</div>
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
-            </div>
-        `;
-    }
-
-    showMerchant() {
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-merchant">
-                <h3 class="text-center">🏪 Магазин</h3>
-                <div class="merchant-list">Товары...</div>
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
-            </div>
-        `;
-    }
-
-    resetHero() {
-        if (!this.currentHero) return;
-        if (!confirm("⚠️ Вы уверены что хотите сбросить героя?")) return;
-        
-        const baseConfig = {
-            race: "human", class: "warrior", saga: "golden_egg", baseHealth: 100, baseDamage: 20, baseArmor: 10,
-            gold: 500, level: 1, experience: 0, inventory: [], equipment: { main_hand: null, chest: null }
-        };
-        
-        Object.assign(this.currentHero, baseConfig);
-        this.addToLog("🔄 Герой сброшен к базовым настройкам");
-        this.saveGame();
-        this.renderHeroScreen();
-    }
-
-    saveGame() {
-        if (this.currentHero) {
-            localStorage.setItem('heroGameSave', JSON.stringify({
-                currentHeroId: this.currentHero.id,
-                heroes: this.heroes,
-                currentMap: this.currentMap,
-                currentLocation: this.currentLocation,
-                lastHealthUpdate: this.lastHealthUpdate,
-                globalInventory: this.globalInventory,
-                locationProgress: this.locationProgress,
-                showVideo: this.showVideo
-            }));
-        }
-    }
-
-    loadSave() {
-        try {
-            const save = localStorage.getItem('heroGameSave');
-            if (save) {
-                const data = JSON.parse(save);
-                const savedHeroProgress = data.heroes || [];
-                const currentHeroId = data.currentHeroId;
-                
-                const progressMap = new Map();
-                savedHeroProgress.forEach(hero => {
-                    progressMap.set(hero.id, {
-                        gold: hero.gold, level: hero.level, experience: hero.experience,
-                        inventory: hero.inventory, equipment: hero.equipment,
-                        currentHealth: hero.currentHealth, unlocked: hero.unlocked
-                    });
-                });
-                
-                this.heroes = this.heroes.map(freshHero => {
-                    const progress = progressMap.get(freshHero.id);
-                    return progress ? { ...freshHero, ...progress } : freshHero;
-                });
-                
-                this.currentMap = data.currentMap || null;
-                this.currentLocation = data.currentLocation || null;
-                this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
-                this.globalInventory = data.globalInventory || [];
-                this.locationProgress = data.locationProgress || this.locationProgress;
-                this.showVideo = data.showVideo || this.showVideo;
-                
-                if (currentHeroId) {
-                    this.currentHero = this.heroes.find(h => h.id === currentHeroId);
-                    if (this.currentHero) this.showScreen('main');
-                }
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки сохранения:', error);
-        }
+    
+    .bonus-badge {
+        font-size: 0.7em;
+        padding: 2px 6px;
     }
 }
 
-// ========== ЗАПУСК ИГРЫ ==========
-console.log('🚀 Script.js загружен!');
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .container {
+        padding: 8px;
+    }
+    
+    .hero-layout {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 350px;
+    }
+    
+    .column-content {
+        padding: 6px;
+    }
+    
+    .hero-info, .bonuses-section {
+        padding: 6px;
+        font-size: 0.8em;
+        min-width: 200px;
+    }
+    
+    .hero-info h2 {
+        font-size: 1em;
+    }
+    
+    .health-bar {
+        height: 14px;
+    }
+    
+    .main-stat {
+        padding: 4px;
+        font-size: 0.75em;
+    }
+    
+    .equipment-slot {
+        padding: 6px;
+        font-size: 0.75em;
+    }
+    
+    .equipment-icon {
+        width: 28px; height: 28px;
+    }
+    
+    .monster-actions button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    .hero-list, .maps-grid, .locations-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .battle-combatants-compact {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 8px;
+    }
+    
+    .vs-compact {
+        order: 2;
+    }
+    
+    .bonus-display {
+        justify-content: center;
+    }
+}
 
-let game;
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .hero-layout {
+        gap: 6px;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 300px;
+    }
+    
+    .column-content {
+        padding: 4px;
+    }
+    
+    .column-title {
+        font-size: 0.9em;
+        padding: 6px;
+        margin-bottom: 6px;
+    }
+    
+    .hero-info, .bonuses-section {
+        padding: 5px;
+        font-size: 0.75em;
+        min-width: 180px;
+    }
+    
+    .health-bar {
+        height: 12px;
+    }
+    
+    .health-text {
+        font-size: 0.75em;
+    }
+    
+    .main-stat {
+        padding: 3px;
+        font-size: 0.7em;
+    }
+    
+    .stat-icon {
+        font-size: 1em;
+    }
+    
+    .stat-value {
+        font-size: 0.85em;
+    }
+    
+    .bonus-value {
+        font-size: 0.65em;
+    }
+    
+    .bonus-badge {
+        font-size: 0.65em;
+        padding: 2px 4px;
+    }
+}
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('✅ DOM загружен');
-        game = new HeroGame();
-        window.game = game;
-    });
-} else {
-    console.log('✅ DOM уже готов');
-    game = new HeroGame();
-    window.game = game;
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4cc9f0;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #3aa8d0;
+}
+
+/* Дополнительные стили для инвентаря и магазина */
+.merchant-item, .inventory-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.merchant-item:hover, .inventory-item:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.item-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+    font-size: 0.85em;
+}
+
+.item-price {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 0;
+    font-weight: bold;
+}
+
+.merchant-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    padding: 12px;
+}
+
+.merchant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
 }
