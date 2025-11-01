@@ -113,61 +113,62 @@ class HeroGame {
         console.log('🖥️ Переключение на экран:', screenName);
     }
 
-    renderHeroSelect() {
-        console.log('🎨 Отрисовка выбора героя');
-        const container = document.getElementById('app');
+ renderHeroSelect() {
+    console.log('🎨 Отрисовка выбора героя');
+    const container = document.getElementById('app');
+    
+    if (!container) {
+        console.error('❌ Контейнер app не найден!');
+        return;
+    }
+
+    const heroesHTML = this.heroes.map(hero => {
+        const isUnlocked = hero.unlocked === true;
+        const emoji = hero.id === 1 ? '🛡️' : hero.id === 2 ? '🏹' : '⚒️';
         
-        if (!container) {
-            console.error('❌ Контейнер app не найден!');
-            return;
-        }
-
-        const heroesHTML = this.heroes.map(hero => {
-            const isUnlocked = hero.unlocked === true;
-            
-            return `
-                <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                     onclick="game.selectHero(${hero.id})">
-                    <div class="hero-option-image">
-                        <img src="${hero.image}" alt="${hero.name}">
-                        ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                    </div>
-                    <div class="hero-option-info">
-                        <div class="hero-option-header">
-                            <strong>${hero.name}</strong>
-                            <span class="hero-level">Ур. ${hero.level}</span>
-                        </div>
-                        <div class="hero-option-stats">
-                            <div class="stat-row">
-                                <span>❤️ ${hero.baseHealth}</span>
-                                <span>⚔️ ${hero.baseDamage}</span>
-                                <span>🛡️ ${hero.baseArmor}</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>💰 ${hero.gold}</span>
-                                <span>🏹 ${hero.race}</span>
-                            </div>
-                        </div>
-                        ${!isUnlocked ? '<small class="locked-text">Заблокирован</small>' : ''}
-                    </div>
+        return `
+            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                 onclick="game.selectHero(${hero.id})">
+                <div class="hero-option-image" style="background: #2a2a5a; display: flex; align-items: center; justify-content: center; font-size: 80px;">
+                    ${emoji}
+                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                 </div>
-            `;
-        }).join('');
-
-        container.innerHTML = `
-            <div class="screen active" id="screen-hero-select">
-                <h2 class="text-center">Выберите героя</h2>
-                <div class="hero-list">
-                    ${heroesHTML}
-                </div>
-                <div style="text-align: center; margin-top: 20px; color: #888;">
-                    <small>Для отладки: откройте консоль (F12)</small>
+                <div class="hero-option-info">
+                    <div class="hero-option-header">
+                        <strong>${hero.name}</strong>
+                        <span class="hero-level">Ур. ${hero.level}</span>
+                    </div>
+                    <div class="hero-option-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${hero.baseHealth}</span>
+                            <span>⚔️ ${hero.baseDamage}</span>
+                            <span>🛡️ ${hero.baseArmor}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>💰 ${hero.gold}</span>
+                            <span>🏹 ${hero.race}</span>
+                        </div>
+                    </div>
+                    ${!isUnlocked ? '<small class="locked-text">Заблокирован</small>' : ''}
                 </div>
             </div>
         `;
-        
-        console.log('✅ Выбор героя отрендерен');
-    }
+    }).join('');
+
+    container.innerHTML = `
+        <div class="screen active" id="screen-hero-select">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
+                ${heroesHTML}
+            </div>
+            <div style="text-align: center; margin-top: 20px; color: #888;">
+                <small>Для отладки: откройте консоль (F12) и используйте debugGame()</small>
+            </div>
+        </div>
+    `;
+    
+    console.log('✅ Выбор героя отрендерен');
+}
 
     renderHeroScreen() {
         if (!this.currentHero) return;
