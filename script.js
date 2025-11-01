@@ -534,60 +534,61 @@ class HeroGame {
         };
     }
 
-    // МЕХАНИКА БОЯ С НОВЫМИ БОНУСАМИ
-    battleAttack() {
-        if (!this.battleActive) return;
-        
-        this.battleRound++;
-        const stats = this.calculateHeroStats(this.currentHero);
-        const totals = this.calculateTotalBonuses();
-        
-        // Ход героя
-        const heroAttack = this.calculateAttackDamage(true);
-        let monsterDamageReduction = heroAttack.isArmorPenetrated ? 0 : this.currentMonster.armor;
-        const heroDamage = Math.max(1, heroAttack.damage - monsterDamageReduction);
-        
-        this.currentMonster.currentHealth -= heroDamage;
-        
+// МЕХАНИКА БОЯ С НОВЫМИ БОНУСАМИ
+battleAttack() {
+    if (!this.battleActive) return;
+    
+    this.battleRound++;
+    const stats = this.calculateHeroStats(this.currentHero);
+    const totals = this.calculateTotalBonuses();
+    
+    // Ход героя
+    const heroAttack = this.calculateAttackDamage(true);
+    let monsterDamageReduction = heroAttack.isArmorPenetrated ? 0 : this.currentMonster.armor;
+    const heroDamage = Math.max(1, heroAttack.damage - monsterDamageReduction);
+    
+    this.currentMonster.currentHealth -= heroDamage;
+    
+    this.addBattleLog({
+        message: `🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!` + 
+                 (heroAttack.isCritical ? ' 💥' : '') +
+                 (heroAttack.isArmorPenetrated ? ' ⚡' : ''),
+        type: 'hero-attack'
+    });
+    
+    // Вампиризм - восстановление здоровья от урона
+    if (totals.vampirism > 0 && heroDamage > 0) {
+        const healAmount = Math.round(heroDamage * totals.vampirism);
+        this.updateHealth(healAmount);
         this.addBattleLog({
-            message: `🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!` + 
-                     (heroAttack.isCritical ? ' 💥' : '') +
-                     (heroAttack.isArmorPenetrated ? ' ⚡' : ''),
-            type: 'hero-attack'
+            message: `🩸 Вампиризм! +${healAmount} здоровья`,
+            type: 'vampirism'
         });
-        
-        // Вампиризм - восстановление здоровья от урона
-        if (totals.vampirism > 0 && heroDamage > 0) {
-            const healAmount = Math.round(heroDamage * totals.vampirism);
-            this.updateHealth(healAmount);
-            this.addBattleLog({
-                message: `🩸 Вампиризм! +${healAmount} здоровья`,
-                type: 'vampirism'
-            });
-        }
-        
-        if (this.currentMonster.currentHealth <= 0) {
-            this.endBattle(true);
-            return;
-        }
-        
-        // Ход монстра
-        const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
-        this.updateHealth(-monsterDamage);
-        
-        this.addBattleLog({
-            message: '👹 ' + this.currentMonster.name + ' наносит ' + monsterDamage + ' урона!',
-            type: 'monster-attack'
-        });
-        
-        if (this.currentHero.currentHealth <= 0) {
-            this.endBattle(false);
-            return;
-        }
-        
-        this.saveGame();
-        this.renderHeroScreen();
     }
+    
+    if (this.currentMonster.currentHealth <= 0) {
+        this.endBattle(true);
+        return;
+    }
+    
+    // Ход монстра
+    const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
+    this.updateHealth(-monsterDamage);
+    
+    this.addBattleLog({
+        message: '👹 ' + this.currentMonster.name + ' наносит ' + monsterDamage + ' урона!',
+        type: 'monster-attack'
+    });
+    
+    // ЕСЛИ ЗДОРОВЬЕ ГЕРОЯ ПАДАЕТ ДО 0 ИЛИ НИЖЕ - ЗАВЕРШАЕМ БОЙ С ПОРАЖЕНИЕМ
+    if (this.currentHero.currentHealth <= 0) {
+        this.endBattle(false);
+        return;
+    }
+    
+    this.saveGame();
+    this.renderHeroScreen();
+}
 
  // ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
 endBattle(victory) {
@@ -625,7 +626,7 @@ endBattle(victory) {
         };
         
     } else {
-        // ГЕРОЙ УМЕР - здоровье сбрасывается до 1 единицы
+        // ГЕРОЙ ПРОИГРАЛ БОЙ - здоровье сбрасывается до 1 единицы и бой завершается
         this.currentHero.currentHealth = 1; // ВОССТАНОВЛЕНИЕ С 1 ЕДИНИЦЫ ЗДОРОВЬЯ
         
         this.addBattleLog({
@@ -639,10 +640,13 @@ endBattle(victory) {
             victory: false,
             monsterName: this.currentMonster.name
         };
+        
+        // Бой завершается, монстр исчезает
+        this.battleActive = false;
+        this.currentMonster = null;
     }
     
-    this.battleActive = false;
-    this.currentMonster = null;
+    this.saveGame();
     this.renderHeroScreen();
 }
 
@@ -744,7 +748,7 @@ getCurrentHealthForDisplay(hero) {
     return currentHealth;
 }
 
- updateHealth(change) {
+updateHealth(change) {
     if (!this.currentHero) return;
     
     if (!this.currentHero.currentHealth) {
@@ -754,8 +758,8 @@ getCurrentHealthForDisplay(hero) {
     this.currentHero.currentHealth += change;
     const maxHealth = this.calculateMaxHealth();
     
-    // Ограничиваем здоровье: минимум 1 (если герой жив), максимум - максимальное здоровье
-    this.currentHero.currentHealth = Math.max(1, Math.min(maxHealth, this.currentHero.currentHealth));
+    // Ограничиваем здоровье: минимум 0 (может быть 0 при получении урона), максимум - максимальное здоровье
+    this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
     
     this.lastHealthUpdate = Date.now();
     this.saveGame();
@@ -1548,15 +1552,9 @@ attemptEscapeFromBattle() {
         const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
         this.updateHealth(-monsterDamage);
         
+        // ЕСЛИ ЗДОРОВЬЕ ГЕРОЯ ПАДАЕТ ДО 0 ИЛИ НИЖЕ - ЗАВЕРШАЕМ БОЙ С ПОРАЖЕНИЕМ
         if (this.currentHero.currentHealth <= 0) {
-            // При смерти в попытке побега тоже устанавливаем здоровье в 1
-            this.currentHero.currentHealth = 1;
-            this.addBattleLog({
-                message: '💀 Герой повержен! Здоровье восстанавливается с 1 единицы.',
-                type: 'defeat'
-            });
-            this.battleActive = false;
-            this.currentMonster = null;
+            this.endBattle(false);
         } else {
             this.saveGame();
             this.renderHeroScreen();
