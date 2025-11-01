@@ -55,11 +55,9 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
+    height: 480px;
     overflow: hidden;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    min-height: 480px;
 }
 
 /* Эффекты при наведении на карточку героя */
@@ -85,9 +83,10 @@ body {
 /* Контейнер для изображения героя */
 .hero-option-image {
     width: 100%;
-    height: 300px;
-    position: relative;
-    overflow: hidden;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 /* Стили для самого изображения героя */
@@ -95,6 +94,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 13px;
     transition: all 0.3s ease;
 }
 
@@ -110,17 +110,23 @@ body {
     z-index: 2;
 }
 
-/* Панель с информацией о герое */
+/* Панель с информацией о герое (появляется при наведении) */
 .hero-option-info {
+    position: absolute;
+    bottom: -70%;
+    left: 0; right: 0;
     background: rgba(26, 26, 46, 0.95);
     padding: 15px;
     border-radius: 0 0 13px 13px;
+    transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     border-top: 2px solid #4cc9f0;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    z-index: 3;
+}
+
+/* Показываем панель информации при наведении */
+.hero-option:hover .hero-option-info {
+    bottom: 0;
 }
 
 /* Шапка карточки героя (имя и уровень) */
@@ -325,7 +331,7 @@ body {
     align-self: flex-start;
 }
 
-/* Имя героя */
+/* Имя героя - КОМПАКТНАЯ ВЕРСИЯ */
 .hero-info h2 {
     color: #ffd700;
     margin: 0;
@@ -425,14 +431,6 @@ body {
     color: #4cc9f0;
 }
 
-/* Бонус к характеристике */
-.bonus-value {
-    color: #4ade80;
-    font-size: 0.7em;
-    margin-left: 5px;
-    font-weight: bold;
-}
-
 /* Секция экипировки */
 .equipment-section {
     display: grid;
@@ -473,12 +471,6 @@ body {
     border-radius: 5px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 0.9em;
-}
-
-.equipment-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
 /* Полоска прогресса уровня */
@@ -535,27 +527,15 @@ body {
     text-align: center;
 }
 
-/* Группировка бонусов по источникам */
-.bonus-source-group {
-    margin-bottom: 10px;
-    padding-bottom: 8px;
+/* Элемент бонуса */
+.bonus-item {
+    margin-bottom: 4px;
+    padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.bonus-source-group:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-
-.bonus-source-title {
-    font-weight: bold;
-    color: #ffd700;
-    margin-bottom: 5px;
     font-size: 0.8em;
-    display: flex;
-    align-items: center;
-    gap: 5px;
 }
+
+/* НОВЫЕ СТИЛИ ДЛЯ СИСТЕМЫ БОНУСОВ */
 
 /* Отображение активных бонусов */
 .bonus-display {
@@ -580,30 +560,19 @@ body {
     transform: translateY(-1px);
 }
 
-/* Цвета для разных типов бонусов */
-.race-bonus {
-    background: rgba(76, 201, 240, 0.3);
-    border-color: #4cc9f0;
+/* Отображение бонусов в характеристиках */
+.stat-with-bonus {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
-.class-bonus {
-    background: rgba(74, 222, 128, 0.3);
-    border-color: #4ade80;
-}
-
-.saga-bonus {
-    background: rgba(245, 158, 11, 0.3);
-    border-color: #f59e0b;
-}
-
-.weapon-bonus {
-    background: rgba(239, 68, 68, 0.3);
-    border-color: #ef4444;
-}
-
-.armor-bonus {
-    background: rgba(168, 85, 247, 0.3);
-    border-color: #a855f7;
+.bonus-value {
+    color: #4ade80;
+    font-size: 0.7em;
+    margin-left: 5px;
+    font-weight: bold;
 }
 
 /* Сетка характеристик монстра */
@@ -768,14 +737,6 @@ body {
     transition: width 0.3s ease;
 }
 
-.hero .health-bar-fill-compact {
-    background: linear-gradient(90deg, #4ade80, #22c55e);
-}
-
-.monster .health-bar-fill-compact {
-    background: linear-gradient(90deg, #f87171, #ef4444);
-}
-
 /* Надпись VS между участниками */
 .vs-compact {
     font-size: 1em;
@@ -796,7 +757,9 @@ body {
     font-size: 0.75em;
 }
 
-/* Стили для записей в логе боя */
+/* НОВЫЕ СТИЛИ ДЛЯ СПЕЦ-ЭФФЕКТОВ В ЛОГЕ БОЯ */
+
+/* Запись в логе боя */
 .battle-log-entry-compact {
     padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -1042,23 +1005,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* Стили для прогресса локаций */
-.location-progress {
-    width: 100%;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-    margin: 5px 0;
-    overflow: hidden;
-}
-
-.location-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #f59e0b, #d97706);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-}
-
 /* Адаптивность для планшетов и маленьких экранов */
 @media (max-width: 1200px) {
     .hero-layout {
@@ -1252,7 +1198,9 @@ body {
     background: #3aa8d0;
 }
 
-/* Дополнительные стили для инвентаря и магазина */
+/* Дополнительные стили для новых механик */
+
+/* Стили для отображения бонусов в инвентаре и магазине */
 .merchant-item, .inventory-item {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
@@ -1288,16 +1236,34 @@ body {
     margin-top: 10px;
 }
 
-.inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    padding: 12px;
+/* Анимация для появления новых бонусов */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.merchant-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+.new-bonus {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* Стили для отображения прогресса локаций */
+.location-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.location-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    transition: width 0.3s ease;
 }
