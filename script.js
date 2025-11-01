@@ -604,37 +604,37 @@ endBattle(victory) {
     this.renderHeroScreen();
 }
 
-    getCurrentHealthForDisplay(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return 0;
-        
-        const now = Date.now();
-        const timePassed = (now - this.lastHealthUpdate) / 1000;
-        
-        if (!hero.currentHealth) {
-            hero.currentHealth = this.calculateMaxHealth(hero);
-        }
-        
-        let currentHealth = hero.currentHealth;
-        const maxHealth = this.calculateMaxHealth(hero);
-        
-        // Регенерация здоровья (только если герой жив)
-        if (currentHealth < maxHealth && currentHealth > 0) {
-            const totals = this.calculateTotalBonuses(hero);
-            const regenMultiplier = 1 + totals.health_regen_mult;
-            const baseRegen = hero.healthRegen || 100/60;
-            const healthToRegen = timePassed * baseRegen * regenMultiplier;
-            currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
-            
-            if (currentHealth > hero.currentHealth) {
-                this.lastHealthUpdate = now;
-                hero.currentHealth = currentHealth;
-                this.saveGame();
-            }
-        }
-        
-        return currentHealth;
+  getCurrentHealthForDisplay(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return 0;
+    
+    const now = Date.now();
+    const timePassed = (now - this.lastHealthUpdate) / 1000;
+    
+    if (!hero.currentHealth) {
+        hero.currentHealth = this.calculateMaxHealth(hero);
     }
+    
+    let currentHealth = hero.currentHealth;
+    const maxHealth = this.calculateMaxHealth(hero);
+    
+    // Регенерация здоровья (работает даже если здоровье = 0)
+    if (currentHealth < maxHealth) {
+        const totals = this.calculateTotalBonuses(hero);
+        const regenMultiplier = 1 + totals.health_regen_mult;
+        const baseRegen = hero.healthRegen || 100/60;
+        const healthToRegen = timePassed * baseRegen * regenMultiplier;
+        currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
+        
+        if (currentHealth > hero.currentHealth) {
+            this.lastHealthUpdate = now;
+            hero.currentHealth = currentHealth;
+            this.saveGame();
+        }
+    }
+    
+    return currentHealth;
+}
 
     updateHealth(change) {
         if (!this.currentHero) return;
