@@ -762,143 +762,205 @@ body {
     font-size: 0.9em;
 }
 
-/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ КАРТЫ - КОМПАКТНАЯ */
+/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ КАРТЫ - ОТДЕЛЬНЫЕ КОМПАКТНЫЕ ПОДЛОЖКИ */
 .map-info {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(8px);
-    width: fit-content; /* ✅ Зона карты компактная */
+    width: fit-content;
     min-width: 200px;
-    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+    align-self: flex-start;
 }
 
 .map-info h4 {
     color: #ffd700;
     margin-bottom: 6px;
-    font-size: 0.9em; /* ✅ Уменьшаем текст */
+    font-size: 0.9em;
     text-align: center;
 }
 
 .map-info p {
     margin-bottom: 8px;
-    font-size: 0.8em; /* ✅ Уменьшаем текст */
+    font-size: 0.8em;
     text-align: left;
 }
 
-/* Множитель силы - компактный */
+/* Отдельные компактные подложки для карты */
 .map-multiplier {
     background: rgba(0, 0, 0, 0.6);
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin: 8px 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 4px 0;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.75em; /* ✅ Уменьшаем текст */
+    font-size: 0.7em;
     text-align: center;
-    width: fit-content; /* ✅ Занимает только нужное место */
+    width: fit-content;
 }
 
-/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ ЛОКАЦИИ - КОМПАКТНАЯ */
+.map-video-btn {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.7em;
+    text-align: center;
+    width: fit-content;
+}
+
+.map-change-btn {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.7em;
+    text-align: center;
+    width: fit-content;
+}
+
+/* ИСПРАВЛЕНИЯ ДЛЯ КОЛОНКИ ЛОКАЦИИ - ОТДЕЛЬНЫЕ КОМПАКТНЫЕ ПОДЛОЖКИ */
 .location-info {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(8px);
-    width: fit-content; /* ✅ Зона локации компактная */
+    width: fit-content;
     min-width: 200px;
-    align-self: flex-start; /* ✅ Прижимаем к левому краю */
+    align-self: flex-start;
 }
 
 .location-info h4 {
     color: #ffd700;
     margin-bottom: 6px;
-    font-size: 0.9em; /* ✅ Уменьшаем текст */
+    font-size: 0.9em;
     text-align: center;
 }
 
 .location-info p {
     margin-bottom: 8px;
-    font-size: 0.8em; /* ✅ Уменьшаем текст */
+    font-size: 0.8em;
     text-align: left;
 }
 
-/* Информационные блоки в локации - компактные */
-.location-stats {
+/* Отдельные компактные подложки для локации */
+.location-monsters {
     background: rgba(0, 0, 0, 0.6);
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin: 8px 0;
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 2px 0;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.75em; /* ✅ Уменьшаем текст */
+    font-size: 0.65em;
     text-align: left;
-    width: fit-content; /* ✅ Занимает только нужное место */
+    width: fit-content;
+}
+
+.location-artifacts {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 2px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.65em;
+    text-align: left;
+    width: fit-content;
+}
+
+.location-relics {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 2px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.65em;
+    text-align: left;
+    width: fit-content;
+}
+
+.location-progress {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3px 6px;
+    border-radius: 3px;
+    margin: 2px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.65em;
+    text-align: left;
+    width: fit-content;
+}
+
+.location-video-btn {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.7em;
+    text-align: center;
+    width: fit-content;
+}
+
+.location-change-btn {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin: 4px 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.7em;
+    text-align: center;
+    width: fit-content;
 }
 
 /* Кнопки в карте/локации */
 .map-info button, .location-info button {
-    width: 100%;
-    margin-top: 8px;
-    font-size: 0.8em; /* ✅ Уменьшаем текст кнопок */
-    padding: 6px 10px;
+    width: fit-content;
+    margin-top: 4px;
+    font-size: 0.7em;
+    padding: 4px 8px;
 }
 
-/* Кнопки действий вверху страницы - УМЕНЬШЕНЫ */
-.action-buttons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 8px;
-    margin-bottom: 15px;
+/* АДАПТИВНОСТЬ ДЛЯ МОБИЛЬНЫХ */
+@media (max-width: 768px) {
+    .map-info, .location-info {
+        min-width: 180px;
+        padding: 8px;
+    }
+    
+    .map-multiplier, .map-video-btn, .map-change-btn,
+    .location-monsters, .location-artifacts, .location-relics,
+    .location-progress, .location-video-btn, .location-change-btn {
+        font-size: 0.65em;
+        padding: 3px 6px;
+    }
 }
 
-.btn-primary, .btn-secondary, .btn-danger {
-    padding: 10px 16px;
-    border: none;
-    border-radius: 6px;
-    font-size: 0.95em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    border: 1px solid;
-    backdrop-filter: blur(4px);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(67, 97, 238, 0.8));
-    color: white;
-    border-color: #4cc9f0;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, rgba(58, 168, 208, 0.9), rgba(50, 81, 212, 0.9));
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
-}
-
-.btn-secondary {
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
-}
-
-.btn-danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
-    color: white;
-    border-color: #dc2626;
-}
-
-.btn-danger:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+@media (max-width: 480px) {
+    .map-info, .location-info {
+        min-width: 160px;
+        padding: 6px;
+    }
+    
+    .map-info h4, .location-info h4 {
+        font-size: 0.85em;
+    }
+    
+    .map-info p, .location-info p {
+        font-size: 0.75em;
+    }
+    
+    .map-multiplier, .map-video-btn, .map-change-btn,
+    .location-monsters, .location-artifacts, .location-relics,
+    .location-progress, .location-video-btn, .location-change-btn {
+        font-size: 0.6em;
+        padding: 2px 4px;
+    }
+    
+    .map-info button, .location-info button {
+        font-size: 0.65em;
+        padding: 3px 6px;
+    }
 }
 
 /* Журнал событий - УМЕНЬШЕН */
