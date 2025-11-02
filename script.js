@@ -252,100 +252,223 @@ class HeroGame {
         }
     }
 
-    // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ И ХАРАКТЕРИСТИК ==========
+// ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
 
-    // Получение всех доступных бонусов
-    getBonuses() {
-        return {
-            races: {
-                elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%", source: "race" },
-                halfling: { type: "crit_chance", value: 0.2, name: "Полурослик", description: "20% шанс двойного урона", source: "race" },
-                // ... другие расы
-            },
-            classes: {
-                hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню", source: "class" },
-                warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне", source: "class" },
-                // ... другие классы
-            },
-            sagas: {
-                golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью", source: "saga" },
-                vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню", source: "saga" },
-                // ... другие саги
-            }
-        };
-    }
+// Получение всех доступных бонусов
+getBonuses() {
+    return {
+        races: {
+            elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%", source: "race" },
+            halfling: { type: "crit_chance", value: 0.2, name: "Полурослик", description: "20% шанс двойного урона", source: "race" },
+            human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота за противника", source: "race" },
+            laitar: { type: "vampirism", value: 0.05, name: "Лайтар", description: "5% урона восстанавливает здоровье", source: "race" },
+            ork: { type: "health_regen_mult", value: 0.3, name: "Орк", description: "+30% к регенерации здоровья", source: "race" },
+            dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью", source: "race" },
+            dragon: { type: "armor_mult", value: 0.15, name: "Дракон", description: "+15% к броне", source: "race" },
+            fairy: { type: "armor_penetration", value: 0.25, name: "Фея", description: "25% шанс игнорировать броню", source: "race" }
+        },
+        classes: {
+            hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню", source: "class" },
+            warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне", source: "class" },
+            bounty_hunter: { type: "crit_chance", value: 0.2, name: "Охотник за головами", description: "20% шанс двойного урона", source: "class" },
+            merchant: { type: "gold_mult", value: 0.3, name: "Торговец", description: "+30% золота за противника", source: "class" },
+            thief: { type: "gold_mult", value: 0.3, name: "Вор", description: "+30% золота за противника", source: "class" },
+            fighter: { type: "health_regen_mult", value: 0.3, name: "Кулачный боец", description: "+30% к регенерации", source: "class" },
+            antiquarian: { type: "gold_mult", value: 0.3, name: "Искатель древностей", description: "+30% золота за противника", source: "class" },
+            death_mage: { type: "vampirism", value: 0.05, name: "Волхв смерти", description: "5% урона восстанавливает здоровье", source: "class" },
+            sorcerer: { type: "damage_mult", value: 0.2, name: "Колдун", description: "Урон +20%", source: "class" },
+            archer: { type: "crit_chance", value: 0.2, name: "Лучник", description: "20% шанс двойного урона", source: "class" },
+            healer: { type: "health_mult", value: 0.3, name: "Знахарь", description: "+30% к здоровью", source: "class" },
+            gladiator: { type: "damage_mult", value: 0.2, name: "Гладиатор", description: "Урон +20%", source: "class" },
+            blacksmith: { type: "armor_mult", value: 0.15, name: "Кузнец", description: "+15% к броне", source: "class" }
+        },
+        sagas: {
+            golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью", source: "saga" },
+            vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню", source: "saga" },
+            well: { type: "gold_mult", value: 0.3, name: "Колодец", description: "+30% золота за противника", source: "saga" },
+            pets: { type: "damage_mult", value: 0.2, name: "Питомец", description: "Урон +20%", source: "saga" },
+            following_sun: { type: "health_regen_mult", value: 0.3, name: "Вслед за солнцем", description: "+30% к регенерации", source: "saga" },
+            vampire_crown: { type: "vampirism", value: 0.05, name: "Корона короля вампиров", description: "5% урона восстанавливает здоровье", source: "saga" },
+            tiger_eye: { type: "crit_chance", value: 0.2, name: "Желтый Глаз тигра", description: "20% шанс двойного урона", source: "saga" },
+            sky_phenomena: { type: "armor_mult", value: 0.15, name: "Небесные явления", description: "+15% к броне", source: "saga" }
+        }
+    };
+}
 
-    // Получение всех активных бонусов героя
-    getAllActiveBonuses(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return { race: [], class: [], saga: [], equipment: [] };
-        
-        const bonuses = this.getBonuses();
-        const activeBonuses = {
-            race: [],
-            class: [],
-            saga: [],
-            equipment: []
-        };
-        
-        // Бонусы от расы
-        if (bonuses.races[hero.race]) {
-            activeBonuses.race.push(bonuses.races[hero.race]);
+// НОВЫЙ МЕТОД: Получение активных сетов
+getActiveSetBonuses(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return [];
+    
+    const equippedItems = Object.values(hero.equipment)
+        .filter(itemId => itemId !== null)
+        .map(itemId => this.items.find(item => item.id === itemId))
+        .filter(item => item !== undefined);
+    
+    // Группируем предметы по сетам
+    const setCounts = {};
+    equippedItems.forEach(item => {
+        if (item.setName) {
+            setCounts[item.setName] = (setCounts[item.setName] || 0) + 1;
         }
-        
-        // Бонусы от класса
-        if (bonuses.classes[hero.class]) {
-            activeBonuses.class.push(bonuses.classes[hero.class]);
-        }
-        
-        // Бонусы от саги
-        if (bonuses.sagas[hero.saga]) {
-            activeBonuses.saga.push(bonuses.sagas[hero.saga]);
-        }
-        
-        // Бонусы от экипировки
-        Object.values(hero.equipment).forEach(itemId => {
-            if (itemId) {
-                const item = this.items.find(item => item.id === itemId);
-                if (item && item.bonus) {
-                    activeBonuses.equipment.push({
-                        ...item.bonus,
-                        source: "equipment",
-                        itemName: item.name
-                    });
-                }
-            }
-        });
-        
-        return activeBonuses;
-    }
-
-    // Расчет суммарных бонусов
-    calculateTotalBonuses(hero) {
-        const activeBonuses = this.getAllActiveBonuses(hero);
-        const totals = {
-            health_mult: 0,
-            damage_mult: 0,
-            armor_mult: 0,
-            gold_mult: 0,
-            health_regen_mult: 0,
-            crit_chance: 0,
-            armor_penetration: 0,
-            vampirism: 0
-        };
-        
-        // Суммирование всех бонусов
-        Object.values(activeBonuses).forEach(bonusGroup => {
-            bonusGroup.forEach(bonus => {
-                if (totals.hasOwnProperty(bonus.type)) {
-                    totals[bonus.type] += bonus.value;
-                }
+    });
+    
+    const activeSetBonuses = [];
+    
+    // Проверяем условия для каждого сета
+    Object.keys(setCounts).forEach(setName => {
+        const setConfig = this.getItemSetConfig()[setName];
+        if (setConfig && setCounts[setName] >= setConfig.requiredPieces) {
+            activeSetBonuses.push({
+                setName: setName,
+                pieces: setCounts[setName],
+                bonus: setConfig.bonus,
+                description: setConfig.description
             });
-        });
-        
-        return totals;
-    }
+        }
+    });
+    
+    return activeSetBonuses;
+}
 
+// НОВЫЙ МЕТОД: Конфигурация сетов предметов
+getItemSetConfig() {
+    return {
+        "set_beginner": {
+            name: "Сет Новичка",
+            requiredPieces: 3,
+            bonus: { type: "health_mult", value: 0.15 },
+            description: "+15% к здоровью за 3 предмета"
+        },
+        "set_warrior": {
+            name: "Сет Воина", 
+            requiredPieces: 4,
+            bonus: { type: "damage_mult", value: 0.2 },
+            description: "+20% к урону за 4 предмета"
+        },
+        "set_guardian": {
+            name: "Сет Стража",
+            requiredPieces: 4, 
+            bonus: { type: "armor_mult", value: 0.25 },
+            description: "+25% к броне за 4 предмета"
+        },
+        "set_hunter": {
+            name: "Сет Охотника",
+            requiredPieces: 3,
+            bonus: { type: "crit_chance", value: 0.15 },
+            description: "+15% к шансу крита за 3 предмета"
+        },
+        "set_complete": {
+            name: "Полный Сет",
+            requiredPieces: 7,
+            bonus: { type: "all_stats_mult", value: 0.3 },
+            description: "+30% ко всем характеристикам за все 7 предметов"
+        }
+    };
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Расчет суммарных бонусов (включая сеты)
+calculateTotalBonuses(hero) {
+    hero = hero || this.currentHero;
+    const activeBonuses = this.getAllActiveBonuses(hero);
+    const setBonuses = this.getActiveSetBonuses(hero);
+    
+    const totals = {
+        health_mult: 0,
+        damage_mult: 0, 
+        armor_mult: 0,
+        gold_mult: 0,
+        health_regen_mult: 0,
+        crit_chance: 0,
+        armor_penetration: 0,
+        vampirism: 0,
+        all_stats_mult: 0
+    };
+    
+    // Суммирование обычных бонусов
+    Object.values(activeBonuses).forEach(bonusGroup => {
+        bonusGroup.forEach(bonus => {
+            if (totals.hasOwnProperty(bonus.type)) {
+                totals[bonus.type] += bonus.value;
+            }
+        });
+    });
+    
+    // Добавление бонусов от сетов
+    setBonuses.forEach(setBonus => {
+        if (setBonus.bonus && totals.hasOwnProperty(setBonus.bonus.type)) {
+            totals[setBonus.bonus.type] += setBonus.bonus.value;
+        }
+    });
+    
+    // Применение бонуса "все характеристики" к отдельным статам
+    if (totals.all_stats_mult > 0) {
+        totals.health_mult += totals.all_stats_mult;
+        totals.damage_mult += totals.all_stats_mult;
+        totals.armor_mult += totals.all_stats_mult;
+        totals.health_regen_mult += totals.all_stats_mult;
+    }
+    
+    return totals;
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Получение всех активных бонусов (включая сеты)
+getAllActiveBonuses(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
+    
+    const bonuses = this.getBonuses();
+    const activeBonuses = {
+        race: [],
+        class: [],
+        saga: [], 
+        equipment: [],
+        sets: [] // НОВОЕ: бонусы от сетов
+    };
+    
+    // Бонусы от расы
+    if (bonuses.races[hero.race]) {
+        activeBonuses.race.push(bonuses.races[hero.race]);
+    }
+    
+    // Бонусы от класса
+    if (bonuses.classes[hero.class]) {
+        activeBonuses.class.push(bonuses.classes[hero.class]);
+    }
+    
+    // Бонусы от саги
+    if (bonuses.sagas[hero.saga]) {
+        activeBonuses.saga.push(bonuses.sagas[hero.saga]);
+    }
+    
+    // Бонусы от экипировки
+    Object.values(hero.equipment).forEach(itemId => {
+        if (itemId) {
+            const item = this.items.find(item => item.id === itemId);
+            if (item && item.bonus) {
+                activeBonuses.equipment.push({
+                    ...item.bonus,
+                    source: "equipment",
+                    itemName: item.name
+                });
+            }
+        }
+    });
+    
+    // НОВОЕ: Бонусы от сетов
+    const setBonuses = this.getActiveSetBonuses(hero);
+    setBonuses.forEach(setBonus => {
+        activeBonuses.sets.push({
+            ...setBonus.bonus,
+            source: "set",
+            setName: setBonus.setName,
+            pieces: setBonus.pieces,
+            description: setBonus.description
+        });
+    });
+    
+    return activeBonuses;
+}
     // ========== МОДУЛЬ 4: СИСТЕМА УРОВНЕЙ И ОПЫТА ==========
 
     // Требования опыта для уровней
@@ -439,103 +562,57 @@ class HeroGame {
         });
     }
 
-    // ========== МОДУЛЬ 5: РАСЧЕТ ХАРАКТЕРИСТИК ==========
+   // ========== МОДУЛЬ 5: РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ СЕТОВ ==========
 
-    // Расчет максимального здоровья
-    calculateMaxHealth(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return 0;
-        
-        const totals = this.calculateTotalBonuses(hero);
-        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-        let health = hero.baseHealth * levelMultiplier;
-        health += hero.baseHealth * totals.health_mult;
-        
-        return Math.round(health);
-    }
-
-    // Расчет всех характеристик героя
-    calculateHeroStats(hero) {
-        hero = hero || this.currentHero;
-        if (!hero) return {};
-        
-        const totals = this.calculateTotalBonuses(hero);
-        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-        
-        // Базовые характеристики
-        let baseHealth = hero.baseHealth * levelMultiplier;
-        let baseDamage = hero.baseDamage * levelMultiplier;
-        let baseArmor = hero.baseArmor * levelMultiplier;
-        
-        // Применение бонусов
-        let health = baseHealth + (hero.baseHealth * totals.health_mult);
-        let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
-        let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
-        
-        // Добавление характеристик от экипировки
-        Object.values(hero.equipment).forEach(itemId => {
-            if (itemId) {
-                const item = this.items.find(item => item.id === itemId);
-                if (item) {
-                    damage += item.fixed_damage || 0;
-                    armor += item.fixed_armor || 0;
-                }
+// Расчет всех характеристик героя
+calculateHeroStats(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return {};
+    
+    const totals = this.calculateTotalBonuses(hero);
+    const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+    
+    // Базовые характеристики (уровень)
+    let baseHealth = hero.baseHealth * levelMultiplier;
+    let baseDamage = hero.baseDamage * levelMultiplier; 
+    let baseArmor = hero.baseArmor * levelMultiplier;
+    
+    // Применение процентных бонусов
+    let health = baseHealth + (hero.baseHealth * totals.health_mult);
+    let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
+    let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
+    
+    // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
+    Object.values(hero.equipment).forEach(itemId => {
+        if (itemId) {
+            const item = this.items.find(item => item.id === itemId);
+            if (item) {
+                damage += item.fixed_damage || 0;
+                armor += item.fixed_armor || 0;
+                health += item.fixed_health || 0;
             }
-        });
-        
-        // Расчет общей силы
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-        const currentHealth = this.getCurrentHealthForDisplay(hero);
-        
-        return {
-            health: Math.round(health),
-            currentHealth: Math.floor(currentHealth),
-            maxHealth: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
-            power: power,
-            bonuses: totals,
-            baseHealth: Math.round(baseHealth),
-            baseDamage: Math.round(baseDamage),
-            baseArmor: Math.round(baseArmor)
-        };
-    }
-
-    // Расчет урона атаки
-    calculateAttackDamage(isHeroAttack = true) {
-        const stats = this.calculateHeroStats();
-        const totals = this.calculateTotalBonuses();
-        
-        let baseDamage = stats.damage;
-        let isCritical = false;
-        let isArmorPenetrated = false;
-        let finalDamage = baseDamage;
-        
-        // Проверка критического удара
-        if (isHeroAttack && Math.random() < totals.crit_chance) {
-            isCritical = true;
-            finalDamage *= 2;
-            this.addBattleLog({
-                message: '💥 КРИТИЧЕСКИЙ УДАР! Двойной урон!',
-                type: 'critical'
-            });
         }
-        
-        // Проверка проникновения брони
-        if (isHeroAttack && Math.random() < totals.armor_penetration) {
-            isArmorPenetrated = true;
-            this.addBattleLog({
-                message: '⚡ ПРОНИКНОВЕНИЕ! Броня противника проигнорирована!',
-                type: 'penetration'
-            });
-        }
-        
-        return {
-            damage: Math.round(finalDamage),
-            isCritical,
-            isArmorPenetrated
-        };
-    }
+    });
+    
+    // Расчет общей силы
+    const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+    const currentHealth = this.getCurrentHealthForDisplay(hero);
+    
+    return {
+        health: Math.round(health),
+        currentHealth: Math.floor(currentHealth),
+        maxHealth: Math.round(health),
+        damage: Math.round(damage),
+        armor: Math.round(armor),
+        power: power,
+        bonuses: totals,
+        baseHealth: Math.round(baseHealth),
+        baseDamage: Math.round(baseDamage), 
+        baseArmor: Math.round(baseArmor),
+        // НОВОЕ: информация о сетах
+        activeSets: this.getActiveSetBonuses(hero)
+    };
+}
 
     // ========== МОДУЛЬ 6: СИСТЕМА БОЯ ==========
 
@@ -1149,86 +1226,162 @@ class HeroGame {
         this.startHealthAnimation();
     }
 
-    // ========== МОДУЛЬ 10: СИСТЕМА ЭКИПИРОВКИ И ИНВЕНТАРЯ ==========
+// ========== МОДУЛЬ 10: СИСТЕМА ЭКИПИРОВКИ С НОВЫМИ ТИПАМИ ОРУЖИЯ ==========
 
-    // Показать подсказку для слота экипировки
-    showEquipmentTooltip(event, slot) {
-        this.hideEquipmentTooltip();
-        
-        const slotNames = {
-            'main_hand': '⚔️ Правая рука',
-            'off_hand': '🛡️ Левая рука', 
-            'helmet': '⛑️ Шлем',
-            'chest': '👕 Нагрудник',
-            'gloves': '🧤 Перчатки',
-            'legs': '👖 Поножи',
-            'boots': '👢 Ботинки'
-        };
-        
-        const itemId = this.currentHero.equipment[slot];
-        let tooltipContent = '';
-        
-        if (itemId) {
-            const item = this.items.find(i => i.id === itemId);
-            if (item) {
-                tooltipContent = `
-                    <div class="slot-name">${slotNames[slot]}</div>
-                    <div class="item-stats">
-                        <div><strong>${item.name}</strong></div>
-                        ${item.fixed_damage ? `<div>⚔️ Урон: +${item.fixed_damage}</div>` : ''}
-                        ${item.fixed_armor ? `<div>🛡️ Броня: +${item.fixed_armor}</div>` : ''}
-                        ${item.bonus ? `<div>🎯 ${this.formatBonus(item.bonus)}</div>` : ''}
-                        <div><em>${item.description}</em></div>
-                        <div style="margin-top: 6px; color: #ff6b6b; font-size: 0.75em;">Кликните чтобы снять</div>
-                    </div>
-                `;
+// НОВЫЙ МЕТОД: Проверка совместимости оружия
+canEquipWeapon(item, currentEquipment) {
+    if (item.type !== 'weapon') return true;
+    
+    const mainHand = currentEquipment.main_hand;
+    const offHand = currentEquipment.off_hand;
+    
+    // Если предмет двуручный
+    if (item.weaponType === 'two_handed') {
+        // Нельзя экипировать если уже есть что-то в любой руке
+        if (mainHand || offHand) {
+            return false;
+        }
+        return true;
+    }
+    
+    // Если предмет одноручный
+    if (item.weaponType === 'one_handed') {
+        // Проверяем куда пытаемся надеть
+        if (item.slot === 'main_hand') {
+            // Если в главной руке уже двуручное оружие - нельзя
+            const mainHandItem = mainHand ? this.items.find(i => i.id === mainHand) : null;
+            if (mainHandItem && mainHandItem.weaponType === 'two_handed') {
+                return false;
             }
-        } else {
-            tooltipContent = `
-                <div class="slot-name">${slotNames[slot]}</div>
-                <div class="empty-slot">Пустой слот</div>
-                <div style="margin-top: 6px; color: #4cc9f0; font-size: 0.75em;">Откройте инвентарь чтобы экипировать</div>
-            `;
+            return true;
         }
-        
-        const tooltip = document.createElement('div');
-        tooltip.className = 'equipment-tooltip';
-        tooltip.innerHTML = tooltipContent;
-        
-        event.currentTarget.appendChild(tooltip);
+        if (item.slot === 'off_hand') {
+            // Если в главной руке двуручное оружие - нельзя
+            const mainHandItem = mainHand ? this.items.find(i => i.id === mainHand) : null;
+            if (mainHandItem && mainHandItem.weaponType === 'two_handed') {
+                return false;
+            }
+            // Если в левой руке уже щит - можно заменить
+            return true;
+        }
+    }
+    
+    // Если предмет - щит
+    if (item.weaponType === 'shield') {
+        // Если в главной руке двуручное оружие - нельзя
+        const mainHandItem = mainHand ? this.items.find(i => i.id === mainHand) : null;
+        if (mainHandItem && mainHandItem.weaponType === 'two_handed') {
+            return false;
+        }
+        return true;
+    }
+    
+    return true;
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Экипировать предмет
+equipItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Использование зелья
+    if (item.type === 'potion') {
+        this.usePotion(item);
+        return;
     }
 
-    // Скрыть подсказки экипировки
-    hideEquipmentTooltip() {
-        const existingTooltips = document.querySelectorAll('.equipment-tooltip');
-        existingTooltips.forEach(tooltip => tooltip.remove());
+    // Проверка совместимости оружия
+    if (!this.canEquipWeapon(item, this.currentHero.equipment)) {
+        this.addToLog(`❌ Нельзя экипировать ${item.name} - несовместимо с текущим оружием`);
+        return;
     }
 
-    // Снять предмет
-    unequipItem(slot) {
-        const itemId = this.currentHero.equipment[slot];
-        if (!itemId) {
-            this.showInventory();
-            return;
+    let slot = item.slot;
+    if (!slot) {
+        slot = this.getEquipmentSlot(item);
+    }
+
+    // Особые случаи для двуручного оружия
+    if (item.weaponType === 'two_handed') {
+        // Снимаем всё что было в руках
+        this.unequipToInventory('main_hand');
+        this.unequipToInventory('off_hand');
+        
+        // Экипируем в обе руки
+        this.currentHero.equipment.main_hand = itemId;
+        this.currentHero.equipment.off_hand = itemId;
+        
+    } else {
+        // Стандартная экипировка
+        const currentEquipped = this.currentHero.equipment[slot];
+        if (currentEquipped) {
+            this.unequipToInventory(slot);
         }
-        
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-        
-        // Проверка места в инвентаре
-        if (this.currentHero.inventory.length >= 10) {
-            this.addToLog('❌ Инвентарь полон! Максимум 10 предметов');
-            return;
-        }
-        
-        // Снятие предмета
+        this.currentHero.equipment[slot] = itemId;
+    }
+
+    // Убираем из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+
+    this.addToLog(`🎯 Надето: ${item.name}`);
+    
+    // Проверяем бонусы сетов
+    this.checkSetBonuses();
+    
+    this.saveGame();
+    this.renderHeroScreen();
+}
+
+// НОВЫЙ МЕТОД: Снять предмет в инвентарь
+unequipToInventory(slot) {
+    const itemId = this.currentHero.equipment[slot];
+    if (!itemId) return;
+
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Проверяем место в инвентаре
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog('❌ Инвентарь полон! Максимум 10 предметов');
+        return;
+    }
+
+    // Особый случай: если снимаем двуручное оружие
+    if (item.weaponType === 'two_handed') {
+        this.currentHero.equipment.main_hand = null;
+        this.currentHero.equipment.off_hand = null;
+    } else {
         this.currentHero.equipment[slot] = null;
-        this.currentHero.inventory.push(itemId);
-        
-        this.addToLog(`📦 Снято: ${item.name} (${this.getSlotName(slot)})`);
-        this.saveGame();
-        this.renderHeroScreen();
     }
+
+    this.currentHero.inventory.push(itemId);
+    return true;
+}
+
+// НОВЫЙ МЕТОД: Проверка и применение бонусов сетов
+checkSetBonuses() {
+    const activeSets = this.getActiveSetBonuses(this.currentHero);
+    if (activeSets.length > 0) {
+        activeSets.forEach(set => {
+            this.addToLog(`✨ Активирован бонус сета: ${set.description}`);
+        });
+    }
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Получить слот для предмета
+getEquipmentSlot(item) {
+    const slotMap = {
+        'weapon': item.weaponType === 'shield' ? 'off_hand' : 'main_hand',
+        'helmet': ['helmet'],
+        'chest': ['chest'], 
+        'gloves': ['gloves'],
+        'legs': ['legs'],
+        'boots': ['boots'],
+        'accessory': ['accessory']
+    };
+    
+    return slotMap[item.type] ? (Array.isArray(slotMap[item.type]) ? slotMap[item.type][0] : slotMap[item.type]) : null;
+}
 
     // ========== МОДУЛЬ 11: СИСТЕМА ПУТЕШЕСТВИЙ И ВСТРЕЧ ==========
 
