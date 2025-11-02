@@ -1,22 +1,20 @@
-/* Базовые сбросы стилей */
+/* ===== 1. БАЗОВЫЕ СТИЛИ И СБРОСЫ ===== */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Упрощает расчет размеров */
 }
 
-/* Стили для тела документа */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Градиентный фон */
     color: white;
     line-height: 1.6;
     min-height: 100vh;
     width: 100vw;
-    overflow-x: hidden;
+    overflow-x: hidden; /* Запрещаем горизонтальный скролл */
 }
 
-/* Основной контейнер */
 .container {
     width: 100%;
     max-width: none;
@@ -24,30 +22,28 @@ body {
     margin: 0;
 }
 
-/* Стили для экранов (страниц) */
+/* ===== 2. СИСТЕМА ЭКРАНОВ ===== */
 .screen {
-    display: none;
+    display: none; /* По умолчанию экраны скрыты */
 }
 
 .screen.active {
-    display: block;
+    display: block; /* Активный экран показываем */
 }
 
-/* Класс для центрирования текста */
 .text-center {
     text-align: center;
 }
 
-/* Сетка для списка героев */
+/* ===== 3. ВЫБОР ГЕРОЯ ===== */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Адаптивная сетка */
     gap: 30px;
     padding: 30px;
     width: 100%;
 }
 
-/* Стили для карточки героя */
 .hero-option {
     position: relative;
     background: rgba(255, 255, 255, 0.1);
@@ -60,27 +56,23 @@ body {
     width: 100%;
 }
 
-/* Эффекты при наведении на карточку героя */
 .hero-option:hover {
     border-color: #4cc9f0;
-    transform: translateY(-5px);
+    transform: translateY(-5px); /* Эффект поднятия */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-/* Стили для заблокированных героев */
 .hero-option.locked {
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: not-allowed; /* Заблокированные герои */
 }
 
-/* Убираем эффекты наведения для заблокированных героев */
 .hero-option.locked:hover {
     border-color: transparent;
     transform: none;
     box-shadow: none;
 }
 
-/* Контейнер для изображения героя */
 .hero-option-image {
     width: 100%;
     height: 100%;
@@ -89,16 +81,14 @@ body {
     left: 0;
 }
 
-/* Стили для самого изображения героя */
 .hero-option-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Сохраняем пропорции изображения */
     border-radius: 13px;
     transition: all 0.3s ease;
 }
 
-/* Наложение для заблокированных героев */
 .locked-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -110,26 +100,23 @@ body {
     z-index: 2;
 }
 
-/* Панель с информацией о герое (появляется при наведении) */
 .hero-option-info {
     position: absolute;
-    bottom: -70%;
+    bottom: -70%; /* Скрываем информацию */
     left: 0; right: 0;
     background: rgba(26, 26, 46, 0.95);
     padding: 15px;
     border-radius: 0 0 13px 13px;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); /* Размытие фона */
     border-top: 2px solid #4cc9f0;
     z-index: 3;
 }
 
-/* Показываем панель информации при наведении */
 .hero-option:hover .hero-option-info {
-    bottom: 0;
+    bottom: 0; /* Показываем при наведении */
 }
 
-/* Шапка карточки героя (имя и уровень) */
 .hero-option-header {
     display: flex;
     justify-content: space-between;
@@ -137,13 +124,11 @@ body {
     margin-bottom: 10px;
 }
 
-/* Имя героя в карточке */
 .hero-option-header strong {
     font-size: 1.3em;
-    color: #ffd700;
+    color: #ffd700; /* Золотой цвет для имени */
 }
 
-/* Бейдж уровня героя */
 .hero-level {
     background: #4cc9f0;
     color: #1a1a2e;
@@ -153,12 +138,10 @@ body {
     font-weight: bold;
 }
 
-/* Сетка характеристик героя */
 .hero-option-stats {
     margin-bottom: 10px;
 }
 
-/* Строка характеристики */
 .stat-row {
     display: flex;
     justify-content: space-between;
@@ -166,12 +149,10 @@ body {
     font-size: 1em;
 }
 
-/* Элементы в строке характеристики */
 .stat-row span {
-    white-space: nowrap;
+    white-space: nowrap; /* Запрещаем перенос текста */
 }
 
-/* Контейнер для навыков героя */
 .hero-option-skills {
     display: flex;
     flex-wrap: wrap;
@@ -179,7 +160,6 @@ body {
     margin-bottom: 8px;
 }
 
-/* Бейдж навыка */
 .hero-option-skills span {
     background: rgba(76, 201, 240, 0.3);
     padding: 4px 10px;
@@ -188,7 +168,6 @@ body {
     border: 1px solid #4cc9f0;
 }
 
-/* Текст с бонусами */
 .hero-option-bonuses small {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.9em;
@@ -198,7 +177,6 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Текст для заблокированных героев */
 .locked-text {
     color: #ff6b6b;
     display: block;
@@ -207,17 +185,16 @@ body {
     text-align: center;
 }
 
-/* ОСНОВНОЙ МАКЕТ - 4 КОЛОНКИ */
+/* ===== 4. ОСНОВНОЙ МАКЕТ ИГРЫ (4 КОЛОНКИ) ===== */
 .hero-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 равные колонки */
     gap: 12px;
     margin-bottom: 20px;
     align-items: start;
     min-height: 75vh;
 }
 
-/* ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ КОЛОНОК */
 .hero-column, .monster-column, .map-column, .location-column {
     position: relative;
     border-radius: 10px;
@@ -230,13 +207,11 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* ЦВЕТА РАМОК ДЛЯ КАЖДОЙ КОЛОНКИ */
-.hero-column { border-color: #4cc9f0; }
-.monster-column { border-color: #f87171; }
-.map-column { border-color: #4ade80; }
-.location-column { border-color: #f59e0b; }
+.hero-column { border-color: #4cc9f0; } /* Синий для героя */
+.monster-column { border-color: #f87171; } /* Красный для монстра */
+.map-column { border-color: #4ade80; } /* Зеленый для карты */
+.location-column { border-color: #f59e0b; } /* Оранжевый для локации */
 
-/* ФОН КАЖДОЙ КОЛОНКИ */
 .column-background {
     position: absolute;
     top: 0; left: 0;
@@ -245,7 +220,6 @@ body {
     z-index: 1;
 }
 
-/* ПОЛУПРОЗРАЧНОЕ НАЛОЖЕНИЕ ДЛЯ ЧИТАЕМОСТИ ТЕКСТА */
 .column-overlay {
     position: absolute;
     top: 0; left: 0;
@@ -256,11 +230,10 @@ body {
         rgba(0, 0, 0, 0.3) 20%,
         rgba(0, 0, 0, 0.2) 60%,
         rgba(0, 0, 0, 0.7) 100%
-    );
+    ); /* Градиент для читаемости текста */
     z-index: 2;
 }
 
-/* КОНТЕЙНЕР ДЛЯ КОНТЕНТА НА КАРТИНКЕ */
 .column-content {
     position: relative;
     z-index: 3;
@@ -269,10 +242,9 @@ body {
     flex-direction: column;
     padding: 12px;
     color: white;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9); /* Тень для текста */
 }
 
-/* Заголовки колонок */
 .column-title {
     text-align: center;
     font-weight: bold;
@@ -286,7 +258,7 @@ body {
     backdrop-filter: blur(8px);
 }
 
-/* СТИЛИ ДЛЯ ВИДЕО */
+/* ===== 5. ВИДЕО И ПЕРЕКЛЮЧАТЕЛИ ===== */
 .video-container {
     width: 100%; height: 100%;
     position: absolute;
@@ -299,7 +271,6 @@ body {
     border: none;
 }
 
-/* Кнопка переключения видео */
 .video-toggle {
     position: absolute;
     top: 8px; right: 8px;
@@ -318,7 +289,7 @@ body {
     background: rgba(76, 201, 240, 0.3);
 }
 
-/* Стили для основной информации героя */
+/* ===== 6. ИНФОРМАЦИЯ О ГЕРОЕ ===== */
 .hero-info {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
@@ -331,7 +302,6 @@ body {
     align-self: flex-start;
 }
 
-/* Имя героя - КОМПАКТНАЯ ВЕРСИЯ */
 .hero-info h2 {
     color: #ffd700;
     margin: 0;
@@ -346,18 +316,15 @@ body {
     white-space: nowrap;
 }
 
-/* Отображение здоровья */
 .health-display {
     margin-bottom: 8px;
     width: 100%;
 }
 
-/* Контейнер для полоски здоровья */
 .health-bar-container {
     margin-bottom: 6px;
 }
 
-/* Полоска здоровья */
 .health-bar {
     position: relative;
     height: 16px;
@@ -368,22 +335,19 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Заполненная часть полоски здоровья */
 .health-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4ade80, #22c55e);
+    background: linear-gradient(90deg, #4ade80, #22c55e); /* Градиент здоровья */
     transition: width 0.3s ease;
     box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
 }
 
-/* Текст здоровья */
 .health-text {
     font-weight: bold;
     font-size: 0.85em;
     text-align: center;
 }
 
-/* Регенерация здоровья */
 .health-regen {
     background: rgba(76, 201, 240, 0.3);
     padding: 6px 12px;
@@ -396,15 +360,13 @@ body {
     margin-left: auto; margin-right: auto;
 }
 
-/* Основные характеристики героя */
 .hero-main-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* 3 колонки характеристик */
     gap: 6px;
     margin-bottom: 8px;
 }
 
-/* Карточка характеристики */
 .main-stat {
     display: flex;
     flex-direction: column;
@@ -418,23 +380,21 @@ body {
     position: relative;
 }
 
-/* Иконка характеристики */
 .stat-icon {
     font-size: 1.1em;
     margin-bottom: 2px;
 }
 
-/* Значение характеристики */
 .stat-value {
     font-weight: bold;
     font-size: 0.95em;
     color: #4cc9f0;
 }
 
-/* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВКИ - ГОРИЗОНТАЛЬНОЕ РАСПОЛОЖЕНИЕ */
+/* ===== 7. СИСТЕМА ЭКИПИРОВКИ ===== */
 .equipment-section {
     display: flex;
-    gap: 8px;
+    gap: 6px; /* Уменьшен зазор между слотами */
     margin-top: auto;
     margin-bottom: 8px;
     background: rgba(0, 0, 0, 0.7);
@@ -443,12 +403,11 @@ body {
     border: 1px solid rgba(76, 201, 240, 0.4);
     width: 100%;
     box-sizing: border-box;
-    height: 70px; /* Уменьшенная высота */
+    height: 70px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center; /* Центрируем слоты */
 }
 
-/* Увеличенные слоты экипировки - ГОРИЗОНТАЛЬНЫЕ */
 .equipment-slot {
     position: relative;
     display: flex;
@@ -461,9 +420,10 @@ body {
     transition: all 0.3s ease;
     backdrop-filter: blur(4px);
     padding: 4px;
-    width: 60px; /* Фиксированная ширина */
-    height: 50px; /* Фиксированная высота */
+    width: 60px;
+    height: 50px;
     flex-shrink: 0;
+    margin: 0 2px; /* Добавляем маленькие отступы по бокам */
 }
 
 .equipment-slot:hover {
@@ -473,7 +433,6 @@ body {
     box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
 }
 
-/* Иконки экипировки ЗАПОЛНЯЮТ ВЕСЬ СЛОТ */
 .equipment-icon {
     width: 100%;
     height: 100%;
@@ -482,18 +441,17 @@ body {
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
-    font-size: 1.4em; /* Увеличенные эмодзи */
+    font-size: 1.4em;
     overflow: hidden;
 }
 
 .equipment-icon img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: contain; /* Сохраняем пропорции изображения */
     padding: 4px;
 }
 
-/* Слоты оружия */
 .weapon-slot {
     border-color: rgba(239, 68, 68, 0.4);
 }
@@ -507,7 +465,6 @@ body {
     background: rgba(239, 68, 68, 0.1);
 }
 
-/* Слоты брони */
 .armor-slot {
     border-color: rgba(34, 197, 94, 0.4);
 }
@@ -521,7 +478,6 @@ body {
     background: rgba(34, 197, 94, 0.1);
 }
 
-/* Слот инвентаря */
 .equipment-slot.empty {
     border-color: rgba(255, 215, 0, 0.4);
 }
@@ -530,7 +486,7 @@ body {
     border-color: #ffd700;
 }
 
-/* Увеличенные всплывающие подсказки */
+/* ===== 8. ВСПЛЫВАЮЩИЕ ПОДСКАЗКИ ДЛЯ ЭКИПИРОВКИ ===== */
 .equipment-tooltip {
     position: absolute;
     bottom: 100%;
@@ -547,6 +503,9 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
     margin-bottom: 8px;
     min-width: 150px;
+    max-width: 200px; /* Ограничиваем максимальную ширину */
+    word-wrap: break-word; /* Разрешаем перенос слов */
+    white-space: normal; /* Разрешаем перенос строк */
 }
 
 .equipment-tooltip::after {
@@ -556,7 +515,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-top-color: #4cc9f0;
+    border-top-color: #4cc9f0; /* Стрелка подсказки */
 }
 
 .equipment-tooltip .slot-name {
@@ -579,67 +538,7 @@ body {
     text-align: center;
 }
 
-/* Адаптивность для экипировки */
-@media (max-width: 1200px) {
-    .equipment-section {
-        height: 65px;
-        padding: 6px 10px;
-        gap: 6px;
-    }
-    
-    .equipment-slot {
-        width: 55px;
-        height: 45px;
-    }
-    
-    .equipment-icon {
-        font-size: 1.3em;
-    }
-}
-
-@media (max-width: 768px) {
-    .equipment-section {
-        height: 60px;
-        padding: 5px 8px;
-        gap: 5px;
-    }
-    
-    .equipment-slot {
-        width: 50px;
-        height: 40px;
-    }
-    
-    .equipment-icon {
-        font-size: 1.2em;
-    }
-    
-    .equipment-icon img {
-        padding: 3px;
-    }
-}
-
-@media (max-width: 480px) {
-    .equipment-section {
-        height: 55px;
-        padding: 4px 6px;
-        gap: 4px;
-    }
-    
-    .equipment-slot {
-        width: 45px;
-        height: 35px;
-    }
-    
-    .equipment-icon {
-        font-size: 1.1em;
-    }
-    
-    .equipment-icon img {
-        padding: 2px;
-    }
-}
-
-/* Полоска прогресса уровня */
+/* ===== 9. ПРОГРЕСС И СТАТИСТИКА ГЕРОЯ ===== */
 .level-progress {
     width: 100%;
     height: 6px;
@@ -650,7 +549,6 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Заполненная часть прогресса уровня */
 .level-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #4cc9f0, #4361ee);
@@ -659,7 +557,6 @@ body {
     box-shadow: 0 0 6px rgba(76, 201, 240, 0.4);
 }
 
-/* Панель прогресса героя */
 .hero-progress {
     display: flex;
     justify-content: space-around;
@@ -671,7 +568,6 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* СТАТИСТИКА ГЕРОЯ */
 .hero-stats {
     display: flex;
     justify-content: space-between;
@@ -706,7 +602,7 @@ body {
     text-align: center;
 }
 
-/* Секция бонусов */
+/* ===== 10. СИСТЕМА БОНУСОВ ===== */
 .bonuses-section {
     background: rgba(0, 0, 0, 0.7);
     padding: 10px;
@@ -720,7 +616,6 @@ body {
     align-self: flex-start;
 }
 
-/* Заголовок бонусов */
 .bonuses-section h3 {
     color: #ffd700;
     margin-bottom: 6px;
@@ -728,7 +623,6 @@ body {
     text-align: center;
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ ГРУПП БОНУСОВ */
 .bonus-source-group {
     margin-bottom: 8px;
     padding-bottom: 6px;
@@ -751,7 +645,6 @@ body {
     gap: 5px;
 }
 
-/* Цвета для разных типов бонусов */
 .race-bonus {
     background: rgba(76, 201, 240, 0.3);
     border: 1px solid #4cc9f0;
@@ -780,7 +673,6 @@ body {
     padding: 10px;
 }
 
-/* Отображение активных бонусов */
 .bonus-display {
     display: flex;
     flex-wrap: wrap;
@@ -816,7 +708,6 @@ body {
     background: rgba(168, 85, 247, 0.5);
 }
 
-/* Отображение бонусов в характеристиках */
 .stat-with-bonus {
     display: flex;
     justify-content: space-between;
@@ -831,15 +722,14 @@ body {
     font-weight: bold;
 }
 
-/* Сетка характеристик монстра */
+/* ===== 11. СИСТЕМА МОНСТРОВ И БОЯ ===== */
 .monster-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr; /* 2 колонки для статистики монстра */
     gap: 6px;
     margin: 8px 0;
 }
 
-/* Карточка характеристики монстра */
 .monster-stat-card {
     background: rgba(0, 0, 0, 0.7);
     padding: 6px;
@@ -850,14 +740,12 @@ body {
     font-size: 0.8em;
 }
 
-/* Значение характеристики монстра */
 .monster-stat-value {
     font-weight: bold;
     color: #4cc9f0;
     font-size: 0.9em;
 }
 
-/* Кнопки действий для монстра */
 .monster-actions {
     display: flex;
     flex-direction: column;
@@ -865,7 +753,6 @@ body {
     margin-top: 10px;
 }
 
-/* Общие стили для кнопок монстра */
 .monster-actions button {
     padding: 8px 12px;
     font-size: 0.9em;
@@ -879,7 +766,6 @@ body {
     border: 1px solid;
 }
 
-/* Основная кнопка (атака) */
 .monster-actions .btn-primary {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
     color: white;
@@ -892,7 +778,6 @@ body {
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
-/* Вторичная кнопка */
 .monster-actions .btn-secondary {
     background: rgba(255, 255, 255, 0.15);
     color: white;
@@ -905,7 +790,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
 }
 
-/* Стили для боя в колонке монстра */
 .battle-in-monster-column {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
@@ -916,7 +800,6 @@ body {
     font-size: 0.85em;
 }
 
-/* Шапка боя */
 .battle-header {
     display: flex;
     justify-content: space-between;
@@ -932,7 +815,6 @@ body {
     font-size: 1em;
 }
 
-/* Бейдж номера раунда */
 .battle-round {
     background: rgba(76, 201, 240, 0.3);
     padding: 4px 8px;
@@ -942,16 +824,14 @@ body {
     border: 1px solid #4cc9f0;
 }
 
-/* Компактное отображение участников боя */
 .battle-combatants-compact {
     display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 1fr auto 1fr; /* Герой - VS - Монстр */
     gap: 10px;
     align-items: center;
     margin-bottom: 8px;
 }
 
-/* Карточка участника боя */
 .combatant-compact {
     text-align: center;
     padding: 8px;
@@ -962,11 +842,10 @@ body {
     font-size: 0.85em;
 }
 
-/* Аватар участника боя */
 .combatant-image-compact {
     width: 50px; height: 50px;
     margin: 0 auto 6px;
-    border-radius: 50%;
+    border-radius: 50%; /* Круглые аватары */
     overflow: hidden;
     border: 2px solid currentColor;
 }
@@ -976,7 +855,6 @@ body {
     object-fit: cover;
 }
 
-/* Компактная полоска здоровья */
 .health-bar-compact {
     position: relative;
     height: 10px;
@@ -987,13 +865,11 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Заполненная часть компактной полоски здоровья */
 .health-bar-fill-compact {
     height: 100%;
     transition: width 0.3s ease;
 }
 
-/* Надпись VS между участниками */
 .vs-compact {
     font-size: 1em;
     font-weight: bold;
@@ -1001,7 +877,6 @@ body {
     text-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
 }
 
-/* Лог боя компактный */
 .battle-log-compact {
     background: rgba(0, 0, 0, 0.6);
     border-radius: 5px;
@@ -1013,9 +888,7 @@ body {
     font-size: 0.75em;
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ СПЕЦ-ЭФФЕКТОВ В ЛОГЕ БОЯ */
-
-/* Запись в логе боя */
+/* Стили для спец-эффектов в логе боя */
 .battle-log-entry-compact {
     padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
@@ -1023,66 +896,55 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Критический удар */
 .battle-log-entry-compact.critical {
     color: #ff6b6b;
     font-weight: bold;
     animation: pulse 0.5s ease-in-out;
 }
 
-/* Пенетрация */
 .battle-log-entry-compact.penetration {
     color: #4cc9f0;
     font-weight: bold;
 }
 
-/* Вампиризм */
 .battle-log-entry-compact.vampirism {
     color: #dc2626;
     font-weight: bold;
 }
 
-/* Атака героя */
 .battle-log-entry-compact.hero-attack {
     color: #4ade80;
 }
 
-/* Атака монстра */
 .battle-log-entry-compact.monster-attack {
     color: #f87171;
 }
 
-/* Побег */
 .battle-log-entry-compact.escape {
     color: #f59e0b;
 }
 
-/* Победа */
 .battle-log-entry-compact.victory {
     color: #ffd700;
     font-weight: bold;
 }
 
-/* Поражение */
 .battle-log-entry-compact.defeat {
     color: #9ca3af;
 }
 
-/* Анимация пульсации для критов */
 @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
 
-/* Кнопки действий в бою */
 .battle-actions-compact {
     display: flex;
     gap: 6px;
     justify-content: center;
 }
 
-/* Общие стили для кнопок боя */
 .btn-battle-attack-compact, .btn-battle-escape-compact {
     padding: 6px 10px;
     border: none;
@@ -1096,7 +958,6 @@ body {
     border: 1px solid;
 }
 
-/* Кнопка атаки в бою */
 .btn-battle-attack-compact {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
     color: white;
@@ -1108,7 +969,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Кнопка побега из боя */
 .btn-battle-escape-compact {
     background: rgba(255, 255, 255, 0.15);
     color: white;
@@ -1120,7 +980,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Стили для отображения результата боя */
 .battle-result {
     text-align: center;
     padding: 15px;
@@ -1132,7 +991,6 @@ body {
     font-size: 0.9em;
 }
 
-/* Иконка результата боя */
 .battle-result-image {
     font-size: 2em;
     margin-bottom: 8px;
@@ -1144,7 +1002,6 @@ body {
     font-size: 1.1em;
 }
 
-/* Отображение награды */
 .reward-amount {
     background: rgba(255, 215, 0, 0.25);
     padding: 8px 10px;
@@ -1156,15 +1013,14 @@ body {
     font-size: 0.9em;
 }
 
-/* Кнопки действий вверху страницы */
+/* ===== 12. КНОПКИ ДЕЙСТВИЙ ===== */
 .action-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Адаптивная сетка кнопок */
     gap: 8px;
     margin-bottom: 15px;
 }
 
-/* Общие стили для кнопок */
 .btn-primary, .btn-secondary, .btn-danger {
     padding: 10px 16px;
     border: none;
@@ -1178,7 +1034,6 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* Основная кнопка */
 .btn-primary {
     background: linear-gradient(135deg, rgba(76, 201, 240, 0.8), rgba(67, 97, 238, 0.8));
     color: white;
@@ -1191,7 +1046,6 @@ body {
     box-shadow: 0 2px 8px rgba(76, 201, 240, 0.3);
 }
 
-/* Вторичная кнопка */
 .btn-secondary {
     background: rgba(255, 255, 255, 0.15);
     color: white;
@@ -1204,7 +1058,6 @@ body {
     box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
 }
 
-/* Опасная кнопка */
 .btn-danger {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
     color: white;
@@ -1217,8 +1070,7 @@ body {
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
 
-
-/* Основной журнал событий */
+/* ===== 13. ЖУРНАЛ СОБЫТИЙ ===== */
 .battle-log {
     background: rgba(0, 0, 0, 0.8);
     border-radius: 8px;
@@ -1230,14 +1082,13 @@ body {
     font-size: 0.85em;
 }
 
-/* Запись в журнале событий */
 .log-entry {
     padding: 4px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 0.8em;
 }
 
-/* Сетки для выбора карт и локаций */
+/* ===== 14. ВЫБОР КАРТ И ЛОКАЦИЙ ===== */
 .maps-grid, .locations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1245,7 +1096,6 @@ body {
     padding: 12px;
 }
 
-/* Карточки карт и локаций */
 .map-option, .location-option {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
@@ -1256,13 +1106,11 @@ body {
     text-align: center;
 }
 
-/* Эффекты при наведении на карты и локации */
 .map-option:hover, .location-option:hover {
     border-color: #4cc9f0;
     transform: translateY(-2px);
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ ПРОГРЕССА ЛОКАЦИЙ */
 .location-progress {
     width: 100%;
     height: 8px;
@@ -1278,7 +1126,6 @@ body {
     transition: width 0.3s ease;
 }
 
-/* Мини-прогресс для карточек локаций */
 .location-progress-mini {
     margin-top: 8px;
 }
@@ -1303,7 +1150,7 @@ body {
     transition: width 0.3s ease;
 }
 
-/* НОВЫЕ СТИЛИ ДЛЯ МАГАЗИНА И ИНВЕНТАРЯ */
+/* ===== 15. МАГАЗИН И ИНВЕНТАРЬ ===== */
 .merchant-list, .inventory-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1327,7 +1174,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* Уменьшенные картинки предметов */
 .merchant-item-image, .inventory-item-image {
     width: 60px;
     height: 60px;
@@ -1406,7 +1252,7 @@ body {
     color: #4cc9f0;
 }
 
-/* Анимация для появления новых бонусов */
+/* ===== 16. АНИМАЦИИ ===== */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1422,7 +1268,7 @@ body {
     animation: fadeInUp 0.5s ease-out;
 }
 
-/* Адаптивность для планшетов и маленьких экранов */
+/* ===== 17. АДАПТИВНОСТЬ ===== */
 @media (max-width: 1200px) {
     .hero-layout {
         grid-template-columns: 1fr 1fr;
@@ -1454,9 +1300,24 @@ body {
     .merchant-list, .inventory-grid {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     }
+    
+    .equipment-section {
+        height: 65px;
+        padding: 6px 10px;
+        gap: 5px;
+    }
+    
+    .equipment-slot {
+        width: 55px;
+        height: 45px;
+        margin: 0 1px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.3em;
+    }
 }
 
-/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
     .container {
         padding: 8px;
@@ -1496,7 +1357,6 @@ body {
     
     .equipment-slot {
         padding: 6px;
-        font-size: 0.75em;
     }
     
     .equipment-icon {
@@ -1550,9 +1410,28 @@ body {
     .merchant-item-image, .inventory-item-image {
         align-self: center;
     }
+    
+    .equipment-section {
+        height: 60px;
+        padding: 5px 8px;
+        gap: 4px;
+    }
+    
+    .equipment-slot {
+        width: 50px;
+        height: 40px;
+        margin: 0 1px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.2em;
+    }
+    
+    .equipment-icon img {
+        padding: 3px;
+    }
 }
 
-/* Адаптивность для очень маленьких экранов */
 @media (max-width: 480px) {
     .container {
         padding: 5px;
@@ -1614,24 +1493,26 @@ body {
     
     .equipment-section {
         padding: 6px;
-    }
-    
-    .equipment-row {
-        gap: 4px;
+        height: 55px;
+        gap: 3px;
     }
     
     .equipment-slot {
-        min-width: 35px;
-        min-height: 35px;
+        width: 45px;
+        height: 35px;
+        margin: 0 1px;
     }
     
     .equipment-icon {
-        width: 25px;
-        height: 25px;
+        font-size: 1.1em;
+    }
+    
+    .equipment-icon img {
+        padding: 2px;
     }
 }
 
-/* Стилизация скроллбара */
+/* ===== 18. СТИЛИЗАЦИЯ СКРОЛЛБАРА ===== */
 ::-webkit-scrollbar {
     width: 4px;
 }
