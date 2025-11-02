@@ -1060,7 +1060,7 @@ renderHeroSelect() {
 
         return `
             <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
+                 onclick="game.selectHero(${hero.id})">
                 <div class="hero-option-image">
                     <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
@@ -1102,8 +1102,16 @@ renderHeroSelect() {
             <div class="hero-list">
                 ${heroesHTML}
             </div>
+            <div class="action-buttons" style="margin-top: 20px;">
+                <button class="btn-secondary" onclick="game.showScreen('main'); game.renderHeroScreen();" style="margin: 0 auto;">
+                    ← Назад к текущему герою
+                </button>
+            </div>
         </div>
     `;
+
+    // Убедимся, что экран переключен правильно
+    this.showScreen('hero-select');
 }
 
 // Получение иконки для бонуса
