@@ -1814,116 +1814,363 @@ usePotion(item) {
         this.renderHeroScreen();
     }
 
-    // ========== МОДУЛЬ 12: СИСТЕМА МАГАЗИНА И ТОРГОВЛИ ==========
+ // ========== МОДУЛЬ 12: СИСТЕМА МАГАЗИНА И ТОРГОВЛИ ==========
 
-    // Показать магазин
-    showMerchant() {
-        const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
-        
-        const merchantHTML = availableItems.map(item => `
-            <div class="merchant-item">
-                <div class="merchant-item-image">
-                    <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+// Показать магазин с структурированной категоризацией
+showMerchant() {
+    const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
+    
+    // Группировка предметов по типам и редкости
+    const categorizedItems = this.categorizeItems(availableItems);
+    
+    const merchantHTML = this.renderCategorizedShop(categorizedItems);
+    
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-merchant">
+            <div class="merchant-header">
+                <h3 class="text-center">🏪 Магазин снаряжения</h3>
+                <div class="hero-merchant-info">
+                    <div class="merchant-stats">
+                        <span class="gold-amount">💰 ${this.currentHero?.gold.toFixed(2) || 0}</span>
+                        <span class="inventory-space">🎒 ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
+                    </div>
                 </div>
-                <div class="merchant-item-info">
-                    <strong>${item.name}</strong>
-                    <div class="item-stats">
-                        ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
-                        ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
-                        ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
-                        ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
+            </div>
+            
+            <div class="shop-categories">
+                <button class="category-tab active" data-category="all">Все предметы</button>
+                <button class="category-tab" data-category="weapon">⚔️ Оружие</button>
+                <button class="category-tab" data-category="shield">🛡️ Щиты</button>
+                <button class="category-tab" data-category="helmet">⛑️ Шлемы</button>
+                <button class="category-tab" data-category="chest">👕 Броня</button>
+                <button class="category-tab" data-category="gloves">🧤 Перчатки</button>
+                <button class="category-tab" data-category="legs">👖 Поножи</button>
+            </div>
+            
+            <div class="merchant-items-container">
+                ${merchantHTML}
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+            </div>
+        </div>
+    `;
+
+    this.initializeShopFilters();
+    this.showScreen('merchant');
+}
+
+// Категоризация предметов по типам и редкости
+categorizeItems(items) {
+    const categories = {
+        all: { name: "Все предметы", items: [] },
+        weapon: { name: "Оружие", items: [] },
+        shield: { name: "Щиты", items: [] },
+        helmet: { name: "Шлемы", items: [] },
+        chest: { name: "Броня", items: [] },
+        gloves: { name: "Перчатки", items: [] },
+        legs: { name: "Поножи", items: [] }
+    };
+    
+    // Сортируем предметы по цене (качеству)
+    const sortedItems = items.sort((a, b) => a.price - b.price);
+    
+    sortedItems.forEach(item => {
+        // Добавляем во все категории
+        categories.all.items.push(item);
+        
+        // Добавляем в специфические категории
+        if (item.type === 'weapon' && item.weaponType !== 'shield') {
+            categories.weapon.items.push(item);
+        } else if (item.weaponType === 'shield') {
+            categories.shield.items.push(item);
+        } else if (item.type in categories) {
+            categories[item.type].items.push(item);
+        }
+    });
+    
+    return categories;
+}
+
+// Рендер структурированного магазина
+renderCategorizedShop(categories) {
+    return `
+        <div class="shop-content">
+            ${Object.entries(categories).map(([categoryKey, category]) => `
+                <div class="shop-category ${categoryKey}" style="${categoryKey !== 'all' ? 'display: none;' : ''}">
+                    <h4 class="category-title">${category.name}</h4>
+                    <div class="items-grid">
+                        ${category.items.map(item => this.renderShopItem(item)).join('')}
                     </div>
-                    <div class="item-price">
-                        <span>💰 Купить: ${item.price.toFixed(2)}</span>
-                        <span>💸 Продать: ${(item.sellPrice || Math.floor(item.price * 0.5)).toFixed(2)}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Рендер отдельного предмета в магазине
+renderShopItem(item) {
+    const isOwned = this.currentHero.inventory.includes(item.id);
+    const canAfford = this.currentHero.gold >= item.price;
+    const hasSpace = this.currentHero.inventory.length < 10;
+    const canBuy = !isOwned && canAfford && hasSpace;
+    
+    const rarityClass = `rarity-${item.rarity}`;
+    const itemTypeClass = `item-type-${item.type}`;
+    
+    return `
+        <div class="shop-item ${rarityClass} ${itemTypeClass} ${isOwned ? 'owned' : ''} ${!canBuy && !isOwned ? 'cannot-buy' : ''}" 
+             onclick="game.showItemDetails(${item.id})">
+            
+            <div class="item-background">
+                <div class="item-image-container">
+                    <img src="${item.image}" alt="${item.name}" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div class="item-fallback" style="display: none;">
+                        <span class="item-icon">${this.getItemTypeIcon(item.type)}</span>
                     </div>
-                    <small>${item.description}</small>
-                    <div class="merchant-actions">
-                        <button class="btn-primary" onclick="game.buyItem(${item.id})">Купить</button>
-                        ${this.currentHero.inventory.includes(item.id) ? 
-                            `<button class="btn-secondary" onclick="game.sellItem(${item.id})">Продать</button>` : 
-                            ''
+                </div>
+                
+                <div class="item-rarity-bar"></div>
+                
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
+                    
+                    <div class="item-stats-compact">
+                        ${item.fixed_damage ? `<span>⚔️${item.fixed_damage}</span>` : ''}
+                        ${item.fixed_armor ? `<span>🛡️${item.fixed_armor}</span>` : ''}
+                        ${item.fixed_health ? `<span>❤️${item.fixed_health}</span>` : ''}
+                    </div>
+                    
+                    <div class="item-price-tag">
+                        <span class="price">💰 ${item.price}</span>
+                        ${isOwned ? 
+                            `<span class="owned-badge">✓ В инвентаре</span>` :
+                            `<span class="buy-status ${canBuy ? 'can-buy' : 'cannot-buy'}">${canBuy ? 'Купить' : 'Недоступно'}</span>`
                         }
                     </div>
                 </div>
             </div>
-        `).join('');
+        </div>
+    `;
+}
 
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="screen active" id="screen-merchant">
-                <h3 class="text-center">🏪 Магазин</h3>
-                <div class="hero-info" style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>💰 Ваше золото: ${this.currentHero?.gold.toFixed(2) || 0}</span>
-                        <span>🎒 Свободно мест: ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
-                    </div>
-                </div>
-                <div class="merchant-list">
-                    ${merchantHTML || '<div class="text-center">Товаров нет</div>'}
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
-                </div>
-            </div>
-        `;
-
-        this.showScreen('merchant');
-    }
-
-    // Купить предмет
-    buyItem(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-
-        if (this.currentHero.gold < item.price) {
-            this.addToLog(`❌ Недостаточно золота для покупки ${item.name}`);
-            return;
-        }
-
-        if (this.currentHero.inventory.length >= 10) {
-            this.addToLog(`❌ Инвентарь полон! Максимум 10 предметов`);
-            return;
-        }
-
-        if (this.currentHero.inventory.includes(itemId)) {
-            this.addToLog(`❌ У вас уже есть ${item.name}`);
-            return;
-        }
-
-        this.currentHero.gold = parseFloat((this.currentHero.gold - item.price).toFixed(2));
-        this.currentHero.inventory.push(itemId);
-        
-        this.addToLog(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`);
-        this.saveGame();
-        this.showMerchant();
-    }
-
-    // Продать предмет
-    sellItem(itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-
-        if (!this.currentHero.inventory.includes(itemId)) {
-            this.addToLog(`❌ Предмет ${item.name} не найден в инвентаре`);
-            return;
-        }
-
-        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
-        const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
-        this.currentHero.gold = parseFloat((this.currentHero.gold + sellPrice).toFixed(2));
-        
-        // Снятие предмета если он был экипирован
-        Object.keys(this.currentHero.equipment).forEach(slot => {
-            if (this.currentHero.equipment[slot] === itemId) {
-                this.currentHero.equipment[slot] = null;
+// Инициализация фильтров магазина
+initializeShopFilters() {
+    const tabs = document.querySelectorAll('.category-tab');
+    const categories = document.querySelectorAll('.shop-category');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Убираем активный класс со всех вкладок
+            tabs.forEach(t => t.classList.remove('active'));
+            // Добавляем активный класс текущей вкладке
+            tab.classList.add('active');
+            
+            // Скрываем все категории
+            categories.forEach(cat => cat.style.display = 'none');
+            
+            // Показываем выбранную категорию
+            const category = tab.dataset.category;
+            const targetCategory = document.querySelector(`.shop-category.${category}`);
+            if (targetCategory) {
+                targetCategory.style.display = 'block';
             }
         });
+    });
+}
 
-        this.addToLog(`💰 Продано: ${item.name} за ${sellPrice.toFixed(2)} золота`);
-        this.saveGame();
-        this.showMerchant();
+// Показать детали предмета
+showItemDetails(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const isOwned = this.currentHero.inventory.includes(item.id);
+    const canAfford = this.currentHero.gold >= item.price;
+    const hasSpace = this.currentHero.inventory.length < 10;
+    const canBuy = !isOwned && canAfford && hasSpace;
+    
+    const modalHTML = `
+        <div class="item-detail-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4>${item.name}</h4>
+                    <button class="close-modal" onclick="game.closeItemModal()">×</button>
+                </div>
+                
+                <div class="item-detail-content">
+                    <div class="item-detail-image">
+                        <div class="detail-item-background ${this.getItemTypeClass(item.type)}">
+                            <img src="${item.image}" alt="${item.name}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="item-fallback-large" style="display: none;">
+                                <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
+                            </div>
+                        </div>
+                        <div class="item-rarity ${item.rarity}">${this.getRarityName(item.rarity)}</div>
+                    </div>
+                    
+                    <div class="item-detail-info">
+                        <div class="item-description">${item.description}</div>
+                        <div class="item-flavor">"${item.flavorText}"</div>
+                        
+                        <div class="item-stats-detailed">
+                            <h5>Характеристики:</h5>
+                            ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span>+${item.fixed_damage}</span></div>` : ''}
+                            ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
+                            ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
+                            ${item.bonus && item.bonus.type !== 'none' ? 
+                                `<div class="stat-line"><span>🎯 Бонус:</span> <span>${this.formatBonus(item.bonus)}</span></div>` : ''}
+                            ${item.setName ? `<div class="stat-line"><span>✨ Сет:</span> <span>${this.getItemSetConfig()[item.setName]?.name || item.setName}</span></div>` : ''}
+                        </div>
+                        
+                        <div class="item-requirements">
+                            <h5>Требования:</h5>
+                            <div class="stat-line"><span>📊 Уровень:</span> <span>${item.requiredLevel}</span></div>
+                            ${item.requiredClass.length > 0 ? 
+                                `<div class="stat-line"><span>⚔️ Классы:</span> <span>${item.requiredClass.join(', ')}</span></div>` : ''}
+                            ${item.requiredRace.length > 0 ? 
+                                `<div class="stat-line"><span>🧬 Расы:</span> <span>${item.requiredRace.join(', ')}</span></div>` : ''}
+                        </div>
+                        
+                        <div class="item-actions">
+                            <div class="price-section">
+                                <span class="buy-price">💰 Купить: ${item.price.toFixed(2)}</span>
+                                <span class="sell-price">💸 Продать: ${(item.sellPrice || Math.floor(item.price * 0.5)).toFixed(2)}</span>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                ${isOwned ? 
+                                    `<button class="btn-secondary" onclick="game.sellItem(${item.id}); game.closeItemModal()">Продать</button>` :
+                                    `<button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                            ${!canBuy ? 'disabled' : ''}
+                                            onclick="game.buyItem(${item.id}); game.closeItemModal()">
+                                        Купить
+                                    </button>`
+                                }
+                                ${!canBuy && !isOwned ? 
+                                    `<div class="purchase-error">
+                                        ${!canAfford ? '❌ Недостаточно золота' : ''}
+                                        ${!hasSpace ? '❌ Инвентарь полон' : ''}
+                                    </div>` : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Закрыть модальное окно предмета
+closeItemModal() {
+    const modal = document.querySelector('.item-detail-modal');
+    if (modal) {
+        modal.remove();
     }
+}
+
+// Вспомогательные методы для магазина
+getItemTypeIcon(type) {
+    const icons = {
+        'weapon': '⚔️',
+        'shield': '🛡️',
+        'helmet': '⛑️',
+        'chest': '👕',
+        'gloves': '🧤',
+        'legs': '👖',
+        'boots': '👢'
+    };
+    return icons[type] || '🎁';
+}
+
+getItemTypeName(type) {
+    const names = {
+        'weapon': 'Оружие',
+        'shield': 'Щит',
+        'helmet': 'Шлем',
+        'chest': 'Броня',
+        'gloves': 'Перчатки',
+        'legs': 'Поножи',
+        'boots': 'Ботинки'
+    };
+    return names[type] || 'Предмет';
+}
+
+getItemTypeClass(type) {
+    return `item-type-${type}`;
+}
+
+getRarityName(rarity) {
+    const names = {
+        'common': 'Обычный',
+        'uncommon': 'Необычный',
+        'rare': 'Редкий',
+        'epic': 'Эпический',
+        'legendary': 'Легендарный'
+    };
+    return names[rarity] || 'Обычный';
+}
+
+// Купить предмет (без изменений)
+buyItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (this.currentHero.gold < item.price) {
+        this.addToLog(`❌ Недостаточно золота для покупки ${item.name}`);
+        return;
+    }
+
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog(`❌ Инвентарь полон! Максимум 10 предметов`);
+        return;
+    }
+
+    if (this.currentHero.inventory.includes(itemId)) {
+        this.addToLog(`❌ У вас уже есть ${item.name}`);
+        return;
+    }
+
+    this.currentHero.gold = parseFloat((this.currentHero.gold - item.price).toFixed(2));
+    this.currentHero.inventory.push(itemId);
+    
+    this.addToLog(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`);
+    this.saveGame();
+    this.showMerchant();
+}
+
+// Продать предмет (без изменений)
+sellItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (!this.currentHero.inventory.includes(itemId)) {
+        this.addToLog(`❌ Предмет ${item.name} не найден в инвентаре`);
+        return;
+    }
+
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+    const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
+    this.currentHero.gold = parseFloat((this.currentHero.gold + sellPrice).toFixed(2));
+    
+    // Снятие предмета если он был экипирован
+    Object.keys(this.currentHero.equipment).forEach(slot => {
+        if (this.currentHero.equipment[slot] === itemId) {
+            this.currentHero.equipment[slot] = null;
+        }
+    });
+
+    this.addToLog(`💰 Продано: ${item.name} за ${sellPrice.toFixed(2)} золота`);
+    this.saveGame();
+    this.showMerchant();
+}
 
 // ========== МОДУЛЬ 13: СИСТЕМА ИНВЕНТАРЯ ==========
 
