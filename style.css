@@ -1511,22 +1511,1054 @@ body {
         padding: 2px;
     }
 }
+/* ===== МОДУЛЬ 17.5: СТИЛИ СТРУКТУРИРОВАННОГО МАГАЗИНА ===== */
 
-/* ===== 18. СТИЛИЗАЦИЯ СКРОЛЛБАРА ===== */
-::-webkit-scrollbar {
-    width: 4px;
+.merchant-header {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
-::-webkit-scrollbar-track {
+.hero-merchant-info {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.merchant-stats {
+    display: flex;
+    gap: 20px;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #4cc9f0;
+}
+
+.gold-amount, .inventory-space {
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.shop-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.category-tab {
     background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(4px);
+}
+
+.category-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-color: #4cc9f0;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.merchant-items-container {
+    min-height: 500px;
+}
+
+.shop-content {
+    width: 100%;
+}
+
+.shop-category {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.category-title {
+    color: #ffd700;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.shop-item {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px) scale(1.02);
+}
+
+.shop-item.owned {
+    opacity: 0.7;
+}
+
+.shop-item.cannot-buy {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.item-background {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 15px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.shop-item:hover .item-background {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Стили редкости */
+.rarity-common .item-background { border-color: #9ca3af; }
+.rarity-uncommon .item-background { border-color: #4ade80; }
+.rarity-rare .item-background { border-color: #4cc9f0; }
+.rarity-epic .item-background { border-color: #a855f7; }
+.rarity-legendary .item-background { border-color: #f59e0b; }
+
+.rarity-common .item-rarity-bar { background: #9ca3af; }
+.rarity-uncommon .item-rarity-bar { background: #4ade80; }
+.rarity-rare .item-rarity-bar { background: #4cc9f0; }
+.rarity-epic .item-rarity-bar { background: #a855f7; }
+.rarity-legendary .item-rarity-bar { background: #f59e0b; }
+
+.item-image-container {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.item-image-container img {
+    max-width: 70px;
+    max-height: 70px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.item-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.item-icon {
+    font-size: 2em;
+}
+
+.item-rarity-bar {
+    width: 100%;
+    height: 3px;
+    margin: 5px 0;
     border-radius: 2px;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #4cc9f0;
-    border-radius: 2px;
+.item-info {
+    text-align: center;
+    width: 100%;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #3aa8d0;
+.item-name {
+    font-weight: bold;
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-type {
+    font-size: 0.75em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.item-stats-compact {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.item-stats-compact span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.item-price-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.price {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 0.85em;
+}
+
+.owned-badge {
+    background: rgba(74, 222, 128, 0.3);
+    color: #4ade80;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    border: 1px solid #4ade80;
+}
+
+.buy-status {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    font-weight: bold;
+}
+
+.buy-status.can-buy {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    border: 1px solid #4cc9f0;
+}
+
+.buy-status.cannot-buy {
+    background: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+    border: 1px solid #f87171;
+}
+
+/* Модальное окно предмета */
+.item-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid #4cc9f0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.modal-header h4 {
+    color: #ffd700;
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+}
+
+.item-detail-content {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.item-detail-image {
+    text-align: center;
+}
+
+.detail-item-background {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 20px;
+    border: 2px solid;
+    margin-bottom: 10px;
+}
+
+.item-type-weapon .detail-item-background { border-color: #ef4444; }
+.item-type-shield .detail-item-background { border-color: #4cc9f0; }
+.item-type-helmet .detail-item-background { border-color: #f59e0b; }
+.item-type-chest .detail-item-background { border-color: #4ade80; }
+.item-type-gloves .detail-item-background { border-color: #a855f7; }
+.item-type-legs .detail-item-background { border-color: #f97316; }
+
+.detail-item-background img {
+    max-width: 120px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.item-fallback-large {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.item-icon-large {
+    font-size: 3em;
+}
+
+.item-rarity {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.item-rarity.common { background: #9ca3af; color: #1f2937; }
+.item-rarity.uncommon { background: #4ade80; color: #1f2937; }
+.item-rarity.rare { background: #4cc9f0; color: #1f2937; }
+.item-rarity.epic { background: #a855f7; color: white; }
+.item-rarity.legendary { background: #f59e0b; color: #1f2937; }
+
+.item-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.item-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+.item-flavor {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #4cc9f0;
+}
+
+.item-stats-detailed, .item-requirements {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-stats-detailed h5, .item-requirements h5 {
+    color: #4cc9f0;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-line:last-child {
+    border-bottom: none;
+}
+
+.item-actions {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.buy-price {
+    color: #ffd700;
+}
+
+.sell-price {
+    color: #4ade80;
+}
+
+.purchase-error {
+    color: #f87171;
+    font-size: 0.8em;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.btn-primary.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Адаптивность магазина */
+@media (max-width: 768px) {
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 5px;
+    }
+    
+    .item-image-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .item-image-container img {
+        max-width: 50px;
+        max-height: 50px;
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .shop-categories {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 10px;
+    }
+    
+    .category-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        padding: 15px;
+    }
+}
+/* ===== МОДУЛЬ 18: АДАПТИВНОСТЬ ===== */
+
+@media (max-width: 1200px) {
+    .hero-layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 10px;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 400px;
+    }
+    
+    .column-content {
+        padding: 8px;
+    }
+    
+    .hero-info, .bonuses-section {
+        padding: 8px;
+    }
+    
+    .bonus-display {
+        gap: 3px;
+    }
+    
+    .bonus-badge {
+        font-size: 0.7em;
+        padding: 2px 6px;
+    }
+    
+    .merchant-list, .inventory-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    
+    .equipment-section {
+        height: 65px;
+        padding: 6px 10px;
+        gap: 5px;
+    }
+    
+    .equipment-slot {
+        width: 55px;
+        height: 45px;
+        margin: 0 1px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.3em;
+    }
+    
+    /* Адаптивность для магазина */
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 180px 1fr;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .detail-item-background {
+        padding: 15px;
+    }
+    
+    .detail-item-background img {
+        max-width: 100px;
+        max-height: 100px;
+    }
+    
+    .item-fallback-large {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 8px;
+    }
+    
+    .hero-layout {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 350px;
+    }
+    
+    .column-content {
+        padding: 6px;
+    }
+    
+    .hero-info, .bonuses-section {
+        padding: 6px;
+        font-size: 0.8em;
+        min-width: 200px;
+    }
+    
+    .hero-info h2 {
+        font-size: 1em;
+    }
+    
+    .health-bar {
+        height: 14px;
+    }
+    
+    .main-stat {
+        padding: 4px;
+        font-size: 0.75em;
+    }
+    
+    .equipment-slot {
+        padding: 6px;
+    }
+    
+    .equipment-icon {
+        width: 28px; height: 28px;
+    }
+    
+    .monster-actions button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    .hero-list, .maps-grid, .locations-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .battle-combatants-compact {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 8px;
+    }
+    
+    .vs-compact {
+        order: 2;
+    }
+    
+    .bonus-display {
+        justify-content: center;
+    }
+    
+    .merchant-list, .inventory-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .merchant-item, .inventory-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .merchant-item-image, .inventory-item-image {
+        align-self: center;
+    }
+    
+    .equipment-section {
+        height: 60px;
+        padding: 5px 8px;
+        gap: 4px;
+    }
+    
+    .equipment-slot {
+        width: 50px;
+        height: 40px;
+        margin: 0 1px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.2em;
+    }
+    
+    .equipment-icon img {
+        padding: 3px;
+    }
+    
+    /* Адаптивность для магазина */
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 10px;
+        padding: 5px;
+    }
+    
+    .item-image-container {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .item-image-container img {
+        max-width: 50px;
+        max-height: 50px;
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .shop-categories {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 10px;
+    }
+    
+    .category-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    .merchant-header {
+        padding: 10px;
+    }
+    
+    .merchant-stats {
+        flex-direction: column;
+        gap: 8px;
+        padding: 6px 12px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        padding: 15px;
+    }
+    
+    .detail-item-background {
+        max-width: 200px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .hero-layout {
+        gap: 6px;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 300px;
+    }
+    
+    .column-content {
+        padding: 4px;
+    }
+    
+    .column-title {
+        font-size: 0.9em;
+        padding: 6px;
+        margin-bottom: 6px;
+    }
+    
+    .hero-info, .bonuses-section {
+        padding: 5px;
+        font-size: 0.75em;
+        min-width: 180px;
+    }
+    
+    .health-bar {
+        height: 12px;
+    }
+    
+    .health-text {
+        font-size: 0.75em;
+    }
+    
+    .main-stat {
+        padding: 3px;
+        font-size: 0.7em;
+    }
+    
+    .stat-icon {
+        font-size: 1em;
+    }
+    
+    .stat-value {
+        font-size: 0.85em;
+    }
+    
+    .bonus-value {
+        font-size: 0.65em;
+    }
+    
+    .bonus-badge {
+        font-size: 0.65em;
+        padding: 2px 4px;
+    }
+    
+    .equipment-section {
+        padding: 6px;
+        height: 55px;
+        gap: 3px;
+    }
+    
+    .equipment-slot {
+        width: 45px;
+        height: 35px;
+        margin: 0 1px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.1em;
+    }
+    
+    .equipment-icon img {
+        padding: 2px;
+    }
+    
+    .action-buttons {
+        gap: 4px;
+    }
+    
+    .btn-primary, .btn-secondary, .btn-danger {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .battle-log {
+        max-height: 80px;
+        font-size: 0.75em;
+    }
+    
+    .log-entry {
+        font-size: 0.7em;
+    }
+    
+    /* Адаптивность для магазина */
+    .items-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        padding: 5px;
+    }
+    
+    .item-image-container {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .item-image-container img {
+        max-width: 40px;
+        max-height: 40px;
+    }
+    
+    .item-name {
+        font-size: 0.8em;
+    }
+    
+    .item-type {
+        font-size: 0.7em;
+    }
+    
+    .item-stats-compact span {
+        font-size: 0.65em;
+        padding: 1px 4px;
+    }
+    
+    .price {
+        font-size: 0.75em;
+    }
+    
+    .owned-badge, .buy-status {
+        font-size: 0.65em;
+        padding: 1px 6px;
+    }
+    
+    .shop-categories {
+        gap: 4px;
+    }
+    
+    .category-tab {
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+    
+    .merchant-header h3 {
+        font-size: 1.1em;
+    }
+    
+    .modal-content {
+        width: 98%;
+        margin: 5px;
+        max-height: 90vh;
+    }
+    
+    .modal-header {
+        padding: 10px 15px;
+    }
+    
+    .modal-header h4 {
+        font-size: 1em;
+    }
+    
+    .item-detail-content {
+        padding: 10px;
+        gap: 12px;
+    }
+    
+    .item-stats-detailed, .item-requirements {
+        padding: 8px;
+    }
+    
+    .item-stats-detailed h5, .item-requirements h5 {
+        font-size: 0.85em;
+    }
+    
+    .stat-line {
+        font-size: 0.8em;
+    }
+    
+    .item-actions {
+        padding: 10px;
+    }
+    
+    .price-section {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
+}
+
+/* Особые случаи для очень маленьких экранов */
+@media (max-width: 360px) {
+    .items-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .hero-option {
+        height: 400px;
+    }
+    
+    .equipment-section {
+        flex-wrap: wrap;
+        height: auto;
+        justify-content: center;
+    }
+    
+    .equipment-slot {
+        width: 40px;
+        height: 35px;
+        margin: 2px;
+    }
+    
+    .action-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-categories {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .category-tab {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Поддержка ориентации для мобильных устройств */
+@media (max-height: 600px) and (orientation: landscape) {
+    .hero-layout {
+        grid-template-columns: 1fr 1fr;
+        min-height: 60vh;
+    }
+    
+    .hero-column, .monster-column, .map-column, .location-column {
+        min-height: 250px;
+    }
+    
+    .merchant-items-container {
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+    
+    .modal-content {
+        max-height: 70vh;
+    }
+}
+
+/* Поддержка темной темы для разных устройств */
+@media (prefers-color-scheme: dark) {
+    .shop-item .item-background {
+        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+    }
+    
+    .detail-item-background {
+        background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+    }
+}
+
+/* Улучшение производительности на слабых устройствах */
+@media (prefers-reduced-motion: reduce) {
+    .shop-item, .category-tab, .equipment-slot, .hero-option {
+        transition: none;
+    }
+    
+    .shop-category {
+        animation: none;
+    }
+}
+
+/* Поддержка высокого DPI экранов */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .item-image-container img,
+    .detail-item-background img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
 }
