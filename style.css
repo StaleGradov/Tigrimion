@@ -2562,3 +2562,254 @@ body {
         image-rendering: crisp-edges;
     }
 }
+/* ===== МОДУЛЬ 19: СИСТЕМА ВЫНОСЛИВОСТИ И ЦВЕТА РЕДКОСТИ ===== */
+
+/* Стили для выносливости */
+.endurance-display {
+    margin: 10px 0;
+    padding: 8px;
+    background: rgba(245, 158, 11, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.endurance-bar-container {
+    margin-bottom: 6px;
+}
+
+.endurance-bar {
+    position: relative;
+    height: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.endurance-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.4);
+}
+
+.endurance-text {
+    font-weight: bold;
+    font-size: 0.8em;
+    text-align: center;
+    color: #f59e0b;
+}
+
+.endurance-info {
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+}
+
+/* Выносливость в компактном режиме боя */
+.endurance-bar-compact-container {
+    margin-top: 4px;
+}
+
+.endurance-bar-compact {
+    position: relative;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.endurance-bar-fill-compact {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.endurance-text-compact {
+    font-size: 0.6em;
+    text-align: center;
+    color: #f59e0b;
+}
+
+.endurance-info-compact {
+    font-size: 0.7em;
+    color: #f59e0b;
+    text-align: center;
+    margin-top: 6px;
+    padding: 4px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 4px;
+}
+
+/* Кнопка блокирования в бою */
+.btn-battle-block-compact {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    flex: 1;
+    backdrop-filter: blur(4px);
+    border: 1px solid;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8));
+    color: white;
+    border-color: #d97706;
+}
+
+.btn-battle-block-compact:hover {
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.9), rgba(180, 83, 9, 0.9));
+    transform: translateY(-1px);
+}
+
+/* Значки редкости в подсказках */
+.rarity-badge {
+    font-size: 0.7em;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.rarity-common .rarity-badge { background: #9ca3af; color: #1f2937; }
+.rarity-uncommon .rarity-badge { background: #4cc9f0; color: #1f2937; }
+.rarity-rare .rarity-badge { background: #a855f7; color: white; }
+.rarity-epic .rarity-badge { background: #f59e0b; color: #1f2937; }
+.rarity-legendary .rarity-badge { background: #ffd700; color: #1f2937; }
+
+/* Цвета рамок для экипировки по редкости */
+.equipment-slot.rarity-common {
+    border-color: #9ca3af !important;
+}
+
+.equipment-slot.rarity-uncommon {
+    border-color: #4cc9f0 !important;
+}
+
+.equipment-slot.rarity-rare {
+    border-color: #a855f7 !important;
+}
+
+.equipment-slot.rarity-epic {
+    border-color: #f59e0b !important;
+}
+
+.equipment-slot.rarity-legendary {
+    border-color: #ffd700 !important;
+}
+
+/* Эффекты при наведении для цветных слотов */
+.equipment-slot.rarity-common:hover {
+    border-color: #9ca3af !important;
+    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+}
+
+.equipment-slot.rarity-uncommon:hover {
+    border-color: #4cc9f0 !important;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.equipment-slot.rarity-rare:hover {
+    border-color: #a855f7 !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.equipment-slot.rarity-epic:hover {
+    border-color: #f59e0b !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.equipment-slot.rarity-legendary:hover {
+    border-color: #ffd700 !important;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+/* Цвета для предметов в инвентаре */
+.inventory-item.rarity-common .inventory-item-image {
+    border-color: #9ca3af;
+}
+
+.inventory-item.rarity-uncommon .inventory-item-image {
+    border-color: #4cc9f0;
+}
+
+.inventory-item.rarity-rare .inventory-item-image {
+    border-color: #a855f7;
+}
+
+.inventory-item.rarity-epic .inventory-item-image {
+    border-color: #f59e0b;
+}
+
+.inventory-item.rarity-legendary .inventory-item-image {
+    border-color: #ffd700;
+}
+
+/* Анимация для новых стаков выносливости */
+@keyframes enduranceGain {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.endurance-gain {
+    animation: enduranceGain 0.3s ease-in-out;
+}
+
+/* Адаптивность для системы выносливости */
+@media (max-width: 768px) {
+    .endurance-display {
+        padding: 6px;
+        margin: 8px 0;
+    }
+    
+    .endurance-bar {
+        height: 10px;
+    }
+    
+    .endurance-text {
+        font-size: 0.75em;
+    }
+    
+    .endurance-info {
+        font-size: 0.65em;
+    }
+    
+    .endurance-bar-compact {
+        height: 5px;
+    }
+    
+    .endurance-text-compact {
+        font-size: 0.55em;
+    }
+    
+    .endurance-info-compact {
+        font-size: 0.65em;
+    }
+}
+
+@media (max-width: 480px) {
+    .endurance-display {
+        padding: 4px;
+        margin: 6px 0;
+    }
+    
+    .endurance-bar {
+        height: 8px;
+    }
+    
+    .endurance-text {
+        font-size: 0.7em;
+    }
+    
+    .endurance-info {
+        font-size: 0.6em;
+    }
+    
+    .btn-battle-block-compact {
+        padding: 5px 8px;
+        font-size: 0.8em;
+    }
+}
