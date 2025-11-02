@@ -484,18 +484,35 @@ body {
     transition: all 0.3s ease;
     backdrop-filter: blur(4px);
     font-size: 0.85em;
+    min-height: 48px; /* Фиксированная высота */
 }
 
-/* Эффекты при наведении на слот экипировки */
-.equipment-slot:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #4cc9f0;
-    transform: translateY(-1px);
+/* Текст в слоте экипировки */
+.equipment-slot > div:last-child {
+    flex: 1;
+    min-width: 0; /* Разрешаем сжатие текстового контейнера */
 }
 
-/* Иконка экипировки */
+.equipment-slot strong {
+    display: block;
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.equipment-slot > div:last-child div:last-child {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Иконка экипировки - КОМПАКТНАЯ ВЕРСИЯ */
 .equipment-icon {
-    width: 32px; height: 32px;
+    width: 32px;
+    height: 32px;
     margin-right: 8px;
     display: flex;
     align-items: center;
@@ -504,6 +521,17 @@ body {
     border-radius: 5px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 0.9em;
+    flex-shrink: 0; /* Запрещаем сжатие */
+    overflow: hidden; /* Обрезаем содержимое если выходит за границы */
+}
+
+/* Изображения внутри иконок экипировки */
+.equipment-icon img {
+    max-width: 24px;
+    max-height: 24px;
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Сохраняем пропорции */
 }
 
 /* Полоска прогресса уровня */
