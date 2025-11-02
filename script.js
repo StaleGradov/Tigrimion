@@ -1002,7 +1002,6 @@ class HeroGame {
                                 </div>
                                 
                                 <div class="equipment-section">
-                                    // В функции renderHeroScreen, в блоке equipment-section:
 <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
     <div class="equipment-icon ${weapon ? '' : 'compact'}">
         ${weapon ? '<img src="' + weapon.image + '" alt="' + weapon.name + '" onerror="this.style.display=\'none\'">' : '⚔️'}
