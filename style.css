@@ -2562,325 +2562,358 @@ body {
         image-rendering: crisp-edges;
     }
 }
-/* ===== МОДУЛЬ 19: СТИЛИ ДЛЯ НОВОЙ СИСТЕМЫ БОЯ И РАМОК ===== */
+/* ===== МОДУЛЬ 19: ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ СЛОТОВ И ПРЕДМЕТОВ ===== */
 
-/* Стили для индикатора выносливости */
-.stamina-display {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
+/* НЕЙТРАЛЬНЫЕ СЛОТЫ ДЛЯ ЭКИПИРОВКИ ГЕРОЯ */
+.equipment-section {
+    display: flex;
+    gap: 6px;
+    margin-top: auto;
+    margin-bottom: 8px;
+    background: rgba(0, 0, 0, 0.7);
     padding: 8px 12px;
     border-radius: 8px;
-    margin-bottom: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2); /* Нейтральная рамка */
+    width: 100%;
+    box-sizing: border-box;
+    height: 70px;
+    align-items: center;
+    justify-content: center;
+}
+
+.equipment-slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.3); /* Нейтральный цвет для всех слотов */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
+    padding: 4px;
+    width: 60px;
+    height: 50px;
+    flex-shrink: 0;
+    margin: 0 2px;
+}
+
+.equipment-slot:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+}
+
+/* УБИРАЕМ ЦВЕТА ДЛЯ ТИПОВ СЛОТОВ */
+.weapon-slot {
+    border-color: rgba(255, 255, 255, 0.3) !important; /* Нейтральный для оружия */
+}
+
+.weapon-slot:hover {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.weapon-slot.equipped {
+    border-color: rgba(255, 255, 255, 0.3) !important; /* Нейтральный даже когда экипирован */
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.armor-slot {
+    border-color: rgba(255, 255, 255, 0.3) !important; /* Нейтральный для брони */
+}
+
+.armor-slot:hover {
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.armor-slot.equipped {
+    border-color: rgba(255, 255, 255, 0.3) !important; /* Нейтральный даже когда экипирован */
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.equipment-slot.empty {
+    border-color: rgba(255, 255, 255, 0.2) !important; /* Нейтральный для пустых */
+}
+
+.equipment-slot.empty:hover {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* УСИЛЕННЫЕ СТИЛИ ДЛЯ ПРЕДМЕТОВ ПО РЕДКОСТИ */
+.rarity-common .item-background {
+    border: 3px solid #9ca3af !important; /* Увеличили толщину рамки */
+    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.4); /* Усилили тень */
+}
+
+.rarity-uncommon .item-background {
+    border: 4px solid #4cc9f0 !important; /* Еще толще для лучших предметов */
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
+}
+
+.rarity-rare .item-background {
+    border: 5px solid #a855f7 !important;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
+}
+
+.rarity-epic .item-background {
+    border: 6px solid #f59e0b !important; /* Очень толстая рамка для эпических */
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+    animation: epic-pulse 3s ease-in-out infinite;
+}
+
+.rarity-legendary .item-background {
+    border: 8px solid #ffd700 !important; /* Максимальная толщина для легендарных */
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
+    animation: legendary-glow 2s ease-in-out infinite alternate;
+}
+
+/* АНИМАЦИИ ДЛЯ ЭПИЧЕСКИХ И ЛЕГЕНДАРНЫХ ПРЕДМЕТОВ */
+@keyframes epic-pulse {
+    0% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+    50% { 
+        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.9);
+        border-color: #fbbf24;
+    }
+    100% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+}
+
+@keyframes legendary-glow {
+    from {
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
+        border-color: #ffd700;
+    }
+    to {
+        box-shadow: 0 15px 50px rgba(255, 215, 0, 1);
+        border-color: #fef08a;
+    }
+}
+
+/* УСИЛЕННЫЕ СТИЛИ ДЛЯ ПРЕДМЕТОВ В ИНВЕНТАРЕ */
+.inventory-item {
+    border: 3px solid #9ca3af; /* Базовая толстая рамка */
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.inventory-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ЦВЕТА РАМОК ДЛЯ ПРЕДМЕТОВ В ИНВЕНТАРЕ ПО РЕДКОСТИ */
+.inventory-item[data-rarity="uncommon"] {
+    border: 4px solid #4cc9f0 !important;
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.3);
+}
+
+.inventory-item[data-rarity="rare"] {
+    border: 5px solid #a855f7 !important;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.4);
+}
+
+.inventory-item[data-rarity="epic"] {
+    border: 6px solid #f59e0b !important;
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.5);
+    animation: inventory-epic-pulse 3s ease-in-out infinite;
+}
+
+.inventory-item[data-rarity="legendary"] {
+    border: 8px solid #ffd700 !important;
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6);
+    animation: inventory-legendary-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes inventory-epic-pulse {
+    0% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.5);
+        border-color: #f59e0b;
+    }
+    50% { 
+        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.7);
+        border-color: #fbbf24;
+    }
+    100% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.5);
+        border-color: #f59e0b;
+    }
+}
+
+@keyframes inventory-legendary-glow {
+    from {
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.6);
+        border-color: #ffd700;
+    }
+    to {
+        box-shadow: 0 15px 50px rgba(255, 215, 0, 0.9);
+        border-color: #fef08a;
+    }
+}
+
+/* УСИЛЕННЫЕ СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ПРЕДМЕТА */
+.modal-content .detail-item-background {
+    border-width: 6px !important; /* Очень толстая рамка в модалке */
+    transition: all 0.3s ease;
+    padding: 25px;
+}
+
+.modal-content .detail-item-background:hover {
+    transform: scale(1.03);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* УСИЛЕННЫЕ ЦВЕТА ДЛЯ НАЗВАНИЙ ПРЕДМЕТОВ */
+.item-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.rarity-common .item-name { color: #9ca3af; }
+.rarity-uncommon .item-name { color: #4cc9f0; }
+.rarity-rare .item-name { color: #a855f7; }
+.rarity-epic .item-name { 
+    color: #f59e0b;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+.rarity-legendary .item-name { 
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+}
+
+/* СТИЛИ ДЛЯ ИКОНОК ПРЕДМЕТОВ В СЛОТАХ */
+.equipment-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 1.4em;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.equipment-slot.equipped .equipment-icon {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.equipment-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px; /* Увеличили отступ для толстых рамок */
+    border-radius: 3px;
+}
+
+/* ИНДИКАТОР РЕДКОСТИ В СЛОТАХ (тонкая полоска снизу) */
+.equipment-slot.equipped::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 0 0 4px 4px;
+    transition: all 0.3s ease;
+}
+
+/* ЦВЕТА ИНДИКАТОРОВ ДЛЯ ЭКИПИРОВАННЫХ ПРЕДМЕТОВ */
+.equipment-slot.equipped[data-rarity="common"]::after { background: #9ca3af; }
+.equipment-slot.equipped[data-rarity="uncommon"]::after { background: #4cc9f0; }
+.equipment-slot.equipped[data-rarity="rare"]::after { background: #a855f7; }
+.equipment-slot.equipped[data-rarity="epic"]::after { 
+    background: #f59e0b;
+    animation: epic-indicator 2s ease-in-out infinite;
+}
+.equipment-slot.equipped[data-rarity="legendary"]::after { 
+    background: #ffd700;
+    animation: legendary-indicator 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes epic-indicator {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+@keyframes legendary-indicator {
+    from { 
+        opacity: 0.8;
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+    to { 
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    }
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ ТОЛСТЫХ РАМОК */
+@media (max-width: 768px) {
+    .equipment-slot {
+        width: 50px;
+        height: 45px;
+    }
+    
+    .rarity-epic .item-background {
+        border-width: 5px !important;
+    }
+    
+    .rarity-legendary .item-background {
+        border-width: 6px !important;
+    }
+    
+    .inventory-item[data-rarity="epic"] {
+        border-width: 5px !important;
+    }
+    
+    .inventory-item[data-rarity="legendary"] {
+        border-width: 6px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-slot {
+        width: 45px;
+        height: 40px;
+    }
+    
+    .equipment-icon {
+        font-size: 1.2em;
+    }
+    
+    .rarity-epic .item-background {
+        border-width: 4px !important;
+    }
+    
+    .rarity-legendary .item-background {
+        border-width: 5px !important;
+    }
+}
+
+/* СТИЛИ ДЛЯ ИНДИКАТОРА ВЫНОСЛИВОСТИ */
+.stamina-display {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
+    padding: 10px 15px;
+    border-radius: 10px;
+    margin-bottom: 12px;
     text-align: center;
-    border: 2px solid #f59e0b;
+    border: 3px solid #f59e0b; /* Толстая рамка */
     backdrop-filter: blur(4px);
 }
 
 .stamina-display strong {
     color: #f59e0b;
-    font-size: 0.9em;
-}
-
-/* Стили для кнопки блокирования */
-.btn-battle-block-compact {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85em;
-    flex: 1;
-    backdrop-filter: blur(4px);
-    border: 2px solid;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8));
-    color: white;
-    border-color: #d97706;
-}
-
-.btn-battle-block-compact:hover {
-    background: linear-gradient(135deg, rgba(217, 119, 6, 0.9), rgba(180, 83, 9, 0.9));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-}
-
-/* Стили для цветных рамок предметов по редкости */
-.rarity-common .item-background {
-    border-color: #9ca3af !important;
-    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
-}
-
-.rarity-uncommon .item-background {
-    border-color: #4cc9f0 !important;
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-}
-
-.rarity-rare .item-background {
-    border-color: #a855f7 !important;
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
-}
-
-.rarity-epic .item-background {
-    border-color: #f59e0b !important;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-}
-
-.rarity-legendary .item-background {
-    border-color: #ffd700 !important;
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from {
-        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-    }
-    to {
-        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.7);
-    }
-}
-
-/* Стили для предметов в инвентаре с цветными рамками */
-.inventory-item {
-    border: 2px solid #9ca3af;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.inventory-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-}
-
-/* Стили для лога боя с новыми типами сообщений */
-.battle-log-entry-compact.block {
-    color: #f59e0b;
-    font-weight: bold;
-}
-
-.battle-log-entry-compact.battle-start {
-    color: #4cc9f0;
-    font-weight: bold;
-    text-align: center;
-}
-
-/* Стили для кнопок боя в компактном режиме */
-.battle-actions-compact {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-top: 10px;
-}
-
-.btn-battle-attack-compact, .btn-battle-block-compact {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9em;
-    flex: 1;
-    backdrop-filter: blur(4px);
-    border: 2px solid;
-    text-align: center;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn-battle-attack-compact {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
-    color: white;
-    border-color: #dc2626;
-}
-
-.btn-battle-attack-compact:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 1), rgba(185, 28, 28, 1));
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
-}
-
-/* Стили для подсказки о множественных атаках */
-.attack-count-indicator {
-    font-size: 0.7em;
-    margin-top: 2px;
-    color: #ffd700;
-    font-weight: bold;
-}
-
-/* Адаптивность для новых элементов */
-@media (max-width: 768px) {
-    .stamina-display {
-        padding: 6px 10px;
-        font-size: 0.8em;
-    }
-    
-    .btn-battle-attack-compact, .btn-battle-block-compact {
-        padding: 8px 12px;
-        font-size: 0.8em;
-        min-height: 40px;
-    }
-    
-    .battle-actions-compact {
-        gap: 6px;
-    }
-}
-
-@media (max-width: 480px) {
-    .stamina-display {
-        padding: 5px 8px;
-        font-size: 0.75em;
-    }
-    
-    .btn-battle-attack-compact, .btn-battle-block-compact {
-        padding: 6px 10px;
-        font-size: 0.75em;
-        min-height: 36px;
-    }
-    
-    .attack-count-indicator {
-        font-size: 0.65em;
-    }
-}
-
-/* Стили для экипированных предметов с цветными рамками */
-.equipment-slot.equipped {
-    position: relative;
-    overflow: hidden;
-}
-
-.equipment-slot.equipped::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 2px solid;
-    border-radius: 6px;
-    pointer-events: none;
-}
-
-/* Цвета рамок для экипированных предметов по редкости */
-.equipment-slot.equipped[data-rarity="common"]::before { border-color: #9ca3af; }
-.equipment-slot.equipped[data-rarity="uncommon"]::before { border-color: #4cc9f0; }
-.equipment-slot.equipped[data-rarity="rare"]::before { border-color: #a855f7; }
-.equipment-slot.equipped[data-rarity="epic"]::before { border-color: #f59e0b; }
-.equipment-slot.equipped[data-rarity="legendary"]::before { 
-    border-color: #ffd700;
-    animation: slot-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes slot-glow {
-    from {
-        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-    }
-    to {
-        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-    }
-}
-
-/* Улучшенные стили для модального окна предмета */
-.modal-content .detail-item-background {
-    border-width: 3px;
-    transition: all 0.3s ease;
-}
-
-.modal-content .detail-item-background:hover {
-    transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* Стили для статистики выносливости в бою */
-.stamina-stats {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(245, 158, 11, 0.1);
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    margin-bottom: 8px;
-}
-
-.stamina-icon {
-    font-size: 1.2em;
-}
-
-.stamina-value {
-    font-weight: bold;
-    color: #f59e0b;
-    font-size: 1.1em;
-}
-
-.stamina-info {
-    font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.7);
-    margin-left: auto;
-}
-
-/* Стили для уведомлений о бонусе выносливости */
-.stamina-bonus-notification {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin: 5px 0;
-    text-align: center;
-    font-weight: bold;
-    border: 1px solid #d97706;
-    animation: pulse-stamina 0.5s ease-in-out;
-}
-
-@keyframes pulse-stamina {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-/* Стили для инструктирующих подсказок */
-.combat-tutorial {
-    background: rgba(76, 201, 240, 0.1);
-    border: 1px solid #4cc9f0;
-    border-radius: 6px;
-    padding: 8px 10px;
-    margin: 8px 0;
-    font-size: 0.8em;
-    color: #4cc9f0;
-}
-
-.combat-tutorial strong {
-    color: #4cc9f0;
-}
-
-/* Стили для визуального отображения стаков выносливости */
-.stamina-stacks {
-    display: flex;
-    gap: 4px;
-    justify-content: center;
-    margin: 5px 0;
-}
-
-.stamina-stack {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #f59e0b;
-    transition: all 0.3s ease;
-}
-
-.stamina-stack.empty {
-    background: rgba(245, 158, 11, 0.3);
-}
-
-/* Анимация для получения стака выносливости */
-@keyframes gain-stamina {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
-}
-
-.stamina-stack.gained {
-    animation: gain-stamina 0.3s ease-in-out;
+    font-size: 1em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
