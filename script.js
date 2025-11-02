@@ -117,46 +117,45 @@ class HeroGame {
         }
     }
 
-    // Загрузка всех данных игры
-    async loadGameData() {
-        try {
-            // Параллельная загрузка всех JSON файлов
-            const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
-                this.loadJSON('data/heroes.json'),
-                this.loadJSON('data/enemies.json'),
-                this.loadJSON('data/items.json'),
-                this.loadJSON('data/maps.json'),
-                this.loadJSON('data/locations.json')
-            ]);
+async loadGameData() {
+  try {
+    console.log('🔄 Начинаю загрузку данных игры...');
+    
+    // Параллельная загрузка всех JSON файлов
+    const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
+      this.loadJSON('./data/heroes.json'),
+      this.loadJSON('./data/enemies.json'), 
+      this.loadJSON('./data/items.json'),
+      this.loadJSON('./data/maps.json'),
+      this.loadJSON('./data/locations.json')
+    ]);
 
-            // Заполнение данных игры
-            this.heroes = heroes || [];
-            this.monsters = enemies || [];
-            this.items = items || [];
-            this.maps = mapsData || [];
-            this.locations = locationsData || [];
+    // Заполнение данных игры с проверкой
+    this.heroes = heroes || [];
+    this.monsters = enemies || [];
+    this.items = items || [];
+    this.maps = mapsData || [];
+    this.locations = locationsData || [];
 
-            // Разблокировка первого героя
-            if (this.heroes.length > 0) {
-                const firstHero = this.heroes.find(h => h.id === 1);
-                if (firstHero) {
-                    firstHero.unlocked = true;
-                }
-            }
+    console.log('✅ Данные загружены:', {
+      heroes: this.heroes.length,
+      monsters: this.monsters.length, 
+      items: this.items.length,
+      maps: this.maps.length,
+      locations: this.locations.length
+    });
 
-            console.log('✅ Все данные загружены:', {
-                heroes: this.heroes.length,
-                monsters: this.monsters.length,
-                items: this.items.length,
-                maps: this.maps.length,
-                locations: this.locations.length
-            });
-
-        } catch (error) {
-            console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.createFallbackData();  // Создание тестовых данных при ошибке
-        }
+    // Если какие-то данные не загрузились, создаем тестовые
+    if (this.heroes.length === 0 || this.monsters.length === 0) {
+      console.warn('⚠️ Некоторые данные не загрузились, создаю тестовые...');
+      this.createFallbackData();
     }
+
+  } catch (error) {
+    console.error('❌ Ошибка загрузки данных:', error);
+    this.createFallbackData();
+  }
+}
 
     // Создание тестовых данных при ошибке загрузки
     createFallbackData() {
