@@ -562,7 +562,30 @@ getAllActiveBonuses(hero) {
         });
     }
 
-   // ========== МОДУЛЬ 5: РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ СЕТОВ ==========
+ // ========== МОДУЛЬ 5: РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ СЕТОВ ==========
+
+// Расчет максимального здоровья
+calculateMaxHealth(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return 0;
+    
+    const totals = this.calculateTotalBonuses(hero);
+    const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+    let health = hero.baseHealth * levelMultiplier;
+    health += hero.baseHealth * totals.health_mult;
+    
+    // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
+    Object.values(hero.equipment).forEach(itemId => {
+        if (itemId) {
+            const item = this.items.find(item => item.id === itemId);
+            if (item) {
+                health += item.fixed_health || 0;
+            }
+        }
+    });
+    
+    return Math.round(health);
+}
 
 // Расчет всех характеристик героя
 calculateHeroStats(hero) {
@@ -846,385 +869,697 @@ calculateHeroStats(hero) {
         this.saveGame();
     }
 
-    // ========== МОДУЛЬ 9: СИСТЕМА ОТОБРАЖЕНИЯ И ИНТЕРФЕЙСА ==========
+  // ========== МОДУЛЬ 9: СИСТЕМА ОТОБРАЖЕНИЯ И ИНТЕРФЕЙСА ==========
 
-    // Отрисовка экрана выбора героя
-    renderHeroSelect() {
-        const container = document.getElementById('app');
-        const heroesHTML = this.heroes.map(hero => {
-            const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
-            const stats = this.calculateHeroStats(hero);
-            const bonuses = this.getBonuses();
-            
-            const activeBonuses = this.getAllActiveBonuses(hero);
-            const allBonuses = [...activeBonuses.race, ...activeBonuses.class, ...activeBonuses.saga, ...activeBonuses.equipment];
-            const bonusDisplay = allBonuses.map(bonus => {
-                const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
-                return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
-            }).join('');
-            
-            const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
-            const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
-            const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
-
-            return `
-                <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                     onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
-                    <div class="hero-option-image">
-                        <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                    </div>
-                    <div class="hero-option-info">
-                        <div class="hero-option-header">
-                            <strong>${hero.name}</strong>
-                            <span class="hero-level">Ур. ${hero.level}</span>
-                        </div>
-                        <div class="hero-option-stats">
-                            <div class="stat-row">
-                                <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
-                                <span>⚔️ ${stats.damage}</span>
-                                <span>🛡️ ${stats.armor}</span>
-                                <span>🌟 ${stats.power}</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>💰 ${hero.gold.toFixed(2)}</span>
-                                <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
-                            </div>
-                        </div>
-                        ${bonusDisplay ? `
-                            <div class="hero-option-skills">
-                                ${bonusDisplay}
-                            </div>
-                        ` : ''}
-                        <div class="hero-option-bonuses">
-                            <small>${raceName} - ${className} - ${sagaName}</small>
-                        </div>
-                        ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        container.innerHTML = `
-            <div class="screen active" id="screen-hero-select">
-                <h2 class="text-center">Выберите героя</h2>
-                <div class="hero-list">
-                    ${heroesHTML}
-                </div>
-            </div>
-        `;
-    }
-
-    // Получение иконки для бонуса
-    getBonusIcon(bonusType) {
-        const icons = {
-            'health_mult': '❤️',
-            'damage_mult': '⚔️',
-            'armor_mult': '🛡️',
-            'gold_mult': '💰',
-            'health_regen_mult': '⚡',
-            'crit_chance': '💥',
-            'armor_penetration': '⚡',
-            'vampirism': '🩸'
-        };
-        return icons[bonusType] || '🎯';
-    }
-
-    // Выбор героя
-    selectHero(heroId) {
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) {
-            console.error('Герой не найден:', heroId);
-            return;
-        }
-        
+// Отрисовка экрана выбора героя
+renderHeroSelect() {
+    const container = document.getElementById('app');
+    const heroesHTML = this.heroes.map(hero => {
         const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
-        if (!isUnlocked) {
-            console.log('Герой заблокирован:', hero.name);
-            return;
-        }
-        
-        this.currentHero = hero;
-        this.showScreen('main');
-        this.renderHeroScreen();
-        this.saveGame();
-    }
-
-    // Переключение экранов
-    showScreen(screenName) {
-        this.currentScreen = screenName;
-        if (this.healthInterval) {
-            clearInterval(this.healthInterval);
-            this.healthInterval = null;
-        }
-    }
-
-    // Запуск анимации здоровья
-    startHealthAnimation() {
-        if (!this.currentHero) return;
-
-        const updateHealthDisplay = () => {
-            const stats = this.calculateHeroStats(this.currentHero);
-            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-            
-            const healthFill = document.querySelector('.health-bar-fill');
-            const currentHealthEl = document.getElementById('current-health');
-            const maxHealthEl = document.getElementById('max-health');
-            
-            if (healthFill && currentHealthEl && maxHealthEl) {
-                healthFill.style.width = healthPercent + '%';
-                currentHealthEl.textContent = stats.currentHealth;
-                maxHealthEl.textContent = stats.maxHealth;
-            }
-        };
-
-        this.healthInterval = setInterval(updateHealthDisplay, 1000);
-    }
-
-    // Отрисовка главного экрана героя
-    renderHeroScreen() {
-        if (!this.currentHero) return;
-
-        const stats = this.calculateHeroStats(this.currentHero);
+        const stats = this.calculateHeroStats(hero);
         const bonuses = this.getBonuses();
-        const activeBonuses = this.getAllActiveBonuses();
-
-        // Получение экипированных предметов
-        const weaponMain = this.currentHero.equipment.main_hand ? 
-            this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-        const weaponOff = this.currentHero.equipment.off_hand ? 
-            this.items.find(item => item.id === this.currentHero.equipment.off_hand) : null;
-        // ... остальные слоты экипировки
-
-        const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
-        const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
-        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-
-        // Фоновые изображения
-        const heroBackground = this.currentHero.image;
-        const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
         
-        const monsterBackground = this.currentMonster ? this.currentMonster.image : 'default_monster_bg';
-        const mapBackground = this.currentMap ? this.currentMap.image : 'default_map_bg';
-        const locationBackground = this.currentLocation ? this.currentLocation.image : 'default_location_bg';
+        const activeBonuses = this.getAllActiveBonuses(hero); // ИСПРАВЛЕНО: добавлен параметр hero
+        const allBonuses = [...activeBonuses.race, ...activeBonuses.class, ...activeBonuses.saga, ...activeBonuses.equipment];
+        const bonusDisplay = allBonuses.map(bonus => {
+            const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
+            return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
+        }).join('');
+        
+        const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
+        const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
+        const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
 
-        const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
-        const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
-        const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
-
-        const container = document.getElementById('app');
-        container.innerHTML = `
-            <div class="screen active" id="screen-main">
-                <!-- Кнопки действий -->
-                <div class="action-buttons">
-                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
-                    <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
-                    <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
-                    <button class="btn-danger" onclick="game.resetHero()">🔄 Сброс</button>
-                    <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
+        return `
+            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
+                <div class="hero-option-image">
+                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                 </div>
-
-                <!-- Основной layout с 4 колонками -->
-                <div class="hero-layout">
-                    <!-- Колонка героя -->
-                    <div class="hero-column" style="background-image: url('${heroBackground}')">
-                        ${this.showVideo.hero ? `
-                            <div class="video-container">
-                                <iframe src="${heroVideo}?autoplay=1&mute=1" 
-                                        allow="autoplay; encrypted-media" 
-                                        allowfullscreen>
-                                </iframe>
-                            </div>
-                        ` : ''}
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🎯 ${this.currentHero.name}</div>
-                            ${!this.showVideo.hero ? `
-                                <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Видео</button>
-                            ` : `
-                                <button class="video-toggle" onclick="game.toggleVideo('hero')">🖼️ Фото</button>
-                            `}
-                            
-                            <!-- Информация о здоровье -->
-                            <div class="hero-info">
-                                <div class="health-display">
-                                    <div class="health-bar-container">
-                                        <div class="health-bar">
-                                            <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
-                                        </div>
-                                        <div class="health-text">
-                                            ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
-                                        </div>
-                                    </div>
-                                    <div class="health-regen">
-                                        ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
-                                    </div>
-                                </div>
-
-                                <!-- Основные характеристики -->
-                                <div class="hero-main-stats">
-                                    <div class="main-stat">
-                                        <span class="stat-icon">⚔️</span>
-                                        <span class="stat-value">${stats.damage}</span>
-                                        ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
-                                    </div>
-                                    <div class="main-stat">
-                                        <span class="stat-icon">🛡️</span>
-                                        <span class="stat-value">${stats.armor}</span>
-                                        ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
-                                    </div>
-                                    <div class="main-stat">
-                                        <span class="stat-icon">🌟</span>
-                                        <span class="stat-value">${stats.power}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Секция бонусов -->
-                            <div class="bonuses-section">
-                                <h3>🎯 Активные бонусы</h3>
-                                <!-- Бонусы расы -->
-                                ${activeBonuses.race.length > 0 ? `
-                                    <div class="bonus-source-group">
-                                        <div class="bonus-source-title">🧬 Раса (${raceName})</div>
-                                        <div class="bonus-display">
-                                            ${activeBonuses.race.map(bonus => `
-                                                <div class="bonus-badge race-bonus" title="${bonus.description}">
-                                                    ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                <!-- Бонусы класса -->
-                                ${activeBonuses.class.length > 0 ? `
-                                    <div class="bonus-source-group">
-                                        <div class="bonus-source-title">⚔️ Класс (${className})</div>
-                                        <div class="bonus-display">
-                                            ${activeBonuses.class.map(bonus => `
-                                                <div class="bonus-badge class-bonus" title="${bonus.description}">
-                                                    ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                <!-- Бонусы саги -->
-                                ${activeBonuses.saga.length > 0 ? `
-                                    <div class="bonus-source-group">
-                                        <div class="bonus-source-title">📖 Сага (${sagaName})</div>
-                                        <div class="bonus-display">
-                                            ${activeBonuses.saga.map(bonus => `
-                                                <div class="bonus-badge saga-bonus" title="${bonus.description}">
-                                                    ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                <!-- Бонусы экипировки -->
-                                ${activeBonuses.equipment.length > 0 ? `
-                                    <div class="bonus-source-group">
-                                        <div class="bonus-source-title">🎒 Экипировка</div>
-                                        <div class="bonus-display">
-                                            ${activeBonuses.equipment.map(bonus => `
-                                                <div class="bonus-badge equipment-bonus" title="${bonus.description} (${bonus.itemName})">
-                                                    ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                                                </div>
-                                            `).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
-                                
-                                ${activeBonuses.race.length === 0 && activeBonuses.class.length === 0 && 
-                                  activeBonuses.saga.length === 0 && activeBonuses.equipment.length === 0 ? `
-                                    <div class="no-bonuses">Нет активных бонусов</div>
-                                ` : ''}
-                            </div>
-
-                            <!-- Секция экипировки -->
-                            <div class="equipment-section">
-                                <!-- Слоты экипировки -->
-                                <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
-                                     onclick="game.unequipItem('main_hand')"
-                                     onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
-                                     onmouseout="game.hideEquipmentTooltip()">
-                                    <div class="equipment-icon">
-                                        ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
-                                    </div>
-                                </div>
-                                
-                                <!-- ... остальные слоты экипировки -->
-                                
-                                <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
-                                    <div class="equipment-icon">🎒</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Прогресс уровня -->
-                            <div class="level-progress">
-                                <div class="level-progress-fill" style="width: ${expProgress}%"></div>
-                            </div>
-                            <div class="hero-progress">
-                                <span>Ур.${this.currentHero.level}</span>
-                                <span>💰${this.currentHero.gold.toFixed(2)}</span>
-                                <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
-                            </div>
-                            
-                            <!-- Статистика героя -->
-                            <div class="hero-stats">
-                                <div class="stat-item">
-                                    <span class="stat-icon">💀</span>
-                                    <span class="stat-label">Убийств:</span>
-                                    <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">☠️</span>
-                                    <span class="stat-label">Смертей:</span>
-                                    <span class="stat-value">${this.currentHero.deaths || 0}</span>
-                                </div>
-                            </div>
+                <div class="hero-option-info">
+                    <div class="hero-option-header">
+                        <strong>${hero.name}</strong>
+                        <span class="hero-level">Ур. ${hero.level}</span>
+                    </div>
+                    <div class="hero-option-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
+                            <span>⚔️ ${stats.damage}</span>
+                            <span>🛡️ ${stats.armor}</span>
+                            <span>🌟 ${stats.power}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
                         </div>
                     </div>
-
-                    <!-- Колонка монстра -->
-                    <div class="monster-column" style="background-image: url('${monsterBackground}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🎭 Враг</div>
-                            ${this.renderMonsterColumn()}
+                    ${bonusDisplay ? `
+                        <div class="hero-option-skills">
+                            ${bonusDisplay}
                         </div>
+                    ` : ''}
+                    <div class="hero-option-bonuses">
+                        <small>${raceName} - ${className} - ${sagaName}</small>
                     </div>
-
-                    <!-- Колонка карты -->
-                    <div class="map-column" style="background-image: url('${mapBackground}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">🗺️ Карта</div>
-                            ${this.renderMapSelection()}
-                        </div>
-                    </div>
-
-                    <!-- Колонка локации -->
-                    <div class="location-column" style="background-image: url('${locationBackground}')">
-                        <div class="column-overlay"></div>
-                        <div class="column-content">
-                            <div class="column-title">📍 Локация</div>
-                            ${this.renderLocationSelection()}
-                        </div>
-                    </div>
+                    ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
                 </div>
-
-                <!-- Лог событий -->
-                <div class="battle-log" id="battle-log"></div>
             </div>
         `;
+    }).join('');
 
-        this.startHealthAnimation();
+    container.innerHTML = `
+        <div class="screen active" id="screen-hero-select">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
+                ${heroesHTML}
+            </div>
+        </div>
+    `;
+}
+
+// Получение иконки для бонуса
+getBonusIcon(bonusType) {
+    const icons = {
+        'health_mult': '❤️',
+        'damage_mult': '⚔️',
+        'armor_mult': '🛡️',
+        'gold_mult': '💰',
+        'health_regen_mult': '⚡',
+        'crit_chance': '💥',
+        'armor_penetration': '⚡',
+        'vampirism': '🩸'
+    };
+    return icons[bonusType] || '🎯';
+}
+
+// Выбор героя
+selectHero(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) {
+        console.error('Герой не найден:', heroId);
+        return;
     }
+    
+    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    if (!isUnlocked) {
+        console.log('Герой заблокирован:', hero.name);
+        return;
+    }
+    
+    this.currentHero = hero;
+    this.showScreen('main');
+    this.renderHeroScreen();
+    this.saveGame();
+}
+
+// Переключение экранов
+showScreen(screenName) {
+    this.currentScreen = screenName;
+    if (this.healthInterval) {
+        clearInterval(this.healthInterval);
+        this.healthInterval = null;
+    }
+}
+
+// Запуск анимации здоровья
+startHealthAnimation() {
+    if (!this.currentHero) return;
+
+    const updateHealthDisplay = () => {
+        const stats = this.calculateHeroStats(this.currentHero);
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+        
+        const healthFill = document.querySelector('.health-bar-fill');
+        const currentHealthEl = document.getElementById('current-health');
+        const maxHealthEl = document.getElementById('max-health');
+        
+        if (healthFill && currentHealthEl && maxHealthEl) {
+            healthFill.style.width = healthPercent + '%';
+            currentHealthEl.textContent = stats.currentHealth;
+            maxHealthEl.textContent = stats.maxHealth;
+        }
+    };
+
+    this.healthInterval = setInterval(updateHealthDisplay, 1000);
+}
+
+// Отрисовка главного экрана героя
+renderHeroScreen() {
+    if (!this.currentHero) return;
+
+    const stats = this.calculateHeroStats(this.currentHero);
+    const bonuses = this.getBonuses();
+    const activeBonuses = this.getAllActiveBonuses(this.currentHero); // ИСПРАВЛЕНО: добавлен параметр
+
+    // Получение экипированных предметов
+    const weaponMain = this.currentHero.equipment.main_hand ? 
+        this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
+    const weaponOff = this.currentHero.equipment.off_hand ? 
+        this.items.find(item => item.id === this.currentHero.equipment.off_hand) : null;
+    const armorHelmet = this.currentHero.equipment.helmet ? 
+        this.items.find(item => item.id === this.currentHero.equipment.helmet) : null;
+    const armorChest = this.currentHero.equipment.chest ? 
+        this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
+    const armorGloves = this.currentHero.equipment.gloves ? 
+        this.items.find(item => item.id === this.currentHero.equipment.gloves) : null;
+    const armorLegs = this.currentHero.equipment.legs ? 
+        this.items.find(item => item.id === this.currentHero.equipment.legs) : null;
+    const armorBoots = this.currentHero.equipment.boots ? 
+        this.items.find(item => item.id === this.currentHero.equipment.boots) : null;
+
+    const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
+    const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
+    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+
+    // Фоновые изображения
+    const heroBackground = this.currentHero.image;
+    const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
+    
+    const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
+    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
+
+    const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
+    const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
+    const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
+
+    const container = document.getElementById('app');
+    container.innerHTML = `
+        <div class="screen active" id="screen-main">
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
+                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
+                <button class="btn-danger" onclick="game.resetHero()">🔄 Сброс</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
+            </div>
+
+            <!-- Основной layout с 4 колонками -->
+            <div class="hero-layout">
+                <!-- Колонка героя -->
+                <div class="hero-column" style="background-image: url('${heroBackground}')">
+                    ${this.showVideo.hero ? `
+                        <div class="video-container">
+                            <iframe src="${heroVideo}?autoplay=1&mute=1" 
+                                    allow="autoplay; encrypted-media" 
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    ` : ''}
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🎯 ${this.currentHero.name}</div>
+                        ${!this.showVideo.hero ? `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Видео</button>
+                        ` : `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🖼️ Фото</button>
+                        `}
+                        
+                        <!-- Информация о здоровье -->
+                        <div class="hero-info">
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
+                                    </div>
+                                </div>
+                                <div class="health-regen">
+                                    ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
+                                </div>
+                            </div>
+
+                            <!-- Основные характеристики -->
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <span class="stat-icon">⚔️</span>
+                                    <span class="stat-value">${stats.damage}</span>
+                                    ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🛡️</span>
+                                    <span class="stat-value">${stats.armor}</span>
+                                    ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🌟</span>
+                                    <span class="stat-value">${stats.power}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция бонусов -->
+                        <div class="bonuses-section">
+                            <h3>🎯 Активные бонусы</h3>
+                            <!-- Бонусы расы -->
+                            ${activeBonuses.race.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🧬 Раса (${raceName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.race.map(bonus => `
+                                            <div class="bonus-badge race-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы класса -->
+                            ${activeBonuses.class.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">⚔️ Класс (${className})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.class.map(bonus => `
+                                            <div class="bonus-badge class-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы саги -->
+                            ${activeBonuses.saga.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">📖 Сага (${sagaName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.saga.map(bonus => `
+                                            <div class="bonus-badge saga-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы экипировки -->
+                            ${activeBonuses.equipment.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🎒 Экипировка</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.equipment.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description} (${bonus.itemName})">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы сетов -->
+                            ${activeBonuses.sets.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">✨ Бонусы сетов</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.sets.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${activeBonuses.race.length === 0 && activeBonuses.class.length === 0 && 
+                              activeBonuses.saga.length === 0 && activeBonuses.equipment.length === 0 && 
+                              activeBonuses.sets.length === 0 ? `
+                                <div class="no-bonuses">Нет активных бонусов</div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Секция экипировки -->
+                        <div class="equipment-section">
+                            <!-- Слоты экипировки -->
+                            <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('main_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('off_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('helmet')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'helmet')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('chest')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'chest')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('gloves')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'gloves')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('legs')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'legs')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                                 onclick="game.unequipItem('boots')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'boots')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
+                                <div class="equipment-icon">🎒</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Прогресс уровня -->
+                        <div class="level-progress">
+                            <div class="level-progress-fill" style="width: ${expProgress}%"></div>
+                        </div>
+                        <div class="hero-progress">
+                            <span>Ур.${this.currentHero.level}</span>
+                            <span>💰${this.currentHero.gold.toFixed(2)}</span>
+                            <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                        </div>
+                        
+                        <!-- Статистика героя -->
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">💀</span>
+                                <span class="stat-label">Убийств:</span>
+                                <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">☠️</span>
+                                <span class="stat-label">Смертей:</span>
+                                <span class="stat-value">${this.currentHero.deaths || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Колонка монстра -->
+                <div class="monster-column" style="background-image: url('${monsterBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🎭 Враг</div>
+                        ${this.renderMonsterColumn()}
+                    </div>
+                </div>
+
+                <!-- Колонка карты -->
+                <div class="map-column" style="background-image: url('${mapBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🗺️ Карта</div>
+                        ${this.renderMapSelection()}
+                    </div>
+                </div>
+
+                <!-- Колонка локации -->
+                <div class="location-column" style="background-image: url('${locationBackground}')">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">📍 Локация</div>
+                        ${this.renderLocationSelection()}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Лог событий -->
+            <div class="battle-log" id="battle-log"></div>
+        </div>
+    `;
+
+    this.startHealthAnimation();
+}
+
+// Отрисовка колонки монстра
+renderMonsterColumn() {
+    if (this.battleResult) {
+        return this.renderBattleResult();
+    }
+    
+    if (this.battleActive && this.currentMonster) {
+        return this.renderBattleInMonsterColumn();
+    }
+    
+    if (this.currentMonster && !this.battleActive) {
+        const stats = this.calculateHeroStats(this.currentHero);
+        const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
+
+        return `
+            <div class="monster-info">
+                <h4>${this.currentMonster.name}</h4>
+                <p>${this.currentMonster.description}</p>
+                
+                <div class="monster-stats-grid">
+                    <div class="monster-stat-card">
+                        <div>❤️ Здоровье</div>
+                        <div class="monster-stat-value">${this.currentMonster.health}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>⚔️ Урон</div>
+                        <div class="monster-stat-value">${this.currentMonster.damage}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🛡️ Броня</div>
+                        <div class="monster-stat-value">${this.currentMonster.armor}</div>
+                    </div>
+                    <div class="monster-stat-card">
+                        <div>🌟 Мощь</div>
+                        <div class="monster-stat-value">${this.currentMonster.power}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 12px 0; font-size: 1em;">
+                    <p><strong>Сравнение:</strong> ${powerComparison}</p>
+                    <p>💰 Награда: ${this.currentMonster.reward.toFixed(2)} золота</p>
+                </div>
+
+                <div class="monster-actions">
+                    <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
+                    <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
+                    <button class="btn-secondary" onclick="game.attemptEscape()">🏃 Убежать</button>
+                </div>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="monster-info" style="text-align: center; padding: 20px;">
+                <h4>Врага нет</h4>
+                <p>Начните путешествие, чтобы встретить противника</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Начать путешествие</button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Отрисовка результата боя
+renderBattleResult() {
+    if (!this.battleResult) return '';
+    
+    const victory = this.battleResult.victory;
+    const reward = this.battleResult.reward;
+    const experience = this.battleResult.experience;
+    
+    if (victory) {
+        return `
+            <div class="battle-result">
+                <div class="battle-result-image">🎉</div>
+                <h4>ПОБЕДА!</h4>
+                <p>Вы победили ${this.battleResult.monsterName}!</p>
+                <div class="reward-amount">
+                    +${reward.toFixed(2)} золота<br>
+                    +${experience} опыта
+                </div>
+                <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="battle-result">
+                <div class="battle-result-image">💀</div>
+                <h4>ПОРАЖЕНИЕ</h4>
+                <p>Вы проиграли бой с ${this.battleResult.monsterName}</p>
+                <button class="btn-primary" onclick="game.continueAfterBattle()">Продолжить</button>
+            </div>
+        `;
+    }
+}
+
+// Отрисовка боя в колонке монстра
+renderBattleInMonsterColumn() {
+    if (!this.battleActive) return '';
+    
+    const stats = this.calculateHeroStats(this.currentHero);
+    const heroHealthPercent = (this.currentHero.currentHealth / stats.maxHealth) * 100;
+    const monsterHealthPercent = (this.currentMonster.currentHealth / this.currentMonster.health) * 100;
+    
+    return `
+        <div class="battle-in-monster-column">
+            <div class="battle-header">
+                <h4>⚔️ БОЙ</h4>
+                <div class="battle-round">Раунд: ${this.battleRound}</div>
+            </div>
+            
+            <div class="battle-combatants-compact">
+                <div class="combatant-compact" style="border: 2px solid #4cc9f0;">
+                    <div class="combatant-image-compact" style="border-color: #4cc9f0;">
+                        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <div class="combatant-info-compact">
+                        <div class="health-bar-compact">
+                            <div class="health-bar-fill-compact" style="width: ${heroHealthPercent}%; background: linear-gradient(90deg, #4ade80, #22c55e);"></div>
+                        </div>
+                        <div class="health-text-compact">${Math.ceil(this.currentHero.currentHealth)}/${stats.maxHealth}</div>
+                    </div>
+                </div>
+                
+                <div class="vs-compact">VS</div>
+                
+                <div class="combatant-compact" style="border: 2px solid #f87171;">
+                    <div class="combatant-image-compact" style="border-color: #f87171;">
+                        <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <div class="combatant-info-compact">
+                        <div class="health-bar-compact">
+                            <div class="health-bar-fill-compact" style="width: ${monsterHealthPercent}%; background: linear-gradient(90deg, #f87171, #ef4444);"></div>
+                        </div>
+                        <div class="health-text-compact">${Math.ceil(this.currentMonster.currentHealth)}/${this.currentMonster.health}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-log-compact">
+                ${this.battleLog.slice(-3).map(entry => {
+                    return '<div class="battle-log-entry-compact ' + (entry.type || '') + '">' + entry.message + '</div>';
+                }).join('')}
+            </div>
+            
+            <div class="battle-actions-compact">
+                <button class="btn-battle-attack-compact" onclick="game.battleAttack()">
+                    ⚔️ Атака
+                </button>
+                <button class="btn-battle-escape-compact" onclick="game.attemptEscapeFromBattle()">
+                    🏃 Бегство
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Отрисовка выбора карты
+renderMapSelection() {
+    if (this.currentMap) {
+        return `
+            <div class="map-info">
+                ${this.showVideo.map ? `
+                    <button class="video-toggle" onclick="game.toggleVideo('map')">🖼️ Показать картинку</button>
+                ` : `
+                    <button class="video-toggle" onclick="game.toggleVideo('map')">🎬 Включить видео</button>
+                `}
+                <h4>${this.currentMap.name}</h4>
+                <p>${this.currentMap.description}</p>
+                <div style="background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; margin: 10px 0; border: 2px solid rgba(74, 222, 128, 0.5);">
+                    <strong>Множитель силы: x${this.currentMap.multiplier}</strong>
+                </div>
+                <button class="btn-secondary" onclick="game.showMapSelection()">Сменить карту</button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="map-info" style="text-align: center; padding: 20px;">
+                <h4>Карта не выбрана</h4>
+                <p>Выберите карту для путешествия</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.showMapSelection()">🗺️ Выбрать карту</button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Отрисовка выбора локации
+renderLocationSelection() {
+    if (this.currentLocation) {
+        const progress = this.locationProgress[this.currentLocation.level];
+        const killedCount = progress ? progress.monstersKilled.size : 0;
+        const totalMonsters = progress ? progress.totalMonsters : 10;
+        const progressPercent = (killedCount / totalMonsters) * 100;
+        
+        return `
+            <div class="location-info">
+                ${this.showVideo.location ? `
+                    <button class="video-toggle" onclick="game.toggleVideo('location')">🖼️ Показать картинку</button>
+                ` : `
+                    <button class="video-toggle" onclick="game.toggleVideo('location')">🎬 Включить видео</button>
+                `}
+                <h4>${this.currentLocation.name} (Ур. ${this.currentLocation.level})</h4>
+                <p>${this.currentLocation.description}</p>
+                <div style="background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; margin: 10px 0; border: 2px solid rgba(245, 158, 11, 0.5);">
+                    <div><strong>Монстры:</strong> №${this.currentLocation.monsterRange[0]}-${this.currentLocation.monsterRange[1]}</div>
+                    <div><strong>Прогресс:</strong> ${killedCount}/${totalMonsters} уникальных монстров</div>
+                    <div class="location-progress">
+                        <div class="location-progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div><strong>Артефакты:</strong> ${(this.currentLocation.artifactChance * 100).toFixed(2)}%</div>
+                    <div><strong>Реликвии:</strong> ${(this.currentLocation.relicChance * 100).toFixed(2)}%</div>
+                </div>
+                <button class="btn-secondary" onclick="game.showLocationSelection()">Сменить локацию</button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="location-info" style="text-align: center; padding: 20px;">
+                <h4>Локация не выбрана</h4>
+                <p>Выберите локацию для исследования</p>
+                <div style="margin-top: 20px;">
+                    <button class="btn-primary" onclick="game.showLocationSelection()">📍 Выбрать локацию</button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Переключение видео/изображения
+toggleVideo(type) {
+    this.showVideo[type] = !this.showVideo[type];
+    this.renderHeroScreen();
+}
 
 // ========== МОДУЛЬ 10: СИСТЕМА ЭКИПИРОВКИ С НОВЫМИ ТИПАМИ ОРУЖИЯ ==========
 
@@ -1343,7 +1678,7 @@ unequipToInventory(slot) {
     // Проверяем место в инвентаре
     if (this.currentHero.inventory.length >= 10) {
         this.addToLog('❌ Инвентарь полон! Максимум 10 предметов');
-        return;
+        return false;
     }
 
     // Особый случай: если снимаем двуручное оружие
@@ -1381,6 +1716,36 @@ getEquipmentSlot(item) {
     };
     
     return slotMap[item.type] ? (Array.isArray(slotMap[item.type]) ? slotMap[item.type][0] : slotMap[item.type]) : null;
+}
+
+// МЕТОД: Получить название слота
+getSlotName(slot) {
+    const slotNames = {
+        'main_hand': 'Правая рука',
+        'off_hand': 'Левая рука', 
+        'helmet': 'Шлем',
+        'chest': 'Нагрудник',
+        'gloves': 'Перчатки',
+        'legs': 'Поножи',
+        'boots': 'Ботинки'
+    };
+    
+    return slotNames[slot] || 'Неизвестный слот';
+}
+
+// МЕТОД: Использовать зелье
+usePotion(item) {
+    if (item.type !== 'potion') return;
+
+    if (item.heal) {
+        this.updateHealth(item.heal);
+        this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
+    }
+
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== item.id);
+    
+    this.saveGame();
+    this.showInventory();
 }
 
     // ========== МОДУЛЬ 11: СИСТЕМА ПУТЕШЕСТВИЙ И ВСТРЕЧ ==========
@@ -1560,131 +1925,126 @@ getEquipmentSlot(item) {
         this.showMerchant();
     }
 
-    // ========== МОДУЛЬ 13: СИСТЕМА ИНВЕНТАРЯ ==========
+// ========== МОДУЛЬ 13: СИСТЕМА ИНВЕНТАРЯ ==========
 
-    // Показать инвентарь
-    showInventory() {
-        if (!this.currentHero) return;
+// Показать инвентарь
+showInventory() {
+    if (!this.currentHero) return;
 
-        const inventoryHTML = this.currentHero.inventory.map(itemId => {
-            const item = this.items.find(i => i.id === itemId);
-            if (!item) return '';
-            
-            const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
-            
-            return `
-                <div class="inventory-item" onclick="game.equipItem(${itemId})">
-                    <div class="inventory-item-image">
-                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
-                    </div>
-                    <div class="inventory-item-info">
-                        <strong>${item.name}</strong>
-                        <div class="item-stats">
-                            ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
-                            ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
-                            ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
-                            ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
-                        </div>
-                        <small>${item.description}</small>
-                        ${isEquipped ? '<small style="color: #4ade80;">✓ Надето</small>' : '<small style="color: #4cc9f0;">📦 В инвентаре</small>'}
-                    </div>
+    const inventoryHTML = this.currentHero.inventory.map(itemId => {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return '';
+        
+        const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
+        
+        return `
+            <div class="inventory-item" onclick="game.equipItem(${itemId})">
+                <div class="inventory-item-image">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
                 </div>
-            `;
-        }).join('');
-
-        const container = document.getElementById('app');
-        container.innerHTML += `
-            <div class="screen active" id="screen-inventory">
-                <h3 class="text-center">🎒 Инвентарь</h3>
-                <div class="inventory-grid">
-                    ${inventoryHTML || '<div class="text-center">Инвентарь пуст</div>'}
-                </div>
-                <div class="action-buttons">
-                    <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+                <div class="inventory-item-info">
+                    <strong>${item.name}</strong>
+                    <div class="item-stats">
+                        ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
+                        ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
+                        ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
+                        ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
+                        ${item.fixed_health ? `<span>❤️ Здоровье: +${item.fixed_health}</span>` : ''}
+                    </div>
+                    <small>${item.description}</small>
+                    ${isEquipped ? '<small style="color: #4ade80;">✓ Надето</small>' : '<small style="color: #4cc9f0;">📦 В инвентаре</small>'}
+                    ${item.setName ? `<small style="color: #f59e0b;">✨ Часть сета: ${this.getItemSetConfig()[item.setName]?.name || item.setName}</small>` : ''}
                 </div>
             </div>
         `;
+    }).join('');
 
-        this.showScreen('inventory');
-    }
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-inventory">
+            <h3 class="text-center">🎒 Инвентарь</h3>
+            <div class="inventory-info" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                    <span>💰 Ваше золото: ${this.currentHero?.gold.toFixed(2) || 0}</span>
+                    <span>🎒 Свободно мест: ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
+                </div>
+            </div>
+            <div class="inventory-grid">
+                ${inventoryHTML || '<div class="text-center">Инвентарь пуст</div>'}
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+            </div>
+        </div>
+    `;
 
-    // Экипировать предмет
-    equipItem(itemId) {
+    this.showScreen('inventory');
+}
+
+// Показать подсказку для экипировки
+showEquipmentTooltip(event, slot) {
+    // Удаляем существующие подсказки
+    this.hideEquipmentTooltip();
+    
+    const slotNames = {
+        'main_hand': '⚔️ Правая рука',
+        'off_hand': '🛡️ Левая рука', 
+        'helmet': '⛑️ Шлем',
+        'chest': '👕 Нагрудник',
+        'gloves': '🧤 Перчатки',
+        'legs': '👖 Поножи',
+        'boots': '👢 Ботинки'
+    };
+    
+    const itemId = this.currentHero.equipment[slot];
+    let tooltipContent = '';
+    
+    if (itemId) {
         const item = this.items.find(i => i.id === itemId);
-        if (!item) return;
-
-        // Использование зелья
-        if (item.type === 'potion') {
-            this.usePotion(item);
-            return;
+        if (item) {
+            tooltipContent = `
+                <div class="slot-name">${slotNames[slot]}</div>
+                <div class="item-stats">
+                    <div><strong>${item.name}</strong></div>
+                    ${item.fixed_damage ? `<div>⚔️ Урон: +${item.fixed_damage}</div>` : ''}
+                    ${item.fixed_armor ? `<div>🛡️ Броня: +${item.fixed_armor}</div>` : ''}
+                    ${item.fixed_health ? `<div>❤️ Здоровье: +${item.fixed_health}</div>` : ''}
+                    ${item.bonus ? `<div>🎯 ${this.formatBonus(item.bonus)}</div>` : ''}
+                    ${item.setName ? `<div>✨ Сет: ${this.getItemSetConfig()[item.setName]?.name || item.setName}</div>` : ''}
+                    <div><em>${item.description}</em></div>
+                    <div style="margin-top: 6px; color: #ff6b6b; font-size: 0.75em;">Кликните чтобы снять</div>
+                </div>
+            `;
         }
+    } else {
+        tooltipContent = `
+            <div class="slot-name">${slotNames[slot]}</div>
+            <div class="empty-slot">Пустой слот</div>
+            <div style="margin-top: 6px; color: #4cc9f0; font-size: 0.75em;">Откройте инвентарь чтобы экипировать</div>
+        `;
+    }
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'equipment-tooltip';
+    tooltip.innerHTML = tooltipContent;
+    
+    event.currentTarget.appendChild(tooltip);
+}
 
-        let slot = this.getEquipmentSlot(item);
-        if (!slot) {
-            this.addToLog(`❌ Неизвестный тип предмета: ${item.type}`);
-            return;
-        }
+// Скрыть подсказки экипировки
+hideEquipmentTooltip() {
+    const existingTooltips = document.querySelectorAll('.equipment-tooltip');
+    existingTooltips.forEach(tooltip => tooltip.remove());
+}
 
-        // Снятие текущего предмета если есть
-        const currentEquipped = this.currentHero.equipment[slot];
-        if (currentEquipped) {
-            if (!this.currentHero.inventory.includes(currentEquipped)) {
-                this.currentHero.inventory.push(currentEquipped);
-            }
-        }
-
-        // Экипировка нового предмета
-        this.currentHero.equipment[slot] = itemId;
-        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
-
-        this.addToLog(`🎯 Надето: ${item.name} (${this.getSlotName(slot)})`);
+// Снять предмет
+unequipItem(slot) {
+    const success = this.unequipToInventory(slot);
+    if (success) {
         this.saveGame();
         this.renderHeroScreen();
     }
-
-    // Получить слот для предмета
-    getEquipmentSlot(item) {
-        const slotMap = {
-            'weapon': ['main_hand', 'off_hand'],
-            'helmet': ['helmet'],
-            'chest': ['chest'], 
-            'gloves': ['gloves'],
-            'legs': ['legs'],
-            'boots': ['boots']
-        };
-        
-        return slotMap[item.type] ? slotMap[item.type][0] : null;
-    }
-
-    // Получить название слота
-    getSlotName(slot) {
-        const slotNames = {
-            'main_hand': 'Правая рука',
-            'off_hand': 'Левая рука', 
-            'helmet': 'Шлем',
-            'chest': 'Нагрудник',
-            'gloves': 'Перчатки',
-            'legs': 'Поножи',
-            'boots': 'Ботинки'
-        };
-        
-        return slotNames[slot] || 'Неизвестный слот';
-    }
-
-    // Использовать зелье
-    usePotion(item) {
-        if (item.type !== 'potion') return;
-
-        if (item.heal) {
-            this.updateHealth(item.heal);
-            this.addToLog(`❤️ Использовано: ${item.name} (+${item.heal} здоровья)`);
-        }
-
-        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== item.id);
-        
-        this.saveGame();
-        this.showInventory();
-    }
+}
 
     // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
 
