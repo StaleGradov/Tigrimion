@@ -53,14 +53,14 @@ class HeroGame {
         
         // НОВАЯ СИСТЕМА ПРОГРЕССА ЛОКАЦИЙ
         this.locationProgress = {};
-        this.monsterKillCount = {}; // Счетчик убийств по монстрам
+        this.monsterKillCount = {};
         
         this.init();
     }
 
     async init() {
         await this.loadGameData();
-        this.initLocationSystem(); // Инициализируем систему локаций после загрузки данных
+        this.initLocationSystem();
         this.loadSave();
         
         if (this.heroes.length > 0) {
@@ -73,22 +73,19 @@ class HeroGame {
         this.renderHeroSelect();
     }
 
-    // НОВАЯ ФУНКЦИЯ: Инициализация системы локаций
     initLocationSystem() {
-        // Инициализируем прогресс локаций
         this.locations.forEach(location => {
             const locationId = location.level;
             
             if (!this.locationProgress[locationId]) {
                 this.locationProgress[locationId] = {
-                    unlocked: locationId === 10, // Только первая локация разблокирована изначально
-                    monstersKilled: new Set(), // Множество убитых монстров в этой локации
+                    unlocked: locationId === 10,
+                    monstersKilled: new Set(),
                     totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
                 };
             }
         });
         
-        // Инициализируем счетчик убийств монстров
         this.monsters.forEach(monster => {
             if (!this.monsterKillCount[monster.id]) {
                 this.monsterKillCount[monster.id] = 0;
@@ -164,12 +161,19 @@ class HeroGame {
             deaths: 0,
             healthRegen: 100/60,
             inventory: [],
-            equipment: { main_hand: null, chest: null },
+            equipment: {
+                main_hand: null,
+                off_hand: null,
+                helmet: null,
+                chest: null,
+                gloves: null,
+                legs: null,
+                boots: null
+            },
             unlocked: true,
             story: "Простой воин из далекой деревни..."
         }];
 
-        // Создаем 55 монстров для 10 локаций
         this.monsters = [];
         for (let i = 1; i <= 55; i++) {
             this.monsters.push({
@@ -210,7 +214,6 @@ class HeroGame {
             unlocked: true 
         }];
 
-        // Создаем 10 локаций с монстрами по 10 на локацию
         this.locations = [];
         for (let level = 10; level >= 1; level--) {
             const startMonster = (10 - level) * 10 + 1;
@@ -228,7 +231,6 @@ class HeroGame {
         }
     }
 
-    // НОВАЯ СИСТЕМА БОНУСОВ
     getBonuses() {
         return {
             races: {
@@ -269,7 +271,6 @@ class HeroGame {
         };
     }
 
-    // Сбор всех активных бонусов с разделением по источникам
     getAllActiveBonuses(hero) {
         hero = hero || this.currentHero;
         if (!hero) return { race: [], class: [], saga: [], equipment: [] };
@@ -282,48 +283,34 @@ class HeroGame {
             equipment: []
         };
         
-        // Бонусы расы
         if (bonuses.races[hero.race]) {
             activeBonuses.race.push(bonuses.races[hero.race]);
         }
         
-        // Бонусы класса
         if (bonuses.classes[hero.class]) {
             activeBonuses.class.push(bonuses.classes[hero.class]);
         }
         
-        // Бонусы саги
         if (bonuses.sagas[hero.saga]) {
             activeBonuses.saga.push(bonuses.sagas[hero.saga]);
         }
         
-        // Бонусы от экипировки
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            if (weapon && weapon.bonus) {
-                activeBonuses.equipment.push({
-                    ...weapon.bonus,
-                    source: "equipment",
-                    itemName: weapon.name
-                });
+        Object.values(hero.equipment).forEach(itemId => {
+            if (itemId) {
+                const item = this.items.find(item => item.id === itemId);
+                if (item && item.bonus) {
+                    activeBonuses.equipment.push({
+                        ...item.bonus,
+                        source: "equipment",
+                        itemName: item.name
+                    });
+                }
             }
-        }
-        
-        if (hero.equipment.chest) {
-            const armor = this.items.find(item => item.id === hero.equipment.chest);
-            if (armor && armor.bonus) {
-                activeBonuses.equipment.push({
-                    ...armor.bonus,
-                    source: "equipment", 
-                    itemName: armor.name
-                });
-            }
-        }
+        });
         
         return activeBonuses;
     }
 
-    // Расчет суммарных бонусов по типам
     calculateTotalBonuses(hero) {
         const activeBonuses = this.getAllActiveBonuses(hero);
         const totals = {
@@ -337,7 +324,6 @@ class HeroGame {
             vampirism: 0
         };
         
-        // Суммируем бонусы из всех источников
         Object.values(activeBonuses).forEach(bonusGroup => {
             bonusGroup.forEach(bonus => {
                 if (totals.hasOwnProperty(bonus.type)) {
@@ -349,7 +335,6 @@ class HeroGame {
         return totals;
     }
 
-    // Система уровней
     getLevelRequirements() {
         return {
             1: 1,
@@ -402,7 +387,6 @@ class HeroGame {
         this.currentHero.baseDamage += damageIncrease;
         this.currentHero.baseArmor += armorIncrease;
         
-        // Восстанавливаем здоровье до нового максимума
         this.currentHero.currentHealth = this.calculateMaxHealth();
         
         this.addToLog('🎉 Уровень повышен! Теперь уровень ' + newLevel);
@@ -436,18 +420,13 @@ class HeroGame {
         });
     }
 
-    // РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ АДДИТИВНЫХ БОНУСОВ
     calculateMaxHealth(hero) {
         hero = hero || this.currentHero;
         if (!hero) return 0;
         
         const totals = this.calculateTotalBonuses(hero);
-        
-        // База с учетом уровня
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
         let health = hero.baseHealth * levelMultiplier;
-        
-        // Аддитивные бонусы от базы
         health += hero.baseHealth * totals.health_mult;
         
         return Math.round(health);
@@ -458,32 +437,26 @@ class HeroGame {
         if (!hero) return {};
         
         const totals = this.calculateTotalBonuses(hero);
-        
-        // База с учетом уровня
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
         let baseHealth = hero.baseHealth * levelMultiplier;
         let baseDamage = hero.baseDamage * levelMultiplier;
         let baseArmor = hero.baseArmor * levelMultiplier;
         
-        // Аддитивные бонусы от базы
         let health = baseHealth + (hero.baseHealth * totals.health_mult);
         let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
         let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
         
-        // Экипировка
-        if (hero.equipment.main_hand) {
-            const weapon = this.items.find(item => item.id === hero.equipment.main_hand);
-            damage += (weapon && weapon.fixed_damage) ? weapon.fixed_damage : 0;
-        }
-        
-        if (hero.equipment.chest) {
-            const armorItem = this.items.find(item => item.id === hero.equipment.chest);
-            armor += (armorItem && armorItem.fixed_armor) ? armorItem.fixed_armor : 0;
-        }
+        Object.values(hero.equipment).forEach(itemId => {
+            if (itemId) {
+                const item = this.items.find(item => item.id === itemId);
+                if (item) {
+                    damage += item.fixed_damage || 0;
+                    armor += item.fixed_armor || 0;
+                }
+            }
+        });
         
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-        
-        // Текущее здоровье с учетом регенерации
         const currentHealth = this.getCurrentHealthForDisplay(hero);
         
         return {
@@ -500,7 +473,6 @@ class HeroGame {
         };
     }
 
-    // МЕХАНИКА КРИТИЧЕСКОГО УДАРА
     calculateAttackDamage(isHeroAttack = true) {
         const stats = this.calculateHeroStats();
         const totals = this.calculateTotalBonuses();
@@ -510,17 +482,15 @@ class HeroGame {
         let isArmorPenetrated = false;
         let finalDamage = baseDamage;
         
-        // Проверка крита
         if (isHeroAttack && Math.random() < totals.crit_chance) {
             isCritical = true;
-            finalDamage *= 2; // Двойной урон при крите
+            finalDamage *= 2;
             this.addBattleLog({
                 message: '💥 КРИТИЧЕСКИЙ УДАР! Двойной урон!',
                 type: 'critical'
             });
         }
         
-        // Проверка пенетрации
         if (isHeroAttack && Math.random() < totals.armor_penetration) {
             isArmorPenetrated = true;
             this.addBattleLog({
@@ -536,7 +506,6 @@ class HeroGame {
         };
     }
 
-    // МЕХАНИКА БОЯ С НОВЫМИ БОНУСАМИ
     battleAttack() {
         if (!this.battleActive) return;
         
@@ -544,7 +513,6 @@ class HeroGame {
         const stats = this.calculateHeroStats(this.currentHero);
         const totals = this.calculateTotalBonuses();
         
-        // Ход героя
         const heroAttack = this.calculateAttackDamage(true);
         let monsterDamageReduction = heroAttack.isArmorPenetrated ? 0 : this.currentMonster.armor;
         const heroDamage = Math.max(1, heroAttack.damage - monsterDamageReduction);
@@ -558,7 +526,6 @@ class HeroGame {
             type: 'hero-attack'
         });
         
-        // Вампиризм - восстановление здоровья от урона
         if (totals.vampirism > 0 && heroDamage > 0) {
             const healAmount = Math.round(heroDamage * totals.vampirism);
             this.updateHealth(healAmount);
@@ -573,7 +540,6 @@ class HeroGame {
             return;
         }
         
-        // Ход монстра
         const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
         this.updateHealth(-monsterDamage);
         
@@ -582,7 +548,6 @@ class HeroGame {
             type: 'monster-attack'
         });
         
-        // ЕСЛИ ЗДОРОВЬЕ ГЕРОЯ ПАДАЕТ ДО 0 ИЛИ НИЖЕ - ЗАВЕРШАЕМ БОЙ С ПОРАЖЕНИЕМ
         if (this.currentHero.currentHealth <= 0) {
             this.endBattle(false);
             return;
@@ -592,13 +557,12 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // ЗАВЕРШЕНИЕ БОЯ С УЧЕТОМ БОНУСОВ И ОБНОВЛЕНИЕМ ПРОГРЕССА ЛОКАЦИИ
     endBattle(victory) {
         if (victory) {
             const totals = this.calculateTotalBonuses();
             const baseReward = this.currentMonster.reward;
             const goldMultiplier = 1 + totals.gold_mult;
-            const reward = parseFloat((baseReward * goldMultiplier).toFixed(2)); // Два знака после запятой
+            const reward = parseFloat((baseReward * goldMultiplier).toFixed(2));
             
             this.currentHero.gold = parseFloat((this.currentHero.gold + reward).toFixed(2));
             this.lastReward = reward;
@@ -607,11 +571,7 @@ class HeroGame {
             const experienceGained = baseExperience;
             
             this.addExperience(experienceGained);
-            
-            // Увеличиваем счетчик убийств
             this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + 1;
-            
-            // ОБНОВЛЯЕМ ПРОГРЕСС ЛОКАЦИИ - НОВАЯ ЛОГИКА
             this.updateLocationProgress(this.currentMonster.id);
             
             this.addBattleLog({
@@ -631,10 +591,7 @@ class HeroGame {
             };
             
         } else {
-            // ГЕРОЙ ПРОИГРАЛ БОЙ - здоровье сбрасывается до 1 единицы и бой завершается
             this.currentHero.currentHealth = 1;
-            
-            // Увеличиваем счетчик смертей
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             
             this.addBattleLog({
@@ -650,7 +607,6 @@ class HeroGame {
             };
         }
         
-        // ВСЕГДА ЗАВЕРШАЕМ БОЙ И ОЧИЩАЕМ СОСТОЯНИЕ
         this.battleActive = false;
         this.currentMonster = null;
         this.battleRound = 0;
@@ -660,7 +616,6 @@ class HeroGame {
         this.renderHeroScreen();
     }
 
-    // НОВАЯ ФУНКЦИЯ: Обновление прогресса локации
     updateLocationProgress(monsterId) {
         if (!this.currentLocation) return;
         
@@ -668,15 +623,10 @@ class HeroGame {
         const progress = this.locationProgress[locationId];
         
         if (progress) {
-            // Добавляем монстра в множество убитых
             progress.monstersKilled.add(monsterId);
-            
-            // Увеличиваем счетчик убийств для этого монстра
             this.monsterKillCount[monsterId] = (this.monsterKillCount[monsterId] || 0) + 1;
             
-            // Проверяем, все ли монстры в локации убиты хотя бы по одному разу
             const allMonstersKilled = this.checkIfAllMonstersKilled(locationId);
-            
             if (allMonstersKilled) {
                 this.completeLocation(locationId);
             }
@@ -685,7 +635,6 @@ class HeroGame {
         }
     }
 
-    // НОВАЯ ФУНКЦИЯ: Проверка, все ли монстры в локации убиты
     checkIfAllMonstersKilled(locationId) {
         const location = this.locations.find(l => l.level === locationId);
         if (!location) return false;
@@ -694,18 +643,15 @@ class HeroGame {
         if (!progress) return false;
         
         const [startMonster, endMonster] = location.monsterRange;
-        
-        // Проверяем, для каждого монстра в диапазоне локации
         for (let monsterId = startMonster; monsterId <= endMonster; monsterId++) {
             if (!progress.monstersKilled.has(monsterId)) {
-                return false; // Нашелся монстр, которого еще не убивали
+                return false;
             }
         }
         
-        return true; // Все монстры убиты хотя бы по одному разу
+        return true;
     }
 
-    // НОВАЯ ФУНКЦИЯ: Завершение локации и разблокировка следующей
     completeLocation(locationId) {
         const nextLocationId = locationId - 1;
         const nextProgress = this.locationProgress[nextLocationId];
@@ -726,7 +672,6 @@ class HeroGame {
         const now = Date.now();
         const timePassed = (now - this.lastHealthUpdate) / 1000;
         
-        // Если здоровье не установлено, устанавливаем максимальное
         if (!hero.currentHealth) {
             hero.currentHealth = this.calculateMaxHealth(hero);
         }
@@ -734,7 +679,6 @@ class HeroGame {
         let currentHealth = hero.currentHealth;
         const maxHealth = this.calculateMaxHealth(hero);
         
-        // Регенерация здоровья (только если герой жив и здоровье больше 0)
         if (currentHealth > 0 && currentHealth < maxHealth) {
             const totals = this.calculateTotalBonuses(hero);
             const regenMultiplier = 1 + totals.health_regen_mult;
@@ -749,7 +693,6 @@ class HeroGame {
             }
         }
         
-        // Гарантируем, что здоровье никогда не будет меньше 1, если герой жив
         if (currentHealth <= 0 && this.currentHero) {
             currentHealth = 1;
             hero.currentHealth = 1;
@@ -767,10 +710,7 @@ class HeroGame {
         
         this.currentHero.currentHealth += change;
         const maxHealth = this.calculateMaxHealth();
-        
-        // Ограничиваем здоровье: минимум 0 (может быть 0 при получении урона), максимум - максимальное здоровье
         this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-        
         this.lastHealthUpdate = Date.now();
         this.saveGame();
     }
@@ -855,7 +795,6 @@ class HeroGame {
         return icons[bonusType] || '🎯';
     }
 
-    // Выбор героя
     selectHero(heroId) {
         const hero = this.heroes.find(h => h.id === heroId);
         if (!hero) {
@@ -875,7 +814,6 @@ class HeroGame {
         this.saveGame();
     }
 
-    // Показать экран
     showScreen(screenName) {
         this.currentScreen = screenName;
         if (this.healthInterval) {
@@ -884,7 +822,6 @@ class HeroGame {
         }
     }
 
-    // Новая функция для анимации здоровья
     startHealthAnimation() {
         if (!this.currentHero) return;
 
@@ -903,11 +840,9 @@ class HeroGame {
             }
         };
 
-        // Обновляем отображение здоровья каждую секунду
         this.healthInterval = setInterval(updateHealthDisplay, 1000);
     }
 
-    // Рендер основного экрана героя с улучшенным отображением бонусов
     renderHeroScreen() {
         if (!this.currentHero) return;
 
@@ -915,22 +850,31 @@ class HeroGame {
         const bonuses = this.getBonuses();
         const activeBonuses = this.getAllActiveBonuses();
 
-        const weapon = this.currentHero.equipment.main_hand ? 
+        const weaponMain = this.currentHero.equipment.main_hand ? 
             this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-        const armor = this.currentHero.equipment.chest ? 
+        const weaponOff = this.currentHero.equipment.off_hand ? 
+            this.items.find(item => item.id === this.currentHero.equipment.off_hand) : null;
+        const armorHelmet = this.currentHero.equipment.helmet ? 
+            this.items.find(item => item.id === this.currentHero.equipment.helmet) : null;
+        const armorChest = this.currentHero.equipment.chest ? 
             this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
+        const armorGloves = this.currentHero.equipment.gloves ? 
+            this.items.find(item => item.id === this.currentHero.equipment.gloves) : null;
+        const armorLegs = this.currentHero.equipment.legs ? 
+            this.items.find(item => item.id === this.currentHero.equipment.legs) : null;
+        const armorBoots = this.currentHero.equipment.boots ? 
+            this.items.find(item => item.id === this.currentHero.equipment.boots) : null;
 
         const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
         const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
         const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
 
-        // Получаем URL картинок и видео
         const heroBackground = this.currentHero.image;
         const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
         
         const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
-       const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
-                const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
+        const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+        const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
 
         const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
         const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
@@ -939,7 +883,6 @@ class HeroGame {
         const container = document.getElementById('app');
         container.innerHTML = `
             <div class="screen active" id="screen-main">
-                <!-- Кнопки действий -->
                 <div class="action-buttons">
                     <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
                     <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
@@ -948,9 +891,7 @@ class HeroGame {
                     <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
                 </div>
 
-                <!-- 4 КОЛОНКИ С КАРТИНКАМИ НА ВЕСЬ ЭКРАН -->
                 <div class="hero-layout">
-                    <!-- Колонка 1: Герой -->
                     <div class="hero-column" style="background-image: url('${heroBackground}')">
                         ${this.showVideo.hero ? `
                             <div class="video-container">
@@ -1002,33 +943,48 @@ class HeroGame {
                                 </div>
                                 
                                 <div class="equipment-section">
-<div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-    <div class="equipment-icon ${weapon ? '' : 'compact'}">
-        ${weapon ? '<img src="' + weapon.image + '" alt="' + weapon.name + '" onerror="this.style.display=\'none\'">' : '⚔️'}
-    </div>
-    <div>
-        <div><strong>Оружие</strong></div>
-        <div>${weapon ? weapon.name : 'Пусто'}</div>
-    </div>
-</div>
-
-<div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-    <div class="equipment-icon ${armor ? '' : 'compact'}">
-        ${armor ? '<img src="' + armor.image + '" alt="' + armor.name + '" onerror="this.style.display=\'none\'">' : '🛡️'}
-    </div>
-    <div>
-        <div><strong>Броня</strong></div>
-        <div>${armor ? armor.name : 'Пусто'}</div>
-    </div>
-</div>
-                                    
-                                    <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-                                        <div class="equipment-icon">
-                                            ${armor ? '<img src="' + armor.image + '" alt="' + armor.name + '" onerror="this.style.display=\'none\'">' : '🛡️'}
+                                    <div class="equipment-row">
+                                        <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Правая рука">
+                                            <div class="equipment-icon">
+                                                ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div><strong>Броня</strong></div>
-                                            <div>${armor ? armor.name : 'Пусто'}</div>
+                                        <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Левая рука">
+                                            <div class="equipment-icon">
+                                                ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="equipment-row">
+                                        <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Шлем">
+                                            <div class="equipment-icon">
+                                                ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
+                                            </div>
+                                        </div>
+                                        <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Нагрудник">
+                                            <div class="equipment-icon">
+                                                ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
+                                            </div>
+                                        </div>
+                                        <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Перчатки">
+                                            <div class="equipment-icon">
+                                                ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="equipment-row">
+                                        <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Поножи">
+                                            <div class="equipment-icon">
+                                                ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
+                                            </div>
+                                        </div>
+                                        <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Ботинки">
+                                            <div class="equipment-icon">
+                                                ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
+                                            </div>
+                                        </div>
+                                        <div class="equipment-slot empty" onclick="game.showInventory()" title="Свободный слот">
+                                            <div class="equipment-icon">✨</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1042,7 +998,6 @@ class HeroGame {
                                     <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
                                 </div>
                                 
-                                <!-- СТАТИСТИКА ГЕРОЯ -->
                                 <div class="hero-stats">
                                     <div class="stat-item">
                                         <span class="stat-icon">💀</span>
@@ -1057,11 +1012,9 @@ class HeroGame {
                                 </div>
                             </div>
 
-                            <!-- УЛУЧШЕННОЕ ОТОБРАЖЕНИЕ БОНУСОВ ПО ИСТОЧНИКАМ -->
                             <div class="bonuses-section">
                                 <h3>🎯 Активные бонусы</h3>
                                 
-                                <!-- Бонусы расы -->
                                 ${activeBonuses.race.length > 0 ? `
                                     <div class="bonus-source-group">
                                         <div class="bonus-source-title">🧬 Раса (${raceName})</div>
@@ -1075,7 +1028,6 @@ class HeroGame {
                                     </div>
                                 ` : ''}
                                 
-                                <!-- Бонусы класса -->
                                 ${activeBonuses.class.length > 0 ? `
                                     <div class="bonus-source-group">
                                         <div class="bonus-source-title">⚔️ Класс (${className})</div>
@@ -1089,7 +1041,6 @@ class HeroGame {
                                     </div>
                                 ` : ''}
                                 
-                                <!-- Бонусы саги -->
                                 ${activeBonuses.saga.length > 0 ? `
                                     <div class="bonus-source-group">
                                         <div class="bonus-source-title">📖 Сага (${sagaName})</div>
@@ -1103,7 +1054,6 @@ class HeroGame {
                                     </div>
                                 ` : ''}
                                 
-                                <!-- Бонусы экипировки -->
                                 ${activeBonuses.equipment.length > 0 ? `
                                     <div class="bonus-source-group">
                                         <div class="bonus-source-title">🎒 Экипировка</div>
@@ -1125,7 +1075,6 @@ class HeroGame {
                         </div>
                     </div>
 
-                    <!-- Колонка 2: Монстр -->
                     <div class="monster-column" style="background-image: url('${monsterBackground}')">
                         <div class="column-overlay"></div>
                         <div class="column-content">
@@ -1134,7 +1083,6 @@ class HeroGame {
                         </div>
                     </div>
 
-                    <!-- Колонка 3: Карта -->
                     <div class="map-column" style="background-image: url('${mapBackground}')">
                         <div class="column-overlay"></div>
                         <div class="column-content">
@@ -1143,7 +1091,6 @@ class HeroGame {
                         </div>
                     </div>
 
-                    <!-- Колонка 4: Локация -->
                     <div class="location-column" style="background-image: url('${locationBackground}')">
                         <div class="column-overlay"></div>
                         <div class="column-content">
@@ -1153,7 +1100,6 @@ class HeroGame {
                     </div>
                 </div>
 
-                <!-- Журнал событий -->
                 <div class="battle-log" id="battle-log"></div>
             </div>
         `;
@@ -1162,17 +1108,14 @@ class HeroGame {
     }
 
     renderMonsterColumn() {
-        // ЕСЛИ ЕСТЬ РЕЗУЛЬТАТ БОЯ - ПОКАЗЫВАЕМ ЕГО
         if (this.battleResult) {
             return this.renderBattleResult();
         }
         
-        // ЕСЛИ БОЙ АКТИВЕН - ПОКАЗЫВАЕМ ИНТЕРФЕЙС БОЯ
         if (this.battleActive && this.currentMonster) {
             return this.renderBattleInMonsterColumn();
         }
         
-        // ЕСЛИ ЕСТЬ МОНСТР, НО БОЙ НЕ АКТИВЕН - ПОКАЗЫВАЕМ ИНФОРМАЦИЮ О МОНСТРЕ
         if (this.currentMonster && !this.battleActive) {
             const stats = this.calculateHeroStats(this.currentHero);
             const powerComparison = stats.power >= this.currentMonster.power ? '✅ ПРЕИМУЩЕСТВО' : '⚠️ РИСК';
@@ -1206,7 +1149,6 @@ class HeroGame {
                         <p>💰 Награда: ${this.currentMonster.reward.toFixed(2)} золота</p>
                     </div>
 
-                    <!-- КНОПКИ ДЕЙСТВИЙ -->
                     <div class="monster-actions">
                         <button class="btn-primary" onclick="game.startBattle()">⚔️ Сражаться</button>
                         <button class="btn-secondary" onclick="game.attemptStealth()">👻 Скрыться</button>
@@ -1215,7 +1157,6 @@ class HeroGame {
                 </div>
             `;
         } else {
-            // ЕСЛИ МОНСТРА НЕТ - ПОКАЗЫВАЕМ ПРИГЛАШЕНИЕ К ПУТЕШЕСТВИЮ
             return `
                 <div class="monster-info" style="text-align: center; padding: 20px;">
                     <h4>Врага нет</h4>
@@ -1275,7 +1216,6 @@ class HeroGame {
                 </div>
                 
                 <div class="battle-combatants-compact">
-                    <!-- Герой -->
                     <div class="combatant-compact" style="border: 2px solid #4cc9f0;">
                         <div class="combatant-image-compact" style="border-color: #4cc9f0;">
                             <img src="${this.currentHero.image}" alt="${this.currentHero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
@@ -1290,10 +1230,9 @@ class HeroGame {
                     
                     <div class="vs-compact">VS</div>
                     
-                    <!-- Монстр -->
                     <div class="combatant-compact" style="border: 2px solid #f87171;">
                         <div class="combatant-image-compact" style="border-color: #f87171;">
-                                                       <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                            <img src="${this.currentMonster.image}" alt="${this.currentMonster.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         </div>
                         <div class="combatant-info-compact">
                             <div class="health-bar-compact">
@@ -1304,14 +1243,12 @@ class HeroGame {
                     </div>
                 </div>
                 
-                <!-- Лог боя -->
                 <div class="battle-log-compact">
                     ${this.battleLog.slice(-3).map(entry => {
                         return '<div class="battle-log-entry-compact ' + (entry.type || '') + '">' + entry.message + '</div>';
                     }).join('')}
                 </div>
                 
-                <!-- Кнопки действий в бою -->
                 <div class="battle-actions-compact">
                     <button class="btn-battle-attack-compact" onclick="game.battleAttack()">
                         ⚔️ Атака
@@ -1416,7 +1353,7 @@ class HeroGame {
                 <div class="location-option ${isUnlocked ? '' : 'locked'}" 
                      onclick="${isUnlocked ? 'game.selectLocation(' + location.level + ')' : ''}">
                     <div class="location-option-image">
-                        <img src="${location.image}" alt="${location.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    <img src="${location.image}" alt="${location.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                         ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                     </div>
                     <div class="location-option-info">
@@ -1486,7 +1423,6 @@ class HeroGame {
             return;
         }
         
-        // НОВАЯ ЛОГИКА: Выбираем случайного монстра из доступных в локации
         const availableMonsters = [];
         for (let monsterId = minId; monsterId <= maxId; monsterId++) {
             availableMonsters.push(monsterId);
@@ -1525,13 +1461,12 @@ class HeroGame {
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
-        this.battleResult = null; // СБРАСЫВАЕМ РЕЗУЛЬТАТ ПРЕДЫДУЩЕГО БОЯ
+        this.battleResult = null;
         
         if (!this.currentHero.currentHealth) {
             this.currentHero.currentHealth = this.calculateMaxHealth();
         }
         
-        // ВОССТАНАВЛИВАЕМ ЗДОРОВЬЕ МОНСТРА ДО МАКСИМУМА
         this.currentMonster.currentHealth = this.currentMonster.health;
         
         this.addToLog('⚔️ Начало боя с ' + this.currentMonster.name + '!');
@@ -1546,7 +1481,6 @@ class HeroGame {
     }
 
     continueAfterBattle() {
-        // ПОЛНОСТЬЮ СБРАСЫВАЕМ СОСТОЯНИЕ БОЯ
         this.battleResult = null;
         this.battleActive = false;
         this.currentMonster = null;
@@ -1600,7 +1534,6 @@ class HeroGame {
             const monsterDamage = Math.max(1, this.currentMonster.damage - stats.armor);
             this.updateHealth(-monsterDamage);
             
-            // ЕСЛИ ЗДОРОВЬЕ ГЕРОЯ ПАДАЕТ ДО 0 ИЛИ НИЖЕ - ЗАВЕРШАЕМ БОЙ С ПОРАЖЕНИЕМ
             if (this.currentHero.currentHealth <= 0) {
                 this.endBattle(false);
             } else {
@@ -1802,12 +1735,11 @@ class HeroGame {
         const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
         this.currentHero.gold = parseFloat((this.currentHero.gold + sellPrice).toFixed(2));
         
-        if (this.currentHero.equipment.main_hand === itemId) {
-            this.currentHero.equipment.main_hand = null;
-        }
-        if (this.currentHero.equipment.chest === itemId) {
-            this.currentHero.equipment.chest = null;
-        }
+        Object.keys(this.currentHero.equipment).forEach(slot => {
+            if (this.currentHero.equipment[slot] === itemId) {
+                this.currentHero.equipment[slot] = null;
+            }
+        });
 
         this.addToLog(`💰 Продано: ${item.name} за ${sellPrice.toFixed(2)} золота`);
         this.saveGame();
@@ -1861,9 +1793,11 @@ class HeroGame {
             return;
         }
 
-        let slot = 'main_hand';
-        if (item.type === 'armor') slot = 'chest';
-        if (item.slot) slot = item.slot;
+        let slot = this.getEquipmentSlot(item);
+        if (!slot) {
+            this.addToLog(`❌ Неизвестный тип предмета: ${item.type}`);
+            return;
+        }
 
         const currentEquipped = this.currentHero.equipment[slot];
         if (currentEquipped) {
@@ -1875,16 +1809,36 @@ class HeroGame {
         this.currentHero.equipment[slot] = itemId;
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
 
-        if (item.bonus && item.bonus.type === 'health_mult') {
-            const oldMaxHealth = this.calculateMaxHealth({...this.currentHero, equipment: {...this.currentHero.equipment, [slot]: currentEquipped}});
-            const newMaxHealth = this.calculateMaxHealth();
-            const healthRatio = this.currentHero.currentHealth / oldMaxHealth;
-            this.currentHero.currentHealth = Math.floor(newMaxHealth * healthRatio);
-        }
-
-        this.addToLog(`🎯 Надето: ${item.name}`);
+        this.addToLog(`🎯 Надето: ${item.name} (${this.getSlotName(slot)})`);
         this.saveGame();
         this.renderHeroScreen();
+    }
+
+    getEquipmentSlot(item) {
+        const slotMap = {
+            'weapon': ['main_hand', 'off_hand'],
+            'helmet': ['helmet'],
+            'chest': ['chest'], 
+            'gloves': ['gloves'],
+            'legs': ['legs'],
+            'boots': ['boots']
+        };
+        
+        return slotMap[item.type] ? slotMap[item.type][0] : null;
+    }
+
+    getSlotName(slot) {
+        const slotNames = {
+            'main_hand': 'Правая рука',
+            'off_hand': 'Левая рука', 
+            'helmet': 'Шлем',
+            'chest': 'Нагрудник',
+            'gloves': 'Перчатки',
+            'legs': 'Поножи',
+            'boots': 'Ботинки'
+        };
+        
+        return slotNames[slot] || 'Неизвестный слот';
     }
 
     usePotion(item) {
@@ -1926,7 +1880,12 @@ class HeroGame {
             inventory: [],
             equipment: {
                 main_hand: null,
-                chest: null
+                off_hand: null,
+                helmet: null,
+                chest: null,
+                gloves: null,
+                legs: null,
+                boots: null
             }
         };
         
@@ -1977,7 +1936,6 @@ class HeroGame {
 
     saveGame() {
         if (this.currentHero) {
-            // Преобразуем Set в Array для сохранения
             const locationProgressForSave = {};
             Object.keys(this.locationProgress).forEach(locationId => {
                 const progress = this.locationProgress[locationId];
@@ -2043,7 +2001,6 @@ class HeroGame {
                 this.monsterKillCount = data.monsterKillCount || {};
                 this.showVideo = data.showVideo || this.showVideo;
                 
-                // Восстанавливаем Set из Array
                 if (data.locationProgress) {
                     Object.keys(data.locationProgress).forEach(locationId => {
                         const progress = data.locationProgress[locationId];
