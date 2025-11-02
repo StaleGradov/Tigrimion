@@ -99,7 +99,7 @@
     "fixed_armor": 0,
     "fixed_health": 0,
     "bonus": {"type": "crit_chance", "value": 0.05},
-    "requiredLevel": 15,
+    "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
     "durability": 100,
