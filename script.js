@@ -941,75 +941,6 @@ class HeroGame {
                                         <span class="stat-value">${stats.power}</span>
                                     </div>
                                 </div>
-                                
-                                <div class="equipment-section">
-                                    <div class="equipment-row">
-                                        <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Правая рука">
-                                            <div class="equipment-icon">
-                                                ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
-                                            </div>
-                                        </div>
-                                        <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Левая рука">
-                                            <div class="equipment-icon">
-                                                ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="equipment-row">
-                                        <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Шлем">
-                                            <div class="equipment-icon">
-                                                ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
-                                            </div>
-                                        </div>
-                                        <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Нагрудник">
-                                            <div class="equipment-icon">
-                                                ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
-                                            </div>
-                                        </div>
-                                        <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Перчатки">
-                                            <div class="equipment-icon">
-                                                ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="equipment-row">
-                                        <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Поножи">
-                                            <div class="equipment-icon">
-                                                ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
-                                            </div>
-                                        </div>
-                                        <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" onclick="game.showInventory()" title="Ботинки">
-                                            <div class="equipment-icon">
-                                                ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
-                                            </div>
-                                        </div>
-                                        <div class="equipment-slot empty" onclick="game.showInventory()" title="Свободный слот">
-                                            <div class="equipment-icon">✨</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="level-progress">
-                                    <div class="level-progress-fill" style="width: ${expProgress}%"></div>
-                                </div>
-                                <div class="hero-progress">
-                                    <span>Ур.${this.currentHero.level}</span>
-                                    <span>💰${this.currentHero.gold.toFixed(2)}</span>
-                                    <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
-                                </div>
-                                
-                                <div class="hero-stats">
-                                    <div class="stat-item">
-                                        <span class="stat-icon">💀</span>
-                                        <span class="stat-label">Убийств:</span>
-                                        <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
-                                    </div>
-                                    <div class="stat-item">
-                                        <span class="stat-icon">☠️</span>
-                                        <span class="stat-label">Смертей:</span>
-                                        <span class="stat-value">${this.currentHero.deaths || 0}</span>
-                                    </div>
-                                </div>
                             </div>
 
                             <div class="bonuses-section">
@@ -1072,6 +1003,97 @@ class HeroGame {
                                     <div class="no-bonuses">Нет активных бонусов</div>
                                 ` : ''}
                             </div>
+
+                            <!-- ЭКИПИРОВКА ПЕРЕМЕЩЕНА ВНИЗ -->
+                            <div class="equipment-section">
+                                <div class="equipment-row">
+                                    <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('main_hand')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
+                                        </div>
+                                    </div>
+                                    <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('off_hand')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="equipment-row">
+                                    <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('helmet')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'helmet')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
+                                        </div>
+                                    </div>
+                                    <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('chest')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'chest')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
+                                        </div>
+                                    </div>
+                                    <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('gloves')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'gloves')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="equipment-row">
+                                    <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('legs')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'legs')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
+                                        </div>
+                                    </div>
+                                    <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                                         onclick="game.unequipItem('boots')"
+                                         onmouseover="game.showEquipmentTooltip(event, 'boots')"
+                                         onmouseout="game.hideEquipmentTooltip()">
+                                        <div class="equipment-icon">
+                                            ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
+                                        </div>
+                                    </div>
+                                    <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
+                                        <div class="equipment-icon">✨</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="level-progress">
+                                <div class="level-progress-fill" style="width: ${expProgress}%"></div>
+                            </div>
+                            <div class="hero-progress">
+                                <span>Ур.${this.currentHero.level}</span>
+                                <span>💰${this.currentHero.gold.toFixed(2)}</span>
+                                <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                            </div>
+                            
+                            <div class="hero-stats">
+                                <div class="stat-item">
+                                    <span class="stat-icon">💀</span>
+                                    <span class="stat-label">Убийств:</span>
+                                    <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon">☠️</span>
+                                    <span class="stat-label">Смертей:</span>
+                                    <span class="stat-value">${this.currentHero.deaths || 0}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1105,6 +1127,86 @@ class HeroGame {
         `;
 
         this.startHealthAnimation();
+    }
+
+    // НОВЫЙ МЕТОД ДЛЯ ПОКАЗА ПОДСКАЗОК ЭКИПИРОВКИ
+    showEquipmentTooltip(event, slot) {
+        // Удаляем существующие подсказки
+        this.hideEquipmentTooltip();
+        
+        const slotNames = {
+            'main_hand': 'Правая рука',
+            'off_hand': 'Левая рука',
+            'helmet': 'Шлем',
+            'chest': 'Нагрудник',
+            'gloves': 'Перчатки',
+            'legs': 'Поножи',
+            'boots': 'Ботинки'
+        };
+        
+        const itemId = this.currentHero.equipment[slot];
+        let tooltipContent = '';
+        
+        if (itemId) {
+            const item = this.items.find(i => i.id === itemId);
+            if (item) {
+                tooltipContent = `
+                    <div class="slot-name">${slotNames[slot]}</div>
+                    <div class="item-stats">
+                        <div><strong>${item.name}</strong></div>
+                        ${item.fixed_damage ? `<div>⚔️ Урон: +${item.fixed_damage}</div>` : ''}
+                        ${item.fixed_armor ? `<div>🛡️ Броня: +${item.fixed_armor}</div>` : ''}
+                        ${item.bonus ? `<div>🎯 ${this.formatBonus(item.bonus)}</div>` : ''}
+                        <div><em>${item.description}</em></div>
+                        <div style="margin-top: 4px; color: #ff6b6b; font-size: 0.7em;">Кликните чтобы снять</div>
+                    </div>
+                `;
+            }
+        } else {
+            tooltipContent = `
+                <div class="slot-name">${slotNames[slot]}</div>
+                <div class="empty-slot">Пусто</div>
+                <div style="margin-top: 4px; color: #4cc9f0; font-size: 0.7em;">Откройте инвентарь чтобы экипировать</div>
+            `;
+        }
+        
+        const tooltip = document.createElement('div');
+        tooltip.className = 'equipment-tooltip';
+        tooltip.innerHTML = tooltipContent;
+        
+        event.currentTarget.appendChild(tooltip);
+    }
+
+    // НОВЫЙ МЕТОД ДЛЯ СКРЫТИЯ ПОДСКАЗОК
+    hideEquipmentTooltip() {
+        const existingTooltips = document.querySelectorAll('.equipment-tooltip');
+        existingTooltips.forEach(tooltip => tooltip.remove());
+    }
+
+    // НОВЫЙ МЕТОД ДЛЯ СНЯТИЯ ПРЕДМЕТА
+    unequipItem(slot) {
+        const itemId = this.currentHero.equipment[slot];
+        if (!itemId) {
+            this.showInventory();
+            return;
+        }
+        
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return;
+        
+        // Проверяем, есть ли место в инвентаре
+        if (this.currentHero.inventory.length >= 10) {
+            this.addToLog('❌ Инвентарь полон! Максимум 10 предметов');
+            return;
+        }
+        
+        // Снимаем предмет
+        this.currentHero.equipment[slot] = null;
+        this.currentHero.inventory.push(itemId);
+        
+        this.addToLog(`📦 Снято: ${item.name} (${this.getSlotName(slot)})`);
+        this.saveGame();
+        this.renderHeroScreen();
     }
 
     renderMonsterColumn() {
@@ -1760,10 +1862,17 @@ class HeroGame {
                     <div class="inventory-item-image">
                         <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
                     </div>
-                    <strong>${item.name}</strong>
-                    <div>${this.formatBonus(item.bonus)}</div>
-                    <div>Урон: +${item.fixed_damage || 0} | Броня: +${item.fixed_armor || 0}</div>
-                    ${isEquipped ? '<small>✓ Надето</small>' : '<small>📦 В инвентаре</small>'}
+                    <div class="inventory-item-info">
+                        <strong>${item.name}</strong>
+                        <div class="item-stats">
+                            ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
+                            ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
+                            ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
+                            ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
+                        </div>
+                        <small>${item.description}</small>
+                        ${isEquipped ? '<small style="color: #4ade80;">✓ Надето</small>' : '<small style="color: #4cc9f0;">📦 В инвентаре</small>'}
+                    </div>
                 </div>
             `;
         }).join('');
