@@ -15,7 +15,40 @@ body {
     width: 100vw;
     overflow-x: hidden;
 }
+/* Стили для статистики героя */
+.hero-stats {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 6px;
+    margin-top: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    font-size: 0.75em;
+}
 
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-icon {
+    font-size: 0.9em;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 2px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #4cc9f0;
+    min-width: 20px;
+    text-align: center;
+}
 /* Основной контейнер */
 .container {
     width: 100%;
