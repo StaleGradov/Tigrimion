@@ -15,40 +15,7 @@ body {
     width: 100vw;
     overflow-x: hidden;
 }
-/* Стили для статистики героя */
-.hero-stats {
-    display: flex;
-    justify-content: space-between;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 6px;
-    border-radius: 6px;
-    margin-top: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(4px);
-    font-size: 0.75em;
-}
 
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.stat-icon {
-    font-size: 0.9em;
-}
-
-.stat-label {
-    color: rgba(255, 255, 255, 0.8);
-    margin-right: 2px;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: #4cc9f0;
-    min-width: 20px;
-    text-align: center;
-}
 /* Основной контейнер */
 .container {
     width: 100%;
@@ -464,74 +431,95 @@ body {
     color: #4cc9f0;
 }
 
-/* Секция экипировки */
+/* НОВАЯ СИСТЕМА ЭКИПИРОВКИ */
 .equipment-section {
-    display: grid;
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 6px;
     margin-bottom: 8px;
 }
 
-/* Слот экипировки */
+.equipment-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+/* Базовые слоты экипировки */
 .equipment-slot {
     display: flex;
     align-items: center;
+    justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     transition: all 0.3s ease;
     backdrop-filter: blur(4px);
-    font-size: 0.85em;
-    min-height: 48px; /* Фиксированная высота */
+    padding: 4px;
+    min-width: 40px;
+    min-height: 40px;
 }
 
-/* Текст в слоте экипировки */
-.equipment-slot > div:last-child {
-    flex: 1;
-    min-width: 0; /* Разрешаем сжатие текстового контейнера */
+.equipment-slot:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #4cc9f0;
+    transform: translateY(-1px);
 }
 
-.equipment-slot strong {
-    display: block;
-    font-size: 0.9em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+/* Слоты оружия */
+.weapon-slot {
+    border-color: rgba(239, 68, 68, 0.4);
 }
 
-.equipment-slot > div:last-child div:last-child {
-    font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.8);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.weapon-slot:hover {
+    border-color: #ef4444;
 }
 
-/* Иконка экипировки - КОМПАКТНАЯ ВЕРСИЯ */
+/* Слоты брони */
+.armor-slot {
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.armor-slot:hover {
+    border-color: #22c55e;
+}
+
+/* Иконки экипировки - КОМПАКТНЫЕ */
 .equipment-icon {
     width: 32px;
     height: 32px;
-    margin-right: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
     font-size: 0.9em;
-    flex-shrink: 0; /* Запрещаем сжатие */
-    overflow: hidden; /* Обрезаем содержимое если выходит за границы */
+    flex-shrink: 0;
+    overflow: hidden;
 }
 
-/* Изображения внутри иконок экипировки */
 .equipment-icon img {
     max-width: 24px;
     max-height: 24px;
     width: auto;
     height: auto;
-    object-fit: contain; /* Сохраняем пропорции */
+    object-fit: contain;
+}
+
+/* Заполненные слоты */
+.equipment-slot.equipped {
+    border-width: 2px;
+}
+
+.weapon-slot.equipped {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.armor-slot.equipped {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
 }
 
 /* Полоска прогресса уровня */
@@ -564,6 +552,41 @@ body {
     font-size: 0.8em;
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(4px);
+}
+
+/* СТАТИСТИКА ГЕРОЯ */
+.hero-stats {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px;
+    border-radius: 6px;
+    margin-top: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    font-size: 0.75em;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-icon {
+    font-size: 0.9em;
+}
+
+.stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    margin-right: 2px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #4cc9f0;
+    min-width: 20px;
+    text-align: center;
 }
 
 /* Секция бонусов */
@@ -1076,6 +1099,7 @@ body {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
 }
+
 
 /* Основной журнал событий */
 .battle-log {
