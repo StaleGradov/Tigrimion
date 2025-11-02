@@ -2,117 +2,359 @@
   {
     "id": 1,
     "name": "Медное копьё",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/MEDPIKE.jpg",
-    "type": "weapon",
-    "slot": "main_hand",
-    "fixed_damage": 5,
-    "bonus": {"type": "damage_mult", "value": 0.1},
-    "price": 0.05,
-    "sellPrice": 0.025,
-    "requiredLevel": 1,
-    "description": "Староё медное копьё, но лучше кулаки"
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_spear.jpg",
+    "type": "weapon",           // Тип предмета: weapon, armor, helmet, gloves, boots, potion, accessory
+    "slot": "main_hand",        // Слот экипировки: main_hand, off_hand, helmet, chest, gloves, legs, boots, accessory
+    "rarity": "common",         // Редкость: common, uncommon, rare, epic, legendary
+    "fixed_damage": 5,          // Фиксированный бонус к урону
+    "fixed_armor": 0,           // Фиксированный бонус к броне
+    "fixed_health": 0,          // Фиксированный бонус к здоровью
+    "bonus": {                  // Бонус эффект
+      "type": "damage_mult",    // Тип бонуса: damage_mult, health_mult, armor_mult, gold_mult, etc.
+      "value": 0.1              // Значение бонуса (обычно от 0.1 до 0.5)
+    },
+    "requiredLevel": 1,         // Требуемый уровень для использования
+    "requiredClass": [],        // Ограничения по классу ["warrior", "hunter"]
+    "requiredRace": [],         // Ограничения по расе ["human", "elf"]
+    "durability": 100,          // Прочность предмета (0-100)
+    "price": 50,                // Цена покупки
+    "sellPrice": 25,            // Цена продажи
+    "description": "Староё медное копьё, но лучше кулаки",
+    "flavorText": "Ржавеет, но колется",  // Текст для атмосферы
+    "setBonus": null            // Бонус за комплект (если есть)
   },
   {
     "id": 2,
     "name": "Бронзовое копьё",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/BRONZEPIKE.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bronze_spear.jpg",
     "type": "weapon",
     "slot": "main_hand",
+    "rarity": "uncommon",
     "fixed_damage": 10,
-    "bonus": {"type": "crit_chance", "value": 0.1},
-    "price": 0.1,
-    "sellPrice": 0.05,
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "crit_chance",
+      "value": 0.1
+    },
     "requiredLevel": 1,
-    "description": "Бронзовое копьё для скрытной охоты"
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 100,
+    "sellPrice": 50,
+    "description": "Бронзовое копьё для скрытной охоты",
+    "flavorText": "Блестит в лунном свете",
+    "setBonus": null
   },
   {
     "id": 3,
     "name": "Железное копьё",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/IRONPIKE.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_spear.jpg",
     "type": "weapon",
     "slot": "main_hand",
+    "rarity": "rare",
     "fixed_damage": 15,
-    "bonus": {"type": "gold_mult", "value": 0.15},
-    "price": 0.2,
-    "sellPrice": 0.1,
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "gold_mult",
+      "value": 0.15
+    },
     "requiredLevel": 2,
-    "description": "Магическое копьё, приносящее удачу"
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 200,
+    "sellPrice": 100,
+    "description": "Магическое копьё, приносящее удачу",
+    "flavorText": "Золотые прожилки мерцают в темноте",
+    "setBonus": null
   },
   {
     "id": 4,
     "name": "Кожаный доспех",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/leather_armor.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/leather_armor.jpg",
     "type": "armor",
     "slot": "chest",
+    "rarity": "common",
+    "fixed_damage": 0,
     "fixed_armor": 15,
-    "bonus": {"type": "health_mult", "value": 0.1},
-    "price": 0.7,
-    "sellPrice": 35,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "health_mult",
+      "value": 0.1
+    },
     "requiredLevel": 1,
-    "description": "Простая кожаная броня"
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 70,
+    "sellPrice": 35,
+    "description": "Простая кожаная броня",
+    "flavorText": "Пахнет дымом и приключениями",
+    "setBonus": null
   },
   {
     "id": 5,
     "name": "Кольчуга богатства",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/chainmail_wealth.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/chainmail_wealth.jpg",
     "type": "armor",
     "slot": "chest",
+    "rarity": "rare",
+    "fixed_damage": 0,
     "fixed_armor": 8,
-    "bonus": {"type": "gold_mult", "value": 0.2},
+    "fixed_health": 0,
+    "bonus": {
+      "type": "gold_mult",
+      "value": 0.2
+    },
+    "requiredLevel": 2,
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
     "price": 120,
     "sellPrice": 60,
-    "requiredLevel": 2,
-    "description": "Кольчуга, увеличивающая добычу золота"
+    "description": "Кольчуга, увеличивающая добычу золота",
+    "flavorText": "Звенит золотом при каждом шаге",
+    "setBonus": null
   },
   {
     "id": 6,
     "name": "Плащ тени",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/shadow_cloak.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/shadow_cloak.jpg",
     "type": "armor",
     "slot": "chest",
+    "rarity": "uncommon",
+    "fixed_damage": 0,
     "fixed_armor": 3,
-    "bonus": {"type": "escape_bonus", "value": 1},
+    "fixed_health": 0,
+    "bonus": {
+      "type": "escape_chance",
+      "value": 0.15
+    },
+    "requiredLevel": 1,
+    "requiredClass": ["thief", "hunter"],
+    "requiredRace": ["elf", "halfling"],
+    "durability": 100,
     "price": 90,
     "sellPrice": 45,
-    "requiredLevel": 1,
-    "description": "Плащ, помогающий скрыться от врагов"
+    "description": "Плащ, помогающий скрыться от врагов",
+    "flavorText": "Сливается с тенями",
+    "setBonus": null
   },
   {
     "id": 7,
     "name": "Стальной меч",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/steel_sword.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_sword.jpg",
     "type": "weapon",
     "slot": "main_hand",
+    "rarity": "rare",
     "fixed_damage": 12,
-    "bonus": {"type": "damage_mult", "value": 0.15},
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "damage_mult",
+      "value": 0.15
+    },
+    "requiredLevel": 3,
+    "requiredClass": ["warrior", "gladiator"],
+    "requiredRace": ["human", "ork"],
+    "durability": 100,
     "price": 200,
     "sellPrice": 100,
-    "requiredLevel": 3,
-    "description": "Качественный стальной меч"
+    "description": "Качественный стальной меч",
+    "flavorText": "Идеальный баланс и острота",
+    "setBonus": null
   },
   {
     "id": 8,
     "name": "Доспех выживальщика",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/survival_armor.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/survival_armor.jpg",
     "type": "armor",
     "slot": "chest",
+    "rarity": "epic",
+    "fixed_damage": 0,
     "fixed_armor": 10,
-    "bonus": {"type": "survival_bonus", "value": 1},
+    "fixed_health": 20,
+    "bonus": {
+      "type": "health_regen_mult",
+      "value": 0.25
+    },
+    "requiredLevel": 3,
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
     "price": 150,
     "sellPrice": 75,
-    "requiredLevel": 3,
-    "description": "Доспех, дающий шанс перевыбрать локацию"
+    "description": "Доспех, увеличивающий регенерацию здоровья",
+    "flavorText": "Шрамы на броне рассказывают истории выживания",
+    "setBonus": null
   },
   {
     "id": 9,
+    "name": "Шлем стража",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/guard_helmet.jpg",
+    "type": "helmet",
+    "slot": "helmet",
+    "rarity": "uncommon",
+    "fixed_damage": 0,
+    "fixed_armor": 8,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "armor_mult",
+      "value": 0.1
+    },
+    "requiredLevel": 2,
+    "requiredClass": ["warrior", "gladiator"],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 80,
+    "sellPrice": 40,
+    "description": "Надежный шлем городской стражи",
+    "flavorText": "Видел множество битв",
+    "setBonus": null
+  },
+  {
+    "id": 10,
+    "name": "Перчатки ловкости",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/agility_gloves.jpg",
+    "type": "gloves",
+    "slot": "gloves",
+    "rarity": "rare",
+    "fixed_damage": 0,
+    "fixed_armor": 5,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "crit_chance",
+      "value": 0.1
+    },
+    "requiredLevel": 3,
+    "requiredClass": ["hunter", "thief", "archer"],
+    "requiredRace": ["elf", "halfling"],
+    "durability": 100,
+    "price": 120,
+    "sellPrice": 60,
+    "description": "Перчатки, увеличивающие шанс критического удара",
+    "flavorText": "Пальцы скользят как тень",
+    "setBonus": null
+  },
+  {
+    "id": 11,
+    "name": "Сапоги странника",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/traveler_boots.jpg",
+    "type": "boots",
+    "slot": "boots",
+    "rarity": "common",
+    "fixed_damage": 0,
+    "fixed_armor": 4,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "health_regen_mult",
+      "value": 0.1
+    },
+    "requiredLevel": 1,
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 60,
+    "sellPrice": 30,
+    "description": "Удобные сапоги для долгих путешествий",
+    "flavorText": "Прошли сотни миль",
+    "setBonus": null
+  },
+  {
+    "id": 12,
     "name": "Зелье здоровья",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/health_potion.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/health_potion.jpg",
     "type": "potion",
     "slot": "consumable",
+    "rarity": "common",
     "heal": 30,
+    "fixed_damage": 0,
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": null,
+    "requiredLevel": 1,
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 1,
     "price": 40,
     "sellPrice": 20,
-    "requiredLevel": 1,
-    "description": "Восстанавливает 30 здоровья"
+    "description": "Восстанавливает 30 здоровья",
+    "flavorText": "Красная жидкость с фруктовым ароматом",
+    "setBonus": null
+  },
+  {
+    "id": 13,
+    "name": "Амулет вампира",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/vampire_amulet.jpg",
+    "type": "accessory",
+    "slot": "accessory",
+    "rarity": "epic",
+    "fixed_damage": 0,
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "vampirism",
+      "value": 0.1
+    },
+    "requiredLevel": 5,
+    "requiredClass": ["death_mage", "sorcerer"],
+    "requiredRace": ["laitar"],
+    "durability": 100,
+    "price": 300,
+    "sellPrice": 150,
+    "description": "Амулет, позволяющий восстанавливать здоровье от урона",
+    "flavorText": "Теплый пульс исходит от камня",
+    "setBonus": null
+  },
+  {
+    "id": 14,
+    "name": "Щит дракона",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/dragon_shield.jpg",
+    "type": "weapon",
+    "slot": "off_hand",
+    "rarity": "legendary",
+    "fixed_damage": 0,
+    "fixed_armor": 25,
+    "fixed_health": 50,
+    "bonus": {
+      "type": "armor_mult",
+      "value": 0.2
+    },
+    "requiredLevel": 10,
+    "requiredClass": ["warrior", "gladiator"],
+    "requiredRace": ["dragon", "human"],
+    "durability": 100,
+    "price": 1000,
+    "sellPrice": 500,
+    "description": "Легендарный щит из чешуи дракона",
+    "flavorText": "Глаза дракона следят за врагами",
+    "setBonus": null
+  },
+  {
+    "id": 15,
+    "name": "Лук эльфийского следопыта",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/elf_bow.jpg",
+    "type": "weapon",
+    "slot": "main_hand",
+    "rarity": "epic",
+    "fixed_damage": 18,
+    "fixed_armor": 0,
+    "fixed_health": 0,
+    "bonus": {
+      "type": "armor_penetration",
+      "value": 0.2
+    },
+    "requiredLevel": 6,
+    "requiredClass": ["archer", "hunter"],
+    "requiredRace": ["elf"],
+    "durability": 100,
+    "price": 450,
+    "sellPrice": 225,
+    "description": "Изысканный лук эльфийских мастеров",
+    "flavorText": "Стрелы находят цель даже в кромешной тьме",
+    "setBonus": null
   }
 ]
