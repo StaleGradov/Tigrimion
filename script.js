@@ -1004,72 +1004,73 @@ class HeroGame {
                                 ` : ''}
                             </div>
 
-<!-- ЭКИПИРОВКА ПЕРЕМЕЩЕНА ВНИЗ И РАСШИРЕНА -->
+<!-- ЭКИПИРОВКА - ГОРИЗОНТАЛЬНОЕ РАСПОЛОЖЕНИЕ -->
 <div class="equipment-section">
-    <div class="equipment-row">
-        <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('main_hand')"
-             onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
-            </div>
-        </div>
-        <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('off_hand')"
-             onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
-            </div>
+    <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('main_hand')"
+         onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
         </div>
     </div>
-    <div class="equipment-row">
-        <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('helmet')"
-             onmouseover="game.showEquipmentTooltip(event, 'helmet')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
-            </div>
-        </div>
-        <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('chest')"
-             onmouseover="game.showEquipmentTooltip(event, 'chest')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
-            </div>
-        </div>
-        <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('gloves')"
-             onmouseover="game.showEquipmentTooltip(event, 'gloves')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
-            </div>
+    
+    <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('off_hand')"
+         onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
         </div>
     </div>
-    <div class="equipment-row">
-        <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('legs')"
-             onmouseover="game.showEquipmentTooltip(event, 'legs')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
-            </div>
+    
+    <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('helmet')"
+         onmouseover="game.showEquipmentTooltip(event, 'helmet')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
         </div>
-        <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
-             onclick="game.unequipItem('boots')"
-             onmouseover="game.showEquipmentTooltip(event, 'boots')"
-             onmouseout="game.hideEquipmentTooltip()">
-            <div class="equipment-icon">
-                ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
-            </div>
+    </div>
+    
+    <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('chest')"
+         onmouseover="game.showEquipmentTooltip(event, 'chest')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
         </div>
-        <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
-            <div class="equipment-icon">🎒</div>
+    </div>
+    
+    <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('gloves')"
+         onmouseover="game.showEquipmentTooltip(event, 'gloves')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
         </div>
+    </div>
+    
+    <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('legs')"
+         onmouseover="game.showEquipmentTooltip(event, 'legs')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
+        </div>
+    </div>
+    
+    <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
+         onclick="game.unequipItem('boots')"
+         onmouseover="game.showEquipmentTooltip(event, 'boots')"
+         onmouseout="game.hideEquipmentTooltip()">
+        <div class="equipment-icon">
+            ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
+        </div>
+    </div>
+    
+    <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
+        <div class="equipment-icon">🎒</div>
     </div>
 </div>
                             
@@ -1136,7 +1137,7 @@ showEquipmentTooltip(event, slot) {
     
     const slotNames = {
         'main_hand': '⚔️ Правая рука',
-        'off_hand': '🛡️ Левая рука',
+        'off_hand': '🛡️ Левая рука', 
         'helmet': '⛑️ Шлем',
         'chest': '👕 Нагрудник',
         'gloves': '🧤 Перчатки',
