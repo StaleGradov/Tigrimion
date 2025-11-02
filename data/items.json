@@ -1,16 +1,16 @@
 [
   {
     "id": 1,
-    "name": "Ржавый меч",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/rusty_sword.jpg",
+    "name": "Медное копьё",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/MEDPIKE.jpg",
     "type": "weapon",
     "slot": "main_hand",
-    "fixed_damage": 50,
+    "fixed_damage": 15,
     "bonus": {"type": "damage_mult", "value": 0.1},
-    "price": 0.5,
-    "sellPrice": 25,
+    "price": 0.05,
+    "sellPrice": 0.025,
     "requiredLevel": 1,
-    "description": "Старый ржавый меч, но лучше чем ничего"
+    "description": "Староё медное копьё, но лучше кулаки"
   },
   {
     "id": 2,
