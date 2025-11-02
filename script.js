@@ -1002,15 +1002,26 @@ class HeroGame {
                                 </div>
                                 
                                 <div class="equipment-section">
-                                    <div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
-                                        <div class="equipment-icon">
-                                            ${weapon ? '<img src="' + weapon.image + '" alt="' + weapon.name + '" onerror="this.style.display=\'none\'">' : '⚔️'}
-                                        </div>
-                                        <div>
-                                            <div><strong>Оружие</strong></div>
-                                            <div>${weapon ? weapon.name : 'Пусто'}</div>
-                                        </div>
-                                    </div>
+                                    // В функции renderHeroScreen, в блоке equipment-section:
+<div class="equipment-slot ${weapon ? 'equipped' : 'empty'}" onclick="game.showInventory()">
+    <div class="equipment-icon ${weapon ? '' : 'compact'}">
+        ${weapon ? '<img src="' + weapon.image + '" alt="' + weapon.name + '" onerror="this.style.display=\'none\'">' : '⚔️'}
+    </div>
+    <div>
+        <div><strong>Оружие</strong></div>
+        <div>${weapon ? weapon.name : 'Пусто'}</div>
+    </div>
+</div>
+
+<div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
+    <div class="equipment-icon ${armor ? '' : 'compact'}">
+        ${armor ? '<img src="' + armor.image + '" alt="' + armor.name + '" onerror="this.style.display=\'none\'">' : '🛡️'}
+    </div>
+    <div>
+        <div><strong>Броня</strong></div>
+        <div>${armor ? armor.name : 'Пусто'}</div>
+    </div>
+</div>
                                     
                                     <div class="equipment-slot ${armor ? 'equipped' : 'empty'}" onclick="game.showInventory()">
                                         <div class="equipment-icon">
