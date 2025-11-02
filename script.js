@@ -1041,9 +1041,19 @@ startBattle() {
 
 // Отрисовка экрана выбора героя
 renderHeroSelect() {
+    console.log('renderHeroSelect вызван');
+    console.log('Количество героев:', this.heroes.length);
+    
     const container = document.getElementById('app');
+    if (!container) {
+        console.error('Контейнер app не найден!');
+        return;
+    }
+
     const heroesHTML = this.heroes.map(hero => {
         const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+        console.log(`Герой ${hero.name} (ID: ${hero.id}) разблокирован:`, isUnlocked);
+        
         const stats = this.calculateHeroStats(hero);
         const bonuses = this.getBonuses();
         
@@ -1102,15 +1112,19 @@ renderHeroSelect() {
             <div class="hero-list">
                 ${heroesHTML}
             </div>
-            <div class="action-buttons" style="margin-top: 20px;">
-                <button class="btn-secondary" onclick="game.showScreen('main'); game.renderHeroScreen();" style="margin: 0 auto;">
-                    ← Назад к текущему герою
+            <div class="action-buttons" style="margin-top: 20px; justify-content: center;">
+                <button class="btn-secondary" onclick="game.debugHeroSelection()">
+                    🐛 Отладка выбора героя
                 </button>
+                ${this.currentHero ? `
+                    <button class="btn-secondary" onclick="game.showScreen('main'); game.renderHeroScreen();">
+                        ← Назад к ${this.currentHero.name}
+                    </button>
+                ` : ''}
             </div>
         </div>
     `;
 
-    // Убедимся, что экран переключен правильно
     this.showScreen('hero-select');
 }
 
@@ -1131,22 +1145,29 @@ getBonusIcon(bonusType) {
 
 // Выбор героя
 selectHero(heroId) {
+    console.log('selectHero вызван с ID:', heroId);
+    
     const hero = this.heroes.find(h => h.id === heroId);
     if (!hero) {
         console.error('Герой не найден:', heroId);
+        this.addToLog('❌ Ошибка: герой не найден');
         return;
     }
     
     const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
+        this.addToLog(`❌ Герой ${hero.name} заблокирован!`);
         return;
     }
     
+    console.log('Выбран герой:', hero.name);
     this.currentHero = hero;
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
+    
+    this.addToLog(`🎯 Выбран герой: ${hero.name}`);
 }
 
 // Переключение экранов
@@ -2609,6 +2630,29 @@ unequipItem(slot) {
     dropRelic() {
         this.addToLog('🌟 Найдена легендарная реликвия!');
     }
+    // Метод отладки для диагностики проблемы
+debugHeroSelection() {
+    console.log('=== ОТЛАДКА ВЫБОРА ГЕРОЯ ===');
+    console.log('game object:', this);
+    console.log('heroes array:', this.heroes);
+    console.log('currentHero:', this.currentHero);
+    console.log('window.game:', window.game);
+    
+    // Проверяем обработчики событий
+    const heroOptions = document.querySelectorAll('.hero-option');
+    console.log('Найдено элементов hero-option:', heroOptions.length);
+    
+    heroOptions.forEach((option, index) => {
+        console.log(`Hero option ${index}:`, option);
+        console.log(`Onclick атрибут ${index}:`, option.getAttribute('onclick'));
+    });
+    
+    // Тестируем выбор героя напрямую
+    if (this.heroes.length > 0) {
+        console.log('Пробуем выбрать первого героя напрямую...');
+        this.selectHero(1);
+    }
+}
 }
 
 // ========== МОДУЛЬ 16: ЗАПУСК ИГРЫ ==========
