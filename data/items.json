@@ -14,16 +14,16 @@
   },
   {
     "id": 2,
-    "name": "Охотничий лук",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/hunting_bow.jpg",
+    "name": "Бронзовое копьё",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/BRONZEPIKE.jpg",
     "type": "weapon",
     "slot": "main_hand",
-    "fixed_damage": 8,
+    "fixed_damage": 30,
     "bonus": {"type": "stealth_bonus", "value": 1},
-    "price": 80,
-    "sellPrice": 40,
+    "price": 0.1,
+    "sellPrice": 0.05,
     "requiredLevel": 1,
-    "description": "Точный лук для скрытной охоты"
+    "description": "Бронзовое копьё для скрытной охоты"
   },
   {
     "id": 3,
