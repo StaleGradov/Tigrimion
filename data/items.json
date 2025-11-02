@@ -737,25 +737,25 @@
     "flavorText": "Несокрушимые ноги",
     "setName": "set_guardian"
   },
-  {
-    "id": 35,
-    "name": "Мифриловые поножи",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_leggings.jpg",
-    "type": "legs", 
-    "slot": "legs",
-    "rarity": "legendary",
-    "fixed_damage": 0,
-    "fixed_armor": 28,
-    "fixed_health": 20,
-    "bonus": {"type": "health_regen_mult", "value": 0.15},
-    "requiredLevel": 15,
-    "requiredClass": ["warrior", "gladiator"],
-    "requiredRace": ["human", "dwarf", "ork"],
-    "durability": 100,
-    "price": 360,
-    "sellPrice": 180,
-    "description": "Мощные стальные поножи",
-    "flavorText": "Несокрушимые ноги",
-  "setName": "set_guardian"
+{
+  "id": 35,
+  "name": "Мифриловые поножи",
+  "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_leggings.jpg",
+  "type": "legs", 
+  "slot": "legs",
+  "rarity": "legendary",
+  "fixed_damage": 0,
+  "fixed_armor": 35, // Увеличено с 28
+  "fixed_health": 25, // Увеличено с 20
+  "bonus": {"type": "health_regen_mult", "value": 0.2}, // Усилен бонус
+  "requiredLevel": 15, // Добавлен требуемый уровень
+  "requiredClass": ["warrior", "gladiator"],
+  "requiredRace": ["elf", "human", "dwarf"], // Добавлены эльфы для консистентности
+  "durability": 100,
+  "price": 900, // Увеличена цена
+  "sellPrice": 450, // Увеличена цена продажи
+  "description": "Легендарные поножи из мифрила",
+  "flavorText": "Позволяют двигаться с невероятной скоростью",
+  "setName": "set_complete" // Сменен сет для единообразия
 }
 ]
