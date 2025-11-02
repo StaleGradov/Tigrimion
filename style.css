@@ -2562,3 +2562,325 @@ body {
         image-rendering: crisp-edges;
     }
 }
+/* ===== МОДУЛЬ 19: СТИЛИ ДЛЯ НОВОЙ СИСТЕМЫ БОЯ И РАМОК ===== */
+
+/* Стили для индикатора выносливости */
+.stamina-display {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3));
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+    border: 2px solid #f59e0b;
+    backdrop-filter: blur(4px);
+}
+
+.stamina-display strong {
+    color: #f59e0b;
+    font-size: 0.9em;
+}
+
+/* Стили для кнопки блокирования */
+.btn-battle-block-compact {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    flex: 1;
+    backdrop-filter: blur(4px);
+    border: 2px solid;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8));
+    color: white;
+    border-color: #d97706;
+}
+
+.btn-battle-block-compact:hover {
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.9), rgba(180, 83, 9, 0.9));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Стили для цветных рамок предметов по редкости */
+.rarity-common .item-background {
+    border-color: #9ca3af !important;
+    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+}
+
+.rarity-uncommon .item-background {
+    border-color: #4cc9f0 !important;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.rarity-rare .item-background {
+    border-color: #a855f7 !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
+}
+
+.rarity-epic .item-background {
+    border-color: #f59e0b !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.rarity-legendary .item-background {
+    border-color: #ffd700 !important;
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    }
+    to {
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.7);
+    }
+}
+
+/* Стили для предметов в инвентаре с цветными рамками */
+.inventory-item {
+    border: 2px solid #9ca3af;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.inventory-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+/* Стили для лога боя с новыми типами сообщений */
+.battle-log-entry-compact.block {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.battle-log-entry-compact.battle-start {
+    color: #4cc9f0;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Стили для кнопок боя в компактном режиме */
+.battle-actions-compact {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.btn-battle-attack-compact, .btn-battle-block-compact {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    flex: 1;
+    backdrop-filter: blur(4px);
+    border: 2px solid;
+    text-align: center;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-battle-attack-compact {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+    color: white;
+    border-color: #dc2626;
+}
+
+.btn-battle-attack-compact:hover {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 1), rgba(185, 28, 28, 1));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+/* Стили для подсказки о множественных атаках */
+.attack-count-indicator {
+    font-size: 0.7em;
+    margin-top: 2px;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+/* Адаптивность для новых элементов */
+@media (max-width: 768px) {
+    .stamina-display {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .btn-battle-attack-compact, .btn-battle-block-compact {
+        padding: 8px 12px;
+        font-size: 0.8em;
+        min-height: 40px;
+    }
+    
+    .battle-actions-compact {
+        gap: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stamina-display {
+        padding: 5px 8px;
+        font-size: 0.75em;
+    }
+    
+    .btn-battle-attack-compact, .btn-battle-block-compact {
+        padding: 6px 10px;
+        font-size: 0.75em;
+        min-height: 36px;
+    }
+    
+    .attack-count-indicator {
+        font-size: 0.65em;
+    }
+}
+
+/* Стили для экипированных предметов с цветными рамками */
+.equipment-slot.equipped {
+    position: relative;
+    overflow: hidden;
+}
+
+.equipment-slot.equipped::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid;
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+/* Цвета рамок для экипированных предметов по редкости */
+.equipment-slot.equipped[data-rarity="common"]::before { border-color: #9ca3af; }
+.equipment-slot.equipped[data-rarity="uncommon"]::before { border-color: #4cc9f0; }
+.equipment-slot.equipped[data-rarity="rare"]::before { border-color: #a855f7; }
+.equipment-slot.equipped[data-rarity="epic"]::before { border-color: #f59e0b; }
+.equipment-slot.equipped[data-rarity="legendary"]::before { 
+    border-color: #ffd700;
+    animation: slot-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes slot-glow {
+    from {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+    to {
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    }
+}
+
+/* Улучшенные стили для модального окна предмета */
+.modal-content .detail-item-background {
+    border-width: 3px;
+    transition: all 0.3s ease;
+}
+
+.modal-content .detail-item-background:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Стили для статистики выносливости в бою */
+.stamina-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    margin-bottom: 8px;
+}
+
+.stamina-icon {
+    font-size: 1.2em;
+}
+
+.stamina-value {
+    font-weight: bold;
+    color: #f59e0b;
+    font-size: 1.1em;
+}
+
+.stamina-info {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: auto;
+}
+
+/* Стили для уведомлений о бонусе выносливости */
+.stamina-bonus-notification {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 5px 0;
+    text-align: center;
+    font-weight: bold;
+    border: 1px solid #d97706;
+    animation: pulse-stamina 0.5s ease-in-out;
+}
+
+@keyframes pulse-stamina {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Стили для инструктирующих подсказок */
+.combat-tutorial {
+    background: rgba(76, 201, 240, 0.1);
+    border: 1px solid #4cc9f0;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 8px 0;
+    font-size: 0.8em;
+    color: #4cc9f0;
+}
+
+.combat-tutorial strong {
+    color: #4cc9f0;
+}
+
+/* Стили для визуального отображения стаков выносливости */
+.stamina-stacks {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    margin: 5px 0;
+}
+
+.stamina-stack {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f59e0b;
+    transition: all 0.3s ease;
+}
+
+.stamina-stack.empty {
+    background: rgba(245, 158, 11, 0.3);
+}
+
+/* Анимация для получения стака выносливости */
+@keyframes gain-stamina {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+}
+
+.stamina-stack.gained {
+    animation: gain-stamina 0.3s ease-in-out;
+}
