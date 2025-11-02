@@ -431,120 +431,93 @@ body {
     color: #4cc9f0;
 }
 
-/* НОВАЯ СИСТЕМА ЭКИПИРОВКИ - ПЕРЕМЕЩЕНА ВНИЗ */
+/* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВКИ */
 .equipment-section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     margin-top: auto;
     margin-bottom: 8px;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 12px;
     border-radius: 8px;
-    border: 1px solid rgba(76, 201, 240, 0.3);
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .equipment-row {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     justify-content: center;
+    width: 100%;
 }
 
-/* Базовые слоты экипировки */
+/* Увеличенные слоты экипировки */
 .equipment-slot {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
     transition: all 0.3s ease;
     backdrop-filter: blur(4px);
-    padding: 4px;
-    min-width: 40px;
-    min-height: 40px;
+    padding: 8px;
+    min-width: 50px;
+    min-height: 50px;
+    flex: 1;
+    max-width: 60px;
 }
 
 .equipment-slot:hover {
     background: rgba(255, 255, 255, 0.15);
     border-color: #4cc9f0;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
 }
 
-/* Слоты оружия */
-.weapon-slot {
-    border-color: rgba(239, 68, 68, 0.4);
-}
-
-.weapon-slot:hover {
-    border-color: #ef4444;
-}
-
-/* Слоты брони */
-.armor-slot {
-    border-color: rgba(34, 197, 94, 0.4);
-}
-
-.armor-slot:hover {
-    border-color: #22c55e;
-}
-
-/* Иконки экипировки - КОМПАКТНЫЕ */
+/* Увеличенные иконки экипировки */
 .equipment-icon {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    font-size: 0.9em;
+    border-radius: 6px;
+    font-size: 1.2em;
     flex-shrink: 0;
     overflow: hidden;
 }
 
 .equipment-icon img {
-    max-width: 24px;
-    max-height: 24px;
+    max-width: 32px;
+    max-height: 32px;
     width: auto;
     height: auto;
     object-fit: contain;
 }
 
-/* Заполненные слоты */
-.equipment-slot.equipped {
-    border-width: 2px;
-}
-
-.weapon-slot.equipped {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.1);
-}
-
-.armor-slot.equipped {
-    border-color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-}
-
-/* ВСПЛЫВАЮЩИЕ ПОДСКАЗКИ ДЛЯ ЭКИПИРОВКИ */
+/* Увеличенные всплывающие подсказки */
 .equipment-tooltip {
     position: absolute;
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.95);
-    border: 1px solid #4cc9f0;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 0.75em;
+    border: 2px solid #4cc9f0;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.85em;
     white-space: nowrap;
     z-index: 1000;
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    margin-bottom: 5px;
-    min-width: 120px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    margin-bottom: 8px;
+    min-width: 150px;
 }
 
 .equipment-tooltip::after {
@@ -553,25 +526,84 @@ body {
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    border: 5px solid transparent;
+    border: 6px solid transparent;
     border-top-color: #4cc9f0;
 }
 
 .equipment-tooltip .slot-name {
     color: #ffd700;
     font-weight: bold;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     text-align: center;
+    font-size: 0.9em;
 }
 
 .equipment-tooltip .item-stats {
-    font-size: 0.7em;
+    font-size: 0.8em;
     color: #ccc;
+    line-height: 1.4;
 }
 
 .equipment-tooltip .empty-slot {
     color: #888;
     font-style: italic;
+    text-align: center;
+}
+
+/* Адаптивность для экипировки */
+@media (max-width: 768px) {
+    .equipment-section {
+        padding: 10px;
+        gap: 6px;
+    }
+    
+    .equipment-row {
+        gap: 6px;
+    }
+    
+    .equipment-slot {
+        min-width: 45px;
+        min-height: 45px;
+        padding: 6px;
+    }
+    
+    .equipment-icon {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .equipment-icon img {
+        max-width: 28px;
+        max-height: 28px;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-section {
+        padding: 8px;
+        gap: 4px;
+    }
+    
+    .equipment-row {
+        gap: 4px;
+    }
+    
+    .equipment-slot {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 4px;
+    }
+    
+    .equipment-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1em;
+    }
+    
+    .equipment-icon img {
+        max-width: 24px;
+        max-height: 24px;
+    }
 }
 
 /* Полоска прогресса уровня */
