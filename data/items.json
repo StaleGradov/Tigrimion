@@ -10,7 +10,7 @@
     "fixed_damage": 5,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "damage_mult", "value": 0.05},
+    "bonus": {"type": "damage_mult", "value": 0.1},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -19,7 +19,7 @@
     "sellPrice": 0.25,
     "description": "Простое медное копьё для крестьян",
     "flavorText": "Мягкий металл, но острый",
-    "setName": "Комплект крестьянина Арканиума"
+    "setName": "Крестьянина Арканиума"
   },
   {
     "id": 2,
@@ -32,7 +32,7 @@
     "fixed_damage": 10,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.05},
+    "bonus": {"type": "damage_mult", "value": 0.1},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -41,7 +41,7 @@
     "sellPrice": 0.5,
     "description": "Бронзовое копьё с хорошим балансом",
     "flavorText": "Блестит в лунном свете",
-    "setName": "Комплект ополченца Арканиума"
+    "setName": "Ополченца Арканиума"
   },
   {
     "id": 3, 
@@ -54,7 +54,7 @@
     "fixed_damage": 15,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "armor_penetration", "value": 0.1},
+    "bonus": {"type": "damage_mult", "value": 0.1},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -63,7 +63,7 @@
     "sellPrice": 1,
     "description": "Качественное железное копьё",
     "flavorText": "Проходит сквозь броню",
-    "setName": "Комплект стражника Арканиума"
+    "setName": "Стражника Арканиума"
   },
   {
     "id": 4,
@@ -85,7 +85,7 @@
     "sellPrice": 2,
     "description": "Искусно выкованное стальное копьё",
     "flavorText": "Не знает промаха",
-    "setName": "Комплек воина Арканиума"
+    "setName": "Воина Арканиума"
   },
   {
     "id": 5,
@@ -98,7 +98,7 @@
     "fixed_damage": 25,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.05},
+    "bonus": {"type": "damage_mult", "value": 0.1},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -107,7 +107,7 @@
     "sellPrice": 4,
     "description": "Легендарное копьё из мифрила",
     "flavorText": "Светится в темноте",
-    "setName": "set_complete"
+    "setName": "Личного телохранителя Магнатов Арканиума"
   },
 
   {
@@ -121,7 +121,7 @@
     "fixed_damage": 10,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "damage_mult", "value": 0.1},
+    "bonus": {"type": "damage_mult", "value": 0.2},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -129,7 +129,8 @@
     "price": 1,
     "sellPrice": 0.5,
     "description": "Длинное копьё для дистанционных атак",
-    "flavorText": "Держи врага на расстоянии"
+    "flavorText": "Держи врага на расстоянии",
+    "setName": "Крестьянина Арканиума"
   },
   {
     "id": 7,
@@ -142,15 +143,16 @@
     "fixed_damage": 20,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "armor_penetration", "value": 0.2},
+    "bonus": {"type": "damage_mult", "value": 0.2},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
     "durability": 100,
     "price": 2,
     "sellPrice": 1,
-    "description": "Улучшенное длинное копьё",
-    "flavorText": "Пронзает любую защиту"
+    "description": "Отличное длинное копьё",
+    "flavorText": "Пронзает посчти любую защиту",
+    "setName": "Ополченца Арканиума"
   },
   {
     "id": 8,
@@ -163,7 +165,7 @@
     "fixed_damage": 30,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "damage_mult", "value": 0.1},
+    "bonus": {"type": "damage_mult", "value": 0.2},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -171,7 +173,8 @@
     "price": 4,
     "sellPrice": 2,
     "description": "Мощное железное копьё",
-    "flavorText": "Сбивает с ног одним ударом"
+    "flavorText": "Сбивает с ног одним ударом",
+    "setName": "Стражника Арканиума"
   },
   {
     "id": 9,
@@ -184,7 +187,7 @@
     "fixed_damage": 40,
     "fixed_armor": 0, 
     "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.1},
+    "bonus": {"type": "damage_mult", "value": 0.2},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -192,7 +195,8 @@
     "price": 8,
     "sellPrice": 4,
     "description": "Элитное стальное копьё",
-    "flavorText": "Оружие чемпионов"
+    "flavorText": "Оружие настоящих воинов",
+    "setName": "Воина Арканиума"
   },
   {
     "id": 10,
@@ -205,7 +209,7 @@
     "fixed_damage": 50,
     "fixed_armor": 0,
     "fixed_health": 0,
-    "bonus": {"type": "damage_mult", "value": 0.1},
+    "bonus": {"type": "damage_mult", "value": 0.2},
     "requiredLevel": 1,
     "requiredClass": [],
     "requiredRace": [],
@@ -214,7 +218,7 @@
     "sellPrice": 8,
     "description": "Легендарное мифриловое копьё",
     "flavorText": "Достаточно чтобы пронзить дракона",
-    "setName": "set_complete"
+    "setName": "Личного телохранителя Магнатов Арканиума"
   },
 
   {
