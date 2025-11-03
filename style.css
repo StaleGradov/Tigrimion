@@ -2915,3 +2915,385 @@ body {
     font-size: 1em;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
+/* ===== МОДУЛЬ 20: СТИЛИ СИСТЕМЫ ПОДКАТЕГОРИЙ ===== */
+
+/* Контейнер подкатегорий */
+.shop-subcategories {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.shop-subcategories h4 {
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Контейнер вкладок подкатегорий */
+.subcategory-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Кнопки подкатегорий */
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    text-align: center;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border-color: rgba(76, 201, 240, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border-color: #a855f7;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    font-weight: bold;
+    transform: translateY(-2px);
+}
+
+/* Специфичные цвета для разных типов материалов */
+.subcategory-tab[data-subcategory="cloth"]:hover,
+.subcategory-tab[data-subcategory="cloth"].active {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    border-color: #9ca3af;
+    box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+}
+
+.subcategory-tab[data-subcategory="leather"]:hover,
+.subcategory-tab[data-subcategory="leather"].active {
+    background: linear-gradient(135deg, #a16207, #854d0e);
+    border-color: #a16207;
+    box-shadow: 0 4px 15px rgba(161, 98, 7, 0.4);
+}
+
+.subcategory-tab[data-subcategory="hide"]:hover,
+.subcategory-tab[data-subcategory="hide"].active {
+    background: linear-gradient(135deg, #78350f, #451a03);
+    border-color: #78350f;
+    box-shadow: 0 4px 15px rgba(120, 53, 15, 0.4);
+}
+
+.subcategory-tab[data-subcategory="fur"]:hover,
+.subcategory-tab[data-subcategory="fur"].active {
+    background: linear-gradient(135deg, #57534e, #44403c);
+    border-color: #57534e;
+    box-shadow: 0 4px 15px rgba(87, 83, 78, 0.4);
+}
+
+.subcategory-tab[data-subcategory="bone"]:hover,
+.subcategory-tab[data-subcategory="bone"].active {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    border-color: #f8fafc;
+    color: #1a1a2e;
+    box-shadow: 0 4px 15px rgba(248, 250, 252, 0.4);
+}
+
+.subcategory-tab[data-subcategory="plate"]:hover,
+.subcategory-tab[data-subcategory="plate"].active {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    border-color: #94a3b8;
+    box-shadow: 0 4px 15px rgba(148, 163, 184, 0.4);
+}
+
+.subcategory-tab[data-subcategory="chain"]:hover,
+.subcategory-tab[data-subcategory="chain"].active {
+    background: linear-gradient(135deg, #475569, #334155);
+    border-color: #475569;
+    box-shadow: 0 4px 15px rgba(71, 85, 105, 0.4);
+}
+
+.subcategory-tab[data-subcategory="plate_mail"]:hover,
+.subcategory-tab[data-subcategory="plate_mail"].active {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-color: #1e293b;
+    box-shadow: 0 4px 15px rgba(30, 41, 59, 0.4);
+}
+
+/* Индикатор активной подкатегории */
+.subcategory-indicator {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: #4cc9f0;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.subcategory-tab.active .subcategory-indicator {
+    opacity: 1;
+}
+
+/* Анимация появления подкатегорий */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.shop-subcategories {
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Счетчик предметов в подкатегории */
+.subcategory-count {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.subcategory-tab.active .subcategory-count {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+/* Адаптивность для подкатегорий */
+@media (max-width: 768px) {
+    .shop-subcategories {
+        padding: 12px;
+        margin: 10px 0;
+    }
+    
+    .subcategory-tabs {
+        gap: 6px;
+    }
+    
+    .subcategory-tab {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 70px;
+    }
+    
+    .subcategory-tab:hover {
+        transform: translateY(-1px);
+    }
+    
+    .subcategory-tab.active {
+        transform: translateY(-1px);
+    }
+}
+
+@media (max-width: 480px) {
+    .shop-subcategories {
+        padding: 10px;
+    }
+    
+    .subcategory-tabs {
+        gap: 4px;
+    }
+    
+    .subcategory-tab {
+        padding: 5px 10px;
+        font-size: 0.75em;
+        min-width: 60px;
+        border-width: 1px;
+    }
+    
+    .subcategory-count {
+        padding: 1px 4px;
+        font-size: 0.65em;
+        margin-left: 3px;
+        min-width: 16px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 360px) {
+    .subcategory-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .subcategory-tab {
+        width: 100%;
+        margin: 2px 0;
+        text-align: center;
+    }
+}
+
+/* Стили для пустых подкатегорий */
+.subcategory-tab.empty {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.subcategory-tab.empty:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    box-shadow: none;
+}
+
+/* Индикатор загрузки для подкатегорий */
+.subcategory-loading {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid #4cc9f0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 5px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Подсветка при фильтрации */
+.items-grid.filtering {
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+/* Сообщение о пустой подкатегории */
+.empty-subcategory-message {
+    text-align: center;
+    padding: 30px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-subcategory-message::before {
+    content: "🎯";
+    display: block;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+/* Анимация переключения подкатегорий */
+.subcategory-transition-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.subcategory-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.subcategory-transition-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.subcategory-transition-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Улучшенные стили для заголовка подкатегорий */
+.subcategory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-title {
+    color: #ffd700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.subcategory-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.subcategory-total {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    border: 1px solid #4cc9f0;
+}
+
+/* Эффект при наведении на предметы фильтрованной категории */
+.shop-category.filtered .shop-item {
+    transition: all 0.3s ease;
+}
+
+.shop-category.filtered .shop-item:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Индикатор активной фильтрации */
+.filter-active-indicator {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background: #4cc9f0;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+}
