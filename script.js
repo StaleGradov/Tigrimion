@@ -1906,7 +1906,6 @@ HeroGame.prototype.canEquipWeapon = function(item, currentEquipment) {
     return true;
 };
 
-// ========== МОДУЛЬ 10.2: ЭКИПИРОВАТЬ ПРЕДМЕТ ==========
 HeroGame.prototype.equipItem = function(itemId) {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
@@ -1957,8 +1956,9 @@ HeroGame.prototype.equipItem = function(itemId) {
     
     this.saveGame();
     
-    // ОБНОВЛЯЕМ ЭКРАН - ВАЖНОЕ ИЗМЕНЕНИЕ!
-    this.renderHeroScreen();
+    // НЕ ЗАКРЫВАЕМ ИНВЕНТАРЬ ПРИ ЭКИПИРОВКЕ - ОБНОВЛЯЕМ ЕГО
+    const targetSlot = this.getEquipmentSlot(item);
+    this.showInventory(targetSlot);
 };
 
 // ========== МОДУЛЬ 10.3: СНЯТЬ ПРЕДМЕТ В ИНВЕНТАРЬ ==========
@@ -2012,21 +2012,29 @@ HeroGame.prototype.getEquipmentSlot = function(item) {
     return slotMap[item.type] ? (Array.isArray(slotMap[item.type]) ? slotMap[item.type][0] : slotMap[item.type]) : null;
 };
 
-// ========== МОДУЛЬ 10.6: ПОЛУЧИТЬ НАЗВАНИЕ СЛОТА ==========
-HeroGame.prototype.getSlotName = function(slot) {
-    const slotNames = {
-        'main_hand': 'Правая рука',
-        'off_hand': 'Левая рука', 
-        'helmet': 'Шлем',
-        'chest': 'Нагрудник',
-        'gloves': 'Перчатки',
-        'legs': 'Поножи',
-        'boots': 'Ботинки'
+// ========== МОДУЛЬ 10.6: ПОЛУЧЕНИЕ СЛОТА ДЛЯ ПРЕДМЕТА ==========
+HeroGame.prototype.getEquipmentSlot = function(item) {
+    if (item.type === 'weapon') {
+        if (item.weaponType === 'shield') {
+            return 'off_hand';
+        } else if (item.weaponType === 'two_handed') {
+            return 'main_hand'; // Двуручное оружие занимает оба слота, но возвращаем основной
+        } else {
+            return 'main_hand'; // Одноручное оружие
+        }
+    }
+    
+    // Для брони возвращаем соответствующий слот
+    const slotMap = {
+        'helmet': 'helmet',
+        'chest': 'chest', 
+        'gloves': 'gloves',
+        'legs': 'legs',
+        'boots': 'boots'
     };
     
-    return slotNames[slot] || 'Неизвестный слот';
+    return slotMap[item.type] || null;
 };
-
 // ========== МОДУЛЬ 10.7: ИСПОЛЬЗОВАТЬ ЗЕЛЬЕ ==========
 HeroGame.prototype.usePotion = function(item) {
     if (item.type !== 'potion') return;
@@ -2041,6 +2049,7 @@ HeroGame.prototype.usePotion = function(item) {
     this.saveGame();
     this.showInventory();
 };
+// ========== МОДУЛЬ 10.8: ОТКРЫТИЕ ИНВЕНТАРЯ ИЗ СЛОТА И СНЯТИЕ ПРЕДМЕТА ==========
 HeroGame.prototype.openInventoryFromSlot = function(slot) {
     // Если слот не пустой - снимаем предмет
     if (this.currentHero.equipment[slot] && slot !== 'inventory') {
@@ -2051,6 +2060,7 @@ HeroGame.prototype.openInventoryFromSlot = function(slot) {
     // Если слот пустой или это инвентарь - открываем инвентарь с фильтром
     this.showInventory(slot);
 };
+
 HeroGame.prototype.unequipItem = function(slot) {
     const itemId = this.currentHero.equipment[slot];
     if (!itemId) return;
@@ -2081,9 +2091,10 @@ HeroGame.prototype.unequipItem = function(slot) {
     this.checkSetBonuses();
     
     this.saveGame();
-    this.renderHeroScreen();
+    
+    // ОТКРЫВАЕМ ИНВЕНТАРЬ ПОСЛЕ СНЯТИЯ ПРЕДМЕТА
+    this.showInventory(slot);
 };
-
 // ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ ==========
 HeroGame.prototype.startAdventure = function() {
     if (!this.currentMap || !this.currentLocation) {
@@ -2150,7 +2161,6 @@ HeroGame.prototype.encounterMonster = function() {
 
 // ========== МОДУЛЬ 12: СИСТЕМА МАГАЗИНА И ТОРГОВЛИ ==========
 
-// ========== МОДУЛЬ 12.1: ПОКАЗАТЬ МАГАЗИН ==========
 HeroGame.prototype.showMerchant = function() {
     // Удаляем только существующие экраны магазина и инвентаря
     const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
@@ -2179,7 +2189,7 @@ HeroGame.prototype.showMerchant = function() {
             <div class="shop-categories">
                 <button class="category-tab active" data-category="all">Все предметы</button>
                 <button class="category-tab" data-category="weapon">⚔️ Оружие</button>
-                <button class="category-tab" data-category="shield">🛡️ Щиты</button>
+                <!-- УДАЛЕНА КНОПКА ЩИТОВ -->
                 <button class="category-tab" data-category="helmet">⛑️ Шлемы</button>
                 <button class="category-tab" data-category="chest">👕 Броня</button>
                 <button class="category-tab" data-category="gloves">🧤 Перчатки</button>
@@ -2675,14 +2685,18 @@ HeroGame.prototype.doesItemMatchCategory = function(item, category) {
     if (category === 'shield') return item.weaponType === 'shield';
     return item.type === category;
 };
-// ========== МОДУЛЬ 12.17: ЗАКРЫТЬ МАГАЗИН ==========
+// ========== МОДУЛЬ 12.17: ОБНОВЛЕННЫЙ МЕТОД ЗАКРЫТИЯ МАГАЗИНА ==========
+
 HeroGame.prototype.closeMerchant = function() {
     const merchantScreen = document.getElementById('screen-merchant');
     if (merchantScreen) {
         merchantScreen.remove();
     }
+    // ВОССТАНАВЛИВАЕМ ГЛАВНЫЙ ЭКРАН ГЕРОЯ
     this.renderHeroScreen();
 };
+
+//========== МОДУЛЬ 12.18: ОБНОВЛЕННЫЙ МЕТОД ПОКАЗА ИНВЕНТАРЯ С ФИЛЬТРАЦИЕЙ ==========
 HeroGame.prototype.showInventory = function(targetSlot = null) {
     if (!this.currentHero) return;
 
@@ -2692,8 +2706,18 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
 
     // Фильтрация предметов для выбранного слота
     let filteredItems = this.currentHero.inventory;
+    let filterInfo = '';
+    
     if (targetSlot && targetSlot !== 'inventory') {
         filteredItems = this.getItemsForSlot(targetSlot);
+        filterInfo = `
+            <div style="text-align: center; margin-bottom: 10px; background: rgba(76, 201, 240, 0.2); padding: 8px; border-radius: 8px; border: 1px solid #4cc9f0;">
+                <strong>🎯 Выбор предмета для: ${this.getSlotName(targetSlot)}</strong>
+                <div style="font-size: 0.8em; margin-top: 4px; color: #4cc9f0;">
+                    Показано: ${filteredItems.length} подходящих предметов
+                </div>
+            </div>
+        `;
     }
 
     const inventoryHTML = filteredItems.map(itemId => {
@@ -2726,16 +2750,11 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
         `;
     }).join('');
 
-    const slotInfo = targetSlot && targetSlot !== 'inventory' ? 
-        `<div style="text-align: center; margin-bottom: 10px; background: rgba(76, 201, 240, 0.2); padding: 8px; border-radius: 8px; border: 1px solid #4cc9f0;">
-            <strong>🎯 Выбор предмета для: ${this.getSlotName(targetSlot)}</strong>
-        </div>` : '';
-
     const container = document.getElementById('app');
     container.innerHTML += `
         <div class="screen active" id="screen-inventory">
             <h3 class="text-center">🎒 Инвентарь</h3>
-            ${slotInfo}
+            ${filterInfo}
             <div class="inventory-info" style="margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
                     <span>💰 Ваше золото: ${this.currentHero?.gold.toFixed(2) || 0}</span>
@@ -2746,6 +2765,9 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
                 ${inventoryHTML || '<div class="text-center">Инвентарь пуст</div>'}
             </div>
             <div class="action-buttons">
+                ${targetSlot ? `
+                    <button class="btn-secondary" onclick="game.showInventory()">📦 Показать все предметы</button>
+                ` : ''}
                 <button class="btn-secondary" onclick="game.closeInventory()">← Назад к герою</button>
             </div>
         </div>
@@ -3063,12 +3085,12 @@ HeroGame.prototype.unequipItem = function(slot) {
         this.renderHeroScreen();
     }
 };
-// ========== МОДУЛЬ 13.3: ЗАКРЫТЬ ИНВЕНТАРЬ ==========
 HeroGame.prototype.closeInventory = function() {
     const inventoryScreen = document.getElementById('screen-inventory');
     if (inventoryScreen) {
         inventoryScreen.remove();
     }
+    // ВОССТАНАВЛИВАЕМ ГЛАВНЫЙ ЭКРАН ГЕРОЯ
     this.renderHeroScreen();
 };
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
