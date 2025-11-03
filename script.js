@@ -1125,21 +1125,27 @@ renderHeroScreen() {
     const bonuses = this.getBonuses();
     const activeBonuses = this.getAllActiveBonuses(this.currentHero);
 
-    // Получение экипированных предметов
-    const weaponMain = this.currentHero.equipment.main_hand ? 
-        this.items.find(item => item.id === this.currentHero.equipment.main_hand) : null;
-    const weaponOff = this.currentHero.equipment.off_hand ? 
-        this.items.find(item => item.id === this.currentHero.equipment.off_hand) : null;
-    const armorHelmet = this.currentHero.equipment.helmet ? 
-        this.items.find(item => item.id === this.currentHero.equipment.helmet) : null;
-    const armorChest = this.currentHero.equipment.chest ? 
-        this.items.find(item => item.id === this.currentHero.equipment.chest) : null;
-    const armorGloves = this.currentHero.equipment.gloves ? 
-        this.items.find(item => item.id === this.currentHero.equipment.gloves) : null;
-    const armorLegs = this.currentHero.equipment.legs ? 
-        this.items.find(item => item.id === this.currentHero.equipment.legs) : null;
-    const armorBoots = this.currentHero.equipment.boots ? 
-        this.items.find(item => item.id === this.currentHero.equipment.boots) : null;
+    // Получение экипированных предметов с информацией о редкости
+    const getEquippedItemWithRarity = (slot) => {
+        const itemId = this.currentHero.equipment[slot];
+        if (!itemId) return null;
+        
+        const item = this.items.find(item => item.id === itemId);
+        if (!item) return null;
+        
+        return {
+            item: item,
+            rarity: item.rarity || 'common'
+        };
+    };
+
+    const weaponMain = getEquippedItemWithRarity('main_hand');
+    const weaponOff = getEquippedItemWithRarity('off_hand');
+    const armorHelmet = getEquippedItemWithRarity('helmet');
+    const armorChest = getEquippedItemWithRarity('chest');
+    const armorGloves = getEquippedItemWithRarity('gloves');
+    const armorLegs = getEquippedItemWithRarity('legs');
+    const armorBoots = getEquippedItemWithRarity('boots');
 
     const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
     const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
@@ -1305,69 +1311,76 @@ renderHeroScreen() {
                             ` : ''}
                         </div>
 
-                        <!-- Секция экипировки -->
+                        <!-- Секция экипировки с цветными слотами -->
                         <div class="equipment-section">
-                            <!-- Слоты экипировки -->
+                            <!-- Слоты экипировки с цветными рамками -->
                             <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
+                                 ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
                                  onclick="game.unequipItem('main_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${weaponMain ? '<img src="' + weaponMain.image + '" alt="' + weaponMain.name + '">' : '⚔️'}
+                                    ${weaponMain ? '<img src="' + weaponMain.item.image + '" alt="' + weaponMain.item.name + '">' : '⚔️'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
+                                 ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
                                  onclick="game.unequipItem('off_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${weaponOff ? '<img src="' + weaponOff.image + '" alt="' + weaponOff.name + '">' : '🛡️'}
+                                    ${weaponOff ? '<img src="' + weaponOff.item.image + '" alt="' + weaponOff.item.name + '">' : '🛡️'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                                 ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
                                  onclick="game.unequipItem('helmet')"
                                  onmouseover="game.showEquipmentTooltip(event, 'helmet')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${armorHelmet ? '<img src="' + armorHelmet.image + '" alt="' + armorHelmet.name + '">' : '⛑️'}
+                                    ${armorHelmet ? '<img src="' + armorHelmet.item.image + '" alt="' + armorHelmet.item.name + '">' : '⛑️'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
+                                 ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
                                  onclick="game.unequipItem('chest')"
                                  onmouseover="game.showEquipmentTooltip(event, 'chest')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${armorChest ? '<img src="' + armorChest.image + '" alt="' + armorChest.name + '">' : '👕'}
+                                    ${armorChest ? '<img src="' + armorChest.item.image + '" alt="' + armorChest.item.name + '">' : '👕'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                                 ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
                                  onclick="game.unequipItem('gloves')"
                                  onmouseover="game.showEquipmentTooltip(event, 'gloves')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${armorGloves ? '<img src="' + armorGloves.image + '" alt="' + armorGloves.name + '">' : '🧤'}
+                                    ${armorGloves ? '<img src="' + armorGloves.item.image + '" alt="' + armorGloves.item.name + '">' : '🧤'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                                 ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
                                  onclick="game.unequipItem('legs')"
                                  onmouseover="game.showEquipmentTooltip(event, 'legs')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${armorLegs ? '<img src="' + armorLegs.image + '" alt="' + armorLegs.name + '">' : '👖'}
+                                    ${armorLegs ? '<img src="' + armorLegs.item.image + '" alt="' + armorLegs.item.name + '">' : '👖'}
                                 </div>
                             </div>
                             
                             <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                                 ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
                                  onclick="game.unequipItem('boots')"
                                  onmouseover="game.showEquipmentTooltip(event, 'boots')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
-                                    ${armorBoots ? '<img src="' + armorBoots.image + '" alt="' + armorBoots.name + '">' : '👢'}
+                                    ${armorBoots ? '<img src="' + armorBoots.item.image + '" alt="' + armorBoots.item.name + '">' : '👢'}
                                 </div>
                             </div>
                             
@@ -1436,6 +1449,82 @@ renderHeroScreen() {
     `;
 
     this.startHealthAnimation();
+}
+
+// Показать подсказку для экипировки с информацией о редкости
+showEquipmentTooltip(event, slot) {
+    // Удаляем существующие подсказки
+    this.hideEquipmentTooltip();
+    
+    const slotNames = {
+        'main_hand': '⚔️ Правая рука',
+        'off_hand': '🛡️ Левая рука', 
+        'helmet': '⛑️ Шлем',
+        'chest': '👕 Нагрудник',
+        'gloves': '🧤 Перчатки',
+        'legs': '👖 Поножи',
+        'boots': '👢 Ботинки'
+    };
+    
+    const itemId = this.currentHero.equipment[slot];
+    let tooltipContent = '';
+    
+    if (itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (item) {
+            const rarityColors = {
+                'common': '#9ca3af',
+                'uncommon': '#4cc9f0', 
+                'rare': '#a855f7',
+                'epic': '#f59e0b',
+                'legendary': '#ffd700'
+            };
+            
+            const rarityNames = {
+                'common': 'Обычный',
+                'uncommon': 'Необычный',
+                'rare': 'Редкий',
+                'epic': 'Эпический',
+                'legendary': 'Легендарный'
+            };
+            
+            const frameColor = rarityColors[item.rarity] || '#9ca3af';
+            const rarityName = rarityNames[item.rarity] || 'Обычный';
+            
+            tooltipContent = `
+                <div class="slot-name">${slotNames[slot]}</div>
+                <div class="item-stats">
+                    <div><strong style="color: ${frameColor}">${item.name}</strong></div>
+                    <div style="color: ${frameColor}; font-size: 0.8em; margin-bottom: 5px;">${rarityName}</div>
+                    ${item.fixed_damage ? `<div>⚔️ Урон: +${item.fixed_damage}</div>` : ''}
+                    ${item.fixed_armor ? `<div>🛡️ Броня: +${item.fixed_armor}</div>` : ''}
+                    ${item.fixed_health ? `<div>❤️ Здоровье: +${item.fixed_health}</div>` : ''}
+                    ${item.bonus ? `<div>🎯 ${this.formatBonus(item.bonus)}</div>` : ''}
+                    ${item.setName ? `<div>✨ Сет: ${this.getItemSetConfig()[item.setName]?.name || item.setName}</div>` : ''}
+                    <div><em>${item.description}</em></div>
+                    <div style="margin-top: 6px; color: #ff6b6b; font-size: 0.75em;">Кликните чтобы снять</div>
+                </div>
+            `;
+        }
+    } else {
+        tooltipContent = `
+            <div class="slot-name">${slotNames[slot]}</div>
+            <div class="empty-slot">Пустой слот</div>
+            <div style="margin-top: 6px; color: #4cc9f0; font-size: 0.75em;">Откройте инвентарь чтобы экипировать</div>
+        `;
+    }
+    
+    const tooltip = document.createElement('div');
+    tooltip.className = 'equipment-tooltip';
+    tooltip.innerHTML = tooltipContent;
+    
+    event.currentTarget.appendChild(tooltip);
+}
+
+// Скрыть подсказки экипировки
+hideEquipmentTooltip() {
+    const existingTooltips = document.querySelectorAll('.equipment-tooltip');
+    existingTooltips.forEach(tooltip => tooltip.remove());
 }
 
 // Отрисовка колонки монстра
