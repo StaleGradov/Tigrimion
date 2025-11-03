@@ -28,7 +28,7 @@
     "type": "weapon",
     "weaponType": "one_handed",
     "slot": "main_hand",
-    "rarity": "common",
+    "rarity": "uncommon",
     "fixed_damage": 10,
     "fixed_armor": 0,
     "fixed_health": 0,
@@ -50,7 +50,7 @@
     "type": "weapon",
     "weaponType": "one_handed", 
     "slot": "main_hand",
-    "rarity": "common",
+    "rarity": "rare",
     "fixed_damage": 15,
     "fixed_armor": 0,
     "fixed_health": 0,
@@ -72,7 +72,7 @@
     "type": "weapon", 
     "weaponType": "one_handed",
     "slot": "main_hand",
-    "rarity": "common",
+    "rarity": "epic",
     "fixed_damage": 20,
     "fixed_armor": 0,
     "fixed_health": 0,
@@ -130,7 +130,7 @@
     "sellPrice": 0.5,
     "description": "Длинное копьё для дистанционных атак",
     "flavorText": "Держи врага на расстоянии",
-    "setName": "Крестьянина Арканиума"
+    "setName": "set_beginner"
   },
   {
     "id": 7,
@@ -152,7 +152,7 @@
     "sellPrice": 1,
     "description": "Отличное длинное копьё",
     "flavorText": "Пронзает посчти любую защиту",
-    "setName": "Ополченца Арканиума"
+    "setName": "set_warrior"
   },
   {
     "id": 8,
@@ -174,7 +174,7 @@
     "sellPrice": 2,
     "description": "Мощное железное копьё",
     "flavorText": "Сбивает с ног одним ударом",
-    "setName": "Стражника Арканиума"
+    "setName": "set_guardian"
   },
   {
     "id": 9,
@@ -196,7 +196,7 @@
     "sellPrice": 4,
     "description": "Элитное стальное копьё",
     "flavorText": "Оружие настоящих воинов",
-    "setName": "Воина Арканиума"
+    "setName": "set_hunter"
   },
   {
     "id": 10,
@@ -218,7 +218,7 @@
     "sellPrice": 8,
     "description": "Легендарное мифриловое копьё",
     "flavorText": "Достаточно чтобы пронзить дракона",
-    "setName": "Личного телохранителя Магнатов Арканиума"
+    "setName": "set_complete"
   },
 
   {
@@ -364,7 +364,7 @@
     "fixed_armor": 8,
     "fixed_health": 5,
     "bonus": {"type": "armor_mult", "value": 0.08},
-    "requiredLevel": 3,
+    "requiredLevel": 1,
     "requiredClass": ["warrior", "gladiator"],
     "requiredRace": [],
     "durability": 100,
@@ -385,7 +385,7 @@
     "fixed_armor": 12,
     "fixed_health": 10,
     "bonus": {"type": "health_mult", "value": 0.1},
-    "requiredLevel": 6,
+    "requiredLevel": 1,
     "requiredClass": ["warrior", "gladiator"],
     "requiredRace": ["human", "dwarf"],
     "durability": 100,
@@ -406,7 +406,7 @@
     "fixed_armor": 18,
     "fixed_health": 15,
     "bonus": {"type": "armor_mult", "value": 0.12},
-    "requiredLevel": 10,
+    "requiredLevel": 1,
     "requiredClass": ["warrior", "gladiator"],
     "requiredRace": ["human", "dwarf", "ork"],
     "durability": 100,
