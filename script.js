@@ -1905,7 +1905,7 @@ HeroGame.prototype.canEquipWeapon = function(item, currentEquipment) {
     
     return true;
 };
-
+//========== МОДУЛЬ 10.2: ИСПРАВЛЕННЫЙ МЕТОД ЭКИПИРОВКИ ПРЕДМЕТА ==========
 HeroGame.prototype.equipItem = function(itemId) {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
@@ -1955,6 +1955,9 @@ HeroGame.prototype.equipItem = function(itemId) {
     this.checkSetBonuses();
     
     this.saveGame();
+    
+    // ОБНОВЛЯЕМ ИНТЕРФЕЙС - ВАЖНО!
+    this.updateEquipmentDisplay();
     
     // НЕ ЗАКРЫВАЕМ ИНВЕНТАРЬ ПРИ ЭКИПИРОВКЕ - ОБНОВЛЯЕМ ЕГО
     const targetSlot = this.getEquipmentSlot(item);
@@ -2049,7 +2052,8 @@ HeroGame.prototype.usePotion = function(item) {
     this.saveGame();
     this.showInventory();
 };
-// ========== МОДУЛЬ 10.8: ОТКРЫТИЕ ИНВЕНТАРЯ ИЗ СЛОТА И СНЯТИЕ ПРЕДМЕТА ==========
+//========== МОДУЛЬ 10.8: ОТКРЫТИЕ ИНВЕНТАРЯ ИЗ СЛОТА И СНЯТИЕ ПРЕДМЕТА ==========
+
 HeroGame.prototype.openInventoryFromSlot = function(slot) {
     // Если слот не пустой - снимаем предмет
     if (this.currentHero.equipment[slot] && slot !== 'inventory') {
@@ -2094,6 +2098,113 @@ HeroGame.prototype.unequipItem = function(slot) {
     
     // ОТКРЫВАЕМ ИНВЕНТАРЬ ПОСЛЕ СНЯТИЯ ПРЕДМЕТА
     this.showInventory(slot);
+};
+//========== МОДУЛЬ 10.10: МЕТОД ОБНОВЛЕНИЯ ОТОБРАЖЕНИЯ ЭКИПИРОВКИ ==========
+
+HeroGame.prototype.updateEquipmentDisplay = function() {
+    if (!this.currentHero) return;
+    
+    // Обновляем отображение слотов экипировки
+    const equipmentSlots = document.querySelectorAll('.equipment-slot');
+    
+    equipmentSlots.forEach(slotElement => {
+        const slotType = this.getSlotTypeFromElement(slotElement);
+        if (!slotType) return;
+        
+        const itemId = this.currentHero.equipment[slotType];
+        const slotIcon = slotElement.querySelector('.equipment-icon');
+        
+        if (itemId) {
+            const item = this.items.find(i => i.id === itemId);
+            if (item) {
+                // Обновляем иконку предмета
+                slotIcon.innerHTML = `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">`;
+                
+                // Устанавливаем классы редкости
+                slotElement.classList.add('equipped');
+                slotElement.setAttribute('data-rarity', item.rarity || 'common');
+                
+                // Убираем fallback иконку
+                const fallback = slotIcon.querySelector('.equipment-fallback');
+                if (fallback) fallback.style.display = 'none';
+            }
+        } else {
+            // Слот пустой - показываем стандартную иконку
+            const defaultIcons = {
+                'main_hand': '⚔️',
+                'off_hand': '🛡️',
+                'helmet': '⛑️',
+                'chest': '👕',
+                'gloves': '🧤',
+                'legs': '👖',
+                'boots': '👢'
+            };
+            
+            slotIcon.innerHTML = defaultIcons[slotType] || '🎒';
+            slotElement.classList.remove('equipped');
+            slotElement.removeAttribute('data-rarity');
+        }
+    });
+    
+    // Обновляем статистику героя
+    this.updateHeroStatsDisplay();
+};
+//========== МОДУЛЬ 10.11: ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА ==========
+
+HeroGame.prototype.getSlotTypeFromElement = function(element) {
+    if (element.classList.contains('weapon-slot')) {
+        if (element.classList.contains('main-hand')) return 'main_hand';
+        if (element.classList.contains('off-hand')) return 'off_hand';
+        // Определяем по позиции или другим атрибутам
+        const slots = Array.from(document.querySelectorAll('.weapon-slot'));
+        const index = slots.indexOf(element);
+        return index === 0 ? 'main_hand' : 'off_hand';
+    }
+    
+    // Для брони определяем по классам
+    const slotMap = {
+        'helmet-slot': 'helmet',
+        'chest-slot': 'chest',
+        'gloves-slot': 'gloves', 
+        'legs-slot': 'legs',
+        'boots-slot': 'boots'
+    };
+    
+    for (const [className, slotType] of Object.entries(slotMap)) {
+        if (element.classList.contains(className)) {
+            return slotType;
+        }
+    }
+    
+    return null;
+};
+
+HeroGame.prototype.updateHeroStatsDisplay = function() {
+    const stats = this.calculateHeroStats(this.currentHero);
+    
+    // Обновляем здоровье
+    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+    const healthFill = document.querySelector('.health-bar-fill');
+    const currentHealthEl = document.getElementById('current-health');
+    const maxHealthEl = document.getElementById('max-health');
+    
+    if (healthFill) healthFill.style.width = healthPercent + '%';
+    if (currentHealthEl) currentHealthEl.textContent = stats.currentHealth;
+    if (maxHealthEl) maxHealthEl.textContent = stats.maxHealth;
+    
+    // Обновляем основные характеристики
+    const statElements = {
+        'damage': '.hero-main-stats .main-stat:nth-child(1) .stat-value',
+        'armor': '.hero-main-stats .main-stat:nth-child(2) .stat-value', 
+        'power': '.hero-main-stats .main-stat:nth-child(3) .stat-value'
+    };
+    
+    for (const [stat, selector] of Object.entries(statElements)) {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.textContent = stats[stat];
+        }
+    }
 };
 // ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ ==========
 HeroGame.prototype.startAdventure = function() {
