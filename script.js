@@ -1904,10 +1904,6 @@ canEquipWeapon(item, currentEquipment) {
     return true;
 }
 
-// ОБНОВЛЕННЫЙ МЕТОД: Экипировать предмет
-equipItem(itemId) {
-    const item = this.items.find(i => i.id === itemId);
-    if (!item) return;
 
     // Использование зелья
     if (item.type === 'potion') {
@@ -2412,14 +2408,6 @@ hideEquipmentTooltip() {
     existingTooltips.forEach(tooltip => tooltip.remove());
 }
 
-// Снять предмет
-unequipItem(slot) {
-    const success = this.unequipToInventory(slot);
-    if (success) {
-        this.saveGame();
-        this.renderHeroScreen();
-    }
-}
 
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
 
