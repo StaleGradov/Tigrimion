@@ -19,7 +19,7 @@
     "sellPrice": 0.25,
     "description": "Простое медное копьё для крестьян",
     "flavorText": "Мягкий металл, но острый",
-    "setName": "Крестьянина Арканиума"
+    "setName": "set_beginner"
   },
   {
     "id": 2,
@@ -41,7 +41,7 @@
     "sellPrice": 0.5,
     "description": "Бронзовое копьё с хорошим балансом",
     "flavorText": "Блестит в лунном свете",
-    "setName": "Ополченца Арканиума"
+    "setName": "set_warrior"
   },
   {
     "id": 3, 
@@ -63,7 +63,7 @@
     "sellPrice": 1,
     "description": "Качественное железное копьё",
     "flavorText": "Проходит сквозь броню",
-    "setName": "Стражника Арканиума"
+    "setName": "set_guardian"
   },
   {
     "id": 4,
@@ -85,7 +85,7 @@
     "sellPrice": 2,
     "description": "Искусно выкованное стальное копьё",
     "flavorText": "Не знает промаха",
-    "setName": "Воина Арканиума"
+    "setName": "set_hunter"
   },
   {
     "id": 5,
@@ -107,7 +107,7 @@
     "sellPrice": 4,
     "description": "Легендарное копьё из мифрила",
     "flavorText": "Светится в темноте",
-    "setName": "Личного телохранителя Магнатов Арканиума"
+    "setName": "set_complete"
   },
 
   {
