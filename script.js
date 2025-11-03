@@ -2051,8 +2051,6 @@ HeroGame.prototype.usePotion = function(item) {
     this.saveGame();
     this.showInventory();
 };
-//========== МОДУЛЬ 10.8: ОТКРЫТИЕ ИНВЕНТАРЯ ИЗ СЛОТА И СНЯТИЕ ПРЕДМЕТА ==========
-
 HeroGame.prototype.openInventoryFromSlot = function(slot) {
     // Если слот не пустой - снимаем предмет
     if (this.currentHero.equipment[slot] && slot !== 'inventory') {
@@ -2094,6 +2092,9 @@ HeroGame.prototype.unequipItem = function(slot) {
     this.checkSetBonuses();
     
     this.saveGame();
+    
+    // ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ ЭКИПИРОВКИ ПЕРЕД ОТКРЫТИЕМ ИНВЕНТАРЯ
+    this.updateEquipmentDisplay();
     
     // ОТКРЫВАЕМ ИНВЕНТАРЬ ПОСЛЕ СНЯТИЯ ПРЕДМЕТА
     this.showInventory(slot);
