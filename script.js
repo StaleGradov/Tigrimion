@@ -2765,3 +2765,564 @@ if (document.readyState === 'loading') {
     game = new HeroGame();
     window.game = game;
 }
+// ========== МОДУЛЬ 17: СИСТЕМА РЕДКОСТЕЙ ПРЕДМЕТОВ И УЛУЧШЕННЫЙ ИНТЕРФЕЙС ==========
+
+// Конфигурация системы редкостей
+getRarityConfig() {
+    return {
+        'common': {
+            name: 'Обычный',
+            color: '#9ca3af',      // Серый
+            multiplier: 1.0,
+            chance: 0.40
+        },
+        'uncommon': {
+            name: 'Необычный', 
+            color: '#4ade80',      // Зеленый
+            multiplier: 1.3,
+            chance: 0.25
+        },
+        'rare': {
+            name: 'Редкий',
+            color: '#4cc9f0',      // Голубой
+            multiplier: 1.7,
+            chance: 0.15
+        },
+        'epic': {
+            name: 'Эпический',
+            color: '#a855f7',      // Фиолетовый
+            multiplier: 2.2,
+            chance: 0.10
+        },
+        'legendary': {
+            name: 'Легендарный',
+            color: '#f59e0b',      // Оранжевый
+            multiplier: 3.0,
+            chance: 0.07
+        },
+        'mythic': {
+            name: 'Мифический',
+            color: '#ff6b6b',      // Красный
+            multiplier: 4.0,
+            chance: 0.03
+        }
+    };
+}
+
+// Получение цвета рамки на основе редкости предмета
+getItemFrameColor(rarity) {
+    const config = this.getRarityConfig();
+    return config[rarity]?.color || '#9ca3af';
+}
+
+// Получение названия редкости
+getRarityName(rarity) {
+    const config = this.getRarityConfig();
+    return config[rarity]?.name || 'Обычный';
+}
+
+// Генерация предмета с учетом редкости
+generateItemWithRarity(baseItem, forceRarity = null) {
+    const rarityConfig = this.getRarityConfig();
+    let selectedRarity = forceRarity;
+    
+    if (!selectedRarity) {
+        const rand = Math.random();
+        let cumulativeChance = 0;
+        
+        for (const [rarity, config] of Object.entries(rarityConfig)) {
+            cumulativeChance += config.chance;
+            if (rand <= cumulativeChance) {
+                selectedRarity = rarity;
+                break;
+            }
+        }
+    }
+    
+    const config = rarityConfig[selectedRarity];
+    const multiplier = config.multiplier;
+    
+    // Создаем улучшенный предмет на основе редкости
+    const enhancedItem = {
+        ...baseItem,
+        id: Date.now() + Math.random(), // Уникальный ID
+        rarity: selectedRarity,
+        name: this.getEnhancedItemName(baseItem.name, selectedRarity),
+        price: Math.round(baseItem.price * multiplier),
+        fixed_damage: baseItem.fixed_damage ? Math.round(baseItem.fixed_damage * multiplier) : 0,
+        fixed_armor: baseItem.fixed_armor ? Math.round(baseItem.fixed_armor * multiplier) : 0,
+        fixed_health: baseItem.fixed_health ? Math.round(baseItem.fixed_health * multiplier) : 0,
+        bonus: this.enhanceBonus(baseItem.bonus, multiplier)
+    };
+    
+    return enhancedItem;
+}
+
+// Улучшение названия предмета в зависимости от редкости
+getEnhancedItemName(baseName, rarity) {
+    const prefixes = {
+        'common': ['', 'Простой'],
+        'uncommon': ['Улучшенный', 'Качественный'],
+        'rare': ['Редкий', 'Искусный'],
+        'epic': ['Эпический', 'Могущественный'],
+        'legendary': ['Легендарный', 'Великий'],
+        'mythic': ['Мифический', 'Божественный']
+    };
+    
+    const prefix = prefixes[rarity][Math.floor(Math.random() * prefixes[rarity].length)];
+    return prefix ? `${prefix} ${baseName}` : baseName;
+}
+
+// Улучшение бонуса предмета
+enhanceBonus(bonus, multiplier) {
+    if (!bonus || bonus.type === 'none') return bonus;
+    
+    return {
+        ...bonus,
+        value: bonus.value * multiplier
+    };
+}
+
+// НОВЫЙ МЕТОД: Покупка предмета с подтверждением
+buyItemWithConfirmation(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (this.currentHero.gold < item.price) {
+        this.showNotification(`❌ Недостаточно золота для покупки ${item.name}`, 'error');
+        return;
+    }
+
+    if (this.currentHero.inventory.length >= 10) {
+        this.showNotification(`❌ Инвентарь полон! Максимум 10 предметов`, 'error');
+        return;
+    }
+
+    if (this.currentHero.inventory.includes(itemId)) {
+        this.showNotification(`❌ У вас уже есть ${item.name}`, 'error');
+        return;
+    }
+
+    this.currentHero.gold = parseFloat((this.currentHero.gold - item.price).toFixed(2));
+    this.currentHero.inventory.push(itemId);
+    
+    this.showNotification(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`, 'success');
+    this.saveGame();
+    this.showMerchant(); // Обновляем магазин
+}
+
+// НОВЫЙ МЕТОД: Всплывающее уведомление
+showNotification(message, type = 'info') {
+    // Удаляем существующие уведомления
+    const existingNotifications = document.querySelectorAll('.game-notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `game-notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">OK</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматическое скрытие через 5 секунд
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Показать магазин с улучшенной системой
+showMerchant() {
+    // Закрываем другие экраны
+    this.closeOtherScreens('merchant');
+    
+    const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
+    
+    // Группировка предметов по типам и редкости
+    const categorizedItems = this.categorizeItems(availableItems);
+    
+    const merchantHTML = this.renderCategorizedShop(categorizedItems);
+    
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-merchant">
+            <div class="merchant-header">
+                <h3 class="text-center">🏪 Магазин снаряжения</h3>
+                <div class="hero-merchant-info">
+                    <div class="merchant-stats">
+                        <span class="gold-amount">💰 ${this.currentHero?.gold.toFixed(2) || 0}</span>
+                        <span class="inventory-space">🎒 ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="shop-categories">
+                <button class="category-tab active" data-category="all">Все предметы</button>
+                <button class="category-tab" data-category="one_handed">⚔️ Одноручное</button>
+                <button class="category-tab" data-category="two_handed">🪓 Двуручное</button>
+                <button class="category-tab" data-category="shield">🛡️ Щиты</button>
+                <button class="category-tab" data-category="helmet">⛑️ Шлемы</button>
+                <button class="category-tab" data-category="chest">👕 Броня</button>
+                <button class="category-tab" data-category="gloves">🧤 Перчатки</button>
+                <button class="category-tab" data-category="legs">👖 Поножи</button>
+                <button class="category-tab" data-category="boots">👢 Ботинки</button>
+            </div>
+            
+            <div class="merchant-items-container">
+                ${merchantHTML}
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.closeCurrentScreen(); game.renderHeroScreen()">← Назад к герою</button>
+            </div>
+        </div>
+    `;
+
+    this.initializeShopFilters();
+    this.showScreen('merchant');
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Категоризация предметов с учетом типа оружия
+categorizeItems(items) {
+    const categories = {
+        all: { name: "Все предметы", items: [] },
+        one_handed: { name: "Одноручное оружие", items: [] },
+        two_handed: { name: "Двуручное оружие", items: [] },
+        shield: { name: "Щиты", items: [] },
+        helmet: { name: "Шлемы", items: [] },
+        chest: { name: "Броня", items: [] },
+        gloves: { name: "Перчатки", items: [] },
+        legs: { name: "Поножи", items: [] },
+        boots: { name: "Ботинки", items: [] }
+    };
+    
+    // Сортируем предметы по цене (качеству)
+    const sortedItems = items.sort((a, b) => a.price - b.price);
+    
+    sortedItems.forEach(item => {
+        // Добавляем во все категории
+        categories.all.items.push(item);
+        
+        // Добавляем в специфические категории
+        if (item.type === 'weapon') {
+            if (item.weaponType === 'one_handed') {
+                categories.one_handed.items.push(item);
+            } else if (item.weaponType === 'two_handed') {
+                categories.two_handed.items.push(item);
+            } else if (item.weaponType === 'shield') {
+                categories.shield.items.push(item);
+            }
+        } else if (item.type in categories) {
+            categories[item.type].items.push(item);
+        }
+    });
+    
+    return categories;
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Показать инвентарь с улучшенной системой
+showInventory() {
+    // Закрываем другие экраны
+    this.closeOtherScreens('inventory');
+    
+    if (!this.currentHero) return;
+
+    const inventoryHTML = this.currentHero.inventory.map(itemId => {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return '';
+        
+        const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
+        const frameColor = this.getItemFrameColor(item.rarity);
+        
+        return `
+            <div class="inventory-item" data-rarity="${item.rarity}" onclick="game.equipItem(${itemId})" style="border-color: ${frameColor};">
+                <div class="inventory-item-image">
+                    <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+                    <div class="item-rarity-indicator" style="background: ${frameColor};"></div>
+                </div>
+                <div class="inventory-item-info">
+                    <strong style="color: ${frameColor};">${item.name}</strong>
+                    <div class="item-stats">
+                        ${item.fixed_damage ? `<span>⚔️ Урон: +${item.fixed_damage}</span>` : ''}
+                        ${item.fixed_armor ? `<span>🛡️ Броня: +${item.fixed_armor}</span>` : ''}
+                        ${item.heal ? `<span>❤️ Лечение: +${item.heal}</span>` : ''}
+                        ${item.bonus ? `<span>🎯 ${this.formatBonus(item.bonus)}</span>` : ''}
+                        ${item.fixed_health ? `<span>❤️ Здоровье: +${item.fixed_health}</span>` : ''}
+                    </div>
+                    <small>${item.description}</small>
+                    ${isEquipped ? 
+                        '<small style="color: #4ade80;">✓ Надето</small>' : 
+                        '<small style="color: #4cc9f0;">📦 В инвентаре</small>'
+                    }
+                    ${item.setName ? 
+                        `<small style="color: #f59e0b;">✨ Часть сета: ${this.getItemSetConfig()[item.setName]?.name || item.setName}</small>` : 
+                        ''
+                    }
+                    <div class="item-rarity-tag" style="background: ${frameColor};">
+                        ${this.getRarityName(item.rarity)}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-inventory">
+            <h3 class="text-center">🎒 Инвентарь</h3>
+            <div class="inventory-info" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+                    <span>💰 Ваше золото: ${this.currentHero?.gold.toFixed(2) || 0}</span>
+                    <span>🎒 Свободно мест: ${10 - (this.currentHero?.inventory?.length || 0)}/10</span>
+                </div>
+            </div>
+            <div class="inventory-grid">
+                ${inventoryHTML || '<div class="text-center">Инвентарь пуст</div>'}
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.closeCurrentScreen(); game.renderHeroScreen()">← Назад к герою</button>
+            </div>
+        </div>
+    `;
+
+    this.showScreen('inventory');
+}
+
+// НОВЫЙ МЕТОД: Закрыть другие экраны
+closeOtherScreens(currentScreen) {
+    const screens = ['merchant', 'inventory', 'map-select', 'location-select'];
+    screens.forEach(screen => {
+        if (screen !== currentScreen) {
+            const screenElement = document.getElementById(`screen-${screen}`);
+            if (screenElement) {
+                screenElement.remove();
+            }
+        }
+    });
+}
+
+// НОВЫЙ МЕТОД: Закрыть текущий экран
+closeCurrentScreen() {
+    const activeScreen = document.querySelector('.screen.active');
+    if (activeScreen && activeScreen.id !== 'screen-main') {
+        activeScreen.remove();
+    }
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Экипировать предмет (без закрытия инвентаря)
+equipItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Использование зелья
+    if (item.type === 'potion') {
+        this.usePotion(item);
+        return;
+    }
+
+    // Проверка совместимости оружия
+    if (!this.canEquipWeapon(item, this.currentHero.equipment)) {
+        this.showNotification(`❌ Нельзя экипировать ${item.name} - несовместимо с текущим оружием`, 'error');
+        return;
+    }
+
+    let slot = item.slot;
+    if (!slot) {
+        slot = this.getEquipmentSlot(item);
+    }
+
+    // Особые случаи для двуручного оружия
+    if (item.weaponType === 'two_handed') {
+        // Снимаем всё что было в руках
+        this.unequipToInventory('main_hand');
+        this.unequipToInventory('off_hand');
+        
+        // Экипируем в обе руки
+        this.currentHero.equipment.main_hand = itemId;
+        this.currentHero.equipment.off_hand = itemId;
+        
+    } else {
+        // Стандартная экипировка
+        const currentEquipped = this.currentHero.equipment[slot];
+        if (currentEquipped) {
+            this.unequipToInventory(slot);
+        }
+        this.currentHero.equipment[slot] = itemId;
+    }
+
+    // Убираем из инвентаря
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+
+    this.showNotification(`🎯 Надето: ${item.name}`, 'success');
+    
+    // Проверяем бонусы сетов
+    this.checkSetBonuses();
+    
+    this.saveGame();
+    this.showInventory(); // Обновляем инвентарь вместо возврата к герою
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Снять предмет (открывает инвентарь)
+unequipItem(slot) {
+    const success = this.unequipToInventory(slot);
+    if (success) {
+        this.saveGame();
+        this.showInventory(); // Открываем инвентарь после снятия
+    }
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Покупка предмета (с подтверждением)
+buyItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (this.currentHero.gold < item.price) {
+        this.showNotification(`❌ Недостаточно золота для покупки ${item.name}`, 'error');
+        return;
+    }
+
+    if (this.currentHero.inventory.length >= 10) {
+        this.showNotification(`❌ Инвентарь полон! Максимум 10 предметов`, 'error');
+        return;
+    }
+
+    if (this.currentHero.inventory.includes(itemId)) {
+        this.showNotification(`❌ У вас уже есть ${item.name}`, 'error');
+        return;
+    }
+
+    this.currentHero.gold = parseFloat((this.currentHero.gold - item.price).toFixed(2));
+    this.currentHero.inventory.push(itemId);
+    
+    this.showNotification(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`, 'success');
+    this.saveGame();
+    this.showMerchant();
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Продажа предмета
+sellItem(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    if (!this.currentHero.inventory.includes(itemId)) {
+        this.showNotification(`❌ Предмет ${item.name} не найден в инвентаре`, 'error');
+        return;
+    }
+
+    this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+    const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
+    this.currentHero.gold = parseFloat((this.currentHero.gold + sellPrice).toFixed(2));
+    
+    // Снятие предмета если он был экипирован
+    Object.keys(this.currentHero.equipment).forEach(slot => {
+        if (this.currentHero.equipment[slot] === itemId) {
+            this.currentHero.equipment[slot] = null;
+        }
+    });
+
+    this.showNotification(`💰 Продано: ${item.name} за ${sellPrice.toFixed(2)} золота`, 'success');
+    this.saveGame();
+    this.showMerchant();
+}
+
+// ОБНОВЛЕННЫЙ МЕТОД: Отображение деталей предмета в магазине
+showItemDetails(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+    
+    const isOwned = this.currentHero.inventory.includes(item.id);
+    const canAfford = this.currentHero.gold >= item.price;
+    const hasSpace = this.currentHero.inventory.length < 10;
+    const canBuy = !isOwned && canAfford && hasSpace;
+    const frameColor = this.getItemFrameColor(item.rarity);
+    
+    const modalHTML = `
+        <div class="item-detail-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 style="color: ${frameColor};">${item.name}</h4>
+                    <button class="close-modal" onclick="game.closeItemModal()">×</button>
+                </div>
+                
+                <div class="item-detail-content">
+                    <div class="item-detail-image">
+                        <div class="detail-item-background ${this.getItemTypeClass(item.type)}" style="border-color: ${frameColor};">
+                            <img src="${item.image}" alt="${item.name}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                            <div class="item-fallback-large" style="display: none;">
+                                <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
+                            </div>
+                        </div>
+                        <div class="item-rarity ${item.rarity}" style="background: ${frameColor};">${this.getRarityName(item.rarity)}</div>
+                    </div>
+                    
+                    <div class="item-detail-info">
+                        <div class="item-description">${item.description}</div>
+                        <div class="item-flavor">"${item.flavorText || 'Стандартный предмет'}"</div>
+                        
+                        <div class="item-stats-detailed">
+                            <h5>Характеристики:</h5>
+                            ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span>+${item.fixed_damage}</span></div>` : ''}
+                            ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
+                            ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
+                            ${item.bonus && item.bonus.type !== 'none' ? 
+                                `<div class="stat-line"><span>🎯 Бонус:</span> <span>${this.formatBonus(item.bonus)}</span></div>` : ''}
+                            ${item.setName ? `<div class="stat-line"><span>✨ Сет:</span> <span>${this.getItemSetConfig()[item.setName]?.name || item.setName}</span></div>` : ''}
+                            ${item.weaponType ? `<div class="stat-line"><span>🎪 Тип оружия:</span> <span>${this.getWeaponTypeName(item.weaponType)}</span></div>` : ''}
+                        </div>
+                        
+                        <div class="item-requirements">
+                            <h5>Требования:</h5>
+                            <div class="stat-line"><span>📊 Уровень:</span> <span>${item.requiredLevel}</span></div>
+                            ${item.requiredClass && item.requiredClass.length > 0 ? 
+                                `<div class="stat-line"><span>⚔️ Классы:</span> <span>${item.requiredClass.join(', ')}</span></div>` : ''}
+                            ${item.requiredRace && item.requiredRace.length > 0 ? 
+                                `<div class="stat-line"><span>🧬 Расы:</span> <span>${item.requiredRace.join(', ')}</span></div>` : ''}
+                        </div>
+                        
+                        <div class="item-actions">
+                            <div class="price-section">
+                                <span class="buy-price">💰 Купить: ${item.price.toFixed(2)}</span>
+                                <span class="sell-price">💸 Продать: ${(item.sellPrice || Math.floor(item.price * 0.5)).toFixed(2)}</span>
+                            </div>
+                            
+                            <div class="action-buttons">
+                                ${isOwned ? 
+                                    `<button class="btn-secondary" onclick="game.sellItem(${item.id}); game.closeItemModal()">Продать</button>` :
+                                    `<button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                            ${!canBuy ? 'disabled' : ''}
+                                            onclick="game.buyItem(${item.id}); game.closeItemModal()">
+                                        Купить
+                                    </button>`
+                                }
+                                ${!canBuy && !isOwned ? 
+                                    `<div class="purchase-error">
+                                        ${!canAfford ? '❌ Недостаточно золота' : ''}
+                                        ${!hasSpace ? '❌ Инвентарь полон' : ''}
+                                    </div>` : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// НОВЫЙ МЕТОД: Получение названия типа оружия
+getWeaponTypeName(weaponType) {
+    const names = {
+        'one_handed': 'Одноручное',
+        'two_handed': 'Двуручное',
+        'shield': 'Щит'
+    };
+    return names[weaponType] || 'Оружие';
+}
