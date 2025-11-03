@@ -1096,17 +1096,14 @@ HeroGame.prototype.selectHero = function(heroId) {
 
 // ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
 HeroGame.prototype.showScreen = function(screenName) {
-    // Закрываем все экраны
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.remove());
-    
     this.currentScreen = screenName;
+    
+    // НЕ удаляем экраны здесь - это будет делаться в методах рендеринга
     if (this.healthInterval) {
         clearInterval(this.healthInterval);
         this.healthInterval = null;
     }
 };
-
 // ========== МОДУЛЬ 9.5: ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ ==========
 HeroGame.prototype.startHealthAnimation = function() {
     if (!this.currentHero) return;
@@ -1177,9 +1174,9 @@ HeroGame.prototype.renderHeroScreen = function() {
 
     const container = document.getElementById('app');
     
-    // Закрываем все экраны перед рендером
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.remove());
+    // УДАЛЯЕМ ТОЛЬКО СУЩЕСТВУЮЩИЕ ЭКРАНЫ МАГАЗИНА И ИНВЕНТАРЯ
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
     
     container.innerHTML = `
         <div class="screen active" id="screen-main">
@@ -1977,17 +1974,10 @@ HeroGame.prototype.usePotion = function(item) {
 };
 // ========== МОДУЛЬ 10.8: ОТКРЫТЬ ИНВЕНТАРЬ ИЗ СЛОТА ==========
 HeroGame.prototype.openInventoryFromSlot = function(slot) {
-    // Проверяем, есть ли предмет в слоте
-    const itemId = this.currentHero.equipment[slot];
-    if (!itemId) {
-        // Если слот пустой - открываем инвентарь
-        this.showInventory();
-    } else {
-        // Если слот занят - показываем подсказку (уже есть в showEquipmentTooltip)
-        // Можно добавить дополнительную логику если нужно
-    }
+    // Просто открываем инвентарь
+    this.showInventory();
 };
-// ========== МОДУЛЬ 11: СИСТЕМА ПУТЕШЕСТВИЙ И ВСТРЕЧ ==========
+
 
 // ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ ==========
 HeroGame.prototype.startAdventure = function() {
@@ -2057,9 +2047,9 @@ HeroGame.prototype.encounterMonster = function() {
 
 // ========== МОДУЛЬ 12.1: ПОКАЗАТЬ МАГАЗИН ==========
 HeroGame.prototype.showMerchant = function() {
-    // Закрываем все экраны перед открытием нового
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.remove());
+    // Удаляем только существующие экраны магазина и инвентаря
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
     
     const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
     
@@ -2101,7 +2091,7 @@ HeroGame.prototype.showMerchant = function() {
             </div>
             
             <div class="action-buttons">
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+                <button class="btn-secondary" onclick="game.closeMerchant()">← Назад к герою</button>
             </div>
         </div>
     `;
@@ -2580,15 +2570,23 @@ HeroGame.prototype.doesItemMatchCategory = function(item, category) {
     if (category === 'shield') return item.weaponType === 'shield';
     return item.type === category;
 };
+// ========== МОДУЛЬ 12.17: ЗАКРЫТЬ МАГАЗИН ==========
+HeroGame.prototype.closeMerchant = function() {
+    const merchantScreen = document.getElementById('screen-merchant');
+    if (merchantScreen) {
+        merchantScreen.remove();
+    }
+    this.renderHeroScreen();
+};
 // ========== МОДУЛЬ 13: СИСТЕМА ИНВЕНТАРЯ ==========
 
 // ========== МОДУЛЬ 13.1: ПОКАЗАТЬ ИНВЕНТАРЬ ==========
 HeroGame.prototype.showInventory = function() {
     if (!this.currentHero) return;
 
-    // Закрываем все экраны перед открытием нового
-    const screens = document.querySelectorAll('.screen');
-    screens.forEach(screen => screen.remove());
+    // Удаляем только существующие экраны магазина и инвентаря
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
 
     const inventoryHTML = this.currentHero.inventory.map(itemId => {
         const item = this.items.find(i => i.id === itemId);
@@ -2633,7 +2631,7 @@ HeroGame.prototype.showInventory = function() {
                 ${inventoryHTML || '<div class="text-center">Инвентарь пуст</div>'}
             </div>
             <div class="action-buttons">
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад к герою</button>
+                <button class="btn-secondary" onclick="game.closeInventory()">← Назад к герою</button>
             </div>
         </div>
     `;
@@ -2648,7 +2646,14 @@ HeroGame.prototype.unequipItem = function(slot) {
         this.renderHeroScreen();
     }
 };
-
+// ========== МОДУЛЬ 13.3: ЗАКРЫТЬ ИНВЕНТАРЬ ==========
+HeroGame.prototype.closeInventory = function() {
+    const inventoryScreen = document.getElementById('screen-inventory');
+    if (inventoryScreen) {
+        inventoryScreen.remove();
+    }
+    this.renderHeroScreen();
+};
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
 
 // ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ ==========
