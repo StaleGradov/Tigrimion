@@ -1096,6 +1096,10 @@ HeroGame.prototype.selectHero = function(heroId) {
 
 // ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
 HeroGame.prototype.showScreen = function(screenName) {
+    // Закрываем все экраны
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.remove());
+    
     this.currentScreen = screenName;
     if (this.healthInterval) {
         clearInterval(this.healthInterval);
@@ -1172,6 +1176,11 @@ HeroGame.prototype.renderHeroScreen = function() {
     const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
 
     const container = document.getElementById('app');
+    
+    // Закрываем все экраны перед рендером
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.remove());
+    
     container.innerHTML = `
         <div class="screen active" id="screen-main">
             <!-- Кнопки действий -->
@@ -1324,7 +1333,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             <!-- Слоты экипировки с цветными рамками -->
                             <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
                                  ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
-                                 onclick="game.unequipItem('main_hand')"
+                                 onclick="game.openInventoryFromSlot('main_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1334,7 +1343,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
                                  ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
-                                 onclick="game.unequipItem('off_hand')"
+                                 onclick="game.openInventoryFromSlot('off_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1344,7 +1353,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
                                  ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
-                                 onclick="game.unequipItem('helmet')"
+                                 onclick="game.openInventoryFromSlot('helmet')"
                                  onmouseover="game.showEquipmentTooltip(event, 'helmet')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1354,7 +1363,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
                                  ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
-                                 onclick="game.unequipItem('chest')"
+                                 onclick="game.openInventoryFromSlot('chest')"
                                  onmouseover="game.showEquipmentTooltip(event, 'chest')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1364,7 +1373,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
                                  ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
-                                 onclick="game.unequipItem('gloves')"
+                                 onclick="game.openInventoryFromSlot('gloves')"
                                  onmouseover="game.showEquipmentTooltip(event, 'gloves')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1374,7 +1383,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
                                  ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
-                                 onclick="game.unequipItem('legs')"
+                                 onclick="game.openInventoryFromSlot('legs')"
                                  onmouseover="game.showEquipmentTooltip(event, 'legs')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1384,7 +1393,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             
                             <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
                                  ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
-                                 onclick="game.unequipItem('boots')"
+                                 onclick="game.openInventoryFromSlot('boots')"
                                  onmouseover="game.showEquipmentTooltip(event, 'boots')"
                                  onmouseout="game.hideEquipmentTooltip()">
                                 <div class="equipment-icon">
@@ -1392,7 +1401,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot empty" onclick="game.showInventory()" title="Открыть инвентарь">
+                            <div class="equipment-slot empty" onclick="game.openInventoryFromSlot('inventory')" title="Открыть инвентарь">
                                 <div class="equipment-icon">🎒</div>
                             </div>
                         </div>
@@ -1881,6 +1890,8 @@ HeroGame.prototype.equipItem = function(itemId) {
     this.checkSetBonuses();
     
     this.saveGame();
+    
+    // ОБНОВЛЯЕМ ЭКРАН - ВАЖНОЕ ИЗМЕНЕНИЕ!
     this.renderHeroScreen();
 };
 
@@ -1964,7 +1975,18 @@ HeroGame.prototype.usePotion = function(item) {
     this.saveGame();
     this.showInventory();
 };
-
+// ========== МОДУЛЬ 10.8: ОТКРЫТЬ ИНВЕНТАРЬ ИЗ СЛОТА ==========
+HeroGame.prototype.openInventoryFromSlot = function(slot) {
+    // Проверяем, есть ли предмет в слоте
+    const itemId = this.currentHero.equipment[slot];
+    if (!itemId) {
+        // Если слот пустой - открываем инвентарь
+        this.showInventory();
+    } else {
+        // Если слот занят - показываем подсказку (уже есть в showEquipmentTooltip)
+        // Можно добавить дополнительную логику если нужно
+    }
+};
 // ========== МОДУЛЬ 11: СИСТЕМА ПУТЕШЕСТВИЙ И ВСТРЕЧ ==========
 
 // ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ ==========
@@ -2035,6 +2057,10 @@ HeroGame.prototype.encounterMonster = function() {
 
 // ========== МОДУЛЬ 12.1: ПОКАЗАТЬ МАГАЗИН ==========
 HeroGame.prototype.showMerchant = function() {
+    // Закрываем все экраны перед открытием нового
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.remove());
+    
     const availableItems = this.items.filter(item => item.requiredLevel <= (this.currentHero?.level || 1));
     
     // Группировка предметов по типам и редкости
@@ -2063,6 +2089,11 @@ HeroGame.prototype.showMerchant = function() {
                 <button class="category-tab" data-category="chest">👕 Броня</button>
                 <button class="category-tab" data-category="gloves">🧤 Перчатки</button>
                 <button class="category-tab" data-category="legs">👖 Поножи</button>
+                <button class="category-tab" data-category="boots">👢 Ботинки</button>
+            </div>
+            
+            <div class="shop-subcategories" id="shop-subcategories" style="display: none;">
+                <!-- Подкатегории будут добавляться динамически -->
             </div>
             
             <div class="merchant-items-container">
@@ -2193,6 +2224,7 @@ HeroGame.prototype.getItemFrameColor = function(rarity) {
 HeroGame.prototype.initializeShopFilters = function() {
     const tabs = document.querySelectorAll('.category-tab');
     const categories = document.querySelectorAll('.shop-category');
+    const subcategoriesContainer = document.getElementById('shop-subcategories');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -2204,16 +2236,36 @@ HeroGame.prototype.initializeShopFilters = function() {
             // Скрываем все категории
             categories.forEach(cat => cat.style.display = 'none');
             
-            // Показываем выбранную категорию
+            // Показываем/скрываем подкатегории
             const category = tab.dataset.category;
+            const hasSubcategories = ['helmet', 'chest', 'gloves', 'legs', 'boots'].includes(category);
+            
+            if (hasSubcategories) {
+                this.renderSubcategories(category, subcategoriesContainer);
+                subcategoriesContainer.style.display = 'block';
+            } else {
+                subcategoriesContainer.style.display = 'none';
+            }
+            
+            // Показываем выбранную категорию
             const targetCategory = document.querySelector(`.shop-category.${category}`);
             if (targetCategory) {
                 targetCategory.style.display = 'block';
+                
+                // Если есть активная подкатегория, применяем фильтр
+                const activeSubcategory = subcategoriesContainer.querySelector('.subcategory-tab.active');
+                if (activeSubcategory) {
+                    this.filterCategoryBySubcategory(category, activeSubcategory.dataset.subcategory);
+                }
             }
         });
     });
+    
+    // Инициализируем первую категорию
+    if (tabs.length > 0) {
+        tabs[0].click();
+    }
 };
-
 // ========== МОДУЛЬ 12.7: ПОКАЗАТЬ ДЕТАЛИ ПРЕДМЕТА ==========
 HeroGame.prototype.showItemDetails = function(itemId) {
     const item = this.items.find(i => i.id === itemId);
@@ -2404,12 +2456,139 @@ HeroGame.prototype.sellItem = function(itemId) {
     this.saveGame();
     this.showMerchant();
 };
+// ========== МОДУЛЬ 12.12: СИСТЕМА ПОДКАТЕГОРИЙ ==========
+HeroGame.prototype.getSubcategories = function() {
+    return {
+        'helmet': {
+            'cloth': 'Ткань',
+            'leather': 'Кожа', 
+            'hide': 'Шкура',
+            'fur': 'Мех',
+            'bone': 'Кости',
+            'plate': 'Пластины',
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        },
+        'chest': {
+            'cloth': 'Ткань',
+            'leather': 'Кожа',
+            'hide': 'Шкура', 
+            'fur': 'Мех',
+            'bone': 'Кости',
+            'plate': 'Пластины',
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        },
+        'gloves': {
+            'cloth': 'Ткань',
+            'leather': 'Кожа',
+            'hide': 'Шкура',
+            'fur': 'Мех', 
+            'bone': 'Кости',
+            'plate': 'Пластины',
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        },
+        'legs': {
+            'cloth': 'Ткань',
+            'leather': 'Кожа',
+            'hide': 'Шкура',
+            'fur': 'Меф',
+            'bone': 'Кости',
+            'plate': 'Пластины', 
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        },
+        'boots': {
+            'cloth': 'Ткань',
+            'leather': 'Кожа',
+            'hide': 'Шкура',
+            'fur': 'Мех',
+            'bone': 'Кости',
+            'plate': 'Пластины',
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        }
+    };
+};
 
+// ========== МОДУЛЬ 12.13: ФИЛЬТРАЦИЯ ПО ПОДКАТЕГОРИЯМ ==========
+HeroGame.prototype.filterItemsBySubcategory = function(items, category, subcategory) {
+    if (!subcategory || subcategory === 'all') return items;
+    
+    return items.filter(item => {
+        if (item.type !== category) return false;
+        
+        // Проверяем материал предмета
+        const itemMaterial = item.material || 'cloth'; // По умолчанию ткань
+        return itemMaterial === subcategory;
+    });
+};
+// ========== МОДУЛЬ 12.14: РЕНДЕР ПОДКАТЕГОРИЙ ==========
+HeroGame.prototype.renderSubcategories = function(category, container) {
+    const subcategories = this.getSubcategories()[category];
+    if (!subcategories) return;
+    
+    let html = `<div class="subcategory-tabs">`;
+    html += `<button class="subcategory-tab active" data-subcategory="all">Все</button>`;
+    
+    Object.entries(subcategories).forEach(([key, name]) => {
+        html += `<button class="subcategory-tab" data-subcategory="${key}">${name}</button>`;
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+    
+    // Добавляем обработчики для подкатегорий
+    const subTabs = container.querySelectorAll('.subcategory-tab');
+    subTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            subTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const activeCategory = document.querySelector('.category-tab.active');
+            if (activeCategory) {
+                this.filterCategoryBySubcategory(activeCategory.dataset.category, tab.dataset.subcategory);
+            }
+        });
+    });
+};
+
+// ========== МОДУЛЬ 12.15: ФИЛЬТРАЦИЯ КАТЕГОРИИ ПО ПОДКАТЕГОРИИ ==========
+HeroGame.prototype.filterCategoryBySubcategory = function(category, subcategory) {
+    const categoryElement = document.querySelector(`.shop-category.${category}`);
+    if (!categoryElement) return;
+    
+    const allItems = this.items.filter(item => 
+        item.requiredLevel <= (this.currentHero?.level || 1) && 
+        this.doesItemMatchCategory(item, category)
+    );
+    
+    const filteredItems = this.filterItemsBySubcategory(allItems, category, subcategory);
+    
+    // Обновляем отображение предметов в категории
+    const itemsGrid = categoryElement.querySelector('.items-grid');
+    if (itemsGrid) {
+        itemsGrid.innerHTML = filteredItems.map(item => this.renderShopItem(item)).join('');
+    }
+};
+
+// ========== МОДУЛЬ 12.16: ПРОВЕРКА СООТВЕТСТВИЯ ПРЕДМЕТА КАТЕГОРИИ ==========
+HeroGame.prototype.doesItemMatchCategory = function(item, category) {
+    if (category === 'all') return true;
+    if (category === 'weapon') return item.type === 'weapon' && item.weaponType !== 'shield';
+    if (category === 'shield') return item.weaponType === 'shield';
+    return item.type === category;
+};
 // ========== МОДУЛЬ 13: СИСТЕМА ИНВЕНТАРЯ ==========
 
 // ========== МОДУЛЬ 13.1: ПОКАЗАТЬ ИНВЕНТАРЬ ==========
 HeroGame.prototype.showInventory = function() {
     if (!this.currentHero) return;
+
+    // Закрываем все экраны перед открытием нового
+    const screens = document.querySelectorAll('.screen');
+    screens.forEach(screen => screen.remove());
 
     const inventoryHTML = this.currentHero.inventory.map(itemId => {
         const item = this.items.find(i => i.id === itemId);
@@ -2461,7 +2640,6 @@ HeroGame.prototype.showInventory = function() {
 
     this.showScreen('inventory');
 };
-
 // ========== МОДУЛЬ 13.2: СНЯТЬ ПРЕДМЕТ ==========
 HeroGame.prototype.unequipItem = function(slot) {
     const success = this.unequipToInventory(slot);
