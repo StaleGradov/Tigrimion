@@ -1126,7 +1126,6 @@ HeroGame.prototype.startHealthAnimation = function() {
     this.healthInterval = setInterval(updateHealthDisplay, 1000);
 };
 
-// ========== МОДУЛЬ 9.6: ОТРИСОВКА ГЛАВНОГО ЭКРАНА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroScreen = function() {
     if (!this.currentHero) return;
 
@@ -1327,8 +1326,8 @@ HeroGame.prototype.renderHeroScreen = function() {
 
                         <!-- Секция экипировки с цветными слотами -->
                         <div class="equipment-section">
-                            <!-- Слоты экипировки с цветными рамками -->
-                            <div class="equipment-slot weapon-slot ${weaponMain ? 'equipped' : 'empty'}" 
+                            <!-- ОБНОВЛЕННЫЕ СЛОТЫ ЭКИПИРОВКИ С КЛАССАМИ ДЛЯ ИДЕНТИФИКАЦИИ -->
+                            <div class="equipment-slot weapon-slot main-hand ${weaponMain ? 'equipped' : 'empty'}" 
                                  ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('main_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
@@ -1338,7 +1337,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot weapon-slot ${weaponOff ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot weapon-slot off-hand ${weaponOff ? 'equipped' : 'empty'}" 
                                  ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('off_hand')"
                                  onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
@@ -1348,7 +1347,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot armor-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot armor-slot helmet-slot ${armorHelmet ? 'equipped' : 'empty'}" 
                                  ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('helmet')"
                                  onmouseover="game.showEquipmentTooltip(event, 'helmet')"
@@ -1358,7 +1357,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot armor-slot ${armorChest ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot armor-slot chest-slot ${armorChest ? 'equipped' : 'empty'}" 
                                  ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('chest')"
                                  onmouseover="game.showEquipmentTooltip(event, 'chest')"
@@ -1368,7 +1367,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot armor-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot armor-slot gloves-slot ${armorGloves ? 'equipped' : 'empty'}" 
                                  ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('gloves')"
                                  onmouseover="game.showEquipmentTooltip(event, 'gloves')"
@@ -1378,7 +1377,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot armor-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot armor-slot legs-slot ${armorLegs ? 'equipped' : 'empty'}" 
                                  ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('legs')"
                                  onmouseover="game.showEquipmentTooltip(event, 'legs')"
@@ -1388,7 +1387,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             </div>
                             
-                            <div class="equipment-slot armor-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                            <div class="equipment-slot armor-slot boots-slot ${armorBoots ? 'equipped' : 'empty'}" 
                                  ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('boots')"
                                  onmouseover="game.showEquipmentTooltip(event, 'boots')"
@@ -2807,13 +2806,15 @@ HeroGame.prototype.closeMerchant = function() {
     this.renderHeroScreen();
 };
 
-//========== МОДУЛЬ 12.18: ОБНОВЛЕННЫЙ МЕТОД ПОКАЗА ИНВЕНТАРЯ С ФИЛЬТРАЦИЕЙ ==========
 HeroGame.prototype.showInventory = function(targetSlot = null) {
     if (!this.currentHero) return;
 
     // Удаляем только существующие экраны магазина и инвентаря
     const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
     existingScreens.forEach(screen => screen.remove());
+
+    // ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ ЭКИПИРОВКИ ПЕРЕД ПОКАЗОМ ИНВЕНТАРЯ
+    this.updateEquipmentDisplay();
 
     // Фильтрация предметов для выбранного слота
     let filteredItems = this.currentHero.inventory;
