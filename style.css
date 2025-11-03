@@ -2917,3 +2917,196 @@ body {
     font-size: 1em;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
+/* ========== МОДУЛЬ 20: СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ И ТИПОВ ОРУЖИЯ ========== */
+
+/* ===== СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ ===== */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    padding: 15px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.notification-success {
+    border-color: #4ade80;
+}
+
+.notification-error {
+    border-color: #f87171;
+}
+
+.notification-info {
+    border-color: #4cc9f0;
+}
+
+.notification-message {
+    color: white;
+    font-size: 0.95em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.notification-close {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.notification-close:hover {
+    background: linear-gradient(135deg, #3aa8d0, #3251d4);
+    transform: translateY(-1px);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ===== СТИЛИ ДЛЯ ТИПОВ ОРУЖИЯ В МАГАЗИНЕ ===== */
+.weapon-type-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.weapon-one-handed {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    border: 1px solid #4cc9f0;
+}
+
+.weapon-two-handed {
+    background: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.weapon-shield {
+    background: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+    border: 1px solid #22c55e;
+}
+
+/* ===== ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ КАТЕГОРИЙ МАГАЗИНА ===== */
+.shop-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+    padding: 0 15px;
+}
+
+.category-tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(4px);
+    white-space: nowrap;
+}
+
+.category-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-color: #4cc9f0;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+/* ===== СТИЛИ ДЛЯ ОТОБРАЖЕНИЯ ТИПА ОРУЖИЯ В КАРТОЧКЕ ТОВАРА ===== */
+.item-weapon-type {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+/* ===== АДАПТИВНОСТЬ ДЛЯ УВЕДОМЛЕНИЙ ===== */
+@media (max-width: 768px) {
+    .notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+    }
+    
+    .notification-content {
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .shop-categories {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 10px;
+    }
+    
+    .category-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .notification {
+        top: 5px;
+        right: 5px;
+        left: 5px;
+    }
+    
+    .notification-content {
+        padding: 10px;
+    }
+    
+    .notification-message {
+        font-size: 0.85em;
+    }
+    
+    .notification-close {
+        padding: 6px 12px;
+        font-size: 0.9em;
+    }
+    
+    .shop-categories {
+        gap: 4px;
+    }
+    
+    .category-tab {
+        padding: 6px 12px;
+        font-size: 0.8em;
+    }
+}
