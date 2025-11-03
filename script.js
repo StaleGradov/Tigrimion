@@ -335,34 +335,34 @@ getActiveSetBonuses(hero) {
 getItemSetConfig() {
     return {
         "set_beginner": {
-            name: "Сет Новичка",
-            requiredPieces: 3,
-            bonus: { type: "health_mult", value: 0.15 },
-            description: "+15% к здоровью за 3 предмета"
+            name: "Крестьянина Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.05 },
+            description: "+5% к урону за 6 предметов"
         },
         "set_warrior": {
-            name: "Сет Воина", 
-            requiredPieces: 4,
-            bonus: { type: "damage_mult", value: 0.2 },
-            description: "+20% к урону за 4 предмета"
+            name: "Ополченца Арканиума", 
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.1 },
+            description: "+10% к урону за 6 предметов"
         },
         "set_guardian": {
-            name: "Сет Стража",
-            requiredPieces: 4, 
-            bonus: { type: "armor_mult", value: 0.25 },
-            description: "+25% к броне за 4 предмета"
+            name: "Стражника Арканиума",
+            requiredPieces: 6, 
+            bonus: { type: "damage_mult", value: 0.15 },
+            description: "+15% к урону за 6 предметов"
         },
         "set_hunter": {
-            name: "Сет Охотника",
-            requiredPieces: 3,
-            bonus: { type: "crit_chance", value: 0.15 },
-            description: "+15% к шансу крита за 3 предмета"
+            name: "Воина Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.2 },
+            description: "+20% к урону за 6 предметов"
         },
         "set_complete": {
-            name: "Полный Сет",
-            requiredPieces: 7,
-            bonus: { type: "all_stats_mult", value: 0.3 },
-            description: "+30% ко всем характеристикам за все 7 предметов"
+            name: "Личного Телохранителя Магнатов Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.25 },
+            description: "+25% к урону за 6 предметов"
         }
     };
 }
