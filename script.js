@@ -302,38 +302,74 @@ HeroGame.prototype.getItemSetConfig = function() {
         "set_beginner": {
             name: "Крестьянина Арканиума",
             requiredPieces: 6,
-            bonus: { type: "all_stats_mult", value: 0.01 },
-            description: "+1% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к урону"
         },
         "set_warrior": {
             name: "Ополченца Арканиума", 
             requiredPieces: 6,
-            bonus: { type: "all_stats_mult", value: 0.02 },
-            description: "+2% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к урону"
         },
         "set_guardian": {
-            name: "Стражника Арканиума",
+            name: "Милитанта Арканиума",
             requiredPieces: 6, 
-            bonus: { type: "all_stats_mult", value: 0.03 },
-            description: "+3% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к урону"
         },
         "set_hunter": {
-            name: "Воина Арканиума",
+            name: "Ветерана Арканиума",
             requiredPieces: 6,
-            bonus: { type: "all_stats_mult", value: 0.04 },
-            description: "+4% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к урону"
         },
         "set_complete": {
-            name: "Личного Телохранителя Магнатов Арканиума",
+            name: "Командира ополчения Арканиума",
             requiredPieces: 6,
-            bonus: { type: "all_stats_mult", value: 0.05 },
-            description: "+5% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к урону"
         },
           "set_king": {
-            name: "Личной Охраны Короля Таргона 4",
+            name: "Стратегоса Арканиума",
             requiredPieces: 6,
-            bonus: { type: "all_stats_mult", value: 0.06 },
-            description: "+6% ко всем характеристикам"
+            bonus: { type: "damage_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к урону"
+        },
+         "set_crit1": {
+            name: "Охотника Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "crit_chance", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit2": {
+            name: "Разведчика Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit3": {
+            name: "Лучника Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit4": {
+            name: "Элитного стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit5": {
+            name: "Командира лучников Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit6": {
+            name: "Легендарного стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
         }
     };
 };
