@@ -61,197 +61,111 @@ class HeroGame {
         this.init();
     }
 
-    // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
+   // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
     
-    // Основной метод инициализации игры
-    async init() {
-        await this.loadGameData();    // Загрузка всех данных игры
-        this.initLocationSystem();    // Инициализация системы локаций
-        this.loadSave();              // Загрузка сохраненной игры
+// Основной метод инициализации игры
+async init() {
+    await this.loadGameData();    // Загрузка всех данных игры
+    this.initLocationSystem();    // Инициализация системы локаций
+    this.loadSave();              // Загрузка сохраненной игры
+    
+    // Разблокировка первого героя по умолчанию
+    if (this.heroes.length > 0) {
+        const firstHero = this.heroes.find(h => h.id === 1);
+        if (firstHero) {
+            firstHero.unlocked = true;
+        }
+    }
+    
+    this.renderHeroSelect();      // Показ экрана выбора героя
+    
+    // Инициализация системы экранов
+    this.initializeScreenSystem();
+}
+
+// Инициализация системы экранов
+initializeScreenSystem() {
+    // Создаем контейнер для всех экранов
+    const container = document.getElementById('app');
+    if (!container) {
+        console.error('Контейнер app не найден!');
+        return;
+    }
+    
+    // Инициализируем главный экран если есть текущий герой
+    if (this.currentHero) {
+        this.renderHeroScreen();
+    }
+}
+
+// Отрисовка экрана выбора героя
+renderHeroSelect() {
+    const container = document.getElementById('app');
+    const heroesHTML = this.heroes.map(hero => {
+        const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+        const stats = this.calculateHeroStats(hero);
+        const bonuses = this.getBonuses();
         
-        // Разблокировка первого героя по умолчанию
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
+        const activeBonuses = this.getAllActiveBonuses(hero);
+        const allBonuses = [...activeBonuses.race, ...activeBonuses.class, ...activeBonuses.saga, ...activeBonuses.equipment];
+        const bonusDisplay = allBonuses.map(bonus => {
+            const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
+            return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
+        }).join('');
         
-        this.renderHeroSelect();      // Показ экрана выбора героя
-    }
+        const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
+        const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
+        const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
 
-    // Инициализация системы прогресса локаций
-    initLocationSystem() {
-        // Для каждой локации создаем запись прогресса
-        this.locations.forEach(location => {
-            const locationId = location.level;
-            
-            if (!this.locationProgress[locationId]) {
-                this.locationProgress[locationId] = {
-                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
-                    monstersKilled: new Set(),      // Множество убитых монстров
-                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
-                };
-            }
-        });
-        
-        // Инициализация счетчиков убийств для каждого монстра
-        this.monsters.forEach(monster => {
-            if (!this.monsterKillCount[monster.id]) {
-                this.monsterKillCount[monster.id] = 0;
-            }
-        });
-    }
+        return `
+            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
+                <div class="hero-option-image">
+                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                </div>
+                <div class="hero-option-info">
+                    <div class="hero-option-header">
+                        <strong>${hero.name}</strong>
+                        <span class="hero-level">Ур. ${hero.level}</span>
+                    </div>
+                    <div class="hero-option-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
+                            <span>⚔️ ${stats.damage}</span>
+                            <span>🛡️ ${stats.armor}</span>
+                            <span>🌟 ${stats.power}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
+                        </div>
+                    </div>
+                    ${bonusDisplay ? `
+                        <div class="hero-option-skills">
+                            ${bonusDisplay}
+                        </div>
+                    ` : ''}
+                    <div class="hero-option-bonuses">
+                        <small>${raceName} - ${className} - ${sagaName}</small>
+                    </div>
+                    ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
 
-    // Загрузка JSON файла
-    async loadJSON(filePath) {
-        try {
-            const response = await fetch(filePath);
-            if (!response.ok) {
-                throw new Error('HTTP error! status: ' + response.status);
-            }
-            return await response.json();
-        } catch (error) {
-            console.error('Ошибка загрузки ' + filePath + ':', error);
-            return null;
-        }
-    }
-
-    // Загрузка всех данных игры
-    async loadGameData() {
-        try {
-            // Параллельная загрузка всех JSON файлов
-            const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
-                this.loadJSON('data/heroes.json'),
-                this.loadJSON('data/enemies.json'),
-                this.loadJSON('data/items.json'),
-                this.loadJSON('data/maps.json'),
-                this.loadJSON('data/locations.json')
-            ]);
-
-            // Заполнение данных игры
-            this.heroes = heroes || [];
-            this.monsters = enemies || [];
-            this.items = items || [];
-            this.maps = mapsData || [];
-            this.locations = locationsData || [];
-
-            // Разблокировка первого героя
-            if (this.heroes.length > 0) {
-                const firstHero = this.heroes.find(h => h.id === 1);
-                if (firstHero) {
-                    firstHero.unlocked = true;
-                }
-            }
-
-            console.log('✅ Все данные загружены:', {
-                heroes: this.heroes.length,
-                monsters: this.monsters.length,
-                items: this.items.length,
-                maps: this.maps.length,
-                locations: this.locations.length
-            });
-
-        } catch (error) {
-            console.error('❌ Критическая ошибка загрузки данных:', error);
-            this.createFallbackData();  // Создание тестовых данных при ошибке
-        }
-    }
-
-    // Создание тестовых данных при ошибке загрузки
-    createFallbackData() {
-        // Создание базового героя
-        this.heroes = [{
-            id: 1,
-            name: "Начальный герой",
-            image: "images/heroes/hero1.jpg",
-            race: "human",
-            class: "warrior",
-            saga: "golden_egg",
-            baseHealth: 100,
-            baseDamage: 20,
-            baseArmor: 10,
-            gold: 500.00,
-            level: 1,
-            experience: 0,
-            monstersKilled: 0,
-            deaths: 0,
-            healthRegen: 100/60,
-            inventory: [],
-            equipment: {
-                main_hand: null,
-                off_hand: null,
-                helmet: null,
-                chest: null,
-                gloves: null,
-                legs: null,
-                boots: null
-            },
-            unlocked: true,
-            story: "Простой воин из далекой деревни..."
-        }];
-
-        // Создание тестовых монстров
-        this.monsters = [];
-        for (let i = 1; i <= 55; i++) {
-            this.monsters.push({
-                id: i,
-                name: `Монстр ${i}`,
-                image: "images/monsters/monster1.jpg",
-                description: `Монстр уровня ${Math.ceil(i/10)}`,
-                health: 20 + i * 5,
-                maxHealth: 20 + i * 5,
-                damage: 5 + i * 2,
-                attack: 5 + i,
-                defense: 2 + Math.floor(i/2),
-                armor: 2 + Math.floor(i/3),
-                speed: 3 + Math.floor(i/5),
-                experience: 5 + i * 2,
-                reward: 10 + i * 3,
-                power: 15 + i * 4
-            });
-        }
-
-        // Создание тестовых предметов
-        this.items = [{
-            id: 1,
-            name: "Малое зелье здоровья",
-            type: "potion",
-            value: 20,
-            price: 25,
-            heal: 20,
-            image: "images/items/potion1.jpg",
-            description: "Восстанавливает 20 здоровья"
-        }];
-
-        // Создание тестовых карт
-        this.maps = [{
-            id: 1, 
-            name: "Арканиум", 
-            image: "images/maps/arcanium.jpg", 
-            description: "Земля древней магии", 
-            multiplier: 1.0, 
-            unlocked: true 
-        }];
-
-        // Создание тестовых локаций
-        this.locations = [];
-        for (let level = 10; level >= 1; level--) {
-            const startMonster = (10 - level) * 10 + 1;
-            const endMonster = startMonster + 9;
-            
-            this.locations.push({
-                level: level,
-                name: `Локация ${11 - level}`,
-                description: `Уровень сложности: ${level}`,
-                image: "images/locations/level10.jpg",
-                monsterRange: [startMonster, endMonster],
-                artifactChance: 0.005 + (10 - level) * 0.001,
-                relicChance: 0.0005 + (10 - level) * 0.0001
-            });
-        }
-    }
-
+    container.innerHTML = `
+        <div class="screen" id="screen-hero-select">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
+                ${heroesHTML}
+            </div>
+        </div>
+    `;
+    
+    this.showScreen('hero-select');
+}
 // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
 
 // Получение всех доступных бонусов
@@ -1042,28 +956,15 @@ renderHeroSelect() {
     }).join('');
 
     container.innerHTML = `
-        <div class="screen active" id="screen-hero-select">
+        <div class="screen" id="screen-hero-select">
             <h2 class="text-center">Выберите героя</h2>
             <div class="hero-list">
                 ${heroesHTML}
             </div>
         </div>
     `;
-}
-
-// Получение иконки для бонуса
-getBonusIcon(bonusType) {
-    const icons = {
-        'health_mult': '❤️',
-        'damage_mult': '⚔️',
-        'armor_mult': '🛡️',
-        'gold_mult': '💰',
-        'health_regen_mult': '⚡',
-        'crit_chance': '💥',
-        'armor_penetration': '⚡',
-        'vampirism': '🩸'
-    };
-    return icons[bonusType] || '🎯';
+    
+    this.showScreen('hero-select');
 }
 
 // Выбор героя
@@ -1088,7 +989,15 @@ selectHero(heroId) {
 
 // Переключение экранов
 showScreen(screenName) {
+    this.closeAllScreens(screenName);
     this.currentScreen = screenName;
+    
+    // Показываем нужный экран
+    const screenElement = document.getElementById(`screen-${screenName}`);
+    if (screenElement) {
+        screenElement.style.display = 'block';
+    }
+    
     if (this.healthInterval) {
         clearInterval(this.healthInterval);
         this.healthInterval = null;
@@ -1165,7 +1074,7 @@ renderHeroScreen() {
 
     const container = document.getElementById('app');
     container.innerHTML = `
-        <div class="screen active" id="screen-main">
+        <div class="screen" id="screen-main">
             <!-- Кнопки действий -->
             <div class="action-buttons">
                 <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
@@ -1451,80 +1360,25 @@ renderHeroScreen() {
     this.startHealthAnimation();
 }
 
-// Показать подсказку для экипировки с информацией о редкости
-showEquipmentTooltip(event, slot) {
-    // Удаляем существующие подсказки
-    this.hideEquipmentTooltip();
-    
-    const slotNames = {
-        'main_hand': '⚔️ Правая рука',
-        'off_hand': '🛡️ Левая рука', 
-        'helmet': '⛑️ Шлем',
-        'chest': '👕 Нагрудник',
-        'gloves': '🧤 Перчатки',
-        'legs': '👖 Поножи',
-        'boots': '👢 Ботинки'
+// Получение иконки для бонуса
+getBonusIcon(bonusType) {
+    const icons = {
+        'health_mult': '❤️',
+        'damage_mult': '⚔️',
+        'armor_mult': '🛡️',
+        'gold_mult': '💰',
+        'health_regen_mult': '⚡',
+        'crit_chance': '💥',
+        'armor_penetration': '⚡',
+        'vampirism': '🩸'
     };
-    
-    const itemId = this.currentHero.equipment[slot];
-    let tooltipContent = '';
-    
-    if (itemId) {
-        const item = this.items.find(i => i.id === itemId);
-        if (item) {
-            const rarityColors = {
-                'common': '#9ca3af',
-                'uncommon': '#4cc9f0', 
-                'rare': '#a855f7',
-                'epic': '#f59e0b',
-                'legendary': '#ffd700'
-            };
-            
-            const rarityNames = {
-                'common': 'Обычный',
-                'uncommon': 'Необычный',
-                'rare': 'Редкий',
-                'epic': 'Эпический',
-                'legendary': 'Легендарный'
-            };
-            
-            const frameColor = rarityColors[item.rarity] || '#9ca3af';
-            const rarityName = rarityNames[item.rarity] || 'Обычный';
-            
-            tooltipContent = `
-                <div class="slot-name">${slotNames[slot]}</div>
-                <div class="item-stats">
-                    <div><strong style="color: ${frameColor}">${item.name}</strong></div>
-                    <div style="color: ${frameColor}; font-size: 0.8em; margin-bottom: 5px;">${rarityName}</div>
-                    ${item.fixed_damage ? `<div>⚔️ Урон: +${item.fixed_damage}</div>` : ''}
-                    ${item.fixed_armor ? `<div>🛡️ Броня: +${item.fixed_armor}</div>` : ''}
-                    ${item.fixed_health ? `<div>❤️ Здоровье: +${item.fixed_health}</div>` : ''}
-                    ${item.bonus ? `<div>🎯 ${this.formatBonus(item.bonus)}</div>` : ''}
-                    ${item.setName ? `<div>✨ Сет: ${this.getItemSetConfig()[item.setName]?.name || item.setName}</div>` : ''}
-                    <div><em>${item.description}</em></div>
-                    <div style="margin-top: 6px; color: #ff6b6b; font-size: 0.75em;">Кликните чтобы снять</div>
-                </div>
-            `;
-        }
-    } else {
-        tooltipContent = `
-            <div class="slot-name">${slotNames[slot]}</div>
-            <div class="empty-slot">Пустой слот</div>
-            <div style="margin-top: 6px; color: #4cc9f0; font-size: 0.75em;">Откройте инвентарь чтобы экипировать</div>
-        `;
-    }
-    
-    const tooltip = document.createElement('div');
-    tooltip.className = 'equipment-tooltip';
-    tooltip.innerHTML = tooltipContent;
-    
-    event.currentTarget.appendChild(tooltip);
+    return icons[bonusType] || '🎯';
 }
 
-// Скрыть подсказки экипировки
-hideEquipmentTooltip() {
-    const existingTooltips = document.querySelectorAll('.equipment-tooltip');
-    existingTooltips.forEach(tooltip => tooltip.remove());
+// Переключение видео/изображения
+toggleVideo(type) {
+    this.showVideo[type] = !this.showVideo[type];
+    this.renderHeroScreen();
 }
 
 // Отрисовка колонки монстра
@@ -1762,12 +1616,6 @@ renderLocationSelection() {
             </div>
         `;
     }
-}
-
-// Переключение видео/изображения
-toggleVideo(type) {
-    this.showVideo[type] = !this.showVideo[type];
-    this.renderHeroScreen();
 }
 
 // ========== МОДУЛЬ 10: СИСТЕМА ЭКИПИРОВКИ С ТИПАМИ ОРУЖИЯ И УПРАВЛЕНИЕМ ОКОН ==========
