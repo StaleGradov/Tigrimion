@@ -2473,11 +2473,11 @@ HeroGame.prototype.getItemFrameColor = function(rarity) {
         'uncommon': '#4cc9f0',    // Синий
         'rare': '#a855f7',        // Фиолетовый
         'epic': '#f59e0b',        // Оранжевый
-        'legendary': '#ffd700'    // Золотой
+        'legendary': '#ffd700',   // Золотой
+        'mythic': '#ff6b6b'       // Красный для мифических предметов
     };
     return colors[rarity] || '#9ca3af';
 };
-
 // ========== МОДУЛЬ 12.6: ИНИЦИАЛИЗАЦИЯ ФИЛЬТРОВ МАГАЗИНА ==========
 HeroGame.prototype.initializeShopFilters = function() {
     const tabs = document.querySelectorAll('.category-tab');
@@ -2547,7 +2547,10 @@ HeroGame.prototype.showItemDetails = function(itemId) {
                     <div class="item-detail-image">
                         <div class="detail-item-background ${this.getItemTypeClass(item.type)}" style="border-color: ${frameColor};">
                             <img src="${item.image}" alt="${item.name}" 
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                 class="item-detail-image-zoom"
+                                 onmouseover="game.zoomItemImage(this)"
+                                 onmouseout="game.unzoomItemImage(this)">
                             <div class="item-fallback-large" style="display: none;">
                                 <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
                             </div>
@@ -2610,6 +2613,20 @@ HeroGame.prototype.showItemDetails = function(itemId) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 };
 
+// ========== МОДУЛЬ 12.7.1: УВЕЛИЧЕНИЕ ИЗОБРАЖЕНИЯ ПРЕДМЕТА ==========
+HeroGame.prototype.zoomItemImage = function(imgElement) {
+    imgElement.style.transform = 'scale(2.5)'; // Увеличение в 2.5 раза
+    imgElement.style.transition = 'transform 0.3s ease';
+    imgElement.style.zIndex = '1000';
+    imgElement.style.position = 'relative';
+};
+
+// ========== МОДУЛЬ 12.7.2: ВОЗВРАТ ИЗОБРАЖЕНИЯ К НОРМАЛЬНОМУ РАЗМЕРУ ==========
+HeroGame.prototype.unzoomItemImage = function(imgElement) {
+    imgElement.style.transform = 'scale(1)';
+    imgElement.style.transition = 'transform 0.3s ease';
+};
+
 // ========== МОДУЛЬ 12.8: ЗАКРЫТЬ МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ==========
 HeroGame.prototype.closeItemModal = function() {
     const modal = document.querySelector('.item-detail-modal');
@@ -2656,7 +2673,8 @@ HeroGame.prototype.getRarityName = function(rarity) {
         'uncommon': 'Необычный',
         'rare': 'Редкий',
         'epic': 'Эпический',
-        'legendary': 'Легендарный'
+        'legendary': 'Легендарный',
+        'mythic': 'Мифический' // Добавлено для мифических предметов
     };
     return names[rarity] || 'Обычный';
 };
