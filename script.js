@@ -1,5 +1,5 @@
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
-// ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 class HeroGame {
     constructor() {
         // Массивы данных игры
@@ -7,21 +7,11 @@ class HeroGame {
         this.items = [];         // Список всех предметов
         this.monsters = [];      // Список всех монстров
         
-        // УДАЛЕНО: maps и locations
-        // this.maps = [];       // УДАЛЕНО
-        // this.locations = [];  // УДАЛЕНО
-        
         // Флаги отображения
         this.showReward = false;         // Показывать ли награду
         this.lastReward = 0;             // Последняя полученная награда
         this.currentHero = null;         // Текущий выбранный герой
         this.currentScreen = 'hero-select'; // Текущий экран игры
-        
-        // УДАЛЕНО: текущие карта, локация и связанные системы
-        // this.currentMap = null;       // УДАЛЕНО
-        // this.currentLocation = null;  // УДАЛЕНО
-        // this.locationProgress = {};   // УДАЛЕНО
-        // this.monsterKillCount = {};   // УДАЛЕНО
         
         this.currentMonster = null;      // Текущий встреченный монстр
         
@@ -45,26 +35,18 @@ class HeroGame {
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         };
         
-        // УДАЛЕНО: видео для карт и локаций
-        // this.videos = { ... };  // УДАЛЕНО
-        
         // Флаги показа видео вместо изображений
         this.showVideo = {
-            hero: false,      // Показывать видео героя
-            // УДАЛЕНО: map и location
-            // map: false,       // УДАЛЕНО
-            // location: false   // УДАЛЕНО
+            hero: false      // Показывать видео героя
         };
         
         // Запуск инициализации игры
         this.init();
     }
 
-    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ (ОБНОВЛЕННЫЙ) ==========
+    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
     async init() {
         await this.loadGameData();    // Загрузка всех данных игры
-        // УДАЛЕНО: инициализация системы локаций
-        // this.initLocationSystem();  // УДАЛЕНО
         this.loadSave();              // Загрузка сохраненной игры
         
         // Разблокировка первого героя по умолчанию
@@ -77,9 +59,8 @@ class HeroGame {
         
         this.renderHeroSelect();      // Показ экрана выбора героя
     }
-
-    // УДАЛЕН МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ
-    // HeroGame.prototype.initLocationSystem = function() { ... } // УДАЛЕНО
+}
+НО
 
 
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
@@ -122,7 +103,7 @@ HeroGame.prototype.loadJSON = async function(filePath) {
     }
 };
 
-// ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ ==========
 HeroGame.prototype.loadGameData = async function() {
     try {
         // Загружаем только героев, монстров и предметы
@@ -130,19 +111,12 @@ HeroGame.prototype.loadGameData = async function() {
             this.loadJSON('data/heroes.json'),
             this.loadJSON('data/enemies.json'),
             this.loadJSON('data/items.json')
-            // УДАЛЕНО: загрузка карт и локаций
-            // this.loadJSON('data/maps.json'),      // УДАЛЕНО
-            // this.loadJSON('data/locations.json')  // УДАЛЕНО
         ]);
 
         // Заполнение данных игры
         this.heroes = heroes || [];
         this.monsters = enemies || [];
         this.items = items || [];
-        
-        // УДАЛЕНО: maps и locations
-        // this.maps = mapsData || [];        // УДАЛЕНО
-        // this.locations = locationsData || []; // УДАЛЕНО
 
         // Разблокировка первого героя
         if (this.heroes.length > 0) {
@@ -156,7 +130,6 @@ HeroGame.prototype.loadGameData = async function() {
             heroes: this.heroes.length,
             monsters: this.monsters.length,
             items: this.items.length
-            // УДАЛЕНО: maps и locations
         });
 
     } catch (error) {
@@ -165,7 +138,7 @@ HeroGame.prototype.loadGameData = async function() {
     }
 };
 
-// ========== МОДУЛЬ 2.3: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 2.3: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ==========
 HeroGame.prototype.createFallbackData = function() {
     // Создание базового героя
     this.heroes = [{
@@ -200,7 +173,7 @@ HeroGame.prototype.createFallbackData = function() {
 
     // Создание тестовых монстров
     this.monsters = [];
-    for (let i = 1; i <= 20; i++) { // Уменьшено количество монстров
+    for (let i = 1; i <= 20; i++) {
         this.monsters.push({
             id: i,
             name: `Монстр ${i}`,
@@ -230,9 +203,6 @@ HeroGame.prototype.createFallbackData = function() {
         image: "images/items/potion1.jpg",
         description: "Восстанавливает 20 здоровья"
     }];
-
-    // УДАЛЕНО: создание тестовых карт и локаций
-};
 
 // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
 
@@ -3667,8 +3637,6 @@ HeroGame.prototype.showNotification = function(message, type = 'info') {
 };
 
 // ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
-
-// ========== МОДУЛЬ 17.1: ИНИЦИАЛИЗАЦИЯ И ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
 
 let game;
@@ -3677,11 +3645,21 @@ let game;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ DOM загружен');
-        game = new HeroGame();
-        window.game = game;
+        try {
+            game = new HeroGame();
+            window.game = game;
+            console.log('✅ Игра успешно инициализирована');
+        } catch (error) {
+            console.error('❌ Ошибка инициализации игры:', error);
+        }
     });
 } else {
     console.log('✅ DOM уже готов');
-    game = new HeroGame();
-    window.game = game;
+    try {
+        game = new HeroGame();
+        window.game = game;
+        console.log('✅ Игра успешно инициализирована');
+    } catch (error) {
+        console.error('❌ Ошибка инициализации игры:', error);
+    }
 }
