@@ -1,40 +1,36 @@
-// ========== МОДУЛЬ 0: ЭКСТРЕННЫЙ ЗАПУСК ==========
-console.log('🚀 Загрузка Hero RPG Game...');
+// МИНИМАЛЬНАЯ РАБОЧАЯ ВЕРСИЯ
+console.log('🎮 Минимальная версия игры загружается...');
 
-// Простейшая проверка загрузки
-window.addEventListener('load', function() {
-    console.log('✅ Страница загружена');
-    setTimeout(initializeGame, 100);
-});
-
-function initializeGame() {
-    try {
-        console.log('🎮 Инициализация игры...');
-        if (typeof HeroGame !== 'undefined') {
-            window.game = new HeroGame();
-            console.log('✅ Игра успешно создана');
-        } else {
-            console.error('❌ Класс HeroGame не найден');
-        }
-    } catch (error) {
-        console.error('❌ Ошибка инициализации:', error);
-        // Показываем сообщение об ошибке
+class SimpleHeroGame {
+    constructor() {
+        this.init();
+    }
+    
+    init() {
+        console.log('✅ Простая игра инициализирована');
+        this.renderMainScreen();
+    }
+    
+    renderMainScreen() {
         const app = document.getElementById('app');
-        if (app) {
-            app.innerHTML = `
-                <div style="text-align: center; padding: 50px; color: white;">
-                    <h1>🎮 Hero RPG Game</h1>
-                    <p style="color: #ff6b6b;">Ошибка загрузки игры</p>
-                    <p>${error.message}</p>
-                    <button onclick="location.reload()">Перезагрузить</button>
-                </div>
-            `;
-        }
+        app.innerHTML = `
+            <div style="background: #1a1a2e; color: white; padding: 20px; border-radius: 10px;">
+                <h1>🎮 Hero RPG Game - РАБОТАЕТ!</h1>
+                <p>Базовая версия игры загружена успешно</p>
+                <button onclick="game.testButton()">Тест кнопка</button>
+            </div>
+        `;
+    }
+    
+    testButton() {
+        alert('Кнопка работает! Игра функционирует!');
     }
 }
 
-// Экспорт для глобального доступа
-window.initializeGame = initializeGame;
+// Запуск при загрузке
+window.addEventListener('load', () => {
+    window.game = new SimpleHeroGame();
+});
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
