@@ -3299,33 +3299,103 @@ body {
 }
 /* ===== МОДУЛЬ 21: СТИЛИ ДЛЯ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЙ И МИФИЧЕСКИХ ПРЕДМЕТОВ ===== */
 
-/* Стили для увеличения изображения в модальном окне */
+/* Убираем внутренние бесцветные рамки и делаем изображение на всю площадь */
 .item-detail-image {
     position: relative;
     overflow: visible;
-    padding: 5px; /* Добавляем небольшой отступ от рамки */
+    padding: 0; /* Убираем отступы */
+}
+
+.detail-item-background {
+    padding: 0 !important; /* Убираем отступы внутри цветной рамки */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    overflow: hidden; /* Обрезаем выходящие за рамки части */
 }
 
 .item-detail-image-zoom {
     cursor: zoom-in;
-    transition: transform 0.3s ease, z-index 0.3s ease;
-    width: 100%; /* Занимает всю ширину контейнера */
-    height: auto;
+    transition: transform 0.3s ease;
+    width: 100%; /* Занимает всю ширину цветной рамки */
+    height: 100%; /* Занимает всю высоту цветной рамки */
     max-width: 100%;
-    max-height: 200px; /* Ограничиваем максимальную высоту */
-    object-fit: contain; /* Сохраняем пропорции */
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05); /* Легкий фон для контраста */
-    padding: 10px; /* Отступ внутри изображения */
+    max-height: 100%;
+    object-fit: contain; /* Сохраняем пропорции, заполняя всю область */
+    border-radius: 0; /* Убираем скругления чтобы касалось рамки */
 }
 
 /* Увеличение при наведении */
 .item-detail-image-zoom:hover {
-    transform: scale(1.8); /* Увеличиваем еще на 80% */
+    transform: scale(1.5); /* Увеличиваем на 50% */
     z-index: 1000;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); /* Тень при увеличении */
-    background: rgba(255, 255, 255, 0.1); /* Более светлый фон при наведении */
+}
+
+/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ */
+.equipment-icon {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important; /* Убираем фон */
+    border-radius: 0; /* Убираем скругления */
+    font-size: 1.4em;
+    overflow: hidden;
+    padding: 0 !important; /* Убираем отступы */
+}
+
+.equipment-icon img {
+    width: 100% !important; /* Занимает всю ширину слота */
+    height: 100% !important; /* Занимает всю высоту слота */
+    object-fit: contain; /* Сохраняем пропорции */
+    padding: 0 !important; /* Убираем отступы */
+    border-radius: 0; /* Убираем скругления */
+}
+
+/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ */
+.item-image-container {
+    width: 100%;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important; /* Убираем фон */
+    border-radius: 0; /* Убираем скругления */
+    margin-bottom: 10px;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important; /* Убираем отступы */
+}
+
+.item-image-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    border-radius: 0; /* Убираем скругления */
+}
+
+/* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ */
+.inventory-item-image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important; /* Убираем фон */
+    border-radius: 0; /* Убираем скругления */
+    overflow: hidden;
+    padding: 0 !important; /* Убираем отступы */
+}
+
+.inventory-item-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    border-radius: 0; /* Убираем скругления */
 }
 
 /* Усиленные стили для мифических предметов */
@@ -3386,25 +3456,24 @@ body {
     }
 }
 
-/* Адаптивность для увеличенных изображений */
+/* Адаптивность */
 @media (max-width: 768px) {
-    .item-detail-image-zoom {
-        max-height: 180px; /* Чуть меньше на планшетах */
+    .item-detail-image-zoom:hover {
+        transform: scale(1.3);
     }
     
-    .item-detail-image-zoom:hover {
-        transform: scale(1.6); /* Меньшее увеличение на планшетах */
+    .detail-item-background {
+        min-height: 150px;
     }
 }
 
 @media (max-width: 480px) {
-    .item-detail-image-zoom {
-        max-height: 150px; /* Еще меньше на телефонах */
-        padding: 8px;
+    .item-detail-image-zoom:hover {
+        transform: scale(1.2);
     }
     
-    .item-detail-image-zoom:hover {
-        transform: scale(1.4); /* Минимальное увеличение на телефонах */
+    .detail-item-background {
+        min-height: 120px;
     }
     
     .rarity-mythic .item-background {
@@ -3414,32 +3483,31 @@ body {
     .inventory-item[data-rarity="mythic"] {
         border-width: 8px !important;
     }
+    
+    .inventory-item-image {
+        width: 50px;
+        height: 50px;
+    }
 }
 
-/* Улучшенные стили для контейнера изображения в модалке */
-.detail-item-background {
-    padding: 15px !important; /* Увеличиваем отступы для лучшего отображения */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 250px; /* Минимальная высота для консистентности */
-}
-
-/* Стили для fallback иконки (когда изображение не загружается) */
+/* Fallback иконки (когда изображение не загружается) */
 .item-fallback-large {
     width: 100%;
-    height: 150px;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    font-size: 3em;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 2em;
     transition: all 0.3s ease;
 }
 
-.item-fallback-large:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.1);
+.item-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 1.5em;
 }
