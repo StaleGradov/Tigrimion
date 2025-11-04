@@ -1,0 +1,21 @@
+{
+  "id": "kingdom_erador",
+  "name": "Королевство Эрадор", 
+  "image": "maps/global/erador.jpg",
+  "gridSize": 20,
+  "start": {"x": 10, "y": 10},
+  "tiles": [
+    {
+      "x": 10, "y": 10,
+      "type": "plains",
+      "localMapId": "starting_region",
+      "description": "Стартовый регион"
+    },
+    {
+      "x": 11, "y": 10, 
+      "type": "forest",
+      "localMapId": "dark_forest_region",
+      "description": "Темный Лес"
+    }
+  ]
+}
