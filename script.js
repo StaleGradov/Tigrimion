@@ -150,7 +150,187 @@ class HeroGame {
             console.error('Ошибка загрузки сохранения:', error);
         }
     }
+// ДОБАВИТЬ ПОСЛЕ КЛАССА HeroGame (перед запуском игры)
 
+// ========== СИСТЕМА ХАРАКТЕРИСТИК ==========
+HeroGame.prototype.calculateHeroStats = function(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return {};
+    
+    return {
+        health: hero.baseHealth,
+        currentHealth: hero.baseHealth,
+        maxHealth: hero.baseHealth,
+        damage: hero.baseDamage,
+        armor: hero.baseArmor,
+        power: Math.round((hero.baseHealth / 10) + (hero.baseDamage * 1.5) + (hero.baseArmor * 2))
+    };
+};
+
+HeroGame.prototype.getBonuses = function() {
+    return {
+        races: {
+            human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота" }
+        },
+        classes: {
+            warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне" }
+        },
+        sagas: {
+            golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью" }
+        }
+    };
+};
+
+HeroGame.prototype.getAllActiveBonuses = function(hero) {
+    hero = hero || this.currentHero;
+    if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
+    
+    const bonuses = this.getBonuses();
+    return {
+        race: bonuses.races[hero.race] ? [bonuses.races[hero.race]] : [],
+        class: bonuses.classes[hero.class] ? [bonuses.classes[hero.class]] : [],
+        saga: bonuses.sagas[hero.saga] ? [bonuses.sagas[hero.saga]] : [],
+        equipment: [],
+        sets: []
+    };
+};
+
+// ========== ОБНОВЛЕННЫЙ РЕНДЕР ГЕРОЯ ==========
+HeroGame.prototype.renderHeroScreen = function() {
+    if (!this.currentHero) {
+        this.currentHero = this.heroes[0];
+    }
+
+    const stats = this.calculateHeroStats(this.currentHero);
+    const activeBonuses = this.getAllActiveBonuses(this.currentHero);
+
+    const container = document.getElementById('app');
+    
+    container.innerHTML = `
+        <div class="screen active" id="screen-main">
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
+                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
+            </div>
+
+            <div class="hero-layout">
+                <!-- Колонка 1: Герой -->
+                <div class="hero-column">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🎯 ${this.currentHero.name}</div>
+                        
+                        <!-- Информация о здоровье -->
+                        <div class="hero-info">
+                            <h3>${this.currentHero.name}</h3>
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: 100%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ ${stats.currentHealth}/${stats.maxHealth}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Основные характеристики -->
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <span class="stat-icon">⚔️</span>
+                                    <span class="stat-value">${stats.damage}</span>
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🛡️</span>
+                                    <span class="stat-value">${stats.armor}</span>
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🌟</span>
+                                    <span class="stat-value">${stats.power}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция бонусов -->
+                        <div class="bonuses-section">
+                            <h4>🎯 Активные бонусы</h4>
+                            ${activeBonuses.race.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🧬 Раса</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.race.map(bonus => `
+                                            <div class="bonus-badge">${bonus.description}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${activeBonuses.class.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">⚔️ Класс</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.class.map(bonus => `
+                                            <div class="bonus-badge">${bonus.description}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${activeBonuses.saga.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">📖 Сага</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.saga.map(bonus => `
+                                            <div class="bonus-badge">${bonus.description}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Прогресс уровня -->
+                        <div class="hero-progress">
+                            <span>Ур.${this.currentHero.level}</span>
+                            <span>💰${this.currentHero.gold.toFixed(2)}</span>
+                            <span>⚡${this.currentHero.experience}/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Остальные колонки карт (без изменений) -->
+                <div class="monster-column">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🗺️ Глобальная карта</div>
+                        ${this.renderGlobalMapColumn()}
+                    </div>
+                </div>
+
+                <div class="map-column">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">📍 Локальная карта</div>
+                        ${this.renderLocalMapColumn()}
+                    </div>
+                </div>
+
+                <div class="location-column">
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">⚔️ Тактическая карта</div>
+                        ${this.renderTacticalMapColumn()}
+                    </div>
+                </div>
+            </div>
+
+            <div class="battle-log" id="battle-log">
+                <div class="log-entry">Игра загружена успешно!</div>
+            </div>
+        </div>
+    `;
+};
     // ОСНОВНОЙ РЕНДЕР ГЕРОЯ
     renderHeroScreen() {
         if (!this.currentHero) {
