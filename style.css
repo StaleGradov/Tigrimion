@@ -3967,3 +3967,79 @@ body {
     font-weight: bold;
     margin-top: 5px;
 }
+/* ========== МОДУЛЬ 8.3: УЛУЧШЕННЫЕ СТИЛИ ИНВЕНТАРЯ ========== */
+.empty-inventory {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.empty-hint {
+    font-size: 0.9em;
+    opacity: 0.7;
+}
+
+.inventory-item.equipped {
+    border-color: #4ade80;
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.item-type {
+    color: #4cc9f0;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.item-heal {
+    color: #ef4444;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.equipped-badge {
+    color: #4ade80;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.inventory-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gold-stat {
+    color: #ffd700 !important;
+}
+
+.space-stat {
+    color: #4cc9f0 !important;
+}
+
+.inventory-item {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.inventory-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
