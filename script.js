@@ -7,7 +7,7 @@ class HeroGame {
         this.heroes = [];        // Список всех героев
         this.items = [];         // Список всех предметов
         this.monsters = [];      // Список всех монстров
-        this.maps = [];          // Список всех карт
+        this.maps = [];          // Список всех карт (старая система)
         this.locations = [];     // Список всех локаций
         
         // Флаги отображения
@@ -15,8 +15,8 @@ class HeroGame {
         this.lastReward = 0;             // Последняя полученная награда
         this.currentHero = null;         // Текущий выбранный герой
         this.currentScreen = 'hero-select'; // Текущий экран игры
-        this.currentMap = null;          // Текущая выбранная карта
-        this.currentLocation = null;     // Текущая выбранная локация
+        this.currentMap = null;          // Текущая выбранная карта (старая система)
+        this.currentLocation = null;     // Текущая выбранная локация (старая система)
         this.currentMonster = null;      // Текущий встреченный монстр
         
         // Свойства для системы боя
@@ -37,7 +37,6 @@ class HeroGame {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            // ... остальные герои
         };
         
         // Видео для карт и локаций
@@ -57,6 +56,9 @@ class HeroGame {
         this.locationProgress = {};      // Прогресс по каждой локации
         this.monsterKillCount = {};      // Счетчик убийств каждого монстра
         
+        // НОВАЯ СИСТЕМА КАРТ
+        this.mapSystem = null;
+        
         // Запуск инициализации игры
         this.init();
     }
@@ -65,6 +67,8 @@ class HeroGame {
     async init() {
         await this.loadGameData();    // Загрузка всех данных игры
         this.initLocationSystem();    // Инициализация системы локаций
+        this.initMapSystem();         // Инициализация новой системы карт
+        await this.loadMapData();     // Загрузка данных карт
         this.loadSave();              // Загрузка сохраненной игры
         
         // Разблокировка первого героя по умолчанию
@@ -77,6 +81,30 @@ class HeroGame {
         
         this.renderHeroSelect();      // Показ экрана выбора героя
     }
+
+    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
+    initLocationSystem() {
+        // Для каждой локации создаем запись прогресса
+        this.locations.forEach(location => {
+            const locationId = location.level;
+            
+            if (!this.locationProgress[locationId]) {
+                this.locationProgress[locationId] = {
+                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
+                    monstersKilled: new Set(),      // Множество убитых монстров
+                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
+                };
+            }
+        });
+        
+        // Инициализация счетчиков убийств для каждого монстра
+        this.monsters.forEach(monster => {
+            if (!this.monsterKillCount[monster.id]) {
+                this.monsterKillCount[monster.id] = 0;
+            }
+        });
+    }
+}
 
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
@@ -1276,6 +1304,8 @@ HeroGame.prototype.startHealthAnimation = function() {
     this.healthInterval = setInterval(updateHealthDisplay, 1000);
 };
 
+// ========== МОДУЛЬ 9.6: ОТРИСОВКА ЭКРАНА ГЕРОЯ (ОБНОВЛЕННЫЙ) ==========
+
 HeroGame.prototype.renderHeroScreen = function() {
     if (!this.currentHero) return;
 
@@ -1313,14 +1343,6 @@ HeroGame.prototype.renderHeroScreen = function() {
     const heroBackground = this.currentHero.image;
     const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
     
-    const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
-    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
-    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
-
-    const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
-    const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
-    const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
-
     const container = document.getElementById('app');
     
     // УДАЛЯЕМ ТОЛЬКО СУЩЕСТВУЮЩИЕ ЭКРАНЫ МАГАЗИНА И ИНВЕНТАРЯ
@@ -1338,9 +1360,9 @@ HeroGame.prototype.renderHeroScreen = function() {
                 <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
             </div>
 
-            <!-- Основной layout с 4 колонками -->
+            <!-- ОБНОВЛЕННЫЙ LAYOUT С 4 КОЛОНКАМИ -->
             <div class="hero-layout">
-                <!-- Колонка героя -->
+                <!-- Колонка 1: Герой (оставить как есть) -->
                 <div class="hero-column" style="background-image: url('${heroBackground}')">
                     ${this.showVideo.hero ? `
                         <div class="video-container">
@@ -1400,7 +1422,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             <!-- Бонусы расы -->
                             ${activeBonuses.race.length > 0 ? `
                                 <div class="bonus-source-group">
-                                    <div class="bonus-source-title">🧬 Раса (${raceName})</div>
+                                    <div class="bonus-source-title">🧬 Раса (${bonuses.races[this.currentHero.race]?.name || 'Неизвестно'})</div>
                                     <div class="bonus-display">
                                         ${activeBonuses.race.map(bonus => `
                                             <div class="bonus-badge race-bonus" title="${bonus.description}">
@@ -1414,7 +1436,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             <!-- Бонусы класса -->
                             ${activeBonuses.class.length > 0 ? `
                                 <div class="bonus-source-group">
-                                    <div class="bonus-source-title">⚔️ Класс (${className})</div>
+                                    <div class="bonus-source-title">⚔️ Класс (${bonuses.classes[this.currentHero.class]?.name || 'Неизвестно'})</div>
                                     <div class="bonus-display">
                                         ${activeBonuses.class.map(bonus => `
                                             <div class="bonus-badge class-bonus" title="${bonus.description}">
@@ -1428,7 +1450,7 @@ HeroGame.prototype.renderHeroScreen = function() {
                             <!-- Бонусы саги -->
                             ${activeBonuses.saga.length > 0 ? `
                                 <div class="bonus-source-group">
-                                    <div class="bonus-source-title">📖 Сага (${sagaName})</div>
+                                    <div class="bonus-source-title">📖 Сага (${bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно'})</div>
                                     <div class="bonus-display">
                                         ${activeBonuses.saga.map(bonus => `
                                             <div class="bonus-badge saga-bonus" title="${bonus.description}">
@@ -1474,9 +1496,8 @@ HeroGame.prototype.renderHeroScreen = function() {
                             ` : ''}
                         </div>
 
-                        <!-- Секция экипировки с цветными слотами -->
+                        <!-- Секция экипировки -->
                         <div class="equipment-section">
-                            <!-- ОБНОВЛЕННЫЕ СЛОТЫ ЭКИПИРОВКИ С КЛАССАМИ ДЛЯ ИДЕНТИФИКАЦИИ -->
                             <div class="equipment-slot weapon-slot main-hand ${weaponMain ? 'equipped' : 'empty'}" 
                                  ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
                                  onclick="game.openInventoryFromSlot('main_hand')"
@@ -1578,30 +1599,27 @@ HeroGame.prototype.renderHeroScreen = function() {
                     </div>
                 </div>
 
-                <!-- Колонка монстра -->
-                <div class="monster-column" style="background-image: url('${monsterBackground}')">
+                <!-- Колонка 2: Глобальная карта (вместо врага) -->
+                <div class="monster-column" style="background-image: url('${this.getMapBackground('global')}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">🎭 Враг</div>
-                        ${this.renderMonsterColumn()}
+                        ${this.renderGlobalMapColumn()}
                     </div>
                 </div>
 
-                <!-- Колонка карты -->
-                <div class="map-column" style="background-image: url('${mapBackground}')">
+                <!-- Колонка 3: Локальная карта (вместо карты) -->
+                <div class="map-column" style="background-image: url('${this.getMapBackground('local')}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">🗺️ Карта</div>
-                        ${this.renderMapSelection()}
+                        ${this.renderLocalMapColumn()}
                     </div>
                 </div>
 
-                <!-- Колонка локации -->
-                <div class="location-column" style="background-image: url('${locationBackground}')">
+                <!-- Колонка 4: Тактическая карта (вместо локации) -->
+                <div class="location-column" style="background-image: url('${this.getMapBackground('tactical')}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
-                        <div class="column-title">📍 Локация</div>
-                        ${this.renderLocationSelection()}
+                        ${this.renderTacticalMapColumn()}
                     </div>
                 </div>
             </div>
@@ -3375,11 +3393,10 @@ HeroGame.prototype.closeInventory = function() {
     this.renderHeroScreen();
 };
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
+// ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ (ОБНОВЛЕННЫЙ) ==========
 
-// ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ ==========
 HeroGame.prototype.saveGame = function() {
     if (this.currentHero) {
-        // Преобразование Set в Array для сохранения
         const locationProgressForSave = {};
         Object.keys(this.locationProgress).forEach(locationId => {
             const progress = this.locationProgress[locationId];
@@ -3399,13 +3416,15 @@ HeroGame.prototype.saveGame = function() {
             locationProgress: locationProgressForSave,
             monsterKillCount: this.monsterKillCount,
             showVideo: this.showVideo,
-            // Сохраняем выносливость героя
-            heroStamina: this.currentHero.stamina || 0
+            heroStamina: this.currentHero.stamina || 0,
+            // Сохраняем данные новой системы карт
+            mapSystem: this.mapSystem
         }));
     }
 };
 
-// ========== МОДУЛЬ 14.2: ЗАГРУЗКА СОХРАНЕНИЯ ==========
+// ========== МОДУЛЬ 14.2: ЗАГРУЗКА СОХРАНЕНИЯ (ОБНОВЛЕННЫЙ) ==========
+
 HeroGame.prototype.loadSave = function() {
     try {
         const save = localStorage.getItem('heroGameSave');
@@ -3415,7 +3434,6 @@ HeroGame.prototype.loadSave = function() {
             const savedHeroProgress = data.heroes || [];
             const currentHeroId = data.currentHeroId;
             
-            // Создание карты прогресса героев
             const progressMap = new Map();
             savedHeroProgress.forEach(hero => {
                 progressMap.set(hero.id, {
@@ -3428,11 +3446,10 @@ HeroGame.prototype.loadSave = function() {
                     unlocked: hero.unlocked,
                     monstersKilled: hero.monstersKilled || 0,
                     deaths: hero.deaths || 0,
-                    stamina: hero.stamina || 0 // Загружаем выносливость
+                    stamina: hero.stamina || 0
                 });
             });
             
-            // Обновление героев сохраненным прогрессом
             this.heroes = this.heroes.map(freshHero => {
                 const progress = progressMap.get(freshHero.id);
                 if (progress) {
@@ -3444,7 +3461,6 @@ HeroGame.prototype.loadSave = function() {
                 return freshHero;
             });
             
-            // Загрузка остальных данных
             this.currentMap = data.currentMap || null;
             this.currentLocation = data.currentLocation || null;
             this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
@@ -3452,7 +3468,6 @@ HeroGame.prototype.loadSave = function() {
             this.monsterKillCount = data.monsterKillCount || {};
             this.showVideo = data.showVideo || this.showVideo;
             
-            // Восстановление прогресса локаций
             if (data.locationProgress) {
                 Object.keys(data.locationProgress).forEach(locationId => {
                     const progress = data.locationProgress[locationId];
@@ -3463,11 +3478,14 @@ HeroGame.prototype.loadSave = function() {
                 });
             }
             
-            // Восстановление текущего героя
+            // Загружаем данные новой системы карт
+            if (data.mapSystem) {
+                this.mapSystem = data.mapSystem;
+            }
+            
             if (currentHeroId) {
                 this.currentHero = this.heroes.find(h => h.id === currentHeroId);
                 if (this.currentHero) {
-                    // Восстанавливаем выносливость из отдельного поля если есть
                     if (data.heroStamina !== undefined) {
                         this.currentHero.stamina = data.heroStamina;
                     }
@@ -3746,3 +3764,460 @@ if (document.readyState === 'loading') {
     game = new HeroGame();
     window.game = game;
 }
+// ========== МОДУЛЬ 18.1: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ КАРТ ==========
+
+HeroGame.prototype.initMapSystem = function() {
+    this.mapSystem = {
+        currentGlobalMap: null,
+        currentLocalMap: null,
+        currentTacticalMap: null,
+        playerPosition: {
+            global: { x: 0, y: 0 },
+            local: { x: 0, y: 0 },
+            tactical: { x: 0, y: 0 }
+        },
+        maps: {
+            global: [],
+            local: [],
+            tactical: []
+        }
+    };
+};
+
+// ========== МОДУЛЬ 18.2: СТРУКТУРЫ ДАННЫХ ДЛЯ КАРТ ==========
+
+HeroGame.prototype.createMapStructure = function() {
+    return {
+        globalMaps: [
+            {
+                id: 1,
+                name: "Арканиум",
+                image: "images/maps/global/arcanium.jpg",
+                grid: {
+                    width: 5,
+                    height: 5,
+                    cells: this.createGrid(5, 5, 'global')
+                },
+                startPosition: { x: 2, y: 2 },
+                connections: []
+            }
+        ],
+        
+        localMaps: [
+            {
+                id: 1,
+                globalMapId: 1,
+                globalPosition: { x: 2, y: 2 },
+                name: "Стартовая зона",
+                image: "images/maps/local/start_zone.jpg",
+                grid: {
+                    width: 8,
+                    height: 8,
+                    cells: this.createGrid(8, 8, 'local')
+                },
+                startPosition: { x: 4, y: 4 },
+                connections: []
+            }
+        ],
+        
+        tacticalMaps: [
+            {
+                id: 1,
+                localMapId: 1,
+                localPosition: { x: 4, y: 4 },
+                name: "Лесная поляна",
+                image: "images/maps/tactical/forest_clearing.jpg",
+                grid: {
+                    width: 10,
+                    height: 10,
+                    cells: this.createGrid(10, 10, 'tactical')
+                },
+                startPosition: { x: 5, y: 5 },
+                interactions: []
+            }
+        ]
+    };
+};
+
+HeroGame.prototype.createGrid = function(width, height, mapType) {
+    const grid = [];
+    for (let y = 0; y < height; y++) {
+        const row = [];
+        for (let x = 0; x < width; x++) {
+            row.push({
+                x: x,
+                y: y,
+                type: 'empty',
+                accessible: true,
+                connections: []
+            });
+        }
+        grid.push(row);
+    }
+    return grid;
+};
+
+// ========== МОДУЛЬ 18.3: ЗАГРУЗКА ДАННЫХ КАРТ ==========
+
+HeroGame.prototype.loadMapData = async function() {
+    try {
+        const mapData = await this.loadJSON('data/maps.json');
+        
+        if (mapData) {
+            this.mapSystem.maps = mapData;
+        } else {
+            console.log('Создаем тестовые данные карт...');
+            this.mapSystem.maps = this.createMapStructure();
+        }
+        
+        this.setStartPosition();
+        console.log('✅ Система карт инициализирована:', this.mapSystem);
+        
+    } catch (error) {
+        console.error('❌ Ошибка загрузки карт:', error);
+        this.mapSystem.maps = this.createMapStructure();
+        this.setStartPosition();
+    }
+};
+
+HeroGame.prototype.setStartPosition = function() {
+    if (this.mapSystem.maps.globalMaps.length > 0) {
+        const globalMap = this.mapSystem.maps.globalMaps[0];
+        this.mapSystem.currentGlobalMap = globalMap;
+        this.mapSystem.playerPosition.global = { ...globalMap.startPosition };
+        
+        const localMap = this.mapSystem.maps.localMaps.find(
+            map => map.globalMapId === globalMap.id && 
+                   map.globalPosition.x === globalMap.startPosition.x && 
+                   map.globalPosition.y === globalMap.startPosition.y
+        );
+        
+        if (localMap) {
+            this.mapSystem.currentLocalMap = localMap;
+            this.mapSystem.playerPosition.local = { ...localMap.startPosition };
+            
+            const tacticalMap = this.mapSystem.maps.tacticalMaps.find(
+                map => map.localMapId === localMap.id && 
+                       map.localPosition.x === localMap.startPosition.x && 
+                       map.localPosition.y === localMap.startPosition.y
+            );
+            
+            if (tacticalMap) {
+                this.mapSystem.currentTacticalMap = tacticalMap;
+                this.mapSystem.playerPosition.tactical = { ...tacticalMap.startPosition };
+            }
+        }
+    }
+};
+
+// ========== МОДУЛЬ 18.4: РЕНДЕРИНГ КАРТ ==========
+
+HeroGame.prototype.renderGlobalMapColumn = function() {
+    if (!this.mapSystem || !this.mapSystem.currentGlobalMap) {
+        return `
+            <div class="map-column-content" style="text-align: center; padding: 20px;">
+                <h4>🗺️ Глобальная карта</h4>
+                <p>Загрузка карты...</p>
+            </div>
+        `;
+    }
+
+    const map = this.mapSystem.currentGlobalMap;
+    const playerPos = this.mapSystem.playerPosition.global;
+    
+    return `
+        <div class="map-column-content">
+            <div class="column-title">🗺️ Глобальная карта</div>
+            <div class="map-info">
+                <h4>${map.name}</h4>
+                <div class="map-grid-container">
+                    ${this.renderMapGrid('global', map, playerPos)}
+                </div>
+                <div class="map-position-info">
+                    Позиция: [${playerPos.x}, ${playerPos.y}]
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+HeroGame.prototype.renderLocalMapColumn = function() {
+    if (!this.mapSystem || !this.mapSystem.currentLocalMap) {
+        return `
+            <div class="map-column-content" style="text-align: center; padding: 20px;">
+                <h4>📍 Локальная карта</h4>
+                <p>Выберите клетку на глобальной карте</p>
+            </div>
+        `;
+    }
+
+    const map = this.mapSystem.currentLocalMap;
+    const playerPos = this.mapSystem.playerPosition.local;
+    
+    return `
+        <div class="map-column-content">
+            <div class="column-title">📍 Локальная карта</div>
+            <div class="map-info">
+                <h4>${map.name}</h4>
+                <div class="map-grid-container">
+                    ${this.renderMapGrid('local', map, playerPos)}
+                </div>
+                <div class="map-position-info">
+                    Позиция: [${playerPos.x}, ${playerPos.y}]
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+HeroGame.prototype.renderTacticalMapColumn = function() {
+    if (!this.mapSystem || !this.mapSystem.currentTacticalMap) {
+        return `
+            <div class="map-column-content" style="text-align: center; padding: 20px;">
+                <h4>⚔️ Тактическая карта</h4>
+                <p>Выберите клетку на локальной карте</p>
+            </div>
+        `;
+    }
+
+    const map = this.mapSystem.currentTacticalMap;
+    const playerPos = this.mapSystem.playerPosition.tactical;
+    
+    return `
+        <div class="map-column-content">
+            <div class="column-title">⚔️ Тактическая карта</div>
+            <div class="map-info">
+                <h4>${map.name}</h4>
+                <div class="map-grid-container">
+                    ${this.renderMapGrid('tactical', map, playerPos)}
+                </div>
+                <div class="map-position-info">
+                    Позиция: [${playerPos.x}, ${playerPos.y}]
+                </div>
+                <div class="tactical-actions">
+                    <button class="btn-primary" onclick="game.exploreTacticalMap()">
+                        Исследовать
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+HeroGame.prototype.renderMapGrid = function(mapType, map, playerPos) {
+    const grid = map.grid;
+    const cellSize = mapType === 'global' ? '40px' : 
+                    mapType === 'local' ? '35px' : '30px';
+    
+    let html = `<div class="map-grid ${mapType}-grid" style="grid-template-columns: repeat(${grid.width}, ${cellSize});">`;
+    
+    for (let y = 0; y < grid.height; y++) {
+        for (let x = 0; x < grid.width; x++) {
+            const cell = grid.cells[y][x];
+            const isPlayerHere = playerPos.x === x && playerPos.y === y;
+            const cellClass = `map-cell ${cell.type} ${isPlayerHere ? 'player-here' : ''} ${cell.accessible ? 'accessible' : 'blocked'}`;
+            
+            html += `
+                <div class="${cellClass}" 
+                     onclick="game.handleMapCellClick('${mapType}', ${x}, ${y})"
+                     title="Позиция: [${x}, ${y}]">
+                    ${isPlayerHere ? '👤' : this.getMapCellIcon(cell.type)}
+                </div>
+            `;
+        }
+    }
+    
+    html += `</div>`;
+    return html;
+};
+
+HeroGame.prototype.getMapCellIcon = function(cellType) {
+    const icons = {
+        'empty': '·',
+        'obstacle': '⛰️',
+        'entrance': '🚪',
+        'exit': '🚪',
+        'monster': '👹',
+        'chest': '📦',
+        'npc': '🧙',
+        'village': '🏠',
+        'dungeon': '🏰'
+    };
+    return icons[cellType] || '·';
+};
+
+// ========== МОДУЛЬ 18.5: ОБРАБОТКА ВЗАИМОДЕЙСТВИЙ ==========
+
+HeroGame.prototype.handleMapCellClick = function(mapType, x, y) {
+    if (!this.mapSystem) return;
+    
+    const map = this.getCurrentMap(mapType);
+    if (!map || !map.grid.cells[y] || !map.grid.cells[y][x]) return;
+    
+    const cell = map.grid.cells[y][x];
+    
+    if (!cell.accessible) {
+        this.addToLog('❌ Эта клетка недоступна для перемещения');
+        return;
+    }
+    
+    switch (mapType) {
+        case 'global':
+            this.handleGlobalMapClick(x, y, cell);
+            break;
+        case 'local':
+            this.handleLocalMapClick(x, y, cell);
+            break;
+        case 'tactical':
+            this.handleTacticalMapClick(x, y, cell);
+            break;
+    }
+};
+
+HeroGame.prototype.handleGlobalMapClick = function(x, y, cell) {
+    this.mapSystem.playerPosition.global = { x, y };
+    
+    const localMap = this.mapSystem.maps.localMaps.find(
+        map => map.globalMapId === this.mapSystem.currentGlobalMap.id && 
+               map.globalPosition.x === x && 
+               map.globalPosition.y === y
+    );
+    
+    if (localMap) {
+        this.mapSystem.currentLocalMap = localMap;
+        this.mapSystem.playerPosition.local = { ...localMap.startPosition };
+        
+        const tacticalMap = this.mapSystem.maps.tacticalMaps.find(
+            tmap => tmap.localMapId === localMap.id && 
+                   tmap.localPosition.x === localMap.startPosition.x && 
+                   tmap.localPosition.y === localMap.startPosition.y
+        );
+        
+        if (tacticalMap) {
+            this.mapSystem.currentTacticalMap = tacticalMap;
+            this.mapSystem.playerPosition.tactical = { ...tacticalMap.startPosition };
+        }
+        
+        this.addToLog(`🗺️ Перемещение на глобальную позицию [${x}, ${y}]`);
+    }
+    
+    this.renderHeroScreen();
+};
+
+HeroGame.prototype.handleLocalMapClick = function(x, y, cell) {
+    this.mapSystem.playerPosition.local = { x, y };
+    
+    const tacticalMap = this.mapSystem.maps.tacticalMaps.find(
+        map => map.localMapId === this.mapSystem.currentLocalMap.id && 
+               map.localPosition.x === x && 
+               map.localPosition.y === y
+    );
+    
+    if (tacticalMap) {
+        this.mapSystem.currentTacticalMap = tacticalMap;
+        this.mapSystem.playerPosition.tactical = { ...tacticalMap.startPosition };
+        this.addToLog(`📍 Перемещение на локальную позицию [${x}, ${y}]`);
+    }
+    
+    this.renderHeroScreen();
+};
+
+HeroGame.prototype.handleTacticalMapClick = function(x, y, cell) {
+    this.mapSystem.playerPosition.tactical = { x, y };
+    this.addToLog(`⚔️ Перемещение на тактическую позицию [${x}, ${y}]`);
+    
+    if (cell.type === 'monster') {
+        this.encounterMonsterOnMap();
+    } else if (cell.type === 'chest') {
+        this.openChestOnMap();
+    } else if (cell.type === 'npc') {
+        this.interactWithNPC();
+    }
+    
+    this.renderHeroScreen();
+};
+
+HeroGame.prototype.getCurrentMap = function(mapType) {
+    switch (mapType) {
+        case 'global': return this.mapSystem.currentGlobalMap;
+        case 'local': return this.mapSystem.currentLocalMap;
+        case 'tactical': return this.mapSystem.currentTacticalMap;
+        default: return null;
+    }
+};
+
+// ========== МОДУЛЬ 18.6: ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ КАРТ ==========
+
+HeroGame.prototype.exploreTacticalMap = function() {
+    if (!this.mapSystem.currentTacticalMap) return;
+    
+    const pos = this.mapSystem.playerPosition.tactical;
+    const cell = this.mapSystem.currentTacticalMap.grid.cells[pos.y][pos.x];
+    
+    this.addToLog(`🔍 Исследование позиции [${pos.x}, ${pos.y}] на тактической карте`);
+    
+    const encounterChance = Math.random();
+    
+    if (encounterChance < 0.6) {
+        this.encounterMonsterOnMap();
+    } else if (encounterChance < 0.8) {
+        this.findItemOnMap();
+    } else {
+        this.addToLog('Ничего не найдено...');
+    }
+};
+
+HeroGame.prototype.encounterMonsterOnMap = function() {
+    if (!this.currentLocation) {
+        const monsterId = Math.floor(Math.random() * 10) + 1;
+        let monster = this.monsters.find(m => m.id === monsterId);
+        
+        if (!monster) {
+            monster = this.monsters[0];
+        }
+        
+        if (monster) {
+            this.currentMonster = { ...monster };
+            this.addToLog(`🎭 Встречен монстр: ${this.currentMonster.name}`);
+            this.renderHeroScreen();
+        }
+    } else {
+        this.encounterMonster();
+    }
+};
+
+HeroGame.prototype.findItemOnMap = function() {
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog('🎒 Инвентарь полон! Нельзя подобрать предмет.');
+        return;
+    }
+    
+    const goldFound = Math.floor(Math.random() * 50) + 10;
+    this.currentHero.gold += goldFound;
+    
+    this.addToLog(`💰 Найдено ${goldFound} золота!`);
+    this.saveGame();
+};
+
+HeroGame.prototype.openChestOnMap = function() {
+    this.addToLog('📦 Открыт сундук!');
+};
+
+HeroGame.prototype.interactWithNPC = function() {
+    this.addToLog('🧙 Взаимодействие с NPC');
+};
+
+HeroGame.prototype.getMapBackground = function(mapType) {
+    const map = this.getCurrentMap(mapType);
+    if (map && map.image) {
+        return map.image;
+    }
+    
+    const fallbacks = {
+        'global': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==',
+        'local': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=',
+        'tactical': 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QotCw0LrQvtC70YzQutC+0LLQsCDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4='
+    };
+    
+    return fallbacks[mapType] || fallbacks.global;
+};
