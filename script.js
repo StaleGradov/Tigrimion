@@ -1149,19 +1149,30 @@ HeroGame.prototype.getBonusIcon = function(bonusType) {
 
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
+    console.log('Попытка выбрать героя:', heroId);
+    
     const hero = this.heroes.find(h => h.id === heroId);
     if (!hero) {
         console.error('Герой не найден:', heroId);
         return;
     }
     
-    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    // Упрощенная проверка разблокировки
+    const isUnlocked = hero.id === 1 || (hero.unlocked === true);
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
+        alert('❌ Этот герой еще заблокирован!');
         return;
     }
     
     this.currentHero = hero;
+    
+    // Инициализируем здоровье если его нет
+    if (!this.currentHero.currentHealth) {
+        this.currentHero.currentHealth = this.calculateMaxHealth();
+    }
+    
+    console.log('✅ Выбран герой:', this.currentHero.name);
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
@@ -3735,7 +3746,25 @@ HeroGame.prototype.updateHeroStatsDisplay = function() {
     if (currentHealthEl) currentHealthEl.textContent = stats.currentHealth;
     if (maxHealthEl) maxHealthEl.textContent = stats.maxHealth;
 };
-
+// ========== ОТЛАДОЧНЫЙ МЕТОД ==========
+HeroGame.prototype.debugHeroes = function() {
+    console.log('=== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ О ГЕРОЯХ ===');
+    this.heroes.forEach(hero => {
+        console.log(`Герой ${hero.id}: ${hero.name}`, {
+            unlocked: hero.unlocked,
+            level: hero.level,
+            health: this.calculateMaxHealth(hero)
+        });
+    });
+    
+    // Принудительно разблокируем первого героя если нужно
+    const firstHero = this.heroes.find(h => h.id === 1);
+    if (firstHero) {
+        firstHero.unlocked = true;
+        console.log('✅ Первый герой принудительно разблокирован');
+        this.renderHeroSelect();
+    }
+};
 // ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
 
