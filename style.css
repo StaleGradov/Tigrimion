@@ -3583,3 +3583,125 @@ body {
     background: rgba(255, 255, 255, 0.05);
     font-size: 1.5em;
 }
+/* ===== МОДУЛЬ 22: СТИЛИ ДЛЯ НОВОЙ СИСТЕМЫ КАРТ ===== */
+
+.map-column-content {
+    padding: 10px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.map-grid-container {
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+}
+
+.map-grid {
+    display: grid;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.global-grid { gap: 3px; }
+.local-grid { gap: 2px; }
+.tactical-grid { gap: 1px; }
+
+.map-cell {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8em;
+}
+
+.map-cell:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.map-cell.accessible {
+    background: rgba(76, 201, 240, 0.2);
+}
+
+.map-cell.blocked {
+    background: rgba(248, 113, 113, 0.3);
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.map-cell.player-here {
+    background: rgba(74, 222, 128, 0.4);
+    border-color: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+}
+
+.map-cell.monster {
+    background: rgba(248, 113, 113, 0.3);
+    border-color: #f87171;
+}
+
+.map-cell.chest {
+    background: rgba(245, 158, 11, 0.3);
+    border-color: #f59e0b;
+}
+
+.map-cell.npc {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: #a855f7;
+}
+
+.map-cell.obstacle {
+    background: rgba(156, 163, 175, 0.4);
+    cursor: not-allowed;
+}
+
+.map-position-info {
+    margin-top: 8px;
+    padding: 5px 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    font-size: 0.8em;
+    text-align: center;
+}
+
+.tactical-actions {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+
+/* Адаптивность для карт */
+@media (max-width: 1200px) {
+    .map-cell {
+        font-size: 0.7em;
+    }
+}
+
+@media (max-width: 768px) {
+    .map-grid {
+        gap: 1px;
+        padding: 3px;
+    }
+    
+    .map-cell {
+        font-size: 0.6em;
+    }
+}
