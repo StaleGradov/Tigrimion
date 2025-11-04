@@ -135,6 +135,18 @@ HeroGame.prototype.loadSave = function() {
         console.error('Ошибка загрузки сохранения:', error);
     }
 };
+// ========== МОДУЛЬ 2.5: СОХРАНЕНИЕ ИГРЫ ==========
+HeroGame.prototype.saveGame = function() {
+    if (this.currentHero) {
+        localStorage.setItem('heroGameSave', JSON.stringify({
+            currentHeroId: this.currentHero.id,
+            heroes: this.heroes,
+            mapSystem: this.mapSystem,
+            lastSave: Date.now()
+        }));
+        this.addToLog('💾 Игра сохранена');
+    }
+};
 // ========== МОДУЛЬ 3.1: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ КАРТ ==========
 HeroGame.prototype.initMapSystem = function() {
     this.mapSystem.globalMap = {
@@ -268,6 +280,153 @@ HeroGame.prototype.getAllActiveBonuses = function(hero) {
         sets: []
     };
 };
+// ========== МОДУЛЬ 4.5.1: ОТОБРАЖЕНИЕ СЛОТОВ ЭКИПИРОВКИ ==========
+HeroGame.prototype.renderEquipmentSection = function() {
+    const getEquippedItem = (slot) => {
+        const itemId = this.currentHero.equipment[slot];
+        if (!itemId) return null;
+        return this.items.find(item => item.id === itemId);
+    };
+
+    const slots = [
+        { key: 'main_hand', icon: '⚔️', name: 'Правая рука' },
+        { key: 'off_hand', icon: '🛡️', name: 'Левая рука' },
+        { key: 'helmet', icon: '⛑️', name: 'Шлем' },
+        { key: 'chest', icon: '👕', name: 'Броня' },
+        { key: 'gloves', icon: '🧤', name: 'Перчатки' },
+        { key: 'legs', icon: '👖', name: 'Поножи' },
+        { key: 'boots', icon: '👢', name: 'Ботинки' }
+    ];
+
+    return `
+        <div class="equipment-section">
+            ${slots.map(slot => {
+                const item = getEquippedItem(slot.key);
+                return `
+                    <div class="equipment-slot ${item ? 'equipped' : 'empty'}" 
+                         onclick="game.openInventoryFromSlot('${slot.key}')"
+                         title="${slot.name}">
+                        <div class="equipment-icon">
+                            ${item ? '📦' : slot.icon}
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            
+            <div class="equipment-slot empty" onclick="game.showInventory()" title="Инвентарь">
+                <div class="equipment-icon">🎒</div>
+            </div>
+        </div>
+    `;
+};
+
+// ========== МОДУЛЬ 4.5.2: ОТКРЫТИЕ ИНВЕНТАРЯ ДЛЯ СЛОТА ==========
+HeroGame.prototype.openInventoryFromSlot = function(slot) {
+    this.showInventory(slot);
+};
+
+// ========== МОДУЛЬ 4.5.3: ПОКАЗ ИНВЕНТАРЯ ==========
+HeroGame.prototype.showInventory = function(targetSlot = null) {
+    const container = document.getElementById('app');
+    
+    let inventoryHTML = '';
+    if (this.currentHero.inventory.length === 0) {
+        inventoryHTML = '<div class="text-center">Инвентарь пуст</div>';
+    } else {
+        inventoryHTML = this.currentHero.inventory.map(itemId => {
+            const item = this.items.find(i => i.id === itemId);
+            if (!item) return '';
+            
+            return `
+                <div class="inventory-item" onclick="game.equipItem(${itemId})">
+                    <div class="inventory-item-image">📦</div>
+                    <div class="inventory-item-info">
+                        <strong>${item.name}</strong>
+                        <small>${item.description}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    container.innerHTML = `
+        <div class="screen active" id="screen-inventory">
+            <h3 class="text-center">🎒 Инвентарь</h3>
+            ${targetSlot ? `<div class="slot-info">Выбор предмета для слота</div>` : ''}
+            
+            <div class="inventory-info">
+                <div>💰 Золото: ${this.currentHero.gold.toFixed(2)}</div>
+                <div>🎒 Свободно: ${10 - this.currentHero.inventory.length}/10</div>
+            </div>
+            
+            <div class="inventory-grid">
+                ${inventoryHTML}
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
+            </div>
+        </div>
+    `;
+};
+
+// ========== МОДУЛЬ 4.5.4: ЭКИПИРОВКА ПРЕДМЕТА ==========
+HeroGame.prototype.equipItem = function(itemId) {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) return;
+
+    // Определяем слот для предмета
+    let slot = this.getEquipmentSlotForItem(item);
+    
+    if (slot) {
+        // Снимаем текущий предмет если есть
+        const currentItemId = this.currentHero.equipment[slot];
+        if (currentItemId) {
+            this.unequipItem(slot);
+        }
+        
+        // Экипируем новый предмет
+        this.currentHero.equipment[slot] = itemId;
+        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+        
+        this.addToLog(`🎯 Надето: ${item.name}`);
+        this.saveGame();
+    }
+    
+    this.renderHeroScreen();
+};
+
+// ========== МОДУЛЬ 4.5.5: ОПРЕДЕЛЕНИЕ СЛОТА ДЛЯ ПРЕДМЕТА ==========
+HeroGame.prototype.getEquipmentSlotForItem = function(item) {
+    const slotMap = {
+        'weapon': 'main_hand',
+        'helmet': 'helmet',
+        'chest': 'chest',
+        'gloves': 'gloves',
+        'legs': 'legs',
+        'boots': 'boots'
+    };
+    
+    return slotMap[item.type] || null;
+};
+
+// ========== МОДУЛЬ 4.5.6: СНЯТИЕ ПРЕДМЕТА ==========
+HeroGame.prototype.unequipItem = function(slot) {
+    const itemId = this.currentHero.equipment[slot];
+    if (!itemId) return;
+
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog('❌ Инвентарь полон!');
+        return;
+    }
+
+    const item = this.items.find(i => i.id === itemId);
+    this.currentHero.equipment[slot] = null;
+    this.currentHero.inventory.push(itemId);
+    
+    this.addToLog(`📦 Снято: ${item.name}`);
+    this.saveGame();
+};
 // ========== МОДУЛЬ 5.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
     const container = document.getElementById('app');
@@ -387,7 +546,8 @@ HeroGame.prototype.renderHeroScreen = function() {
                                 </div>
                             ` : ''}
                         </div>
-
+<!-- Секция экипировки -->
+${this.renderEquipmentSection()}
                         <!-- Прогресс уровня -->
                         <div class="hero-progress">
                             <span>Ур.${this.currentHero.level}</span>
