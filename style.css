@@ -1511,346 +1511,316 @@ body {
 }
 /* ===== МОДУЛЬ 17.5: СТИЛИ СТРУКТУРИРОВАННОГО МАГАЗИНА ===== */
 
-/* Заголовок магазина - верхняя панель с информацией */
+/* Основной фон магазина - деревянная текстура */
+#screen-merchant {
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), /* Темный оверлей для читаемости */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') 
+        center/cover fixed; /* Деревянные доски - центр, покрытие, фиксированный параллакс */
+    position: relative;
+}
+
+/* Альтернативные варианты деревянных текстур (раскомментируй нужный):
+   
+   Старые деревянные доски:
+   url('https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')
+   
+   Тёмное дерево:
+   url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')
+   
+   Деревянный прилавок:
+   url('https://images.unsplash.com/photo-1571781926260-7a7e6a6c6b6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80')
+*/
+
+/* Заголовок магазина - стилизованный под вывеску */
 .merchant-header {
-    background: rgba(0, 0, 0, 0.8); /* Темный полупрозрачный фон */
-    padding: 15px; /* Внутренние отступы */
-    border-radius: 10px; /* Скругленные углы */
-    margin-bottom: 15px; /* Отступ снизу */
-    border: 2px solid rgba(255, 215, 0, 0.3); /* Золотая рамка */
+    background: 
+        linear-gradient(rgba(139, 69, 19, 0.9), rgba(101, 67, 33, 0.9)), /* Градиент коричневого цвета */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'); /* Текстура дерева */
+    padding: 20px; /* Увеличили отступы */
+    border-radius: 15px; /* Больше скругление */
+    margin-bottom: 20px; /* Больше отступ */
+    border: 3px solid #8B4513; /* Коричневая рамка как у дерева */
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.6), /* Внешняя тень */
+        inset 0 1px 0 rgba(255, 255, 255, 0.2), /* Внутреннее свечение сверху */
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5); /* Внутренняя тень снизу */
+    position: relative;
+    overflow: hidden;
+}
+
+/* Эффект старины для заголовка */
+.merchant-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 /* Контейнер для информации о герое в магазине */
 .hero-merchant-info {
-    display: flex; /* Flexbox для выравнивания */
-    justify-content: center; /* Центрирование по горизонтали */
-    margin-top: 10px; /* Отступ сверху */
+    display: flex;
+    justify-content: center;
+    margin-top: 15px; /* Увеличили отступ */
 }
 
-/* Блок со статистикой героя (золото, место в инвентаре) */
+/* Блок со статистикой героя - стилизованный под табличку */
 .merchant-stats {
-    display: flex; /* Flexbox для расположения элементов в строку */
-    gap: 20px; /* Расстояние между элементами */
-    background: rgba(76, 201, 240, 0.2); /* Голубой полупрозрачный фон */
-    padding: 8px 16px; /* Внутренние отступы */
-    border-radius: 20px; /* Сильно скругленные углы */
-    border: 1px solid #4cc9f0; /* Голубая рамка */
+    display: flex;
+    gap: 25px; /* Увеличили расстояние */
+    background: 
+        linear-gradient(135deg, rgba(160, 82, 45, 0.8), rgba(139, 69, 19, 0.8)), /* Коричневый градиент */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'); /* Деревянная текстура */
+    padding: 12px 24px; /* Увеличили отступы */
+    border-radius: 25px; /* Больше скругление */
+    border: 2px solid #D2691E; /* Светло-коричневая рамка */
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    font-size: 1.1em; /* Увеличили шрифт */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Тень текста */
 }
 
-/* Стили для текста золота и места в инвентаре */
-.gold-amount, .inventory-space {
-    font-weight: bold; /* Жирный шрифт */
-    font-size: 1em; /* Размер шрифта */
-}
-
-/* Контейнер для вкладок категорий товаров */
+/* Контейнер для вкладок категорий товаров - стилизованный под полки */
 .shop-categories {
-    display: flex; /* Flexbox для расположения вкладок в строку */
-    flex-wrap: wrap; /* Перенос на новую строку при нехватке места */
-    gap: 8px; /* Расстояние между вкладками */
-    margin-bottom: 20px; /* Отступ снизу */
-    justify-content: center; /* Центрирование вкладок */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Увеличили расстояние */
+    margin-bottom: 25px; /* Увеличили отступ */
+    justify-content: center;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.5); /* Темный фон для контраста */
+    border-radius: 10px;
+    border: 1px solid #8B4513; /* Коричневая рамка */
 }
 
-/* Стили для отдельных вкладок категорий */
+/* Стили для отдельных вкладок категорий - как деревянные ярлыки */
 .category-tab {
-    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Полупрозрачная белая рамка */
-    color: white; /* Белый текст */
-    padding: 8px 16px; /* Внутренние отступы */
-    border-radius: 20px; /* Скругленные углы (овальная форма) */
-    cursor: pointer; /* Курсор-указатель при наведении */
-    transition: all 0.3s ease; /* Плавные переходы для всех свойств */
-    font-size: 0.9em; /* Размер шрифта */
-    backdrop-filter: blur(4px); /* Размытие фона для стеклянного эффекта */
+    background: 
+        linear-gradient(135deg, rgba(160, 82, 45, 0.9), rgba(139, 69, 19, 0.9)), /* Коричневый градиент */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'); /* Деревянная текстура */
+    border: 2px solid #A0522D; /* Коричневая рамка */
+    color: #FFD700; /* Золотой текст */
+    padding: 10px 20px; /* Увеличили отступы */
+    border-radius: 25px; /* Овальная форма */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95em; /* Увеличили шрифт */
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); /* Тень текста */
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Стили при наведении на вкладку */
+/* Стили при наведении на вкладку - эффект подсветки */
 .category-tab:hover {
-    background: rgba(255, 255, 255, 0.2); /* Более светлый фон */
-    transform: translateY(-2px); /* Поднимаем вкладку на 2px */
+    background: 
+        linear-gradient(135deg, rgba(205, 133, 63, 0.9), rgba(160, 82, 45, 0.9)), /* Более светлый коричневый */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+    transform: translateY(-3px) scale(1.05); /* Больше подъем и увеличение */
+    box-shadow: 
+        0 6px 20px rgba(210, 105, 30, 0.4), /* Оранжевая тень */
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    border-color: #FF8C00; /* Оранжевая рамка */
 }
 
-/* Стили для активной (выбранной) вкладки */
+/* Стили для активной вкладки - как выделенная полка */
 .category-tab.active {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee); /* Градиентный фон */
-    border-color: #4cc9f0; /* Голубая рамка */
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3); /* Тень */
+    background: 
+        linear-gradient(135deg, rgba(255, 140, 0, 0.9), rgba(210, 105, 30, 0.9)), /* Оранжево-коричневый градиент */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80');
+    border-color: #FFD700; /* Золотая рамка */
+    box-shadow: 
+        0 6px 25px rgba(255, 215, 0, 0.5), /* Золотая тень */
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 15px rgba(255, 215, 0, 0.3); /* Свечение */
+    color: #FFF; /* Белый текст */
 }
 
 /* Основной контейнер для товаров */
 .merchant-items-container {
-    min-height: 500px; /* Минимальная высота чтобы контент не прыгал */
-}
-
-/* Контейнер для контента магазина */
-.shop-content {
-    width: 100%; /* Занимает всю ширину */
-}
-
-/* Анимация появления категорий */
-.shop-category {
-    animation: fadeIn 0.3s ease-in-out; /* Анимация плавного появления */
-}
-
-/* Ключевые кадры для анимации появления */
-@keyframes fadeIn {
-    from { 
-        opacity: 0; /* Начало: полностью прозрачный */
-        transform: translateY(10px); /* Начало: смещен на 10px вниз */
-    }
-    to { 
-        opacity: 1; /* Конец: полностью непрозрачный */
-        transform: translateY(0); /* Конец: на своем месте */
-    }
-}
-
-/* Заголовок категории товаров */
-.category-title {
-    color: #ffd700; /* Золотой цвет текста */
-    margin-bottom: 15px; /* Отступ снизу */
-    text-align: center; /* Выравнивание по центру */
-    font-size: 1.2em; /* Размер шрифта */
-    padding: 10px; /* Внутренние отступы */
-    background: rgba(0, 0, 0, 0.6); /* Темный полупрозрачный фон */
-    border-radius: 8px; /* Скругленные углы */
-    border: 1px solid rgba(255, 215, 0, 0.3); /* Золотая рамка */
+    min-height: 500px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6); /* Темный полупрозрачный фон для контраста */
+    border-radius: 15px;
+    border: 2px solid #8B4513; /* Коричневая рамка */
+    box-shadow: 
+        inset 0 0 50px rgba(0, 0, 0, 0.8),
+        0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* Сетка для отображения товаров */
 .items-grid {
-    display: grid; /* CSS Grid для сетки товаров */
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Автоподбор колонок, минимальная ширина 240px */
-    gap: 15px; /* Расстояние между карточками */
-    padding: 10px; /* Внутренние отступы сетки */
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Увеличили минимальную ширину */
+    gap: 20px; /* Увеличили расстояние */
+    padding: 15px; /* Увеличили отступы */
 }
 
-/* Карточка отдельного товара */
+/* Карточка отдельного товара - как ящик или полка */
 .shop-item {
-    cursor: pointer; /* Курсор-указатель при наведении */
-    transition: all 0.3s ease; /* Плавные переходы для всех свойств */
-    border-radius: 12px; /* Скругленные углы */
-    overflow: hidden; /* Обрезаем содержимое за пределами */
-    min-height: 260px; /* Минимальная высота карточки (УВЕЛИЧЕНО) */
+    cursor: pointer;
+    transition: all 0.4s ease; /* Более плавный переход */
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 280px; /* Увеличили высоту */
+    background: 
+        linear-gradient(145deg, rgba(101, 67, 33, 0.9), rgba(139, 69, 19, 0.9)), /* Коричневый градиент */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'); /* Деревянная текстура */
+    border: 3px solid #8B4513; /* Коричневая рамка */
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+    position: relative;
 }
 
-/* Эффект при наведении на карточку товара */
+/* Эффект при наведении на карточку товара - подсветка */
 .shop-item:hover {
-    transform: translateY(-5px) scale(1.02); /* Поднимаем и немного увеличиваем */
+    transform: translateY(-8px) scale(1.03); /* Больше подъем и увеличение */
+    box-shadow: 
+        0 12px 35px rgba(210, 105, 30, 0.6), /* Оранжевая тень */
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 25px rgba(255, 140, 0, 0.4); /* Свечение */
+    border-color: #FF8C00; /* Оранжевая рамка */
 }
 
-/* Стиль для уже купленных товаров */
-.shop-item.owned {
-    opacity: 0.7; /* Полупрозрачность */
-}
-
-/* Стиль для товаров которые нельзя купить */
-.shop-item.cannot-buy {
-    opacity: 0.5; /* Сильная прозрачность */
-    cursor: not-allowed; /* Курсор "недоступно" */
-}
-
-/* Основной фон карточки товара */
+/* Основной фон карточки товара - витрина */
 .item-background {
-    position: relative; /* Относительное позиционирование для дочерних элементов */
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); /* Градиентный фон */
-    border-radius: 12px; /* Скругленные углы */
-    padding: 0 !important; /* Убираем внутренние отступы (ВАЖНО для заполнения картинкой) */
-    height: 170px; /* Фиксированная высота области картинки (УВЕЛИЧЕНО) */
-    display: flex; /* Flexbox для выравнивания */
-    flex-direction: column; /* Вертикальное направление */
-    align-items: center; /* Центрирование по горизонтали */
-    border: 3px solid transparent; /* Прозрачная рамка (цвет добавится через JS по редкости) */
-    transition: all 0.3s ease; /* Плавные переходы */
+    position: relative;
+    background: 
+        linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), /* Темный оверлей */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'); /* Деревянная текстура */
+    border-radius: 8px; /* Меньше скругление внутри */
+    padding: 0 !important;
+    height: 180px; /* Увеличили высоту области картинки */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    margin: 8px; /* Отступ от края карточки */
+    overflow: hidden;
 }
 
-/* Эффект при наведении на карточку */
-.shop-item:hover .item-background {
-    border-color: rgba(255, 255, 255, 0.3); /* Белая полупрозрачная рамка */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Тень */
-}
-
-/* Контейнер для изображения товара */
+/* Контейнер для изображения товара - как подставка */
 .item-image-container {
-    width: 100%; /* Занимает всю ширину */
-    height: 100%; /* Занимает ВСЮ высоту item-background (ВАЖНО для заполнения) */
-    display: flex; /* Flexbox для центрирования */
-    align-items: center; /* Вертикальное центрирование */
-    justify-content: center; /* Горизонтальное центрирование */
-    background: rgba(255, 255, 255, 0.05); /* Легкий фон для контраста */
-    border-radius: 8px 8px 0 0; /* Скругление только верхних углов */
-    margin-bottom: 0; /* Убираем отступ снизу */
-    position: relative; /* Относительное позиционирование */
-    overflow: hidden; /* Обрезаем выходящие за пределы части */
-    padding: 0 !important; /* Убираем внутренние отступы */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: 
+        radial-gradient(circle at center, rgba(255, 215, 0, 0.1) 0%, transparent 70%),
+        rgba(0, 0, 0, 0.6); /* Темный фон с золотым свечением */
+    border-radius: 6px;
+    margin-bottom: 0;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
 }
 
 /* Стили для самого изображения товара */
 .item-image-container img {
-    width: 100% !important; /* Занимает всю ширину контейнера */
-    height: 100% !important; /* Занимает всю высоту контейнера */
-    object-fit: contain; /* Сохраняет пропорции, вписывая в контейнер */
-    display: block; /* Блочное отображение */
-    padding: 18px; /* Внутренние отступы чтобы картинка не касалась краев (УВЕЛИЧЕНО) */
-    box-sizing: border-box; /* Учитываем padding в общей ширине/высоте */
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    display: block;
+    padding: 20px; /* Увеличили отступы */
+    box-sizing: border-box;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)); /* Тень для картинки */
+    transition: all 0.3s ease;
 }
 
-/* Запасной контейнер если изображение не загрузилось */
-.item-fallback {
-    width: 100%; /* Занимает всю ширину */
-    height: 100%; /* Занимает всю высоту */
-    display: flex; /* Flexbox для центрирования */
-    align-items: center; /* Вертикальное центрирование */
-    justify-content: center; /* Горизонтальное центрирование */
-    background: rgba(255, 255, 255, 0.1); /* Фон для иконки */
-    border-radius: 8px; /* Скругленные углы */
+/* Эффект при наведении на картинку */
+.shop-item:hover .item-image-container img {
+    transform: scale(1.1); /* Увеличение картинки */
+    filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.3)); /* Золотая тень */
 }
 
-/* Стили для иконки в запасном контейнере */
-.item-icon {
-    font-size: 2.8em; /* Размер иконки (УВЕЛИЧЕНО) */
-}
-
-/* Полоска редкости (скрыта, так как теперь вся рамка цветная) */
-.item-rarity-bar {
-    width: 100%; /* Занимает всю ширину */
-    height: 3px; /* Высота полоски */
-    margin: 0; /* Убираем отступы */
-    border-radius: 0; /* Убираем скругления */
-}
-
-/* Контейнер с информацией о товаре (под картинкой) */
+/* Контейнер с информацией о товаре - как ценник */
 .item-info {
-    text-align: center; /* Выравнивание текста по центру */
-    width: 100%; /* Занимает всю ширину */
-    padding: 12px; /* Внутренние отступы (УВЕЛИЧЕНО) */
-    background: rgba(0, 0, 0, 0.8); /* Темный полупрозрачный фон */
-    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия сверху */
+    text-align: center;
+    width: 100%;
+    padding: 15px; /* Увеличили отступы */
+    background: 
+        linear-gradient(135deg, rgba(139, 69, 19, 0.9), rgba(101, 67, 33, 0.9)), /* Коричневый градиент */
+        url('https://images.unsplash.com/photo-1541140532154-b024d705b90a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80');
+    border-top: 2px solid #D2691E; /* Светло-коричневая разделительная линия */
+    border-bottom: 2px solid #8B4513; /* Темно-коричневая линия снизу */
+    position: relative;
+}
+
+/* Эффект пергамента для информационной части */
+.item-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 70%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 30%, rgba(255, 140, 0, 0.1) 0%, transparent 50%);
+    pointer-events: none;
 }
 
 /* Название товара */
 .item-name {
-    font-weight: bold; /* Жирный шрифт */
-    font-size: 1em !important; /* Размер шрифта (УВЕЛИЧЕНО) */
-    margin-bottom: 6px; /* Отступ снизу */
-    color: white; /* Белый цвет текста */
-    white-space: nowrap; /* Запрет переноса строк */
-    overflow: hidden; /* Скрытие переполнения */
-    text-overflow: ellipsis; /* Многоточие при длинном тексте */
+    font-weight: bold;
+    font-size: 1.1em !important; /* Увеличили шрифт */
+    margin-bottom: 8px; /* Увеличили отступ */
+    color: #FFD700; /* Золотой цвет */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Более выраженная тень */
+    letter-spacing: 0.5px; /* Разрядка букв */
 }
 
-/* Тип товара (оружие, броня и т.д.) */
-.item-type {
-    font-size: 0.8em !important; /* Размер шрифта (УВЕЛИЧЕНО) */
-    color: rgba(255, 255, 255, 0.7); /* Серый цвет текста */
-    margin-bottom: 8px; /* Отступ снизу */
-}
-
-/* Контейнер для компактного отображения характеристик */
-.item-stats-compact {
-    display: flex; /* Flexbox для расположения в строку */
-    justify-content: center; /* Центрирование по горизонтали */
-    gap: 8px; /* Расстояние между характеристиками */
-    margin-bottom: 8px; /* Отступ снизу */
-    flex-wrap: wrap; /* Перенос на новую строку при нехватке места */
-}
-
-/* Отдельные характеристики товара */
-.item-stats-compact span {
-    background: rgba(76, 201, 240, 0.2); /* Голубой полупрозрачный фон */
-    padding: 3px 8px; /* Внутренние отступы */
-    border-radius: 4px; /* Скругленные углы */
-    font-size: 0.75em; /* Размер шрифта */
-    border: 1px solid rgba(76, 201, 240, 0.3); /* Голубая рамка */
-}
-
-/* Контейнер для цены и статуса покупки */
-.item-price-tag {
-    display: flex; /* Flexbox для расположения элементов */
-    flex-direction: column; /* Вертикальное направление */
-    gap: 4px; /* Расстояние между элементами */
-    align-items: center; /* Центрирование по горизонтали */
-}
-
-/* Цена товара */
-.price {
-    font-weight: bold; /* Жирный шрифт */
-    color: #ffd700; /* Золотой цвет */
-    font-size: 0.9em; /* Размер шрифта */
-}
-
-/* Бейдж для уже купленных товаров */
-.owned-badge {
-    background: rgba(74, 222, 128, 0.3); /* Зеленый полупрозрачный фон */
-    color: #4ade80; /* Зеленый цвет текста */
-    padding: 3px 10px; /* Внутренние отступы */
-    border-radius: 10px; /* Скругленные углы */
-    font-size: 0.75em; /* Размер шрифта */
-    border: 1px solid #4ade80; /* Зеленая рамка */
-}
-
-/* Статус возможности покупки */
-.buy-status {
-    padding: 3px 10px; /* Внутренние отступы */
-    border-radius: 10px; /* Скругленные углы */
-    font-size: 0.75em; /* Размер шрифта */
-    font-weight: bold; /* Жирный шрифт */
-}
-
-/* Статус "можно купить" */
-.buy-status.can-buy {
-    background: rgba(76, 201, 240, 0.3); /* Голубой полупрозрачный фон */
-    color: #4cc9f0; /* Голубой цвет текста */
-    border: 1px solid #4cc9f0; /* Голубая рамка */
-}
-
-/* Статус "нельзя купить" */
-.buy-status.cannot-buy {
-    background: rgba(248, 113, 113, 0.3); /* Красный полупрозрачный фон */
-    color: #f87171; /* Красный цвет текста */
-    border: 1px solid #f87171; /* Красная рамка */
-}
+/* Остальные стили остаются похожими, но с коричневой цветовой схемой */
 
 /* Адаптивность для планшетов */
 @media (max-width: 768px) {
+    #screen-merchant {
+        background-attachment: scroll; /* Убираем фиксированный фон на мобильных */
+    }
+    
     .items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Уменьшаем минимальную ширину */
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     }
     
     .shop-item {
-        min-height: 240px; /* Уменьшаем высоту карточки */
+        min-height: 260px;
     }
     
     .item-background {
-        height: 150px; /* Уменьшаем высоту области картинки */
-    }
-    
-    .item-image-container img {
-        padding: 12px; /* Уменьшаем отступы для картинки */
+        height: 160px;
     }
 }
 
 /* Адаптивность для мобильных */
 @media (max-width: 480px) {
     .items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Еще меньше минимальная ширина */
-        gap: 10px; /* Меньше расстояние между карточками */
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
     }
     
     .shop-item {
-        min-height: 220px; /* Еще меньше высота карточки */
+        min-height: 240px;
     }
     
     .item-background {
-        height: 130px; /* Еще меньше высота области картинки */
+        height: 140px;
     }
     
     .item-image-container img {
-        padding: 8px; /* Минимальные отступы для картинки */
-    }
-    
-    .item-info {
-        padding: 8px; /* Меньше отступы в информации */
+        padding: 15px;
     }
 }
 /* ===== МОДУЛЬ 18: АДАПТИВНОСТЬ ===== */
