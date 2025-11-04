@@ -1,0 +1,25 @@
+{
+  "id": "starting_region", 
+  "name": "Окрестности Стартового Города",
+  "image": "maps/local/starting_region.jpg",
+  "gridSize": 15,
+  "start": {"x": 7, "y": 7},
+  "exits": [
+    {"x": 7, "y": 0, "direction": "north", "globalPosition": {"x": 10, "y": 9}},
+    {"x": 14, "y": 7, "direction": "east", "globalPosition": {"x": 11, "y": 10}}
+  ],
+  "tiles": [
+    {
+      "x": 7, "y": 7,
+      "type": "town",
+      "tacticalMapId": "town_square",
+      "description": "Городская площадь"
+    },
+    {
+      "x": 5, "y": 5,
+      "type": "forest", 
+      "tacticalMapId": "old_forest",
+      "description": "Старый Лес"
+    }
+  ]
+}
