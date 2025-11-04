@@ -7,11 +7,21 @@ class HeroGame {
         this.items = [];         // Список всех предметов
         this.monsters = [];      // Список всех монстров
         
+        // УДАЛЕНО: maps и locations
+        // this.maps = [];       // УДАЛЕНО
+        // this.locations = [];  // УДАЛЕНО
+        
         // Флаги отображения
         this.showReward = false;         // Показывать ли награду
         this.lastReward = 0;             // Последняя полученная награда
         this.currentHero = null;         // Текущий выбранный герой
         this.currentScreen = 'hero-select'; // Текущий экран игры
+        
+        // УДАЛЕНО: текущие карта, локация и связанные системы
+        // this.currentMap = null;       // УДАЛЕНО
+        // this.currentLocation = null;  // УДАЛЕНО
+        // this.locationProgress = {};   // УДАЛЕНО
+        // this.monsterKillCount = {};   // УДАЛЕНО
         
         this.currentMonster = null;      // Текущий встреченный монстр
         
@@ -34,6 +44,9 @@ class HeroGame {
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         };
+        
+        // УДАЛЕНО: видео для карт и локаций
+        // this.videos = { ... };  // УДАЛЕНО
         
         // Флаги показа видео вместо изображений
         this.showVideo = {
@@ -60,7 +73,6 @@ class HeroGame {
         this.renderHeroSelect();      // Показ экрана выбора героя
     }
 }
-НО
 
 
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
@@ -134,7 +146,7 @@ HeroGame.prototype.loadGameData = async function() {
 
     } catch (error) {
         console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.createFallbackData();  // Создание тестовых данных при ошибке
+        this.createFallbackData();
     }
 };
 
@@ -203,6 +215,7 @@ HeroGame.prototype.createFallbackData = function() {
         image: "images/items/potion1.jpg",
         description: "Восстанавливает 20 здоровья"
     }];
+};
 
 // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
 
@@ -1078,26 +1091,55 @@ HeroGame.prototype.updateHealth = function(change) {
 // ========== МОДУЛЬ 9.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
     const container = document.getElementById('app');
-    
     const heroesHTML = this.heroes.map(hero => {
-        // Первый герой всегда разблокирован, остальные - по флагу unlocked
-        const isUnlocked = hero.id === 1 || (hero.unlocked === true);
+        const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+        const stats = this.calculateHeroStats(hero);
+        const bonuses = this.getBonuses();
         
+        const activeBonuses = this.getAllActiveBonuses(hero);
+        const allBonuses = [...activeBonuses.race, ...activeBonuses.class, ...activeBonuses.saga, ...activeBonuses.equipment];
+        const bonusDisplay = allBonuses.map(bonus => {
+            const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
+            return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
+        }).join('');
+        
+        const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
+        const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
+        const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
+
         return `
-            <div class="hero-option ${isUnlocked ? 'unlocked' : 'locked'}" 
-                 onclick="game.selectHero(${hero.id})">
-                <div class="hero-image">
-                    <img src="${hero.image}" alt="${hero.name}" 
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
+                <div class="hero-option-image">
+                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                 </div>
-                <div class="hero-info">
-                    <h3>${hero.name}</h3>
-                    <p>Уровень: ${hero.level}</p>
-                    <p>Здоровье: ${this.calculateMaxHealth(hero)}</p>
-                    <p>Урон: ${this.calculateHeroStats(hero).damage}</p>
-                    <p>Золото: ${hero.gold.toFixed(2)}</p>
-                    ${!isUnlocked ? '<p class="locked-text">🔒 Заблокирован</p>' : '<p class="unlocked-text">✅ Доступен</p>'}
+                <div class="hero-option-info">
+                    <div class="hero-option-header">
+                        <strong>${hero.name}</strong>
+                        <span class="hero-level">Ур. ${hero.level}</span>
+                    </div>
+                    <div class="hero-option-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
+                            <span>⚔️ ${stats.damage}</span>
+                            <span>🛡️ ${stats.armor}</span>
+                            <span>🌟 ${stats.power}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
+                        </div>
+                    </div>
+                    ${bonusDisplay ? `
+                        <div class="hero-option-skills">
+                            ${bonusDisplay}
+                        </div>
+                    ` : ''}
+                    <div class="hero-option-bonuses">
+                        <small>${raceName} - ${className} - ${sagaName}</small>
+                    </div>
+                    ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
                 </div>
             </div>
         `;
@@ -1105,13 +1147,9 @@ HeroGame.prototype.renderHeroSelect = function() {
 
     container.innerHTML = `
         <div class="screen active" id="screen-hero-select">
-            <h1 class="text-center">Выберите героя</h1>
-            <div class="heroes-grid">
+            <h2 class="text-center">Выберите героя</h2>
+            <div class="hero-list">
                 ${heroesHTML}
-            </div>
-            <div class="debug-info">
-                <p>Всего героев: ${this.heroes.length}</p>
-                <button onclick="game.debugHeroes()">Отладочная информация</button>
             </div>
         </div>
     `;
@@ -1134,39 +1172,28 @@ HeroGame.prototype.getBonusIcon = function(bonusType) {
 
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
-    console.log('Попытка выбора героя:', heroId);
-    
     const hero = this.heroes.find(h => h.id === heroId);
     if (!hero) {
         console.error('Герой не найден:', heroId);
         return;
     }
     
-    // Упрощенная проверка разблокировки - первый герой всегда доступен
-    const isUnlocked = hero.id === 1 || (hero.unlocked === true);
+    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
-        this.addToLog('❌ Этот герой еще заблокирован!');
         return;
     }
     
     this.currentHero = hero;
-    
-    // Инициализируем здоровье если его нет
-    if (!this.currentHero.currentHealth) {
-        this.currentHero.currentHealth = this.calculateMaxHealth();
-    }
-    
-    console.log('Выбран герой:', this.currentHero.name);
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
 };
+
 // ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
 HeroGame.prototype.showScreen = function(screenName) {
     this.currentScreen = screenName;
     
-    // НЕ удаляем экраны здесь - это будет делаться в методах рендеринга
     if (this.healthInterval) {
         clearInterval(this.healthInterval);
         this.healthInterval = null;
@@ -2006,7 +2033,8 @@ HeroGame.prototype.canEquipWeapon = function(item, currentEquipment) {
     
     return true;
 };
-//========== МОДУЛЬ 10.2: ИСПРАВЛЕННЫЙ МЕТОД ЭКИПИРОВКИ ПРЕДМЕТА ==========
+
+// ========== МОДУЛЬ 10.2: ЭКИПИРОВКА ПРЕДМЕТА ==========
 HeroGame.prototype.equipItem = function(itemId) {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
@@ -2056,13 +2084,7 @@ HeroGame.prototype.equipItem = function(itemId) {
     this.checkSetBonuses();
     
     this.saveGame();
-    
-    // ОБНОВЛЯЕМ ИНТЕРФЕЙС - ВАЖНО!
-    this.updateEquipmentDisplay();
-    
-    // НЕ ЗАКРЫВАЕМ ИНВЕНТАРЬ ПРИ ЭКИПИРОВКЕ - ОБНОВЛЯЕМ ЕГО
-    const targetSlot = this.getEquipmentSlot(item);
-    this.showInventory(targetSlot);
+    this.renderHeroScreen();
 };
 
 // ========== МОДУЛЬ 10.3: СНЯТЬ ПРЕДМЕТ В ИНВЕНТАРЬ ==========
@@ -3415,7 +3437,7 @@ HeroGame.prototype.addBattleLog = function(entry) {
     }
 };
 
-// ========== МОДУЛЬ 15.3: ФОРМАТИРОВАНИЕ БОНУСА ДЛЯ ОТОБРАЖЕНИЯ ==========
+// ========== МОДУЛЬ 15.3: ФОРМАТИРОВАНИЕ БОНУСА ==========
 HeroGame.prototype.formatBonus = function(bonus) {
     if (!bonus || bonus.type === 'none') return 'Нет бонуса';
     
@@ -3619,6 +3641,136 @@ HeroGame.prototype.showNotification = function(message, type = 'info') {
             notification.remove();
         }
     }, 5000);
+};
+
+// ВАШ СУЩЕСТВУЮЩИЙ КОД...
+
+// ========== ДОБАВЛЯЕМ ОТСУТТСТВУЮЩИЕ МЕТОДЫ ==========
+
+// Метод для получения имени слота
+HeroGame.prototype.getSlotName = function(slot) {
+    const slotNames = {
+        'main_hand': '⚔️ Правая рука',
+        'off_hand': '🛡️ Левая рука', 
+        'helmet': '⛑️ Шлем',
+        'chest': '👕 Нагрудник',
+        'gloves': '🧤 Перчатки',
+        'legs': '👖 Поножи',
+        'boots': '👢 Ботинки'
+    };
+    return slotNames[slot] || 'Слот';
+};
+
+// Метод для получения подходящих слотов для предмета
+HeroGame.prototype.getSuitableSlotsForItem = function(item) {
+    if (!item) return [];
+    
+    const slotMap = {
+        'weapon': {
+            'one_handed': ['main_hand', 'off_hand'],
+            'two_handed': ['main_hand'],
+            'shield': ['off_hand']
+        },
+        'helmet': ['helmet'],
+        'chest': ['chest'],
+        'gloves': ['gloves'],
+        'legs': ['legs'],
+        'boots': ['boots']
+    };
+
+    if (item.type === 'weapon' && item.weaponType && slotMap.weapon[item.weaponType]) {
+        return slotMap.weapon[item.weaponType];
+    }
+    
+    return slotMap[item.type] || [];
+};
+
+// Заглушки для удаленных методов
+HeroGame.prototype.updateLocationProgress = function() {
+    // Метод удален, но оставляем заглушку
+};
+
+HeroGame.prototype.getItemsForSlot = function(slot) {
+    if (!this.currentHero || !this.currentHero.inventory) return [];
+    
+    return this.currentHero.inventory.filter(itemId => {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return false;
+        const suitableSlots = this.getSuitableSlotsForItem(item);
+        return suitableSlots.includes(slot);
+    });
+};
+
+// Метод для получения типа слота из элемента
+HeroGame.prototype.getSlotTypeFromElement = function(element) {
+    if (element.classList.contains('main-hand')) return 'main_hand';
+    if (element.classList.contains('off-hand')) return 'off_hand';
+    if (element.classList.contains('helmet-slot')) return 'helmet';
+    if (element.classList.contains('chest-slot')) return 'chest';
+    if (element.classList.contains('gloves-slot')) return 'gloves';
+    if (element.classList.contains('legs-slot')) return 'legs';
+    if (element.classList.contains('boots-slot')) return 'boots';
+    return null;
+};
+
+// Метод обновления отображения экипировки
+HeroGame.prototype.updateEquipmentDisplay = function() {
+    if (!this.currentHero) return;
+    
+    // Обновляем отображение слотов экипировки
+    const equipmentSlots = document.querySelectorAll('.equipment-slot');
+    
+    equipmentSlots.forEach(slotElement => {
+        const slotType = this.getSlotTypeFromElement(slotElement);
+        if (!slotType) return;
+        
+        const itemId = this.currentHero.equipment[slotType];
+        const slotIcon = slotElement.querySelector('.equipment-icon');
+        
+        if (itemId) {
+            const item = this.items.find(i => i.id === itemId);
+            if (item) {
+                // Обновляем иконку предмета
+                slotIcon.innerHTML = `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">`;
+                
+                // Устанавливаем классы редкости
+                slotElement.classList.add('equipped');
+                slotElement.setAttribute('data-rarity', item.rarity || 'common');
+            }
+        } else {
+            // Слот пустой - показываем стандартную иконку
+            const defaultIcons = {
+                'main_hand': '⚔️',
+                'off_hand': '🛡️',
+                'helmet': '⛑️',
+                'chest': '👕',
+                'gloves': '🧤',
+                'legs': '👖',
+                'boots': '👢'
+            };
+            
+            slotIcon.innerHTML = defaultIcons[slotType] || '🎒';
+            slotElement.classList.remove('equipped');
+            slotElement.removeAttribute('data-rarity');
+        }
+    });
+};
+
+// Метод обновления статистики героя
+HeroGame.prototype.updateHeroStatsDisplay = function() {
+    if (!this.currentHero) return;
+    
+    const stats = this.calculateHeroStats(this.currentHero);
+    
+    // Обновляем здоровье
+    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+    const healthFill = document.querySelector('.health-bar-fill');
+    const currentHealthEl = document.getElementById('current-health');
+    const maxHealthEl = document.getElementById('max-health');
+    
+    if (healthFill) healthFill.style.width = healthPercent + '%';
+    if (currentHealthEl) currentHealthEl.textContent = stats.currentHealth;
+    if (maxHealthEl) maxHealthEl.textContent = stats.maxHealth;
 };
 
 // ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
