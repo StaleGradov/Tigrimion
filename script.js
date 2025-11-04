@@ -1,131 +1,3 @@
-// ========== МОДУЛЬ 0: СИСТЕМА СЕТОЧНЫХ КАРТ (ДОБАВИТЬ ПЕРЕД HeroGame) ==========
-
-class GridMapCell {
-    constructor(x, y, type = 'ground', passable = true) {
-        this.x = x;
-        this.y = y;
-        this.type = type;
-        this.passable = passable;
-        this.connections = [];
-        this.content = null;
-    }
-}
-
-class GridGameMap {
-    constructor(id, name, width, height, level = 'global') {
-        this.id = id;
-        this.name = name;
-        this.width = width;
-        this.height = height;
-        this.level = level;
-        this.grid = [];
-        this.entryPoints = [];
-        this.exitPoints = [];
-        this.playerPosition = null;
-        this.initializeGrid();
-    }
-    
-    initializeGrid() {
-        for (let y = 0; y < this.height; y++) {
-            const row = [];
-            for (let x = 0; x < this.width; x++) {
-                row.push(new GridMapCell(x, y));
-            }
-            this.grid.push(row);
-        }
-    }
-    
-    getCell(x, y) {
-        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-            return this.grid[y][x];
-        }
-        return null;
-    }
-    
-    setPlayerPosition(x, y) {
-        const cell = this.getCell(x, y);
-        if (cell && cell.passable) {
-            this.playerPosition = { x, y };
-            return true;
-        }
-        return false;
-    }
-}
-
-class GridMapManager {
-    constructor(game) {
-        this.game = game;
-        this.gridMaps = new Map();
-        this.currentGridGlobalMap = null;
-        this.currentGridLocalMap = null;
-        this.currentGridTacticalMap = null;
-        this.gridPlayerPositions = {
-            global: { x: 0, y: 0 },
-            local: { x: 0, y: 0 },
-            tactical: { x: 0, y: 0 }
-        };
-    }
-    
-    async loadGridMaps() {
-        try {
-            const mapsData = await this.game.loadJSON('data/grid_maps.json');
-            if (mapsData) {
-                this.initializeGridMaps(mapsData);
-            } else {
-                this.createDefaultGridMaps();
-            }
-        } catch (error) {
-            console.error('Ошибка загрузки сеточных карт:', error);
-            this.createDefaultGridMaps();
-        }
-    }
-    
-    initializeGridMaps(mapsData) {
-        // Простая заглушка для теста
-        this.createDefaultGridMaps();
-    }
-    
-    createDefaultGridMaps() {
-        // Простые тестовые карты
-        const globalMap = new GridGameMap(1, "Арканиум", 5, 5, 'global');
-        this.setupDefaultGridMap(globalMap);
-        this.gridMaps.set(1, globalMap);
-        
-        const localMap = new GridGameMap(101, "Локация 1", 4, 4, 'local');
-        this.setupDefaultGridMap(localMap);
-        this.gridMaps.set(101, localMap);
-        
-        const tacticalMap = new GridGameMap(1001, "Зона 1", 3, 3, 'tactical');
-        this.setupDefaultGridMap(tacticalMap);
-        this.gridMaps.set(1001, tacticalMap);
-        
-        this.setInitialGridMaps();
-    }
-    
-    setupDefaultGridMap(map) {
-        map.entryPoints = [{ x: 0, y: 0 }];
-        map.exitPoints = [{ x: map.width - 1, y: map.height - 1 }];
-    }
-    
-    setInitialGridMaps() {
-        this.currentGridGlobalMap = this.gridMaps.get(1);
-        this.currentGridLocalMap = this.gridMaps.get(101);
-        this.currentGridTacticalMap = this.gridMaps.get(1001);
-        
-        if (this.currentGridGlobalMap) this.currentGridGlobalMap.setPlayerPosition(0, 0);
-        if (this.currentGridLocalMap) this.currentGridLocalMap.setPlayerPosition(0, 0);
-        if (this.currentGridTacticalMap) this.currentGridTacticalMap.setPlayerPosition(0, 0);
-    }
-    
-    getCurrentGridMap(level) {
-        switch (level) {
-            case 'global': return this.currentGridGlobalMap;
-            case 'local': return this.currentGridLocalMap;
-            case 'tactical': return this.currentGridTacticalMap;
-            default: return null;
-        }
-    }
-}
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
@@ -185,35 +57,27 @@ class HeroGame {
         this.locationProgress = {};      // Прогресс по каждой локации
         this.monsterKillCount = {};      // Счетчик убийств каждого монстра
         
-        // === ДОБАВИТЬ ЭТУ СТРОКУ ===
-        this.gridMapManager = new GridMapManager(this);
-        // ===========================
-        
         // Запуск инициализации игры
         this.init();
     }
 
-   // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
-HeroGame.prototype.init = async function() {
-    await this.loadGameData();    // Загрузка всех данных игры
-    
-    // === ДОБАВИТЬ ЭТУ СТРОКУ ===
-    await this.gridMapManager.loadGridMaps(); // Загрузка сеточных карт
-    // ===========================
-    
-    this.initLocationSystem();    // Инициализация системы локаций
-    this.loadSave();              // Загрузка сохраненной игры
-    
-    // Разблокировка первого героя по умолчанию
-    if (this.heroes.length > 0) {
-        const firstHero = this.heroes.find(h => h.id === 1);
-        if (firstHero) {
-            firstHero.unlocked = true;
+    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
+    async init() {
+        await this.loadGameData();    // Загрузка всех данных игры
+        this.initLocationSystem();    // Инициализация системы локаций
+        this.loadSave();              // Загрузка сохраненной игры
+        
+        // Разблокировка первого героя по умолчанию
+        if (this.heroes.length > 0) {
+            const firstHero = this.heroes.find(h => h.id === 1);
+            if (firstHero) {
+                firstHero.unlocked = true;
+            }
         }
+        
+        this.renderHeroSelect();      // Показ экрана выбора героя
     }
-    
-    this.renderHeroSelect();      // Показ экрана выбора героя
-};
+
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
         // Для каждой локации создаем запись прогресса
@@ -3846,4 +3710,3 @@ if (document.readyState === 'loading') {
     game = new HeroGame();
     window.game = game;
 }
-
