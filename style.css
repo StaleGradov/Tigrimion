@@ -3303,22 +3303,29 @@ body {
 .item-detail-image {
     position: relative;
     overflow: visible;
+    padding: 5px; /* Добавляем небольшой отступ от рамки */
 }
 
 .item-detail-image-zoom {
     cursor: zoom-in;
     transition: transform 0.3s ease, z-index 0.3s ease;
-    max-width: 120px;
-    max-height: 120px;
-    width: auto;
+    width: 100%; /* Занимает всю ширину контейнера */
     height: auto;
-    object-fit: contain;
+    max-width: 100%;
+    max-height: 200px; /* Ограничиваем максимальную высоту */
+    object-fit: contain; /* Сохраняем пропорции */
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05); /* Легкий фон для контраста */
+    padding: 10px; /* Отступ внутри изображения */
 }
 
+/* Увеличение при наведении */
 .item-detail-image-zoom:hover {
-    transform: scale(2.5);
+    transform: scale(1.8); /* Увеличиваем еще на 80% */
     z-index: 1000;
     position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7); /* Тень при увеличении */
+    background: rgba(255, 255, 255, 0.1); /* Более светлый фон при наведении */
 }
 
 /* Усиленные стили для мифических предметов */
@@ -3381,14 +3388,23 @@ body {
 
 /* Адаптивность для увеличенных изображений */
 @media (max-width: 768px) {
+    .item-detail-image-zoom {
+        max-height: 180px; /* Чуть меньше на планшетах */
+    }
+    
     .item-detail-image-zoom:hover {
-        transform: scale(2);
+        transform: scale(1.6); /* Меньшее увеличение на планшетах */
     }
 }
 
 @media (max-width: 480px) {
+    .item-detail-image-zoom {
+        max-height: 150px; /* Еще меньше на телефонах */
+        padding: 8px;
+    }
+    
     .item-detail-image-zoom:hover {
-        transform: scale(1.8);
+        transform: scale(1.4); /* Минимальное увеличение на телефонах */
     }
     
     .rarity-mythic .item-background {
@@ -3398,4 +3414,32 @@ body {
     .inventory-item[data-rarity="mythic"] {
         border-width: 8px !important;
     }
+}
+
+/* Улучшенные стили для контейнера изображения в модалке */
+.detail-item-background {
+    padding: 15px !important; /* Увеличиваем отступы для лучшего отображения */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px; /* Минимальная высота для консистентности */
+}
+
+/* Стили для fallback иконки (когда изображение не загружается) */
+.item-fallback-large {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 3em;
+    transition: all 0.3s ease;
+}
+
+.item-fallback-large:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.1);
 }
