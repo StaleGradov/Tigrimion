@@ -3585,7 +3585,7 @@ body {
 }
 /* ===== МОДУЛЬ 22: СИСТЕМА ТРЕХУРОВНЕВЫХ КАРТ ===== */
 
-/* ОСНОВНОЙ МАКЕТ С КВАДРАТНЫМИ КАРТАМИ */
+/* ОСНОВНОЙ МАКЕТ С КВАДРАТНЫМИ КАРТАМИ - переопределяем существующий hero-layout */
 .hero-layout {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -3595,6 +3595,7 @@ body {
     min-height: 75vh;
 }
 
+/* Переопределяем существующие стили колонок */
 .hero-column {
     position: relative;
     border-radius: 10px;
@@ -3606,8 +3607,15 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* КВАДРАТНЫЕ КАРТЫ */
-.map-column {
+/* Убираем старые стили для monster-column, map-column, location-column */
+.monster-column,
+.map-column, 
+.location-column {
+    display: none !important; /* Скрываем старые колонки */
+}
+
+/* НОВЫЕ КВАДРАТНЫЕ КАРТЫ */
+.map-square {
     position: relative;
     border-radius: 10px;
     overflow: hidden;
@@ -3632,21 +3640,21 @@ body {
     background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(220, 38, 38, 0.05));
 }
 
-.map-container {
+.map-square-container {
     position: relative;
     width: 100%;
     height: 100%;
     cursor: pointer;
 }
 
-.map-image {
+.map-square-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
 }
 
-.map-canvas {
+.map-square-canvas {
     position: absolute;
     top: 0;
     left: 0;
@@ -3655,7 +3663,7 @@ body {
     pointer-events: none;
 }
 
-.map-info {
+.map-square-info {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -3666,7 +3674,7 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.map-title {
+.map-square-title {
     color: #ffd700;
     font-size: 0.9em;
     font-weight: bold;
@@ -3675,64 +3683,11 @@ body {
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
-.map-stats {
+.map-square-stats {
     display: flex;
     justify-content: space-between;
     font-size: 0.75em;
     color: rgba(255, 255, 255, 0.8);
-}
-
-/* ИНДИКАТОРЫ КЛЕТОК */
-.grid-cell {
-    position: absolute;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-}
-
-.grid-cell:hover {
-    background: rgba(76, 201, 240, 0.3);
-    border-color: #4cc9f0;
-}
-
-.grid-cell.active {
-    background: rgba(76, 201, 240, 0.5);
-    border-color: #4cc9f0;
-    box-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
-}
-
-.grid-cell.exit {
-    background: rgba(74, 222, 128, 0.4);
-    border-color: #4ade80;
-}
-
-.grid-cell.monster {
-    background: rgba(248, 113, 113, 0.4);
-    border-color: #f87171;
-}
-
-.grid-cell.chest {
-    background: rgba(245, 158, 11, 0.4);
-    border-color: #f59e0b;
-}
-
-/* МАРКЕР ИГРОКА */
-.player-marker {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #4cc9f0;
-    border: 2px solid #1a1a2e;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
-    z-index: 10;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.2); }
-    100% { transform: translate(-50%, -50%) scale(1); }
 }
 
 /* АДАПТИВНОСТЬ ДЛЯ КАРТ */
@@ -3742,7 +3697,7 @@ body {
         grid-template-rows: auto auto;
     }
     
-    .map-column {
+    .map-square {
         max-height: 250px;
     }
 }
@@ -3756,7 +3711,7 @@ body {
         min-height: 400px;
     }
     
-    .map-column {
+    .map-square {
         max-height: 200px;
     }
 }
