@@ -3299,15 +3299,15 @@ body {
 }
 /* ===== МОДУЛЬ 21: СТИЛИ ДЛЯ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЙ И МИФИЧЕСКИХ ПРЕДМЕТОВ ===== */
 
-/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ - КАРТИНКИ НА 100% ПЛОЩАДИ РАМОК */
+/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ - ФОРМАТ 4x3 ДЛЯ КАРТИНОК */
 
-/* Для модального окна предмета - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
+/* Для модального окна предмета - ФОРМАТ 4x3 */
 .item-detail-image {
     position: relative;
     overflow: hidden;
     padding: 0;
     width: 100%;
-    height: 250px; /* Фиксированная высота для модалки */
+    height: 200px; /* Высота для формата 4x3 */
 }
 
 .detail-item-background {
@@ -3343,7 +3343,7 @@ body {
     z-index: 1000;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
+/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ */
 .equipment-slot.equipped {
     border: 3px solid !important;
     padding: 0 !important;
@@ -3382,9 +3382,9 @@ body {
     display: none !important;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - УВЕЛИЧИВАЕМ РАЗМЕР КАРТИНОК */
+/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - ФОРМАТ 4x3 И ВОЗВРАЩАЕМ КАРТИНКИ */
 .shop-item {
-    min-height: 200px; /* Увеличиваем минимальную высоту карточки */
+    min-height: 180px; /* Оптимальная высота для формата 4x3 */
 }
 
 .item-background {
@@ -3392,9 +3392,10 @@ body {
     border: 4px solid;
     overflow: hidden;
     width: 100%;
-    height: 160px; /* Фиксированная высота для картинки в магазине */
+    height: 120px; /* Высота для формата 4x3 */
     display: flex;
     flex-direction: column;
+    background: rgba(255, 255, 255, 0.05); /* Легкий фон чтобы картинки были видны */
 }
 
 /* Цвета рамок для магазина по редкости */
@@ -3407,7 +3408,7 @@ body {
 
 .item-image-container {
     width: 100%;
-    height: 120px; /* УВЕЛИЧИВАЕМ высоту контейнера картинки */
+    height: 100%; /* Занимает всю высоту item-background */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3416,14 +3417,14 @@ body {
     position: relative;
     overflow: hidden;
     padding: 0 !important;
-    flex: 1; /* Занимает всё доступное пространство */
 }
 
+/* ВОЗВРАЩАЕМ КАРТИНКИ - УБИРАЕМ display: none */
 .item-image-container img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
-    display: block;
+    display: block !important; /* ВАЖНО: возвращаем отображение */
     min-width: 100%;
     min-height: 100%;
 }
@@ -3433,32 +3434,35 @@ body {
     display: none !important;
 }
 
-/* Уменьшаем нижнюю часть с информацией чтобы картинка была больше */
+/* Информационная часть под картинкой */
 .item-info {
     padding: 8px;
-    min-height: 80px; /* Фиксируем высоту информационной части */
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .item-name {
     font-size: 0.9em;
     margin-bottom: 4px;
+    color: inherit !important; /* Наследуем цвет от редкости */
 }
 
 .item-type {
     font-size: 0.75em;
     margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .item-stats-compact {
     margin-bottom: 6px;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
+/* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ */
 .inventory-item {
     border: 3px solid;
     padding: 0 !important;
     overflow: hidden;
-    min-height: 100px;
+    min-height: 80px;
     display: flex;
     align-items: stretch;
 }
@@ -3472,13 +3476,13 @@ body {
 .inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
 
 .inventory-item-image {
-    width: 100px; /* УВЕЛИЧИВАЕМ размер картинки в инвентаре */
-    height: 100px;
+    width: 80px; /* Размер картинки в инвентаре */
+    height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent !important;
+    background: rgba(255, 255, 255, 0.05) !important; /* Фон для видимости */
     overflow: hidden;
     padding: 0 !important;
     border-right: 1px solid rgba(255, 255, 255, 0.2);
@@ -3488,7 +3492,7 @@ body {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
-    display: block;
+    display: block !important; /* ВАЖНО: возвращаем отображение */
     min-width: 100%;
     min-height: 100%;
 }
@@ -3574,7 +3578,7 @@ body {
 /* Адаптивность */
 @media (max-width: 768px) {
     .item-detail-image {
-        height: 200px;
+        height: 160px;
     }
     
     .item-detail-image-zoom:hover {
@@ -3582,26 +3586,22 @@ body {
     }
     
     .item-background {
-        height: 140px;
-    }
-    
-    .item-image-container {
         height: 100px;
     }
     
-    .inventory-item-image {
-        width: 80px;
-        height: 80px;
+    .shop-item {
+        min-height: 150px;
     }
     
-    .shop-item {
-        min-height: 180px;
+    .inventory-item-image {
+        width: 70px;
+        height: 70px;
     }
 }
 
 @media (max-width: 480px) {
     .item-detail-image {
-        height: 150px;
+        height: 120px;
     }
     
     .item-detail-image-zoom:hover {
@@ -3609,20 +3609,16 @@ body {
     }
     
     .item-background {
-        height: 120px;
-    }
-    
-    .item-image-container {
         height: 80px;
     }
     
-    .inventory-item-image {
-        width: 70px;
-        height: 70px;
+    .shop-item {
+        min-height: 130px;
     }
     
-    .shop-item {
-        min-height: 160px;
+    .inventory-item-image {
+        width: 60px;
+        height: 60px;
     }
 }
 
@@ -3634,7 +3630,8 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 3em;
+    font-size: 2em;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .item-fallback {
@@ -3644,10 +3641,11 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 2em;
+    font-size: 1.5em;
+    color: rgba(255, 255, 255, 0.5);
 }
 
-/* Гарантируем что картинки занимают 100% пространства */
+/* Гарантируем что картинки занимают 100% пространства и ВИДИМЫ */
 .item-image-container img,
 .equipment-icon img,
 .inventory-item-image img,
@@ -3656,4 +3654,5 @@ body {
     min-height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
+    display: block !important; /* ВАЖНО: делаем видимыми */
 }
