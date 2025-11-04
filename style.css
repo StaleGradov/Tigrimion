@@ -3773,3 +3773,97 @@ body {
     margin-bottom: 10px;
     color: #ffd700;
 }
+/* ========== МОДУЛЬ 8.1: СТИЛИ ДЛЯ ЭКИПИРОВКИ ========== */
+.equipment-section {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    padding: 8px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.equipment-slot {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.equipment-slot:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.equipment-slot.equipped {
+    border-color: #4ade80;
+    background: rgba(74,222,128,0.1);
+}
+
+.equipment-icon {
+    font-size: 1.5em;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+}
+
+.inventory-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.inventory-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: #4cc9f0;
+}
+
+.inventory-item-image {
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+}
+
+.inventory-item-info {
+    flex: 1;
+}
+
+.inventory-item-info strong {
+    color: #ffd700;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.inventory-item-info small {
+    color: rgba(255,255,255,0.7);
+    font-size: 0.8em;
+}
+
+.slot-info {
+    text-align: center;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 8px;
+    border-radius: 5px;
+    margin: 10px 0;
+    border: 1px solid #4cc9f0;
+}
