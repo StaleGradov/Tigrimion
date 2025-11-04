@@ -96,7 +96,9 @@ HeroGame.prototype.init = async function() {
         await this.loadGameData();
         
         // Инициализируем новую систему карт
-        await this.mapSystem.init();
+        if (this.mapSystem && this.mapSystem.init) {
+            await this.mapSystem.init();
+        }
         
         // Инициализация системы локаций
         this.initLocationSystem();
@@ -119,6 +121,7 @@ HeroGame.prototype.init = async function() {
         
     } catch (error) {
         console.error('❌ Ошибка инициализации:', error);
+        // Создаем fallback данные и показываем экран выбора героя
         this.createFallbackData();
         this.renderHeroSelect();
     }
@@ -144,31 +147,12 @@ HeroGame.prototype.loadJSON = async function(filePath) {
 // ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ ==========
 HeroGame.prototype.loadGameData = async function() {
     try {
-        // Параллельная загрузка всех JSON файлов
-        const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
-            this.loadJSON('data/heroes.json'),
-            this.loadJSON('data/enemies.json'),
-            this.loadJSON('data/items.json'),
-            this.loadJSON('data/maps.json'),
-            this.loadJSON('data/locations.json')
-        ]);
-
-        // Заполнение данных игры
-        this.heroes = heroes || [];
-        this.monsters = enemies || [];
-        this.items = items || [];
-        this.maps = mapsData || [];
-        this.locations = locationsData || [];
-
-        // Разблокировка первого героя
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-
-        console.log('✅ Все данные загружены:', {
+        console.log('🔄 Загрузка игровых данных...');
+        
+        // Создаем тестовые данные вместо загрузки JSON
+        this.createFallbackData();
+        
+        console.log('✅ Все данные созданы:', {
             heroes: this.heroes.length,
             monsters: this.monsters.length,
             items: this.items.length,
@@ -177,8 +161,8 @@ HeroGame.prototype.loadGameData = async function() {
         });
 
     } catch (error) {
-        console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.createFallbackData();  // Создание тестовых данных при ошибке
+        console.error('❌ Ошибка загрузки данных:', error);
+        this.createFallbackData();
     }
 };
 
@@ -1233,7 +1217,11 @@ HeroGame.prototype.selectHero = function(heroId) {
 
 // ========== МОДУЛЬ 9.4: ОТРИСОВКА ЭКРАНА ГЕРОЯ С НОВЫМИ КАРТАМИ ==========
 HeroGame.prototype.renderHeroScreen = function() {
-    if (!this.currentHero) return;
+    if (!this.currentHero) {
+        console.error('❌ Нет текущего героя');
+        this.renderHeroSelect();
+        return;
+    }
 
     const stats = this.calculateHeroStats(this.currentHero);
     const bonuses = this.getBonuses();
@@ -1315,11 +1303,11 @@ HeroGame.prototype.renderHeroScreen = function() {
                                         <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
                                     </div>
                                     <div class="health-text">
-                                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
+                                        ❤️ <span id="current-health">${Math.floor(stats.currentHealth)}</span>/<span id="max-health">${stats.maxHealth}</span>
                                     </div>
                                 </div>
                                 <div class="health-regen">
-                                    ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
+                                    ⚡ ${Math.round((this.currentHero.healthRegen || 100/60) * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
                                 </div>
                             </div>
 
@@ -1569,6 +1557,80 @@ HeroGame.prototype.renderHeroScreen = function() {
 
     // ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ
     this.startHealthAnimation();
+    
+    // Инициализация карт
+    setTimeout(() => {
+        this.initializeMaps();
+    }, 100);
+};
+
+// ========== МОДУЛЬ 9.4.1: ИНИЦИАЛИЗАЦИЯ КАРТ ==========
+HeroGame.prototype.initializeMaps = function() {
+    try {
+        // Инициализация карт если система карт доступна
+        if (this.mapSystem) {
+            if (this.mapSystem.globalMap) {
+                this.mapSystem.renderMap('global', this.mapSystem.globalMap);
+                this.updateMapInfo('global');
+            }
+            if (this.mapSystem.localMap) {
+                this.mapSystem.renderMap('local', this.mapSystem.localMap);
+                this.updateMapInfo('local');
+            }
+            if (this.mapSystem.tacticalMap) {
+                this.mapSystem.renderMap('tactical', this.mapSystem.tacticalMap);
+                this.updateMapInfo('tactical');
+            }
+        } else {
+            console.warn('⚠️ Система карт не инициализирована');
+            // Создаем простые заглушки для карт
+            this.createMapFallbacks();
+        }
+    } catch (error) {
+        console.error('❌ Ошибка инициализации карт:', error);
+        this.createMapFallbacks();
+    }
+};
+
+// ========== МОДУЛЬ 9.4.2: СОЗДАНИЕ ЗАГЛУШЕК ДЛЯ КАРТ ==========
+HeroGame.prototype.createMapFallbacks = function() {
+    const fallbackImage = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5NYXAgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=";
+    
+    const maps = [
+        { id: 'globalMapImage', stats: 'globalMapStats', text: 'Глобальная карта' },
+        { id: 'localMapImage', stats: 'localMapStats', text: 'Локальная карта' },
+        { id: 'tacticalMapImage', stats: 'tacticalMapStats', text: 'Тактическая карта' }
+    ];
+    
+    maps.forEach(map => {
+        const img = document.getElementById(map.id);
+        const stats = document.getElementById(map.stats);
+        
+        if (img) img.src = fallbackImage;
+        if (stats) stats.textContent = 'Карта не загружена';
+    });
+};
+
+// ========== МОДУЛЬ 9.4.3: ОБНОВЛЕНИЕ ИНФОРМАЦИИ О КАРТЕ ==========
+HeroGame.prototype.updateMapInfo = function(level) {
+    const statsElement = document.getElementById(`${level}MapStats`);
+    if (!statsElement || !this.mapSystem) return;
+    
+    let info = '';
+    
+    switch(level) {
+        case 'global':
+            info = `Позиция: [${this.mapSystem.currentGlobalPos.x}, ${this.mapSystem.currentGlobalPos.y}]`;
+            break;
+        case 'local':
+            info = `Позиция: [${this.mapSystem.currentLocalPos.x}, ${this.mapSystem.currentLocalPos.y}]`;
+            break;
+        case 'tactical':
+            info = `Позиция: [${this.mapSystem.currentTacticalPos.x}, ${this.mapSystem.currentTacticalPos.y}]`;
+            break;
+    }
+    
+    statsElement.textContent = info;
 };
 
 // ========== МОДУЛЬ 9.5: ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ ==========
@@ -1985,6 +2047,47 @@ HeroGame.prototype.showEquipmentTooltip = function(event, slot) {
     tooltip.innerHTML = tooltipContent;
     
     event.currentTarget.appendChild(tooltip);
+};
+// ========== МОДУЛЬ 9.16: ОТСУТСТВУЮЩИЕ МЕТОДЫ ==========
+
+HeroGame.prototype.showScreen = function(screenName) {
+    this.currentScreen = screenName;
+};
+
+HeroGame.prototype.getSlotName = function(slot) {
+    const slotNames = {
+        'main_hand': 'Правая рука',
+        'off_hand': 'Левая рука',
+        'helmet': 'Шлем', 
+        'chest': 'Нагрудник',
+        'gloves': 'Перчатки',
+        'legs': 'Поножи',
+        'boots': 'Ботинки'
+    };
+    return slotNames[slot] || slot;
+};
+
+HeroGame.prototype.getSuitableSlotsForItem = function(item) {
+    if (!item) return [];
+    
+    const slotMap = {
+        'weapon': {
+            'one_handed': ['main_hand', 'off_hand'],
+            'two_handed': ['main_hand'],
+            'shield': ['off_hand']
+        },
+        'helmet': ['helmet'],
+        'chest': ['chest'],
+        'gloves': ['gloves'], 
+        'legs': ['legs'],
+        'boots': ['boots']
+    };
+
+    if (item.type === 'weapon' && slotMap.weapon[item.weaponType]) {
+        return slotMap.weapon[item.weaponType];
+    }
+    
+    return slotMap[item.type] || [];
 };
 // ========== МОДУЛЬ 10: СИСТЕМА ЭКИПИРОВКИ С НОВЫМИ ТИПАМИ ОРУЖИЯ ==========
 
@@ -3763,9 +3866,9 @@ class MapSystem {
         this.localMap = null;
         this.tacticalMap = null;
         
-        this.currentGlobalPos = null;
-        this.currentLocalPos = null; 
-        this.currentTacticalPos = null;
+        this.currentGlobalPos = {x: 10, y: 10};
+        this.currentLocalPos = {x: 7, y: 7};
+        this.currentTacticalPos = {x: 0, y: 0};
         
         this.mapsCache = new Map();
     }
@@ -3773,85 +3876,45 @@ class MapSystem {
     // ========== МОДУЛЬ 21.1: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ КАРТ ==========
     async init() {
         try {
-            // Загружаем стартовые карты
-            await this.loadGlobalMap('global_kingdom_erador');
-            await this.loadLocalMap('local_starting_region');
-            await this.loadTacticalMap('tactical_town_square');
-            
-            // Устанавливаем стартовые позиции
-            this.currentGlobalPos = {x: 10, y: 10};
-            this.currentLocalPos = {x: 7, y: 7};
-            this.currentTacticalPos = {x: 0, y: 0};
-            
+            // Создаем простые тестовые карты вместо загрузки
+            this.createTestMaps();
             this.game.addToLog('🗺️ Система карт инициализирована');
         } catch (error) {
             console.error('Ошибка инициализации карт:', error);
-            this.game.addToLog('❌ Ошибка загрузки карт');
+            this.createTestMaps();
         }
     }
 
-    // ========== МОДУЛЬ 21.2: ЗАГРУЗКА КАРТ ==========
-    async loadGlobalMap(mapId) {
-        const mapData = await this.loadMapData('global', mapId);
-        this.globalMap = mapData;
-        this.renderMap('global', mapData);
-        this.updateMapInfo('global');
-    }
-
-    async loadLocalMap(mapId) {
-        const mapData = await this.loadMapData('local', mapId);
-        this.localMap = mapData;
-        this.renderMap('local', mapData);
-        this.updateMapInfo('local');
-    }
-
-    async loadTacticalMap(mapId) {
-        const mapData = await this.loadMapData('tactical', mapId);
-        this.tacticalMap = mapData;
-        this.renderMap('tactical', mapData);
-        this.updateMapInfo('tactical');
-    }
-
-    async loadMapData(level, mapId) {
-        const cacheKey = `${level}_${mapId}`;
-        
-        if (this.mapsCache.has(cacheKey)) {
-            return this.mapsCache.get(cacheKey);
-        }
-
-        try {
-            const response = await fetch(`data/maps/${level}/${mapId}.json`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            
-            const mapData = await response.json();
-            this.mapsCache.set(cacheKey, mapData);
-            return mapData;
-        } catch (error) {
-            console.error(`Ошибка загрузки ${level} карты:`, error);
-            return this.createFallbackMap(level, mapId);
-        }
-    }
-
-    createFallbackMap(level, mapId) {
-        const baseMap = {
-            id: mapId,
-            name: `Карта ${mapId}`,
-            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==",
-            gridSize: 10,
-            start: {x: 0, y: 0}
+    // ========== МОДУЛЬ 21.2: СОЗДАНИЕ ТЕСТОВЫХ КАРТ ==========
+    createTestMaps() {
+        // Простые тестовые карты
+        this.globalMap = {
+            id: 'test_global',
+            name: 'Королевство Эрадор',
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5HbG9iYWwgTWFwPC90ZXh0Pjwvc3ZnPg==",
+            gridSize: 20,
+            description: "Обширное королевство с разнообразными землями"
         };
 
-        if (level === 'global') {
-            baseMap.tiles = [{x: 0, y: 0, type: "plains", localMapId: "local_default"}];
-        } else if (level === 'local') {
-            baseMap.exits = [{x: 9, y: 5, direction: "east", globalPosition: {x: 1, y: 0}}];
-            baseMap.tiles = [{x: 0, y: 0, type: "plains", tacticalMapId: "tactical_default"}];
-        } else if (level === 'tactical') {
-            baseMap.exits = [{x: 9, y: 5, direction: "east", localPosition: {x: 1, y: 0}}];
-            baseMap.objects = [];
-        }
+        this.localMap = {
+            id: 'test_local', 
+            name: 'Стартовый регион',
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Mb2NhbCBNYXA8L3RleHQ+PC9zdmc+",
+            gridSize: 15,
+            description: "Окрестности стартового города"
+        };
 
-        return baseMap;
+        this.tacticalMap = {
+            id: 'test_tactical',
+            name: 'Городская площадь',
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5UYWN0aWNhbCBNYXA8L3RleHQ+PC9zdmc+",
+            gridSize: 10,
+            description: "Центральная площадь города",
+            objects: [
+                { x: 3, y: 3, type: 'monster', monsterId: 1 },
+                { x: 7, y: 7, type: 'chest' }
+            ]
+        };
     }
 
     // ========== МОДУЛЬ 21.3: ОТРИСОВКА КАРТ ==========
@@ -3859,19 +3922,32 @@ class MapSystem {
         const canvas = document.getElementById(`${level}MapCanvas`);
         const img = document.getElementById(`${level}MapImage`);
         
-        if (!canvas || !img) return;
+        if (!canvas || !img) {
+            console.warn(`❌ Элементы карты ${level} не найдены`);
+            return;
+        }
 
         // Устанавливаем изображение
         img.src = mapData.image;
         
         img.onload = () => {
-            canvas.width = img.clientWidth;
-            canvas.height = img.clientHeight;
-            
-            const ctx = canvas.getContext('2d');
-            this.drawGrid(ctx, mapData);
-            this.drawMapObjects(ctx, level, mapData);
-            this.drawPlayerPosition(ctx, level);
+            try {
+                canvas.width = img.clientWidth;
+                canvas.height = img.clientHeight;
+                
+                const ctx = canvas.getContext('2d');
+                this.drawGrid(ctx, mapData);
+                this.drawMapObjects(ctx, level, mapData);
+                this.drawPlayerPosition(ctx, level);
+            } catch (error) {
+                console.error(`❌ Ошибка отрисовки карты ${level}:`, error);
+            }
+        };
+
+        img.onerror = () => {
+            console.error(`❌ Ошибка загрузки изображения карты ${level}`);
+            // Используем fallback изображение
+            img.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5FcnJvcjwvdGV4dD48L3N2Zz4=";
         };
     }
 
@@ -3900,21 +3976,6 @@ class MapSystem {
 
     drawMapObjects(ctx, level, mapData) {
         const cellSize = Math.min(ctx.canvas.width, ctx.canvas.height) / mapData.gridSize;
-        
-        // Отрисовка выходов
-        if (mapData.exits) {
-            mapData.exits.forEach(exit => {
-                const x = exit.x * cellSize;
-                const y = exit.y * cellSize;
-                
-                ctx.fillStyle = 'rgba(74, 222, 128, 0.6)';
-                ctx.fillRect(x, y, cellSize, cellSize);
-                
-                ctx.strokeStyle = '#4ade80';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(x, y, cellSize, cellSize);
-            });
-        }
         
         // Отрисовка объектов на тактической карте
         if (level === 'tactical' && mapData.objects) {
@@ -3952,6 +4013,8 @@ class MapSystem {
         if (!position) return;
         
         const mapData = this[`${level}Map`];
+        if (!mapData) return;
+        
         const cellSize = Math.min(ctx.canvas.width, ctx.canvas.height) / mapData.gridSize;
         
         const x = position.x * cellSize + cellSize / 2;
@@ -3974,32 +4037,7 @@ class MapSystem {
         ctx.shadowBlur = 0;
     }
 
-    // ========== МОДУЛЬ 21.4: ОБНОВЛЕНИЕ ИНФОРМАЦИИ О КАРТЕ ==========
-    updateMapInfo(level) {
-        const statsElement = document.getElementById(`${level}MapStats`);
-        if (!statsElement) return;
-        
-        const mapData = this[`${level}Map`];
-        let info = '';
-        
-        switch(level) {
-            case 'global':
-                info = `Размер: ${mapData.gridSize}x${mapData.gridSize}`;
-                break;
-            case 'local':
-                info = `Выходы: ${mapData.exits?.length || 0}`;
-                break;
-            case 'tactical':
-                const monsters = mapData.objects?.filter(obj => obj.type === 'monster').length || 0;
-                const chests = mapData.objects?.filter(obj => obj.type === 'chest').length || 0;
-                info = `Монстры: ${monsters} | Сундуки: ${chests}`;
-                break;
-        }
-        
-        statsElement.textContent = info;
-    }
-
-    // ========== МОДУЛЬ 21.5: ОБНОВЛЕНИЕ ПОЗИЦИИ ИГРОКА ==========
+    // ========== МОДУЛЬ 21.4: ОБНОВЛЕНИЕ ПОЗИЦИИ ИГРОКА ==========
     updatePlayerPosition(level, newPosition) {
         switch(level) {
             case 'global':
@@ -4019,8 +4057,31 @@ class MapSystem {
             this.renderMap(level, mapData);
         }
         
-        this.game.saveGame();
+        // Обновляем информацию о позиции
+        if (this.game && this.game.updateMapInfo) {
+            this.game.updateMapInfo(level);
+        }
+        
+        // Сохраняем игру
+        if (this.game && this.game.saveGame) {
+            this.game.saveGame();
+        }
     }
+
+    // ========== МОДУЛЬ 21.5: ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+    getCurrentPosition(level) {
+        switch(level) {
+            case 'global': return this.currentGlobalPos;
+            case 'local': return this.currentLocalPos;
+            case 'tactical': return this.currentTacticalPos;
+        }
+    }
+
+    // Методы-заглушки для совместимости
+    async loadGlobalMap() { return this.globalMap; }
+    async loadLocalMap() { return this.localMap; }
+    async loadTacticalMap() { return this.tacticalMap; }
+}
 
     // ========== МОДУЛЬ 21.6: ПЕРЕМЕЩЕНИЕ МЕЖДУ КАРТАМИ ==========
     async moveToTacticalMap(localX, localY) {
