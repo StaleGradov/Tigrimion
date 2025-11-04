@@ -3297,3 +3297,105 @@ body {
         opacity: 0.7;
     }
 }
+/* ===== МОДУЛЬ 21: СТИЛИ ДЛЯ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЙ И МИФИЧЕСКИХ ПРЕДМЕТОВ ===== */
+
+/* Стили для увеличения изображения в модальном окне */
+.item-detail-image {
+    position: relative;
+    overflow: visible;
+}
+
+.item-detail-image-zoom {
+    cursor: zoom-in;
+    transition: transform 0.3s ease, z-index 0.3s ease;
+    max-width: 120px;
+    max-height: 120px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.item-detail-image-zoom:hover {
+    transform: scale(2.5);
+    z-index: 1000;
+    position: relative;
+}
+
+/* Усиленные стили для мифических предметов */
+.rarity-mythic .item-background {
+    border: 10px solid #ff6b6b !important;
+    box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+    animation: mythic-pulse 1.5s ease-in-out infinite;
+}
+
+.rarity-mythic .item-name {
+    color: #ff6b6b !important;
+    text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+}
+
+.rarity-mythic .item-rarity-bar {
+    background: #ff6b6b !important;
+}
+
+.inventory-item[data-rarity="mythic"] {
+    border: 10px solid #ff6b6b !important;
+    box-shadow: 0 20px 50px rgba(255, 107, 107, 0.7);
+    animation: inventory-mythic-pulse 1.5s ease-in-out infinite;
+}
+
+.item-rarity.mythic {
+    background: #ff6b6b !important;
+    color: white !important;
+}
+
+/* Анимации для мифических предметов */
+@keyframes mythic-pulse {
+    0% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+        border-color: #ff6b6b;
+    }
+    50% { 
+        box-shadow: 0 20px 60px rgba(255, 107, 107, 1);
+        border-color: #fca5a5;
+    }
+    100% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+        border-color: #ff6b6b;
+    }
+}
+
+@keyframes inventory-mythic-pulse {
+    0% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.7);
+        border-color: #ff6b6b;
+    }
+    50% { 
+        box-shadow: 0 20px 60px rgba(255, 107, 107, 0.9);
+        border-color: #fca5a5;
+    }
+    100% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.7);
+        border-color: #ff6b6b;
+    }
+}
+
+/* Адаптивность для увеличенных изображений */
+@media (max-width: 768px) {
+    .item-detail-image-zoom:hover {
+        transform: scale(2);
+    }
+}
+
+@media (max-width: 480px) {
+    .item-detail-image-zoom:hover {
+        transform: scale(1.8);
+    }
+    
+    .rarity-mythic .item-background {
+        border-width: 8px !important;
+    }
+    
+    .inventory-item[data-rarity="mythic"] {
+        border-width: 8px !important;
+    }
+}
