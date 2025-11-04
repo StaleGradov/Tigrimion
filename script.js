@@ -1,8 +1,27 @@
+// ========== МОДУЛЬ 0: БАЗОВЫЕ МЕТОДЫ ДЛЯ ЗАПУСКА ==========
+
+// Временные методы для запуска игры
+function initializeGame() {
+    console.log('🔄 Инициализация игры...');
+    window.game = new HeroGame();
+}
+
+// Запуск при загрузке страницы
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGame);
+} else {
+    initializeGame();
+}
+
+// Базовые методы для совместимости
+console.log('✅ Базовые методы загружены');
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class HeroGame {
     constructor() {
+        console.log('🎮 Создание экземпляра игры...');
+        
         // Массивы данных игры
         this.heroes = [];
         this.items = [];
@@ -58,12 +77,30 @@ class HeroGame {
         this.locationProgress = {};
         this.monsterKillCount = {};
         
-        // НОВАЯ СИСТЕМА КАРТ
-        this.mapSystem = new MapSystem(this);
+        // НОВАЯ СИСТЕМА КАРТ - создаем после базовой инициализации
+        this.mapSystem = null;
         
         // Запуск инициализации игры
-        this.init();
+        this.safeInit();
     }
+
+    // Безопасная инициализация
+    async safeInit() {
+        try {
+            await this.init();
+        } catch (error) {
+            console.error('❌ Критическая ошибка инициализации:', error);
+            this.emergencyFallback();
+        }
+    }
+
+    // Аварийный fallback
+    emergencyFallback() {
+        console.log('🚨 Запуск аварийного режима...');
+        this.createFallbackData();
+        this.renderHeroSelect();
+    }
+}
 
     // ========== МОДУЛЬ 1.2: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
@@ -92,18 +129,19 @@ class HeroGame {
 // ========== МОДУЛЬ 1.3: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
 HeroGame.prototype.init = async function() {
     try {
-        // Загружаем все данные игры
-        await this.loadGameData();
+        console.log('🔄 Начало инициализации игры...');
         
-        // Инициализируем новую систему карт
+        // Сначала создаем базовые данные
+        this.createFallbackData();
+        
+        // Потом инициализируем систему карт
+        this.mapSystem = new MapSystem(this);
         if (this.mapSystem && this.mapSystem.init) {
             await this.mapSystem.init();
         }
         
-        // Инициализация системы локаций
+        // Базовая инициализация
         this.initLocationSystem();
-        
-        // Загрузка сохраненной игры
         this.loadSave();
         
         // Разблокировка первого героя
@@ -111,8 +149,12 @@ HeroGame.prototype.init = async function() {
             const firstHero = this.heroes.find(h => h.id === 1);
             if (firstHero) {
                 firstHero.unlocked = true;
+                // Устанавливаем первого героя как текущего для теста
+                this.currentHero = firstHero;
             }
         }
+        
+        console.log('✅ Базовая инициализация завершена');
         
         // Показ экрана выбора героя
         this.renderHeroSelect();
@@ -121,9 +163,7 @@ HeroGame.prototype.init = async function() {
         
     } catch (error) {
         console.error('❌ Ошибка инициализации:', error);
-        // Создаем fallback данные и показываем экран выбора героя
-        this.createFallbackData();
-        this.renderHeroSelect();
+        throw error; // Перебрасываем ошибку для safeInit
     }
 };
 
@@ -168,11 +208,13 @@ HeroGame.prototype.loadGameData = async function() {
 
 // ========== МОДУЛЬ 2.3: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ==========
 HeroGame.prototype.createFallbackData = function() {
+    console.log('📝 Создание тестовых данных...');
+    
     // Создание базового героя
     this.heroes = [{
         id: 1,
         name: "Начальный герой",
-        image: "images/heroes/hero1.jpg",
+        image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5IZXJvPC90ZXh0Pjwvc3ZnPg==",
         race: "human",
         class: "warrior",
         saga: "golden_egg",
@@ -185,7 +227,7 @@ HeroGame.prototype.createFallbackData = function() {
         monstersKilled: 0,
         deaths: 0,
         healthRegen: 100/60,
-        inventory: [],
+        inventory: [1, 2], // Добавляем несколько предметов в инвентарь
         equipment: {
             main_hand: null,
             off_hand: null,
@@ -199,14 +241,42 @@ HeroGame.prototype.createFallbackData = function() {
         story: "Простой воин из далекой деревни..."
     }];
 
+    // Создание тестовых предметов
+    this.items = [
+        {
+            id: 1,
+            name: "Малое зелье здоровья",
+            type: "potion",
+            value: 20,
+            price: 25,
+            heal: 20,
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGY0MjY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Ql9C8PC90ZXh0Pjwvc3ZnPg==",
+            description: "Восстанавливает 20 здоровья",
+            rarity: "common"
+        },
+        {
+            id: 2,
+            name: "Простой меч",
+            type: "weapon",
+            weaponType: "one_handed",
+            slot: "main_hand",
+            fixed_damage: 5,
+            price: 100,
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjOTljYTNmIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QnNC10YI8L3RleHQ+PC9zdmc+",
+            description: "Обычный стальной меч",
+            rarity: "common",
+            requiredLevel: 1
+        }
+    ];
+
     // Создание тестовых монстров
     this.monsters = [];
-    for (let i = 1; i <= 55; i++) {
+    for (let i = 1; i <= 10; i++) {
         this.monsters.push({
             id: i,
             name: `Монстр ${i}`,
-            image: "images/monsters/monster1.jpg",
-            description: `Монстр уровня ${Math.ceil(i/10)}`,
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGY0MjY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IiNmZmYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QnNC+0L3Rg9GC0Yw8L3RleHQ+PC9zdmc+",
+            description: `Монстр уровня ${Math.ceil(i/2)}`,
             health: 20 + i * 5,
             maxHealth: 20 + i * 5,
             damage: 5 + i * 2,
@@ -220,23 +290,11 @@ HeroGame.prototype.createFallbackData = function() {
         });
     }
 
-    // Создание тестовых предметов
-    this.items = [{
-        id: 1,
-        name: "Малое зелье здоровья",
-        type: "potion",
-        value: 20,
-        price: 25,
-        heal: 20,
-        image: "images/items/potion1.jpg",
-        description: "Восстанавливает 20 здоровья"
-    }];
-
     // Создание тестовых карт
     this.maps = [{
         id: 1, 
         name: "Арканиум", 
-        image: "images/maps/arcanium.jpg", 
+        image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5NYXA8L3RleHQ+PC9zdmc+", 
         description: "Земля древней магии", 
         multiplier: 1.0, 
         unlocked: true 
@@ -244,20 +302,27 @@ HeroGame.prototype.createFallbackData = function() {
 
     // Создание тестовых локаций
     this.locations = [];
-    for (let level = 10; level >= 1; level--) {
-        const startMonster = (10 - level) * 10 + 1;
-        const endMonster = startMonster + 9;
+    for (let level = 3; level >= 1; level--) {
+        const startMonster = (3 - level) * 3 + 1;
+        const endMonster = startMonster + 2;
         
         this.locations.push({
             level: level,
-            name: `Локация ${11 - level}`,
+            name: `Локация ${4 - level}`,
             description: `Уровень сложности: ${level}`,
-            image: "images/locations/level10.jpg",
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5Mb2NhdGlvbjwvdGV4dD48L3N2Zz4=",
             monsterRange: [startMonster, endMonster],
-            artifactChance: 0.005 + (10 - level) * 0.001,
-            relicChance: 0.0005 + (10 - level) * 0.0001
+            artifactChance: 0.005 + (3 - level) * 0.001,
+            relicChance: 0.0005 + (3 - level) * 0.0001
         });
     }
+    
+    console.log('✅ Тестовые данные созданы:', {
+        heroes: this.heroes.length,
+        items: this.items.length,
+        monsters: this.monsters.length,
+        locations: this.locations.length
+    });
 };
 
 // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
@@ -1631,6 +1696,93 @@ HeroGame.prototype.updateMapInfo = function(level) {
     }
     
     statsElement.textContent = info;
+};
+// ========== МОДУЛЬ 9.17: ОСНОВНЫЕ МЕТОДЫ ДЛЯ ЗАПУСКА ==========
+
+// Простой метод для отображения экрана
+HeroGame.prototype.showScreen = function(screenName) {
+    this.currentScreen = screenName;
+    console.log('📱 Переключение на экран:', screenName);
+};
+
+// Метод для начала исследования
+HeroGame.prototype.startExploration = function() {
+    this.addToLog('🧭 Начато исследование местности');
+    // Простая встреча с монстром для теста
+    this.encounterMonster();
+};
+
+// Метод для открытия инвентаря
+HeroGame.prototype.showInventory = function() {
+    console.log('🎒 Открытие инвентаря');
+    this.addToLog('📦 Открыт инвентарь');
+    // Временно просто показываем сообщение
+    alert('Инвентарь будет реализован позже');
+};
+
+// Метод для открытия магазина
+HeroGame.prototype.showMerchant = function() {
+    console.log('🏪 Открытие магазина');
+    this.addToLog('🏪 Открыт магазин');
+    // Временно просто показываем сообщение
+    alert('Магазин будет реализован позже');
+};
+
+// Обработчики карт (упрощенные)
+HeroGame.prototype.handleGlobalMapClick = function(event) {
+    this.addToLog('🗺️ Клик по глобальной карте');
+};
+
+HeroGame.prototype.handleLocalMapClick = function(event) {
+    this.addToLog('📍 Клик по локальной карте');
+};
+
+HeroGame.prototype.handleTacticalMapClick = function(event) {
+    this.addToLog('⚔️ Клик по тактической карте');
+};
+
+// Упрощенная встреча с монстром
+HeroGame.prototype.encounterMonster = function() {
+    if (this.monsters.length > 0) {
+        const monster = this.monsters[0]; // Берем первого монстра
+        this.currentMonster = {...monster};
+        this.addToLog(`🎭 Встречен: ${monster.name}`);
+        this.renderHeroScreen(); // Перерисовываем экран
+    }
+};
+
+// Упрощенный метод для переключения видео
+HeroGame.prototype.toggleVideo = function(type) {
+    this.showVideo[type] = !this.showVideo[type];
+    this.addToLog(`🎬 Видео ${type}: ${this.showVideo[type] ? 'включено' : 'выключено'}`);
+    this.renderHeroScreen();
+};
+
+// Простой метод для добавления в лог
+HeroGame.prototype.addToLog = function(message) {
+    console.log('📝 Лог:', message);
+    const log = document.getElementById('battle-log');
+    if (log) {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.textContent = message;
+        log.appendChild(entry);
+        log.scrollTop = log.scrollHeight;
+    }
+};
+
+// Заглушки для методов экипировки
+HeroGame.prototype.openInventoryFromSlot = function(slot) {
+    console.log('🎯 Открытие инвентаря для слота:', slot);
+    this.showInventory();
+};
+
+HeroGame.prototype.showEquipmentTooltip = function(event, slot) {
+    console.log('ℹ️ Подсказка для слота:', slot);
+};
+
+HeroGame.prototype.hideEquipmentTooltip = function() {
+    // Заглушка
 };
 
 // ========== МОДУЛЬ 9.5: ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ ==========
