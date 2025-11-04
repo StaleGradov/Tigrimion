@@ -3,22 +3,10 @@
   "name": "Окрестности Стартового Города",
   "image": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
   "gridSize": 8,
-  "start": {"x": 4, "y": 4},
-  "exits": [
-    {
-      "x": 4,
-      "y": 0,
-      "direction": "north", 
-      "globalPosition": {"x": 5, "y": 4}
-    }
-  ],
-  "tiles": [
-    {
-      "x": 4,
-      "y": 4,
-      "type": "town",
-      "tacticalMapId": "tactical_town_square",
-      "description": "Городская площадь"
-    }
-  ]
+  "start": {
+    "x": 4,
+    "y": 4
+  },
+  "exits": [],
+  "tiles": []
 }
