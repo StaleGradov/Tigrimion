@@ -75,14 +75,48 @@ HeroGame.prototype.loadGameData = async function() {
     }
 };
 
-// ========== МОДУЛЬ 2.2: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ==========
+// ========== МОДУЛЬ 2.2: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ (ОБНОВЛЕННЫЙ) ==========
 HeroGame.prototype.createFallbackData = function() {
+    // Создаем тестовые предметы
+    this.items = [
+        {
+            id: 1,
+            name: "Железный меч",
+            type: "weapon",
+            description: "Надежный железный меч",
+            price: 100
+        },
+        {
+            id: 2, 
+            name: "Кожаный доспех",
+            type: "chest",
+            description: "Прочный кожаный нагрудник",
+            price: 150
+        },
+        {
+            id: 3,
+            name: "Стальной шлем",
+            type: "helmet", 
+            description: "Защитный стальной шлем",
+            price: 80
+        },
+        {
+            id: 4,
+            name: "Зелье здоровья",
+            type: "potion",
+            description: "Восстанавливает 20 здоровья",
+            price: 25,
+            heal: 20
+        }
+    ];
+
+    // Создаем тестового героя с предметами в инвентаре
     this.heroes = [{
         id: 1,
         name: "Тестовый герой",
         image: "images/heroes/hero1.jpg",
         race: "human",
-        class: "warrior",
+        class: "warrior", 
         saga: "golden_egg",
         baseHealth: 100,
         baseDamage: 20,
@@ -93,7 +127,7 @@ HeroGame.prototype.createFallbackData = function() {
         monstersKilled: 0,
         deaths: 0,
         healthRegen: 100/60,
-        inventory: [],
+        inventory: [1, 4], // Предметы в инвентаре: меч и зелье
         equipment: {
             main_hand: null,
             off_hand: null,
@@ -325,27 +359,37 @@ HeroGame.prototype.openInventoryFromSlot = function(slot) {
     this.showInventory(slot);
 };
 
-// ========== МОДУЛЬ 4.5.3: ПОКАЗ ИНВЕНТАРЯ (ИСПРАВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 4.5.3: ПОКАЗ ИНВЕНТАРЯ (УЛУЧШЕННЫЙ) ==========
 HeroGame.prototype.showInventory = function(targetSlot = null) {
     // Удаляем только существующие экраны магазина и инвентаря
     const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
     existingScreens.forEach(screen => screen.remove());
 
     let inventoryHTML = '';
-    if (this.currentHero.inventory.length === 0) {
-        inventoryHTML = '<div class="text-center">Инвентарь пуст</div>';
+    const inventoryItems = this.getInventoryItems();
+    
+    if (inventoryItems.length === 0) {
+        inventoryHTML = `
+            <div class="empty-inventory">
+                <div class="empty-icon">🎒</div>
+                <div class="empty-text">Инвентарь пуст</div>
+                <div class="empty-hint">Посетите магазин чтобы купить предметы</div>
+            </div>
+        `;
     } else {
-        inventoryHTML = this.currentHero.inventory.map(itemId => {
-            const item = this.items.find(i => i.id === itemId);
-            if (!item) return '';
+        inventoryHTML = inventoryItems.map(item => {
+            const isEquipped = this.isItemEquipped(item.id);
             
             return `
-                <div class="inventory-item" onclick="game.equipItem(${itemId})">
-                    <div class="inventory-item-image">📦</div>
+                <div class="inventory-item ${isEquipped ? 'equipped' : ''}" 
+                     onclick="game.equipItem(${item.id})">
+                    <div class="inventory-item-image">${this.getItemIcon(item.type)}</div>
                     <div class="inventory-item-info">
                         <strong>${item.name}</strong>
+                        <div class="item-type">${this.getItemTypeName(item.type)}</div>
                         <small>${item.description}</small>
-                        ${item.type ? `<small>Тип: ${this.getItemTypeName(item.type)}</small>` : ''}
+                        ${item.heal ? `<div class="item-heal">❤️ +${item.heal} HP</div>` : ''}
+                        ${isEquipped ? '<div class="equipped-badge">✓ Надето</div>' : ''}
                     </div>
                 </div>
             `;
@@ -370,8 +414,8 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
                 
                 <div class="inventory-info">
                     <div class="inventory-stats">
-                        <span>💰 ${this.currentHero.gold.toFixed(2)}</span>
-                        <span>🎒 ${this.currentHero.inventory.length}/10</span>
+                        <span class="gold-stat">💰 ${this.currentHero.gold.toFixed(2)}</span>
+                        <span class="space-stat">🎒 ${this.currentHero.inventory.length}/10</span>
                     </div>
                 </div>
                 
@@ -379,8 +423,9 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
                     ${inventoryHTML}
                 </div>
                 
-                <div class="action-buttons">
+                <div class="inventory-actions">
                     <button class="btn-secondary" onclick="game.closeInventory()">← Назад к герою</button>
+                    <button class="btn-primary" onclick="game.showMerchant()">🏪 Магазин</button>
                 </div>
             </div>
         </div>
@@ -477,6 +522,31 @@ HeroGame.prototype.getItemTypeName = function(type) {
         'boots': 'Ботинки'
     };
     return typeNames[type] || type;
+};
+// ========== МОДУЛЬ 4.5.10: ПОЛУЧЕНИЕ ПРЕДМЕТОВ ИНВЕНТАРЯ ==========
+HeroGame.prototype.getInventoryItems = function() {
+    return this.currentHero.inventory
+        .map(itemId => this.items.find(item => item.id === itemId))
+        .filter(item => item !== undefined);
+};
+
+// ========== МОДУЛЬ 4.5.11: ПРОВЕРКА ЭКИПИРОВАН ЛИ ПРЕДМЕТ ==========
+HeroGame.prototype.isItemEquipped = function(itemId) {
+    return Object.values(this.currentHero.equipment).includes(itemId);
+};
+
+// ========== МОДУЛЬ 4.5.12: ПОЛУЧЕНИЕ ИКОНКИ ПРЕДМЕТА ==========
+HeroGame.prototype.getItemIcon = function(itemType) {
+    const icons = {
+        'weapon': '⚔️',
+        'helmet': '⛑️',
+        'chest': '👕',
+        'gloves': '🧤',
+        'legs': '👖',
+        'boots': '👢',
+        'potion': '🧪'
+    };
+    return icons[itemType] || '📦';
 };
 // ========== МОДУЛЬ 5.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
