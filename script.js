@@ -406,6 +406,42 @@ HeroGame.prototype.getItemSetConfig = function() {
             requiredPieces: 6,
             bonus: { type: "armor_penetration", value: 0.36 },
             description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
+        },
+           "set_rich1": {
+            name: "Сборщика трофеев Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к награде в золоте за убийство монстра"
+        },
+           "set_rich2": {
+            name: "Охотник на редких животных Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к награде в золоте за убийство монстра"
+        },
+           "set_rich3": {
+            name: "Профессионального истребителя опасных существ Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к награде в золоте за убийство монстра"
+        },
+           "set_rich4": {
+            name: "Коллекционера Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к награде в золоте за убийство монстра"
+        },
+           "set_rich5": {
+            name: "Ловца королевских тварей Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к награде в золоте за убийство монстра"
+        },
+           "set_rich6": {
+            name: "Легендарного зверолова Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
         }
     };
 };
