@@ -75,29 +75,6 @@ class HeroGame {
 }
 
 
-    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
-    initLocationSystem() {
-        // Для каждой локации создаем запись прогресса
-        this.locations.forEach(location => {
-            const locationId = location.level;
-            
-            if (!this.locationProgress[locationId]) {
-                this.locationProgress[locationId] = {
-                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
-                    monstersKilled: new Set(),      // Множество убитых монстров
-                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
-                };
-            }
-        });
-        
-        // Инициализация счетчиков убийств для каждого монстра
-        this.monsters.forEach(monster => {
-            if (!this.monsterKillCount[monster.id]) {
-                this.monsterKillCount[monster.id] = 0;
-            }
-        });
-    }
-}
 
 // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
 
@@ -2123,20 +2100,6 @@ HeroGame.prototype.checkSetBonuses = function() {
     }
 };
 
-// ========== МОДУЛЬ 10.5: ПОЛУЧИТЬ СЛОТ ДЛЯ ПРЕДМЕТА ==========
-HeroGame.prototype.getEquipmentSlot = function(item) {
-    const slotMap = {
-        'weapon': item.weaponType === 'shield' ? 'off_hand' : 'main_hand',
-        'helmet': ['helmet'],
-        'chest': ['chest'], 
-        'gloves': ['gloves'],
-        'legs': ['legs'],
-        'boots': ['boots'],
-        'accessory': ['accessory']
-    };
-    
-    return slotMap[item.type] ? (Array.isArray(slotMap[item.type]) ? slotMap[item.type][0] : slotMap[item.type]) : null;
-};
 
 // ========== МОДУЛЬ 10.6: ПОЛУЧЕНИЕ СЛОТА ДЛЯ ПРЕДМЕТА ==========
 HeroGame.prototype.getEquipmentSlot = function(item) {
