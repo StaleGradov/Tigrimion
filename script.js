@@ -57,27 +57,35 @@ class HeroGame {
         this.locationProgress = {};      // Прогресс по каждой локации
         this.monsterKillCount = {};      // Счетчик убийств каждого монстра
         
+        // === ДОБАВИТЬ ЭТУ СТРОКУ ===
+        this.gridMapManager = new GridMapManager(this);
+        // ===========================
+        
         // Запуск инициализации игры
         this.init();
     }
 
-    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
-    async init() {
-        await this.loadGameData();    // Загрузка всех данных игры
-        this.initLocationSystem();    // Инициализация системы локаций
-        this.loadSave();              // Загрузка сохраненной игры
-        
-        // Разблокировка первого героя по умолчанию
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
+   // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
+HeroGame.prototype.init = async function() {
+    await this.loadGameData();    // Загрузка всех данных игры
+    
+    // === ДОБАВИТЬ ЭТУ СТРОКУ ===
+    await this.gridMapManager.loadGridMaps(); // Загрузка сеточных карт
+    // ===========================
+    
+    this.initLocationSystem();    // Инициализация системы локаций
+    this.loadSave();              // Загрузка сохраненной игры
+    
+    // Разблокировка первого героя по умолчанию
+    if (this.heroes.length > 0) {
+        const firstHero = this.heroes.find(h => h.id === 1);
+        if (firstHero) {
+            firstHero.unlocked = true;
         }
-        
-        this.renderHeroSelect();      // Показ экрана выбора героя
     }
-
+    
+    this.renderHeroSelect();      // Показ экрана выбора героя
+};
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
         // Для каждой локации создаем запись прогресса
@@ -3710,3 +3718,523 @@ if (document.readyState === 'loading') {
     game = new HeroGame();
     window.game = game;
 }
+// ========== МОДУЛЬ 18: СИСТЕМА СЕТОЧНЫХ КАРТ (БЕЗ КОНФЛИКТОВ) ==========
+
+class GridMapCell {
+    constructor(x, y, type = 'ground', passable = true) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.passable = passable;
+        this.connections = [];
+        this.content = null;
+    }
+}
+
+class GridGameMap {
+    constructor(id, name, width, height, level = 'global') {
+        this.id = id;
+        this.name = name;
+        this.width = width;
+        this.height = height;
+        this.level = level;
+        this.grid = [];
+        this.entryPoints = [];
+        this.exitPoints = [];
+        this.playerPosition = null;
+        
+        this.initializeGrid();
+    }
+    
+    initializeGrid() {
+        for (let y = 0; y < this.height; y++) {
+            const row = [];
+            for (let x = 0; x < this.width; x++) {
+                row.push(new GridMapCell(x, y));
+            }
+            this.grid.push(row);
+        }
+    }
+    
+    getCell(x, y) {
+        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+            return this.grid[y][x];
+        }
+        return null;
+    }
+    
+    setPlayerPosition(x, y) {
+        const cell = this.getCell(x, y);
+        if (cell && cell.passable) {
+            this.playerPosition = { x, y };
+            return true;
+        }
+        return false;
+    }
+}
+
+class GridMapManager {
+    constructor(game) {
+        this.game = game;
+        this.gridMaps = new Map();
+        this.currentGridGlobalMap = null;
+        this.currentGridLocalMap = null;
+        this.currentGridTacticalMap = null;
+        
+        this.gridPlayerPositions = {
+            global: { x: 0, y: 0 },
+            local: { x: 0, y: 0 },
+            tactical: { x: 0, y: 0 }
+        };
+    }
+    
+    async loadGridMaps() {
+        try {
+            const mapsData = await this.game.loadJSON('data/grid_maps.json');
+            if (mapsData) {
+                this.initializeGridMaps(mapsData);
+                console.log('✅ Сеточные карты загружены:', this.gridMaps.size);
+            } else {
+                this.createDefaultGridMaps();
+            }
+        } catch (error) {
+            console.error('❌ Ошибка загрузки сеточных карт:', error);
+            this.createDefaultGridMaps();
+        }
+    }
+    
+    initializeGridMaps(mapsData) {
+        mapsData.forEach(mapData => {
+            const gameMap = new GridGameMap(
+                mapData.id,
+                mapData.name,
+                mapData.width,
+                mapData.height,
+                mapData.level
+            );
+            
+            if (mapData.grid) {
+                for (let y = 0; y < mapData.height; y++) {
+                    for (let x = 0; x < mapData.width; x++) {
+                        const cellData = mapData.grid[y][x];
+                        const cell = gameMap.getCell(x, y);
+                        if (cell && cellData) {
+                            cell.type = cellData.type || 'ground';
+                            cell.passable = cellData.passable !== false;
+                            cell.content = cellData.content || null;
+                        }
+                    }
+                }
+            }
+            
+            if (mapData.entryPoints) {
+                gameMap.entryPoints = mapData.entryPoints;
+            }
+            if (mapData.exitPoints) {
+                gameMap.exitPoints = mapData.exitPoints;
+            }
+            
+            this.gridMaps.set(mapData.id, gameMap);
+        });
+        
+        this.setInitialGridMaps();
+    }
+    
+    createDefaultGridMaps() {
+        console.log('🔄 Создание тестовых сеточных карт...');
+        
+        const globalMap = new GridGameMap(1, "Арканиум", 8, 8, 'global');
+        this.setupDefaultGridMap(globalMap);
+        this.gridMaps.set(1, globalMap);
+        
+        for (let i = 1; i <= 4; i++) {
+            const localMap = new GridGameMap(100 + i, `Локация ${i}`, 6, 6, 'local');
+            this.setupDefaultGridMap(localMap);
+            this.gridMaps.set(100 + i, localMap);
+        }
+        
+        for (let i = 1; i <= 9; i++) {
+            const tacticalMap = new GridGameMap(1000 + i, `Зона ${i}`, 4, 4, 'tactical');
+            this.setupDefaultGridMap(tacticalMap);
+            this.gridMaps.set(1000 + i, tacticalMap);
+        }
+        
+        this.setInitialGridMaps();
+    }
+    
+    setupDefaultGridMap(map) {
+        for (let y = 0; y < map.height; y++) {
+            for (let x = 0; x < map.width; x++) {
+                const cell = map.getCell(x, y);
+                if (Math.random() < 0.15) {
+                    cell.type = Math.random() < 0.5 ? 'water' : 'mountain';
+                    cell.passable = false;
+                }
+            }
+        }
+        
+        map.entryPoints = [{ x: 0, y: 0 }];
+        map.exitPoints = [
+            { x: map.width - 1, y: Math.floor(map.height / 2) },
+            { x: Math.floor(map.width / 2), y: map.height - 1 }
+        ];
+    }
+    
+    setInitialGridMaps() {
+        this.currentGridGlobalMap = this.gridMaps.get(1);
+        this.currentGridLocalMap = this.gridMaps.get(101);
+        this.currentGridTacticalMap = this.gridMaps.get(1001);
+        
+        if (this.currentGridGlobalMap) {
+            this.currentGridGlobalMap.setPlayerPosition(0, 0);
+            this.gridPlayerPositions.global = { x: 0, y: 0 };
+        }
+        if (this.currentGridLocalMap) {
+            this.currentGridLocalMap.setPlayerPosition(0, 0);
+            this.gridPlayerPositions.local = { x: 0, y: 0 };
+        }
+        if (this.currentGridTacticalMap) {
+            this.currentGridTacticalMap.setPlayerPosition(0, 0);
+            this.gridPlayerPositions.tactical = { x: 0, y: 0 };
+        }
+    }
+    
+    getCurrentGridMap(level) {
+        switch (level) {
+            case 'global': return this.currentGridGlobalMap;
+            case 'local': return this.currentGridLocalMap;
+            case 'tactical': return this.currentGridTacticalMap;
+            default: return null;
+        }
+    }
+    
+    moveOnGridMap(direction, level) {
+        const map = this.getCurrentGridMap(level);
+        if (!map || !map.playerPosition) return false;
+        
+        const { x, y } = map.playerPosition;
+        let newX = x, newY = y;
+        
+        switch (direction) {
+            case 'up': newY--; break;
+            case 'down': newY++; break;
+            case 'left': newX--; break;
+            case 'right': newX++; break;
+        }
+        
+        if (map.setPlayerPosition(newX, newY)) {
+            this.gridPlayerPositions[level] = { x: newX, y: newY };
+            this.checkGridMapTransition(level);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    checkGridMapTransition(level) {
+        const map = this.getCurrentGridMap(level);
+        if (!map || !map.playerPosition) return;
+        
+        const { x, y } = map.playerPosition;
+        
+        for (const exit of map.exitPoints) {
+            if (exit.x === x && exit.y === y) {
+                this.handleGridMapExit(level, exit);
+                break;
+            }
+        }
+    }
+    
+    handleGridMapExit(level, exit) {
+        switch (level) {
+            case 'tactical':
+                this.exitGridTacticalMap(exit);
+                break;
+            case 'local':
+                this.exitGridLocalMap(exit);
+                break;
+        }
+    }
+    
+    exitGridTacticalMap(exit) {
+        if (!this.currentGridLocalMap) return;
+        
+        const direction = this.getGridExitDirection(exit, this.currentGridTacticalMap);
+        this.updateGridLocalPosition(direction);
+        
+        this.generateNewGridTacticalMap();
+        this.game.addToLog(`🚪 Выход из тактической зоны (${direction})`);
+    }
+    
+    exitGridLocalMap(exit) {
+        if (!this.currentGridGlobalMap) return;
+        
+        const direction = this.getGridExitDirection(exit, this.currentGridLocalMap);
+        this.updateGridGlobalPosition(direction);
+        
+        this.generateNewGridLocalMap();
+        this.game.addToLog(`🗺️ Выход из локации (${direction})`);
+    }
+    
+    getGridExitDirection(exit, map) {
+        if (exit.x === 0) return 'left';
+        if (exit.x === map.width - 1) return 'right';
+        if (exit.y === 0) return 'up';
+        if (exit.y === map.height - 1) return 'down';
+        return 'unknown';
+    }
+    
+    updateGridLocalPosition(direction) {
+        const pos = this.gridPlayerPositions.local;
+        
+        switch (direction) {
+            case 'up': pos.y--; break;
+            case 'down': pos.y++; break;
+            case 'left': pos.x--; break;
+            case 'right': pos.x++; break;
+        }
+        
+        pos.x = Math.max(0, Math.min(this.currentGridLocalMap.width - 1, pos.x));
+        pos.y = Math.max(0, Math.min(this.currentGridLocalMap.height - 1, pos.y));
+        
+        this.currentGridLocalMap.setPlayerPosition(pos.x, pos.y);
+    }
+    
+    updateGridGlobalPosition(direction) {
+        const pos = this.gridPlayerPositions.global;
+        
+        switch (direction) {
+            case 'up': pos.y--; break;
+            case 'down': pos.y++; break;
+            case 'left': pos.x--; break;
+            case 'right': pos.x++; break;
+        }
+        
+        pos.x = Math.max(0, Math.min(this.currentGridGlobalMap.width - 1, pos.x));
+        pos.y = Math.max(0, Math.min(this.currentGridGlobalMap.height - 1, pos.y));
+        
+        this.currentGridGlobalMap.setPlayerPosition(pos.x, pos.y);
+    }
+    
+    generateNewGridTacticalMap() {
+        const mapId = 1000 + Math.floor(Math.random() * 9) + 1;
+        const newMap = this.gridMaps.get(mapId);
+        if (newMap) {
+            this.currentGridTacticalMap = newMap;
+            this.currentGridTacticalMap.setPlayerPosition(0, 0);
+            this.gridPlayerPositions.tactical = { x: 0, y: 0 };
+        }
+    }
+    
+    generateNewGridLocalMap() {
+        const mapId = 100 + Math.floor(Math.random() * 4) + 1;
+        const newMap = this.gridMaps.get(mapId);
+        if (newMap) {
+            this.currentGridLocalMap = newMap;
+            this.currentGridLocalMap.setPlayerPosition(0, 0);
+            this.gridPlayerPositions.local = { x: 0, y: 0 };
+        }
+    }
+}
+
+// ========== МОДУЛЬ 19: ОТРИСОВКА СЕТОЧНЫХ КАРТ (БЕЗ КОНФЛИКТОВ) ==========
+
+HeroGame.prototype.renderGridMapColumn = function(level) {
+    const map = this.gridMapManager.getCurrentGridMap(level);
+    if (!map) return '<div class="grid-map-error">Карта не найдена</div>';
+    
+    const playerPos = this.gridMapManager.gridPlayerPositions[level];
+    
+    return `
+        <div class="grid-map-container ${level}-grid-map">
+            <div class="grid-map-header">
+                <h4>${this.getGridMapLevelTitle(level)}</h4>
+                <div class="grid-map-position">(${playerPos.x}, ${playerPos.y})</div>
+            </div>
+            <div class="grid-map-grid" style="grid-template-columns: repeat(${map.width}, 1fr);">
+                ${this.renderGridMapGrid(map, level)}
+            </div>
+            <div class="grid-map-controls">
+                ${this.renderGridMapControls(level)}
+            </div>
+        </div>
+    `;
+};
+
+HeroGame.prototype.renderGridMapGrid = function(map, level) {
+    let html = '';
+    for (let y = 0; y < map.height; y++) {
+        for (let x = 0; x < map.width; x++) {
+            const cell = map.getCell(x, y);
+            const isPlayer = map.playerPosition && 
+                           map.playerPosition.x === x && 
+                           map.playerPosition.y === y;
+            const isExit = map.exitPoints.some(exit => exit.x === x && exit.y === y);
+            const isEntry = map.entryPoints.some(entry => entry.x === x && entry.y === y);
+            
+            html += this.renderGridMapCell(cell, isPlayer, isExit, isEntry, level);
+        }
+    }
+    return html;
+};
+
+HeroGame.prototype.renderGridMapCell = function(cell, isPlayer, isExit, isEntry, level) {
+    let cellClass = `grid-map-cell ${cell.type}`;
+    let content = '';
+    
+    if (isPlayer) {
+        cellClass += ' grid-player';
+        content = '🎯';
+    } else if (isExit) {
+        cellClass += ' grid-exit';
+        content = '🚪';
+    } else if (isEntry) {
+        cellClass += ' grid-entry';
+        content = '📍';
+    } else if (!cell.passable) {
+        cellClass += ' grid-blocked';
+        content = this.getGridCellIcon(cell.type);
+    } else if (cell.content) {
+        content = this.getGridContentIcon(cell.content);
+    } else {
+        content = '·';
+    }
+    
+    return `
+        <div class="${cellClass}" 
+             data-x="${cell.x}" 
+             data-y="${cell.y}"
+             data-level="${level}"
+             onclick="game.handleGridMapCellClick(${cell.x}, ${cell.y}, '${level}')">
+            ${content}
+        </div>
+    `;
+};
+
+HeroGame.prototype.getGridCellIcon = function(type) {
+    const icons = {
+        'water': '💧',
+        'mountain': '⛰️',
+        'forest': '🌲',
+        'ground': '·',
+        'wall': '🧱'
+    };
+    return icons[type] || '·';
+};
+
+HeroGame.prototype.getGridContentIcon = function(content) {
+    const icons = {
+        'monster': '👹',
+        'chest': '🎁',
+        'npc': '🧙',
+        'boss': '🐲',
+        'shop': '🏪'
+    };
+    return icons[content] || '?';
+};
+
+HeroGame.prototype.getGridMapLevelTitle = function(level) {
+    const titles = {
+        'global': '🗺️ Глобальная',
+        'local': '📍 Локальная', 
+        'tactical': '⚔️ Тактическая'
+    };
+    return titles[level] || 'Карта';
+};
+
+HeroGame.prototype.renderGridMapControls = function(level) {
+    if (level === 'tactical') {
+        return `
+            <div class="grid-movement-controls">
+                <button class="btn-grid-move" onclick="game.moveOnGridMap('up', '${level}')">↑</button>
+                <div class="grid-horizontal-controls">
+                    <button class="btn-grid-move" onclick="game.moveOnGridMap('left', '${level}')">←</button>
+                    <button class="btn-grid-move" onclick="game.moveOnGridMap('down', '${level}')">↓</button>
+                    <button class="btn-grid-move" onclick="game.moveOnGridMap('right', '${level}')">→</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    return '<small>Кликните на клетку</small>';
+};
+
+HeroGame.prototype.handleGridMapCellClick = function(x, y, level) {
+    const map = this.gridMapManager.getCurrentGridMap(level);
+    if (!map) return;
+    
+    const cell = map.getCell(x, y);
+    if (!cell || !cell.passable) return;
+    
+    if (level === 'global') {
+        this.handleGridGlobalMapClick(x, y);
+    } else if (level === 'local') {
+        this.handleGridLocalMapClick(x, y);
+    }
+};
+
+HeroGame.prototype.handleGridGlobalMapClick = function(x, y) {
+    this.gridMapManager.currentGridGlobalMap.setPlayerPosition(x, y);
+    this.gridMapManager.gridPlayerPositions.global = { x, y };
+    this.gridMapManager.generateNewGridLocalMap();
+    this.addToLog(`🗺️ Перемещение на глобальной карте: (${x}, ${y})`);
+    this.renderHeroScreen();
+};
+
+HeroGame.prototype.handleGridLocalMapClick = function(x, y) {
+    this.gridMapManager.currentGridLocalMap.setPlayerPosition(x, y);
+    this.gridMapManager.gridPlayerPositions.local = { x, y };
+    this.gridMapManager.generateNewGridTacticalMap();
+    this.addToLog(`📍 Перемещение на локальной карте: (${x}, ${y})`);
+    this.renderHeroScreen();
+};
+
+HeroGame.prototype.moveOnGridMap = function(direction, level) {
+    const moved = this.gridMapManager.moveOnGridMap(direction, level);
+    if (moved) {
+        if (level === 'tactical') {
+            const pos = this.gridMapManager.gridPlayerPositions.tactical;
+            this.checkGridTacticalCellContent(pos.x, pos.y);
+        }
+        this.renderHeroScreen();
+    }
+};
+
+HeroGame.prototype.checkGridTacticalCellContent = function(x, y) {
+    const map = this.gridMapManager.currentGridTacticalMap;
+    if (!map) return;
+    
+    const cell = map.getCell(x, y);
+    if (!cell || !cell.content) return;
+    
+    switch (cell.content) {
+        case 'monster':
+            this.encounterMonsterOnGridMap();
+            break;
+        case 'chest':
+            this.openGridChest();
+            break;
+    }
+    
+    cell.content = null;
+};
+
+HeroGame.prototype.encounterMonsterOnGridMap = function() {
+    this.startAdventure();
+    this.addToLog('👹 Встречен монстр в тактической зоне!');
+};
+
+HeroGame.prototype.openGridChest = function() {
+    const gold = Math.floor(Math.random() * 50) + 10;
+    this.currentHero.gold += gold;
+    this.addToLog(`🎁 Найден сундук! +${gold} золота`);
+    this.saveGame();
+};
+
+// ========== МОДУЛЬ 20: ИНИЦИАЛИЗАЦИЯ СЕТОЧНЫХ КАРТ ==========
+
+// В конструкторе HeroGame ДОБАВИТЬ:
+// this.gridMapManager = new GridMapManager(this);
+
+// В методе init HeroGame.prototype.init ДОБАВИТЬ:
+// await this.gridMapManager.loadGridMaps();
