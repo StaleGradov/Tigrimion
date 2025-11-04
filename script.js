@@ -6,37 +6,37 @@
 class HeroGame {
     constructor() {
         // Массивы данных игры
-        this.heroes = [];        // Список всех героев
-        this.items = [];         // Список всех предметов
-        this.monsters = [];      // Список всех монстров
-        this.maps = [];          // Список всех карт (старая система)
-        this.locations = [];     // Список всех локаций (старая система)
+        this.heroes = [];
+        this.items = [];
+        this.monsters = [];
+        this.maps = [];
+        this.locations = [];
         
         // Флаги отображения
-        this.showReward = false;         // Показывать ли награду
-        this.lastReward = 0;             // Последняя полученная награда
-        this.currentHero = null;         // Текущий выбранный герой
-        this.currentScreen = 'hero-select'; // Текущий экран игры
+        this.showReward = false;
+        this.lastReward = 0;
+        this.currentHero = null;
+        this.currentScreen = 'hero-select';
         
         // Убираем старые системы карт и локаций
-        this.currentMap = null;          // УДАЛЕНО - старая система
-        this.currentLocation = null;     // УДАЛЕНО - старая система
-        this.currentMonster = null;      // Текущий встреченный монстр
+        this.currentMap = null;
+        this.currentLocation = null;
+        this.currentMonster = null;
         
         // Свойства для системы боя
-        this.battleActive = false;       // Активен ли бой
-        this.battleRound = 0;            // Текущий раунд боя
-        this.battleLog = [];             // Лог событий боя
-        this.lastHealthUpdate = Date.now(); // Время последнего обновления здоровья
-        this.healthInterval = null;      // Интервал для анимации здоровья
+        this.battleActive = false;
+        this.battleRound = 0;
+        this.battleLog = [];
+        this.lastHealthUpdate = Date.now();
+        this.healthInterval = null;
         
         // Результат последнего боя
         this.battleResult = null;
         
-        // Общий инвентарь (для всех героев)
+        // Общий инвентарь
         this.globalInventory = [];
         
-        // Видео для каждого героя (заглушки)
+        // Видео для каждого героя
         this.heroVideos = {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
@@ -49,16 +49,16 @@ class HeroGame {
             location: 'https://www.youtube.com/embed/ytr51kwNLPo'
         };
         
-        // Флаги показа видео вместо изображений
+        // Флаги показа видео
         this.showVideo = {
-            hero: false,      // Показывать видео героя
-            map: false,       // Показывать видео карты
-            location: false   // Показывать видео локации
+            hero: false,
+            map: false,
+            location: false
         };
         
         // Система прогресса локаций
-        this.locationProgress = {};      // Прогресс по каждой локации
-        this.monsterKillCount = {};      // Счетчик убийств каждого монстра
+        this.locationProgress = {};
+        this.monsterKillCount = {};
         
         // НОВАЯ СИСТЕМА КАРТ
         this.mapSystem = new MapSystem(this);
@@ -66,7 +66,32 @@ class HeroGame {
         // Запуск инициализации игры
         this.init();
     }
-// ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
+
+    // ========== МОДУЛЬ 1.2: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
+    initLocationSystem() {
+        // Для каждой локации создаем запись прогресса
+        this.locations.forEach(location => {
+            const locationId = location.level;
+            
+            if (!this.locationProgress[locationId]) {
+                this.locationProgress[locationId] = {
+                    unlocked: locationId === 10,
+                    monstersKilled: new Set(),
+                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
+                };
+            }
+        });
+        
+        // Инициализация счетчиков убийств
+        this.monsters.forEach(monster => {
+            if (!this.monsterKillCount[monster.id]) {
+                this.monsterKillCount[monster.id] = 0;
+            }
+        });
+    }
+}
+
+// ========== МОДУЛЬ 1.3: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
 HeroGame.prototype.init = async function() {
     try {
         // Загружаем все данные игры
@@ -75,13 +100,13 @@ HeroGame.prototype.init = async function() {
         // Инициализируем новую систему карт
         await this.mapSystem.init();
         
-        // Инициализация системы локаций (пока оставляем для обратной совместимости)
+        // Инициализация системы локаций
         this.initLocationSystem();
         
         // Загрузка сохраненной игры
         this.loadSave();
         
-        // Разблокировка первого героя по умолчанию
+        // Разблокировка первого героя
         if (this.heroes.length > 0) {
             const firstHero = this.heroes.find(h => h.id === 1);
             if (firstHero) {
@@ -92,38 +117,14 @@ HeroGame.prototype.init = async function() {
         // Показ экрана выбора героя
         this.renderHeroSelect();
         
-        console.log('✅ Игра успешно инициализирована с новой системой карт');
+        console.log('✅ Игра успешно инициализирована');
         
     } catch (error) {
-        console.error('❌ Критическая ошибка инициализации:', error);
+        console.error('❌ Ошибка инициализации:', error);
         this.createFallbackData();
         this.renderHeroSelect();
     }
 };
-    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
-    initLocationSystem() {
-        // Для каждой локации создаем запись прогресса
-        this.locations.forEach(location => {
-            const locationId = location.level;
-            
-            if (!this.locationProgress[locationId]) {
-                this.locationProgress[locationId] = {
-                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
-                    monstersKilled: new Set(),      // Множество убитых монстров
-                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
-                };
-            }
-        });
-        
-        // Инициализация счетчиков убийств для каждого монстра
-        this.monsters.forEach(monster => {
-            if (!this.monsterKillCount[monster.id]) {
-                this.monsterKillCount[monster.id] = 0;
-            }
-        });
-    }
-}
-
 
 
 // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
