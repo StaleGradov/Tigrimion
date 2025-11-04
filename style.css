@@ -3299,13 +3299,15 @@ body {
 }
 /* ===== МОДУЛЬ 21: СТИЛИ ДЛЯ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЙ И МИФИЧЕСКИХ ПРЕДМЕТОВ ===== */
 
-/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ЦВЕТНЫХ РАМОК ВОКРУГ ВСЕЙ КАРТИНКИ */
+/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ - КАРТИНКИ НА 100% ПЛОЩАДИ РАМОК */
 
-/* Для модального окна предмета */
+/* Для модального окна предмета - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
 .item-detail-image {
     position: relative;
-    overflow: visible;
+    overflow: hidden;
     padding: 0;
+    width: 100%;
+    height: 250px; /* Фиксированная высота для модалки */
 }
 
 .detail-item-background {
@@ -3313,9 +3315,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 200px;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
-    border: 4px solid; /* Добавляем рамку вокруг всей картинки */
+    border: 4px solid;
 }
 
 /* Цвета рамок для модального окна по редкости */
@@ -3329,23 +3332,22 @@ body {
 .item-detail-image-zoom {
     cursor: zoom-in;
     transition: transform 0.3s ease;
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
+    display: block;
 }
 
 .item-detail-image-zoom:hover {
-    transform: scale(1.5);
+    transform: scale(1.8);
     z-index: 1000;
-    position: relative;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ - РАМКА ВОКРУГ ВСЕЙ КАРТИНКИ */
+/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
 .equipment-slot.equipped {
-    border: 3px solid !important; /* Рамка вокруг всего слота */
+    border: 3px solid !important;
     padding: 0 !important;
+    overflow: hidden;
 }
 
 /* Цвета рамок для экипированных предметов по редкости */
@@ -3372,18 +3374,27 @@ body {
     height: 100% !important;
     object-fit: contain;
     padding: 0 !important;
+    display: block;
 }
 
-/* Убираем нижнюю полоску (индикатор) так как теперь вся рамка цветная */
+/* Убираем нижнюю полоску */
 .equipment-slot.equipped::after {
     display: none !important;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
+/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - УВЕЛИЧИВАЕМ РАЗМЕР КАРТИНОК */
+.shop-item {
+    min-height: 200px; /* Увеличиваем минимальную высоту карточки */
+}
+
 .item-background {
-    padding: 0 !important; /* Убираем отступы внутри цветной рамки */
-    border: 4px solid; /* Добавляем рамку */
-    overflow: hidden; /* Обрезаем выходящие за рамки части */
+    padding: 0 !important;
+    border: 4px solid;
+    overflow: hidden;
+    width: 100%;
+    height: 160px; /* Фиксированная высота для картинки в магазине */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Цвета рамок для магазина по редкости */
@@ -3396,33 +3407,60 @@ body {
 
 .item-image-container {
     width: 100%;
-    height: 120px; /* Увеличиваем высоту для магазина */
+    height: 120px; /* УВЕЛИЧИВАЕМ высоту контейнера картинки */
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent !important;
-    margin-bottom: 0; /* Убираем отступ снизу */
+    margin-bottom: 0;
     position: relative;
     overflow: hidden;
     padding: 0 !important;
+    flex: 1; /* Занимает всё доступное пространство */
 }
 
 .item-image-container img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
+    display: block;
+    min-width: 100%;
+    min-height: 100%;
 }
 
-/* Убираем старую полоску редкости в магазине */
+/* Убираем старую полоску редкости */
 .item-rarity-bar {
     display: none !important;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ */
+/* Уменьшаем нижнюю часть с информацией чтобы картинка была больше */
+.item-info {
+    padding: 8px;
+    min-height: 80px; /* Фиксируем высоту информационной части */
+}
+
+.item-name {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+}
+
+.item-type {
+    font-size: 0.75em;
+    margin-bottom: 6px;
+}
+
+.item-stats-compact {
+    margin-bottom: 6px;
+}
+
+/* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
 .inventory-item {
-    border: 3px solid; /* Рамка вокруг всего предмета в инвентаре */
-    padding: 0 !important; /* Убираем внутренние отступы */
+    border: 3px solid;
+    padding: 0 !important;
     overflow: hidden;
+    min-height: 100px;
+    display: flex;
+    align-items: stretch;
 }
 
 /* Цвета рамок для инвентаря по редкости */
@@ -3434,8 +3472,8 @@ body {
 .inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
 
 .inventory-item-image {
-    width: 80px; /* Увеличиваем размер для инвентаря */
-    height: 80px;
+    width: 100px; /* УВЕЛИЧИВАЕМ размер картинки в инвентаре */
+    height: 100px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -3443,19 +3481,35 @@ body {
     background: transparent !important;
     overflow: hidden;
     padding: 0 !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.2); /* Разделитель */
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .inventory-item-image img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
+    display: block;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.inventory-item-info {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 /* Усиленные стили для мифических предметов */
 .rarity-mythic .item-background {
     border-width: 6px !important;
     box-shadow: 0 10px 30px rgba(255, 107, 107, 0.6);
+    animation: mythic-pulse 1.5s ease-in-out infinite;
+}
+
+.rarity-mythic .detail-item-background {
+    border-width: 6px !important;
     animation: mythic-pulse 1.5s ease-in-out infinite;
 }
 
@@ -3519,12 +3573,16 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .item-detail-image-zoom:hover {
-        transform: scale(1.3);
+    .item-detail-image {
+        height: 200px;
     }
     
-    .detail-item-background {
-        min-height: 150px;
+    .item-detail-image-zoom:hover {
+        transform: scale(1.5);
+    }
+    
+    .item-background {
+        height: 140px;
     }
     
     .item-image-container {
@@ -3532,18 +3590,26 @@ body {
     }
     
     .inventory-item-image {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
+    }
+    
+    .shop-item {
+        min-height: 180px;
     }
 }
 
 @media (max-width: 480px) {
-    .item-detail-image-zoom:hover {
-        transform: scale(1.2);
+    .item-detail-image {
+        height: 150px;
     }
     
-    .detail-item-background {
-        min-height: 120px;
+    .item-detail-image-zoom:hover {
+        transform: scale(1.3);
+    }
+    
+    .item-background {
+        height: 120px;
     }
     
     .item-image-container {
@@ -3551,8 +3617,12 @@ body {
     }
     
     .inventory-item-image {
-        width: 60px;
-        height: 60px;
+        width: 70px;
+        height: 70px;
+    }
+    
+    .shop-item {
+        min-height: 160px;
     }
 }
 
@@ -3564,7 +3634,7 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 2em;
+    font-size: 3em;
 }
 
 .item-fallback {
@@ -3574,5 +3644,16 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 1.5em;
+    font-size: 2em;
+}
+
+/* Гарантируем что картинки занимают 100% пространства */
+.item-image-container img,
+.equipment-icon img,
+.inventory-item-image img,
+.item-detail-image-zoom {
+    min-width: 100% !important;
+    min-height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
 }
