@@ -1,5 +1,7 @@
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
+// ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
+
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class HeroGame {
     constructor() {
@@ -64,6 +66,31 @@ class HeroGame {
         // Запуск инициализации игры
         this.init();
     }
+
+    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
+    initLocationSystem() {
+        // Для каждой локации создаем запись прогресса
+        this.locations.forEach(location => {
+            const locationId = location.level;
+            
+            if (!this.locationProgress[locationId]) {
+                this.locationProgress[locationId] = {
+                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
+                    monstersKilled: new Set(),      // Множество убитых монстров
+                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
+                };
+            }
+        });
+        
+        // Инициализация счетчиков убийств для каждого монстра
+        this.monsters.forEach(monster => {
+            if (!this.monsterKillCount[monster.id]) {
+                this.monsterKillCount[monster.id] = 0;
+            }
+        });
+    }
+}
+
 // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
 HeroGame.prototype.init = async function() {
     try {
@@ -98,30 +125,6 @@ HeroGame.prototype.init = async function() {
         this.renderHeroSelect();
     }
 };
-
-    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
-    initLocationSystem() {
-        // Для каждой локации создаем запись прогресса
-        this.locations.forEach(location => {
-            const locationId = location.level;
-            
-            if (!this.locationProgress[locationId]) {
-                this.locationProgress[locationId] = {
-                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
-                    monstersKilled: new Set(),      // Множество убитых монстров
-                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
-                };
-            }
-        });
-        
-        // Инициализация счетчиков убийств для каждого монстра
-        this.monsters.forEach(monster => {
-            if (!this.monsterKillCount[monster.id]) {
-                this.monsterKillCount[monster.id] = 0;
-            }
-        });
-    }
-}
 
 // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
 
