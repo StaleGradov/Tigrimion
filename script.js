@@ -370,6 +370,42 @@ HeroGame.prototype.getItemSetConfig = function() {
             requiredPieces: 6,
             bonus: { type: "damage_mult", value: 0.3 },
             description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
+        },
+             "set_penetration1": {
+            name: "Стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.06 },
+            description: "Комплект из 6 вещей даст +6% к шансу игрорирования брони соперника"
+        },
+         "set_penetration2": {
+            name: "Следопыта Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.12 },
+            description: "Комплект из 6 вещей даст +12% к шансу игрорирования брони соперника"
+        },
+         "set_penetration3": {
+            name: "Охотника на монстров Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.18 },
+            description: "Комплект из 6 вещей даст +18% к шансу игрорирования брони соперника"
+        },
+         "set_penetration4": {
+            name: "Наемного убийцы Магнатов Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.24 },
+            description: "Комплект из 6 вещей даст +24% к шансу игрорирования брони соперника"
+        },
+         "set_penetration5": {
+            name: "Командира арбалетчиков Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к шансу игрорирования брони соперника"
+        },
+         "set_penetration6": {
+            name: "Мастера над арбалетами Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.36 },
+            description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
         }
     };
 };
