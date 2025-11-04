@@ -442,6 +442,42 @@ HeroGame.prototype.getItemSetConfig = function() {
             requiredPieces: 6,
             bonus: { type: "gold_mult", value: 0.3 },
             description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
+        },
+            "set_vampire1": {
+            name: "Убийцы Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.01 },
+            description: "Комплект из 6 вещей даст +1% к вампиризму"
+        },
+           "set_vampire2": {
+            name: "Наемного убийцы Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.02 },
+            description: "Комплект из 6 вещей даст +2% к вампиризму"
+        },
+            "set_vampire3": {
+            name: "Темного стража Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.03 },
+            description: "Комплект из 6 вещей даст +3% к вампиризму"
+        },
+               "set_vampire4": {
+            name: "Легендарного зверолова Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.04 },
+            description: "Комплект из 6 вещей даст +4% к вампиризму"
+        },
+               "set_vampire5": {
+            name: "Охотника на вампиров, ставшего вампиром",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к вампиризму"
+        },
+               "set_vampire6": {
+            name: "Лорда вампиров... Откуда у него могли взяться доспехи из костей драконов...",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.06 },
+            description: "Комплект из 6 вещей даст +6% к вампиризму"
         }
     };
 };
