@@ -1,4 +1,105 @@
-// ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hero Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        #app {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .btn-primary, .btn-secondary, .btn-danger {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            background: #4cc9f0;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .action-buttons {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .hero-column, .map-square {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 400px;
+        }
+        
+        .battle-log {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Игра будет рендериться здесь -->
+    </div>
+
+    <script>
 
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
@@ -4164,4 +4265,8 @@ HeroGame.prototype.startExploration = function() {
     this.addToLog('🧭 Начато исследование местности');
     // Можно добавить автоматическое перемещение или другие механики
 };
+
+        </script>
+</body>
+</html>
 }
