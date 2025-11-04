@@ -774,7 +774,7 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/dragonhide_helmet.jpg",
     "type": "helmet",
     "slot": "helmet",
-    "rarity": "mithic",
+    "rarity": "mythic",
      "material": "hide",
     "fixed_damage": 0,
     "fixed_armor": 18,
