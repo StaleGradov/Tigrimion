@@ -1511,527 +1511,346 @@ body {
 }
 /* ===== МОДУЛЬ 17.5: СТИЛИ СТРУКТУРИРОВАННОГО МАГАЗИНА ===== */
 
+/* Заголовок магазина - верхняя панель с информацией */
 .merchant-header {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
+    background: rgba(0, 0, 0, 0.8); /* Темный полупрозрачный фон */
+    padding: 15px; /* Внутренние отступы */
+    border-radius: 10px; /* Скругленные углы */
+    margin-bottom: 15px; /* Отступ снизу */
+    border: 2px solid rgba(255, 215, 0, 0.3); /* Золотая рамка */
 }
 
+/* Контейнер для информации о герое в магазине */
 .hero-merchant-info {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    display: flex; /* Flexbox для выравнивания */
+    justify-content: center; /* Центрирование по горизонтали */
+    margin-top: 10px; /* Отступ сверху */
 }
 
+/* Блок со статистикой героя (золото, место в инвентаре) */
 .merchant-stats {
-    display: flex;
-    gap: 20px;
-    background: rgba(76, 201, 240, 0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid #4cc9f0;
+    display: flex; /* Flexbox для расположения элементов в строку */
+    gap: 20px; /* Расстояние между элементами */
+    background: rgba(76, 201, 240, 0.2); /* Голубой полупрозрачный фон */
+    padding: 8px 16px; /* Внутренние отступы */
+    border-radius: 20px; /* Сильно скругленные углы */
+    border: 1px solid #4cc9f0; /* Голубая рамка */
 }
 
+/* Стили для текста золота и места в инвентаре */
 .gold-amount, .inventory-space {
-    font-weight: bold;
-    font-size: 1em;
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 1em; /* Размер шрифта */
 }
 
+/* Контейнер для вкладок категорий товаров */
 .shop-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    justify-content: center;
+    display: flex; /* Flexbox для расположения вкладок в строку */
+    flex-wrap: wrap; /* Перенос на новую строку при нехватке места */
+    gap: 8px; /* Расстояние между вкладками */
+    margin-bottom: 20px; /* Отступ снизу */
+    justify-content: center; /* Центрирование вкладок */
 }
 
+/* Стили для отдельных вкладок категорий */
 .category-tab {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9em;
-    backdrop-filter: blur(4px);
+    background: rgba(255, 255, 255, 0.1); /* Полупрозрачный белый фон */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Полупрозрачная белая рамка */
+    color: white; /* Белый текст */
+    padding: 8px 16px; /* Внутренние отступы */
+    border-radius: 20px; /* Скругленные углы (овальная форма) */
+    cursor: pointer; /* Курсор-указатель при наведении */
+    transition: all 0.3s ease; /* Плавные переходы для всех свойств */
+    font-size: 0.9em; /* Размер шрифта */
+    backdrop-filter: blur(4px); /* Размытие фона для стеклянного эффекта */
 }
 
+/* Стили при наведении на вкладку */
 .category-tab:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2); /* Более светлый фон */
+    transform: translateY(-2px); /* Поднимаем вкладку на 2px */
 }
 
+/* Стили для активной (выбранной) вкладки */
 .category-tab.active {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    border-color: #4cc9f0;
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+    background: linear-gradient(135deg, #4cc9f0, #4361ee); /* Градиентный фон */
+    border-color: #4cc9f0; /* Голубая рамка */
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3); /* Тень */
 }
 
+/* Основной контейнер для товаров */
 .merchant-items-container {
-    min-height: 500px;
+    min-height: 500px; /* Минимальная высота чтобы контент не прыгал */
 }
 
+/* Контейнер для контента магазина */
 .shop-content {
-    width: 100%;
+    width: 100%; /* Занимает всю ширину */
 }
 
+/* Анимация появления категорий */
 .shop-category {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.3s ease-in-out; /* Анимация плавного появления */
 }
 
+/* Ключевые кадры для анимации появления */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; /* Начало: полностью прозрачный */
+        transform: translateY(10px); /* Начало: смещен на 10px вниз */
+    }
+    to { 
+        opacity: 1; /* Конец: полностью непрозрачный */
+        transform: translateY(0); /* Конец: на своем месте */
+    }
 }
 
+/* Заголовок категории товаров */
 .category-title {
-    color: #ffd700;
-    margin-bottom: 15px;
-    text-align: center;
-    font-size: 1.2em;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: #ffd700; /* Золотой цвет текста */
+    margin-bottom: 15px; /* Отступ снизу */
+    text-align: center; /* Выравнивание по центру */
+    font-size: 1.2em; /* Размер шрифта */
+    padding: 10px; /* Внутренние отступы */
+    background: rgba(0, 0, 0, 0.6); /* Темный полупрозрачный фон */
+    border-radius: 8px; /* Скругленные углы */
+    border: 1px solid rgba(255, 215, 0, 0.3); /* Золотая рамка */
 }
 
+/* Сетка для отображения товаров */
 .items-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 10px;
+    display: grid; /* CSS Grid для сетки товаров */
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Автоподбор колонок, минимальная ширина 240px */
+    gap: 15px; /* Расстояние между карточками */
+    padding: 10px; /* Внутренние отступы сетки */
 }
 
+/* Карточка отдельного товара */
 .shop-item {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 12px;
-    overflow: hidden;
+    cursor: pointer; /* Курсор-указатель при наведении */
+    transition: all 0.3s ease; /* Плавные переходы для всех свойств */
+    border-radius: 12px; /* Скругленные углы */
+    overflow: hidden; /* Обрезаем содержимое за пределами */
+    min-height: 260px; /* Минимальная высота карточки (УВЕЛИЧЕНО) */
 }
 
+/* Эффект при наведении на карточку товара */
 .shop-item:hover {
-    transform: translateY(-5px) scale(1.02);
+    transform: translateY(-5px) scale(1.02); /* Поднимаем и немного увеличиваем */
 }
 
+/* Стиль для уже купленных товаров */
 .shop-item.owned {
-    opacity: 0.7;
+    opacity: 0.7; /* Полупрозрачность */
 }
 
+/* Стиль для товаров которые нельзя купить */
 .shop-item.cannot-buy {
-    opacity: 0.5;
-    cursor: not-allowed;
+    opacity: 0.5; /* Сильная прозрачность */
+    cursor: not-allowed; /* Курсор "недоступно" */
 }
 
+/* Основной фон карточки товара */
 .item-background {
-    position: relative;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    border-radius: 12px;
-    padding: 15px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
+    position: relative; /* Относительное позиционирование для дочерних элементов */
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)); /* Градиентный фон */
+    border-radius: 12px; /* Скругленные углы */
+    padding: 0 !important; /* Убираем внутренние отступы (ВАЖНО для заполнения картинкой) */
+    height: 170px; /* Фиксированная высота области картинки (УВЕЛИЧЕНО) */
+    display: flex; /* Flexbox для выравнивания */
+    flex-direction: column; /* Вертикальное направление */
+    align-items: center; /* Центрирование по горизонтали */
+    border: 3px solid transparent; /* Прозрачная рамка (цвет добавится через JS по редкости) */
+    transition: all 0.3s ease; /* Плавные переходы */
 }
 
+/* Эффект при наведении на карточку */
 .shop-item:hover .item-background {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.3); /* Белая полупрозрачная рамка */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4); /* Тень */
 }
 
-/* Стили редкости */
-.rarity-common .item-background { border-color: #9ca3af; }
-.rarity-uncommon .item-background { border-color: #4ade80; }
-.rarity-rare .item-background { border-color: #4cc9f0; }
-.rarity-epic .item-background { border-color: #a855f7; }
-.rarity-legendary .item-background { border-color: #f59e0b; }
-
-.rarity-common .item-rarity-bar { background: #9ca3af; }
-.rarity-uncommon .item-rarity-bar { background: #4ade80; }
-.rarity-rare .item-rarity-bar { background: #4cc9f0; }
-.rarity-epic .item-rarity-bar { background: #a855f7; }
-.rarity-legendary .item-rarity-bar { background: #f59e0b; }
-
+/* Контейнер для изображения товара */
 .item-image-container {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    margin-bottom: 10px;
-    position: relative;
-    overflow: hidden;
+    width: 100%; /* Занимает всю ширину */
+    height: 100%; /* Занимает ВСЮ высоту item-background (ВАЖНО для заполнения) */
+    display: flex; /* Flexbox для центрирования */
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
+    background: rgba(255, 255, 255, 0.05); /* Легкий фон для контраста */
+    border-radius: 8px 8px 0 0; /* Скругление только верхних углов */
+    margin-bottom: 0; /* Убираем отступ снизу */
+    position: relative; /* Относительное позиционирование */
+    overflow: hidden; /* Обрезаем выходящие за пределы части */
+    padding: 0 !important; /* Убираем внутренние отступы */
 }
 
+/* Стили для самого изображения товара */
 .item-image-container img {
-    max-width: 70px;
-    max-height: 70px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
+    width: 100% !important; /* Занимает всю ширину контейнера */
+    height: 100% !important; /* Занимает всю высоту контейнера */
+    object-fit: contain; /* Сохраняет пропорции, вписывая в контейнер */
+    display: block; /* Блочное отображение */
+    padding: 18px; /* Внутренние отступы чтобы картинка не касалась краев (УВЕЛИЧЕНО) */
+    box-sizing: border-box; /* Учитываем padding в общей ширине/высоте */
 }
 
+/* Запасной контейнер если изображение не загрузилось */
 .item-fallback {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    width: 100%; /* Занимает всю ширину */
+    height: 100%; /* Занимает всю высоту */
+    display: flex; /* Flexbox для центрирования */
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
+    background: rgba(255, 255, 255, 0.1); /* Фон для иконки */
+    border-radius: 8px; /* Скругленные углы */
 }
 
+/* Стили для иконки в запасном контейнере */
 .item-icon {
-    font-size: 2em;
+    font-size: 2.8em; /* Размер иконки (УВЕЛИЧЕНО) */
 }
 
+/* Полоска редкости (скрыта, так как теперь вся рамка цветная) */
 .item-rarity-bar {
-    width: 100%;
-    height: 3px;
-    margin: 5px 0;
-    border-radius: 2px;
+    width: 100%; /* Занимает всю ширину */
+    height: 3px; /* Высота полоски */
+    margin: 0; /* Убираем отступы */
+    border-radius: 0; /* Убираем скругления */
 }
 
+/* Контейнер с информацией о товаре (под картинкой) */
 .item-info {
-    text-align: center;
-    width: 100%;
+    text-align: center; /* Выравнивание текста по центру */
+    width: 100%; /* Занимает всю ширину */
+    padding: 12px; /* Внутренние отступы (УВЕЛИЧЕНО) */
+    background: rgba(0, 0, 0, 0.8); /* Темный полупрозрачный фон */
+    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Разделительная линия сверху */
 }
 
+/* Название товара */
 .item-name {
-    font-weight: bold;
-    font-size: 0.9em;
-    margin-bottom: 4px;
-    color: white;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 1em !important; /* Размер шрифта (УВЕЛИЧЕНО) */
+    margin-bottom: 6px; /* Отступ снизу */
+    color: white; /* Белый цвет текста */
+    white-space: nowrap; /* Запрет переноса строк */
+    overflow: hidden; /* Скрытие переполнения */
+    text-overflow: ellipsis; /* Многоточие при длинном тексте */
 }
 
+/* Тип товара (оружие, броня и т.д.) */
 .item-type {
-    font-size: 0.75em;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 8px;
+    font-size: 0.8em !important; /* Размер шрифта (УВЕЛИЧЕНО) */
+    color: rgba(255, 255, 255, 0.7); /* Серый цвет текста */
+    margin-bottom: 8px; /* Отступ снизу */
 }
 
+/* Контейнер для компактного отображения характеристик */
 .item-stats-compact {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+    display: flex; /* Flexbox для расположения в строку */
+    justify-content: center; /* Центрирование по горизонтали */
+    gap: 8px; /* Расстояние между характеристиками */
+    margin-bottom: 8px; /* Отступ снизу */
+    flex-wrap: wrap; /* Перенос на новую строку при нехватке места */
 }
 
+/* Отдельные характеристики товара */
 .item-stats-compact span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.7em;
-    border: 1px solid rgba(76, 201, 240, 0.3);
+    background: rgba(76, 201, 240, 0.2); /* Голубой полупрозрачный фон */
+    padding: 3px 8px; /* Внутренние отступы */
+    border-radius: 4px; /* Скругленные углы */
+    font-size: 0.75em; /* Размер шрифта */
+    border: 1px solid rgba(76, 201, 240, 0.3); /* Голубая рамка */
 }
 
+/* Контейнер для цены и статуса покупки */
 .item-price-tag {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
+    display: flex; /* Flexbox для расположения элементов */
+    flex-direction: column; /* Вертикальное направление */
+    gap: 4px; /* Расстояние между элементами */
+    align-items: center; /* Центрирование по горизонтали */
 }
 
+/* Цена товара */
 .price {
-    font-weight: bold;
-    color: #ffd700;
-    font-size: 0.85em;
+    font-weight: bold; /* Жирный шрифт */
+    color: #ffd700; /* Золотой цвет */
+    font-size: 0.9em; /* Размер шрифта */
 }
 
+/* Бейдж для уже купленных товаров */
 .owned-badge {
-    background: rgba(74, 222, 128, 0.3);
-    color: #4ade80;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.7em;
-    border: 1px solid #4ade80;
+    background: rgba(74, 222, 128, 0.3); /* Зеленый полупрозрачный фон */
+    color: #4ade80; /* Зеленый цвет текста */
+    padding: 3px 10px; /* Внутренние отступы */
+    border-radius: 10px; /* Скругленные углы */
+    font-size: 0.75em; /* Размер шрифта */
+    border: 1px solid #4ade80; /* Зеленая рамка */
 }
 
+/* Статус возможности покупки */
 .buy-status {
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.7em;
-    font-weight: bold;
+    padding: 3px 10px; /* Внутренние отступы */
+    border-radius: 10px; /* Скругленные углы */
+    font-size: 0.75em; /* Размер шрифта */
+    font-weight: bold; /* Жирный шрифт */
 }
 
+/* Статус "можно купить" */
 .buy-status.can-buy {
-    background: rgba(76, 201, 240, 0.3);
-    color: #4cc9f0;
-    border: 1px solid #4cc9f0;
+    background: rgba(76, 201, 240, 0.3); /* Голубой полупрозрачный фон */
+    color: #4cc9f0; /* Голубой цвет текста */
+    border: 1px solid #4cc9f0; /* Голубая рамка */
 }
 
+/* Статус "нельзя купить" */
 .buy-status.cannot-buy {
-    background: rgba(248, 113, 113, 0.3);
-    color: #f87171;
-    border: 1px solid #f87171;
+    background: rgba(248, 113, 113, 0.3); /* Красный полупрозрачный фон */
+    color: #f87171; /* Красный цвет текста */
+    border: 1px solid #f87171; /* Красная рамка */
 }
 
-/* Модальное окно предмета */
-.item-detail-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border-radius: 15px;
-    padding: 0;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    border: 2px solid #4cc9f0;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
-}
-
-.modal-header h4 {
-    color: #ffd700;
-    margin: 0;
-}
-
-.close-modal {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.close-modal:hover {
-    background: rgba(248, 113, 113, 0.3);
-    color: #f87171;
-}
-
-.item-detail-content {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-    gap: 20px;
-    padding: 20px;
-}
-
-.item-detail-image {
-    text-align: center;
-}
-
-.detail-item-background {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    border-radius: 12px;
-    padding: 20px;
-    border: 2px solid;
-    margin-bottom: 10px;
-}
-
-.item-type-weapon .detail-item-background { border-color: #ef4444; }
-.item-type-shield .detail-item-background { border-color: #4cc9f0; }
-.item-type-helmet .detail-item-background { border-color: #f59e0b; }
-.item-type-chest .detail-item-background { border-color: #4ade80; }
-.item-type-gloves .detail-item-background { border-color: #a855f7; }
-.item-type-legs .detail-item-background { border-color: #f97316; }
-
-.detail-item-background img {
-    max-width: 120px;
-    max-height: 120px;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
-
-.item-fallback-large {
-    width: 120px;
-    height: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-}
-
-.item-icon-large {
-    font-size: 3em;
-}
-
-.item-rarity {
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
-    font-weight: bold;
-    text-transform: uppercase;
-}
-
-.item-rarity.common { background: #9ca3af; color: #1f2937; }
-.item-rarity.uncommon { background: #4ade80; color: #1f2937; }
-.item-rarity.rare { background: #4cc9f0; color: #1f2937; }
-.item-rarity.epic { background: #a855f7; color: white; }
-.item-rarity.legendary { background: #f59e0b; color: #1f2937; }
-
-.item-detail-info {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.item-description {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.95em;
-    line-height: 1.4;
-}
-
-.item-flavor {
-    color: rgba(255, 255, 255, 0.6);
-    font-style: italic;
-    font-size: 0.85em;
-    text-align: center;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    border-left: 3px solid #4cc9f0;
-}
-
-.item-stats-detailed, .item-requirements {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.item-stats-detailed h5, .item-requirements h5 {
-    color: #4cc9f0;
-    margin-bottom: 8px;
-    font-size: 0.9em;
-}
-
-.stat-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 0;
-    font-size: 0.85em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-line:last-child {
-    border-bottom: none;
-}
-
-.item-actions {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.price-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-weight: bold;
-}
-
-.buy-price {
-    color: #ffd700;
-}
-
-.sell-price {
-    color: #4ade80;
-}
-
-.purchase-error {
-    color: #f87171;
-    font-size: 0.8em;
-    text-align: center;
-    margin-top: 8px;
-}
-
-.btn-primary.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-/* Адаптивность магазина */
+/* Адаптивность для планшетов */
 @media (max-width: 768px) {
     .items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 10px;
-        padding: 5px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Уменьшаем минимальную ширину */
     }
     
-    .item-image-container {
-        width: 60px;
-        height: 60px;
+    .shop-item {
+        min-height: 240px; /* Уменьшаем высоту карточки */
+    }
+    
+    .item-background {
+        height: 150px; /* Уменьшаем высоту области картинки */
     }
     
     .item-image-container img {
-        max-width: 50px;
-        max-height: 50px;
-    }
-    
-    .item-detail-content {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .shop-categories {
-        overflow-x: auto;
-        justify-content: flex-start;
-        padding-bottom: 10px;
-    }
-    
-    .category-tab {
-        white-space: nowrap;
-        flex-shrink: 0;
+        padding: 12px; /* Уменьшаем отступы для картинки */
     }
 }
 
+/* Адаптивность для мобильных */
 @media (max-width: 480px) {
     .items-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); /* Еще меньше минимальная ширина */
+        gap: 10px; /* Меньше расстояние между карточками */
     }
     
-    .modal-content {
-        width: 95%;
-        margin: 10px;
+    .shop-item {
+        min-height: 220px; /* Еще меньше высота карточки */
     }
     
-    .item-detail-content {
-        padding: 15px;
+    .item-background {
+        height: 130px; /* Еще меньше высота области картинки */
+    }
+    
+    .item-image-container img {
+        padding: 8px; /* Минимальные отступы для картинки */
+    }
+    
+    .item-info {
+        padding: 8px; /* Меньше отступы в информации */
     }
 }
 /* ===== МОДУЛЬ 18: АДАПТИВНОСТЬ ===== */
