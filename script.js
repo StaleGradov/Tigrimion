@@ -7,16 +7,18 @@ class HeroGame {
         this.heroes = [];        // Список всех героев
         this.items = [];         // Список всех предметов
         this.monsters = [];      // Список всех монстров
-        this.maps = [];          // Список всех карт
-        this.locations = [];     // Список всех локаций
+        this.maps = [];          // Список всех карт (старая система)
+        this.locations = [];     // Список всех локаций (старая система)
         
         // Флаги отображения
         this.showReward = false;         // Показывать ли награду
         this.lastReward = 0;             // Последняя полученная награда
         this.currentHero = null;         // Текущий выбранный герой
         this.currentScreen = 'hero-select'; // Текущий экран игры
-        this.currentMap = null;          // Текущая выбранная карта
-        this.currentLocation = null;     // Текущая выбранная локация
+        
+        // Убираем старые системы карт и локаций
+        this.currentMap = null;          // УДАЛЕНО - старая система
+        this.currentLocation = null;     // УДАЛЕНО - старая система
         this.currentMonster = null;      // Текущий встреченный монстр
         
         // Свойства для системы боя
@@ -37,7 +39,6 @@ class HeroGame {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            // ... остальные герои
         };
         
         // Видео для карт и локаций
@@ -57,15 +58,26 @@ class HeroGame {
         this.locationProgress = {};      // Прогресс по каждой локации
         this.monsterKillCount = {};      // Счетчик убийств каждого монстра
         
+        // НОВАЯ СИСТЕМА КАРТ
+        this.mapSystem = new MapSystem(this);
+        
         // Запуск инициализации игры
         this.init();
     }
-
-    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
-    async init() {
-        await this.loadGameData();    // Загрузка всех данных игры
-        this.initLocationSystem();    // Инициализация системы локаций
-        this.loadSave();              // Загрузка сохраненной игры
+// ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
+HeroGame.prototype.init = async function() {
+    try {
+        // Загружаем все данные игры
+        await this.loadGameData();
+        
+        // Инициализируем новую систему карт
+        await this.mapSystem.init();
+        
+        // Инициализация системы локаций (пока оставляем для обратной совместимости)
+        this.initLocationSystem();
+        
+        // Загрузка сохраненной игры
+        this.loadSave();
         
         // Разблокировка первого героя по умолчанию
         if (this.heroes.length > 0) {
@@ -75,8 +87,17 @@ class HeroGame {
             }
         }
         
-        this.renderHeroSelect();      // Показ экрана выбора героя
+        // Показ экрана выбора героя
+        this.renderHeroSelect();
+        
+        console.log('✅ Игра успешно инициализирована с новой системой карт');
+        
+    } catch (error) {
+        console.error('❌ Критическая ошибка инициализации:', error);
+        this.createFallbackData();
+        this.renderHeroSelect();
     }
+};
 
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
@@ -1208,15 +1229,347 @@ HeroGame.prototype.selectHero = function(heroId) {
     this.saveGame();
 };
 
-// ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
-HeroGame.prototype.showScreen = function(screenName) {
-    this.currentScreen = screenName;
+// ========== МОДУЛЬ 9.4: ОТРИСОВКА ЭКРАНА ГЕРОЯ С НОВЫМИ КАРТАМИ ==========
+HeroGame.prototype.renderHeroScreen = function() {
+    if (!this.currentHero) return;
+
+    const stats = this.calculateHeroStats(this.currentHero);
+    const bonuses = this.getBonuses();
+    const activeBonuses = this.getAllActiveBonuses(this.currentHero);
+
+    // Получение экипированных предметов с информацией о редкости
+    const getEquippedItemWithRarity = (slot) => {
+        const itemId = this.currentHero.equipment[slot];
+        if (!itemId) return null;
+        
+        const item = this.items.find(item => item.id === itemId);
+        if (!item) return null;
+        
+        return {
+            item: item,
+            rarity: item.rarity || 'common'
+        };
+    };
+
+    const weaponMain = getEquippedItemWithRarity('main_hand');
+    const weaponOff = getEquippedItemWithRarity('off_hand');
+    const armorHelmet = getEquippedItemWithRarity('helmet');
+    const armorChest = getEquippedItemWithRarity('chest');
+    const armorGloves = getEquippedItemWithRarity('gloves');
+    const armorLegs = getEquippedItemWithRarity('legs');
+    const armorBoots = getEquippedItemWithRarity('boots');
+
+    const nextLevelExp = this.getLevelRequirements()[this.currentHero.level + 1];
+    const expProgress = nextLevelExp ? (this.currentHero.experience / nextLevelExp) * 100 : 100;
+    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+
+    // Фоновые изображения
+    const heroBackground = this.currentHero.image;
+    const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
     
-    // НЕ удаляем экраны здесь - это будет делаться в методах рендеринга
-    if (this.healthInterval) {
-        clearInterval(this.healthInterval);
-        this.healthInterval = null;
-    }
+    const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
+    const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
+    const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
+
+    const container = document.getElementById('app');
+    
+    // УДАЛЯЕМ ТОЛЬКО СУЩЕСТВУЮЩИЕ ЭКРАНЫ МАГАЗИНА И ИНВЕНТАРЯ
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
+    
+    container.innerHTML = `
+        <div class="screen active" id="screen-main">
+            <!-- Кнопки действий -->
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="game.startExploration()">🧭 Исследовать</button>
+                <button class="btn-secondary" onclick="game.showInventory()">🎒 Инвентарь</button>
+                <button class="btn-secondary" onclick="game.showMerchant()">🏪 Магазин</button>
+                <button class="btn-danger" onclick="game.resetHero()">🔄 Сброс</button>
+                <button class="btn-secondary" onclick="game.renderHeroSelect()">🔁 Герои</button>
+            </div>
+
+            <!-- Новый layout с квадратными картами -->
+            <div class="hero-layout">
+                <!-- Колонка героя -->
+                <div class="hero-column" style="background-image: url('${heroBackground}')">
+                    ${this.showVideo.hero ? `
+                        <div class="video-container">
+                            <iframe src="${heroVideo}?autoplay=1&mute=1" 
+                                    allow="autoplay; encrypted-media" 
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    ` : ''}
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🎯 ${this.currentHero.name}</div>
+                        ${!this.showVideo.hero ? `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🎬 Видео</button>
+                        ` : `
+                            <button class="video-toggle" onclick="game.toggleVideo('hero')">🖼️ Фото</button>
+                        `}
+                        
+                        <!-- Информация о здоровье -->
+                        <div class="hero-info">
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
+                                    </div>
+                                </div>
+                                <div class="health-regen">
+                                    ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
+                                </div>
+                            </div>
+
+                            <!-- Основные характеристики -->
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <span class="stat-icon">⚔️</span>
+                                    <span class="stat-value">${stats.damage}</span>
+                                    ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🛡️</span>
+                                    <span class="stat-value">${stats.armor}</span>
+                                    ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🌟</span>
+                                    <span class="stat-value">${stats.power}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция бонусов -->
+                        <div class="bonuses-section">
+                            <h3>🎯 Активные бонусы</h3>
+                            <!-- Бонусы расы -->
+                            ${activeBonuses.race.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🧬 Раса (${raceName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.race.map(bonus => `
+                                            <div class="bonus-badge race-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы класса -->
+                            ${activeBonuses.class.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">⚔️ Класс (${className})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.class.map(bonus => `
+                                            <div class="bonus-badge class-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы саги -->
+                            ${activeBonuses.saga.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">📖 Сага (${sagaName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.saga.map(bonus => `
+                                            <div class="bonus-badge saga-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы экипировки -->
+                            ${activeBonuses.equipment.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🎒 Экипировка</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.equipment.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description} (${bonus.itemName})">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы сетов -->
+                            ${activeBonuses.sets.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">✨ Бонусы сетов</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.sets.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${activeBonuses.race.length === 0 && activeBonuses.class.length === 0 && 
+                              activeBonuses.saga.length === 0 && activeBonuses.equipment.length === 0 && 
+                              activeBonuses.sets.length === 0 ? `
+                                <div class="no-bonuses">Нет активных бонусов</div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Секция экипировки -->
+                        <div class="equipment-section">
+                            <div class="equipment-slot weapon-slot main-hand ${weaponMain ? 'equipped' : 'empty'}" 
+                                 ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('main_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponMain ? '<img src="' + weaponMain.item.image + '" alt="' + weaponMain.item.name + '">' : '⚔️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot weapon-slot off-hand ${weaponOff ? 'equipped' : 'empty'}" 
+                                 ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('off_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponOff ? '<img src="' + weaponOff.item.image + '" alt="' + weaponOff.item.name + '">' : '🛡️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot helmet-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                                 ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('helmet')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'helmet')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorHelmet ? '<img src="' + armorHelmet.item.image + '" alt="' + armorHelmet.item.name + '">' : '⛑️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot chest-slot ${armorChest ? 'equipped' : 'empty'}" 
+                                 ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('chest')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'chest')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorChest ? '<img src="' + armorChest.item.image + '" alt="' + armorChest.item.name + '">' : '👕'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot gloves-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                                 ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('gloves')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'gloves')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorGloves ? '<img src="' + armorGloves.item.image + '" alt="' + armorGloves.item.name + '">' : '🧤'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot legs-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                                 ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('legs')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'legs')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorLegs ? '<img src="' + armorLegs.item.image + '" alt="' + armorLegs.item.name + '">' : '👖'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot boots-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                                 ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('boots')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'boots')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorBoots ? '<img src="' + armorBoots.item.image + '" alt="' + armorBoots.item.name + '">' : '👢'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot empty" onclick="game.openInventoryFromSlot('inventory')" title="Открыть инвентарь">
+                                <div class="equipment-icon">🎒</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Прогресс уровня -->
+                        <div class="level-progress">
+                            <div class="level-progress-fill" style="width: ${expProgress}%"></div>
+                        </div>
+                        <div class="hero-progress">
+                            <span>Ур.${this.currentHero.level}</span>
+                            <span>💰${this.currentHero.gold.toFixed(2)}</span>
+                            <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                        </div>
+                        
+                        <!-- Статистика героя -->
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">💀</span>
+                                <span class="stat-label">Убийств:</span>
+                                <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">☠️</span>
+                                <span class="stat-label">Смертей:</span>
+                                <span class="stat-value">${this.currentHero.deaths || 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Глобальная карта -->
+                <div class="map-square global-map">
+                    <div class="map-square-container" onclick="game.handleGlobalMapClick(event)">
+                        <img id="globalMapImage" class="map-square-image" alt="Глобальная карта">
+                        <canvas id="globalMapCanvas" class="map-square-canvas"></canvas>
+                    </div>
+                    <div class="map-square-info">
+                        <div class="map-square-title">🗺️ Глобальная карта</div>
+                        <div class="map-square-stats" id="globalMapStats">Загрузка...</div>
+                    </div>
+                </div>
+
+                <!-- Локальная карта -->
+                <div class="map-square local-map">
+                    <div class="map-square-container" onclick="game.handleLocalMapClick(event)">
+                        <img id="localMapImage" class="map-square-image" alt="Локальная карта">
+                        <canvas id="localMapCanvas" class="map-square-canvas"></canvas>
+                    </div>
+                    <div class="map-square-info">
+                        <div class="map-square-title">📍 Локальная карта</div>
+                        <div class="map-square-stats" id="localMapStats">Загрузка...</div>
+                    </div>
+                </div>
+
+                <!-- Тактическая карта -->
+                <div class="map-square tactical-map">
+                    <div class="map-square-container" onclick="game.handleTacticalMapClick(event)">
+                        <img id="tacticalMapImage" class="map-square-image" alt="Тактическая карта">
+                        <canvas id="tacticalMapCanvas" class="map-square-canvas"></canvas>
+                    </div>
+                    <div class="map-square-info">
+                        <div class="map-square-title">⚔️ Тактическая карта</div>
+                        <div class="map-square-stats" id="tacticalMapStats">Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Лог событий -->
+            <div class="battle-log" id="battle-log"></div>
+        </div>
+    `;
+
+    this.startHealthAnimation();
 };
 // ========== МОДУЛЬ 9.5: ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ ==========
 HeroGame.prototype.startHealthAnimation = function() {
@@ -3340,7 +3693,7 @@ HeroGame.prototype.closeInventory = function() {
 };
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
 
-// ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ ==========
+// ========== МОДУЛЬ 14.1: ОБНОВЛЕННОЕ СОХРАНЕНИЕ ИГРЫ ==========
 HeroGame.prototype.saveGame = function() {
     if (this.currentHero) {
         // Преобразование Set в Array для сохранения
@@ -3356,8 +3709,16 @@ HeroGame.prototype.saveGame = function() {
         localStorage.setItem('heroGameSave', JSON.stringify({
             currentHeroId: this.currentHero.id,
             heroes: this.heroes,
-            currentMap: this.currentMap,
-            currentLocation: this.currentLocation,
+            // Сохраняем позиции новой системы карт
+            mapSystem: {
+                globalPosition: this.mapSystem.currentGlobalPos,
+                localPosition: this.mapSystem.currentLocalPos,
+                tacticalPosition: this.mapSystem.currentTacticalPos,
+                // Сохраняем ID текущих карт
+                globalMapId: this.mapSystem.globalMap?.id,
+                localMapId: this.mapSystem.localMap?.id,
+                tacticalMapId: this.mapSystem.tacticalMap?.id
+            },
             lastHealthUpdate: this.lastHealthUpdate,
             globalInventory: this.globalInventory,
             locationProgress: locationProgressForSave,
@@ -3369,7 +3730,7 @@ HeroGame.prototype.saveGame = function() {
     }
 };
 
-// ========== МОДУЛЬ 14.2: ЗАГРУЗКА СОХРАНЕНИЯ ==========
+// ========== МОДУЛЬ 14.2: ОБНОВЛЕННАЯ ЗАГРУЗКА СОХРАНЕНИЯ ==========
 HeroGame.prototype.loadSave = function() {
     try {
         const save = localStorage.getItem('heroGameSave');
@@ -3392,7 +3753,7 @@ HeroGame.prototype.loadSave = function() {
                     unlocked: hero.unlocked,
                     monstersKilled: hero.monstersKilled || 0,
                     deaths: hero.deaths || 0,
-                    stamina: hero.stamina || 0 // Загружаем выносливость
+                    stamina: hero.stamina || 0
                 });
             });
             
@@ -3408,9 +3769,25 @@ HeroGame.prototype.loadSave = function() {
                 return freshHero;
             });
             
+            // Загрузка новой системы карт
+            if (data.mapSystem) {
+                this.mapSystem.currentGlobalPos = data.mapSystem.globalPosition || {x: 10, y: 10};
+                this.mapSystem.currentLocalPos = data.mapSystem.localPosition || {x: 7, y: 7};
+                this.mapSystem.currentTacticalPos = data.mapSystem.tacticalPosition || {x: 0, y: 0};
+                
+                // Загружаем карты если есть их ID
+                if (data.mapSystem.globalMapId) {
+                    this.mapSystem.loadGlobalMap(data.mapSystem.globalMapId);
+                }
+                if (data.mapSystem.localMapId) {
+                    this.mapSystem.loadLocalMap(data.mapSystem.localMapId);
+                }
+                if (data.mapSystem.tacticalMapId) {
+                    this.mapSystem.loadTacticalMap(data.mapSystem.tacticalMapId);
+                }
+            }
+            
             // Загрузка остальных данных
-            this.currentMap = data.currentMap || null;
-            this.currentLocation = data.currentLocation || null;
             this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
             this.globalInventory = data.globalInventory || [];
             this.monsterKillCount = data.monsterKillCount || {};
@@ -3709,4 +4086,413 @@ if (document.readyState === 'loading') {
     console.log('✅ DOM уже готов');
     game = new HeroGame();
     window.game = game;
+}
+// ========== МОДУЛЬ 21: СИСТЕМА ТРЕХУРОВНЕВЫХ КАРТ ==========
+
+class MapSystem {
+    constructor(game) {
+        this.game = game;
+        this.globalMap = null;
+        this.localMap = null;
+        this.tacticalMap = null;
+        
+        this.currentGlobalPos = null;
+        this.currentLocalPos = null; 
+        this.currentTacticalPos = null;
+        
+        this.mapsCache = new Map();
+    }
+
+    // ========== МОДУЛЬ 21.1: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ КАРТ ==========
+    async init() {
+        try {
+            // Загружаем стартовые карты
+            await this.loadGlobalMap('global_kingdom_erador');
+            await this.loadLocalMap('local_starting_region');
+            await this.loadTacticalMap('tactical_town_square');
+            
+            // Устанавливаем стартовые позиции
+            this.currentGlobalPos = {x: 10, y: 10};
+            this.currentLocalPos = {x: 7, y: 7};
+            this.currentTacticalPos = {x: 0, y: 0};
+            
+            this.game.addToLog('🗺️ Система карт инициализирована');
+        } catch (error) {
+            console.error('Ошибка инициализации карт:', error);
+            this.game.addToLog('❌ Ошибка загрузки карт');
+        }
+    }
+
+    // ========== МОДУЛЬ 21.2: ЗАГРУЗКА КАРТ ==========
+    async loadGlobalMap(mapId) {
+        const mapData = await this.loadMapData('global', mapId);
+        this.globalMap = mapData;
+        this.renderMap('global', mapData);
+        this.updateMapInfo('global');
+    }
+
+    async loadLocalMap(mapId) {
+        const mapData = await this.loadMapData('local', mapId);
+        this.localMap = mapData;
+        this.renderMap('local', mapData);
+        this.updateMapInfo('local');
+    }
+
+    async loadTacticalMap(mapId) {
+        const mapData = await this.loadMapData('tactical', mapId);
+        this.tacticalMap = mapData;
+        this.renderMap('tactical', mapData);
+        this.updateMapInfo('tactical');
+    }
+
+    async loadMapData(level, mapId) {
+        const cacheKey = `${level}_${mapId}`;
+        
+        if (this.mapsCache.has(cacheKey)) {
+            return this.mapsCache.get(cacheKey);
+        }
+
+        try {
+            const response = await fetch(`data/maps/${level}/${mapId}.json`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const mapData = await response.json();
+            this.mapsCache.set(cacheKey, mapData);
+            return mapData;
+        } catch (error) {
+            console.error(`Ошибка загрузки ${level} карты:`, error);
+            return this.createFallbackMap(level, mapId);
+        }
+    }
+
+    createFallbackMap(level, mapId) {
+        const baseMap = {
+            id: mapId,
+            name: `Карта ${mapId}`,
+            image: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==",
+            gridSize: 10,
+            start: {x: 0, y: 0}
+        };
+
+        if (level === 'global') {
+            baseMap.tiles = [{x: 0, y: 0, type: "plains", localMapId: "local_default"}];
+        } else if (level === 'local') {
+            baseMap.exits = [{x: 9, y: 5, direction: "east", globalPosition: {x: 1, y: 0}}];
+            baseMap.tiles = [{x: 0, y: 0, type: "plains", tacticalMapId: "tactical_default"}];
+        } else if (level === 'tactical') {
+            baseMap.exits = [{x: 9, y: 5, direction: "east", localPosition: {x: 1, y: 0}}];
+            baseMap.objects = [];
+        }
+
+        return baseMap;
+    }
+
+    // ========== МОДУЛЬ 21.3: ОТРИСОВКА КАРТ ==========
+    renderMap(level, mapData) {
+        const canvas = document.getElementById(`${level}MapCanvas`);
+        const img = document.getElementById(`${level}MapImage`);
+        
+        if (!canvas || !img) return;
+
+        // Устанавливаем изображение
+        img.src = mapData.image;
+        
+        img.onload = () => {
+            canvas.width = img.clientWidth;
+            canvas.height = img.clientHeight;
+            
+            const ctx = canvas.getContext('2d');
+            this.drawGrid(ctx, mapData);
+            this.drawMapObjects(ctx, level, mapData);
+            this.drawPlayerPosition(ctx, level);
+        };
+    }
+
+    drawGrid(ctx, mapData) {
+        const cellSize = Math.min(ctx.canvas.width, ctx.canvas.height) / mapData.gridSize;
+        
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        
+        // Вертикальные линии
+        for (let x = 0; x <= mapData.gridSize; x++) {
+            ctx.beginPath();
+            ctx.moveTo(x * cellSize, 0);
+            ctx.lineTo(x * cellSize, ctx.canvas.height);
+            ctx.stroke();
+        }
+        
+        // Горизонтальные линии
+        for (let y = 0; y <= mapData.gridSize; y++) {
+            ctx.beginPath();
+            ctx.moveTo(0, y * cellSize);
+            ctx.lineTo(ctx.canvas.width, y * cellSize);
+            ctx.stroke();
+        }
+    }
+
+    drawMapObjects(ctx, level, mapData) {
+        const cellSize = Math.min(ctx.canvas.width, ctx.canvas.height) / mapData.gridSize;
+        
+        // Отрисовка выходов
+        if (mapData.exits) {
+            mapData.exits.forEach(exit => {
+                const x = exit.x * cellSize;
+                const y = exit.y * cellSize;
+                
+                ctx.fillStyle = 'rgba(74, 222, 128, 0.6)';
+                ctx.fillRect(x, y, cellSize, cellSize);
+                
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, cellSize, cellSize);
+            });
+        }
+        
+        // Отрисовка объектов на тактической карте
+        if (level === 'tactical' && mapData.objects) {
+            mapData.objects.forEach(obj => {
+                const x = obj.x * cellSize;
+                const y = obj.y * cellSize;
+                
+                if (obj.type === 'monster') {
+                    ctx.fillStyle = 'rgba(248, 113, 113, 0.6)';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    
+                    ctx.strokeStyle = '#f87171';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                } else if (obj.type === 'chest') {
+                    ctx.fillStyle = 'rgba(245, 158, 11, 0.6)';
+                    ctx.fillRect(x, y, cellSize, cellSize);
+                    
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x, y, cellSize, cellSize);
+                }
+            });
+        }
+    }
+
+    drawPlayerPosition(ctx, level) {
+        let position;
+        switch(level) {
+            case 'global': position = this.currentGlobalPos; break;
+            case 'local': position = this.currentLocalPos; break;
+            case 'tactical': position = this.currentTacticalPos; break;
+        }
+        
+        if (!position) return;
+        
+        const mapData = this[`${level}Map`];
+        const cellSize = Math.min(ctx.canvas.width, ctx.canvas.height) / mapData.gridSize;
+        
+        const x = position.x * cellSize + cellSize / 2;
+        const y = position.y * cellSize + cellSize / 2;
+        
+        // Маркер игрока
+        ctx.fillStyle = '#4cc9f0';
+        ctx.beginPath();
+        ctx.arc(x, y, cellSize / 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Свечение
+        ctx.shadowColor = '#4cc9f0';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    // ========== МОДУЛЬ 21.4: ОБНОВЛЕНИЕ ИНФОРМАЦИИ О КАРТЕ ==========
+    updateMapInfo(level) {
+        const statsElement = document.getElementById(`${level}MapStats`);
+        if (!statsElement) return;
+        
+        const mapData = this[`${level}Map`];
+        let info = '';
+        
+        switch(level) {
+            case 'global':
+                info = `Размер: ${mapData.gridSize}x${mapData.gridSize}`;
+                break;
+            case 'local':
+                info = `Выходы: ${mapData.exits?.length || 0}`;
+                break;
+            case 'tactical':
+                const monsters = mapData.objects?.filter(obj => obj.type === 'monster').length || 0;
+                const chests = mapData.objects?.filter(obj => obj.type === 'chest').length || 0;
+                info = `Монстры: ${monsters} | Сундуки: ${chests}`;
+                break;
+        }
+        
+        statsElement.textContent = info;
+    }
+
+    // ========== МОДУЛЬ 21.5: ОБНОВЛЕНИЕ ПОЗИЦИИ ИГРОКА ==========
+    updatePlayerPosition(level, newPosition) {
+        switch(level) {
+            case 'global':
+                this.currentGlobalPos = newPosition;
+                break;
+            case 'local':
+                this.currentLocalPos = newPosition;
+                break;
+            case 'tactical':
+                this.currentTacticalPos = newPosition;
+                break;
+        }
+        
+        // Перерисовываем карту
+        const mapData = this[`${level}Map`];
+        if (mapData) {
+            this.renderMap(level, mapData);
+        }
+        
+        this.game.saveGame();
+    }
+
+    // ========== МОДУЛЬ 21.6: ПЕРЕМЕЩЕНИЕ МЕЖДУ КАРТАМИ ==========
+    async moveToTacticalMap(localX, localY) {
+        const tile = this.findLocalTile(localX, localY);
+        if (tile && tile.tacticalMapId) {
+            await this.loadTacticalMap(tile.tacticalMapId);
+            this.currentTacticalPos = {x: 0, y: 0}; // Стартовая позиция
+            this.game.addToLog(`Вход в локацию: ${tile.description}`);
+            return true;
+        }
+        return false;
+    }
+
+    async exitTacticalMap(exitDirection) {
+        const exit = this.findTacticalExit(exitDirection);
+        if (exit && exit.localPosition) {
+            this.currentLocalPos = exit.localPosition;
+            this.renderMap('local', this.localMap);
+            this.game.addToLog(`Выход из локации: ${exitDirection}`);
+            return true;
+        }
+        return false;
+    }
+
+    // ========== МОДУЛЬ 21.7: ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+    findLocalTile(x, y) {
+        return this.localMap?.tiles?.find(tile => tile.x === x && tile.y === y);
+    }
+
+    findTacticalExit(direction) {
+        return this.tacticalMap?.exits?.find(exit => exit.direction === direction);
+    }
+
+    getCurrentPosition(level) {
+        switch(level) {
+            case 'global': return this.currentGlobalPos;
+            case 'local': return this.currentLocalPos;
+            case 'tactical': return this.currentTacticalPos;
+        }
+    }
+    // ========== МОДУЛЬ 21.8: ОБРАБОТЧИКИ КЛИКОВ ПО КАРТАМ ==========
+HeroGame.prototype.handleGlobalMapClick = function(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const canvas = document.getElementById('globalMapCanvas');
+    const cellSize = Math.min(canvas.width, canvas.height) / this.mapSystem.globalMap.gridSize;
+    
+    const cellX = Math.floor(x / cellSize);
+    const cellY = Math.floor(y / cellSize);
+    
+    this.mapSystem.updatePlayerPosition('global', {x: cellX, y: cellY});
+    this.addToLog(`Перемещение на глобальной карте: [${cellX}, ${cellY}]`);
+};
+
+HeroGame.prototype.handleLocalMapClick = function(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const canvas = document.getElementById('localMapCanvas');
+    const cellSize = Math.min(canvas.width, canvas.height) / this.mapSystem.localMap.gridSize;
+    
+    const cellX = Math.floor(x / cellSize);
+    const cellY = Math.floor(y / cellSize);
+    
+    // Проверяем, есть ли тактическая карта в этой клетке
+    if (this.mapSystem.moveToTacticalMap(cellX, cellY)) {
+        this.mapSystem.updatePlayerPosition('local', {x: cellX, y: cellY});
+    } else {
+        this.mapSystem.updatePlayerPosition('local', {x: cellX, y: cellY});
+        this.addToLog(`Перемещение на локальной карте: [${cellX}, ${cellY}]`);
+    }
+};
+
+HeroGame.prototype.handleTacticalMapClick = function(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    const canvas = document.getElementById('tacticalMapCanvas');
+    const cellSize = Math.min(canvas.width, canvas.height) / this.mapSystem.tacticalMap.gridSize;
+    
+    const cellX = Math.floor(x / cellSize);
+    const cellY = Math.floor(y / cellSize);
+    
+    // Проверяем, не выход ли это
+    const exit = this.mapSystem.tacticalMap.exits?.find(exit => 
+        exit.x === cellX && exit.y === cellY
+    );
+    
+    if (exit) {
+        this.mapSystem.exitTacticalMap(exit.direction);
+    } else {
+        this.mapSystem.updatePlayerPosition('tactical', {x: cellX, y: cellY});
+        this.addToLog(`Перемещение на тактической карте: [${cellX}, ${cellY}]`);
+        
+        // Проверяем встречу с монстром
+        this.checkTacticalEncounter(cellX, cellY);
+    }
+};
+
+// ========== МОДУЛЬ 21.9: ПРОВЕРКА ВСТРЕЧ НА ТАКТИЧЕСКОЙ КАРТЕ ==========
+HeroGame.prototype.checkTacticalEncounter = function(x, y) {
+    const monster = this.mapSystem.tacticalMap.objects?.find(obj => 
+        obj.type === 'monster' && obj.x === x && obj.y === y
+    );
+    
+    if (monster) {
+        this.startTacticalBattle(monster);
+    }
+    
+    const chest = this.mapSystem.tacticalMap.objects?.find(obj => 
+        obj.type === 'chest' && obj.x === x && obj.y === y
+    );
+    
+    if (chest) {
+        this.openTacticalChest(chest);
+    }
+};
+
+HeroGame.prototype.startTacticalBattle = function(monsterObj) {
+    const monster = this.monsters.find(m => m.id === monsterObj.monsterId);
+    if (monster) {
+        this.currentMonster = {...monster};
+        this.startBattle();
+        this.addToLog(`Встреча с монстром: ${monster.name}`);
+    }
+};
+
+HeroGame.prototype.openTacticalChest = function(chestObj) {
+    this.addToLog('Найден сундук с сокровищами!');
+    // TODO: Реализовать логику лута
+};
+
+// ========== МОДУЛЬ 21.10: НАЧАЛО ИССЛЕДОВАНИЯ ==========
+HeroGame.prototype.startExploration = function() {
+    this.addToLog('🧭 Начато исследование местности');
+    // Можно добавить автоматическое перемещение или другие механики
+};
 }
