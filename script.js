@@ -325,10 +325,12 @@ HeroGame.prototype.openInventoryFromSlot = function(slot) {
     this.showInventory(slot);
 };
 
-// ========== МОДУЛЬ 4.5.3: ПОКАЗ ИНВЕНТАРЯ ==========
+// ========== МОДУЛЬ 4.5.3: ПОКАЗ ИНВЕНТАРЯ (ИСПРАВЛЕННЫЙ) ==========
 HeroGame.prototype.showInventory = function(targetSlot = null) {
-    const container = document.getElementById('app');
-    
+    // Удаляем только существующие экраны магазина и инвентаря
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
+
     let inventoryHTML = '';
     if (this.currentHero.inventory.length === 0) {
         inventoryHTML = '<div class="text-center">Инвентарь пуст</div>';
@@ -343,28 +345,43 @@ HeroGame.prototype.showInventory = function(targetSlot = null) {
                     <div class="inventory-item-info">
                         <strong>${item.name}</strong>
                         <small>${item.description}</small>
+                        ${item.type ? `<small>Тип: ${this.getItemTypeName(item.type)}</small>` : ''}
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    container.innerHTML = `
+    const container = document.getElementById('app');
+    container.innerHTML += `
         <div class="screen active" id="screen-inventory">
-            <h3 class="text-center">🎒 Инвентарь</h3>
-            ${targetSlot ? `<div class="slot-info">Выбор предмета для слота</div>` : ''}
-            
-            <div class="inventory-info">
-                <div>💰 Золото: ${this.currentHero.gold.toFixed(2)}</div>
-                <div>🎒 Свободно: ${10 - this.currentHero.inventory.length}/10</div>
-            </div>
-            
-            <div class="inventory-grid">
-                ${inventoryHTML}
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn-secondary" onclick="game.renderHeroScreen()">← Назад</button>
+            <div class="inventory-overlay" onclick="game.closeInventory()"></div>
+            <div class="inventory-content">
+                <div class="inventory-header">
+                    <h3>🎒 Инвентарь</h3>
+                    <button class="close-btn" onclick="game.closeInventory()">×</button>
+                </div>
+                
+                ${targetSlot ? `
+                    <div class="slot-info">
+                        🎯 Выбор предмета для: ${this.getSlotName(targetSlot)}
+                    </div>
+                ` : ''}
+                
+                <div class="inventory-info">
+                    <div class="inventory-stats">
+                        <span>💰 ${this.currentHero.gold.toFixed(2)}</span>
+                        <span>🎒 ${this.currentHero.inventory.length}/10</span>
+                    </div>
+                </div>
+                
+                <div class="inventory-grid">
+                    ${inventoryHTML}
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="game.closeInventory()">← Назад к герою</button>
+                </div>
             </div>
         </div>
     `;
@@ -426,6 +443,40 @@ HeroGame.prototype.unequipItem = function(slot) {
     
     this.addToLog(`📦 Снято: ${item.name}`);
     this.saveGame();
+};
+// ========== МОДУЛЬ 4.5.7: ЗАКРЫТИЕ ИНВЕНТАРЯ ==========
+HeroGame.prototype.closeInventory = function() {
+    const inventoryScreen = document.getElementById('screen-inventory');
+    if (inventoryScreen) {
+        inventoryScreen.remove();
+    }
+};
+
+// ========== МОДУЛЬ 4.5.8: ПОЛУЧЕНИЕ НАЗВАНИЯ СЛОТА ==========
+HeroGame.prototype.getSlotName = function(slot) {
+    const slotNames = {
+        'main_hand': '⚔️ Правая рука',
+        'off_hand': '🛡️ Левая рука',
+        'helmet': '⛑️ Шлем',
+        'chest': '👕 Нагрудник', 
+        'gloves': '🧤 Перчатки',
+        'legs': '👖 Поножи',
+        'boots': '👢 Ботинки'
+    };
+    return slotNames[slot] || slot;
+};
+
+// ========== МОДУЛЬ 4.5.9: ПОЛУЧЕНИЕ НАЗВАНИЯ ТИПА ПРЕДМЕТА ==========
+HeroGame.prototype.getItemTypeName = function(type) {
+    const typeNames = {
+        'weapon': 'Оружие',
+        'helmet': 'Шлем',
+        'chest': 'Броня',
+        'gloves': 'Перчатки',
+        'legs': 'Поножи',
+        'boots': 'Ботинки'
+    };
+    return typeNames[type] || type;
 };
 // ========== МОДУЛЬ 5.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
@@ -618,6 +669,101 @@ HeroGame.prototype.showMerchant = function() {
 
 HeroGame.prototype.resetHero = function() {
     this.addToLog('🔄 Герой сброшен');
+};
+// ========== МОДУЛЬ 6.3.1: ПОКАЗ МАГАЗИНА ==========
+HeroGame.prototype.showMerchant = function() {
+    // Удаляем только существующие экраны магазина и инвентаря
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
+
+    // Простые тестовые предметы для магазина
+    const shopItems = [
+        { id: 1001, name: "Меч воина", type: "weapon", price: 100, description: "Простой железный меч" },
+        { id: 1002, name: "Кожаный доспех", type: "chest", price: 150, description: "Кожаный нагрудник" },
+        { id: 1003, name: "Железный шлем", type: "helmet", price: 80, description: "Защитный шлем" },
+        { id: 1004, name: "Зелье здоровья", type: "potion", price: 25, description: "Восстанавливает 20 HP" }
+    ];
+
+    const container = document.getElementById('app');
+    container.innerHTML += `
+        <div class="screen active" id="screen-merchant">
+            <div class="inventory-overlay" onclick="game.closeMerchant()"></div>
+            <div class="inventory-content">
+                <div class="inventory-header">
+                    <h3>🏪 Магазин</h3>
+                    <button class="close-btn" onclick="game.closeMerchant()">×</button>
+                </div>
+                
+                <div class="inventory-info">
+                    <div class="inventory-stats">
+                        <span>💰 ${this.currentHero.gold.toFixed(2)}</span>
+                        <span>🎒 ${this.currentHero.inventory.length}/10</span>
+                    </div>
+                </div>
+                
+                <div class="inventory-grid">
+                    ${shopItems.map(item => `
+                        <div class="inventory-item" onclick="game.buyItem(${item.id})">
+                            <div class="inventory-item-image">🏷️</div>
+                            <div class="inventory-item-info">
+                                <strong>${item.name}</strong>
+                                <small>${item.description}</small>
+                                <div class="item-price">💰 ${item.price}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn-secondary" onclick="game.closeMerchant()">← Назад</button>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+// ========== МОДУЛЬ 6.3.2: ЗАКРЫТИЕ МАГАЗИНА ==========
+HeroGame.prototype.closeMerchant = function() {
+    const merchantScreen = document.getElementById('screen-merchant');
+    if (merchantScreen) {
+        merchantScreen.remove();
+    }
+};
+
+// ========== МОДУЛЬ 6.3.3: ПОКУПКА ПРЕДМЕТА ==========
+HeroGame.prototype.buyItem = function(itemId) {
+    // Временная реализация - создаем предмет на лету
+    const tempItems = {
+        1001: { id: 1001, name: "Меч воина", type: "weapon", price: 100 },
+        1002: { id: 1002, name: "Кожаный доспех", type: "chest", price: 150 },
+        1003: { id: 1003, name: "Железный шлем", type: "helmet", price: 80 },
+        1004: { id: 1004, name: "Зелье здоровья", type: "potion", price: 25 }
+    };
+    
+    const item = tempItems[itemId];
+    if (!item) return;
+
+    if (this.currentHero.gold < item.price) {
+        this.addToLog('❌ Недостаточно золота!');
+        return;
+    }
+
+    if (this.currentHero.inventory.length >= 10) {
+        this.addToLog('❌ Инвентарь полон!');
+        return;
+    }
+
+    this.currentHero.gold -= item.price;
+    this.currentHero.inventory.push(item.id);
+    
+    // Добавляем предмет в общий список если его там нет
+    if (!this.items.find(i => i.id === item.id)) {
+        this.items.push({...item, description: "Куплено в магазине"});
+    }
+    
+    this.addToLog(`🛒 Куплено: ${item.name} за ${item.price} золота`);
+    this.saveGame();
+    this.closeMerchant();
 };
 // ========== МОДУЛЬ 7.1: ИНИЦИАЛИЗАЦИЯ И ЗАПУСК ИГРЫ ==========
 let game;
