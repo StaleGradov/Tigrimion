@@ -474,10 +474,46 @@ HeroGame.prototype.getItemSetConfig = function() {
             description: "Комплект из 6 вещей даст +5% к вампиризму"
         },
                "set_vampire6": {
-            name: "Лорда вампиров... Откуда у него могли взяться доспехи из костей драконов...",
+            name: "Лорда вампиров...Арканиума? Откуда у лорда вампиров могли взяться доспехи из костей драконов..? Неужели драконы были здесь во времена вампиров?  ",
             requiredPieces: 6,
             bonus: { type: "vampirism", value: 0.06 },
             description: "Комплект из 6 вещей даст +6% к вампиризму"
+        },
+            "set_regen1": {
+            name: "Грабителя Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.5 },
+            description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
+        },
+            "set_regen2": {
+            name: "Бандита Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
+        },
+            "set_regen3": {
+            name: "Опытного разбойника",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
+        },
+                   "set_regen4": {
+            name: "Вожака банды Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.4 },
+            description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
+        },
+                   "set_regen5": {
+            name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.8 },
+            description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
+        },
+                   "set_regen6": {
+            name: "Короля воров Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 1.6 },
+            description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
         }
     };
 };
