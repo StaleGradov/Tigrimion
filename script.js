@@ -80,7 +80,7 @@ class HeroGame {
 
     // УДАЛЕН МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ
     // HeroGame.prototype.initLocationSystem = function() { ... } // УДАЛЕНО
-}
+
 
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
