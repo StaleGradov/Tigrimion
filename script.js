@@ -1078,55 +1078,26 @@ HeroGame.prototype.updateHealth = function(change) {
 // ========== МОДУЛЬ 9.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
     const container = document.getElementById('app');
+    
     const heroesHTML = this.heroes.map(hero => {
-        const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
-        const stats = this.calculateHeroStats(hero);
-        const bonuses = this.getBonuses();
+        // Первый герой всегда разблокирован, остальные - по флагу unlocked
+        const isUnlocked = hero.id === 1 || (hero.unlocked === true);
         
-        const activeBonuses = this.getAllActiveBonuses(hero);
-        const allBonuses = [...activeBonuses.race, ...activeBonuses.class, ...activeBonuses.saga, ...activeBonuses.equipment];
-        const bonusDisplay = allBonuses.map(bonus => {
-            const value = bonus.type.includes('_mult') ? Math.round(bonus.value * 100) + '%' : Math.round(bonus.value * 100) + '%';
-            return `<span title="${bonus.description}">${this.getBonusIcon(bonus.type)} ${value}</span>`;
-        }).join('');
-        
-        const raceName = bonuses.races[hero.race]?.name || 'Неизвестно';
-        const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
-        const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
-
         return `
-            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
-                <div class="hero-option-image">
-                    <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+            <div class="hero-option ${isUnlocked ? 'unlocked' : 'locked'}" 
+                 onclick="game.selectHero(${hero.id})">
+                <div class="hero-image">
+                    <img src="${hero.image}" alt="${hero.name}" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                 </div>
-                <div class="hero-option-info">
-                    <div class="hero-option-header">
-                        <strong>${hero.name}</strong>
-                        <span class="hero-level">Ур. ${hero.level}</span>
-                    </div>
-                    <div class="hero-option-stats">
-                        <div class="stat-row">
-                            <span>❤️ ${Math.floor(this.getCurrentHealthForDisplay(hero))}/${this.calculateMaxHealth(hero)}</span>
-                            <span>⚔️ ${stats.damage}</span>
-                            <span>🛡️ ${stats.armor}</span>
-                            <span>🌟 ${stats.power}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span>💰 ${hero.gold.toFixed(2)}</span>
-                            <span>⚡ ${hero.experience}/${this.getLevelRequirements()[hero.level + 1] || 'MAX'}</span>
-                        </div>
-                    </div>
-                    ${bonusDisplay ? `
-                        <div class="hero-option-skills">
-                            ${bonusDisplay}
-                        </div>
-                    ` : ''}
-                    <div class="hero-option-bonuses">
-                        <small>${raceName} - ${className} - ${sagaName}</small>
-                    </div>
-                    ${!isUnlocked ? '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : ''}
+                <div class="hero-info">
+                    <h3>${hero.name}</h3>
+                    <p>Уровень: ${hero.level}</p>
+                    <p>Здоровье: ${this.calculateMaxHealth(hero)}</p>
+                    <p>Урон: ${this.calculateHeroStats(hero).damage}</p>
+                    <p>Золото: ${hero.gold.toFixed(2)}</p>
+                    ${!isUnlocked ? '<p class="locked-text">🔒 Заблокирован</p>' : '<p class="unlocked-text">✅ Доступен</p>'}
                 </div>
             </div>
         `;
@@ -1134,9 +1105,13 @@ HeroGame.prototype.renderHeroSelect = function() {
 
     container.innerHTML = `
         <div class="screen active" id="screen-hero-select">
-            <h2 class="text-center">Выберите героя</h2>
-            <div class="hero-list">
+            <h1 class="text-center">Выберите героя</h1>
+            <div class="heroes-grid">
                 ${heroesHTML}
+            </div>
+            <div class="debug-info">
+                <p>Всего героев: ${this.heroes.length}</p>
+                <button onclick="game.debugHeroes()">Отладочная информация</button>
             </div>
         </div>
     `;
@@ -1159,24 +1134,34 @@ HeroGame.prototype.getBonusIcon = function(bonusType) {
 
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
+    console.log('Попытка выбора героя:', heroId);
+    
     const hero = this.heroes.find(h => h.id === heroId);
     if (!hero) {
         console.error('Герой не найден:', heroId);
         return;
     }
     
-    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    // Упрощенная проверка разблокировки - первый герой всегда доступен
+    const isUnlocked = hero.id === 1 || (hero.unlocked === true);
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
+        this.addToLog('❌ Этот герой еще заблокирован!');
         return;
     }
     
     this.currentHero = hero;
+    
+    // Инициализируем здоровье если его нет
+    if (!this.currentHero.currentHealth) {
+        this.currentHero.currentHealth = this.calculateMaxHealth();
+    }
+    
+    console.log('Выбран герой:', this.currentHero.name);
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
 };
-
 // ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
 HeroGame.prototype.showScreen = function(screenName) {
     this.currentScreen = screenName;
