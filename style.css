@@ -3299,15 +3299,13 @@ body {
 }
 /* ===== МОДУЛЬ 21: СТИЛИ ДЛЯ УВЕЛИЧЕНИЯ ИЗОБРАЖЕНИЙ И МИФИЧЕСКИХ ПРЕДМЕТОВ ===== */
 
-/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ - УВЕЛИЧИВАЕМ КАРТИНКИ В МАГАЗИНЕ */
+/* ОСНОВНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ЦВЕТНЫХ РАМОК ВОКРУГ ВСЕЙ КАРТИНКИ */
 
 /* Для модального окна предмета */
 .item-detail-image {
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     padding: 0;
-    width: 100%;
-    height: 250px;
 }
 
 .detail-item-background {
@@ -3315,10 +3313,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    min-height: 200px;
     overflow: hidden;
-    border: 4px solid;
+    border: 4px solid; /* Добавляем рамку вокруг всей картинки */
 }
 
 /* Цвета рамок для модального окна по редкости */
@@ -3332,22 +3329,23 @@ body {
 .item-detail-image-zoom {
     cursor: zoom-in;
     transition: transform 0.3s ease;
-    width: 100% !important;
-    height: 100% !important;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
-    display: block;
 }
 
 .item-detail-image-zoom:hover {
-    transform: scale(1.8);
+    transform: scale(1.5);
     z-index: 1000;
+    position: relative;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ */
+/* ИСПРАВЛЕНИЕ ДЛЯ СЛОТОВ ЭКИПИРОВКИ ГЕРОЯ - РАМКА ВОКРУГ ВСЕЙ КАРТИНКИ */
 .equipment-slot.equipped {
-    border: 3px solid !important;
+    border: 3px solid !important; /* Рамка вокруг всего слота */
     padding: 0 !important;
-    overflow: hidden;
 }
 
 /* Цвета рамок для экипированных предметов по редкости */
@@ -3374,27 +3372,18 @@ body {
     height: 100% !important;
     object-fit: contain;
     padding: 0 !important;
-    display: block;
 }
 
-/* Убираем нижнюю полоску */
+/* Убираем нижнюю полоску (индикатор) так как теперь вся рамка цветная */
 .equipment-slot.equipped::after {
     display: none !important;
 }
 
-/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - УВЕЛИЧИВАЕМ КАРТИНКИ */
-.shop-item {
-    min-height: 220px; /* Увеличиваем высоту карточки */
-}
-
+/* ИСПРАВЛЕНИЕ ДЛЯ ПРЕДМЕТОВ В МАГАЗИНЕ - КАРТИНКА НА ВСЮ ПЛОЩАДЬ */
 .item-background {
-    padding: 0 !important;
-    border: 4px solid;
-    overflow: hidden;
-    width: 100%;
-    height: 150px; /* УВЕЛИЧИВАЕМ высоту для картинки */
-    display: flex;
-    flex-direction: column;
+    padding: 0 !important; /* Убираем отступы внутри цветной рамки */
+    border: 4px solid; /* Добавляем рамку */
+    overflow: hidden; /* Обрезаем выходящие за рамки части */
 }
 
 /* Цвета рамок для магазина по редкости */
@@ -3407,12 +3396,12 @@ body {
 
 .item-image-container {
     width: 100%;
-    height: 100%; /* Занимает всю высоту */
+    height: 120px; /* Увеличиваем высоту для магазина */
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05) !important; /* Фон для контраста */
-    margin-bottom: 0;
+    background: transparent !important;
+    margin-bottom: 0; /* Убираем отступ снизу */
     position: relative;
     overflow: hidden;
     padding: 0 !important;
@@ -3422,77 +3411,18 @@ body {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
-    display: block;
-    min-width: 100%;
-    min-height: 100%;
-    padding: 10px; /* Отступы чтобы картинка не касалась краев */
-    box-sizing: border-box;
 }
 
-/* Убираем старую полоску редкости */
+/* Убираем старую полоску редкости в магазине */
 .item-rarity-bar {
     display: none !important;
 }
 
-/* Информационная часть */
-.item-info {
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    min-height: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.item-name {
-    font-size: 1em !important; /* Увеличиваем шрифт */
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.item-type {
-    font-size: 0.8em !important; /* Увеличиваем шрифт */
-    margin-bottom: 8px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.item-stats-compact {
-    margin-bottom: 8px;
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-
-.item-stats-compact span {
-    background: rgba(76, 201, 240, 0.3);
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    border: 1px solid rgba(76, 201, 240, 0.5);
-}
-
-.item-price-tag {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
-}
-
-.price {
-    font-weight: bold;
-    color: #ffd700;
-    font-size: 0.9em;
-}
-
 /* ИСПРАВЛЕНИЕ ДЛЯ ИНВЕНТАРЯ */
 .inventory-item {
-    border: 3px solid;
-    padding: 0 !important;
+    border: 3px solid; /* Рамка вокруг всего предмета в инвентаре */
+    padding: 0 !important; /* Убираем внутренние отступы */
     overflow: hidden;
-    min-height: 100px;
-    display: flex;
-    align-items: stretch;
 }
 
 /* Цвета рамок для инвентаря по редкости */
@@ -3504,46 +3434,28 @@ body {
 .inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
 
 .inventory-item-image {
-    width: 100px;
-    height: 100px;
+    width: 80px; /* Увеличиваем размер для инвентаря */
+    height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05) !important;
+    background: transparent !important;
     overflow: hidden;
     padding: 0 !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.2); /* Разделитель */
 }
 
 .inventory-item-image img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
-    display: block;
-    min-width: 100%;
-    min-height: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.inventory-item-info {
-    flex: 1;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
 }
 
 /* Усиленные стили для мифических предметов */
 .rarity-mythic .item-background {
     border-width: 6px !important;
     box-shadow: 0 10px 30px rgba(255, 107, 107, 0.6);
-    animation: mythic-pulse 1.5s ease-in-out infinite;
-}
-
-.rarity-mythic .detail-item-background {
-    border-width: 6px !important;
     animation: mythic-pulse 1.5s ease-in-out infinite;
 }
 
@@ -3607,48 +3519,40 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
-    .item-detail-image {
-        height: 200px;
-    }
-    
-    .item-detail-image-zoom:hover {
-        transform: scale(1.5);
-    }
-    
-    .item-background {
-        height: 130px;
-    }
-    
-    .shop-item {
-        min-height: 200px;
-    }
-    
-    .inventory-item-image {
-        width: 80px;
-        height: 80px;
-    }
-}
-
-@media (max-width: 480px) {
-    .item-detail-image {
-        height: 150px;
-    }
-    
     .item-detail-image-zoom:hover {
         transform: scale(1.3);
     }
     
-    .item-background {
-        height: 110px;
+    .detail-item-background {
+        min-height: 150px;
     }
     
-    .shop-item {
-        min-height: 180px;
+    .item-image-container {
+        height: 100px;
     }
     
     .inventory-item-image {
         width: 70px;
         height: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .item-detail-image-zoom:hover {
+        transform: scale(1.2);
+    }
+    
+    .detail-item-background {
+        min-height: 120px;
+    }
+    
+    .item-image-container {
+        height: 80px;
+    }
+    
+    .inventory-item-image {
+        width: 60px;
+        height: 60px;
     }
 }
 
@@ -3660,8 +3564,7 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 3em;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 2em;
 }
 
 .item-fallback {
@@ -3671,6 +3574,5 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.05);
-    font-size: 2em;
-    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.5em;
 }
