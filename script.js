@@ -1,20 +1,40 @@
-// ========== МОДУЛЬ 0: БАЗОВЫЕ МЕТОДЫ ДЛЯ ЗАПУСКА ==========
+// ========== МОДУЛЬ 0: ЭКСТРЕННЫЙ ЗАПУСК ==========
+console.log('🚀 Загрузка Hero RPG Game...');
 
-// Временные методы для запуска игры
+// Простейшая проверка загрузки
+window.addEventListener('load', function() {
+    console.log('✅ Страница загружена');
+    setTimeout(initializeGame, 100);
+});
+
 function initializeGame() {
-    console.log('🔄 Инициализация игры...');
-    window.game = new HeroGame();
+    try {
+        console.log('🎮 Инициализация игры...');
+        if (typeof HeroGame !== 'undefined') {
+            window.game = new HeroGame();
+            console.log('✅ Игра успешно создана');
+        } else {
+            console.error('❌ Класс HeroGame не найден');
+        }
+    } catch (error) {
+        console.error('❌ Ошибка инициализации:', error);
+        // Показываем сообщение об ошибке
+        const app = document.getElementById('app');
+        if (app) {
+            app.innerHTML = `
+                <div style="text-align: center; padding: 50px; color: white;">
+                    <h1>🎮 Hero RPG Game</h1>
+                    <p style="color: #ff6b6b;">Ошибка загрузки игры</p>
+                    <p>${error.message}</p>
+                    <button onclick="location.reload()">Перезагрузить</button>
+                </div>
+            `;
+        }
+    }
 }
 
-// Запуск при загрузке страницы
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeGame);
-} else {
-    initializeGame();
-}
-
-// Базовые методы для совместимости
-console.log('✅ Базовые методы загружены');
+// Экспорт для глобального доступа
+window.initializeGame = initializeGame;
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
