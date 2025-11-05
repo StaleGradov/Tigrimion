@@ -316,25 +316,29 @@ class SafeHeroGame {
                     </div>
                 </div>
                 
-                <div class="main-actions">
-                    <button class="btn-primary" onclick="game.startGame()">
-                        🚀 Начать игру
-                    </button>
-                    <button class="btn-secondary" onclick="game.showDebugInfo()">
-                        🐛 Информация о системе
-                    </button>
+         <div class="main-actions">
+    <button class="btn-primary" onclick="game.startGame()">
+        🚀 Начать игру
+    </button>
+    <button class="btn-secondary" onclick="game.showDebugInfo()">
+        🐛 Информация о системе
+    </button>
+</div>
                 </div>
             </div>
         `;
     }
 
-    startGame() {
-        if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
-            this.systems.hero.showHeroSelection();
-        } else {
-            alert("Система героев еще не готова!");
-        }
+startGame() {
+    console.log("🔄 Проверяем системы...", this.systems);
+    
+    if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
+        this.systems.hero.showHeroSelection();
+    } else {
+        console.error("❌ HeroSystem не готова:", this.systems.hero);
+        alert("Система героев еще не готова! Проверь консоль для деталей.");
     }
+}
 
     showDebugInfo() {
         console.log("=== ДЕБАГ ИНФОРМАЦИЯ ===");
