@@ -1,28 +1,22 @@
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
-// ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
+
+// ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class HeroGame {
     constructor() {
         // Массивы данных игры
         this.heroes = [];        // Список всех героев
         this.items = [];         // Список всех предметов
         this.monsters = [];      // Список всех монстров
-        
-        // УДАЛЕНО: maps и locations
-        // this.maps = [];       // УДАЛЕНО
-        // this.locations = [];  // УДАЛЕНО
+        this.maps = [];          // Список всех карт
+        this.locations = [];     // Список всех локаций
         
         // Флаги отображения
         this.showReward = false;         // Показывать ли награду
         this.lastReward = 0;             // Последняя полученная награда
         this.currentHero = null;         // Текущий выбранный герой
         this.currentScreen = 'hero-select'; // Текущий экран игры
-        
-        // УДАЛЕНО: текущие карта, локация и связанные системы
-        // this.currentMap = null;       // УДАЛЕНО
-        // this.currentLocation = null;  // УДАЛЕНО
-        // this.locationProgress = {};   // УДАЛЕНО
-        // this.monsterKillCount = {};   // УДАЛЕНО
-        
+        this.currentMap = null;          // Текущая выбранная карта
+        this.currentLocation = null;     // Текущая выбранная локация
         this.currentMonster = null;      // Текущий встреченный монстр
         
         // Свойства для системы боя
@@ -43,15 +37,25 @@ class HeroGame {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            // ... остальные герои
         };
         
-        // УДАЛЕНО: видео для карт и локаций
-        // this.videos = { ... };  // УДАЛЕНО
+        // Видео для карт и локаций
+        this.videos = {
+            map: 'https://www.youtube.com/embed/4gSmkjlEO_Q',
+            location: 'https://www.youtube.com/embed/ytr51kwNLPo'
+        };
         
         // Флаги показа видео вместо изображений
         this.showVideo = {
-            hero: false      // Показывать видео героя
+            hero: false,      // Показывать видео героя
+            map: false,       // Показывать видео карты
+            location: false   // Показывать видео локации
         };
+        
+        // Система прогресса локаций
+        this.locationProgress = {};      // Прогресс по каждой локации
+        this.monsterKillCount = {};      // Счетчик убийств каждого монстра
         
         // Запуск инициализации игры
         this.init();
@@ -60,6 +64,7 @@ class HeroGame {
     // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
     async init() {
         await this.loadGameData();    // Загрузка всех данных игры
+        this.initLocationSystem();    // Инициализация системы локаций
         this.loadSave();              // Загрузка сохраненной игры
         
         // Разблокировка первого героя по умолчанию
@@ -72,9 +77,30 @@ class HeroGame {
         
         this.renderHeroSelect();      // Показ экрана выбора героя
     }
+
+    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
+    initLocationSystem() {
+        // Для каждой локации создаем запись прогресса
+        this.locations.forEach(location => {
+            const locationId = location.level;
+            
+            if (!this.locationProgress[locationId]) {
+                this.locationProgress[locationId] = {
+                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
+                    monstersKilled: new Set(),      // Множество убитых монстров
+                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
+                };
+            }
+        });
+        
+        // Инициализация счетчиков убийств для каждого монстра
+        this.monsters.forEach(monster => {
+            if (!this.monsterKillCount[monster.id]) {
+                this.monsterKillCount[monster.id] = 0;
+            }
+        });
+    }
 }
-
-
 
 // ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
 
@@ -95,17 +121,21 @@ HeroGame.prototype.loadJSON = async function(filePath) {
 // ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ ==========
 HeroGame.prototype.loadGameData = async function() {
     try {
-        // Загружаем только героев, монстров и предметы
-        const [heroes, enemies, items] = await Promise.all([
+        // Параллельная загрузка всех JSON файлов
+        const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
             this.loadJSON('data/heroes.json'),
             this.loadJSON('data/enemies.json'),
-            this.loadJSON('data/items.json')
+            this.loadJSON('data/items.json'),
+            this.loadJSON('data/maps.json'),
+            this.loadJSON('data/locations.json')
         ]);
 
         // Заполнение данных игры
         this.heroes = heroes || [];
         this.monsters = enemies || [];
         this.items = items || [];
+        this.maps = mapsData || [];
+        this.locations = locationsData || [];
 
         // Разблокировка первого героя
         if (this.heroes.length > 0) {
@@ -118,12 +148,14 @@ HeroGame.prototype.loadGameData = async function() {
         console.log('✅ Все данные загружены:', {
             heroes: this.heroes.length,
             monsters: this.monsters.length,
-            items: this.items.length
+            items: this.items.length,
+            maps: this.maps.length,
+            locations: this.locations.length
         });
 
     } catch (error) {
         console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.createFallbackData();
+        this.createFallbackData();  // Создание тестовых данных при ошибке
     }
 };
 
@@ -162,12 +194,12 @@ HeroGame.prototype.createFallbackData = function() {
 
     // Создание тестовых монстров
     this.monsters = [];
-    for (let i = 1; i <= 20; i++) {
+    for (let i = 1; i <= 55; i++) {
         this.monsters.push({
             id: i,
             name: `Монстр ${i}`,
             image: "images/monsters/monster1.jpg",
-            description: `Монстр уровня ${Math.ceil(i/5)}`,
+            description: `Монстр уровня ${Math.ceil(i/10)}`,
             health: 20 + i * 5,
             maxHealth: 20 + i * 5,
             damage: 5 + i * 2,
@@ -192,6 +224,33 @@ HeroGame.prototype.createFallbackData = function() {
         image: "images/items/potion1.jpg",
         description: "Восстанавливает 20 здоровья"
     }];
+
+    // Создание тестовых карт
+    this.maps = [{
+        id: 1, 
+        name: "Арканиум", 
+        image: "images/maps/arcanium.jpg", 
+        description: "Земля древней магии", 
+        multiplier: 1.0, 
+        unlocked: true 
+    }];
+
+    // Создание тестовых локаций
+    this.locations = [];
+    for (let level = 10; level >= 1; level--) {
+        const startMonster = (10 - level) * 10 + 1;
+        const endMonster = startMonster + 9;
+        
+        this.locations.push({
+            level: level,
+            name: `Локация ${11 - level}`,
+            description: `Уровень сложности: ${level}`,
+            image: "images/locations/level10.jpg",
+            monsterRange: [startMonster, endMonster],
+            artifactChance: 0.005 + (10 - level) * 0.001,
+            relicChance: 0.0005 + (10 - level) * 0.0001
+        });
+    }
 };
 
 // ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
@@ -1001,11 +1060,65 @@ HeroGame.prototype.continueAfterBattle = function() {
     this.renderHeroScreen();
 };
 
-// УДАЛЕНЫ ВСЕ МЕТОДЫ СИСТЕМЫ ЛОКАЦИЙ:
-// HeroGame.prototype.updateLocationProgress = function() { ... } // УДАЛЕНО
-// HeroGame.prototype.checkIfAllMonstersKilled = function() { ... } // УДАЛЕНО  
-// HeroGame.prototype.completeLocation = function() { ... } // УДАЛЕНО
-// HeroGame.prototype.getLocationName = function() { ... } // УДАЛЕНО
+// ========== МОДУЛЬ 7: СИСТЕМА ЛОКАЦИЙ И ПРОГРЕССА ==========
+
+// ========== МОДУЛЬ 7.1: ОБНОВЛЕНИЕ ПРОГРЕССА ЛОКАЦИИ ==========
+HeroGame.prototype.updateLocationProgress = function(monsterId) {
+    if (!this.currentLocation) return;
+    
+    const locationId = this.currentLocation.level;
+    const progress = this.locationProgress[locationId];
+    
+    if (progress) {
+        progress.monstersKilled.add(monsterId);
+        this.monsterKillCount[monsterId] = (this.monsterKillCount[monsterId] || 0) + 1;
+        
+        const allMonstersKilled = this.checkIfAllMonstersKilled(locationId);
+        if (allMonstersKilled) {
+            this.completeLocation(locationId);
+        }
+        
+        this.saveGame();
+    }
+};
+
+// ========== МОДУЛЬ 7.2: ПРОВЕРКА УБИТЫ ЛИ ВСЕ МОНСТРЫ В ЛОКАЦИИ ==========
+HeroGame.prototype.checkIfAllMonstersKilled = function(locationId) {
+    const location = this.locations.find(l => l.level === locationId);
+    if (!location) return false;
+    
+    const progress = this.locationProgress[locationId];
+    if (!progress) return false;
+    
+    const [startMonster, endMonster] = location.monsterRange;
+    for (let monsterId = startMonster; monsterId <= endMonster; monsterId++) {
+        if (!progress.monstersKilled.has(monsterId)) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+// ========== МОДУЛЬ 7.3: ЗАВЕРШЕНИЕ ЛОКАЦИИ ==========
+HeroGame.prototype.completeLocation = function(locationId) {
+    const nextLocationId = locationId - 1;
+    const nextProgress = this.locationProgress[nextLocationId];
+    
+    if (nextProgress) {
+        nextProgress.unlocked = true;
+        this.addToLog('🎉 Локация "' + this.getLocationName(locationId) + '" завершена!');
+        this.addToLog('🔓 Открыта новая локация: "' + this.getLocationName(nextLocationId) + '"');
+    }
+    
+    this.saveGame();
+};
+
+// ========== МОДУЛЬ 7.4: ПОЛУЧЕНИЕ НАЗВАНИЯ ЛОКАЦИИ ==========
+HeroGame.prototype.getLocationName = function(locationId) {
+    const location = this.locations.find(l => l.level === locationId);
+    return location ? location.name : 'Неизвестная локация';
+};
 
 // ========== МОДУЛЬ 8: СИСТЕМА ЗДОРОВЬЯ И РЕГЕНЕРАЦИИ ==========
 
@@ -1084,9 +1197,9 @@ HeroGame.prototype.renderHeroSelect = function() {
         const className = bonuses.classes[hero.class]?.name || 'Неизвестно';
         const sagaName = bonuses.sagas[hero.saga]?.name || 'Неизвестно';
 
-       return `
-    <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-         onclick="game.selectHero(${hero.id})">
+        return `
+            <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
+                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
                 <div class="hero-option-image">
                     <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
@@ -1149,30 +1262,19 @@ HeroGame.prototype.getBonusIcon = function(bonusType) {
 
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
-    console.log('Попытка выбрать героя:', heroId);
-    
     const hero = this.heroes.find(h => h.id === heroId);
     if (!hero) {
         console.error('Герой не найден:', heroId);
         return;
     }
     
-    // Упрощенная проверка разблокировки
-    const isUnlocked = hero.id === 1 || (hero.unlocked === true);
+    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
-        alert('❌ Этот герой еще заблокирован!');
         return;
     }
     
     this.currentHero = hero;
-    
-    // Инициализируем здоровье если его нет
-    if (!this.currentHero.currentHealth) {
-        this.currentHero.currentHealth = this.calculateMaxHealth();
-    }
-    
-    console.log('✅ Выбран герой:', this.currentHero.name);
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
@@ -1182,6 +1284,7 @@ HeroGame.prototype.selectHero = function(heroId) {
 HeroGame.prototype.showScreen = function(screenName) {
     this.currentScreen = screenName;
     
+    // НЕ удаляем экраны здесь - это будет делаться в методах рендеринга
     if (this.healthInterval) {
         clearInterval(this.healthInterval);
         this.healthInterval = null;
@@ -1208,7 +1311,7 @@ HeroGame.prototype.startHealthAnimation = function() {
 
     this.healthInterval = setInterval(updateHealthDisplay, 1000);
 };
-// ========== МОДУЛЬ 9.6: ОСНОВНОЙ РЕНДЕР ЭКРАНА ГЕРОЯ (ОБНОВЛЕННЫЙ) ==========
+
 HeroGame.prototype.renderHeroScreen = function() {
     if (!this.currentHero) return;
 
@@ -1216,7 +1319,7 @@ HeroGame.prototype.renderHeroScreen = function() {
     const bonuses = this.getBonuses();
     const activeBonuses = this.getAllActiveBonuses(this.currentHero);
 
-    // Получение экипированных предметов
+    // Получение экипированных предметов с информацией о редкости
     const getEquippedItemWithRarity = (slot) => {
         const itemId = this.currentHero.equipment[slot];
         if (!itemId) return null;
@@ -1244,18 +1347,21 @@ HeroGame.prototype.renderHeroScreen = function() {
 
     // Фоновые изображения
     const heroBackground = this.currentHero.image;
-    const heroVideo = this.heroVideos[this.currentHero.id];
+    const heroVideo = this.heroVideos[this.currentHero.id] || this.videos.hero;
     
     const monsterBackground = this.currentMonster ? this.currentMonster.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QktGA0L7QtNC90YvQtSDQv9C10YDRjNC80LA8L3RleHQ+PC9zdmc+';
-    
-    // УДАЛЕНО: фоны карт и локаций
-    const emptyBackground = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QndC10YIg0L3QsCDQv9GA0L7QtNCw0LbQsCDQutCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+    const mapBackground = this.currentMap ? this.currentMap.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7QmtCw0YDRgtCwPC90ZXh0Pjwvc3ZnPg==';
+    const locationBackground = this.currentLocation ? this.currentLocation.image : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWExYTJlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM2NjYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7Qm9C+0LrRg9C/0YPRjiDQv9C+0LrQsNC30YvQstCw0YLRjDwvdGV4dD48L3N2Zz4=';
 
     const raceName = bonuses.races[this.currentHero.race]?.name || 'Неизвестно';
     const className = bonuses.classes[this.currentHero.class]?.name || 'Неизвестно';
     const sagaName = bonuses.sagas[this.currentHero.saga]?.name || 'Неизвестно';
 
     const container = document.getElementById('app');
+    
+    // УДАЛЯЕМ ТОЛЬКО СУЩЕСТВУЮЩИЕ ЭКРАНЫ МАГАЗИНА И ИНВЕНТАРЯ
+    const existingScreens = document.querySelectorAll('#screen-merchant, #screen-inventory');
+    existingScreens.forEach(screen => screen.remove());
     
     container.innerHTML = `
         <div class="screen active" id="screen-main">
@@ -1289,8 +1395,222 @@ HeroGame.prototype.renderHeroScreen = function() {
                             <button class="video-toggle" onclick="game.toggleVideo('hero')">🖼️ Фото</button>
                         `}
                         
-                        <!-- Вся информация о герое остается здесь -->
-                        ${this.renderHeroColumnContent(stats, activeBonuses, raceName, className, sagaName, healthPercent, expProgress, weaponMain, weaponOff, armorHelmet, armorChest, armorGloves, armorLegs, armorBoots)}
+                        <!-- Информация о здоровье -->
+                        <div class="hero-info">
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
+                                    </div>
+                                    <div class="health-text">
+                                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
+                                    </div>
+                                </div>
+                                <div class="health-regen">
+                                    ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
+                                </div>
+                            </div>
+
+                            <!-- Основные характеристики -->
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <span class="stat-icon">⚔️</span>
+                                    <span class="stat-value">${stats.damage}</span>
+                                    ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🛡️</span>
+                                    <span class="stat-value">${stats.armor}</span>
+                                    ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
+                                </div>
+                                <div class="main-stat">
+                                    <span class="stat-icon">🌟</span>
+                                    <span class="stat-value">${stats.power}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Секция бонусов -->
+                        <div class="bonuses-section">
+                            <h3>🎯 Активные бонусы</h3>
+                            <!-- Бонусы расы -->
+                            ${activeBonuses.race.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🧬 Раса (${raceName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.race.map(bonus => `
+                                            <div class="bonus-badge race-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы класса -->
+                            ${activeBonuses.class.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">⚔️ Класс (${className})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.class.map(bonus => `
+                                            <div class="bonus-badge class-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы саги -->
+                            ${activeBonuses.saga.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">📖 Сага (${sagaName})</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.saga.map(bonus => `
+                                            <div class="bonus-badge saga-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы экипировки -->
+                            ${activeBonuses.equipment.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">🎒 Экипировка</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.equipment.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description} (${bonus.itemName})">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <!-- Бонусы сетов -->
+                            ${activeBonuses.sets.length > 0 ? `
+                                <div class="bonus-source-group">
+                                    <div class="bonus-source-title">✨ Бонусы сетов</div>
+                                    <div class="bonus-display">
+                                        ${activeBonuses.sets.map(bonus => `
+                                            <div class="bonus-badge equipment-bonus" title="${bonus.description}">
+                                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${activeBonuses.race.length === 0 && activeBonuses.class.length === 0 && 
+                              activeBonuses.saga.length === 0 && activeBonuses.equipment.length === 0 && 
+                              activeBonuses.sets.length === 0 ? `
+                                <div class="no-bonuses">Нет активных бонусов</div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Секция экипировки с цветными слотами -->
+                        <div class="equipment-section">
+                            <!-- ОБНОВЛЕННЫЕ СЛОТЫ ЭКИПИРОВКИ С КЛАССАМИ ДЛЯ ИДЕНТИФИКАЦИИ -->
+                            <div class="equipment-slot weapon-slot main-hand ${weaponMain ? 'equipped' : 'empty'}" 
+                                 ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('main_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponMain ? '<img src="' + weaponMain.item.image + '" alt="' + weaponMain.item.name + '">' : '⚔️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot weapon-slot off-hand ${weaponOff ? 'equipped' : 'empty'}" 
+                                 ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('off_hand')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${weaponOff ? '<img src="' + weaponOff.item.image + '" alt="' + weaponOff.item.name + '">' : '🛡️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot helmet-slot ${armorHelmet ? 'equipped' : 'empty'}" 
+                                 ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('helmet')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'helmet')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorHelmet ? '<img src="' + armorHelmet.item.image + '" alt="' + armorHelmet.item.name + '">' : '⛑️'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot chest-slot ${armorChest ? 'equipped' : 'empty'}" 
+                                 ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('chest')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'chest')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorChest ? '<img src="' + armorChest.item.image + '" alt="' + armorChest.item.name + '">' : '👕'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot gloves-slot ${armorGloves ? 'equipped' : 'empty'}" 
+                                 ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('gloves')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'gloves')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorGloves ? '<img src="' + armorGloves.item.image + '" alt="' + armorGloves.item.name + '">' : '🧤'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot legs-slot ${armorLegs ? 'equipped' : 'empty'}" 
+                                 ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('legs')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'legs')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorLegs ? '<img src="' + armorLegs.item.image + '" alt="' + armorLegs.item.name + '">' : '👖'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot armor-slot boots-slot ${armorBoots ? 'equipped' : 'empty'}" 
+                                 ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
+                                 onclick="game.openInventoryFromSlot('boots')"
+                                 onmouseover="game.showEquipmentTooltip(event, 'boots')"
+                                 onmouseout="game.hideEquipmentTooltip()">
+                                <div class="equipment-icon">
+                                    ${armorBoots ? '<img src="' + armorBoots.item.image + '" alt="' + armorBoots.item.name + '">' : '👢'}
+                                </div>
+                            </div>
+                            
+                            <div class="equipment-slot empty" onclick="game.openInventoryFromSlot('inventory')" title="Открыть инвентарь">
+                                <div class="equipment-icon">🎒</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Прогресс уровня -->
+                        <div class="level-progress">
+                            <div class="level-progress-fill" style="width: ${expProgress}%"></div>
+                        </div>
+                        <div class="hero-progress">
+                            <span>Ур.${this.currentHero.level}</span>
+                            <span>💰${this.currentHero.gold.toFixed(2)}</span>
+                            <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
+                        </div>
+                        
+                        <!-- Статистика героя -->
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <span class="stat-icon">💀</span>
+                                <span class="stat-label">Убийств:</span>
+                                <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-icon">☠️</span>
+                                <span class="stat-label">Смертей:</span>
+                                <span class="stat-value">${this.currentHero.deaths || 0}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1303,21 +1623,21 @@ HeroGame.prototype.renderHeroScreen = function() {
                     </div>
                 </div>
 
-                <!-- Колонка карты (ПУСТАЯ) -->
-                <div class="map-column" style="background-image: url('${emptyBackground}')">
+                <!-- Колонка карты -->
+                <div class="map-column" style="background-image: url('${mapBackground}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
                         <div class="column-title">🗺️ Карта</div>
-                        ${this.renderEmptyMapColumn()}
+                        ${this.renderMapSelection()}
                     </div>
                 </div>
 
-                <!-- Колонка локации (ПУСТАЯ) -->
-                <div class="location-column" style="background-image: url('${emptyBackground}')">
+                <!-- Колонка локации -->
+                <div class="location-column" style="background-image: url('${locationBackground}')">
                     <div class="column-overlay"></div>
                     <div class="column-content">
                         <div class="column-title">📍 Локация</div>
-                        ${this.renderEmptyLocationColumn()}
+                        ${this.renderLocationSelection()}
                     </div>
                 </div>
             </div>
@@ -1328,254 +1648,6 @@ HeroGame.prototype.renderHeroScreen = function() {
     `;
 
     this.startHealthAnimation();
-};
-
-// ========== МОДУЛЬ 9.6.1: РЕНДЕР СОДЕРЖИМОГО КОЛОНКИ ГЕРОЯ ==========
-HeroGame.prototype.renderHeroColumnContent = function(stats, activeBonuses, raceName, className, sagaName, healthPercent, expProgress, weaponMain, weaponOff, armorHelmet, armorChest, armorGloves, armorLegs, armorBoots) {
-    return `
-        <!-- Информация о здоровье -->
-        <div class="hero-info">
-            <div class="health-display">
-                <div class="health-bar-container">
-                    <div class="health-bar">
-                        <div class="health-bar-fill" style="width: ${healthPercent}%"></div>
-                    </div>
-                    <div class="health-text">
-                        ❤️ <span id="current-health">${stats.currentHealth}</span>/<span id="max-health">${stats.maxHealth}</span>
-                    </div>
-                </div>
-                <div class="health-regen">
-                    ⚡ ${Math.round(this.currentHero.healthRegen * 60 * (1 + stats.bonuses.health_regen_mult))}/мин
-                </div>
-            </div>
-
-            <!-- Основные характеристики -->
-            <div class="hero-main-stats">
-                <div class="main-stat">
-                    <span class="stat-icon">⚔️</span>
-                    <span class="stat-value">${stats.damage}</span>
-                    ${stats.bonuses.damage_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.damage_mult * 100)}%</div>` : ''}
-                </div>
-                <div class="main-stat">
-                    <span class="stat-icon">🛡️</span>
-                    <span class="stat-value">${stats.armor}</span>
-                    ${stats.bonuses.armor_mult > 0 ? `<div class="bonus-value">+${Math.round(stats.bonuses.armor_mult * 100)}%</div>` : ''}
-                </div>
-                <div class="main-stat">
-                    <span class="stat-icon">🌟</span>
-                    <span class="stat-value">${stats.power}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Секция бонусов -->
-        <div class="bonuses-section">
-            <h3>🎯 Активные бонусы</h3>
-            <!-- Бонусы расы -->
-            ${activeBonuses.race.length > 0 ? `
-                <div class="bonus-source-group">
-                    <div class="bonus-source-title">🧬 Раса (${raceName})</div>
-                    <div class="bonus-display">
-                        ${activeBonuses.race.map(bonus => `
-                            <div class="bonus-badge race-bonus" title="${bonus.description}">
-                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- Бонусы класса -->
-            ${activeBonuses.class.length > 0 ? `
-                <div class="bonus-source-group">
-                    <div class="bonus-source-title">⚔️ Класс (${className})</div>
-                    <div class="bonus-display">
-                        ${activeBonuses.class.map(bonus => `
-                            <div class="bonus-badge class-bonus" title="${bonus.description}">
-                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- Бонусы саги -->
-            ${activeBonuses.saga.length > 0 ? `
-                <div class="bonus-source-group">
-                    <div class="bonus-source-title">📖 Сага (${sagaName})</div>
-                    <div class="bonus-display">
-                        ${activeBonuses.saga.map(bonus => `
-                            <div class="bonus-badge saga-bonus" title="${bonus.description}">
-                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- Бонусы экипировки -->
-            ${activeBonuses.equipment.length > 0 ? `
-                <div class="bonus-source-group">
-                    <div class="bonus-source-title">🎒 Экипировка</div>
-                    <div class="bonus-display">
-                        ${activeBonuses.equipment.map(bonus => `
-                            <div class="bonus-badge equipment-bonus" title="${bonus.description} (${bonus.itemName})">
-                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            <!-- Бонусы сетов -->
-            ${activeBonuses.sets.length > 0 ? `
-                <div class="bonus-source-group">
-                    <div class="bonus-source-title">✨ Бонусы сетов</div>
-                    <div class="bonus-display">
-                        ${activeBonuses.sets.map(bonus => `
-                            <div class="bonus-badge equipment-bonus" title="${bonus.description}">
-                                ${this.getBonusIcon(bonus.type)} ${Math.round(bonus.value * 100)}%
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-            
-            ${activeBonuses.race.length === 0 && activeBonuses.class.length === 0 && 
-              activeBonuses.saga.length === 0 && activeBonuses.equipment.length === 0 && 
-              activeBonuses.sets.length === 0 ? `
-                <div class="no-bonuses">Нет активных бонусов</div>
-            ` : ''}
-        </div>
-
-        <!-- Секция экипировки -->
-        <div class="equipment-section">
-            <!-- Слоты экипировки -->
-            <div class="equipment-slot weapon-slot main-hand ${weaponMain ? 'equipped' : 'empty'}" 
-                 ${weaponMain ? `data-rarity="${weaponMain.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('main_hand')"
-                 onmouseover="game.showEquipmentTooltip(event, 'main_hand')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${weaponMain ? '<img src="' + weaponMain.item.image + '" alt="' + weaponMain.item.name + '">' : '⚔️'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot weapon-slot off-hand ${weaponOff ? 'equipped' : 'empty'}" 
-                 ${weaponOff ? `data-rarity="${weaponOff.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('off_hand')"
-                 onmouseover="game.showEquipmentTooltip(event, 'off_hand')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${weaponOff ? '<img src="' + weaponOff.item.image + '" alt="' + weaponOff.item.name + '">' : '🛡️'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot armor-slot helmet-slot ${armorHelmet ? 'equipped' : 'empty'}" 
-                 ${armorHelmet ? `data-rarity="${armorHelmet.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('helmet')"
-                 onmouseover="game.showEquipmentTooltip(event, 'helmet')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${armorHelmet ? '<img src="' + armorHelmet.item.image + '" alt="' + armorHelmet.item.name + '">' : '⛑️'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot armor-slot chest-slot ${armorChest ? 'equipped' : 'empty'}" 
-                 ${armorChest ? `data-rarity="${armorChest.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('chest')"
-                 onmouseover="game.showEquipmentTooltip(event, 'chest')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${armorChest ? '<img src="' + armorChest.item.image + '" alt="' + armorChest.item.name + '">' : '👕'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot armor-slot gloves-slot ${armorGloves ? 'equipped' : 'empty'}" 
-                 ${armorGloves ? `data-rarity="${armorGloves.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('gloves')"
-                 onmouseover="game.showEquipmentTooltip(event, 'gloves')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${armorGloves ? '<img src="' + armorGloves.item.image + '" alt="' + armorGloves.item.name + '">' : '🧤'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot armor-slot legs-slot ${armorLegs ? 'equipped' : 'empty'}" 
-                 ${armorLegs ? `data-rarity="${armorLegs.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('legs')"
-                 onmouseover="game.showEquipmentTooltip(event, 'legs')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${armorLegs ? '<img src="' + armorLegs.item.image + '" alt="' + armorLegs.item.name + '">' : '👖'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot armor-slot boots-slot ${armorBoots ? 'equipped' : 'empty'}" 
-                 ${armorBoots ? `data-rarity="${armorBoots.rarity}"` : ''}
-                 onclick="game.openInventoryFromSlot('boots')"
-                 onmouseover="game.showEquipmentTooltip(event, 'boots')"
-                 onmouseout="game.hideEquipmentTooltip()">
-                <div class="equipment-icon">
-                    ${armorBoots ? '<img src="' + armorBoots.item.image + '" alt="' + armorBoots.item.name + '">' : '👢'}
-                </div>
-            </div>
-            
-            <div class="equipment-slot empty" onclick="game.openInventoryFromSlot('inventory')" title="Открыть инвентарь">
-                <div class="equipment-icon">🎒</div>
-            </div>
-        </div>
-        
-        <!-- Прогресс уровня -->
-        <div class="level-progress">
-            <div class="level-progress-fill" style="width: ${expProgress}%"></div>
-        </div>
-        <div class="hero-progress">
-            <span>Ур.${this.currentHero.level}</span>
-            <span>💰${this.currentHero.gold.toFixed(2)}</span>
-            <span>⚡${this.currentHero.experience}/${nextLevelExp || 'MAX'}</span>
-        </div>
-        
-        <!-- Статистика героя -->
-        <div class="hero-stats">
-            <div class="stat-item">
-                <span class="stat-icon">💀</span>
-                <span class="stat-label">Убийств:</span>
-                <span class="stat-value">${this.currentHero.monstersKilled || 0}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-icon">☠️</span>
-                <span class="stat-label">Смертей:</span>
-                <span class="stat-value">${this.currentHero.deaths || 0}</span>
-            </div>
-        </div>
-    `;
-};
-
-// ========== МОДУЛЬ 9.6.2: РЕНДЕР ПУСТОЙ КОЛОНКИ КАРТЫ ==========
-HeroGame.prototype.renderEmptyMapColumn = function() {
-    return `
-        <div class="map-info" style="text-align: center; padding: 20px;">
-            <h4>Система карт</h4>
-            <p>В разработке</p>
-            <div style="margin-top: 20px; opacity: 0.7;">
-                <p>🗺️ Карты будут добавлены в будущем обновлении</p>
-            </div>
-        </div>
-    `;
-};
-
-// ========== МОДУЛЬ 9.6.3: РЕНДЕР ПУСТОЙ КОЛОНКИ ЛОКАЦИИ ==========
-HeroGame.prototype.renderEmptyLocationColumn = function() {
-    return `
-        <div class="location-info" style="text-align: center; padding: 20px;">
-            <h4>Система локаций</h4>
-            <p>В разработке</p>
-            <div style="margin-top: 20px; opacity: 0.7;">
-                <p>📍 Локации будут добавлены в будущем обновлении</p>
-            </div>
-        </div>
-    `;
 };
 
 // ========== МОДУЛЬ 9.7: ПОКАЗАТЬ ПОДСКАЗКУ ДЛЯ ЭКИПИРОВКИ ==========
@@ -1891,13 +1963,10 @@ HeroGame.prototype.renderLocationSelection = function() {
     }
 };
 
-// ========== МОДУЛЬ 9.14: ПЕРЕКЛЮЧЕНИЕ ВИДЕО/ИЗОБРАЖЕНИЯ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 9.14: ПЕРЕКЛЮЧЕНИЕ ВИДЕО/ИЗОБРАЖЕНИЯ ==========
 HeroGame.prototype.toggleVideo = function(type) {
-    // Разрешаем переключение только для героя
-    if (type === 'hero') {
-        this.showVideo[type] = !this.showVideo[type];
-        this.renderHeroScreen();
-    }
+    this.showVideo[type] = !this.showVideo[type];
+    this.renderHeroScreen();
 };
 // ========== МОДУЛЬ 9.15: ОБНОВЛЕННЫЙ РЕНДЕР ПОДСКАЗКИ ДЛЯ ЭКИПИРОВКИ ==========
 
@@ -2021,8 +2090,7 @@ HeroGame.prototype.canEquipWeapon = function(item, currentEquipment) {
     
     return true;
 };
-
-// ========== МОДУЛЬ 10.2: ЭКИПИРОВКА ПРЕДМЕТА ==========
+//========== МОДУЛЬ 10.2: ИСПРАВЛЕННЫЙ МЕТОД ЭКИПИРОВКИ ПРЕДМЕТА ==========
 HeroGame.prototype.equipItem = function(itemId) {
     const item = this.items.find(i => i.id === itemId);
     if (!item) return;
@@ -2072,7 +2140,13 @@ HeroGame.prototype.equipItem = function(itemId) {
     this.checkSetBonuses();
     
     this.saveGame();
-    this.renderHeroScreen();
+    
+    // ОБНОВЛЯЕМ ИНТЕРФЕЙС - ВАЖНО!
+    this.updateEquipmentDisplay();
+    
+    // НЕ ЗАКРЫВАЕМ ИНВЕНТАРЬ ПРИ ЭКИПИРОВКЕ - ОБНОВЛЯЕМ ЕГО
+    const targetSlot = this.getEquipmentSlot(item);
+    this.showInventory(targetSlot);
 };
 
 // ========== МОДУЛЬ 10.3: СНЯТЬ ПРЕДМЕТ В ИНВЕНТАРЬ ==========
@@ -2111,6 +2185,20 @@ HeroGame.prototype.checkSetBonuses = function() {
     }
 };
 
+// ========== МОДУЛЬ 10.5: ПОЛУЧИТЬ СЛОТ ДЛЯ ПРЕДМЕТА ==========
+HeroGame.prototype.getEquipmentSlot = function(item) {
+    const slotMap = {
+        'weapon': item.weaponType === 'shield' ? 'off_hand' : 'main_hand',
+        'helmet': ['helmet'],
+        'chest': ['chest'], 
+        'gloves': ['gloves'],
+        'legs': ['legs'],
+        'boots': ['boots'],
+        'accessory': ['accessory']
+    };
+    
+    return slotMap[item.type] ? (Array.isArray(slotMap[item.type]) ? slotMap[item.type][0] : slotMap[item.type]) : null;
+};
 
 // ========== МОДУЛЬ 10.6: ПОЛУЧЕНИЕ СЛОТА ДЛЯ ПРЕДМЕТА ==========
 HeroGame.prototype.getEquipmentSlot = function(item) {
@@ -2304,48 +2392,64 @@ HeroGame.prototype.updateHeroStatsDisplay = function() {
         }
     }
 };
-// ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 11.1: НАЧАТЬ ПУТЕШЕСТВИЕ ==========
 HeroGame.prototype.startAdventure = function() {
-    // УДАЛЕНО: проверка карты и локации
-    // if (!this.currentMap || !this.currentLocation) {
-    //     this.addToLog('❌ Сначала выберите карту и локацию');
-    //     return;
-    // }
+    if (!this.currentMap || !this.currentLocation) {
+        this.addToLog('❌ Сначала выберите карту и локацию');
+        return;
+    }
 
-    this.addToLog('🚀 Начато путешествие по миру Арканиума');
+    this.addToLog('🚀 Начато путешествие по карте ' + this.currentMap.name + ', локация: ' + this.currentLocation.name);
     
     setTimeout(() => {
         this.encounterMonster();
     }, 1000);
 };
 
-// ========== МОДУЛЬ 11.2: ВСТРЕТИТЬ МОНСТРА (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 11.2: ВСТРЕТИТЬ МОНСТРА ==========
 HeroGame.prototype.encounterMonster = function() {
-    // УДАЛЕНО: логика выбора монстра на основе локации
+    if (!this.currentLocation || !this.currentMap) {
+        console.error('❌ Не выбрана локация или карта');
+        return;
+    }
+
+    const minId = this.currentLocation.monsterRange[0];
+    const maxId = this.currentLocation.monsterRange[1];
     
-    // Простой случайный выбор монстра из всех доступных
-    const availableMonsters = this.monsters.filter(monster => 
-        monster.id <= 10 // Ограничиваем монстров для начала игры
-    );
-    
-    if (availableMonsters.length === 0) {
-        console.error('❌ Нет доступных монстров');
+    if (!minId || !maxId) {
+        console.error('❌ Неверный диапазон монстров в локации:', this.currentLocation);
         return;
     }
     
-    const randomMonster = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+    // Создание списка доступных монстров
+    const availableMonsters = [];
+    for (let monsterId = minId; monsterId <= maxId; monsterId++) {
+        availableMonsters.push(monsterId);
+    }
     
-    // Создание текущего монстра
+    // Случайный выбор монстра
+    const randomMonsterId = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+    
+    let monster = this.monsters.find(m => m.id === randomMonsterId);
+    if (!monster) {
+        monster = this.monsters[0];
+        if (!monster) {
+            console.error('❌ Нет доступных монстров');
+            return;
+        }
+    }
+
+    // Создание текущего монстра с учетом множителя карты
     this.currentMonster = {
-        id: randomMonster.id,
-        name: randomMonster.name,
-        image: randomMonster.image,
-        description: randomMonster.description,
-        health: randomMonster.health,
-        damage: randomMonster.damage,
-        armor: randomMonster.armor,
-        reward: parseFloat(randomMonster.reward.toFixed(2)),
-        power: randomMonster.power
+        id: monster.id,
+        name: monster.name,
+        image: monster.image,
+        description: monster.description,
+        health: Math.round(monster.health * this.currentMap.multiplier),
+        damage: Math.round(monster.damage * this.currentMap.multiplier),
+        armor: Math.round(monster.armor * this.currentMap.multiplier),
+        reward: parseFloat((monster.reward * this.currentMap.multiplier).toFixed(2)),
+        power: Math.round(((monster.health / 10) + (monster.damage * 1.5) + (monster.armor * 2)) * this.currentMap.multiplier)
     };
 
     this.addToLog('🎭 Встречен: ' + this.currentMonster.name);
@@ -3308,24 +3412,36 @@ HeroGame.prototype.closeInventory = function() {
 };
 // ========== МОДУЛЬ 14: СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
 
-// ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 14.1: СОХРАНЕНИЕ ИГРЫ ==========
 HeroGame.prototype.saveGame = function() {
     if (this.currentHero) {
-        // УДАЛЕНО: преобразование Set в Array для локаций
-        
+        // Преобразование Set в Array для сохранения
+        const locationProgressForSave = {};
+        Object.keys(this.locationProgress).forEach(locationId => {
+            const progress = this.locationProgress[locationId];
+            locationProgressForSave[locationId] = {
+                ...progress,
+                monstersKilled: Array.from(progress.monstersKilled)
+            };
+        });
+
         localStorage.setItem('heroGameSave', JSON.stringify({
             currentHeroId: this.currentHero.id,
             heroes: this.heroes,
-            // УДАЛЕНО: currentMap, currentLocation, locationProgress, monsterKillCount
+            currentMap: this.currentMap,
+            currentLocation: this.currentLocation,
             lastHealthUpdate: this.lastHealthUpdate,
             globalInventory: this.globalInventory,
+            locationProgress: locationProgressForSave,
+            monsterKillCount: this.monsterKillCount,
             showVideo: this.showVideo,
+            // Сохраняем выносливость героя
             heroStamina: this.currentHero.stamina || 0
         }));
     }
 };
 
-// ========== МОДУЛЬ 14.2: ЗАГРУЗКА СОХРАНЕНИЯ (ОБНОВЛЕННЫЙ) ==========
+// ========== МОДУЛЬ 14.2: ЗАГРУЗКА СОХРАНЕНИЯ ==========
 HeroGame.prototype.loadSave = function() {
     try {
         const save = localStorage.getItem('heroGameSave');
@@ -3348,7 +3464,7 @@ HeroGame.prototype.loadSave = function() {
                     unlocked: hero.unlocked,
                     monstersKilled: hero.monstersKilled || 0,
                     deaths: hero.deaths || 0,
-                    stamina: hero.stamina || 0
+                    stamina: hero.stamina || 0 // Загружаем выносливость
                 });
             });
             
@@ -3364,12 +3480,24 @@ HeroGame.prototype.loadSave = function() {
                 return freshHero;
             });
             
-            // Загрузка остальных данных (УДАЛЕНО: карты и локации)
+            // Загрузка остальных данных
+            this.currentMap = data.currentMap || null;
+            this.currentLocation = data.currentLocation || null;
             this.lastHealthUpdate = data.lastHealthUpdate || Date.now();
             this.globalInventory = data.globalInventory || [];
+            this.monsterKillCount = data.monsterKillCount || {};
             this.showVideo = data.showVideo || this.showVideo;
             
-            // УДАЛЕНО: восстановление прогресса локаций
+            // Восстановление прогресса локаций
+            if (data.locationProgress) {
+                Object.keys(data.locationProgress).forEach(locationId => {
+                    const progress = data.locationProgress[locationId];
+                    this.locationProgress[locationId] = {
+                        ...progress,
+                        monstersKilled: new Set(progress.monstersKilled || [])
+                    };
+                });
+            }
             
             // Восстановление текущего героя
             if (currentHeroId) {
@@ -3411,7 +3539,7 @@ HeroGame.prototype.addBattleLog = function(entry) {
     }
 };
 
-// ========== МОДУЛЬ 15.3: ФОРМАТИРОВАНИЕ БОНУСА ==========
+// ========== МОДУЛЬ 15.3: ФОРМАТИРОВАНИЕ БОНУСА ДЛЯ ОТОБРАЖЕНИЯ ==========
 HeroGame.prototype.formatBonus = function(bonus) {
     if (!bonus || bonus.type === 'none') return 'Нет бонуса';
     
@@ -3481,10 +3609,28 @@ HeroGame.prototype.resetHero = function() {
     this.renderHeroScreen();
 };
 
-// УДАЛЕНЫ МЕТОДЫ ПРОВЕРКИ СПЕЦИАЛЬНЫХ ДРОПОВ:
-// HeroGame.prototype.checkSpecialDrops = function() { ... } // УДАЛЕНО
-// HeroGame.prototype.dropArtifact = function() { ... } // УДАЛЕНО  
-// HeroGame.prototype.dropRelic = function() { ... } // УДАЛЕНО
+// ========== МОДУЛЬ 15.5: ПРОВЕРКА СПЕЦИАЛЬНЫХ ДРОПОВ ==========
+HeroGame.prototype.checkSpecialDrops = function() {
+    if (!this.currentLocation) return;
+    
+    if (Math.random() < this.currentLocation.artifactChance) {
+        this.dropArtifact();
+    }
+    
+    if (Math.random() < this.currentLocation.relicChance) {
+        this.dropRelic();
+    }
+};
+
+// ========== МОДУЛЬ 15.6: ВЫПАДЕНИЕ АРТЕФАКТА ==========
+HeroGame.prototype.dropArtifact = function() {
+    this.addToLog('✨ Найден редкий артефакт!');
+};
+
+// ========== МОДУЛЬ 15.7: ВЫПАДЕНИЕ РЕЛИКВИИ ==========
+HeroGame.prototype.dropRelic = function() {
+    this.addToLog('🌟 Найдена легендарная реликвия!');
+};
 
 // ========== МОДУЛЬ 16: СИСТЕМА РЕДКОСТЕЙ ПРЕДМЕТОВ И УЛУЧШЕННЫЙ ИНТЕРФЕЙС ==========
 
@@ -3617,155 +3763,9 @@ HeroGame.prototype.showNotification = function(message, type = 'info') {
     }, 5000);
 };
 
-// ВАШ СУЩЕСТВУЮЩИЙ КОД...
-
-// ========== ДОБАВЛЯЕМ ОТСУТТСТВУЮЩИЕ МЕТОДЫ ==========
-
-// Метод для получения имени слота
-HeroGame.prototype.getSlotName = function(slot) {
-    const slotNames = {
-        'main_hand': '⚔️ Правая рука',
-        'off_hand': '🛡️ Левая рука', 
-        'helmet': '⛑️ Шлем',
-        'chest': '👕 Нагрудник',
-        'gloves': '🧤 Перчатки',
-        'legs': '👖 Поножи',
-        'boots': '👢 Ботинки'
-    };
-    return slotNames[slot] || 'Слот';
-};
-
-// Метод для получения подходящих слотов для предмета
-HeroGame.prototype.getSuitableSlotsForItem = function(item) {
-    if (!item) return [];
-    
-    const slotMap = {
-        'weapon': {
-            'one_handed': ['main_hand', 'off_hand'],
-            'two_handed': ['main_hand'],
-            'shield': ['off_hand']
-        },
-        'helmet': ['helmet'],
-        'chest': ['chest'],
-        'gloves': ['gloves'],
-        'legs': ['legs'],
-        'boots': ['boots']
-    };
-
-    if (item.type === 'weapon' && item.weaponType && slotMap.weapon[item.weaponType]) {
-        return slotMap.weapon[item.weaponType];
-    }
-    
-    return slotMap[item.type] || [];
-};
-
-// Заглушки для удаленных методов
-HeroGame.prototype.updateLocationProgress = function() {
-    // Метод удален, но оставляем заглушку
-};
-
-HeroGame.prototype.getItemsForSlot = function(slot) {
-    if (!this.currentHero || !this.currentHero.inventory) return [];
-    
-    return this.currentHero.inventory.filter(itemId => {
-        const item = this.items.find(i => i.id === itemId);
-        if (!item) return false;
-        const suitableSlots = this.getSuitableSlotsForItem(item);
-        return suitableSlots.includes(slot);
-    });
-};
-
-// Метод для получения типа слота из элемента
-HeroGame.prototype.getSlotTypeFromElement = function(element) {
-    if (element.classList.contains('main-hand')) return 'main_hand';
-    if (element.classList.contains('off-hand')) return 'off_hand';
-    if (element.classList.contains('helmet-slot')) return 'helmet';
-    if (element.classList.contains('chest-slot')) return 'chest';
-    if (element.classList.contains('gloves-slot')) return 'gloves';
-    if (element.classList.contains('legs-slot')) return 'legs';
-    if (element.classList.contains('boots-slot')) return 'boots';
-    return null;
-};
-
-// Метод обновления отображения экипировки
-HeroGame.prototype.updateEquipmentDisplay = function() {
-    if (!this.currentHero) return;
-    
-    // Обновляем отображение слотов экипировки
-    const equipmentSlots = document.querySelectorAll('.equipment-slot');
-    
-    equipmentSlots.forEach(slotElement => {
-        const slotType = this.getSlotTypeFromElement(slotElement);
-        if (!slotType) return;
-        
-        const itemId = this.currentHero.equipment[slotType];
-        const slotIcon = slotElement.querySelector('.equipment-icon');
-        
-        if (itemId) {
-            const item = this.items.find(i => i.id === itemId);
-            if (item) {
-                // Обновляем иконку предмета
-                slotIcon.innerHTML = `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">`;
-                
-                // Устанавливаем классы редкости
-                slotElement.classList.add('equipped');
-                slotElement.setAttribute('data-rarity', item.rarity || 'common');
-            }
-        } else {
-            // Слот пустой - показываем стандартную иконку
-            const defaultIcons = {
-                'main_hand': '⚔️',
-                'off_hand': '🛡️',
-                'helmet': '⛑️',
-                'chest': '👕',
-                'gloves': '🧤',
-                'legs': '👖',
-                'boots': '👢'
-            };
-            
-            slotIcon.innerHTML = defaultIcons[slotType] || '🎒';
-            slotElement.classList.remove('equipped');
-            slotElement.removeAttribute('data-rarity');
-        }
-    });
-};
-
-// Метод обновления статистики героя
-HeroGame.prototype.updateHeroStatsDisplay = function() {
-    if (!this.currentHero) return;
-    
-    const stats = this.calculateHeroStats(this.currentHero);
-    
-    // Обновляем здоровье
-    const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-    const healthFill = document.querySelector('.health-bar-fill');
-    const currentHealthEl = document.getElementById('current-health');
-    const maxHealthEl = document.getElementById('max-health');
-    
-    if (healthFill) healthFill.style.width = healthPercent + '%';
-    if (currentHealthEl) currentHealthEl.textContent = stats.currentHealth;
-    if (maxHealthEl) maxHealthEl.textContent = stats.maxHealth;
-};
-// ========== ОТЛАДОЧНЫЙ МЕТОД ==========
-HeroGame.prototype.debugHeroes = function() {
-    console.log('=== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ О ГЕРОЯХ ===');
-    this.heroes.forEach(hero => {
-        console.log(`Герой ${hero.id}: ${hero.name}`, {
-            unlocked: hero.unlocked,
-            level: hero.level,
-            health: this.calculateMaxHealth(hero)
-        });
-    });
-    
-    // Принудительно разблокируем первого героя если нужно
-    const firstHero = this.heroes.find(h => h.id === 1);
-    if (firstHero) {
-        firstHero.unlocked = true;
-        console.log('✅ Первый герой принудительно разблокирован');
-        this.renderHeroSelect();
-    }
-};
 // ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
+
+// ========== МОДУЛЬ 17.1: ИНИЦИАЛИЗАЦИЯ И ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
 
 let game;
@@ -3774,21 +3774,11 @@ let game;
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ DOM загружен');
-        try {
-            game = new HeroGame();
-            window.game = game;
-            console.log('✅ Игра успешно инициализирована');
-        } catch (error) {
-            console.error('❌ Ошибка инициализации игры:', error);
-        }
+        game = new HeroGame();
+        window.game = game;
     });
 } else {
     console.log('✅ DOM уже готов');
-    try {
-        game = new HeroGame();
-        window.game = game;
-        console.log('✅ Игра успешно инициализирована');
-    } catch (error) {
-        console.error('❌ Ошибка инициализации игры:', error);
-    }
+    game = new HeroGame();
+    window.game = game;
 }
