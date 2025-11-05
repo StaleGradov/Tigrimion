@@ -16,39 +16,37 @@ class ModuleLoader {
     }
 
 async loadStyles() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         if (document.getElementById('game-styles')) {
             console.log("✅ Стили уже загружены");
             resolve(true);
             return;
         }
 
+        // Создаем инлайн стили как временное решение
+        this.createFallbackStyles();
+        console.log("🔄 Используем резервные стили");
+        resolve(true);
+        
+        // Параллельно пробуем загрузить внешние стили
         const link = document.createElement('link');
         link.rel = 'stylesheet';
-        link.href = 'style.css?v=' + Date.now(); // Добавляем параметр чтобы избежать кеширования
+        link.href = 'style.css';
         link.id = 'game-styles';
         
         link.onload = () => {
-            console.log("✅ Стили игры загружены");
-            resolve(true);
+            console.log("✅ Внешние стили загружены");
+            // Перезагружаем интерфейс когда стили загрузились
+            if (this.currentScreen === 'main') {
+                this.renderMainScreen();
+            }
         };
         
-        link.onerror = (error) => {
-            console.error("❌ Ошибка загрузки стилей:", error);
-            this.createFallbackStyles();
-            resolve(true);
+        link.onerror = () => {
+            console.log("ℹ️ Внешние стили недоступны, используем резервные");
         };
         
         document.head.appendChild(link);
-        
-        // Добавляем таймаут на случай если стили не загрузятся
-        setTimeout(() => {
-            if (!document.getElementById('game-styles').sheet) {
-                console.warn("⚠️ Стили не загрузились, используем резервные");
-                this.createFallbackStyles();
-                resolve(true);
-            }
-        }, 3000);
     });
 }
 
