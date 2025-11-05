@@ -79,25 +79,29 @@ class HeroSystem {
         let damage = Math.round(targetHero.baseDamage * levelMultiplier);
         let armor = Math.round(targetHero.baseArmor * levelMultiplier);
         
-        // Применяем бонусы от экипировки
+        // Применяем бонусы от экипировки если система доступна
         if (window.game && window.game.systems.bonus) {
-            const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero);
-            
-            health += targetHero.baseHealth * totals.health_mult;
-            damage += targetHero.baseDamage * totals.damage_mult;
-            armor += targetHero.baseArmor * totals.armor_mult;
-            
-            // ФИКСИРОВАННЫЕ характеристики от экипировки
-            Object.values(targetHero.equipment).forEach(itemId => {
-                if (itemId && window.game.systems.equipment) {
-                    const item = window.game.systems.equipment.getItemById(itemId);
-                    if (item) {
-                        damage += item.fixed_damage || 0;
-                        armor += item.fixed_armor || 0;
-                        health += item.fixed_health || 0;
+            try {
+                const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero);
+                
+                health += targetHero.baseHealth * totals.health_mult;
+                damage += targetHero.baseDamage * totals.damage_mult;
+                armor += targetHero.baseArmor * totals.armor_mult;
+                
+                // ФИКСИРОВАННЫЕ характеристики от экипировки
+                Object.values(targetHero.equipment).forEach(itemId => {
+                    if (itemId && window.game.systems.equipment) {
+                        const item = window.game.systems.equipment.getItemById(itemId);
+                        if (item) {
+                            damage += item.fixed_damage || 0;
+                            armor += item.fixed_armor || 0;
+                            health += item.fixed_health || 0;
+                        }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.warn("⚠️ Ошибка расчета бонусов, используем базовые значения:", error);
+            }
         }
         
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
@@ -117,6 +121,7 @@ class HeroSystem {
         const targetHero = hero || this.currentHero;
         if (!targetHero) return 0;
         
+        // Если currentHealth не установлен, устанавливаем его как максимальное здоровье
         if (!targetHero.currentHealth) {
             const stats = this.calculateHeroStats(targetHero);
             targetHero.currentHealth = stats.maxHealth;
@@ -125,33 +130,7 @@ class HeroSystem {
         return targetHero.currentHealth;
     }
 
-    getRaceName(race) {
-        const races = {
-            'human': 'Человек',
-            'elf': 'Эльф',
-            'dwarf': 'Гном',
-            'ork': 'Орк'
-        };
-        return races[race] || race;
-    }
-
-    getClassName(className) {
-        const classes = {
-            'warrior': 'Воин',
-            'hunter': 'Охотник',
-            'mage': 'Маг'
-        };
-        return classes[className] || className;
-    }
-
-    getSagaName(saga) {
-        const sagas = {
-            'golden_egg': 'Золотое Яйцо',
-            'vulkanor': 'Вулканор'
-        };
-        return sagas[saga] || saga;
-    }
-
+    // ... остальные методы остаются без изменений ...
     showHeroSelection() {
         const app = document.getElementById('app');
         if (!app) return;
@@ -175,7 +154,7 @@ class HeroSystem {
                         </div>
                         <div class="hero-option-stats">
                             <div class="stat-row">
-                                <span>❤️ ${stats.health}</span>
+                                <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
                                 <span>⚔️ ${stats.damage}</span>
                                 <span>🛡️ ${stats.armor}</span>
                             </div>
@@ -251,7 +230,11 @@ class HeroSystem {
         // Получаем бонусы если система доступна
         let bonuses = { race: [], class: [], saga: [], equipment: [], sets: [] };
         if (window.game && window.game.systems.bonus) {
-            bonuses = window.game.systems.bonus.getAllActiveBonuses(this.currentHero);
+            try {
+                bonuses = window.game.systems.bonus.getAllActiveBonuses(this.currentHero);
+            } catch (error) {
+                console.warn("⚠️ Ошибка получения бонусов:", error);
+            }
         }
         
         // Получаем отрисованные карты из MapSystem
@@ -408,6 +391,33 @@ class HeroSystem {
                 </div>
             </div>
         `;
+    }
+
+    getRaceName(race) {
+        const races = {
+            'human': 'Человек',
+            'elf': 'Эльф',
+            'dwarf': 'Гном',
+            'ork': 'Орк'
+        };
+        return races[race] || race;
+    }
+
+    getClassName(className) {
+        const classes = {
+            'warrior': 'Воин',
+            'hunter': 'Охотник',
+            'mage': 'Маг'
+        };
+        return classes[className] || className;
+    }
+
+    getSagaName(saga) {
+        const sagas = {
+            'golden_egg': 'Золотое Яйцо',
+            'vulkanor': 'Вулканор'
+        };
+        return sagas[saga] || saga;
     }
 
     getBonusIcon(bonusType) {
