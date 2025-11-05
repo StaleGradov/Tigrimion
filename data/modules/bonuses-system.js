@@ -1,43 +1,103 @@
-// ========== МОДУЛЬ СИСТЕМЫ БОНУСОВ И СЕТОВ ==========
-
+// ========== MODULE: BonusSystem ==========
 class BonusSystem {
     constructor() {
-        this.bonuses = this.initializeBonuses();
-        this.itemSets = this.initializeItemSets();
+        this.bonuses = {};
+        this.itemSetConfig = {};
+        console.log("✅ BonusSystem инициализирован");
     }
 
-    // ========== КОНФИГУРАЦИЯ БОНУСОВ ==========
-    initializeBonuses() {
-        return {
+    async loadBonusData() {
+        try {
+            console.log("📥 Загружаем данные бонусов...");
+            this.loadAllBonuses();
+            this.loadItemSetConfig();
+            console.log("✅ Данные бонусов загружены");
+            return true;
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных бонусов:", error);
+            this.createFallbackBonuses();
+            return true;
+        }
+    }
+
+    loadAllBonuses() {
+        this.bonuses = {
             races: {
                 elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%", source: "race" },
-                human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота", source: "race" },
-                dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью", source: "race" }
+                halfling: { type: "crit_chance", value: 0.2, name: "Полурослик", description: "20% шанс двойного урона", source: "race" },
+                human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота за противника", source: "race" },
+                laitar: { type: "vampirism", value: 0.05, name: "Лайтар", description: "5% урона восстанавливает здоровье", source: "race" },
+                ork: { type: "health_regen_mult", value: 0.3, name: "Орк", description: "+30% к регенерации здоровья", source: "race" },
+                dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью", source: "race" },
+                dragon: { type: "armor_mult", value: 0.15, name: "Дракон", description: "+15% к броне", source: "race" },
+                fairy: { type: "armor_penetration", value: 0.25, name: "Фея", description: "25% шанс игнорировать броню", source: "race" }
             },
             classes: {
+                hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню", source: "class" },
                 warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне", source: "class" },
-                hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню", source: "class" }
+                bounty_hunter: { type: "crit_chance", value: 0.2, name: "Охотник за головами", description: "20% шанс двойного урона", source: "class" },
+                merchant: { type: "gold_mult", value: 0.3, name: "Торговец", description: "+30% золота за противника", source: "class" },
+                thief: { type: "gold_mult", value: 0.3, name: "Вор", description: "+30% золота за противника", source: "class" },
+                fighter: { type: "health_regen_mult", value: 0.3, name: "Кулачный боец", description: "+30% к регенерации", source: "class" },
+                antiquarian: { type: "gold_mult", value: 0.3, name: "Искатель древностей", description: "+30% золота за противника", source: "class" },
+                death_mage: { type: "vampirism", value: 0.05, name: "Волхв смерти", description: "5% урона восстанавливает здоровье", source: "class" },
+                sorcerer: { type: "damage_mult", value: 0.2, name: "Колдун", description: "Урон +20%", source: "class" },
+                archer: { type: "crit_chance", value: 0.2, name: "Лучник", description: "20% шанс двойного урона", source: "class" },
+                healer: { type: "health_mult", value: 0.3, name: "Знахарь", description: "+30% к здоровью", source: "class" },
+                gladiator: { type: "damage_mult", value: 0.2, name: "Гладиатор", description: "Урон +20%", source: "class" },
+                blacksmith: { type: "armor_mult", value: 0.15, name: "Кузнец", description: "+15% к броне", source: "class" }
             },
             sagas: {
-                golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью", source: "saga" }
+                golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью", source: "saga" },
+                vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню", source: "saga" },
+                well: { type: "gold_mult", value: 0.3, name: "Колодец", description: "+30% золота за противника", source: "saga" },
+                pets: { type: "damage_mult", value: 0.2, name: "Питомец", description: "Урон +20%", source: "saga" },
+                following_sun: { type: "health_regen_mult", value: 0.3, name: "Вслед за солнцем", description: "+30% к регенерации", source: "saga" },
+                vampire_crown: { type: "vampirism", value: 0.05, name: "Корона короля вампиров", description: "5% урона восстанавливает здоровье", source: "saga" },
+                tiger_eye: { type: "crit_chance", value: 0.2, name: "Желтый Глаз тигра", description: "20% шанс двойного урона", source: "saga" },
+                sky_phenomena: { type: "armor_mult", value: 0.15, name: "Небесные явления", description: "+15% к броне", source: "saga" }
             }
         };
     }
 
-    // ========== КОНФИГУРАЦИЯ СЕТОВ ПРЕДМЕТОВ ==========
-    initializeItemSets() {
-        return {
+    loadItemSetConfig() {
+        this.itemSetConfig = {
             "set_beginner": {
                 name: "Крестьянина Арканиума",
                 requiredPieces: 6,
                 bonus: { type: "damage_mult", value: 0.05 },
                 description: "Комплект из 6 вещей даст +5% к урону"
+            },
+            "set_warrior": {
+                name: "Ополченца Арканиума", 
+                requiredPieces: 6,
+                bonus: { type: "damage_mult", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к урону"
+            },
+            "set_guardian": {
+                name: "Милитанта Арканиума",
+                requiredPieces: 6, 
+                bonus: { type: "damage_mult", value: 0.15 },
+                description: "Комплект из 6 вещей даст +15% к урону"
             }
+            // ... остальные сеты
         };
     }
 
-    // ========== ПОЛУЧЕНИЕ ВСЕХ АКТИВНЫХ БОНУСОВ ДЛЯ ГЕРОЯ ==========
-    getAllActiveBonuses(hero, items) {
+    createFallbackBonuses() {
+        this.loadAllBonuses();
+        this.loadItemSetConfig();
+    }
+
+    getBonuses() {
+        return this.bonuses;
+    }
+
+    getItemSetConfig() {
+        return this.itemSetConfig;
+    }
+
+    getAllActiveBonuses(hero) {
         if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
         
         const activeBonuses = {
@@ -66,9 +126,8 @@ class BonusSystem {
         return activeBonuses;
     }
 
-    // ========== РАСЧЕТ СУММАРНЫХ БОНУСОВ ==========
-    calculateTotalBonuses(hero, items) {
-        const activeBonuses = this.getAllActiveBonuses(hero, items);
+    calculateTotalBonuses(hero) {
+        const activeBonuses = this.getAllActiveBonuses(hero);
         
         const totals = {
             health_mult: 0,
@@ -94,10 +153,21 @@ class BonusSystem {
         return totals;
     }
 
-    getActiveSetBonuses(hero, items) {
-        return [];
+    getBonusIcon(bonusType) {
+        const icons = {
+            'health_mult': '❤️',
+            'damage_mult': '⚔️',
+            'armor_mult': '🛡️',
+            'gold_mult': '💰',
+            'health_regen_mult': '⚡',
+            'crit_chance': '💥',
+            'armor_penetration': '⚡',
+            'vampirism': '🩸'
+        };
+        return icons[bonusType] || '🎯';
     }
 }
 
-// ДОБАВЬТЕ ЭТУ СТРОКУ В КОНЕЦ ФАЙЛА:
+// Регистрируем систему в глобальной области
 window.BonusSystem = BonusSystem;
+console.log("📦 BonusSystem модуль загружен");
