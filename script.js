@@ -1,10 +1,10 @@
 "use strict";
 
-// ========== ОЖИДАНИЕ МОДУЛЕЙ ==========
+// ========== МОДУЛЬ 1: ОЖИДАНИЕ МОДУЛЕЙ ==========
 function waitForModules() {
     return new Promise((resolve, reject) => {
         let attempts = 0;
-        const maxAttempts = 50; // 5 секунд
+        const maxAttempts = 50;
         
         const checkModules = () => {
             attempts++;
@@ -30,6 +30,7 @@ function waitForModules() {
     });
 }
 
+// ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class SafeHeroGame {
     constructor() {
         try {
