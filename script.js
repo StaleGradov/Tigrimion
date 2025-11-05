@@ -6,19 +6,18 @@ class ModuleLoader {
         this.modules = {};
         this.loadedModules = new Set();
         this.requiredModules = [
-            'BonusSystem',
-            'LevelSystem', 
-            'BattleSystem',
-            'EquipmentSystem',
-            'HeroSystem',
-            'MapSystem'
+            'bonuses-system',
+            'level-system', 
+            'battle-system',
+            'equipment-system',
+            'hero-system',
+            'map-system'
         ];
     }
 
     // Загрузка CSS стилей из отдельного файла
     async loadStyles() {
         return new Promise((resolve, reject) => {
-            // Проверяем, не загружены ли стили уже
             if (document.getElementById('game-styles')) {
                 console.log("✅ Стили уже загружены");
                 resolve(true);
@@ -37,7 +36,6 @@ class ModuleLoader {
             
             link.onerror = () => {
                 console.error("❌ Ошибка загрузки стилей");
-                // Создаем базовые стили если файл не найден
                 this.createFallbackStyles();
                 resolve(true);
             };
@@ -81,41 +79,53 @@ class ModuleLoader {
     }
 
     async loadModule(moduleName) {
-    if (this.loadedModules.has(moduleName)) {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-
-    try {
-        // ПРАВИЛЬНОЕ ФОРМИРОВАНИЕ ПУТИ К ФАЙЛУ
-        const modulePath = `data/modules/${moduleName}.js`;
-        console.log(`📥 Загружаем модуль: ${modulePath}`);
-        
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        if (this.loadedModules.has(moduleName)) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
         }
-        
-        const moduleCode = await response.text();
-        
-        // Выполняем код модуля
-        const script = document.createElement('script');
-        script.textContent = moduleCode;
-        document.head.appendChild(script);
-        document.head.removeChild(script);
-        
-        this.loadedModules.add(moduleName);
-        console.log(`✅ Модуль ${moduleName} успешно загружен`);
-        return true;
-        
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-        return false;
+
+        try {
+            const modulePath = `data/modules/${moduleName}.js`;
+            console.log(`📥 Загружаем модуль: ${modulePath}`);
+            
+            const response = await fetch(modulePath);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+            }
+            
+            const moduleCode = await response.text();
+            
+            // Выполняем код модуля
+            const script = document.createElement('script');
+            script.textContent = moduleCode;
+            document.head.appendChild(script);
+            document.head.removeChild(script);
+            
+            this.loadedModules.add(moduleName);
+            console.log(`✅ Модуль ${moduleName} успешно загружен`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            return false;
+        }
     }
-}
 
     isModuleAvailable(moduleName) {
-        return typeof window[moduleName] !== 'undefined';
+        return typeof window[this.getClassName(moduleName)] !== 'undefined';
+    }
+
+    // Преобразует имя файла в имя класса (kebab-case to PascalCase)
+    getClassName(moduleName) {
+        const classMap = {
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem'
+        };
+        return classMap[moduleName] || moduleName;
     }
 
     async waitForAllModules() {
@@ -212,6 +222,7 @@ class SafeHeroGame {
         console.log("⚙️ Инициализация игровых систем...");
         
         try {
+            // Используем правильные имена классов (PascalCase)
             this.systems.bonus = new BonusSystem();
             this.systems.level = new LevelSystem();
             this.systems.battle = new BattleSystem();
