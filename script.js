@@ -16,107 +16,139 @@ class ModuleLoader {
     }
 
 async loadStyles() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        // Если стили уже загружены
         if (document.getElementById('game-styles')) {
             console.log("✅ Стили уже загружены");
             resolve(true);
             return;
         }
 
-        // Создаем инлайн стили как временное решение
-        this.createFallbackStyles();
-        console.log("🔄 Используем резервные стили");
-        resolve(true);
-        
-        // Параллельно пробуем загрузить внешние стили
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'style.css';
         link.id = 'game-styles';
         
-        link.onload = () => {
-            console.log("✅ Внешние стили загружены");
-            // Перезагружаем интерфейс когда стили загрузились
-            if (this.currentScreen === 'main') {
-                this.renderMainScreen();
+        let stylesLoaded = false;
+
+        // Таймаут для стилей
+        const styleTimeout = setTimeout(() => {
+            if (!stylesLoaded) {
+                console.warn("⚠️ Таймаут загрузки стилей, используем резервные");
+                this.createFallbackStyles();
+                resolve(false);
             }
+        }, 3000); // 3 секунды на загрузку стилей
+
+        link.onload = () => {
+            clearTimeout(styleTimeout);
+            stylesLoaded = true;
+            console.log("✅ Внешние стили загружены");
+            resolve(true);
         };
         
         link.onerror = () => {
-            console.log("ℹ️ Внешние стили недоступны, используем резервные");
+            clearTimeout(styleTimeout);
+            stylesLoaded = true;
+            console.warn("❌ Ошибка загрузки внешних стилей, используем резервные");
+            this.createFallbackStyles();
+            resolve(false);
         };
         
         document.head.appendChild(link);
     });
 }
+}
 
-    // Базовые стили на случай если файл стилей не найден
-    createFallbackStyles() {
-        const fallbackStyles = `
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
-                font-family: Arial, sans-serif; 
-                background: #1a1a2e; 
-                color: white; 
-                padding: 20px; 
-            }
-            .loading-screen { 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                height: 100vh; 
-                text-align: center; 
-            }
-            .btn-primary, .btn-secondary { 
-                padding: 10px 20px; 
-                margin: 5px; 
-                border: none; 
-                border-radius: 5px; 
-                cursor: pointer; 
-            }
-            .btn-primary { background: #3b82f6; color: white; }
-            .btn-secondary { background: #6b7280; color: white; }
-        `;
+createFallbackStyles() {
+    // Проверяем, не добавлены ли уже fallback стили
+    if (document.getElementById('fallback-styles')) {
+        return;
+    }
+
+    const fallbackStyles = `
+        /* Базовые сбросы */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        const style = document.createElement('style');
-        style.textContent = fallbackStyles;
-        document.head.appendChild(style);
-        console.log("🔄 Загружены резервные стили");
-    }
-
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
+        /* Основные стили игры */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
         }
-
-        try {
-            const modulePath = `data/modules/${moduleName}.js`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            
-            const moduleCode = await response.text();
-            
-            // Выполняем код модуля
-            const script = document.createElement('script');
-            script.textContent = moduleCode;
-            document.head.appendChild(script);
-            document.head.removeChild(script);
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
+        
+        /* Экран загрузки */
+        .loading-screen { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            text-align: center; 
         }
-    }
-
+        
+        /* Основные кнопки */
+        .btn-primary, .btn-secondary { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary { 
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
+            color: white; 
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-secondary { 
+            background: rgba(107, 114, 128, 0.7); 
+            color: white; 
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-secondary:hover { 
+            background: rgba(107, 114, 128, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        /* Контейнеры */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Карточки систем */
+        .systems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .system-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    `;
+    
+    const style = document.createElement('style');
+    style.id = 'fallback-styles';
+    style.textContent = fallbackStyles;
+    document.head.appendChild(style);
+}
     isModuleAvailable(moduleName) {
         return typeof window[this.getClassName(moduleName)] !== 'undefined';
     }
@@ -199,30 +231,37 @@ class SafeHeroGame {
         this.init();
     }
 
-    async init() {
-        try {
-            console.log("🎮 Инициализация игры...");
-            
-            // Показываем экран загрузки
-            this.showLoadingScreen("Загрузка игровых модулей...");
-            
-            // Загружаем все модули и стили
-            await this.moduleLoader.loadAllModules();
-            
-            // Инициализируем системы
-            await this.initializeSystems();
-            
-            // Загружаем игровые данные
-            await this.loadGameData();
-            
-            // Показываем главный экран
-            this.renderMainScreen();
-            
-        } catch (error) {
-            console.error("💀 Критическая ошибка инициализации:", error);
-            this.panic(error);
-        }
+async init() {
+    try {
+        console.log("🎮 Инициализация игры...");
+        
+        // Показываем экран загрузки ДО загрузки стилей
+        this.showLoadingScreen("Загрузка игровых модулей...");
+        
+        // Сначала загружаем стили
+        const stylesLoaded = await this.moduleLoader.loadStyles();
+        console.log(stylesLoaded ? "✅ Стили загружены" : "⚠️ Используются резервные стили");
+        
+        // Ждем немного чтобы стили применились
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Затем загружаем модули
+        await this.moduleLoader.loadAllModules();
+        
+        // Инициализируем системы
+        await this.initializeSystems();
+        
+        // Загружаем игровые данные
+        await this.loadGameData();
+        
+        // Показываем главный экран
+        this.renderMainScreen();
+        
+    } catch (error) {
+        console.error("💀 Критическая ошибка инициализации:", error);
+        this.panic(error);
     }
+}
 
     async initializeSystems() {
         console.log("⚙️ Инициализация игровых систем...");
