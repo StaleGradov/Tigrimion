@@ -21,7 +21,6 @@ class MapSystem {
             console.log("📥 Загружаем данные карт...");
             
             // Пока используем тестовые данные
-            // Позже будем загружать из JSON файлов
             this.createTestMaps();
             
             // Устанавливаем стартовые позиции
@@ -474,90 +473,10 @@ class MapSystem {
         }
     }
 
-    // Инжект стилей для карт
+    // Убираем injectMapStyles так как стили теперь в отдельном файле
     injectMapStyles() {
-        const styles = `
-            .map-container {
-                background: #4b5563;
-                border-radius: 10px;
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-            
-            .map-grid {
-                display: grid;
-                gap: 2px;
-                margin: 1rem 0;
-                background: #6b7280;
-                padding: 4px;
-                border-radius: 6px;
-            }
-            
-            .map-cell {
-                aspect-ratio: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #9ca3af;
-                border-radius: 4px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                font-size: 0.8rem;
-            }
-            
-            .map-cell:hover {
-                transform: scale(1.1);
-                background: #d1d5db;
-            }
-            
-            .player-cell {
-                background: #10b981 !important;
-                color: white;
-            }
-            
-            .has-local-map, .has-tactical-map {
-                background: #f59e0b;
-                color: white;
-            }
-            
-            .monster-cell {
-                background: #ef4444;
-                color: white;
-            }
-            
-            .chest-cell {
-                background: #f59e0b;
-                color: white;
-            }
-            
-            .npc-cell {
-                background: #3b82f6;
-                color: white;
-            }
-            
-            .exit-cell {
-                background: #8b5cf6;
-                color: white;
-            }
-            
-            .map-info {
-                font-size: 0.9rem;
-                color: #d1d5db;
-                margin-top: 0.5rem;
-            }
-            
-            .map-error {
-                background: #ef4444;
-                color: white;
-                padding: 1rem;
-                border-radius: 6px;
-                text-align: center;
-            }
-        `;
-        
-        const style = document.createElement('style');
-        style.textContent = styles;
-        document.head.appendChild(style);
+        // Стили теперь в styles.css
+        console.log("🎨 Стили карт загружены из styles.css");
     }
 }
 
