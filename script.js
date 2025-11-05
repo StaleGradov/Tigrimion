@@ -15,34 +15,34 @@ class ModuleLoader {
         ];
     }
 
-    // Загрузка CSS стилей из отдельного файла
-    async loadStyles() {
-        return new Promise((resolve, reject) => {
-            if (document.getElementById('game-styles')) {
-                console.log("✅ Стили уже загружены");
-                resolve(true);
-                return;
-            }
+  // Загрузка CSS стилей из отдельного файла
+async loadStyles() {
+    return new Promise((resolve, reject) => {
+        if (document.getElementById('game-styles')) {
+            console.log("✅ Стили уже загружены");
+            resolve(true);
+            return;
+        }
 
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'styles.css';
-            link.id = 'game-styles';
-            
-            link.onload = () => {
-                console.log("✅ Стили игры загружены");
-                resolve(true);
-            };
-            
-            link.onerror = () => {
-                console.error("❌ Ошибка загрузки стилей");
-                this.createFallbackStyles();
-                resolve(true);
-            };
-            
-            document.head.appendChild(link);
-        });
-    }
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'style.css'; // ИЗМЕНИТЕ ЭТУ СТРОКУ
+        link.id = 'game-styles';
+        
+        link.onload = () => {
+            console.log("✅ Стили игры загружены");
+            resolve(true);
+        };
+        
+        link.onerror = () => {
+            console.error("❌ Ошибка загрузки стилей");
+            this.createFallbackStyles();
+            resolve(true);
+        };
+        
+        document.head.appendChild(link);
+    });
+}
 
     // Базовые стили на случай если файл стилей не найден
     createFallbackStyles() {
