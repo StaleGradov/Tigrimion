@@ -1,6 +1,6 @@
 "use strict";
 
-// ========== МОДУЛЬ 1: СИСТЕМА ДИНАМИЧЕСКОЙ ЗАГРУЗКИ МОДУЛЕЙ ==========
+// ========== МОДУЛЬ 1: СИСТЕМА ДИНАМИЧЕСКОЙ ЗАГРУЗКИ МОДУЛЕЙ И СТИЛЕЙ ==========
 class ModuleLoader {
     constructor() {
         this.modules = {};
@@ -15,7 +15,27 @@ class ModuleLoader {
         ];
     }
 
-    // Загрузка отдельного модуля
+    // Загрузка CSS стилей
+    async loadStyles() {
+        try {
+            // Инжектим стили из твоего файла
+            const styles = `/* ВСТАВЬ СЮДА ВЕСЬ ТВОЙ CSS КОД ИЗ ФАЙЛА СТИЛЕЙ */`;
+            
+            const styleSheet = document.createElement('style');
+            styleSheet.textContent = styles;
+            styleSheet.id = 'game-styles';
+            document.head.appendChild(styleSheet);
+            
+            console.log("✅ Стили игры загружены");
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки стилей:", error);
+            return false;
+        }
+    }
+
+    // ... остальные методы loadModule, waitForAllModules и т.д. остаются без изменений ...
     async loadModule(moduleName) {
         if (this.loadedModules.has(moduleName)) {
             console.log(`✅ Модуль ${moduleName} уже загружен`);
@@ -49,14 +69,12 @@ class ModuleLoader {
         }
     }
 
-    // Проверка доступности модуля в глобальной области
     isModuleAvailable(moduleName) {
         return typeof window[moduleName] !== 'undefined';
     }
 
-    // Ожидание всех необходимых модулей
     async waitForAllModules() {
-        const maxAttempts = 100; // 10 секунд
+        const maxAttempts = 100;
         const checkInterval = 100;
         
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -83,12 +101,13 @@ class ModuleLoader {
         throw new Error(`Модули не загрузились за ${maxAttempts/10} секунд`);
     }
 
-    // Последовательная загрузка всех модулей
     async loadAllModules() {
         console.log("🚀 Начинаем загрузку модулей...");
         
+        // Сначала загружаем стили
+        await this.loadStyles();
+        
         const loadPromises = this.requiredModules.map(async (moduleName) => {
-            // Сначала проверяем, может модуль уже загружен
             if (!this.isModuleAvailable(moduleName)) {
                 return await this.loadModule(moduleName);
             }
@@ -97,7 +116,6 @@ class ModuleLoader {
         
         const results = await Promise.allSettled(loadPromises);
         
-        // Проверяем результаты загрузки
         const failedModules = results
             .map((result, index) => ({ result, module: this.requiredModules[index] }))
             .filter(({ result }) => result.status === 'rejected' || result.value === false);
@@ -107,12 +125,11 @@ class ModuleLoader {
             throw new Error(`Не удалось загрузить модули: ${failedModules.map(f => f.module).join(', ')}`);
         }
         
-        // Дополнительная проверка, что все модули действительно доступны
         return await this.waitForAllModules();
     }
 }
 
-// ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ С МОДУЛЬНОЙ АРХИТЕКТУРОЙ ==========
+// ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class SafeHeroGame {
     constructor() {
         this.moduleLoader = new ModuleLoader();
@@ -128,7 +145,7 @@ class SafeHeroGame {
             // Показываем экран загрузки
             this.showLoadingScreen("Загрузка игровых модулей...");
             
-            // Загружаем все модули
+            // Загружаем все модули и стили
             await this.moduleLoader.loadAllModules();
             
             // Инициализируем системы
@@ -150,7 +167,6 @@ class SafeHeroGame {
         console.log("⚙️ Инициализация игровых систем...");
         
         try {
-            // Инициализируем каждую систему через ее модуль
             this.systems.bonus = new BonusSystem();
             this.systems.level = new LevelSystem();
             this.systems.battle = new BattleSystem();
@@ -169,12 +185,13 @@ class SafeHeroGame {
         console.log("📂 Загрузка игровых данных...");
         
         try {
-            // Загрузка данных будет в соответствующих модулях
-            // Здесь только базовая проверка
             await Promise.all([
                 this.systems.hero.loadHeroData(),
                 this.systems.equipment.loadItemData(),
-                this.systems.map.loadMapData()
+                this.systems.battle.loadBattleData(),
+                this.systems.map.loadMapData(),
+                this.systems.bonus.loadBonusData(),
+                this.systems.level.loadLevelData()
             ]);
             
             console.log("✅ Все игровые данные загружены");
@@ -250,7 +267,6 @@ class SafeHeroGame {
     }
 
     startGame() {
-        // Запуск основной игры через систему героев
         if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
             this.systems.hero.showHeroSelection();
         } else {
@@ -309,113 +325,8 @@ class SafeHeroGame {
     }
 }
 
-// Добавляем базовые стили для загрузки
-const loadStyles = () => {
-    const styles = `
-        .loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #1f2937, #374151);
-            color: white;
-            font-family: Arial, sans-serif;
-        }
-        
-        .loading-content {
-            text-align: center;
-            max-width: 500px;
-            padding: 2rem;
-        }
-        
-        .progress-container {
-            margin: 2rem 0;
-        }
-        
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #374151;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            border-radius: 5px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-        
-        .module-status {
-            font-size: 0.9rem;
-            color: #9ca3af;
-            margin-top: 1rem;
-        }
-        
-        .main-screen {
-            padding: 2rem;
-            background: #1f2937;
-            color: white;
-            min-height: 100vh;
-        }
-        
-        .game-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .systems-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-        
-        .system-card {
-            background: #374151;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .btn-primary, .btn-secondary {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            margin: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary {
-            background: #10b981;
-            color: white;
-        }
-        
-        .btn-secondary {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .error-screen {
-            padding: 2rem;
-            background: #dc2626;
-            color: white;
-            min-height: 100vh;
-        }
-    `;
-    
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = styles;
-    document.head.appendChild(styleSheet);
-};
-
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    loadStyles();
     console.log("🎮 Запуск Tigrimion RPG...");
     window.game = new SafeHeroGame();
 });
