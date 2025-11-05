@@ -105,7 +105,9 @@ class HeroSystem {
         }
         
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-        const currentHealth = this.getCurrentHealthForDisplay(targetHero);
+        
+        // УБИРАЕМ вызов getCurrentHealthForDisplay чтобы избежать рекурсии
+        const currentHealth = targetHero.currentHealth || health;
         
         return {
             health: Math.round(health),
@@ -121,16 +123,16 @@ class HeroSystem {
         const targetHero = hero || this.currentHero;
         if (!targetHero) return 0;
         
-        // Если currentHealth не установлен, устанавливаем его как максимальное здоровье
+        // Если currentHealth не установлен, вычисляем максимальное здоровье БЕЗ рекурсии
         if (!targetHero.currentHealth) {
-            const stats = this.calculateHeroStats(targetHero);
-            targetHero.currentHealth = stats.maxHealth;
+            const baseHealth = targetHero.baseHealth || 100;
+            const levelMultiplier = 1 + ((targetHero.level || 1) - 1) * 0.1;
+            targetHero.currentHealth = Math.round(baseHealth * levelMultiplier);
         }
         
         return targetHero.currentHealth;
     }
 
-    // ... остальные методы остаются без изменений ...
     showHeroSelection() {
         const app = document.getElementById('app');
         if (!app) return;
