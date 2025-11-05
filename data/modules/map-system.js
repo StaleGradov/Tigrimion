@@ -475,8 +475,8 @@ class MapSystem {
 
     // Убираем injectMapStyles так как стили теперь в отдельном файле
     injectMapStyles() {
-        // Стили теперь в styles.css
-        console.log("🎨 Стили карт загружены из styles.css");
+        // Стили теперь в style.css
+        console.log("🎨 Стили карт загружены из style.css");
     }
 }
 
