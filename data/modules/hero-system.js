@@ -68,6 +68,90 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
+    calculateHeroStats(hero = null) {
+        const targetHero = hero || this.currentHero;
+        if (!targetHero) return {};
+        
+        // Базовая логика расчета характеристик
+        const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
+        
+        let health = Math.round(targetHero.baseHealth * levelMultiplier);
+        let damage = Math.round(targetHero.baseDamage * levelMultiplier);
+        let armor = Math.round(targetHero.baseArmor * levelMultiplier);
+        
+        // Применяем бонусы от экипировки
+        if (window.game && window.game.systems.bonus) {
+            const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero);
+            
+            health += targetHero.baseHealth * totals.health_mult;
+            damage += targetHero.baseDamage * totals.damage_mult;
+            armor += targetHero.baseArmor * totals.armor_mult;
+            
+            // ФИКСИРОВАННЫЕ характеристики от экипировки
+            Object.values(targetHero.equipment).forEach(itemId => {
+                if (itemId && window.game.systems.equipment) {
+                    const item = window.game.systems.equipment.getItemById(itemId);
+                    if (item) {
+                        damage += item.fixed_damage || 0;
+                        armor += item.fixed_armor || 0;
+                        health += item.fixed_health || 0;
+                    }
+                }
+            });
+        }
+        
+        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+        const currentHealth = this.getCurrentHealthForDisplay(targetHero);
+        
+        return {
+            health: Math.round(health),
+            currentHealth: Math.floor(currentHealth),
+            maxHealth: Math.round(health),
+            damage: Math.round(damage),
+            armor: Math.round(armor),
+            power: power
+        };
+    }
+
+    getCurrentHealthForDisplay(hero = null) {
+        const targetHero = hero || this.currentHero;
+        if (!targetHero) return 0;
+        
+        if (!targetHero.currentHealth) {
+            const stats = this.calculateHeroStats(targetHero);
+            targetHero.currentHealth = stats.maxHealth;
+        }
+        
+        return targetHero.currentHealth;
+    }
+
+    getRaceName(race) {
+        const races = {
+            'human': 'Человек',
+            'elf': 'Эльф',
+            'dwarf': 'Гном',
+            'ork': 'Орк'
+        };
+        return races[race] || race;
+    }
+
+    getClassName(className) {
+        const classes = {
+            'warrior': 'Воин',
+            'hunter': 'Охотник',
+            'mage': 'Маг'
+        };
+        return classes[className] || className;
+    }
+
+    getSagaName(saga) {
+        const sagas = {
+            'golden_egg': 'Золотое Яйцо',
+            'vulkanor': 'Вулканор'
+        };
+        return sagas[saga] || saga;
+    }
+
     showHeroSelection() {
         const app = document.getElementById('app');
         if (!app) return;
@@ -132,8 +216,6 @@ class HeroSystem {
                 </div>
             </div>
         `;
-
-        this.addHeroSelectionStyles();
     }
 
     selectHero(heroId) {
@@ -152,6 +234,11 @@ class HeroSystem {
         this.currentHero = hero;
         console.log(`🎯 Выбран герой: ${hero.name}`);
         
+        // Сохраняем в основной игре
+        if (window.game) {
+            window.game.currentHero = hero;
+        }
+        
         this.showHeroGameScreen();
     }
 
@@ -160,26 +247,31 @@ class HeroSystem {
 
         const app = document.getElementById('app');
         const stats = this.calculateHeroStats(this.currentHero);
-        const bonuses = window.game.systems.bonus.getAllActiveBonuses(this.currentHero);
+        
+        // Получаем бонусы если система доступна
+        let bonuses = { race: [], class: [], saga: [], equipment: [], sets: [] };
+        if (window.game && window.game.systems.bonus) {
+            bonuses = window.game.systems.bonus.getAllActiveBonuses(this.currentHero);
+        }
         
         // Получаем отрисованные карты из MapSystem
-        const globalMapHTML = window.game.systems.map ? 
+        const globalMapHTML = window.game && window.game.systems.map ? 
             window.game.systems.map.renderGlobalMap() : 
-            '<div class="map-placeholder">Глобальная карта<br><small>(Модуль карт загружается...)</small></div>';
+            '<div class="map-placeholder">🗺️ Глобальная карта<br><small>(Модуль карт загружается...)</small></div>';
         
-        const localMapHTML = window.game.systems.map ? 
+        const localMapHTML = window.game && window.game.systems.map ? 
             window.game.systems.map.renderLocalMap() : 
-            '<div class="map-placeholder">Локальная карта<br><small>(Модуль карт загружается...)</small></div>';
+            '<div class="map-placeholder">📍 Локальная карта<br><small>(Модуль карт загружается...)</small></div>';
         
-        const tacticalMapHTML = window.game.systems.map ? 
+        const tacticalMapHTML = window.game && window.game.systems.map ? 
             window.game.systems.map.renderTacticalMap() : 
-            '<div class="map-placeholder">Тактическая карта<br><small>(Модуль карт загружается...)</small></div>';
+            '<div class="map-placeholder">🎲 Тактическая карта<br><small>(Модуль карт загружается...)</small></div>';
 
         app.innerHTML = `
             <div class="hero-game-screen">
                 <!-- Верхняя панель действий -->
                 <div class="action-buttons-top">
-                    <button class="btn-primary" onclick="game.systems.map.startAdventure()">🎲 Путешествие</button>
+                    <button class="btn-primary" onclick="game.startAdventure()">🎲 Путешествие</button>
                     <button class="btn-secondary" onclick="game.systems.hero.showInventory()">🎒 Инвентарь</button>
                     <button class="btn-secondary" onclick="game.systems.equipment.showMerchant()">🏪 Магазин</button>
                     <button class="btn-danger" onclick="game.systems.hero.resetHero()">🔄 Сброс</button>
@@ -200,7 +292,8 @@ class HeroSystem {
                         
                         <div class="hero-display">
                             <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-                                 class="hero-portrait">
+                                 class="hero-portrait"
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                             
                             <!-- Здоровье -->
                             <div class="health-display">
@@ -235,10 +328,28 @@ class HeroSystem {
                                     <div class="bonus-group">
                                         <strong>🧬 ${this.getRaceName(this.currentHero.race)}</strong>
                                         ${bonuses.race.map(bonus => `
-                                            <div class="bonus-item">${window.game.systems.bonus.getBonusIcon(bonus.type)} +${Math.round(bonus.value * 100)}%</div>
+                                            <div class="bonus-item">${this.getBonusIcon(bonus.type)} +${Math.round(bonus.value * 100)}%</div>
                                         `).join('')}
                                     </div>
                                 ` : ''}
+                                ${bonuses.class.length > 0 ? `
+                                    <div class="bonus-group">
+                                        <strong>⚔️ ${this.getClassName(this.currentHero.class)}</strong>
+                                        ${bonuses.class.map(bonus => `
+                                            <div class="bonus-item">${this.getBonusIcon(bonus.type)} +${Math.round(bonus.value * 100)}%</div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                ${bonuses.sets.length > 0 ? `
+                                    <div class="bonus-group">
+                                        <strong>✨ Бонусы сетов</strong>
+                                        ${bonuses.sets.map(bonus => `
+                                            <div class="bonus-item">${this.getBonusIcon(bonus.type)} +${Math.round(bonus.value * 100)}%</div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                ${bonuses.race.length === 0 && bonuses.class.length === 0 && bonuses.sets.length === 0 ? 
+                                    '<div class="no-bonuses">Нет активных бонусов</div>' : ''}
                             </div>
 
                             <!-- Экипировка -->
@@ -246,11 +357,15 @@ class HeroSystem {
                                 <h4>🎒 Экипировка</h4>
                                 <div class="equipment-slots">
                                     ${Object.entries(this.currentHero.equipment).map(([slot, itemId]) => {
-                                        const item = itemId ? window.game.systems.equipment.getItemById(itemId) : null;
+                                        const item = itemId && window.game.systems.equipment ? 
+                                            window.game.systems.equipment.getItemById(itemId) : null;
                                         return `
                                             <div class="equipment-slot ${slot} ${item ? 'equipped' : 'empty'}"
-                                                 onclick="game.systems.hero.showInventory('${slot}')">
-                                                ${item ? '✅' : this.getSlotIcon(slot)}
+                                                 onclick="game.systems.hero.showInventory('${slot}')"
+                                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
+                                                <div class="equipment-icon">
+                                                    ${item ? `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : this.getSlotIcon(slot)}
+                                                </div>
                                             </div>
                                         `;
                                     }).join('')}
@@ -288,31 +403,38 @@ class HeroSystem {
                 <div class="game-log" id="game-log">
                     <h4>📜 Журнал событий</h4>
                     <div class="log-entries">
-                        <div class="log-entry">Добро пожаловать в игру!</div>
+                        <div class="log-entry">🎮 Добро пожаловать в игру! Выберите действие чтобы начать.</div>
                     </div>
                 </div>
             </div>
         `;
+    }
 
-        // Инжектим стили карт если MapSystem доступен
-        if (window.game.systems.map) {
-            window.game.systems.map.injectMapStyles();
-        }
-        
-        this.addHeroGameStyles();
+    getBonusIcon(bonusType) {
+        const icons = {
+            'health_mult': '❤️',
+            'damage_mult': '⚔️',
+            'armor_mult': '🛡️',
+            'gold_mult': '💰',
+            'health_regen_mult': '⚡',
+            'crit_chance': '💥',
+            'armor_penetration': '⚡',
+            'vampirism': '🩸'
+        };
+        return icons[bonusType] || '🎯';
     }
 
     showInventory(targetSlot = null) {
         if (!this.currentHero) return;
 
         const app = document.getElementById('app');
-        const equipmentSystem = window.game.systems.equipment;
+        const equipmentSystem = window.game ? window.game.systems.equipment : null;
         
         let filteredItems = this.currentHero.inventory;
         let filterInfo = '';
         
-        if (targetSlot) {
-            filteredItems = equipmentSystem.getItemsForSlot(targetSlot, this.currentHero.equipment);
+        if (targetSlot && equipmentSystem) {
+            filteredItems = equipmentSystem.getItemsForSlot(targetSlot, this.currentHero);
             filterInfo = `
                 <div class="inventory-filter-info">
                     <strong>🎯 Выбор для: ${this.getSlotName(targetSlot)}</strong>
@@ -322,17 +444,18 @@ class HeroSystem {
         }
 
         const inventoryHTML = filteredItems.map(itemId => {
-            const item = equipmentSystem.getItemById(itemId);
+            const item = equipmentSystem ? equipmentSystem.getItemById(itemId) : null;
             if (!item) return '';
             
             const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
             
             return `
-                <div class="inventory-item" onclick="game.systems.equipment.equipItem(${itemId})">
-                    <div class="item-image">
-                        <img src="${item.image}" alt="${item.name}">
+                <div class="inventory-item" onclick="game.systems.equipment.equipItem(${itemId})" data-rarity="${item.rarity || 'common'}">
+                    <div class="inventory-item-image">
+                        <img src="${item.image}" alt="${item.name}" 
+                             onerror="this.style.display='none'">
                     </div>
-                    <div class="item-info">
+                    <div class="inventory-item-info">
                         <strong>${item.name}</strong>
                         <div class="item-stats">
                             ${item.fixed_damage ? `<span>⚔️ +${item.fixed_damage}</span>` : ''}
@@ -359,7 +482,7 @@ class HeroSystem {
                 ${filterInfo}
                 
                 <div class="inventory-grid">
-                    ${inventoryHTML || '<div class="empty-inventory">Инвентарь пуст</div>'}
+                    ${inventoryHTML || '<div class="empty-inventory">📭 Инвентарь пуст</div>'}
                 </div>
                 
                 <div class="screen-actions">
@@ -374,11 +497,61 @@ class HeroSystem {
                 </div>
             </div>
         `;
-
-        this.addInventoryStyles();
     }
 
-    // ... остальные методы (calculateHeroStats, getRaceName, и т.д.) ...
+    resetHero() {
+        if (!this.currentHero) return;
+        
+        if (!confirm("⚠️ Вы уверены что хотите сбросить героя?\n\nВсе характеристики, предметы и прогресс будут сброшены к базовым значениям.")) {
+            return;
+        }
+        
+        const baseConfig = {
+            race: "human",
+            class: "warrior", 
+            saga: "golden_egg",
+            baseHealth: 100,
+            baseDamage: 20,
+            baseArmor: 10,
+            gold: 500.00,
+            level: 1,
+            experience: 0,
+            monstersKilled: 0,
+            deaths: 0,
+            inventory: [],
+            equipment: {
+                main_hand: null,
+                off_hand: null,
+                helmet: null,
+                chest: null,
+                gloves: null,
+                legs: null,
+                boots: null
+            }
+        };
+        
+        const heroName = this.currentHero.name;
+        const heroImage = this.currentHero.image;
+        
+        Object.assign(this.currentHero, baseConfig);
+        this.currentHero.name = heroName;
+        this.currentHero.image = heroImage;
+        
+        this.addToLog("🔄 Герой сброшен к базовым настройкам");
+        this.showHeroGameScreen();
+    }
+
+    addToLog(message) {
+        const log = document.getElementById('game-log');
+        if (log) {
+            const entries = log.querySelector('.log-entries');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = message;
+            entries.appendChild(entry);
+            entries.scrollTop = entries.scrollHeight;
+        }
+    }
 
     getSlotIcon(slot) {
         const icons = {
@@ -404,199 +577,6 @@ class HeroSystem {
             'boots': 'Ботинки'
         };
         return names[slot] || slot;
-    }
-
-    addHeroGameStyles() {
-        const styles = `
-            .hero-game-screen {
-                padding: 1rem;
-                background: #1f2937;
-                color: white;
-                min-height: 100vh;
-            }
-            
-            .action-buttons-top {
-                display: flex;
-                gap: 0.5rem;
-                margin-bottom: 1rem;
-                flex-wrap: wrap;
-            }
-            
-            .btn-primary, .btn-secondary, .btn-danger {
-                padding: 10px 16px;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 0.9rem;
-                transition: all 0.3s ease;
-            }
-            
-            .btn-primary { background: #10b981; color: white; }
-            .btn-secondary { background: #6b7280; color: white; }
-            .btn-danger { background: #ef4444; color: white; }
-            
-            .hero-main-layout {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr 1fr;
-                gap: 1rem;
-                margin-bottom: 2rem;
-            }
-            
-            .layout-column {
-                background: #374151;
-                border-radius: 10px;
-                padding: 1rem;
-                min-height: 500px;
-            }
-            
-            .column-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-                padding-bottom: 0.5rem;
-                border-bottom: 1px solid #4b5563;
-            }
-            
-            .hero-portrait {
-                width: 100%;
-                max-width: 200px;
-                border-radius: 10px;
-                margin-bottom: 1rem;
-            }
-            
-            .health-bar {
-                width: 100%;
-                height: 20px;
-                background: #4b5563;
-                border-radius: 10px;
-                overflow: hidden;
-                margin: 0.5rem 0;
-            }
-            
-            .health-bar-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #ef4444, #f59e0b);
-                transition: width 0.3s ease;
-            }
-            
-            .hero-main-stats {
-                display: flex;
-                justify-content: space-around;
-                margin: 1rem 0;
-            }
-            
-            .main-stat {
-                text-align: center;
-            }
-            
-            .equipment-slots {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 0.5rem;
-                margin-top: 0.5rem;
-            }
-            
-            .equipment-slot {
-                aspect-ratio: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #4b5563;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 1.2rem;
-            }
-            
-            .equipment-slot:hover {
-                background: #6b7280;
-            }
-            
-            .game-log {
-                background: #374151;
-                padding: 1rem;
-                border-radius: 10px;
-                max-height: 150px;
-                overflow-y: auto;
-            }
-        `;
-        
-        this.injectStyles(styles);
-    }
-
-    addInventoryStyles() {
-        const styles = `
-            .inventory-screen {
-                padding: 2rem;
-                background: #1f2937;
-                color: white;
-                min-height: 100vh;
-            }
-            
-            .inventory-stats {
-                display: flex;
-                gap: 1rem;
-            }
-            
-            .inventory-filter-info {
-                background: #3b82f6;
-                padding: 1rem;
-                border-radius: 8px;
-                margin: 1rem 0;
-                text-align: center;
-            }
-            
-            .inventory-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-                margin: 2rem 0;
-            }
-            
-            .inventory-item {
-                background: #374151;
-                padding: 1rem;
-                border-radius: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                border: 2px solid #4b5563;
-            }
-            
-            .inventory-item:hover {
-                border-color: #3b82f6;
-                transform: translateY(-2px);
-            }
-            
-            .item-image img {
-                width: 50px;
-                height: 50px;
-                border-radius: 8px;
-                margin-bottom: 0.5rem;
-            }
-            
-            .equipped-badge {
-                color: #10b981;
-                font-weight: bold;
-                margin-top: 0.5rem;
-            }
-            
-            .empty-inventory {
-                grid-column: 1 / -1;
-                text-align: center;
-                padding: 2rem;
-                background: #4b5563;
-                border-radius: 10px;
-                opacity: 0.7;
-            }
-        `;
-        
-        this.injectStyles(styles);
-    }
-
-    injectStyles(css) {
-        const style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
     }
 }
 
