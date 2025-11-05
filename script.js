@@ -1,57 +1,31 @@
-// ========== СИГНАЛ ЖИЗНИ ==========
-console.log("🚨 SCRIPT.JS НАЧАЛ ВЫПОЛНЯТЬСЯ");
+"use strict";
 
-// ========== ПРИНУДИТЕЛЬНАЯ ПРОВЕРКА ==========
-alert("Script.js загружен! Нажми OK чтобы продолжить");
-
-// ========== ПРОСТЕЙШАЯ ИГРА ДЛЯ ТЕСТА ==========
-class HeroGame {
+class SafeHeroGame {
     constructor() {
-        console.log("🎮 HeroGame создан");
-        this.init();
-    }
-    
-    init() {
-        console.log("🎮 Инициализация игры");
-        this.renderTestScreen();
-    }
-    
-    renderTestScreen() {
-        console.log("🎮 Отрисовка экрана");
-        const app = document.getElementById('app');
-        if (app) {
-            app.innerHTML = `
-                <div style="padding: 20px; background: #333; color: white;">
-                    <h1>🎯 ИГРА РАБОТАЕТ!</h1>
-                    <p>Script.js выполняется нормально</p>
-                    <button onclick="game.testButton()">ТЕСТ КНОПКА</button>
-                </div>
-            `;
-            console.log("🎮 Экран отрисован");
-        } else {
-            console.error("🎮 ОШИБКА: app элемент не найден");
+        try {
+            console.log("🛡️ БЕЗОПАСНЫЙ ЗАПУСК");
+            this.init();
+        } catch (error) {
+            this.panic(error);
         }
     }
     
-    testButton() {
-        alert("Кнопка работает! Игра функционирует!");
+    panic(error) {
+        document.body.innerHTML = `
+            <div style="padding: 20px; background: red; color: white;">
+                <h1>🚨 ИГРА УПАЛА</h1>
+                <p><strong>Ошибка:</strong> ${error.message}</p>
+                <p><strong>Место:</strong> ${error.stack}</p>
+                <button onclick="location.reload()">Перезагрузить</button>
+            </div>
+        `;
+        throw error; // Все равно покажем в консоль
     }
 }
 
-// ========== ЗАПУСК ==========
-console.log("🚨 ЗАПУСК ИГРЫ...");
-let game;
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log("🚨 DOM ЗАГРУЖЕН");
-        game = new HeroGame();
-        window.game = game;
-    });
-} else {
-    console.log("🚨 DOM УЖЕ ЗАГРУЖЕН");
-    game = new HeroGame();
-    window.game = game;
+// Запуск с максимальной защитой
+try {
+    window.game = new SafeHeroGame();
+} catch (error) {
+    console.error("💀 Игра не запустилась:", error);
 }
-
-console.log("🚨 SCRIPT.JS ВЫПОЛНЕН ДО КОНЦА");
