@@ -159,407 +159,134 @@ class HeroGame {
     }
 }
 
-// ========== МОДУЛЬ 3.1: ПОЛУЧЕНИЕ ВСЕХ ДОСТУПНЫХ БОНУСОВ ==========
-HeroGame.prototype.getBonuses = function() {
-    return {
-        races: {
-            elf: { type: "damage_mult", value: 0.2, name: "Эльф", description: "Урон +20%", source: "race" },
-            halfling: { type: "crit_chance", value: 0.2, name: "Полурослик", description: "20% шанс двойного урона", source: "race" },
-            human: { type: "gold_mult", value: 0.3, name: "Человек", description: "+30% золота за противника", source: "race" },
-            laitar: { type: "vampirism", value: 0.05, name: "Лайтар", description: "5% урона восстанавливает здоровье", source: "race" },
-            ork: { type: "health_regen_mult", value: 0.3, name: "Орк", description: "+30% к регенерации здоровья", source: "race" },
-            dwarf: { type: "health_mult", value: 0.3, name: "Гном", description: "+30% к здоровью", source: "race" },
-            dragon: { type: "armor_mult", value: 0.15, name: "Дракон", description: "+15% к броне", source: "race" },
-            fairy: { type: "armor_penetration", value: 0.25, name: "Фея", description: "25% шанс игнорировать броню", source: "race" }
-        },
-        classes: {
-            hunter: { type: "armor_penetration", value: 0.25, name: "Охотник", description: "25% шанс игнорировать броню", source: "class" },
-            warrior: { type: "armor_mult", value: 0.15, name: "Воин", description: "+15% к броне", source: "class" },
-            bounty_hunter: { type: "crit_chance", value: 0.2, name: "Охотник за головами", description: "20% шанс двойного урона", source: "class" },
-            merchant: { type: "gold_mult", value: 0.3, name: "Торговец", description: "+30% золота за противника", source: "class" },
-            thief: { type: "gold_mult", value: 0.3, name: "Вор", description: "+30% золота за противника", source: "class" },
-            fighter: { type: "health_regen_mult", value: 0.3, name: "Кулачный боец", description: "+30% к регенерации", source: "class" },
-            antiquarian: { type: "gold_mult", value: 0.3, name: "Искатель древностей", description: "+30% золота за противника", source: "class" },
-            death_mage: { type: "vampirism", value: 0.05, name: "Волхв смерти", description: "5% урона восстанавливает здоровье", source: "class" },
-            sorcerer: { type: "damage_mult", value: 0.2, name: "Колдун", description: "Урон +20%", source: "class" },
-            archer: { type: "crit_chance", value: 0.2, name: "Лучник", description: "20% шанс двойного урона", source: "class" },
-            healer: { type: "health_mult", value: 0.3, name: "Знахарь", description: "+30% к здоровью", source: "class" },
-            gladiator: { type: "damage_mult", value: 0.2, name: "Гладиатор", description: "Урон +20%", source: "class" },
-            blacksmith: { type: "armor_mult", value: 0.15, name: "Кузнец", description: "+15% к броне", source: "class" }
-        },
-        sagas: {
-            golden_egg: { type: "health_mult", value: 0.3, name: "Золотое Яйцо", description: "+30% к здоровью", source: "saga" },
-            vulkanor: { type: "armor_penetration", value: 0.25, name: "Вулканор", description: "25% шанс игнорировать броню", source: "saga" },
-            well: { type: "gold_mult", value: 0.3, name: "Колодец", description: "+30% золота за противника", source: "saga" },
-            pets: { type: "damage_mult", value: 0.2, name: "Питомец", description: "Урон +20%", source: "saga" },
-            following_sun: { type: "health_regen_mult", value: 0.3, name: "Вслед за солнцем", description: "+30% к регенерации", source: "saga" },
-            vampire_crown: { type: "vampirism", value: 0.05, name: "Корона короля вампиров", description: "5% урона восстанавливает здоровье", source: "saga" },
-            tiger_eye: { type: "crit_chance", value: 0.2, name: "Желтый Глаз тигра", description: "20% шанс двойного урона", source: "saga" },
-            sky_phenomena: { type: "armor_mult", value: 0.15, name: "Небесные явления", description: "+15% к броне", source: "saga" }
-        }
-    };
-};
+                                                                                      //ПОДМОДУЛЮ 2: СИСТЕМА ХАРАКТЕРИСТИК И БОНУСОВ
+    // ========== СИСТЕМА ХАРАКТЕРИСТИК И БОНУСОВ ==========
 
-// ========== МОДУЛЬ 3.2: КОНФИГУРАЦИЯ СЕТОВ ПРЕДМЕТОВ ==========
-HeroGame.prototype.getItemSetConfig = function() {
-    return {
-        "set_beginner": {
-            name: "Крестьянина Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к урону"
-        },
-        "set_warrior": {
-            name: "Ополченца Арканиума", 
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к урону"
-        },
-        "set_guardian": {
-            name: "Милитанта Арканиума",
-            requiredPieces: 6, 
-            bonus: { type: "damage_mult", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к урону"
-        },
-        "set_hunter": {
-            name: "Ветерана Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к урону"
-        },
-        "set_complete": {
-            name: "Командира ополчения Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к урону"
-        },
-          "set_king": {
-            name: "Стратегоса Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к урону"
-        },
-         "set_crit1": {
-            name: "Охотника Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit2": {
-            name: "Разведчика Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit3": {
-            name: "Лучника Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit4": {
-            name: "Элитного стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit5": {
-            name: "Командира лучников Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit6": {
-            name: "Легендарного стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
-        },
-             "set_penetration1": {
-            name: "Стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.06 },
-            description: "Комплект из 6 вещей даст +6% к шансу игрорирования брони соперника"
-        },
-         "set_penetration2": {
-            name: "Следопыта Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.12 },
-            description: "Комплект из 6 вещей даст +12% к шансу игрорирования брони соперника"
-        },
-         "set_penetration3": {
-            name: "Охотника на монстров Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.18 },
-            description: "Комплект из 6 вещей даст +18% к шансу игрорирования брони соперника"
-        },
-         "set_penetration4": {
-            name: "Наемного убийцы Магнатов Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.24 },
-            description: "Комплект из 6 вещей даст +24% к шансу игрорирования брони соперника"
-        },
-         "set_penetration5": {
-            name: "Командира арбалетчиков Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к шансу игрорирования брони соперника"
-        },
-         "set_penetration6": {
-            name: "Мастера над арбалетами Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.36 },
-            description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
-        },
-           "set_rich1": {
-            name: "Сборщика трофеев Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к награде в золоте за убийство монстра"
-        },
-           "set_rich2": {
-            name: "Охотник на редких животных Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к награде в золоте за убийство монстра"
-        },
-           "set_rich3": {
-            name: "Профессионального истребителя опасных существ Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к награде в золоте за убийство монстра"
-        },
-           "set_rich4": {
-            name: "Коллекционера Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к награде в золоте за убийство монстра"
-        },
-           "set_rich5": {
-            name: "Ловца королевских тварей Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к награде в золоте за убийство монстра"
-        },
-           "set_rich6": {
-            name: "Легендарного зверолова Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
-        },
-            "set_vampire1": {
-            name: "Убийцы Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.01 },
-            description: "Комплект из 6 вещей даст +1% к вампиризму"
-        },
-           "set_vampire2": {
-            name: "Наемного убийцы Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.02 },
-            description: "Комплект из 6 вещей даст +2% к вампиризму"
-        },
-            "set_vampire3": {
-            name: "Темного стража Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.03 },
-            description: "Комплект из 6 вещей даст +3% к вампиризму"
-        },
-               "set_vampire4": {
-            name: "Легендарного зверолова Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.04 },
-            description: "Комплект из 6 вещей даст +4% к вампиризму"
-        },
-               "set_vampire5": {
-            name: "Охотника на вампиров, ставшего вампиром",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к вампиризму"
-        },
-               "set_vampire6": {
-            name: "Лорда вампиров...Арканиума? Откуда у лорда вампиров могли взяться доспехи из костей драконов..? Неужели драконы были здесь во времена вампиров?  ",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.06 },
-            description: "Комплект из 6 вещей даст +6% к вампиризму"
-        },
-            "set_regen1": {
-            name: "Грабителя Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.5 },
-            description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
-        },
-            "set_regen2": {
-            name: "Бандита Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
-        },
-            "set_regen3": {
-            name: "Опытного разбойника",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
-        },
-                   "set_regen4": {
-            name: "Вожака банды Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.4 },
-            description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
-        },
-                   "set_regen5": {
-            name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.8 },
-            description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
-        },
-                   "set_regen6": {
-            name: "Короля воров Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 1.6 },
-            description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
-        }
-    };
-};
-
-// ========== МОДУЛЬ 3.3: ПОЛУЧЕНИЕ АКТИВНЫХ СЕТОВ ==========
-HeroGame.prototype.getActiveSetBonuses = function(hero) {
-    hero = hero || this.currentHero;
-    if (!hero) return [];
-    
-    const equippedItems = Object.values(hero.equipment)
-        .filter(itemId => itemId !== null)
-        .map(itemId => this.items.find(item => item.id === itemId))
-        .filter(item => item !== undefined);
-    
-    // Группируем предметы по сетам
-    const setCounts = {};
-    equippedItems.forEach(item => {
-        if (item.setName) {
-            setCounts[item.setName] = (setCounts[item.setName] || 0) + 1;
-        }
-    });
-    
-    const activeSetBonuses = [];
-    
-    // Проверяем условия для каждого сета
-    Object.keys(setCounts).forEach(setName => {
-        const setConfig = this.getItemSetConfig()[setName];
-        if (setConfig && setCounts[setName] >= setConfig.requiredPieces) {
-            activeSetBonuses.push({
-                setName: setName,
-                pieces: setCounts[setName],
-                bonus: setConfig.bonus,
-                description: setConfig.description
-            });
-        }
-    });
-    
-    return activeSetBonuses;
-};
-
-// ========== МОДУЛЬ 3.4: ПОЛУЧЕНИЕ ВСЕХ АКТИВНЫХ БОНУСОВ ==========
-HeroGame.prototype.getAllActiveBonuses = function(hero) {
-    hero = hero || this.currentHero;
-    if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
-    
-    const bonuses = this.getBonuses();
-    const activeBonuses = {
-        race: [],
-        class: [],
-        saga: [], 
-        equipment: [],
-        sets: [] // НОВОЕ: бонусы от сетов
-    };
-    
-    // Бонусы от расы
-    if (bonuses.races[hero.race]) {
-        activeBonuses.race.push(bonuses.races[hero.race]);
-    }
-    
-    // Бонусы от класса
-    if (bonuses.classes[hero.class]) {
-        activeBonuses.class.push(bonuses.classes[hero.class]);
-    }
-    
-    // Бонусы от саги
-    if (bonuses.sagas[hero.saga]) {
-        activeBonuses.saga.push(bonuses.sagas[hero.saga]);
-    }
-    
-    // Бонусы от экипировки
-    Object.values(hero.equipment).forEach(itemId => {
-        if (itemId) {
-            const item = this.items.find(item => item.id === itemId);
-            if (item && item.bonus) {
-                activeBonuses.equipment.push({
-                    ...item.bonus,
-                    source: "equipment",
-                    itemName: item.name
-                });
-            }
-        }
-    });
-    
-    // НОВОЕ: Бонусы от сетов
-    const setBonuses = this.getActiveSetBonuses(hero);
-    setBonuses.forEach(setBonus => {
-        activeBonuses.sets.push({
-            ...setBonus.bonus,
-            source: "set",
-            setName: setBonus.setName,
-            pieces: setBonus.pieces,
-            description: setBonus.description
-        });
-    });
-    
-    return activeBonuses;
-};
-
-// ========== МОДУЛЬ 3.5: РАСЧЕТ СУММАРНЫХ БОНУСОВ ==========
-HeroGame.prototype.calculateTotalBonuses = function(hero) {
-    hero = hero || this.currentHero;
-    const activeBonuses = this.getAllActiveBonuses(hero);
-    const setBonuses = this.getActiveSetBonuses(hero);
-    
-    const totals = {
-        health_mult: 0,
-        damage_mult: 0, 
-        armor_mult: 0,
-        gold_mult: 0,
-        health_regen_mult: 0,
-        crit_chance: 0,
-        armor_penetration: 0,
-        vampirism: 0,
-        all_stats_mult: 0
-    };
-    
-    // Суммирование обычных бонусов
-    Object.values(activeBonuses).forEach(bonusGroup => {
-        bonusGroup.forEach(bonus => {
-            if (totals.hasOwnProperty(bonus.type)) {
-                totals[bonus.type] += bonus.value;
+    calculateHeroStats(hero) {
+        hero = hero || this.currentHero;
+        if (!hero) return {};
+        
+        const totals = this.bonusSystem.calculateTotalBonuses(hero, this.items);
+        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+        
+        // Базовые характеристики (уровень)
+        let baseHealth = hero.baseHealth * levelMultiplier;
+        let baseDamage = hero.baseDamage * levelMultiplier; 
+        let baseArmor = hero.baseArmor * levelMultiplier;
+        
+        // Применение процентных бонусов
+        let health = baseHealth + (hero.baseHealth * totals.health_mult);
+        let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
+        let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
+        
+        // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
+        Object.values(hero.equipment).forEach(itemId => {
+            if (itemId) {
+                const item = this.items.find(item => item.id === itemId);
+                if (item) {
+                    damage += item.fixed_damage || 0;
+                    armor += item.fixed_armor || 0;
+                    health += item.fixed_health || 0;
+                }
             }
         });
-    });
-    
-    // Добавление бонусов от сетов
-    setBonuses.forEach(setBonus => {
-        if (setBonus.bonus && totals.hasOwnProperty(setBonus.bonus.type)) {
-            totals[setBonus.bonus.type] += setBonus.bonus.value;
-        }
-    });
-    
-    // Применение бонуса "все характеристики" к отдельным статам
-    if (totals.all_stats_mult > 0) {
-        totals.health_mult += totals.all_stats_mult;
-        totals.damage_mult += totals.all_stats_mult;
-        totals.armor_mult += totals.all_stats_mult;
-        totals.health_regen_mult += totals.all_stats_mult;
+        
+        // Расчет общей силы
+        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+        const currentHealth = this.getCurrentHealthForDisplay(hero);
+        
+        return {
+            health: Math.round(health),
+            currentHealth: Math.floor(currentHealth),
+            maxHealth: Math.round(health),
+            damage: Math.round(damage),
+            armor: Math.round(armor),
+            power: power,
+            bonuses: totals,
+            baseHealth: Math.round(baseHealth),
+            baseDamage: Math.round(baseDamage), 
+            baseArmor: Math.round(baseArmor),
+            activeSets: this.bonusSystem.getActiveSetBonuses(hero, this.items)
+        };
     }
-    
-    return totals;
-};
+
+    getAllActiveBonuses(hero) {
+        return this.bonusSystem.getAllActiveBonuses(hero, this.items);
+    }
+
+    getCurrentHealthForDisplay(hero) {
+        hero = hero || this.currentHero;
+        if (!hero) return 0;
+        
+        const now = Date.now();
+        const timePassed = (now - this.lastHealthUpdate) / 1000;
+        
+        if (!hero.currentHealth) {
+            hero.currentHealth = this.calculateMaxHealth(hero);
+        }
+        
+        let currentHealth = hero.currentHealth;
+        const maxHealth = this.calculateMaxHealth(hero);
+        
+        // Регенерация здоровья со временем
+        if (currentHealth > 0 && currentHealth < maxHealth) {
+            const totals = this.bonusSystem.calculateTotalBonuses(hero, this.items);
+            const regenMultiplier = 1 + totals.health_regen_mult;
+            const baseRegen = hero.healthRegen || 100/60;
+            const healthToRegen = timePassed * baseRegen * regenMultiplier;
+            currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
+            
+            if (currentHealth > hero.currentHealth) {
+                this.lastHealthUpdate = now;
+                hero.currentHealth = currentHealth;
+                this.saveGame();
+            }
+        }
+        
+        // Защита от смерти - минимальное здоровье 1
+        if (currentHealth <= 0 && this.currentHero) {
+            currentHealth = 1;
+            hero.currentHealth = 1;
+        }
+        
+        return currentHealth;
+    }
+
+    calculateMaxHealth(hero) {
+        hero = hero || this.currentHero;
+        if (!hero) return 0;
+        
+        const totals = this.bonusSystem.calculateTotalBonuses(hero, this.items);
+        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+        let health = hero.baseHealth * levelMultiplier;
+        health += hero.baseHealth * totals.health_mult;
+        
+        // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
+        Object.values(hero.equipment).forEach(itemId => {
+            if (itemId) {
+                const item = this.items.find(item => item.id === itemId);
+                if (item) {
+                    health += item.fixed_health || 0;
+                }
+            }
+        });
+        
+        return Math.round(health);
+    }
+
+    updateHealth(change) {
+        if (!this.currentHero) return;
+        
+        if (!this.currentHero.currentHealth) {
+            this.currentHero.currentHealth = this.calculateMaxHealth();
+        }
+        
+        this.currentHero.currentHealth += change;
+        const maxHealth = this.calculateMaxHealth();
+        this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
+        this.lastHealthUpdate = Date.now();
+        this.saveGame();
+    }
 
 // ========== МОДУЛЬ 4: СИСТЕМА УРОВНЕЙ И ОПЫТА ==========
 
@@ -654,80 +381,6 @@ HeroGame.prototype.checkHeroUnlocks = function() {
     });
 };
 
-// ========== МОДУЛЬ 5: РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ СЕТОВ ==========
-
-// ========== МОДУЛЬ 5.1: РАСЧЕТ МАКСИМАЛЬНОГО ЗДОРОВЬЯ ==========
-HeroGame.prototype.calculateMaxHealth = function(hero) {
-    hero = hero || this.currentHero;
-    if (!hero) return 0;
-    
-    const totals = this.calculateTotalBonuses(hero);
-    const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-    let health = hero.baseHealth * levelMultiplier;
-    health += hero.baseHealth * totals.health_mult;
-    
-    // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
-    Object.values(hero.equipment).forEach(itemId => {
-        if (itemId) {
-            const item = this.items.find(item => item.id === itemId);
-            if (item) {
-                health += item.fixed_health || 0;
-            }
-        }
-    });
-    
-    return Math.round(health);
-};
-
-// ========== МОДУЛЬ 5.2: РАСЧЕТ ВСЕХ ХАРАКТЕРИСТИК ГЕРОЯ ==========
-HeroGame.prototype.calculateHeroStats = function(hero) {
-    hero = hero || this.currentHero;
-    if (!hero) return {};
-    
-    const totals = this.calculateTotalBonuses(hero);
-    const levelMultiplier = 1 + (hero.level - 1) * 0.1;
-    
-    // Базовые характеристики (уровень)
-    let baseHealth = hero.baseHealth * levelMultiplier;
-    let baseDamage = hero.baseDamage * levelMultiplier; 
-    let baseArmor = hero.baseArmor * levelMultiplier;
-    
-    // Применение процентных бонусов
-    let health = baseHealth + (hero.baseHealth * totals.health_mult);
-    let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
-    let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
-    
-    // Добавление ФИКСИРОВАННЫХ характеристик от экипировки
-    Object.values(hero.equipment).forEach(itemId => {
-        if (itemId) {
-            const item = this.items.find(item => item.id === itemId);
-            if (item) {
-                damage += item.fixed_damage || 0;
-                armor += item.fixed_armor || 0;
-                health += item.fixed_health || 0;
-            }
-        }
-    });
-    
-    // Расчет общей силы
-    const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
-    const currentHealth = this.getCurrentHealthForDisplay(hero);
-    
-    return {
-        health: Math.round(health),
-        currentHealth: Math.floor(currentHealth),
-        maxHealth: Math.round(health),
-        damage: Math.round(damage),
-        armor: Math.round(armor),
-        power: power,
-        bonuses: totals,
-        baseHealth: Math.round(baseHealth),
-        baseDamage: Math.round(baseDamage), 
-        baseArmor: Math.round(baseArmor),
-        // НОВОЕ: информация о сетах
-        activeSets: this.getActiveSetBonuses(hero)
-    };
-};
 
 // ========== МОДУЛЬ 6: СИСТЕМА БОЯ С ВЫНОСЛИВОСТЬЮ ==========
 
@@ -1024,61 +677,7 @@ HeroGame.prototype.getLocationName = function(locationId) {
     return location ? location.name : 'Неизвестная локация';
 };
 
-// ========== МОДУЛЬ 8: СИСТЕМА ЗДОРОВЬЯ И РЕГЕНЕРАЦИИ ==========
 
-// ========== МОДУЛЬ 8.1: ПОЛУЧЕНИЕ ТЕКУЩЕГО ЗДОРОВЬЯ ДЛЯ ОТОБРАЖЕНИЯ ==========
-HeroGame.prototype.getCurrentHealthForDisplay = function(hero) {
-    hero = hero || this.currentHero;
-    if (!hero) return 0;
-    
-    const now = Date.now();
-    const timePassed = (now - this.lastHealthUpdate) / 1000;
-    
-    if (!hero.currentHealth) {
-        hero.currentHealth = this.calculateMaxHealth(hero);
-    }
-    
-    let currentHealth = hero.currentHealth;
-    const maxHealth = this.calculateMaxHealth(hero);
-    
-    // Регенерация здоровья со временем
-    if (currentHealth > 0 && currentHealth < maxHealth) {
-        const totals = this.calculateTotalBonuses(hero);
-        const regenMultiplier = 1 + totals.health_regen_mult;
-        const baseRegen = hero.healthRegen || 100/60;
-        const healthToRegen = timePassed * baseRegen * regenMultiplier;
-        currentHealth = Math.min(maxHealth, currentHealth + healthToRegen);
-        
-        if (currentHealth > hero.currentHealth) {
-            this.lastHealthUpdate = now;
-            hero.currentHealth = currentHealth;
-            this.saveGame();
-        }
-    }
-    
-    // Защита от смерти - минимальное здоровье 1
-    if (currentHealth <= 0 && this.currentHero) {
-        currentHealth = 1;
-        hero.currentHealth = 1;
-    }
-    
-    return currentHealth;
-};
-
-// ========== МОДУЛЬ 8.2: ОБНОВЛЕНИЕ ЗДОРОВЬЯ (ЛЕЧЕНИЕ/УРОН) ==========
-HeroGame.prototype.updateHealth = function(change) {
-    if (!this.currentHero) return;
-    
-    if (!this.currentHero.currentHealth) {
-        this.currentHero.currentHealth = this.calculateMaxHealth();
-    }
-    
-    this.currentHero.currentHealth += change;
-    const maxHealth = this.calculateMaxHealth();
-    this.currentHero.currentHealth = Math.max(0, Math.min(maxHealth, this.currentHero.currentHealth));
-    this.lastHealthUpdate = Date.now();
-    this.saveGame();
-};
 
 // ========== МОДУЛЬ 9: СИСТЕМА ОТОБРАЖЕНИЯ И ИНТЕРФЕЙСА ==========
 
