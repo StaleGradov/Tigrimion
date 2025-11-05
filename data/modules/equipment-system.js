@@ -1,124 +1,122 @@
+// ========== MODULE: EquipmentSystem ==========
 class EquipmentSystem {
-    constructor() {}
+    constructor() {
+        this.items = [];
+        this.itemSets = {};
+        console.log("✅ EquipmentSystem инициализирован");
+    }
 
-    canEquipWeapon(item, currentEquipment, items) {
+    async loadItemData() {
+        try {
+            console.log("📥 Загружаем данные предметов...");
+            
+            // Загружаем items.json
+            const response = await fetch('data/items.json');
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки items.json: ${response.status}`);
+            }
+            
+            this.items = await response.json();
+            this.loadItemSetConfig();
+            
+            console.log(`✅ Загружено предметов: ${this.items.length}`);
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных предметов:", error);
+            this.createFallbackItems();
+            return true;
+        }
+    }
+
+    loadItemSetConfig() {
+        this.itemSets = {
+            "set_beginner": {
+                name: "Крестьянина Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "damage_mult", value: 0.05 },
+                description: "Комплект из 6 вещей даст +5% к урону"
+            },
+            "set_warrior": {
+                name: "Ополченца Арканиума", 
+                requiredPieces: 6,
+                bonus: { type: "damage_mult", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к урону"
+            }
+            // ... остальные сеты можно добавить позже
+        };
+    }
+
+    createFallbackItems() {
+        this.items = [{
+            id: 1,
+            name: "Малое зелье здоровья",
+            type: "potion",
+            value: 20,
+            price: 25,
+            heal: 20,
+            image: "images/items/potion1.jpg",
+            description: "Восстанавливает 20 здоровья"
+        }, {
+            id: 2,
+            name: "Простой меч",
+            type: "weapon",
+            weaponType: "one_handed",
+            slot: "main_hand",
+            fixed_damage: 5,
+            price: 100,
+            image: "images/items/sword1.jpg",
+            description: "Простой железный меч",
+            requiredLevel: 1
+        }];
+        
+        this.loadItemSetConfig();
+        console.log("🔄 Созданы тестовые предметы");
+    }
+
+    getItemById(itemId) {
+        return this.items.find(item => item.id === itemId);
+    }
+
+    getItemsForSlot(slot) {
+        return this.items.filter(item => {
+            if (!item.slot) return false;
+            return item.slot === slot || 
+                   (item.weaponType === 'two_handed' && slot === 'main_hand') ||
+                   (item.weaponType === 'shield' && slot === 'off_hand');
+        });
+    }
+
+    canEquipWeapon(item, currentEquipment) {
         if (item.type !== 'weapon') return true;
         
         const mainHand = currentEquipment.main_hand;
         const offHand = currentEquipment.off_hand;
         
-        // Если предмет двуручный
         if (item.weaponType === 'two_handed') {
-            // Нельзя экипировать если уже есть что-то в любой руке
-            if (mainHand || offHand) {
-                return false;
-            }
-            return true;
+            return !mainHand && !offHand;
         }
         
-        // Если предмет одноручный
         if (item.weaponType === 'one_handed') {
-            // Если в главной руке уже двуручное оружие - нельзя
-            const mainHandItem = mainHand ? items.find(i => i.id === mainHand) : null;
-            if (mainHandItem && mainHandItem.weaponType === 'two_handed') {
-                return false;
+            if (item.slot === 'main_hand') {
+                const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+                return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
             }
-            return true;
+            if (item.slot === 'off_hand') {
+                const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+                return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
+            }
         }
         
-        // Если предмет - щит
         if (item.weaponType === 'shield') {
-            // Если в главной руке двуручное оружие - нельзя
-            const mainHandItem = mainHand ? items.find(i => i.id === mainHand) : null;
-            if (mainHandItem && mainHandItem.weaponType === 'two_handed') {
-                return false;
-            }
-            return true;
+            const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+            return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
         }
         
-        return true;
-    }
-
-    getEquipmentSlot(item) {
-        if (item.type === 'weapon') {
-            if (item.weaponType === 'shield') {
-                return 'off_hand';
-            } else if (item.weaponType === 'two_handed') {
-                return 'main_hand';
-            } else {
-                return 'main_hand';
-            }
-        }
-        
-        // Для брони возвращаем соответствующий слот
-        const slotMap = {
-            'helmet': 'helmet',
-            'chest': 'chest', 
-            'gloves': 'gloves',
-            'legs': 'legs',
-            'boots': 'boots'
-        };
-        
-        return slotMap[item.type] || null;
-    }
-
-    equipItem(hero, itemId, items) {
-        const item = items.find(i => i.id === itemId);
-        if (!item) return false;
-
-        // Проверка совместимости оружия
-        if (!this.canEquipWeapon(item, hero.equipment, items)) {
-            return false;
-        }
-
-        const slot = this.getEquipmentSlot(item);
-        if (!slot) return false;
-
-        // Особые случаи для двуручного оружия
-        if (item.weaponType === 'two_handed') {
-            // Снимаем всё что было в руках
-            this.unequipToInventory(hero, 'main_hand', items);
-            this.unequipToInventory(hero, 'off_hand', items);
-            
-            // Экипируем в обе руки
-            hero.equipment.main_hand = itemId;
-            hero.equipment.off_hand = itemId;
-        } else {
-            // Стандартная экипировка
-            hero.equipment[slot] = itemId;
-        }
-
-        return true;
-    }
-
-    unequipToInventory(hero, slot, items) {
-        const itemId = hero.equipment[slot];
-        if (!itemId) return false;
-
-        const item = items.find(i => i.id === itemId);
-        if (!item) return false;
-
-        // Проверяем место в инвентаре
-        if (hero.inventory.length >= 10) {
-            return false;
-        }
-
-        // Особый случай: если снимаем двуручное оружие
-        if (item.weaponType === 'two_handed') {
-            hero.equipment.main_hand = null;
-            hero.equipment.off_hand = null;
-        } else {
-            hero.equipment[slot] = null;
-        }
-
-        hero.inventory.push(itemId);
         return true;
     }
 }
 
-// Экспорт для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = EquipmentSystem;
-} else {
-    window.EquipmentSystem = EquipmentSystem;
-}
+// Регистрируем систему в глобальной области
+window.EquipmentSystem = EquipmentSystem;
+console.log("📦 EquipmentSystem модуль загружен");
