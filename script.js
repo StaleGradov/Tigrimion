@@ -1,259 +1,163 @@
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
-// ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class HeroGame {
     constructor() {
-        // Массивы данных игры
-        this.heroes = [];        // Список всех героев
-        this.items = [];         // Список всех предметов
-        this.monsters = [];      // Список всех монстров
-        this.maps = [];          // Список всех карт
-        this.locations = [];     // Список всех локаций
+        // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ==========
+        this.bonusSystem = new BonusSystem();
+        this.levelSystem = new LevelSystem();
+        this.battleSystem = new BattleSystem();
+        this.equipmentSystem = new EquipmentSystem();
         
-        // Флаги отображения
-        this.showReward = false;         // Показывать ли награду
-        this.lastReward = 0;             // Последняя полученная награда
-        this.currentHero = null;         // Текущий выбранный герой
-        this.currentScreen = 'hero-select'; // Текущий экран игры
-        this.currentMap = null;          // Текущая выбранная карта
-        this.currentLocation = null;     // Текущая выбранная локация
-        this.currentMonster = null;      // Текущий встреченный монстр
+        // ========== МАССИВЫ ДАННЫХ ИГРЫ ==========
+        this.heroes = [];
+        this.items = [];
+        this.monsters = [];
         
-        // Свойства для системы боя
-        this.battleActive = false;       // Активен ли бой
-        this.battleRound = 0;            // Текущий раунд боя
-        this.battleLog = [];             // Лог событий боя
-        this.lastHealthUpdate = Date.now(); // Время последнего обновления здоровья
-        this.healthInterval = null;      // Интервал для анимации здоровья
+        // ========== ТЕКУЩЕЕ СОСТОЯНИЕ ==========
+        this.currentHero = null;
+        this.currentMonster = null;
+        this.currentScreen = 'hero-select';
         
-        // Результат последнего боя
+        // ========== СИСТЕМА БОЯ ==========
+        this.battleActive = false;
         this.battleResult = null;
+        this.battleLog = [];
+        this.battleRound = 0;
         
-        // Общий инвентарь (для всех героев)
-        this.globalInventory = [];
+        // ========== ОТОБРАЖЕНИЕ ==========
+        this.showReward = false;
+        this.lastReward = 0;
+        this.healthInterval = null;
+        this.lastHealthUpdate = Date.now();
         
-        // Видео для каждого героя (заглушки)
+        // ========== ВИДЕО И ИЗОБРАЖЕНИЯ ==========
+        this.showVideo = {
+            hero: false,
+            map: false,
+            location: false
+        };
+        
         this.heroVideos = {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            // ... остальные герои
         };
         
-        // Видео для карт и локаций
-        this.videos = {
-            map: 'https://www.youtube.com/embed/4gSmkjlEO_Q',
-            location: 'https://www.youtube.com/embed/ytr51kwNLPo'
-        };
-        
-        // Флаги показа видео вместо изображений
-        this.showVideo = {
-            hero: false,      // Показывать видео героя
-            map: false,       // Показывать видео карты
-            location: false   // Показывать видео локации
-        };
-        
-        // Система прогресса локаций
-        this.locationProgress = {};      // Прогресс по каждой локации
-        this.monsterKillCount = {};      // Счетчик убийств каждого монстра
-        
-        // Запуск инициализации игры
+        // Запуск инициализации
         this.init();
     }
 
-    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
     async init() {
-        await this.loadGameData();    // Загрузка всех данных игры
-        this.initLocationSystem();    // Инициализация системы локаций
-        this.loadSave();              // Загрузка сохраненной игры
-        
-        // Разблокировка первого героя по умолчанию
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-        
-        this.renderHeroSelect();      // Показ экрана выбора героя
+        await this.loadGameData();
+        this.renderHeroSelect();
     }
 
-    // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
-    initLocationSystem() {
-        // Для каждой локации создаем запись прогресса
-        this.locations.forEach(location => {
-            const locationId = location.level;
-            
-            if (!this.locationProgress[locationId]) {
-                this.locationProgress[locationId] = {
-                    unlocked: locationId === 10,    // Только локация 10 доступна сначала
-                    monstersKilled: new Set(),      // Множество убитых монстров
-                    totalMonsters: location.monsterRange[1] - location.monsterRange[0] + 1
-                };
+    async loadGameData() {
+        try {
+            const [heroes, monsters, items] = await Promise.all([
+                this.loadJSON('data/heroes.json'),
+                this.loadJSON('data/enemies.json'), 
+                this.loadJSON('data/items.json')
+            ]);
+
+            this.heroes = heroes || [];
+            this.monsters = monsters || [];
+            this.items = items || [];
+
+            // Разблокировка первого героя
+            if (this.heroes.length > 0) {
+                const firstHero = this.heroes.find(h => h.id === 1);
+                if (firstHero) {
+                    firstHero.unlocked = true;
+                }
             }
-        });
-        
-        // Инициализация счетчиков убийств для каждого монстра
-        this.monsters.forEach(monster => {
-            if (!this.monsterKillCount[monster.id]) {
-                this.monsterKillCount[monster.id] = 0;
-            }
-        });
+
+            console.log('✅ Данные загружены:', {
+                heroes: this.heroes.length,
+                monsters: this.monsters.length,
+                items: this.items.length
+            });
+
+        } catch (error) {
+            console.error('❌ Ошибка загрузки:', error);
+            this.createFallbackData();
+        }
+    }
+
+    async loadJSON(filePath) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка загрузки ' + filePath + ':', error);
+            return null;
+        }
+    }
+
+    createFallbackData() {
+        this.heroes = [{
+            id: 1,
+            name: "Начальный герой",
+            image: "images/heroes/hero1.jpg",
+            race: "human",
+            class: "warrior",
+            saga: "golden_egg",
+            baseHealth: 100,
+            baseDamage: 20,
+            baseArmor: 10,
+            gold: 500.00,
+            level: 1,
+            experience: 0,
+            monstersKilled: 0,
+            deaths: 0,
+            healthRegen: 100/60,
+            inventory: [],
+            equipment: {
+                main_hand: null,
+                off_hand: null,
+                helmet: null,
+                chest: null,
+                gloves: null,
+                legs: null,
+                boots: null
+            },
+            unlocked: true,
+            story: "Простой воин из далекой деревни..."
+        }];
+
+        this.monsters = [];
+        for (let i = 1; i <= 20; i++) {
+            this.monsters.push({
+                id: i,
+                name: `Монстр ${i}`,
+                image: "images/monsters/monster1.jpg",
+                description: `Монстр уровня ${Math.ceil(i/5)}`,
+                health: 20 + i * 5,
+                maxHealth: 20 + i * 5,
+                damage: 5 + i * 2,
+                attack: 5 + i,
+                defense: 2 + Math.floor(i/2),
+                armor: 2 + Math.floor(i/3),
+                speed: 3 + Math.floor(i/5),
+                experience: 5 + i * 2,
+                reward: 10 + i * 3,
+                power: 15 + i * 4
+            });
+        }
+
+        this.items = [{
+            id: 1,
+            name: "Малое зелье здоровья",
+            type: "potion",
+            value: 20,
+            price: 25,
+            heal: 20,
+            image: "images/items/potion1.jpg",
+            description: "Восстанавливает 20 здоровья"
+        }];
     }
 }
-
-// ========== МОДУЛЬ 2: ИНИЦИАЛИЗАЦИЯ И ЗАГРУЗКА ДАННЫХ ==========
-
-// ========== МОДУЛЬ 2.1: ЗАГРУЗКА JSON ФАЙЛА ==========
-HeroGame.prototype.loadJSON = async function(filePath) {
-    try {
-        const response = await fetch(filePath);
-        if (!response.ok) {
-            throw new Error('HTTP error! status: ' + response.status);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Ошибка загрузки ' + filePath + ':', error);
-        return null;
-    }
-};
-
-// ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ ==========
-HeroGame.prototype.loadGameData = async function() {
-    try {
-        // Параллельная загрузка всех JSON файлов
-        const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
-            this.loadJSON('data/heroes.json'),
-            this.loadJSON('data/enemies.json'),
-            this.loadJSON('data/items.json'),
-            this.loadJSON('data/maps.json'),
-            this.loadJSON('data/locations.json')
-        ]);
-
-        // Заполнение данных игры
-        this.heroes = heroes || [];
-        this.monsters = enemies || [];
-        this.items = items || [];
-        this.maps = mapsData || [];
-        this.locations = locationsData || [];
-
-        // Разблокировка первого героя
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-
-        console.log('✅ Все данные загружены:', {
-            heroes: this.heroes.length,
-            monsters: this.monsters.length,
-            items: this.items.length,
-            maps: this.maps.length,
-            locations: this.locations.length
-        });
-
-    } catch (error) {
-        console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.createFallbackData();  // Создание тестовых данных при ошибке
-    }
-};
-
-// ========== МОДУЛЬ 2.3: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ==========
-HeroGame.prototype.createFallbackData = function() {
-    // Создание базового героя
-    this.heroes = [{
-        id: 1,
-        name: "Начальный герой",
-        image: "images/heroes/hero1.jpg",
-        race: "human",
-        class: "warrior",
-        saga: "golden_egg",
-        baseHealth: 100,
-        baseDamage: 20,
-        baseArmor: 10,
-        gold: 500.00,
-        level: 1,
-        experience: 0,
-        monstersKilled: 0,
-        deaths: 0,
-        healthRegen: 100/60,
-        inventory: [],
-        equipment: {
-            main_hand: null,
-            off_hand: null,
-            helmet: null,
-            chest: null,
-            gloves: null,
-            legs: null,
-            boots: null
-        },
-        unlocked: true,
-        story: "Простой воин из далекой деревни..."
-    }];
-
-    // Создание тестовых монстров
-    this.monsters = [];
-    for (let i = 1; i <= 55; i++) {
-        this.monsters.push({
-            id: i,
-            name: `Монстр ${i}`,
-            image: "images/monsters/monster1.jpg",
-            description: `Монстр уровня ${Math.ceil(i/10)}`,
-            health: 20 + i * 5,
-            maxHealth: 20 + i * 5,
-            damage: 5 + i * 2,
-            attack: 5 + i,
-            defense: 2 + Math.floor(i/2),
-            armor: 2 + Math.floor(i/3),
-            speed: 3 + Math.floor(i/5),
-            experience: 5 + i * 2,
-            reward: 10 + i * 3,
-            power: 15 + i * 4
-        });
-    }
-
-    // Создание тестовых предметов
-    this.items = [{
-        id: 1,
-        name: "Малое зелье здоровья",
-        type: "potion",
-        value: 20,
-        price: 25,
-        heal: 20,
-        image: "images/items/potion1.jpg",
-        description: "Восстанавливает 20 здоровья"
-    }];
-
-    // Создание тестовых карт
-    this.maps = [{
-        id: 1, 
-        name: "Арканиум", 
-        image: "images/maps/arcanium.jpg", 
-        description: "Земля древней магии", 
-        multiplier: 1.0, 
-        unlocked: true 
-    }];
-
-    // Создание тестовых локаций
-    this.locations = [];
-    for (let level = 10; level >= 1; level--) {
-        const startMonster = (10 - level) * 10 + 1;
-        const endMonster = startMonster + 9;
-        
-        this.locations.push({
-            level: level,
-            name: `Локация ${11 - level}`,
-            description: `Уровень сложности: ${level}`,
-            image: "images/locations/level10.jpg",
-            monsterRange: [startMonster, endMonster],
-            artifactChance: 0.005 + (10 - level) * 0.001,
-            relicChance: 0.0005 + (10 - level) * 0.0001
-        });
-    }
-};
-
-// ========== МОДУЛЬ 3: СИСТЕМА БОНУСОВ, СЕТОВ И ХАРАКТЕРИСТИК ==========
 
 // ========== МОДУЛЬ 3.1: ПОЛУЧЕНИЕ ВСЕХ ДОСТУПНЫХ БОНУСОВ ==========
 HeroGame.prototype.getBonuses = function() {
