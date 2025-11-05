@@ -81,37 +81,38 @@ class ModuleLoader {
     }
 
     async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
-
-        try {
-            const modulePath = `data/modules/${moduleName}.js`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            
-            const moduleCode = await response.text();
-            
-            // Выполняем код модуля
-            const script = document.createElement('script');
-            script.textContent = moduleCode;
-            document.head.appendChild(script);
-            document.head.removeChild(script);
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
-        }
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
     }
+
+    try {
+        // ПРАВИЛЬНОЕ ФОРМИРОВАНИЕ ПУТИ К ФАЙЛУ
+        const modulePath = `data/modules/${moduleName}.js`;
+        console.log(`📥 Загружаем модуль: ${modulePath}`);
+        
+        const response = await fetch(modulePath);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        }
+        
+        const moduleCode = await response.text();
+        
+        // Выполняем код модуля
+        const script = document.createElement('script');
+        script.textContent = moduleCode;
+        document.head.appendChild(script);
+        document.head.removeChild(script);
+        
+        this.loadedModules.add(moduleName);
+        console.log(`✅ Модуль ${moduleName} успешно загружен`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        return false;
+    }
+}
 
     isModuleAvailable(moduleName) {
         return typeof window[moduleName] !== 'undefined';
