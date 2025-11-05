@@ -15,27 +15,71 @@ class ModuleLoader {
         ];
     }
 
-    // Загрузка CSS стилей
+    // Загрузка CSS стилей из отдельного файла
     async loadStyles() {
-        try {
-            // Инжектим стили из твоего файла
-            const styles = `/* ВСТАВЬ СЮДА ВЕСЬ ТВОЙ CSS КОД ИЗ ФАЙЛА СТИЛЕЙ */`;
+        return new Promise((resolve, reject) => {
+            // Проверяем, не загружены ли стили уже
+            if (document.getElementById('game-styles')) {
+                console.log("✅ Стили уже загружены");
+                resolve(true);
+                return;
+            }
+
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'styles.css';
+            link.id = 'game-styles';
             
-            const styleSheet = document.createElement('style');
-            styleSheet.textContent = styles;
-            styleSheet.id = 'game-styles';
-            document.head.appendChild(styleSheet);
+            link.onload = () => {
+                console.log("✅ Стили игры загружены");
+                resolve(true);
+            };
             
-            console.log("✅ Стили игры загружены");
-            return true;
+            link.onerror = () => {
+                console.error("❌ Ошибка загрузки стилей");
+                // Создаем базовые стили если файл не найден
+                this.createFallbackStyles();
+                resolve(true);
+            };
             
-        } catch (error) {
-            console.error("❌ Ошибка загрузки стилей:", error);
-            return false;
-        }
+            document.head.appendChild(link);
+        });
     }
 
-    // ... остальные методы loadModule, waitForAllModules и т.д. остаются без изменений ...
+    // Базовые стили на случай если файл стилей не найден
+    createFallbackStyles() {
+        const fallbackStyles = `
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+                font-family: Arial, sans-serif; 
+                background: #1a1a2e; 
+                color: white; 
+                padding: 20px; 
+            }
+            .loading-screen { 
+                display: flex; 
+                justify-content: center; 
+                align-items: center; 
+                height: 100vh; 
+                text-align: center; 
+            }
+            .btn-primary, .btn-secondary { 
+                padding: 10px 20px; 
+                margin: 5px; 
+                border: none; 
+                border-radius: 5px; 
+                cursor: pointer; 
+            }
+            .btn-primary { background: #3b82f6; color: white; }
+            .btn-secondary { background: #6b7280; color: white; }
+        `;
+        
+        const style = document.createElement('style');
+        style.textContent = fallbackStyles;
+        document.head.appendChild(style);
+        console.log("🔄 Загружены резервные стили");
+    }
+
     async loadModule(moduleName) {
         if (this.loadedModules.has(moduleName)) {
             console.log(`✅ Модуль ${moduleName} уже загружен`);
