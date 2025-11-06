@@ -63,7 +63,193 @@ class EquipmentSystem {
                 requiredPieces: 6,
                 bonus: { type: "damage_mult", value: 0.25 },
                 description: "Комплект из 6 вещей даст +25% к урону"
-            }
+            },
+              "set_king": {
+            name: "Стратегоса Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к урону"
+        },
+         "set_crit1": {
+            name: "Охотника Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "crit_chance", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit2": {
+            name: "Разведчика Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit3": {
+            name: "Лучника Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit4": {
+            name: "Элитного стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit5": {
+            name: "Командира лучников Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
+        },
+     "set_crit6": {
+            name: "Легендарного стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "damage_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
+        },
+             "set_penetration1": {
+            name: "Стрелка Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.06 },
+            description: "Комплект из 6 вещей даст +6% к шансу игрорирования брони соперника"
+        },
+         "set_penetration2": {
+            name: "Следопыта Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.12 },
+            description: "Комплект из 6 вещей даст +12% к шансу игрорирования брони соперника"
+        },
+         "set_penetration3": {
+            name: "Охотника на монстров Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.18 },
+            description: "Комплект из 6 вещей даст +18% к шансу игрорирования брони соперника"
+        },
+         "set_penetration4": {
+            name: "Наемного убийцы Магнатов Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.24 },
+            description: "Комплект из 6 вещей даст +24% к шансу игрорирования брони соперника"
+        },
+         "set_penetration5": {
+            name: "Командира арбалетчиков Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к шансу игрорирования брони соперника"
+        },
+         "set_penetration6": {
+            name: "Мастера над арбалетами Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "armor_penetration", value: 0.36 },
+            description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
+        },
+           "set_rich1": {
+            name: "Сборщика трофеев Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к награде в золоте за убийство монстра"
+        },
+           "set_rich2": {
+            name: "Охотник на редких животных Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к награде в золоте за убийство монстра"
+        },
+           "set_rich3": {
+            name: "Профессионального истребителя опасных существ Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к награде в золоте за убийство монстра"
+        },
+           "set_rich4": {
+            name: "Коллекционера Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к награде в золоте за убийство монстра"
+        },
+           "set_rich5": {
+            name: "Ловца королевских тварей Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к награде в золоте за убийство монстра"
+        },
+           "set_rich6": {
+            name: "Легендарного зверолова Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "gold_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
+        },
+            "set_vampire1": {
+            name: "Убийцы Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.01 },
+            description: "Комплект из 6 вещей даст +1% к вампиризму"
+        },
+           "set_vampire2": {
+            name: "Наемного убийцы Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.02 },
+            description: "Комплект из 6 вещей даст +2% к вампиризму"
+        },
+            "set_vampire3": {
+            name: "Темного стража Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.03 },
+            description: "Комплект из 6 вещей даст +3% к вампиризму"
+        },
+               "set_vampire4": {
+            name: "Легендарного зверолова Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.04 },
+            description: "Комплект из 6 вещей даст +4% к вампиризму"
+        },
+               "set_vampire5": {
+            name: "Охотника на вампиров, ставшего вампиром",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.05 },
+            description: "Комплект из 6 вещей даст +5% к вампиризму"
+        },
+               "set_vampire6": {
+            name: "Лорда вампиров...Арканиума? Откуда у лорда вампиров могли взяться доспехи из костей драконов..? Неужели драконы были здесь во времена вампиров?  ",
+            requiredPieces: 6,
+            bonus: { type: "vampirism", value: 0.06 },
+            description: "Комплект из 6 вещей даст +6% к вампиризму"
+        },
+            "set_regen1": {
+            name: "Грабителя Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.5 },
+            description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
+        },
+            "set_regen2": {
+            name: "Бандита Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
+        },
+            "set_regen3": {
+            name: "Опытного разбойника",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
+        },
+                   "set_regen4": {
+            name: "Вожака банды Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.4 },
+            description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
+        },
+                   "set_regen5": {
+            name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 0.8 },
+            description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
+        },
+                   "set_regen6": {
+            name: "Короля воров Арканиума",
+            requiredPieces: 6,
+            bonus: { type: "health_regen_mult", value: 1.6 },
+            description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
+        }
         };
     }
 
