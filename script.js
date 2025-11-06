@@ -224,56 +224,307 @@ class SafeHeroGame {
         if (status) status.textContent = message;
     }
 
-    renderMainScreen() {
-        const app = document.getElementById('app');
-        if (!app) {
-            console.error("❌ Элемент #app не найден!");
-            return;
-        }
+  renderMainScreen() {
+    const app = document.getElementById('app');
+    if (!app) {
+        console.error("❌ Элемент #app не найден!");
+        return;
+    }
 
-        app.innerHTML = `
-            <div class="main-screen">
-                <header class="game-header">
-                    <h1>🎮 TIGRIMION RPG</h1>
-                    <p class="game-subtitle">Модульная RPG система</p>
-                </header>
-                
-                <div class="systems-status">
-                    <h3>✅ Загруженные системы:</h3>
-                    <div class="systems-grid">
-                        ${Object.keys(this.systems).map(system => `
-                            <div class="system-card">
-                                <strong>${system}</strong>
-                                <span>✅ Готов</span>
+    app.innerHTML = `
+        <div class="main-screen">
+            <header class="game-header">
+                <h1>🎮 TIGRIMION RPG</h1>
+                <p class="game-subtitle">Модульная RPG система</p>
+            </header>
+            
+            <!-- Основной layout с 4 колонками -->
+            <div class="hero-layout">
+                <!-- Колонка героя -->
+                <div class="hero-column">
+                    <div class="column-background" style="background-image: url('https://via.placeholder.com/400x600/1a1a2e/ffffff?text=Hero')"></div>
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">👤 ГЕРОЙ</div>
+                        
+                        <!-- Информация о герое -->
+                        <div class="hero-info">
+                            <h2>Йормунд</h2>
+                            <div class="health-display">
+                                <div class="health-bar-container">
+                                    <div class="health-bar">
+                                        <div class="health-bar-fill" style="width: 100%"></div>
+                                    </div>
+                                </div>
+                                <div class="health-text">100/100 HP</div>
+                                <div class="health-regen">+5 HP/ход</div>
                             </div>
-                        `).join('')}
+                            
+                            <div class="hero-main-stats">
+                                <div class="main-stat">
+                                    <div class="stat-icon">⚔️</div>
+                                    <div class="stat-value">15</div>
+                                    <small>Атака</small>
+                                </div>
+                                <div class="main-stat">
+                                    <div class="stat-icon">🛡️</div>
+                                    <div class="stat-value">12</div>
+                                    <small>Защита</small>
+                                </div>
+                                <div class="main-stat">
+                                    <div class="stat-icon">❤️</div>
+                                    <div class="stat-value">100</div>
+                                    <small>Здоровье</small>
+                                </div>
+                            </div>
+                            
+                            <div class="level-progress">
+                                <div class="level-progress-fill" style="width: 45%"></div>
+                            </div>
+                            <div class="hero-progress">
+                                <span>Ур. 5</span>
+                                <span>Опыт: 245/500</span>
+                            </div>
+                            
+                            <div class="hero-stats">
+                                <div class="stat-item">
+                                    <span class="stat-icon">🎯</span>
+                                    <span class="stat-label">Крит:</span>
+                                    <span class="stat-value">15%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon">⚡</span>
+                                    <span class="stat-label">Скор:</span>
+                                    <span class="stat-value">12</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-icon">🔄</span>
+                                    <span class="stat-label">Увор:</span>
+                                    <span class="stat-value">8%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Экипировка -->
+                        <div class="equipment-section">
+                            <div class="equipment-slot weapon-slot equipped" data-rarity="rare">
+                                <div class="equipment-icon">⚔️</div>
+                            </div>
+                            <div class="equipment-slot armor-slot equipped" data-rarity="uncommon">
+                                <div class="equipment-icon">🛡️</div>
+                            </div>
+                            <div class="equipment-slot armor-slot equipped" data-rarity="common">
+                                <div class="equipment-icon">⛑️</div>
+                            </div>
+                            <div class="equipment-slot armor-slot equipped" data-rarity="common">
+                                <div class="equipment-icon">🧥</div>
+                            </div>
+                            <div class="equipment-slot armor-slot empty">
+                                <div class="equipment-icon">➕</div>
+                            </div>
+                            <div class="equipment-slot armor-slot empty">
+                                <div class="equipment-icon">➕</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Бонусы -->
+                        <div class="bonuses-section">
+                            <h3>🎁 БОНУСЫ</h3>
+                            <div class="bonus-source-group race-bonus">
+                                <div class="bonus-source-title">🧬 Раса: Человек</div>
+                                <div class="bonus-display">
+                                    <div class="bonus-badge race-bonus">+1 ко всем характеристикам</div>
+                                </div>
+                            </div>
+                            <div class="bonus-source-group class-bonus">
+                                <div class="bonus-source-title">⚔️ Класс: Воин</div>
+                                <div class="bonus-display">
+                                    <div class="bonus-badge class-bonus">+5 к атаке</div>
+                                    <div class="bonus-badge class-bonus">+3 к защите</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="main-actions">
-                    <button class="btn-primary" onclick="game.startGame()">
-                        🚀 Начать игру
-                    </button>
-                    <button class="btn-secondary" onclick="game.showDebugInfo()">
-                        🐛 Информация о системе
-                    </button>
+                <!-- Колонка монстра -->
+                <div class="monster-column">
+                    <div class="column-background" style="background-image: url('https://via.placeholder.com/400x600/2d1a2e/ffffff?text=Monster')"></div>
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">👹 МОНСТР</div>
+                        
+                        <!-- Статистика монстра -->
+                        <div class="monster-stats-grid">
+                            <div class="monster-stat-card">
+                                <div>⚔️ Атака</div>
+                                <div class="monster-stat-value">12</div>
+                            </div>
+                            <div class="monster-stat-card">
+                                <div>🛡️ Защита</div>
+                                <div class="monster-stat-value">8</div>
+                            </div>
+                            <div class="monster-stat-card">
+                                <div>❤️ Здоровье</div>
+                                <div class="monster-stat-value">80</div>
+                            </div>
+                            <div class="monster-stat-card">
+                                <div>🎯 Крит</div>
+                                <div class="monster-stat-value">10%</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Бой -->
+                        <div class="battle-in-monster-column">
+                            <div class="battle-header">
+                                <h4>⚔️ БОЙ</h4>
+                                <div class="battle-round">Раунд 1</div>
+                            </div>
+                            
+                            <div class="battle-combatants-compact">
+                                <div class="combatant-compact" style="border-color: #4cc9f0;">
+                                    <div class="combatant-image-compact">
+                                        <div style="width:100%;height:100%;background:#4cc9f0;display:flex;align-items:center;justify-content:center;color:white">👤</div>
+                                    </div>
+                                    <div>Йормунд</div>
+                                    <div class="health-bar-compact">
+                                        <div class="health-bar-fill-compact" style="width: 100%; background: #4ade80;"></div>
+                                    </div>
+                                    <small>100/100</small>
+                                </div>
+                                
+                                <div class="vs-compact">VS</div>
+                                
+                                <div class="combatant-compact" style="border-color: #f87171;">
+                                    <div class="combatant-image-compact">
+                                        <div style="width:100%;height:100%;background:#f87171;display:flex;align-items:center;justify-content:center;color:white">👹</div>
+                                    </div>
+                                    <div>Гоблин</div>
+                                    <div class="health-bar-compact">
+                                        <div class="health-bar-fill-compact" style="width: 100%; background: #4ade80;"></div>
+                                    </div>
+                                    <small>80/80</small>
+                                </div>
+                            </div>
+                            
+                            <div class="battle-log-compact">
+                                <div class="battle-log-entry-compact">Бой начался!</div>
+                                <div class="battle-log-entry-compact">Йормунд атакует Гоблина</div>
+                                <div class="battle-log-entry-compact">Гоблин атакует в ответ</div>
+                            </div>
+                            
+                            <div class="battle-actions-compact">
+                                <button class="btn-battle-attack-compact">⚔️ Атаковать</button>
+                                <button class="btn-battle-escape-compact">🏃 Сбежать</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Действия с монстром -->
+                        <div class="monster-actions">
+                            <button class="btn-primary">🎯 Найти монстра</button>
+                            <button class="btn-secondary">🏃 Сбежать из боя</button>
+                            <button class="btn-danger">💀 Авто-бой</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Колонка карты -->
+                <div class="map-column">
+                    <div class="column-background" style="background-image: url('https://via.placeholder.com/400x600/1a2e2a/ffffff?text=Map')"></div>
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🗺️ КАРТА</div>
+                        
+                        <!-- Видео контейнер -->
+                        <div class="video-container">
+                            <div style="width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;color:white;font-size:1.2em">
+                                🎥 Видео карты
+                            </div>
+                        </div>
+                        <button class="video-toggle">🎬 Переключить видео</button>
+                        
+                        <!-- Выбор карты -->
+                        <div style="margin-top: 20px;">
+                            <h4 style="color: #ffd700; margin-bottom: 10px;">Доступные карты:</h4>
+                            <div class="maps-grid">
+                                <div class="map-option">
+                                    <strong>Лес Теней</strong>
+                                    <div>Уровень: 1-5</div>
+                                    <div>Монстры: Гоблины, Волки</div>
+                                </div>
+                                <div class="map-option">
+                                    <strong>Горный перевал</strong>
+                                    <div>Уровень: 3-7</div>
+                                    <div>Монстры: Орки, Тролли</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Колонка локации -->
+                <div class="location-column">
+                    <div class="column-background" style="background-image: url('https://via.placeholder.com/400x600/2e2a1a/ffffff?text=Location')"></div>
+                    <div class="column-overlay"></div>
+                    <div class="column-content">
+                        <div class="column-title">🏰 ЛОКАЦИЯ</div>
+                        
+                        <!-- Прогресс локации -->
+                        <div style="background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <h4 style="color: #f59e0b; margin-bottom: 10px;">Лес Теней</h4>
+                            <div class="location-progress-text">Прогресс исследования: 65%</div>
+                            <div class="location-progress">
+                                <div class="location-progress-fill" style="width: 65%"></div>
+                            </div>
+                            <div style="margin-top: 8px; font-size: 0.9em;">
+                                Исследовано: 13/20 зон
+                            </div>
+                        </div>
+                        
+                        <!-- Действия локации -->
+                        <div class="action-buttons">
+                            <button class="btn-primary">🏃 Исследовать</button>
+                            <button class="btn-secondary">🛌 Отдохнуть</button>
+                            <button class="btn-primary">🏪 Магазин</button>
+                            <button class="btn-secondary">🎒 Инвентарь</button>
+                            <button class="btn-primary">⚙️ Настройки</button>
+                            <button class="btn-secondary">📊 Статистика</button>
+                        </div>
+                        
+                        <!-- Журнал событий -->
+                        <div style="margin-top: 15px;">
+                            <h4 style="color: #ffd700; margin-bottom: 10px;">📜 ЖУРНАЛ СОБЫТИЙ</h4>
+                            <div class="battle-log">
+                                <div class="log-entry">Вы вошли в Лес Теней</div>
+                                <div class="log-entry">Найден сундук с сокровищами</div>
+                                <div class="log-entry">Побежден Гоблин-разведчик</div>
+                                <div class="log-entry">Получено: 50 золота</div>
+                                <div class="log-entry">Получен опыт: 25 очков</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        `;
-        
-        console.log("🎯 Главный экран отображен");
-    }
+        </div>
+    `;
+    
+    console.log("🎯 4-колоночный интерфейс отображен");
+}
 
-    startGame() {
-        console.log("🔄 Запуск игры...", this.systems);
-        
-        if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
-            this.systems.hero.showHeroSelection();
-        } else {
-            console.error("❌ HeroSystem не готова:", this.systems.hero);
-            alert("Система героев еще не готова! Проверь консоль для деталей.");
-        }
-    }
+startGame() {
+    console.log("🔄 Запуск игры...", this.systems);
+    
+    // Вместо выбора героя сразу показываем основной игровой интерфейс
+    this.renderMainScreen();
+    
+    // Или если нужно сначала выбрать героя:
+    // if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
+    //     this.systems.hero.showHeroSelection();
+    // } else {
+    //     console.error("❌ HeroSystem не готова:", this.systems.hero);
+    //     alert("Система героев еще не готова! Проверь консоль для деталей.");
+    // }
+}
 
     showDebugInfo() {
         console.log("=== ДЕБАГ ИНФОРМАЦИЯ ===");
