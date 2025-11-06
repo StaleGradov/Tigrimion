@@ -439,7 +439,7 @@ showHeroSelection() {
                         <div class="hero-overlay-equipment">
                             <h4>🎒 Экипировка</h4>
                             <div class="equipment-slots-mini">
-                                ${['main_hand', 'off_hand'].map(slot => {
+                                ${['main_hand', 'off_hand', 'helmet', 'chest', 'gloves', 'legs', 'boots'].map(slot => {
                                     const itemId = this.currentHero.equipment[slot];
                                     const item = itemId && this.systems.equipment ? 
                                         this.systems.equipment.getItemById(itemId) : null;
