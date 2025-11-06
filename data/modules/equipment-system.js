@@ -4,6 +4,8 @@ class EquipmentSystem {
         this.items = [];
         this.itemSets = {};
         this.currentHero = null;
+        this.currentCategory = 'all';
+        this.currentSubcategory = 'all';
         console.log("✅ EquipmentSystem инициализирован");
     }
 
@@ -62,20 +64,18 @@ class EquipmentSystem {
                 bonus: { type: "damage_mult", value: 0.25 },
                 description: "Комплект из 6 вещей даст +25% к урону"
             }
-            // ... остальные сеты из старого скрипта
         };
     }
 
-    // ========== МАГАЗИН И ТОРГОВЛЯ ==========
-    showShop() {
-        if (!this.currentHero) return;
+    // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
+    showShop(category = 'all', subcategory = 'all') {
+        if (!this.currentHero) return '';
 
-        const availableItems = this.items.filter(item => 
-            item.requiredLevel <= (this.currentHero?.level || 1)
-        );
+        this.currentCategory = category;
+        this.currentSubcategory = subcategory;
 
-        const categorizedItems = this.categorizeItems(availableItems);
-        const merchantHTML = this.renderCategorizedShop(categorizedItems);
+        const filteredItems = this.filterItemsByCategory(category, subcategory);
+        const subcategories = this.getSubcategoriesForCategory(category);
 
         return `
             <div class="overlay-content shop-overlay">
@@ -92,20 +92,118 @@ class EquipmentSystem {
                 </div>
                 
                 <div class="shop-categories">
-                    <button class="category-tab active" data-category="all">Все предметы</button>
-                    <button class="category-tab" data-category="weapon">⚔️ Оружие</button>
-                    <button class="category-tab" data-category="helmet">⛑️ Шлемы</button>
-                    <button class="category-tab" data-category="chest">👕 Броня</button>
-                    <button class="category-tab" data-category="gloves">🧤 Перчатки</button>
-                    <button class="category-tab" data-category="legs">👖 Поножи</button>
-                    <button class="category-tab" data-category="boots">👢 Ботинки</button>
+                    <button class="category-tab ${category === 'all' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('all')">Все предметы</button>
+                    <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('weapon')">⚔️ Оружие</button>
+                    <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('helmet')">⛑️ Шлемы</button>
+                    <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('chest')">👕 Броня</button>
+                    <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('gloves')">🧤 Перчатки</button>
+                    <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('legs')">👖 Поножи</button>
+                    <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
+                            onclick="game.systems.equipment.showShop('boots')">👢 Ботинки</button>
                 </div>
                 
+                ${Object.keys(subcategories).length > 0 ? `
+                    <div class="shop-subcategories">
+                        <div class="subcategory-tabs">
+                            ${Object.entries(subcategories).map(([key, name]) => `
+                                <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
+                                        onclick="game.systems.equipment.showShop('${category}', '${key}')">
+                                    ${name}
+                                    <span class="subcategory-count">${this.getSubcategoryItemCount(category, key)}</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+                
                 <div class="shop-content">
-                    ${merchantHTML}
+                    <div class="items-grid">
+                        ${filteredItems.map(item => this.renderShopItem(item)).join('')}
+                        ${filteredItems.length === 0 ? '<div class="empty-category">Нет предметов в этой категории</div>' : ''}
+                    </div>
                 </div>
             </div>
         `;
+    }
+
+    filterItemsByCategory(category, subcategory = 'all') {
+        const availableItems = this.items.filter(item => 
+            item.requiredLevel <= (this.currentHero?.level || 1)
+        );
+
+        let filteredItems = availableItems;
+
+        // Фильтрация по основной категории
+        if (category !== 'all') {
+            if (category === 'weapon') {
+                filteredItems = availableItems.filter(item => 
+                    item.type === 'weapon' && item.weaponType !== 'shield'
+                );
+            } else if (category === 'shield') {
+                filteredItems = availableItems.filter(item => 
+                    item.weaponType === 'shield'
+                );
+            } else {
+                filteredItems = availableItems.filter(item => item.type === category);
+            }
+        }
+
+        // Фильтрация по подкатегории
+        if (subcategory !== 'all') {
+            if (category === 'weapon') {
+                filteredItems = filteredItems.filter(item => 
+                    item.weaponType === subcategory
+                );
+            } else {
+                filteredItems = filteredItems.filter(item => 
+                    (item.material || 'cloth') === subcategory
+                );
+            }
+        }
+
+        return filteredItems;
+    }
+
+    getSubcategoriesForCategory(category) {
+        const subcategories = {
+            'weapon': {
+                'all': 'Все оружие',
+                'one_handed': 'Одноручное',
+                'two_handed': 'Двуручное', 
+                'shield': 'Щиты'
+            },
+            'helmet': this.getArmorSubcategories(),
+            'chest': this.getArmorSubcategories(),
+            'gloves': this.getArmorSubcategories(),
+            'legs': this.getArmorSubcategories(),
+            'boots': this.getArmorSubcategories()
+        };
+        
+        return subcategories[category] || {};
+    }
+
+    getArmorSubcategories() {
+        return {
+            'all': 'Все материалы',
+            'cloth': 'Ткань',
+            'leather': 'Кожа',
+            'hide': 'Шкура',
+            'fur': 'Мех',
+            'plate': 'Пластины',
+            'chain': 'Кольчуга',
+            'plate_mail': 'Латы'
+        };
+    }
+
+    getSubcategoryItemCount(category, subcategory) {
+        const items = this.filterItemsByCategory(category, subcategory);
+        return items.length;
     }
 
     categorizeItems(items) {
@@ -134,17 +232,6 @@ class EquipmentSystem {
         return categories;
     }
 
-    renderCategorizedShop(categories) {
-        return Object.entries(categories).map(([categoryKey, category]) => `
-            <div class="shop-category ${categoryKey}" style="${categoryKey !== 'all' ? 'display: none;' : ''}">
-                <h4 class="category-title">${category.name}</h4>
-                <div class="items-grid">
-                    ${category.items.map(item => this.renderShopItem(item)).join('')}
-                </div>
-            </div>
-        `).join('');
-    }
-
     renderShopItem(item) {
         const isOwned = this.currentHero.inventory.includes(item.id);
         const canAfford = this.currentHero.gold >= item.price;
@@ -153,7 +240,7 @@ class EquipmentSystem {
         const frameColor = this.getItemFrameColor(item.rarity);
         
         return `
-            <div class="shop-item" onclick="game.systems.equipment.showItemDetails(${item.id})">
+            <div class="shop-item rarity-${item.rarity}" onclick="game.systems.equipment.showItemDetails(${item.id})">
                 <div class="item-background" style="border-color: ${frameColor};">
                     <div class="item-image-container">
                         <img src="${item.image}" alt="${item.name}" 
@@ -188,6 +275,7 @@ class EquipmentSystem {
         `;
     }
 
+    // ========== ДЕТАЛИ ПРЕДМЕТА И ПОКУПКА ==========
     showItemDetails(itemId) {
         const item = this.getItemById(itemId);
         if (!item) return;
@@ -210,12 +298,13 @@ class EquipmentSystem {
                         <div class="item-detail-image">
                             <div class="detail-item-background" style="border-color: ${frameColor};">
                                 <img src="${item.image}" alt="${item.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                     class="item-detail-image-zoom">
                                 <div class="item-fallback-large" style="display: none;">
                                     <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
                                 </div>
                             </div>
-                            <div class="item-rarity" style="background: ${frameColor};">
+                            <div class="item-rarity ${item.rarity}" style="background: ${frameColor};">
                                 ${this.getRarityName(item.rarity)}
                             </div>
                         </div>
@@ -349,7 +438,7 @@ class EquipmentSystem {
             
             return `
                 <div class="inventory-item" onclick="game.systems.equipment.equipItem(${itemId})" 
-                     style="border-color: ${frameColor};">
+                     data-rarity="${item.rarity}" style="border-color: ${frameColor};">
                     <div class="inventory-item-image">
                         <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
                     </div>
@@ -409,15 +498,17 @@ class EquipmentSystem {
             return;
         }
 
+        // Определяем слот для предмета
+        const slot = this.getEquipmentSlot(item);
+        if (!slot) {
+            this.showNotification(`❌ Нельзя экипировать ${item.name}`);
+            return;
+        }
+
         // Проверка совместимости оружия
         if (!this.canEquipWeapon(item, this.currentHero.equipment)) {
             this.showNotification(`❌ Нельзя экипировать ${item.name} - несовместимо с текущим оружием`);
             return;
-        }
-
-        let slot = item.slot;
-        if (!slot) {
-            slot = this.getEquipmentSlot(item);
         }
 
         // Особые случаи для двуручного оружия
@@ -429,7 +520,6 @@ class EquipmentSystem {
             // Экипируем в обе руки
             this.currentHero.equipment.main_hand = itemId;
             this.currentHero.equipment.off_hand = itemId;
-            
         } else {
             // Стандартная экипировка
             const currentEquipped = this.currentHero.equipment[slot];
@@ -443,6 +533,8 @@ class EquipmentSystem {
         this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
 
         this.showNotification(`🎯 Надето: ${item.name}`);
+        
+        // Обновляем интерфейс
         game.hideOverlay();
         game.showHeroGameScreen();
     }
@@ -544,13 +636,43 @@ class EquipmentSystem {
         return slotMap[item.type] || null;
     }
 
+    canEquipWeapon(item, currentEquipment) {
+        if (item.type !== 'weapon') return true;
+        
+        const mainHand = currentEquipment.main_hand;
+        const offHand = currentEquipment.off_hand;
+        
+        if (item.weaponType === 'two_handed') {
+            return !mainHand && !offHand;
+        }
+        
+        if (item.weaponType === 'one_handed') {
+            if (item.slot === 'main_hand') {
+                const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+                return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
+            }
+            if (item.slot === 'off_hand') {
+                const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+                return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
+            }
+        }
+        
+        if (item.weaponType === 'shield') {
+            const mainHandItem = mainHand ? this.getItemById(mainHand) : null;
+            return !(mainHandItem && mainHandItem.weaponType === 'two_handed');
+        }
+        
+        return true;
+    }
+
     getItemFrameColor(rarity) {
         const colors = {
             'common': '#9ca3af',
-            'uncommon': '#4cc9f0',
-            'rare': '#a855f7',
-            'epic': '#f59e0b',
-            'legendary': '#ffd700'
+            'uncommon': '#4ade80',
+            'rare': '#4cc9f0',
+            'epic': '#a855f7',
+            'legendary': '#f59e0b',
+            'mythic': '#ff6b6b'
         };
         return colors[rarity] || '#9ca3af';
     }
@@ -587,7 +709,8 @@ class EquipmentSystem {
             'uncommon': 'Необычный',
             'rare': 'Редкий',
             'epic': 'Эпический',
-            'legendary': 'Легендарный'
+            'legendary': 'Легендарный',
+            'mythic': 'Мифический'
         };
         return names[rarity] || 'Обычный';
     }
@@ -626,7 +749,6 @@ class EquipmentSystem {
     }
 
     showNotification(message) {
-        // Простая реализация уведомления
         console.log("🔔", message);
         if (window.game && window.game.showNotification) {
             window.game.showNotification(message);
@@ -685,6 +807,7 @@ class EquipmentSystem {
                 image: "images/items/helmet1.jpg",
                 description: "Кожаный шлем",
                 requiredLevel: 1,
+                material: "leather",
                 rarity: "common"
             }
         ];
