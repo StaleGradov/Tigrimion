@@ -1,11 +1,9 @@
 "use strict";
 
-// ========== МОДУЛЬ 1: СИСТЕМА ДИНАМИЧЕСКОЙ ЗАГРУЗКИ МОДУЛЕЙ И СТИЛЕЙ ==========
+// ========== МОДУЛЬ 1: СИСТЕМА ПРОВЕРКИ МОДУЛЕЙ ==========
 class ModuleLoader {
     constructor() {
-        this.modules = {};
         this.loadedModules = new Set();
-        this.stylesLoaded = false;
         this.requiredModules = [
             'bonuses-system',
             'level-system', 
@@ -16,261 +14,13 @@ class ModuleLoader {
         ];
     }
 
+    // Просто проверяем, что стили загружены
     async loadStyles() {
-        // Если стили уже загружены
-        if (this.stylesLoaded || document.getElementById('game-styles')) {
-            console.log("✅ Стили уже загружены");
-            return true;
-        }
-
-        return new Promise((resolve) => {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'style.css';
-            link.id = 'game-styles';
-            
-            let loadCompleted = false;
-
-            const completeLoad = (success) => {
-                if (loadCompleted) return;
-                loadCompleted = true;
-                this.stylesLoaded = true;
-                resolve(success);
-            };
-
-            // Таймаут для стилей
-            const styleTimeout = setTimeout(() => {
-                console.warn("⚠️ Таймаут загрузки стилей, используем резервные");
-                this.createFallbackStyles();
-                completeLoad(false);
-            }, 3000);
-
-            link.onload = () => {
-                clearTimeout(styleTimeout);
-                console.log("✅ Внешние стили загружены");
-                completeLoad(true);
-            };
-            
-            link.onerror = () => {
-                clearTimeout(styleTimeout);
-                console.warn("❌ Ошибка загрузки внешних стилей, используем резервные");
-                this.createFallbackStyles();
-                completeLoad(false);
-            };
-            
-            document.head.appendChild(link);
-        });
+        console.log("✅ Стили загружены через HTML");
+        return true;
     }
 
-    // Базовые стили на случай если файл стилей не найден
-    createFallbackStyles() {
-        // Проверяем, не добавлены ли уже fallback стили
-        if (document.getElementById('fallback-styles')) {
-            return;
-        }
-
-        const fallbackStyles = `
-            /* Базовые сбросы */
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            
-            /* Основные стили игры */
-            body { 
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-                color: white;
-                line-height: 1.6;
-                min-height: 100vh;
-                padding: 20px;
-            }
-            
-            /* Экран загрузки */
-            .loading-screen { 
-                display: flex; 
-                justify-content: center; 
-                align-items: center; 
-                height: 100vh; 
-                text-align: center; 
-                flex-direction: column;
-            }
-            
-            .loading-content {
-                background: rgba(0, 0, 0, 0.8);
-                padding: 40px;
-                border-radius: 15px;
-                border: 2px solid #4cc9f0;
-            }
-            
-            .progress-container {
-                width: 300px;
-                margin: 20px 0;
-            }
-            
-            .progress-bar {
-                width: 100%;
-                height: 20px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 10px;
-                overflow: hidden;
-                border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-            
-            .progress-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #4cc9f0, #4361ee);
-                transition: width 0.3s ease;
-                width: 0%;
-            }
-            
-            .module-status {
-                margin-top: 15px;
-                font-size: 14px;
-                color: #4cc9f0;
-            }
-            
-            /* Основные кнопки */
-            .btn-primary, .btn-secondary { 
-                padding: 12px 24px; 
-                margin: 8px; 
-                border: none; 
-                border-radius: 8px; 
-                cursor: pointer; 
-                font-size: 16px;
-                font-weight: bold;
-                transition: all 0.3s ease;
-            }
-            
-            .btn-primary { 
-                background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-                color: white; 
-            }
-            .btn-primary:hover { 
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-            }
-            
-            .btn-secondary { 
-                background: rgba(107, 114, 128, 0.7); 
-                color: white; 
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-            .btn-secondary:hover { 
-                background: rgba(107, 114, 128, 0.9);
-                transform: translateY(-2px);
-            }
-            
-            /* Главный экран */
-            .main-screen {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            
-            .game-header {
-                text-align: center;
-                margin-bottom: 40px;
-            }
-            
-            .game-header h1 {
-                font-size: 3em;
-                color: #ffd700;
-                margin-bottom: 10px;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            
-            .game-subtitle {
-                font-size: 1.2em;
-                color: #4cc9f0;
-                opacity: 0.8;
-            }
-            
-            /* Карточки систем */
-            .systems-status {
-                margin: 40px 0;
-            }
-            
-            .systems-status h3 {
-                color: #ffd700;
-                margin-bottom: 20px;
-                text-align: center;
-                font-size: 1.5em;
-            }
-            
-            .systems-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 20px;
-                margin: 20px 0;
-            }
-            
-            .system-card {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 20px;
-                border-radius: 12px;
-                text-align: center;
-                border: 2px solid rgba(255, 255, 255, 0.2);
-                backdrop-filter: blur(10px);
-                transition: all 0.3s ease;
-            }
-            
-            .system-card:hover {
-                transform: translateY(-5px);
-                border-color: #4cc9f0;
-                box-shadow: 0 10px 25px rgba(76, 201, 240, 0.3);
-            }
-            
-            .system-card strong {
-                display: block;
-                font-size: 1.2em;
-                color: #ffd700;
-                margin-bottom: 10px;
-            }
-            
-            .main-actions {
-                text-align: center;
-                margin-top: 40px;
-            }
-        `;
-        
-        const style = document.createElement('style');
-        style.id = 'fallback-styles';
-        style.textContent = fallbackStyles;
-        document.head.appendChild(style);
-        console.log("🔄 Загружены резервные стили");
-    }
-
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
-
-        try {
-            const modulePath = `data/modules/${moduleName}.js`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            
-            const moduleCode = await response.text();
-            
-            // Выполняем код модуля
-            const script = document.createElement('script');
-            script.textContent = moduleCode;
-            document.head.appendChild(script);
-            document.head.removeChild(script);
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
-        }
-    }
-
+    // Проверяем доступность модулей
     isModuleAvailable(moduleName) {
         return typeof window[this.getClassName(moduleName)] !== 'undefined';
     }
@@ -289,7 +39,7 @@ class ModuleLoader {
     }
 
     async waitForAllModules() {
-        const maxAttempts = 100;
+        const maxAttempts = 50;
         const checkInterval = 100;
         
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -303,41 +53,31 @@ class ModuleLoader {
             }
             
             if (attempt === 1) {
-                console.log("⏳ Ожидание модулей...");
+                console.log("⏳ Ожидание инициализации модулей...");
             }
             
             if (attempt % 10 === 0) {
                 console.log(`⏳ Попытка ${attempt}/${maxAttempts}...`);
+                // Выводим информацию о том, какие модули еще не загружены
+                const missingModules = this.requiredModules.filter(module => 
+                    !this.isModuleAvailable(module)
+                );
+                console.log("❌ Отсутствуют модули:", missingModules);
             }
             
             await new Promise(resolve => setTimeout(resolve, checkInterval));
         }
         
-        throw new Error(`Модули не загрузились за ${maxAttempts/10} секунд`);
+        const missingModules = this.requiredModules.filter(module => 
+            !this.isModuleAvailable(module)
+        );
+        throw new Error(`Модули не загрузились за ${maxAttempts/10} секунд. Отсутствуют: ${missingModules.join(', ')}`);
     }
 
     async loadAllModules() {
-        console.log("🚀 Начинаем загрузку модулей...");
+        console.log("🔍 Проверка модулей...");
         
-        // Загружаем модули без повторной загрузки стилей
-        const loadPromises = this.requiredModules.map(async (moduleName) => {
-            if (!this.isModuleAvailable(moduleName)) {
-                return await this.loadModule(moduleName);
-            }
-            return true;
-        });
-        
-        const results = await Promise.allSettled(loadPromises);
-        
-        const failedModules = results
-            .map((result, index) => ({ result, module: this.requiredModules[index] }))
-            .filter(({ result }) => result.status === 'rejected' || result.value === false);
-        
-        if (failedModules.length > 0) {
-            console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
-            throw new Error(`Не удалось загрузить модули: ${failedModules.map(f => f.module).join(', ')}`);
-        }
-        
+        // Просто ждем, когда модули станут доступны (они уже загружены в HTML)
         return await this.waitForAllModules();
     }
 }
@@ -348,24 +88,22 @@ class SafeHeroGame {
         this.moduleLoader = new ModuleLoader();
         this.systems = {};
         this.currentScreen = 'loading';
-        this.init();
+        
+        // Запускаем инициализацию с небольшой задержкой, чтобы DOM точно был готов
+        setTimeout(() => this.init(), 100);
     }
 
     async init() {
         try {
             console.log("🎮 Инициализация игры...");
             
-            // Показываем экран загрузки ДО загрузки стилей
-            this.showLoadingScreen("Загрузка игровых модулей...");
+            // Показываем экран загрузки
+            this.showLoadingScreen("Инициализация игровых систем...");
             
-            // Сначала загружаем стили
-            const stylesLoaded = await this.moduleLoader.loadStyles();
-            console.log(stylesLoaded ? "✅ Стили загружены" : "⚠️ Используются резервные стили");
+            // Проверяем что стили загружены
+            await this.moduleLoader.loadStyles();
             
-            // Ждем немного чтобы стили применились
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Затем загружаем модули
+            // Ждем загрузки модулей
             await this.moduleLoader.loadAllModules();
             
             // Инициализируем системы
@@ -387,7 +125,19 @@ class SafeHeroGame {
         console.log("⚙️ Инициализация игровых систем...");
         
         try {
-            // Используем правильные имена классов (PascalCase)
+            // Проверяем что все классы доступны
+            const classes = {
+                BonusSystem: typeof BonusSystem,
+                LevelSystem: typeof LevelSystem,
+                BattleSystem: typeof BattleSystem,
+                EquipmentSystem: typeof EquipmentSystem,
+                HeroSystem: typeof HeroSystem,
+                MapSystem: typeof MapSystem
+            };
+            
+            console.log("Доступные классы:", classes);
+            
+            // Создаем экземпляры систем
             this.systems.bonus = new BonusSystem();
             this.systems.level = new LevelSystem();
             this.systems.battle = new BattleSystem();
@@ -395,9 +145,10 @@ class SafeHeroGame {
             this.systems.hero = new HeroSystem();
             this.systems.map = new MapSystem();
             
-            console.log("✅ Все системы инициализированы");
+            console.log("✅ Все системы инициализированы:", this.systems);
             
         } catch (error) {
+            console.error("❌ Ошибка при создании систем:", error);
             throw new Error(`Ошибка инициализации систем: ${error.message}`);
         }
     }
@@ -406,18 +157,39 @@ class SafeHeroGame {
         console.log("📂 Загрузка игровых данных...");
         
         try {
-            await Promise.all([
-                this.systems.hero.loadHeroData(),
-                this.systems.equipment.loadItemData(),
-                this.systems.battle.loadBattleData(),
-                this.systems.map.loadMapData(),
-                this.systems.bonus.loadBonusData(),
-                this.systems.level.loadLevelData()
-            ]);
+            // Проверяем что у систем есть методы загрузки
+            const loadPromises = [];
+            
+            if (this.systems.hero && typeof this.systems.hero.loadHeroData === 'function') {
+                loadPromises.push(this.systems.hero.loadHeroData());
+            }
+            
+            if (this.systems.equipment && typeof this.systems.equipment.loadItemData === 'function') {
+                loadPromises.push(this.systems.equipment.loadItemData());
+            }
+            
+            if (this.systems.battle && typeof this.systems.battle.loadBattleData === 'function') {
+                loadPromises.push(this.systems.battle.loadBattleData());
+            }
+            
+            if (this.systems.map && typeof this.systems.map.loadMapData === 'function') {
+                loadPromises.push(this.systems.map.loadMapData());
+            }
+            
+            if (this.systems.bonus && typeof this.systems.bonus.loadBonusData === 'function') {
+                loadPromises.push(this.systems.bonus.loadBonusData());
+            }
+            
+            if (this.systems.level && typeof this.systems.level.loadLevelData === 'function') {
+                loadPromises.push(this.systems.level.loadLevelData());
+            }
+            
+            await Promise.all(loadPromises);
             
             console.log("✅ Все игровые данные загружены");
             
         } catch (error) {
+            console.error("❌ Ошибка загрузки данных:", error);
             throw new Error(`Ошибка загрузки данных: ${error.message}`);
         }
     }
@@ -454,7 +226,10 @@ class SafeHeroGame {
 
     renderMainScreen() {
         const app = document.getElementById('app');
-        if (!app) return;
+        if (!app) {
+            console.error("❌ Элемент #app не найден!");
+            return;
+        }
 
         app.innerHTML = `
             <div class="main-screen">
@@ -485,10 +260,12 @@ class SafeHeroGame {
                 </div>
             </div>
         `;
+        
+        console.log("🎯 Главный экран отображен");
     }
 
     startGame() {
-        console.log("🔄 Проверяем системы...", this.systems);
+        console.log("🔄 Запуск игры...", this.systems);
         
         if (this.systems.hero && typeof this.systems.hero.showHeroSelection === 'function') {
             this.systems.hero.showHeroSelection();
@@ -511,10 +288,28 @@ class SafeHeroGame {
             MapSystem: typeof MapSystem
         });
         
+        // Проверяем стили
+        console.log("CSS файл загружен:", !!document.getElementById('game-styles'));
+        console.log("Все стили в head:", document.head.querySelectorAll('link, style').length);
+        
         alert("Информация выведена в консоль (F12)");
     }
 
     panic(error) {
+        const app = document.getElementById('app');
+        if (!app) {
+            document.body.innerHTML = `
+                <div style="padding: 20px; background: #dc2626; color: white; font-family: Arial, sans-serif;">
+                    <h1>🚨 КРИТИЧЕСКАЯ ОШИБКА</h1>
+                    <p><strong>Сообщение:</strong> ${error.message}</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; background: white; color: #dc2626; border: none; border-radius: 5px; cursor: pointer;">
+                        🔄 Перезагрузить игру
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
         const errorHtml = `
             <div class="error-screen">
                 <div class="error-content">
@@ -544,13 +339,21 @@ class SafeHeroGame {
             </div>
         `;
         
-        document.body.innerHTML = errorHtml;
+        app.innerHTML = errorHtml;
         console.error("💀 ПАНИКА:", error);
     }
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
+// Инициализация при полной загрузке страницы
+window.addEventListener('load', () => {
     console.log("🎮 Запуск Tigrimion RPG...");
+    console.log("DOM полностью загружен");
+    
+    // Проверяем что элемент app существует
+    if (!document.getElementById('app')) {
+        console.error("❌ Критическая ошибка: элемент #app не найден в DOM!");
+        return;
+    }
+    
     window.game = new SafeHeroGame();
 });
