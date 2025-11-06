@@ -186,7 +186,7 @@ class SafeHeroGame {
         this.systems = {};
         this.currentScreen = 'loading';
         this.currentHero = null;
-        this.activeOverlay = null; // Текущее открытое окно поверх героя
+        this.activeOverlay = null;
         this.init();
     }
 
@@ -278,71 +278,70 @@ class SafeHeroGame {
         if (status) status.textContent = message;
     }
 
-    // ========== НОВАЯ СИСТЕМА ЭКРАНОВ ==========
-showHeroSelection() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    showHeroSelection() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    const heroes = this.systems.hero.heroes;
-    
-    app.innerHTML = `
-        <div class="hero-selection-screen">
-            <header class="selection-header">
-                <!-- Заголовок скрыт как просили -->
-            </header>
-            
-            <div class="heroes-grid">
-                ${heroes.map(hero => {
-                    const isUnlocked = hero.unlocked || hero.id === 1;
-                    const stats = this.systems.hero.calculateHeroStats(hero);
-                    
-                    return `
-                        <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
-                             onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
-                            <div class="hero-image">
-                                <img src="${hero.image}" alt="${hero.name}" 
-                                     onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                                ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                            </div>
-                            <div class="hero-info-tooltip">
-                                <div class="hero-header">
-                                    <strong>${hero.name}</strong>
-                                    <span class="hero-level">Ур. ${hero.level}</span>
+        const heroes = this.systems.hero.heroes;
+        
+        app.innerHTML = `
+            <div class="hero-selection-screen">
+                <header class="selection-header">
+                    <!-- Заголовок скрыт как просили -->
+                </header>
+                
+                <div class="heroes-grid">
+                    ${heroes.map(hero => {
+                        const isUnlocked = hero.unlocked || hero.id === 1;
+                        const stats = this.systems.hero.calculateHeroStats(hero);
+                        
+                        return `
+                            <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
+                                 onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
+                                <div class="hero-image">
+                                    <img src="${hero.image}" alt="${hero.name}" 
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
                                 </div>
-                                <div class="hero-stats">
-                                    <div class="stat-row">
-                                        <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                        <span>⚔️ ${stats.damage}</span>
-                                        <span>🛡️ ${stats.armor}</span>
+                                <div class="hero-info-tooltip">
+                                    <div class="hero-header">
+                                        <strong>${hero.name}</strong>
+                                        <span class="hero-level">Ур. ${hero.level}</span>
                                     </div>
-                                    <div class="stat-row">
-                                        <span>💰 ${hero.gold.toFixed(2)}</span>
-                                        <span>🌟 ${stats.power}</span>
+                                    <div class="hero-stats">
+                                        <div class="stat-row">
+                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                            <span>⚔️ ${stats.damage}</span>
+                                            <span>🛡️ ${stats.armor}</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                                            <span>🌟 ${stats.power}</span>
+                                        </div>
                                     </div>
+                                    <div class="hero-details">
+                                        <span>🧬 ${this.getRaceName(hero.race)}</span>
+                                        <span>⚔️ ${this.getClassName(hero.class)}</span>
+                                        <span>📖 ${this.getSagaName(hero.saga)}</span>
+                                    </div>
+                                    ${!isUnlocked ? 
+                                        '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : 
+                                        '<small class="select-text">Кликните для выбора</small>'
+                                    }
                                 </div>
-                                <div class="hero-details">
-                                    <span>🧬 ${this.getRaceName(hero.race)}</span>
-                                    <span>⚔️ ${this.getClassName(hero.class)}</span>
-                                    <span>📖 ${this.getSagaName(hero.saga)}</span>
-                                </div>
-                                ${!isUnlocked ? 
-                                    '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : 
-                                    '<small class="select-text">Кликните для выбора</small>'
-                                }
                             </div>
-                        </div>
-                    `;
-                }).join('')}
+                        `;
+                    }).join('')}
+                </div>
+                
+                <div class="selection-actions">
+                    <button class="btn-secondary" onclick="game.showMainMenu()">
+                        ← Назад в меню
+                    </button>
+                </div>
             </div>
-            
-            <div class="selection-actions">
-                <button class="btn-secondary" onclick="game.showMainMenu()">
-                    ← Назад в меню
-                </button>
-            </div>
-        </div>
-    `;
-}
+        `;
+    }
 
     selectHero(heroId) {
         const hero = this.systems.hero.heroes.find(h => h.id === heroId);
@@ -351,123 +350,128 @@ showHeroSelection() {
         this.currentHero = hero;
         this.systems.hero.currentHero = hero;
         
+        // Устанавливаем текущего героя в системе экипировки
+        if (this.systems.equipment) {
+            this.systems.equipment.setCurrentHero(hero);
+        }
+        
         console.log(`🎯 Выбран герой: ${hero.name}`);
         this.showHeroGameScreen();
     }
 
-  showHeroGameScreen() {
-    if (!this.currentHero) return;
+    showHeroGameScreen() {
+        if (!this.currentHero) return;
 
-    const app = document.getElementById('app');
-    const stats = this.systems.hero.calculateHeroStats(this.currentHero);
-    
-    app.innerHTML = `
-        <div class="hero-game-screen">
-            <!-- Верхняя панель кнопок -->
-            <div class="top-action-bar">
-                <button class="btn-top" onclick="game.showOverlay('global-map')">
-                    🗺️ Глобальная карта
-                </button>
-                <button class="btn-top" onclick="game.showOverlay('local-map')">
-                    📍 Локальная карта
-                </button>
-                <button class="btn-top" onclick="game.showOverlay('tactical-map')">
-                    🎲 Тактическая карта
-                </button>
-                <button class="btn-top" onclick="game.showOverlay('inventory')">
-                    🎒 Инвентарь
-                </button>
-                <button class="btn-top" onclick="game.showOverlay('shop')">
-                    🏪 Магазин
-                </button>
-                <button class="btn-top" onclick="game.showHeroSelection()">
-                    🔁 Сменить героя
-                </button>
-            </div>
+        const app = document.getElementById('app');
+        const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+        
+        app.innerHTML = `
+            <div class="hero-game-screen">
+                <!-- Верхняя панель кнопок -->
+                <div class="top-action-bar">
+                    <button class="btn-top" onclick="game.showOverlay('global-map')">
+                        🗺️ Глобальная карта
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('local-map')">
+                        📍 Локальная карта
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('tactical-map')">
+                        🎲 Тактическая карта
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('inventory')">
+                        🎒 Инвентарь
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('shop')">
+                        🏪 Магазин
+                    </button>
+                    <button class="btn-top" onclick="game.showHeroSelection()">
+                        🔁 Сменить героя
+                    </button>
+                </div>
 
-            <!-- Основное окно героя (полноэкранное) -->
-            <div class="hero-main-window">
-                <div class="hero-fullscreen">
-                    <!-- Фон - картинка героя -->
-                    <div class="hero-background">
-                        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-                    </div>
-                    
-                    <!-- Панель параметров поверх картинки -->
-                    <div class="hero-overlay-panel">
-                        <!-- Верхняя строка - имя и уровень -->
-                        <div class="hero-overlay-header">
-                            <div class="hero-overlay-name">${this.currentHero.name}</div>
-                            <div class="hero-overlay-level">⚡ Ур. ${this.currentHero.level}</div>
+                <!-- Основное окно героя (полноэкранное) -->
+                <div class="hero-main-window">
+                    <div class="hero-fullscreen">
+                        <!-- Фон - картинка героя -->
+                        <div class="hero-background">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                         </div>
                         
-                        <!-- Основные параметры -->
-                        <div class="hero-overlay-stats">
-                            <div class="overlay-stat-group">
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">❤️ Здоровье</span>
-                                    <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
+                        <!-- Панель параметров поверх картинки -->
+                        <div class="hero-overlay-panel">
+                            <!-- Верхняя строка - имя и уровень -->
+                            <div class="hero-overlay-header">
+                                <div class="hero-overlay-name">${this.currentHero.name}</div>
+                                <div class="hero-overlay-level">⚡ Ур. ${this.currentHero.level}</div>
+                            </div>
+                            
+                            <!-- Основные параметры -->
+                            <div class="hero-overlay-stats">
+                                <div class="overlay-stat-group">
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">❤️ Здоровье</span>
+                                        <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">⚔️ Мощь</span>
+                                        <span class="overlay-stat-value">${stats.damage}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🛡️ Защита</span>
+                                        <span class="overlay-stat-value">${stats.armor}</span>
+                                    </div>
                                 </div>
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">⚔️ Мощь</span>
-                                    <span class="overlay-stat-value">${stats.damage}</span>
-                                </div>
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">🛡️ Защита</span>
-                                    <span class="overlay-stat-value">${stats.armor}</span>
+                                
+                                <div class="overlay-stat-group">
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">💰 Золото</span>
+                                        <span class="overlay-stat-value">${this.currentHero.gold.toFixed(2)}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🌟 Сила</span>
+                                        <span class="overlay-stat-value">${stats.power}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🧬 Раса</span>
+                                        <span class="overlay-stat-value">${this.getRaceName(this.currentHero.race)}</span>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="overlay-stat-group">
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">💰 Золото</span>
-                                    <span class="overlay-stat-value">${this.currentHero.gold.toFixed(2)}</span>
-                                </div>
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">🌟 Сила</span>
-                                    <span class="overlay-stat-value">${stats.power}</span>
-                                </div>
-                                <div class="overlay-stat-row">
-                                    <span class="overlay-stat-label">🧬 Раса</span>
-                                    <span class="overlay-stat-value">${this.getRaceName(this.currentHero.race)}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Экипировка (2 предмета) -->
-                        <div class="hero-overlay-equipment">
-                            <h4>🎒 Экипировка</h4>
-                            <div class="equipment-slots-mini">
-                                ${['main_hand', 'off_hand', 'helmet', 'chest', 'gloves', 'legs', 'boots'].map(slot => {
-                                    const itemId = this.currentHero.equipment[slot];
-                                    const item = itemId && this.systems.equipment ? 
-                                        this.systems.equipment.getItemById(itemId) : null;
-                                    return `
-                                        <div class="equipment-slot-mini ${slot} ${item ? 'equipped' : 'empty'}"
-                                             onclick="game.showEquipmentForSlot('${slot}')"
-                                             ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
-                                            <div class="slot-icon-mini">
-                                                ${item ? 
-                                                    `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : 
-                                                    this.getSlotIcon(slot)
-                                                }
+                            <!-- Экипировка (2 предмета) -->
+                            <div class="hero-overlay-equipment">
+                                <h4>🎒 Экипировка</h4>
+                                <div class="equipment-slots-mini">
+                                    ${['main_hand', 'off_hand', 'helmet', 'chest', 'gloves', 'legs', 'boots'].map(slot => {
+                                        const itemId = this.currentHero.equipment[slot];
+                                        const item = itemId && this.systems.equipment ? 
+                                            this.systems.equipment.getItemById(itemId) : null;
+                                        return `
+                                            <div class="equipment-slot-mini ${slot} ${item ? 'equipped' : 'empty'}"
+                                                 onclick="game.showEquipmentForSlot('${slot}')"
+                                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
+                                                <div class="slot-icon-mini">
+                                                    ${item ? 
+                                                        `<img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">` : 
+                                                        this.getSlotIcon(slot)
+                                                    }
+                                                </div>
+                                                <div class="slot-label-mini">${this.getSlotName(slot)}</div>
                                             </div>
-                                            <div class="slot-label-mini">${this.getSlotName(slot)}</div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Область для оверлеев (открывается поверх героя) -->
-            <div id="overlay-container" class="overlay-container"></div>
-        </div>
-    `;
-}
+                <!-- Область для оверлеев (открывается поверх героя) -->
+                <div id="overlay-container" class="overlay-container"></div>
+            </div>
+        `;
+    }
 
     showOverlay(overlayType) {
         const container = document.getElementById('overlay-container');
@@ -519,11 +523,11 @@ showHeroSelection() {
                 break;
 
             case 'inventory':
-                this.showInventoryOverlay();
+                container.innerHTML = this.systems.equipment.showInventory();
                 break;
 
             case 'shop':
-                this.showShopOverlay();
+                container.innerHTML = this.systems.equipment.showShop();
                 break;
         }
 
@@ -539,83 +543,52 @@ showHeroSelection() {
         }
     }
 
-    showInventoryOverlay() {
-        const container = document.getElementById('overlay-container');
-        if (!container || !this.currentHero) return;
-
-        const inventoryHTML = this.currentHero.inventory.map(itemId => {
-            const item = this.systems.equipment.getItemById(itemId);
-            if (!item) return '';
-            
-            const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
-            
-            return `
-                <div class="inventory-item" data-rarity="${item.rarity || 'common'}">
-                    <div class="item-image">
-                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
-                    </div>
-                    <div class="item-info">
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-stats">
-                            ${item.fixed_damage ? `<span>⚔️ +${item.fixed_damage}</span>` : ''}
-                            ${item.fixed_armor ? `<span>🛡️ +${item.fixed_armor}</span>` : ''}
-                            ${item.fixed_health ? `<span>❤️ +${item.fixed_health}</span>` : ''}
-                        </div>
-                        <div class="item-description">${item.description}</div>
-                        ${isEquipped ? 
-                            '<div class="item-status equipped">✅ Надето</div>' : 
-                            `<button class="btn-equip" onclick="game.systems.equipment.equipItem(${item.id})">Надеть</button>`
-                        }
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        container.innerHTML = `
-            <div class="overlay-content inventory-overlay">
-                <div class="overlay-header">
-                    <h3>🎒 Инвентарь</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div class="inventory-stats">
-                        <span>💰 Золото: ${this.currentHero.gold.toFixed(2)}</span>
-                        <span>📦 Предметы: ${this.currentHero.inventory.length}</span>
-                    </div>
-                    <div class="inventory-grid">
-                        ${inventoryHTML || '<div class="empty-inventory">📭 Инвентарь пуст</div>'}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    showShopOverlay() {
-        const container = document.getElementById('overlay-container');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div class="overlay-content shop-overlay">
-                <div class="overlay-header">
-                    <h3>🏪 Магазин</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div class="shop-content">
-                        <p>Магазин будет реализован в следующем обновлении</p>
-                        <p>💰 Ваше золото: ${this.currentHero ? this.currentHero.gold.toFixed(2) : '0'}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
     showEquipmentForSlot(slot) {
         this.showOverlay('inventory');
         // Здесь можно добавить фильтрацию по слоту
+        setTimeout(() => {
+            const inventoryOverlay = document.querySelector('.inventory-overlay');
+            if (inventoryOverlay) {
+                const filterInfo = document.createElement('div');
+                filterInfo.className = 'filter-info';
+                filterInfo.innerHTML = `
+                    <strong>🎯 Выбор предмета для: ${this.getSlotName(slot)}</strong>
+                    <div>Показаны только подходящие предметы</div>
+                `;
+                const overlayBody = inventoryOverlay.querySelector('.overlay-body');
+                if (overlayBody) {
+                    overlayBody.insertBefore(filterInfo, overlayBody.firstChild);
+                }
+            }
+        }, 100);
     }
 
-    // Вспомогательные методы
+    // ========== СИСТЕМА УВЕДОМЛЕНИЙ ==========
+    showNotification(message, type = 'info') {
+        // Удаляем существующие уведомления
+        const existingNotifications = document.querySelectorAll('.game-notification');
+        existingNotifications.forEach(notification => notification.remove());
+        
+        const notification = document.createElement('div');
+        notification.className = `game-notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-message">${message}</span>
+                <button class="notification-close" onclick="this.parentElement.parentElement.remove()">OK</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Автоматическое скрытие через 5 секунд
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     getRaceName(race) {
         const races = {
             'human': 'Человек',
@@ -718,6 +691,7 @@ showHeroSelection() {
         console.log("Загруженные модули:", this.moduleLoader.loadedModules);
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
+        console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
         
         alert("Информация выведена в консоль (F12)");
     }
@@ -733,9 +707,15 @@ showHeroSelection() {
                     <div class="error-details">
                         <strong>Сообщение:</strong> ${error.message}
                     </div>
+                    <div class="error-stack">
+                        <strong>Стек:</strong> ${error.stack}
+                    </div>
                     <div class="error-actions">
                         <button onclick="location.reload()" class="btn-reload">
                             🔄 Перезагрузить игру
+                        </button>
+                        <button onclick="game.showMainMenu()" class="btn-main-menu">
+                            🏠 В главное меню
                         </button>
                     </div>
                 </div>
@@ -744,10 +724,124 @@ showHeroSelection() {
         
         console.error("💀 ПАНИКА:", error);
     }
+
+    // ========== СИСТЕМА СОХРАНЕНИЯ ==========
+    saveGame() {
+        if (this.currentHero) {
+            const saveData = {
+                currentHeroId: this.currentHero.id,
+                heroes: this.systems.hero.heroes,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
+            console.log("💾 Игра сохранена");
+        }
+    }
+
+    loadSave() {
+        try {
+            const save = localStorage.getItem('tigrimionSave');
+            if (save) {
+                const data = JSON.parse(save);
+                
+                // Загружаем прогресс героев
+                if (data.heroes && this.systems.hero) {
+                    const savedHeroes = data.heroes;
+                    this.systems.hero.heroes = this.systems.hero.heroes.map(freshHero => {
+                        const savedHero = savedHeroes.find(h => h.id === freshHero.id);
+                        if (savedHero) {
+                            return {
+                                ...freshHero,
+                                ...savedHero
+                            };
+                        }
+                        return freshHero;
+                    });
+                }
+                
+                // Восстанавливаем текущего героя
+                if (data.currentHeroId) {
+                    this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
+                    if (this.currentHero && this.systems.equipment) {
+                        this.systems.equipment.setCurrentHero(this.currentHero);
+                    }
+                }
+                
+                console.log("📂 Сохранение загружено");
+                return true;
+            }
+        } catch (error) {
+            console.error("❌ Ошибка загрузки сохранения:", error);
+        }
+        return false;
+    }
+
+    // ========== СИСТЕМА АВТОСОХРАНЕНИЯ ==========
+    startAutosave() {
+        setInterval(() => {
+            this.saveGame();
+        }, 30000); // Сохраняем каждые 30 секунд
+    }
 }
 
-// Инициализация при загрузке страницы
+// ========== ИНИЦИАЛИЗАЦИЯ ИГРЫ ==========
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🎮 Запуск Tigrimion RPG...");
     window.game = new SafeHeroGame();
+    
+    // Добавляем обработчик закрытия страницы для сохранения
+    window.addEventListener('beforeunload', () => {
+        if (window.game) {
+            window.game.saveGame();
+        }
+    });
 });
+
+// ========== ГЛОБАЛЬНЫЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+// ========== ПОЛИФИЛЛЫ ДЛЯ СТАРЫХ БРАУЗЕРОВ ==========
+if (!String.prototype.includes) {
+    String.prototype.includes = function(search, start) {
+        if (typeof start !== 'number') {
+            start = 0;
+        }
+        if (start + search.length > this.length) {
+            return false;
+        }
+        return this.indexOf(search, start) !== -1;
+    };
+}
+
+if (!Array.prototype.includes) {
+    Array.prototype.includes = function(searchElement, fromIndex) {
+        if (this == null) {
+            throw new TypeError('Array.prototype.includes called on null or undefined');
+        }
+        var O = Object(this);
+        var len = O.length >>> 0;
+        if (len === 0) {
+            return false;
+        }
+        var n = fromIndex | 0;
+        var k = Math.max(n >= 0 ? n : len - Math.abs(n), 0);
+        while (k < len) {
+            if (O[k] === searchElement) {
+                return true;
+            }
+            k++;
+        }
+        return false;
+    };
+}
