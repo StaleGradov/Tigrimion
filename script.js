@@ -190,6 +190,14 @@ HeroGame.prototype.loadGameData = async function() {
             this.loadJSON('data/locations.json')
         ]);
 
+        console.log("📊 Результаты загрузки:", {
+            heroes: heroes ? `✅ ${heroes.length} героев` : '❌ не загружены',
+            enemies: enemies ? `✅ ${enemies.length} врагов` : '❌ не загружены',
+            items: items ? `✅ ${items.length} предметов` : '❌ не загружены',
+            maps: mapsData ? `✅ ${mapsData.length} карт` : '❌ не загружены',
+            locations: locationsData ? `✅ ${locationsData.length} локаций` : '❌ не загружены'
+        });
+
         // Заполнение данных игры с проверками
         this.heroes = heroes || [];
         this.monsters = enemies || [];
@@ -197,29 +205,22 @@ HeroGame.prototype.loadGameData = async function() {
         this.maps = mapsData || [];
         this.locations = locationsData || [];
 
-        console.log("✅ Данные загружены:", {
-            heroes: this.heroes.length,
-            monsters: this.monsters.length,
-            items: this.items.length,
-            maps: this.maps.length,
-            locations: this.locations.length
-        });
-
-        // Разблокировка первого героя
+        // Разблокировка первого героя по умолчанию
         if (this.heroes.length > 0) {
             const firstHero = this.heroes.find(h => h.id === 1);
             if (firstHero) {
                 firstHero.unlocked = true;
-                console.log("✅ Первый герой разблокирован");
+                console.log("✅ Первый герой разблокирован:", firstHero.name);
             }
+        } else {
+            console.error("❌ Нет героев для разблокировки!");
         }
 
     } catch (error) {
         console.error('❌ Критическая ошибка загрузки данных:', error);
-        this.createFallbackData();  // Создание тестовых данных при ошибке
+        this.createFallbackData();
     }
 };
-
 // ========== МОДУЛЬ 2.3: СОЗДАНИЕ ТЕСТОВЫХ ДАННЫХ ==========
 HeroGame.prototype.createFallbackData = function() {
     // Создание базового героя
@@ -1031,12 +1032,30 @@ HeroGame.prototype.updateHealth = function(change) {
 };
 
 // ========== МОДУЛЬ 9: СИСТЕМА ОТОБРАЖЕНИЯ И ИНТЕРФЕЙСА ==========
-
 // ========== МОДУЛЬ 9.1: ОТРИСОВКА ЭКРАНА ВЫБОРА ГЕРОЯ ==========
 HeroGame.prototype.renderHeroSelect = function() {
+    console.log("🎨 Рендерим экран выбора героя");
+    console.log("📊 Количество героев:", this.heroes.length);
+    
     const container = document.getElementById('app');
+    
+    // Проверяем, есть ли герои
+    if (this.heroes.length === 0) {
+        console.error("❌ Нет героев для отображения!");
+        container.innerHTML = `
+            <div class="screen active" id="screen-hero-select">
+                <h2 class="text-center">❌ Ошибка загрузки героев</h2>
+                <p>Герои не загружены. Проверьте консоль для деталей.</p>
+                <button onclick="location.reload()">🔄 Перезагрузить</button>
+            </div>
+        `;
+        return;
+    }
+    
     const heroesHTML = this.heroes.map(hero => {
         const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+        console.log(`👤 Герой ${hero.id}: ${hero.name}, разблокирован: ${isUnlocked}`);
+        
         const stats = this.calculateHeroStats(hero);
         const bonuses = this.getBonuses();
         
@@ -1053,7 +1072,7 @@ HeroGame.prototype.renderHeroSelect = function() {
 
         return `
             <div class="hero-option ${isUnlocked ? '' : 'locked'}" 
-                 onclick="${isUnlocked ? 'game.selectHero(' + hero.id + ')' : ''}">
+                 onclick="game.selectHero(${hero.id})">
                 <div class="hero-option-image">
                     <img src="${hero.image}" alt="${hero.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
@@ -1097,6 +1116,8 @@ HeroGame.prototype.renderHeroSelect = function() {
             </div>
         </div>
     `;
+    
+    console.log("✅ Экран выбора героя отрендерен");
 };
 
 // ========== МОДУЛЬ 9.2: ПОЛУЧЕНИЕ ИКОНКИ ДЛЯ БОНУСА ==========
@@ -1124,19 +1145,27 @@ HeroGame.prototype.getBonusIcon = function(bonusType) {
 };
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
+    console.log("🎯 selectHero вызван с ID:", heroId);
+    
     const hero = this.heroes.find(h => h.id === heroId);
+    console.log("🔍 Найден герой:", hero);
+    
     if (!hero) {
         console.error('Герой не найден:', heroId);
         return;
     }
     
     const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    console.log("🔓 Герой разблокирован:", isUnlocked, "ID:", hero.id);
+    
     if (!isUnlocked) {
         console.log('Герой заблокирован:', hero.name);
         return;
     }
     
     this.currentHero = hero;
+    console.log("✅ Текущий герой установлен:", this.currentHero.name);
+    
     this.showScreen('main');
     this.renderHeroScreen();
     this.saveGame();
