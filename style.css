@@ -295,13 +295,13 @@ body {
 .hero-background img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Изменено с cover на contain для полного отображения */
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Фон на случай прозрачных изображений */
+    object-fit: contain;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
 .hero-overlay-panel {
     position: absolute;
-    bottom: 2rem; /* Перемещено вниз */
+    bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(15, 23, 42, 0.95);
@@ -381,7 +381,7 @@ body {
 
 .equipment-slots-mini {
     display: grid;
-    grid-template-columns: repeat(7, 1fr); /* 7 слотов в ряд */
+    grid-template-columns: repeat(7, 1fr);
     gap: 0.5rem;
 }
 
@@ -518,6 +518,10 @@ body {
     border-radius: 8px;
     padding: 1rem;
     transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
 }
 
 .inventory-item[data-rarity="common"] { border-color: #6b7280; }
@@ -531,36 +535,51 @@ body {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.item-image {
-    text-align: center;
-    margin-bottom: 0.8rem;
+.inventory-item-image {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
 }
 
-.item-image img {
-    width: 48px;
-    height: 48px;
+.inventory-item-image img {
+    max-width: 50px;
+    max-height: 50px;
+    width: auto;
+    height: auto;
     object-fit: contain;
 }
 
-.item-name {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: white;
+.inventory-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inventory-item-info strong {
+    color: #ffd700;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9em;
 }
 
 .item-stats {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.8rem;
+    gap: 6px;
+    margin: 6px 0;
+    font-size: 0.8em;
 }
 
 .item-stats span {
-    background: rgba(59, 130, 246, 0.2);
-    padding: 0.2rem 0.5rem;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 2px 6px;
     border-radius: 4px;
-    color: #60a5fa;
+    border: 1px solid rgba(76, 201, 240, 0.3);
 }
 
 .item-description {
@@ -582,6 +601,485 @@ body {
     padding: 3rem;
     color: #9ca3af;
     font-size: 1.1rem;
+}
+
+/* ========== МАГАЗИН ========== */
+.merchant-header {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.hero-merchant-info {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.merchant-stats {
+    display: flex;
+    gap: 20px;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #4cc9f0;
+}
+
+.gold-amount, .inventory-space {
+    font-weight: bold;
+    font-size: 1em;
+}
+
+.shop-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.category-tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(4px);
+}
+
+.category-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-color: #4cc9f0;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.merchant-items-container {
+    min-height: 500px;
+}
+
+.shop-content {
+    width: 100%;
+}
+
+.shop-category {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.category-title {
+    color: #ffd700;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 15px;
+}
+
+.shop-item {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 180px;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px) scale(1.02);
+}
+
+.shop-item.owned {
+    opacity: 0.7;
+}
+
+.shop-item.cannot-buy {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.item-background {
+    position: relative;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 15px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.shop-item:hover .item-background {
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Стили редкости */
+.rarity-common .item-background { border-color: #9ca3af; }
+.rarity-uncommon .item-background { border-color: #4cc9f0; }
+.rarity-rare .item-background { border-color: #a855f7; }
+.rarity-epic .item-background { border-color: #f59e0b; }
+.rarity-legendary .item-background { border-color: #ffd700; }
+
+.item-image-container {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.item-image-container img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.shop-item:hover .item-image-container img {
+    transform: scale(1.2);
+}
+
+.item-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.item-icon {
+    font-size: 2.5em;
+}
+
+.item-rarity-bar {
+    width: 100%;
+    height: 3px;
+    margin: 8px 0;
+    border-radius: 2px;
+}
+
+.item-info {
+    text-align: center;
+    width: 100%;
+    padding: 0;
+}
+
+.item-name {
+    font-weight: bold;
+    font-size: 1em;
+    margin-bottom: 6px;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-type {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.item-stats-compact {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.item-stats-compact span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.item-price-tag {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+}
+
+.price {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 0.9em;
+}
+
+.owned-badge {
+    background: rgba(74, 222, 128, 0.3);
+    color: #4ade80;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    border: 1px solid #4ade80;
+}
+
+.buy-status {
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 0.75em;
+    font-weight: bold;
+}
+
+.buy-status.can-buy {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    border: 1px solid #4cc9f0;
+}
+
+.buy-status.cannot-buy {
+    background: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+    border: 1px solid #f87171;
+}
+
+/* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
+.item-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 3px solid #4cc9f0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.modal-header h4 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+}
+
+.item-detail-content {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.item-detail-image {
+    text-align: center;
+}
+
+.detail-item-background {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 20px;
+    border: 3px solid;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 188px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.detail-item-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.detail-item-background img:hover {
+    transform: scale(2.5);
+    z-index: 1000;
+    position: relative;
+}
+
+.item-fallback-large {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 3em;
+}
+
+.item-rarity {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.item-rarity.common { background: #9ca3af; color: #1f2937; }
+.item-rarity.uncommon { background: #4ade80; color: #1f2937; }
+.item-rarity.rare { background: #4cc9f0; color: #1f2937; }
+.item-rarity.epic { background: #a855f7; color: white; }
+.item-rarity.legendary { background: #f59e0b; color: #1f2937; }
+
+.item-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.item-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+.item-flavor {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #4cc9f0;
+}
+
+.item-stats-detailed, .item-requirements {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-stats-detailed h5, .item-requirements h5 {
+    color: #4cc9f0;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-line:last-child {
+    border-bottom: none;
+}
+
+.item-actions {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.buy-price {
+    color: #ffd700;
+}
+
+.sell-price {
+    color: #4ade80;
+}
+
+.purchase-error {
+    color: #f87171;
+    font-size: 0.8em;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.btn-primary.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* ========== КНОПКИ ========== */
@@ -715,7 +1213,7 @@ body {
     }
     
     .equipment-slots-mini {
-        grid-template-columns: repeat(4, 1fr); /* 4 слота в ряд на мобильных */
+        grid-template-columns: repeat(4, 1fr);
     }
     
     .top-action-bar {
@@ -734,11 +1232,47 @@ body {
     .inventory-grid {
         grid-template-columns: 1fr;
     }
+    
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 10px;
+    }
+    
+    .item-image-container {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item-background {
+        width: 100%;
+        height: 200px;
+        max-width: 300px;
+        margin: 0 auto;
+    }
 }
 
 @media (max-width: 480px) {
     .equipment-slots-mini {
-        grid-template-columns: repeat(3, 1fr); /* 3 слота в ряд на маленьких экранах */
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        padding: 15px;
     }
 }
 
@@ -769,4 +1303,243 @@ body {
 
 .overlay-body::-webkit-scrollbar-thumb:hover {
     background: #64748b;
+}
+
+/* ========== УВЕДОМЛЕНИЯ ========== */
+.game-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    padding: 15px 20px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-info {
+    border-color: #4cc9f0;
+}
+
+.notification-success {
+    border-color: #4ade80;
+}
+
+.notification-error {
+    border-color: #f87171;
+}
+
+.notification-message {
+    color: white;
+    font-weight: bold;
+    flex: 1;
+}
+
+.notification-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
+.rarity-common .item-background {
+    border: 3px solid #9ca3af !important;
+    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.4);
+}
+
+.rarity-uncommon .item-background {
+    border: 4px solid #4cc9f0 !important;
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
+}
+
+.rarity-rare .item-background {
+    border: 5px solid #a855f7 !important;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
+}
+
+.rarity-epic .item-background {
+    border: 6px solid #f59e0b !important;
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+    animation: epic-pulse 3s ease-in-out infinite;
+}
+
+.rarity-legendary .item-background {
+    border: 8px solid #ffd700 !important;
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
+    animation: legendary-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes epic-pulse {
+    0% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+    50% { 
+        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.9);
+        border-color: #fbbf24;
+    }
+    100% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+}
+
+@keyframes legendary-glow {
+    from {
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
+        border-color: #ffd700;
+    }
+    to {
+        box-shadow: 0 15px 50px rgba(255, 215, 0, 1);
+        border-color: #fef08a;
+    }
+}
+
+/* ========== СИСТЕМА ПОДКАТЕГОРИЙ ========== */
+.shop-subcategories {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.subcategory-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    text-align: center;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border-color: rgba(76, 201, 240, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border-color: #a855f7;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    font-weight: bold;
+    transform: translateY(-2px);
+}
+
+.subcategory-count {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.subcategory-tab.active .subcategory-count {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+/* ========== ФИЛЬТРЫ И ИНФОРМАЦИЯ ========== */
+.filter-info {
+    text-align: center;
+    margin-bottom: 10px;
+    background: rgba(76, 201, 240, 0.2);
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #4cc9f0;
+}
+
+.inventory-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВКИ ========== */
+.equipment-slot-mini.equipped[data-rarity="common"] { border-color: #9ca3af !important; }
+.equipment-slot-mini.equipped[data-rarity="uncommon"] { border-color: #4cc9f0 !important; }
+.equipment-slot-mini.equipped[data-rarity="rare"] { border-color: #a855f7 !important; }
+.equipment-slot-mini.equipped[data-rarity="epic"] { border-color: #f59e0b !important; }
+.equipment-slot-mini.equipped[data-rarity="legendary"] { border-color: #ffd700 !important; }
+
+.equipment-slot-mini.equipped[data-rarity="epic"] {
+    animation: equipment-epic-pulse 3s ease-in-out infinite;
+}
+
+.equipment-slot-mini.equipped[data-rarity="legendary"] {
+    animation: equipment-legendary-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes equipment-epic-pulse {
+    0% { 
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+    }
+    100% { 
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+}
+
+@keyframes equipment-legendary-glow {
+    from {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+    to {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    }
 }
