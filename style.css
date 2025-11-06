@@ -38,11 +38,10 @@ body {
 /* ===== 3. ВЫБОР ГЕРОЯ ===== */
 .hero-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Исправлено с 450px */
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Адаптивная сетка */
+    gap: 30px;
+    padding: 30px;
     width: 100%;
-    justify-items: center; /* Добавлено для центрирования */
 }
 
 .hero-option {
@@ -52,10 +51,9 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     border: 2px solid transparent;
-    height: 400px; /* Уменьшена высота */
+    height: 480px;
     overflow: hidden;
     width: 100%;
-    max-width: 300px; /* Добавлено ограничение ширины */
 }
 
 .hero-option:hover {
