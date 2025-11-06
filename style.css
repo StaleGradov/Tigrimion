@@ -268,6 +268,8 @@ body {
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #334155;
     flex-wrap: wrap;
+    z-index: 100;
+    position: relative;
 }
 
 .hero-main-window {
@@ -293,20 +295,22 @@ body {
 .hero-background img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Изменено с cover на contain для полного отображения */
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Фон на случай прозрачных изображений */
 }
 
 .hero-overlay-panel {
     position: absolute;
-    top: 50%;
-    right: 2rem;
-    transform: translateY(-50%);
+    bottom: 2rem; /* Перемещено вниз */
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(15, 23, 42, 0.95);
     backdrop-filter: blur(20px);
     border: 1px solid #334155;
     border-radius: 12px;
-    padding: 2rem;
-    width: 400px;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 800px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -314,7 +318,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #334155;
 }
@@ -334,55 +338,62 @@ body {
 
 .hero-overlay-stats {
     display: grid;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .overlay-stat-group {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.5rem;
 }
 
 .overlay-stat-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0.3rem 0;
     border-bottom: 1px solid rgba(51, 65, 85, 0.3);
 }
 
 .overlay-stat-label {
     color: #cbd5e1;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .overlay-stat-value {
     font-weight: 600;
     color: white;
+    font-size: 0.9rem;
+}
+
+.hero-overlay-equipment {
+    margin-top: 1rem;
 }
 
 .hero-overlay-equipment h4 {
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     color: #cbd5e1;
     font-size: 1rem;
+    text-align: center;
 }
 
 .equipment-slots-mini {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.8rem;
+    grid-template-columns: repeat(7, 1fr); /* 7 слотов в ряд */
+    gap: 0.5rem;
 }
 
 .equipment-slot-mini {
     background: rgba(30, 41, 59, 0.8);
     border: 2px dashed #475569;
     border-radius: 8px;
-    padding: 0.8rem;
+    padding: 0.6rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 80px;
+    min-height: 70px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -407,19 +418,21 @@ body {
 .equipment-slot-mini[data-rarity="legendary"] { border-color: #f59e0b; }
 
 .slot-icon-mini {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
 }
 
 .slot-icon-mini img {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     object-fit: contain;
 }
 
 .slot-label-mini {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     color: #9ca3af;
+    text-align: center;
+    line-height: 1.1;
 }
 
 /* ========== ОВЕРЛЕИ ========== */
@@ -684,16 +697,25 @@ body {
     
     .hero-overlay-panel {
         position: relative;
-        top: auto;
-        right: auto;
+        bottom: auto;
+        left: auto;
         transform: none;
         width: 100%;
-        margin: 1rem;
+        margin: 1rem 0;
+        border-radius: 0;
     }
     
     .hero-fullscreen {
         height: auto;
         min-height: 100vh;
+    }
+    
+    .hero-overlay-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .equipment-slots-mini {
+        grid-template-columns: repeat(4, 1fr); /* 4 слота в ряд на мобильных */
     }
     
     .top-action-bar {
@@ -711,6 +733,12 @@ body {
     
     .inventory-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-slots-mini {
+        grid-template-columns: repeat(3, 1fr); /* 3 слота в ряд на маленьких экранах */
     }
 }
 
