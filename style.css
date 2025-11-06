@@ -4802,3 +4802,638 @@ body {
         max-width: 200px;
     }
 }
+/* ===== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ПЕРЕРАБОТАННОГО ИНТЕРФЕЙСА ===== */
+
+/* Экран выбора героя - ИСПОЛЬЗУЕМ СТАРЫЙ ПРОВЕРЕННЫЙ СТИЛЬ */
+.hero-selection-screen {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.selection-header {
+    display: none; /* Убираем заголовок как просили */
+}
+
+.heroes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); /* Адаптивная сетка из старого стиля */
+    gap: 30px;
+    padding: 30px;
+    width: 100%;
+}
+
+.hero-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    height: 480px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.hero-card:hover {
+    border-color: #4cc9f0;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.hero-card.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.hero-card.locked:hover {
+    border-color: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+.hero-image {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 13px;
+    transition: all 0.3s ease;
+}
+
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    z-index: 2;
+}
+
+/* Всплывающая информация при наведении - из старого стиля */
+.hero-info-tooltip {
+    position: absolute;
+    bottom: -70%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    padding: 15px;
+    border-radius: 0 0 13px 13px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border-top: 2px solid #4cc9f0;
+    z-index: 3;
+}
+
+.hero-card:hover .hero-info-tooltip {
+    bottom: 0;
+}
+
+.hero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hero-header strong {
+    font-size: 1.3em;
+    color: #ffd700;
+}
+
+.hero-level {
+    background: #4cc9f0;
+    color: #1a1a2e;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.hero-stats {
+    margin-bottom: 10px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 1em;
+}
+
+.stat-row span {
+    white-space: nowrap;
+}
+
+.hero-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 8px;
+}
+
+.hero-details span {
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 0.9em;
+    border: 1px solid #4cc9f0;
+}
+
+.locked-text {
+    color: #ff6b6b;
+    display: block;
+    margin-top: 5px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.select-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+    display: block;
+    text-align: center;
+    padding-top: 5px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.selection-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Основной игровой экран */
+.hero-game-screen {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+    min-height: 100vh;
+}
+
+.top-action-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.btn-top {
+    background: rgba(76, 201, 240, 0.2);
+    border: 2px solid #4cc9f0;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(4px);
+}
+
+.btn-top:hover {
+    background: rgba(76, 201, 240, 0.4);
+    transform: translateY(-2px);
+}
+
+.hero-main-window {
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 15px;
+    padding: 0;
+    border: 2px solid rgba(76, 201, 240, 0.3);
+    margin-bottom: 20px;
+    position: relative;
+    min-height: 600px;
+    overflow: hidden;
+}
+
+/* Герой на весь экран с наложенными параметрами */
+.hero-fullscreen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+}
+
+.hero-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.hero-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Панель параметров поверх картинки */
+.hero-overlay-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.hero-overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.hero-overlay-name {
+    color: #ffd700;
+    font-size: 1.8em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero-overlay-level {
+    background: rgba(76, 201, 240, 0.8);
+    color: #1a1a2e;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Основные параметры поверх картинки */
+.hero-overlay-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.overlay-stat-group {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.overlay-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.overlay-stat-row:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.overlay-stat-label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+}
+
+.overlay-stat-value {
+    color: #4cc9f0;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Экипировка поверх картинки (2 предмета) */
+.hero-overlay-equipment {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.hero-overlay-equipment h4 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.equipment-slots-mini {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.equipment-slot-mini {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.equipment-slot-mini:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #4cc9f0;
+    transform: translateY(-2px);
+}
+
+.equipment-slot-mini.equipped {
+    border-color: #4cc9f0;
+    background: rgba(76, 201, 240, 0.1);
+}
+
+.slot-icon-mini {
+    font-size: 1.5em;
+    margin-bottom: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slot-icon-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.slot-label-mini {
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: bold;
+}
+
+/* Стили для оверлеев (открываются поверх героя) */
+.overlay-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.overlay-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #4cc9f0;
+    border-radius: 15px;
+    padding: 0;
+    width: 90%;
+    max-width: 1000px;
+    max-height: 80%;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.overlay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.overlay-header h3 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.3em;
+}
+
+.btn-close {
+    background: rgba(248, 113, 113, 0.3);
+    border: 1px solid #f87171;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-close:hover {
+    background: rgba(248, 113, 113, 0.5);
+    transform: scale(1.1);
+}
+
+.overlay-body {
+    padding: 20px;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+}
+
+/* Контент для разных оверлеев */
+.map-overlay .overlay-body {
+    padding: 30px;
+    text-align: center;
+}
+
+.inventory-overlay .overlay-body {
+    max-height: 60vh;
+}
+
+.shop-overlay .overlay-body {
+    padding: 30px;
+    text-align: center;
+}
+
+/* Стили для инвентаря в оверлее */
+.inventory-stats {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.inventory-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid #9ca3af;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+.inventory-item[data-rarity="uncommon"] { border-color: #4cc9f0; }
+.inventory-item[data-rarity="rare"] { border-color: #a855f7; }
+.inventory-item[data-rarity="epic"] { border-color: #f59e0b; }
+.inventory-item[data-rarity="legendary"] { border-color: #ffd700; }
+
+.item-image {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.item-image img {
+    max-width: 50px;
+    max-height: 50px;
+    object-fit: contain;
+}
+
+.item-info {
+    text-align: center;
+}
+
+.item-name {
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+
+.item-stats {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.item-stats span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.item-description {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.item-status, .btn-equip {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.item-status.equipped {
+    background: rgba(74, 222, 128, 0.3);
+    color: #4ade80;
+    border: 1px solid #4ade80;
+}
+
+.btn-equip {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    border: 1px solid #4cc9f0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-equip:hover {
+    background: rgba(76, 201, 240, 0.5);
+}
+
+.empty-inventory {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .heroes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .heroes-grid {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .hero-card {
+        height: 400px;
+    }
+    
+    .hero-overlay-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .top-action-bar {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-top {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .heroes-grid {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .hero-card {
+        height: 350px;
+    }
+    
+    .equipment-slots-mini {
+        grid-template-columns: 1fr;
+        max-width: 200px;
+    }
+}
