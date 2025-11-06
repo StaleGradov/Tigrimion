@@ -1,8 +1,12 @@
 // ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
+// ========== МОДУЛЬ 1: ОСНОВНОЙ КЛАСС И ИНИЦИАЛИЗАЦИЯ ==========
 
 // ========== МОДУЛЬ 1.1: ОСНОВНОЙ КЛАСС ИГРЫ ==========
 class HeroGame {
     constructor() {
+        console.log("🎮 Инициализация HeroGame...");
+        console.log("📦 BonusSystem доступен:", typeof BonusSystem !== 'undefined');
+        
         // Массивы данных игры
         this.heroes = [];        // Список всех героев
         this.items = [];         // Список всех предметов
@@ -10,8 +14,15 @@ class HeroGame {
         this.maps = [];          // Список всех карт
         this.locations = [];     // Список всех локаций
         
-        // Система бонусов
-        this.bonusSystem = new BonusSystem();
+        // Система бонусов - ИСПРАВЛЕНО
+        try {
+            this.bonusSystem = new BonusSystem();
+            console.log("✅ BonusSystem создан успешно");
+        } catch (error) {
+            console.error("❌ Ошибка создания BonusSystem:", error);
+            // Создаем заглушку
+            this.bonusSystem = this.createFallbackBonusSystem();
+        }
         
         // Флаги отображения
         this.showReward = false;         // Показывать ли награду
@@ -40,7 +51,6 @@ class HeroGame {
             1: 'https://www.youtube.com/embed/mfziNIhX9mo',
             2: 'https://www.youtube.com/embed/dQw4w9WgXcQ',  
             3: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            // ... остальные герои
         };
         
         // Видео для карт и локаций
@@ -64,27 +74,69 @@ class HeroGame {
         this.init();
     }
 
-    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
-    async init() {
-        // Сначала инициализируем систему бонусов
-        await this.bonusSystem.loadBonusData();
-        
-        // Затем загружаем остальные данные игры
-        await this.loadGameData();    
-        this.initLocationSystem();    
-        this.loadSave();              
-        
-        // Разблокировка первого героя по умолчанию
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-        
-        this.renderHeroSelect();      
+    // Создание заглушки для BonusSystem при ошибках
+    createFallbackBonusSystem() {
+        console.log("🔄 Создание fallback BonusSystem...");
+        return {
+            loadBonusData: async () => {
+                console.log("✅ Fallback BonusSystem загружен");
+                return true;
+            },
+            getBonuses: () => ({
+                races: {}, classes: {}, sagas: {}
+            }),
+            getItemSetConfig: () => ({}),
+            getAllActiveBonuses: () => ({ race: [], class: [], saga: [], equipment: [], sets: [] }),
+            getBonusIcon: () => '🎯',
+            getAllBonusesWithEquipment: () => ({ race: [], class: [], saga: [], equipment: [], sets: [] }),
+            calculateTotalBonuses: () => ({
+                health_mult: 0, damage_mult: 0, armor_mult: 0, gold_mult: 0,
+                health_regen_mult: 0, crit_chance: 0, armor_penetration: 0, vampirism: 0, all_stats_mult: 0
+            })
+        };
     }
 
+    // ========== МОДУЛЬ 1.2: ОСНОВНОЙ МЕТОД ИНИЦИАЛИЗАЦИИ ==========
+    async init() {
+        try {
+            console.log("🔄 Начало инициализации игры...");
+            
+            // Сначала инициализируем систему бонусов
+            console.log("🔄 Инициализация системы бонусов...");
+            if (this.bonusSystem && this.bonusSystem.loadBonusData) {
+                await this.bonusSystem.loadBonusData();
+                console.log("✅ Система бонусов инициализирована");
+            } else {
+                console.warn("⚠️ BonusSystem не доступен, используем fallback");
+            }
+            
+            // Затем загружаем остальные данные игры
+            console.log("🔄 Загрузка игровых данных...");
+            await this.loadGameData();    
+            this.initLocationSystem();    
+            this.loadSave();              
+            
+            // Разблокировка первого героя по умолчанию
+            if (this.heroes.length > 0) {
+                const firstHero = this.heroes.find(h => h.id === 1);
+                if (firstHero) {
+                    firstHero.unlocked = true;
+                }
+            }
+            
+            console.log("✅ Рендеринг экрана выбора героя...");
+            this.renderHeroSelect();
+            console.log("✅ Игра успешно инициализирована");
+            
+        } catch (error) {
+            console.error("❌ Критическая ошибка инициализации:", error);
+            // Создаем fallback данные
+            this.createFallbackData();
+            this.renderHeroSelect();
+        }
+    }
+
+    // ... остальные методы без изменений
     // ========== МОДУЛЬ 1.3: ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ЛОКАЦИЙ ==========
     initLocationSystem() {
         // Для каждой локации создаем запись прогресса
@@ -127,6 +179,8 @@ HeroGame.prototype.loadJSON = async function(filePath) {
 // ========== МОДУЛЬ 2.2: ЗАГРУЗКА ВСЕХ ДАННЫХ ИГРЫ ==========
 HeroGame.prototype.loadGameData = async function() {
     try {
+        console.log("📥 Начало загрузки игровых данных...");
+        
         // Параллельная загрузка всех JSON файлов
         const [heroes, enemies, items, mapsData, locationsData] = await Promise.all([
             this.loadJSON('data/heroes.json'),
@@ -136,28 +190,29 @@ HeroGame.prototype.loadGameData = async function() {
             this.loadJSON('data/locations.json')
         ]);
 
-        // Заполнение данных игры
+        // Заполнение данных игры с проверками
         this.heroes = heroes || [];
         this.monsters = enemies || [];
         this.items = items || [];
         this.maps = mapsData || [];
         this.locations = locationsData || [];
 
-        // Разблокировка первого героя
-        if (this.heroes.length > 0) {
-            const firstHero = this.heroes.find(h => h.id === 1);
-            if (firstHero) {
-                firstHero.unlocked = true;
-            }
-        }
-
-        console.log('✅ Все данные загружены:', {
+        console.log("✅ Данные загружены:", {
             heroes: this.heroes.length,
             monsters: this.monsters.length,
             items: this.items.length,
             maps: this.maps.length,
             locations: this.locations.length
         });
+
+        // Разблокировка первого героя
+        if (this.heroes.length > 0) {
+            const firstHero = this.heroes.find(h => h.id === 1);
+            if (firstHero) {
+                firstHero.unlocked = true;
+                console.log("✅ Первый герой разблокирован");
+            }
+        }
 
     } catch (error) {
         console.error('❌ Критическая ошибка загрузки данных:', error);
@@ -263,11 +318,27 @@ HeroGame.prototype.createFallbackData = function() {
 
 // ========== МОДУЛЬ 3.1: ПОЛУЧЕНИЕ ВСЕХ ДОСТУПНЫХ БОНУСОВ ==========
 HeroGame.prototype.getBonuses = function() {
+    if (!this.bonusSystem) {
+        console.error("❌ BonusSystem не инициализирован в getBonuses");
+        return { races: {}, classes: {}, sagas: {} };
+    }
+    if (!this.bonusSystem.getBonuses) {
+        console.error("❌ Метод getBonuses не доступен");
+        return { races: {}, classes: {}, sagas: {} };
+    }
     return this.bonusSystem.getBonuses();
 };
 
 // ========== МОДУЛЬ 3.2: КОНФИГУРАЦИЯ СЕТОВ ПРЕДМЕТОВ ==========
 HeroGame.prototype.getItemSetConfig = function() {
+    if (!this.bonusSystem) {
+        console.error("❌ BonusSystem не инициализирован в getItemSetConfig");
+        return {};
+    }
+    if (!this.bonusSystem.getItemSetConfig) {
+        console.error("❌ Метод getItemSetConfig не доступен");
+        return {};
+    }
     return this.bonusSystem.getItemSetConfig();
 };
 
@@ -290,7 +361,7 @@ HeroGame.prototype.getActiveSetBonuses = function(hero) {
     });
     
     const activeSetBonuses = [];
-    const setConfig = this.bonusSystem.getItemSetConfig();
+    const setConfig = this.getItemSetConfig();
     
     // Проверяем условия для каждого сета
     Object.keys(setCounts).forEach(setName => {
@@ -314,7 +385,13 @@ HeroGame.prototype.getAllActiveBonuses = function(hero) {
     if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
     
     // Получаем базовые бонусы из системы
-    const baseBonuses = this.bonusSystem.getAllActiveBonuses(hero);
+    let baseBonuses;
+    if (this.bonusSystem && this.bonusSystem.getAllActiveBonuses) {
+        baseBonuses = this.bonusSystem.getAllActiveBonuses(hero);
+    } else {
+        console.warn("⚠️ Используем fallback для getAllActiveBonuses");
+        baseBonuses = { race: [], class: [], saga: [], equipment: [], sets: [] };
+    }
     
     // Добавляем бонусы от экипировки
     const equipmentBonuses = [];
@@ -342,9 +419,9 @@ HeroGame.prototype.getAllActiveBonuses = function(hero) {
     }));
     
     return {
-        race: baseBonuses.race,
-        class: baseBonuses.class,
-        saga: baseBonuses.saga,
+        race: baseBonuses.race || [],
+        class: baseBonuses.class || [],
+        saga: baseBonuses.saga || [],
         equipment: equipmentBonuses,
         sets: setBonusObjects
     };
@@ -353,9 +430,38 @@ HeroGame.prototype.getAllActiveBonuses = function(hero) {
 // ========== МОДУЛЬ 3.5: РАСЧЕТ СУММАРНЫХ БОНУСОВ ==========
 HeroGame.prototype.calculateTotalBonuses = function(hero) {
     hero = hero || this.currentHero;
-    const activeBonuses = this.getAllActiveBonuses(hero);
-    const setBonuses = this.getActiveSetBonuses(hero);
     
+    let totals = {
+        health_mult: 0,
+        damage_mult: 0, 
+        armor_mult: 0,
+        gold_mult: 0,
+        health_regen_mult: 0,
+        crit_chance: 0,
+        armor_penetration: 0,
+        vampirism: 0,
+        all_stats_mult: 0
+    };
+    
+    // Пытаемся получить бонусы из системы
+    if (this.bonusSystem && this.bonusSystem.calculateTotalBonuses) {
+        try {
+            totals = this.bonusSystem.calculateTotalBonuses(hero, this.items);
+        } catch (error) {
+            console.error("❌ Ошибка в calculateTotalBonuses:", error);
+            // Используем fallback расчет
+            totals = this.calculateTotalBonusesFallback(hero);
+        }
+    } else {
+        console.warn("⚠️ Используем fallback для calculateTotalBonuses");
+        totals = this.calculateTotalBonusesFallback(hero);
+    }
+    
+    return totals;
+};
+
+// Fallback расчет бонусов
+HeroGame.prototype.calculateTotalBonusesFallback = function(hero) {
     const totals = {
         health_mult: 0,
         damage_mult: 0, 
@@ -368,31 +474,41 @@ HeroGame.prototype.calculateTotalBonuses = function(hero) {
         all_stats_mult: 0
     };
     
+    // Простой расчет из активных бонусов
+    const activeBonuses = this.getAllActiveBonuses(hero);
+    
     // Суммирование обычных бонусов
     Object.values(activeBonuses).forEach(bonusGroup => {
-        bonusGroup.forEach(bonus => {
-            if (totals.hasOwnProperty(bonus.type)) {
-                totals[bonus.type] += bonus.value;
-            }
-        });
-    });
-    
-    // Добавление бонусов от сетов
-    setBonuses.forEach(setBonus => {
-        if (setBonus.bonus && totals.hasOwnProperty(setBonus.bonus.type)) {
-            totals[setBonus.bonus.type] += setBonus.bonus.value;
+        if (Array.isArray(bonusGroup)) {
+            bonusGroup.forEach(bonus => {
+                if (bonus && totals.hasOwnProperty(bonus.type)) {
+                    totals[bonus.type] += bonus.value || 0;
+                }
+            });
         }
     });
     
-    // Применение бонуса "все характеристики" к отдельным статам
-    if (totals.all_stats_mult > 0) {
-        totals.health_mult += totals.all_stats_mult;
-        totals.damage_mult += totals.all_stats_mult;
-        totals.armor_mult += totals.all_stats_mult;
-        totals.health_regen_mult += totals.all_stats_mult;
+    return totals;
+};
+
+// ========== МОДУЛЬ 3.6: ПОЛУЧЕНИЕ ИКОНКИ БОНУСА ==========
+HeroGame.prototype.getBonusIcon = function(bonusType) {
+    if (this.bonusSystem && this.bonusSystem.getBonusIcon) {
+        return this.bonusSystem.getBonusIcon(bonusType);
     }
     
-    return totals;
+    // Fallback иконки
+    const icons = {
+        'health_mult': '❤️',
+        'damage_mult': '⚔️',
+        'armor_mult': '🛡️',
+        'gold_mult': '💰',
+        'health_regen_mult': '⚡',
+        'crit_chance': '💥',
+        'armor_penetration': '⚡',
+        'vampirism': '🩸'
+    };
+    return icons[bonusType] || '🎯';
 };
 
 // ========== МОДУЛЬ 4: СИСТЕМА УРОВНЕЙ И ОПЫТА ==========
@@ -985,7 +1101,26 @@ HeroGame.prototype.renderHeroSelect = function() {
 
 // ========== МОДУЛЬ 9.2: ПОЛУЧЕНИЕ ИКОНКИ ДЛЯ БОНУСА ==========
 HeroGame.prototype.getBonusIcon = function(bonusType) {
-    return this.bonusSystem.getBonusIcon(bonusType);
+    if (this.bonusSystem && this.bonusSystem.getBonusIcon) {
+        try {
+            return this.bonusSystem.getBonusIcon(bonusType);
+        } catch (error) {
+            console.error("❌ Ошибка в getBonusIcon:", error);
+        }
+    }
+    
+    // Fallback иконки
+    const icons = {
+        'health_mult': '❤️',
+        'damage_mult': '⚔️',
+        'armor_mult': '🛡️',
+        'gold_mult': '💰',
+        'health_regen_mult': '⚡',
+        'crit_chance': '💥',
+        'armor_penetration': '⚡',
+        'vampirism': '🩸'
+    };
+    return icons[bonusType] || '🎯';
 };
 // ========== МОДУЛЬ 9.3: ВЫБОР ГЕРОЯ ==========
 HeroGame.prototype.selectHero = function(heroId) {
@@ -1006,17 +1141,26 @@ HeroGame.prototype.selectHero = function(heroId) {
     this.renderHeroScreen();
     this.saveGame();
 };
-
-// ========== МОДУЛЬ 9.4: ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ ==========
-HeroGame.prototype.showScreen = function(screenName) {
-    this.currentScreen = screenName;
-    
-    // НЕ удаляем экраны здесь - это будет делаться в методах рендеринга
-    if (this.healthInterval) {
-        clearInterval(this.healthInterval);
-        this.healthInterval = null;
+// ========== МОДУЛЬ 9.4: ВЫБОР ГЕРОЯ ==========
+HeroGame.prototype.selectHero = function(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) {
+        console.error('Герой не найден:', heroId);
+        return;
     }
+    
+    const isUnlocked = hero.id === 1 ? true : (hero.unlocked || false);
+    if (!isUnlocked) {
+        console.log('Герой заблокирован:', hero.name);
+        return;
+    }
+    
+    this.currentHero = hero;
+    this.showScreen('main');
+    this.renderHeroScreen();
+    this.saveGame();
 };
+
 // ========== МОДУЛЬ 9.5: ЗАПУСК АНИМАЦИИ ЗДОРОВЬЯ ==========
 HeroGame.prototype.startHealthAnimation = function() {
     if (!this.currentHero) return;
@@ -1038,6 +1182,7 @@ HeroGame.prototype.startHealthAnimation = function() {
 
     this.healthInterval = setInterval(updateHealthDisplay, 1000);
 };
+// ========== МОДУЛЬ 9.6:  ==========
 
 HeroGame.prototype.renderHeroScreen = function() {
     if (!this.currentHero) return;
@@ -3491,21 +3636,44 @@ HeroGame.prototype.showNotification = function(message, type = 'info') {
 };
 
 // ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
+// ========== МОДУЛЬ 17: ЗАПУСК ИГРЫ ==========
 
 // ========== МОДУЛЬ 17.1: ИНИЦИАЛИЗАЦИЯ И ЗАПУСК ИГРЫ ==========
 console.log('🚀 Script.js загружен!');
+console.log('📦 BonusSystem доступен:', typeof BonusSystem !== 'undefined');
 
 let game;
 
-// Запуск игры после загрузки DOM
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('✅ DOM загружен');
+// Функция для безопасной инициализации игры
+function initializeGame() {
+    try {
+        console.log("🎮 Попытка инициализации игры...");
         game = new HeroGame();
         window.game = game;
-    });
+        console.log("✅ Игра успешно инициализирована");
+    } catch (error) {
+        console.error("❌ Фатальная ошибка инициализации игры:", error);
+        // Показать сообщение об ошибке пользователю
+        const container = document.getElementById('app');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-screen">
+                    <h2>❌ Ошибка загрузки игры</h2>
+                    <p>Произошла ошибка при загрузке игры. Пожалуйста, обновите страницу.</p>
+                    <button onclick="location.reload()">🔄 Обновить страницу</button>
+                    <details style="margin-top: 20px; color: #ccc;">
+                        <summary>Техническая информация</summary>
+                        <pre>${error.stack}</pre>
+                    </details>
+                </div>
+            `;
+        }
+    }
+}
+
+// Запуск игры после загрузки DOM
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeGame);
 } else {
-    console.log('✅ DOM уже готов');
-    game = new HeroGame();
-    window.game = game;
+    initializeGame();
 }
