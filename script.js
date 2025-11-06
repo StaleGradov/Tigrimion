@@ -5,6 +5,7 @@ class ModuleLoader {
     constructor() {
         this.modules = {};
         this.loadedModules = new Set();
+        this.stylesLoaded = false;
         this.requiredModules = [
             'bonuses-system',
             'level-system', 
@@ -16,43 +17,45 @@ class ModuleLoader {
     }
 
     async loadStyles() {
-        return new Promise((resolve, reject) => {
-            // Если стили уже загружены
-            if (document.getElementById('game-styles')) {
-                console.log("✅ Стили уже загружены");
-                resolve(true);
-                return;
-            }
+        // Если стили уже загружены
+        if (this.stylesLoaded || document.getElementById('game-styles')) {
+            console.log("✅ Стили уже загружены");
+            return true;
+        }
 
+        return new Promise((resolve) => {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'style.css';
             link.id = 'game-styles';
             
-            let stylesLoaded = false;
+            let loadCompleted = false;
+
+            const completeLoad = (success) => {
+                if (loadCompleted) return;
+                loadCompleted = true;
+                this.stylesLoaded = true;
+                resolve(success);
+            };
 
             // Таймаут для стилей
             const styleTimeout = setTimeout(() => {
-                if (!stylesLoaded) {
-                    console.warn("⚠️ Таймаут загрузки стилей, используем резервные");
-                    this.createFallbackStyles();
-                    resolve(false);
-                }
-            }, 3000); // 3 секунды на загрузку стилей
+                console.warn("⚠️ Таймаут загрузки стилей, используем резервные");
+                this.createFallbackStyles();
+                completeLoad(false);
+            }, 3000);
 
             link.onload = () => {
                 clearTimeout(styleTimeout);
-                stylesLoaded = true;
                 console.log("✅ Внешние стили загружены");
-                resolve(true);
+                completeLoad(true);
             };
             
             link.onerror = () => {
                 clearTimeout(styleTimeout);
-                stylesLoaded = true;
                 console.warn("❌ Ошибка загрузки внешних стилей, используем резервные");
                 this.createFallbackStyles();
-                resolve(false);
+                completeLoad(false);
             };
             
             document.head.appendChild(link);
@@ -87,6 +90,41 @@ class ModuleLoader {
                 align-items: center; 
                 height: 100vh; 
                 text-align: center; 
+                flex-direction: column;
+            }
+            
+            .loading-content {
+                background: rgba(0, 0, 0, 0.8);
+                padding: 40px;
+                border-radius: 15px;
+                border: 2px solid #4cc9f0;
+            }
+            
+            .progress-container {
+                width: 300px;
+                margin: 20px 0;
+            }
+            
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 10px;
+                overflow: hidden;
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #4cc9f0, #4361ee);
+                transition: width 0.3s ease;
+                width: 0%;
+            }
+            
+            .module-status {
+                margin-top: 15px;
+                font-size: 14px;
+                color: #4cc9f0;
             }
             
             /* Основные кнопки */
@@ -120,27 +158,76 @@ class ModuleLoader {
                 transform: translateY(-2px);
             }
             
-            /* Контейнеры */
-            .container {
+            /* Главный экран */
+            .main-screen {
                 max-width: 1200px;
                 margin: 0 auto;
                 padding: 20px;
             }
             
+            .game-header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            
+            .game-header h1 {
+                font-size: 3em;
+                color: #ffd700;
+                margin-bottom: 10px;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            
+            .game-subtitle {
+                font-size: 1.2em;
+                color: #4cc9f0;
+                opacity: 0.8;
+            }
+            
             /* Карточки систем */
+            .systems-status {
+                margin: 40px 0;
+            }
+            
+            .systems-status h3 {
+                color: #ffd700;
+                margin-bottom: 20px;
+                text-align: center;
+                font-size: 1.5em;
+            }
+            
             .systems-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 15px;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
                 margin: 20px 0;
             }
             
             .system-card {
                 background: rgba(255, 255, 255, 0.1);
-                padding: 15px;
-                border-radius: 10px;
+                padding: 20px;
+                border-radius: 12px;
                 text-align: center;
-                border: 1px solid rgba(255, 255, 255, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease;
+            }
+            
+            .system-card:hover {
+                transform: translateY(-5px);
+                border-color: #4cc9f0;
+                box-shadow: 0 10px 25px rgba(76, 201, 240, 0.3);
+            }
+            
+            .system-card strong {
+                display: block;
+                font-size: 1.2em;
+                color: #ffd700;
+                margin-bottom: 10px;
+            }
+            
+            .main-actions {
+                text-align: center;
+                margin-top: 40px;
             }
         `;
         
@@ -232,9 +319,7 @@ class ModuleLoader {
     async loadAllModules() {
         console.log("🚀 Начинаем загрузку модулей...");
         
-        // Сначала загружаем стили
-        await this.loadStyles();
-        
+        // Загружаем модули без повторной загрузки стилей
         const loadPromises = this.requiredModules.map(async (moduleName) => {
             if (!this.isModuleAvailable(moduleName)) {
                 return await this.loadModule(moduleName);
@@ -278,7 +363,7 @@ class SafeHeroGame {
             console.log(stylesLoaded ? "✅ Стили загружены" : "⚠️ Используются резервные стили");
             
             // Ждем немного чтобы стили применились
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise(resolve => setTimeout(resolve, 500));
             
             // Затем загружаем модули
             await this.moduleLoader.loadAllModules();
