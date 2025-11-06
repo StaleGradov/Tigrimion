@@ -1543,3 +1543,152 @@ body {
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
     }
 }
+/* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
+.rarity-common .item-background { 
+    border: 3px solid #9ca3af !important;
+    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.4);
+}
+
+.rarity-uncommon .item-background { 
+    border: 4px solid #4ade80 !important;
+    box-shadow: 0 8px 25px rgba(74, 222, 128, 0.5);
+}
+
+.rarity-rare .item-background { 
+    border: 5px solid #4cc9f0 !important;
+    box-shadow: 0 10px 30px rgba(76, 201, 240, 0.6);
+}
+
+.rarity-epic .item-background { 
+    border: 6px solid #a855f7 !important;
+    box-shadow: 0 12px 35px rgba(168, 85, 247, 0.7);
+    animation: epic-pulse 3s ease-in-out infinite;
+}
+
+.rarity-legendary .item-background { 
+    border: 8px solid #f59e0b !important;
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.8);
+    animation: legendary-glow 2s ease-in-out infinite alternate;
+}
+
+.rarity-mythic .item-background { 
+    border: 10px solid #ff6b6b !important;
+    box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+    animation: mythic-pulse 1.5s ease-in-out infinite;
+}
+
+/* Цвета для экипированных предметов */
+.equipment-slot-mini.equipped[data-rarity="common"] { border-color: #9ca3af !important; }
+.equipment-slot-mini.equipped[data-rarity="uncommon"] { border-color: #4ade80 !important; }
+.equipment-slot-mini.equipped[data-rarity="rare"] { border-color: #4cc9f0 !important; }
+.equipment-slot-mini.equipped[data-rarity="epic"] { border-color: #a855f7 !important; }
+.equipment-slot-mini.equipped[data-rarity="legendary"] { border-color: #f59e0b !important; }
+.equipment-slot-mini.equipped[data-rarity="mythic"] { border-color: #ff6b6b !important; }
+
+/* Цвета для инвентаря */
+.inventory-item[data-rarity="common"] { border-color: #9ca3af; }
+.inventory-item[data-rarity="uncommon"] { border-color: #4ade80; }
+.inventory-item[data-rarity="rare"] { border-color: #4cc9f0; }
+.inventory-item[data-rarity="epic"] { border-color: #a855f7; }
+.inventory-item[data-rarity="legendary"] { border-color: #f59e0b; }
+.inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
+
+/* Анимации для редкостей */
+@keyframes epic-pulse {
+    0% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+    50% { 
+        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.9);
+        border-color: #fbbf24;
+    }
+    100% { 
+        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+    }
+}
+
+@keyframes legendary-glow {
+    from {
+        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
+        border-color: #ffd700;
+    }
+    to {
+        box-shadow: 0 15px 50px rgba(255, 215, 0, 1);
+        border-color: #fef08a;
+    }
+}
+
+@keyframes mythic-pulse {
+    0% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+        border-color: #ff6b6b;
+    }
+    50% { 
+        box-shadow: 0 20px 60px rgba(255, 107, 107, 1);
+        border-color: #fca5a5;
+    }
+    100% { 
+        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
+        border-color: #ff6b6b;
+    }
+}
+
+/* Анимации для экипированных предметов */
+.equipment-slot-mini.equipped[data-rarity="epic"] {
+    animation: equipment-epic-pulse 3s ease-in-out infinite;
+}
+
+.equipment-slot-mini.equipped[data-rarity="legendary"] {
+    animation: equipment-legendary-glow 2s ease-in-out infinite alternate;
+}
+
+.equipment-slot-mini.equipped[data-rarity="mythic"] {
+    animation: equipment-mythic-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes equipment-epic-pulse {
+    0% { 
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+    }
+    100% { 
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+}
+
+@keyframes equipment-legendary-glow {
+    from {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+    to {
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    }
+}
+
+@keyframes equipment-mythic-pulse {
+    0% { 
+        box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
+    }
+    100% { 
+        box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    }
+}
+
+/* Стиль для пустых категорий */
+.empty-category {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px dashed #475569;
+}
