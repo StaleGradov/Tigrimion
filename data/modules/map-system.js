@@ -522,34 +522,39 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    drawAvailableMoves() {
-        const availableMoves = this.getAvailableMoves();
-        
-        this.ctx.save();
-        availableMoves.forEach(move => {
-            const hexSize = this.currentTacticalMap.cellSize || 40;
+drawAvailableMoves() {
+    const availableMoves = this.getAvailableMoves();
+    
+    this.ctx.save();
+    availableMoves.forEach(move => {
+        const hexSize = this.currentTacticalMap.cellSize || 40;
 
-            this.ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = move.cell.x + hexSize * Math.cos(angle);
-                const y = move.cell.y + hexSize * Math.sin(angle);
-                
-                if (i === 0) this.ctx.moveTo(x, y);
-                else this.ctx.lineTo(x, y);
-            }
-            this.ctx.closePath();
-
-            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-            this.ctx.fill();
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = move.cell.x + hexSize * Math.cos(angle);
+            const y = move.cell.y + hexSize * Math.sin(angle);
             
-            this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
-            this.ctx.lineWidth = 2;
-            this.ctx.stroke();
-        });
-        this.ctx.restore();
-    }
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
 
+        // Яркая подсветка доступных ходов
+        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.4)';
+        this.ctx.fill();
+        
+        this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+        
+        // Добавляем номер направления для отладки
+        this.ctx.fillStyle = '#00ff00';
+        this.ctx.font = 'bold 12px Arial';
+        this.ctx.fillText(move.direction, move.cell.x - 15, move.cell.y + 5);
+    });
+    this.ctx.restore();
+}
     drawHoverEffect() {
         if (!this.hoveredHex) return;
 
@@ -587,51 +592,65 @@ class MapSystem {
         return neighbors;
     }
 
-    getHexNeighbors(currentRow, currentCol) {
-        if (!this.currentTacticalMap) return [];
+  getHexNeighbors(currentRow, currentCol) {
+    if (!this.currentTacticalMap) return [];
+    
+    const neighbors = [];
+    const isEvenRow = currentRow % 2 === 0;
+    
+    // ПРАВИЛЬНЫЕ направления для шестиугольной сетки (офсетные координаты)
+    const directions = isEvenRow ? [
+        // Для ЧЕТНЫХ строк (0, 2, 4...)
+        {dr: -1, dc: 0},   // север
+        {dr: -1, dc: 1},   // северо-восток
+        {dr: 0, dc: 1},    // восток
+        {dr: 1, dc: 0},    // юг
+        {dr: 1, dc: -1},   // юго-запад (ИСПРАВЛЕНО!)
+        {dr: 0, dc: -1}    // запад
+    ] : [
+        // Для НЕЧЕТНЫХ строк (1, 3, 5...)
+        {dr: -1, dc: -1},  // северо-запад (ИСПРАВЛЕНО!)
+        {dr: -1, dc: 0},   // север
+        {dr: 0, dc: 1},    // восток
+        {dr: 1, dc: 0},    // юг
+        {dr: 1, dc: 1},    // юго-восток (ИСПРАВЛЕНО!)
+        {dr: 0, dc: -1}    // запад
+    ];
+    
+    console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}], четная строка: ${isEvenRow}`);
+    
+    directions.forEach(({dr, dc}, index) => {
+        const newRow = currentRow + dr;
+        const newCol = currentCol + dc;
+        const cellKey = `${newCol},${newRow}`;
+        const neighbor = this.currentTacticalMap.cells[cellKey];
         
-        const neighbors = [];
-        const isEvenRow = currentRow % 2 === 0;
+        const directionNames = isEvenRow ? 
+            ['север', 'северо-восток', 'восток', 'юг', 'юго-запад', 'запад'] :
+            ['северо-запад', 'север', 'восток', 'юг', 'юго-восток', 'запад'];
         
-        // ПРАВИЛЬНЫЕ направления для шестиугольной сетки
-        const directions = [
-            {dr: -1, dc: 0},   // север
-            {dr: 1, dc: 0},    // юг
-            {dr: 0, dc: -1},   // запад
-            {dr: 0, dc: 1},    // восток
-        ];
-        
-        // Добавляем диагональные направления в зависимости от четности строки
-        if (isEvenRow) {
-            directions.push(
-                {dr: -1, dc: 1},   // северо-восток
-                {dr: 1, dc: 1}     // юго-восток
-            );
+        // Проверяем, что клетка существует, видима и проходима
+        if (neighbor && neighbor.visible && neighbor.passable !== false) {
+            neighbors.push({
+                row: newRow,
+                col: newCol,
+                cell: neighbor,
+                direction: directionNames[index]
+            });
+            console.log(`  ✅ ${directionNames[index]}: [${newCol},${newRow}] - ДОСТУПЕН`);
+        } else if (neighbor) {
+            console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - НЕДОСТУПЕН`, {
+                visible: neighbor?.visible,
+                passable: neighbor?.passable
+            });
         } else {
-            directions.push(
-                {dr: -1, dc: -1},  // северо-запад
-                {dr: 1, dc: -1}    // юго-запад
-            );
+            console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - КЛЕТКА НЕ СУЩЕСТВУЕТ`);
         }
-        
-        directions.forEach(({dr, dc}) => {
-            const newRow = currentRow + dr;
-            const newCol = currentCol + dc;
-            const cellKey = `${newCol},${newRow}`;
-            const neighbor = this.currentTacticalMap.cells[cellKey];
-            
-            // Проверяем, что клетка существует, видима и проходима
-            if (neighbor && neighbor.visible && neighbor.passable !== false) {
-                neighbors.push({
-                    row: newRow,
-                    col: newCol,
-                    cell: neighbor
-                });
-            }
-        });
-        
-        return neighbors;
-    }
+    });
+    
+    console.log(`🎯 Итог: найдено ${neighbors.length} доступных соседей`);
+    return neighbors;
+}
 
     isCellReachable(targetRow, targetCol) {
         const currentRow = this.playerTacticalPosition.y;
