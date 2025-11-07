@@ -1756,8 +1756,7 @@ body {
 }
 
 
-
-/* ========== СИСТЕМА ПОДКАТЕГОРИЙ - ИСПРАВЛЕНИЯ ========== */
+/* ========== СИСТЕМА ПОДКАТЕГОРИЙ ========== */
 .shop-subcategories {
     margin: 15px 0;
     padding: 15px;
@@ -1766,7 +1765,7 @@ body {
     border: 2px solid rgba(76, 201, 240, 0.4);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    display: block !important;
+    display: block !important; /* Добавьте это */
 }
 
 .subcategory-tabs {
@@ -1827,7 +1826,7 @@ body {
 
 /* Убедитесь что эти стили не перезаписываются */
 .shop-categories {
-    display: flex !important;
+    display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 20px;
