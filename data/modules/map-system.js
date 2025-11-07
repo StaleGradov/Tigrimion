@@ -49,7 +49,7 @@ class MapSystem {
             console.log("🔄 Загружаем JSON карты...");
             
             const mapPaths = [
-                'data/maps/tactical/tactical-maps.json', // ← ДОБАВЬТЕ ЭТОТ ПУТЬ
+                'data/maps/tactical/tactical-maps.json',
                 'data/maps/tactical-maps.json',
                 'maps/tactical-maps.json', 
                 'data/tactical-maps.json',
@@ -125,6 +125,8 @@ class MapSystem {
                 visible: cell.visible,
                 x: cell.x,
                 y: cell.y,
+                row: cell.row,
+                col: cell.col,
                 // Сохраняем оригинальные данные для совместимости
                 originalData: cell
             };
@@ -148,11 +150,78 @@ class MapSystem {
             gameData: jsonMap.game,
             
             // Настройки отображения
-            renderType: 'hex', // Ваш формат использует шестиугольники
+            renderType: 'hex',
             cellSize: jsonMap.game.grid.cellSize || 41,
             canvasWidth: jsonMap.visual?.canvasWidth,
             canvasHeight: jsonMap.visual?.canvasHeight
         };
+    }
+
+    // ========== НОВАЯ ФУНКЦИЯ: ПРЕОБРАЗОВАНИЕ КООРДИНАТ ==========
+    convertCoordinates(hexX, hexY, mapData) {
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) return { x: hexX, y: hexY };
+        
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const originalWidth = mapData.visual.canvasWidth;
+        const originalHeight = mapData.visual.canvasHeight;
+        
+        // Вычисляем масштаб для вписывания
+        const scaleX = containerWidth / originalWidth;
+        const scaleY = containerHeight / originalHeight;
+        const scale = Math.min(scaleX, scaleY);
+        
+        // Вычисляем смещение для центрирования
+        const offsetX = (containerWidth - originalWidth * scale) / 2;
+        const offsetY = (containerHeight - originalHeight * scale) / 2;
+        
+        return {
+            x: (hexX * scale) + offsetX,
+            y: (hexY * scale) + offsetY
+        };
+    }
+
+    // ========== НОВАЯ ФУНКЦИЯ: ПОЛУЧЕНИЕ СОСЕДНИХ КЛЕТОК ==========
+    getHexNeighbors(currentRow, currentCol) {
+        if (!this.currentTacticalMap) return [];
+        
+        const neighbors = [];
+        const directions = [
+            [0, -1],  [1, -1],  [1, 0], 
+            [0, 1],   [-1, 1],  [-1, 0]
+        ];
+        
+        directions.forEach(([dr, dc]) => {
+            const newRow = currentRow + dr;
+            const newCol = currentCol + dc;
+            const cellKey = `${newCol},${newRow}`;
+            const neighbor = this.currentTacticalMap.cells[cellKey];
+            
+            if (neighbor && neighbor.passable !== false) {
+                neighbors.push({
+                    row: newRow,
+                    col: newCol,
+                    cell: neighbor
+                });
+            }
+        });
+        
+        return neighbors;
+    }
+
+    // ========== НОВАЯ ФУНКЦИЯ: ПРОВЕРКА ДОСТУПНОСТИ КЛЕТКИ ==========
+    isCellReachable(targetRow, targetCol) {
+        const currentRow = this.playerTacticalPosition.y;
+        const currentCol = this.playerTacticalPosition.x;
+        
+        // Получаем всех соседей текущей позиции
+        const neighbors = this.getHexNeighbors(currentRow, currentCol);
+        
+        // Проверяем, является ли целевая клетка соседней
+        return neighbors.some(neighbor => 
+            neighbor.row === targetRow && neighbor.col === targetCol
+        );
     }
 
     createTestMaps() {
@@ -209,11 +278,11 @@ class MapSystem {
                     west: {localX: 2, localY: 3}
                 },
                 cells: {
-                    "3,3": {type: "start", content: "player_start", passable: true},
-                    "3,2": {type: "exit", direction: "north", content: "exit_north", passable: true},
-                    "2,3": {type: "monster", monsterId: 1, content: "goblin", passable: false},
-                    "4,3": {type: "chest", loot: "common", content: "wooden_chest", passable: true},
-                    "3,4": {type: "npc", content: "old_merchant", passable: true}
+                    "3,3": {type: "start", content: "player_start", passable: true, row: 3, col: 3},
+                    "3,2": {type: "exit", direction: "north", content: "exit_north", passable: true, row: 2, col: 3},
+                    "2,3": {type: "monster", monsterId: 1, content: "goblin", passable: false, row: 3, col: 2},
+                    "4,3": {type: "chest", loot: "common", content: "wooden_chest", passable: true, row: 3, col: 4},
+                    "3,4": {type: "npc", content: "old_merchant", passable: true, row: 4, col: 3}
                 }
             }];
         }
@@ -250,7 +319,7 @@ class MapSystem {
             startPosition: {x: 1, y: 1},
             localPosition: {x: 2, y: 2},
             cells: {
-                "1,1": {type: "start", content: "player_start", passable: true}
+                "1,1": {type: "start", content: "player_start", passable: true, row: 1, col: 1}
             }
         }];
     }
@@ -371,14 +440,14 @@ class MapSystem {
                 </div>
                 
                 <div class="tactical-map-content" id="tacticalMapContent">
-                    <div class="tactical-map-visual">
+                    <div class="tactical-map-visual" id="tacticalMapVisual">
                         ${map.image ? `
                             <img src="${map.image}" alt="${map.name}" 
                                  style="max-width: 100%; height: auto;"
                                  onerror="this.style.display='none'">
                         ` : ''}
                         
-                        <div class="tactical-hex-overlay">
+                        <div class="tactical-hex-overlay" id="hexOverlay">
                             ${this.generateTigrimionHexGrid()}
                         </div>
                     </div>
@@ -391,6 +460,9 @@ class MapSystem {
                         <div class="map-stats">
                             Размер: ${map.width} × ${map.height} | Клеток: ${Object.keys(map.cells).length}
                         </div>
+                        <div class="movement-info" id="movementInfo">
+                            Доступные ходы: <span id="availableMoves">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -402,38 +474,63 @@ class MapSystem {
         const map = this.currentTacticalMap;
         const cells = Object.values(map.cells);
 
+        // Получаем доступные для хода клетки
+        const availableMoves = this.getHexNeighbors(
+            this.playerTacticalPosition.y, 
+            this.playerTacticalPosition.x
+        );
+
         cells.forEach(cellData => {
-            const isPlayerHere = cellData.originalData.col === this.playerTacticalPosition.x && 
-                               cellData.originalData.row === this.playerTacticalPosition.y;
+            const isPlayerHere = cellData.col === this.playerTacticalPosition.x && 
+                               cellData.row === this.playerTacticalPosition.y;
+            
+            // Проверяем, доступна ли клетка для хода
+            const isReachable = availableMoves.some(move => 
+                move.row === cellData.row && move.col === cellData.col
+            );
             
             let cellClass = 'tactical-hex-cell';
             let cellContent = '';
-            let title = `Позиция: [${cellData.originalData.col}, ${cellData.originalData.row}]`;
+            let title = `Позиция: [${cellData.col}, ${cellData.row}]`;
+
+            // Преобразуем координаты для правильного отображения
+            const convertedPos = this.convertCoordinates(cellData.x, cellData.y, map.jsonData);
 
             if (isPlayerHere) {
                 cellClass += ' player-cell';
                 cellContent = '🎯';
+            } else if (isReachable) {
+                cellClass += ' reachable-cell';
+                cellContent = this.getCellEmoji(cellData);
             } else {
                 cellClass += ` ${cellData.type}-cell`;
-                title += ` - ${this.getCellDescription(cellData)}`;
-                
                 cellContent = this.getCellEmoji(cellData);
-                
-                // Добавляем стили для разных типов клеток
-                if (!cellData.passable) {
-                    cellClass += ' impassable';
-                }
+            }
+            
+            title += ` - ${this.getCellDescription(cellData)}`;
+
+            // Добавляем стили для разных типов клеток
+            if (!cellData.passable && !isPlayerHere) {
+                cellClass += ' impassable';
             }
 
             gridHTML += `
                 <div class="${cellClass}" 
-                     style="left: ${cellData.originalData.x}px; top: ${cellData.originalData.y}px;"
-                     onclick="game.systems.map.moveOnTacticalMap(${cellData.originalData.col}, ${cellData.originalData.row})"
+                     style="left: ${convertedPos.x}px; top: ${convertedPos.y}px;"
+                     onclick="game.systems.map.moveOnTacticalMap(${cellData.col}, ${cellData.row})"
                      title="${title}">
                     ${cellContent}
                 </div>
             `;
         });
+
+        // Обновляем информацию о доступных ходах
+        setTimeout(() => {
+            const movesElement = document.getElementById('availableMoves');
+            if (movesElement) {
+                movesElement.textContent = availableMoves.length;
+            }
+        }, 100);
         
         return gridHTML;
     }
@@ -587,6 +684,15 @@ class MapSystem {
 
     moveOnTacticalMap(x, y) {
         if (!this.currentTacticalMap) return;
+
+        // ПРОВЕРКА ДОСТУПНОСТИ КЛЕТКИ
+        if (!this.isCellReachable(y, x)) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она не соседняя");
+            if (window.game) {
+                window.game.showNotification("Можно ходить только на соседние клетки!", 'error');
+            }
+            return;
+        }
 
         const cellKey = `${x},${y}`;
         const cellData = this.currentTacticalMap.cells[cellKey];
