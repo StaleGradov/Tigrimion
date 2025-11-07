@@ -359,7 +359,7 @@ class SafeHeroGame {
         this.showHeroGameScreen();
     }
 
-  showHeroGameScreen() {
+showHeroGameScreen() {
     if (!this.currentHero) return;
 
     const app = document.getElementById('app');
@@ -377,6 +377,9 @@ class SafeHeroGame {
                 </button>
                 <button class="btn-top" onclick="game.showOverlay('tactical-map')">
                     🎲 Тактическая карта
+                </button>
+                <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">
+                    🎨 Создать карту
                 </button>
                 <button class="btn-top" onclick="game.showOverlay('inventory')">
                     🎒 Инвентарь
@@ -512,20 +515,14 @@ class SafeHeroGame {
                 `;
                 break;
 
-            case 'tactical-map':
-                container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>🎲 Тактическая карта</h3>
-                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                        </div>
-                        <div class="overlay-body">
-                            ${this.systems.map ? this.systems.map.renderTacticalMap() : 'Карта загружается...'}
-                        </div>
-                    </div>
-                `;
-                break;
-
+         case 'tactical-map':
+            // Вместо стандартного рендера вызываем редактор
+            if (this.systems.map) {
+                this.systems.map.showTacticalMapEditor();
+            } else {
+                container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+            }
+            break;
             case 'inventory':
                 container.innerHTML = this.systems.equipment.showInventory();
                 break;
