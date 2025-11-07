@@ -2158,3 +2158,146 @@ body {
         padding: 0.6rem;
     }
 }
+/* Добавим в конец файла style.css */
+
+/* ========== СТИЛИ ДЛЯ JSON ТАКТИЧЕСКИХ КАРТ ========== */
+.json-tactical-map {
+    max-width: 1200px !important;
+    width: 95% !important;
+}
+
+.tactical-map-content {
+    display: flex;
+    flex-direction: column;
+    height: 70vh;
+}
+
+.tactical-map-visual {
+    flex: 1;
+    position: relative;
+    overflow: auto;
+    background: #000;
+    border: 2px solid #4cc9f0;
+    border-radius: 8px;
+}
+
+.tactical-grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    gap: 1px;
+}
+
+.tactical-grid-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(76, 201, 240, 0.1);
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2em;
+    min-height: 40px;
+}
+
+.tactical-grid-cell:hover {
+    background: rgba(76, 201, 240, 0.3);
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+.tactical-grid-cell.player-cell {
+    background: rgba(74, 222, 128, 0.4);
+    border-color: #4ade80;
+    animation: pulse 2s infinite;
+}
+
+.tactical-grid-cell.monster-cell {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+}
+
+.tactical-grid-cell.chest-cell {
+    background: rgba(245, 158, 11, 0.3);
+    border-color: #f59e0b;
+}
+
+.tactical-grid-cell.npc-cell {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+}
+
+.tactical-grid-cell.exit-cell {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: #8b5cf6;
+}
+
+.tactical-grid-cell.impassable {
+    background: rgba(107, 114, 128, 0.5);
+    border-color: #6b7280;
+    cursor: not-allowed;
+}
+
+.tactical-grid-cell.impassable:hover {
+    transform: none;
+    background: rgba(107, 114, 128, 0.7);
+}
+
+.tactical-map-info {
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid #4cc9f0;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.map-description {
+    color: #cbd5e1;
+    font-style: italic;
+}
+
+.player-position, .map-stats {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.9em;
+}
+
+.tactical-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.map-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Адаптивность для тактических карт */
+@media (max-width: 768px) {
+    .tactical-map-info {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .tactical-grid-cell {
+        min-height: 30px;
+        font-size: 1em;
+    }
+    
+    .tactical-map-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
