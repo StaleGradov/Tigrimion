@@ -49,6 +49,7 @@ class MapSystem {
             console.log("🔄 Загружаем JSON карты...");
             
             const mapPaths = [
+                'data/maps/tactical/tactical-maps.json', // ← ДОБАВЬТЕ ЭТОТ ПУТЬ
                 'data/maps/tactical-maps.json',
                 'maps/tactical-maps.json', 
                 'data/tactical-maps.json',
