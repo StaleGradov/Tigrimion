@@ -258,40 +258,40 @@ hexToScreenExact(col, row, gridMetrics, jsonMap) {
 }
 
     // ========== CANVAS РЕНДЕРИНГ КАК В РЕДАКТОРЕ ==========
-    initCanvas() {
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) {
-            console.log("❌ Контейнер для карты не найден");
-            return;
-        }
+   initCanvas() {
+    const container = document.querySelector('.tactical-map-visual');
+    if (!container) {
+        console.log("❌ Контейнер для карты не найден");
+        return;
+    }
 
-        // Очищаем контейнер
-        container.innerHTML = '';
+    // Очищаем контейнер
+    container.innerHTML = '';
 
-        // Создаем canvas с размерами из редактора
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'tacticalMapCanvas';
-        
-        // Устанавливаем точные размеры как в редакторе
-        if (this.currentTacticalMap?.canvasWidth && this.currentTacticalMap?.canvasHeight) {
-            this.canvas.width = this.currentTacticalMap.canvasWidth;
-            this.canvas.height = this.currentTacticalMap.canvasHeight;
-            this.canvas.style.width = '100%';
-            this.canvas.style.height = '100%';
-        } else {
-            // Адаптивные размеры
-            this.canvas.style.width = '100%';
-            this.canvas.style.height = '100%';
-            this.resizeCanvas();
-        }
-        
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.cursor = 'pointer';
-        container.appendChild(this.canvas);
+    // Создаем canvas
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'tacticalMapCanvas';
+    
+    // Устанавливаем размеры контейнера
+    const containerRect = container.getBoundingClientRect();
+    this.canvas.width = containerRect.width;
+    this.canvas.height = containerRect.height;
+    
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.display = 'block';
+    
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = '0';
+    this.canvas.style.left = '0';
+    this.canvas.style.cursor = 'pointer';
+    container.appendChild(this.canvas);
 
-        this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext('2d');
+    
+    console.log(`✅ Canvas инициализирован: ${this.canvas.width}x${this.canvas.height}`);
+    this.drawTacticalMap();
+}
         
         // Пересчитываем метрики для текущей карты
         if (this.currentTacticalMap) {
