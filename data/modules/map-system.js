@@ -27,6 +27,10 @@ class MapSystem {
         this.mapOffset = { x: 0, y: 0 };
         this.mapScale = 1;
         
+        // Оптимизация рендеринга
+        this.lastHoveredHex = null;
+        this.animationFrame = null;
+        
         console.log("✅ MapSystem инициализирован");
     }
 
@@ -282,8 +286,20 @@ class MapSystem {
         const y = e.clientY - rect.top;
 
         const hex = this.getHexAtCanvasPosition(x, y);
-        this.hoveredHex = hex;
-        this.drawTacticalMap();
+        
+        // Оптимизация: перерисовываем только если изменилась клетка
+        if (this.lastHoveredHex !== hex) {
+            this.lastHoveredHex = hex;
+            this.hoveredHex = hex;
+            
+            // Используем requestAnimationFrame для плавного рендеринга
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+            }
+            this.animationFrame = requestAnimationFrame(() => {
+                this.drawTacticalMap();
+            });
+        }
     }
 
     getHexAtCanvasPosition(canvasX, canvasY) {
@@ -577,22 +593,26 @@ class MapSystem {
         const neighbors = [];
         const isEvenRow = currentRow % 2 === 0;
         
-        // Правильные направления для шестиугольной сетки (смещение по осям)
-        const directions = isEvenRow ? [
+        // ПРАВИЛЬНЫЕ направления для шестиугольной сетки
+        const directions = [
             {dr: -1, dc: 0},   // север
-            {dr: -1, dc: 1},   // северо-восток  
+            {dr: 1, dc: 0},    // юг
+            {dr: 0, dc: -1},   // запад
             {dr: 0, dc: 1},    // восток
-            {dr: 1, dc: 0},    // юг
-            {dr: 1, dc: 1},    // юго-восток (исправлено!)
-            {dr: 0, dc: -1}    // запад
-        ] : [
-            {dr: -1, dc: -1},  // северо-запад (исправлено!)
-            {dr: -1, dc: 0},   // север
-            {dr: 0, dc: 1},    // восток  
-            {dr: 1, dc: -1},   // юго-запад (исправлено!)
-            {dr: 1, dc: 0},    // юг
-            {dr: 0, dc: -1}    // запад
         ];
+        
+        // Добавляем диагональные направления в зависимости от четности строки
+        if (isEvenRow) {
+            directions.push(
+                {dr: -1, dc: 1},   // северо-восток
+                {dr: 1, dc: 1}     // юго-восток
+            );
+        } else {
+            directions.push(
+                {dr: -1, dc: -1},  // северо-запад
+                {dr: 1, dc: -1}    // юго-запад
+            );
+        }
         
         directions.forEach(({dr, dc}) => {
             const newRow = currentRow + dr;
@@ -1289,6 +1309,13 @@ class MapSystem {
             container.innerHTML = '';
             this.activeOverlay = null;
             this.hoveredHex = null;
+            this.lastHoveredHex = null;
+            
+            // Отменяем анимацию
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
         }
     }
 
