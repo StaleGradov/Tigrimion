@@ -1801,3 +1801,105 @@ body {
     font-size: 0.7em !important;
     margin-left: 5px !important;
 }
+/* ========== ПРОКРУТКА МАГАЗИНА ========== */
+.shop-overlay .shop-content {
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    padding: 10px !important;
+}
+
+/* Полоса прокрутки */
+.shop-overlay .shop-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.shop-overlay .shop-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.shop-overlay .shop-content::-webkit-scrollbar-thumb {
+    background: #4cc9f0;
+    border-radius: 4px;
+}
+
+.shop-overlay .shop-content::-webkit-scrollbar-thumb:hover {
+    background: #3b82f6;
+}
+
+/* ========== СТИЛИ ПОДКАТЕГОРИЙ ========== */
+.shop-subcategories {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 2px solid #4cc9f0 !important;
+    border-radius: 12px !important;
+    padding: 15px !important;
+    margin: 15px 0 !important;
+    animation: slideDown 0.3s ease-out !important;
+}
+
+.subcategory-tabs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05)) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    font-size: 0.85em !important;
+    font-weight: 500 !important;
+    backdrop-filter: blur(4px) !important;
+    text-align: center !important;
+    min-width: 80px !important;
+    white-space: nowrap !important;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1)) !important;
+    border-color: rgba(76, 201, 240, 0.6) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3) !important;
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #a855f7, #7c3aed) !important;
+    border-color: #a855f7 !important;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4) !important;
+    font-weight: bold !important;
+    transform: translateY(-2px) !important;
+}
+
+.subcategory-count {
+    display: inline-block !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 2px 6px !important;
+    border-radius: 10px !important;
+    font-size: 0.7em !important;
+    margin-left: 5px !important;
+    min-width: 20px !important;
+    text-align: center !important;
+}
+
+.subcategory-tab.active .subcategory-count {
+    background: rgba(255, 255, 255, 0.3) !important;
+    font-weight: bold !important;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
