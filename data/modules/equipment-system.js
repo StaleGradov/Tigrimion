@@ -9,28 +9,31 @@ class EquipmentSystem {
         console.log("✅ EquipmentSystem инициализирован");
     }
 
-    async loadItemData() {
-        try {
-            console.log("📥 Загружаем данные предметов...");
-            
-            const response = await fetch('data/items.json');
-            if (!response.ok) {
-                throw new Error(`Ошибка загрузки items.json: ${response.status}`);
-            }
-            
-            this.items = await response.json();
-            this.loadItemSetConfig();
-            
-            console.log(`✅ Загружено предметов: ${this.items.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных предметов:", error);
-            this.createFallbackItems();
-            return true;
+   async loadItemData() {
+    try {
+        console.log("📥 Загружаем данные предметов...");
+        
+        const response = await fetch('data/items.json');
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки items.json: ${response.status}`);
         }
+        
+        this.items = await response.json();
+        this.loadItemSetConfig();
+        
+        console.log(`✅ Загружено предметов: ${this.items.length}`);
+        
+        // Отладка
+        this.debugItems();
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных предметов:", error);
+        this.createFallbackItems();
+        return true;
     }
-
+}
     // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
     loadItemSetConfig() {
         this.itemSets = {
@@ -253,15 +256,45 @@ class EquipmentSystem {
         };
     }
 
+
+
+    
+// Добавьте этот метод в класс EquipmentSystem для отладки
+debugItems() {
+    console.log('=== ДЕБАГ ПРЕДМЕТОВ ===');
+    console.log(`Всего предметов: ${this.items.length}`);
+    
+    const categories = {};
+    this.items.forEach(item => {
+        if (!categories[item.type]) categories[item.type] = 0;
+        categories[item.type]++;
+        
+        if (item.type === 'weapon') {
+            console.log(`Оружие: ${item.name} (${item.weaponType})`);
+        } else if (item.material) {
+            console.log(`${item.type}: ${item.name} (${item.material})`);
+        }
+    });
+    
+    console.log('Распределение по категориям:', categories);
+}
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
 showShop(category = 'all', subcategory = 'all') {
-    if (!this.currentHero) return '';
+    if (!this.currentHero) {
+        console.log('❌ Нет текущего героя');
+        return '';
+    }
 
     this.currentCategory = category;
     this.currentSubcategory = subcategory;
 
+    console.log(`🏪 Открываем магазин: категория=${category}, подкатегория=${subcategory}`);
+    
     const filteredItems = this.filterItemsByCategory(category, subcategory);
     const subcategories = this.getSubcategoriesForCategory(category);
+
+    console.log(`📋 Подкатегории для ${category}:`, subcategories);
+    console.log(`🎯 Найдено предметов: ${filteredItems.length}`);
 
     return `
         <div class="overlay-content shop-overlay">
@@ -297,13 +330,16 @@ showShop(category = 'all', subcategory = 'all') {
             ${Object.keys(subcategories).length > 0 ? `
                 <div class="shop-subcategories">
                     <div class="subcategory-tabs">
-                        ${Object.entries(subcategories).map(([key, name]) => `
-                            <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
-                                    onclick="game.systems.equipment.showShop('${category}', '${key}')">
-                                ${name}
-                                <span class="subcategory-count">${this.getSubcategoryItemCount(category, key)}</span>
-                            </button>
-                        `).join('')}
+                        ${Object.entries(subcategories).map(([key, name]) => {
+                            const count = this.getSubcategoryItemCount(category, key);
+                            return `
+                                <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
+                                        onclick="game.systems.equipment.showShop('${category}', '${key}')">
+                                    ${name}
+                                    <span class="subcategory-count">${count}</span>
+                                </button>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             ` : ''}
@@ -311,7 +347,9 @@ showShop(category = 'all', subcategory = 'all') {
             <div class="shop-content">
                 <div class="items-grid">
                     ${filteredItems.map(item => this.renderShopItem(item)).join('')}
-                    ${filteredItems.length === 0 ? '<div class="empty-category">Нет предметов в этой категории</div>' : ''}
+                    ${filteredItems.length === 0 ? 
+                        '<div class="empty-category">📭 Нет предметов в этой категории</div>' : 
+                        ''}
                 </div>
             </div>
         </div>
@@ -319,66 +357,81 @@ showShop(category = 'all', subcategory = 'all') {
 }
 
  filterItemsByCategory(category, subcategory = 'all') {
-    const availableItems = this.items.filter(item => 
+    console.log(`🔍 Фильтрация: категория=${category}, подкатегория=${subcategory}`);
+    
+    // Сначала фильтруем по уровню
+    let filteredItems = this.items.filter(item => 
         item.requiredLevel <= (this.currentHero?.level || 1)
     );
 
-    let filteredItems = availableItems;
+    console.log(`📊 После фильтра по уровню: ${filteredItems.length} предметов`);
 
     // Фильтрация по основной категории
     if (category !== 'all') {
         if (category === 'weapon') {
-            filteredItems = availableItems.filter(item => 
-                item.type === 'weapon'
-            );
+            filteredItems = filteredItems.filter(item => item.type === 'weapon');
         } else {
-            filteredItems = availableItems.filter(item => item.type === category);
+            filteredItems = filteredItems.filter(item => item.type === category);
         }
     }
+
+    console.log(`📊 После фильтра по категории ${category}: ${filteredItems.length} предметов`);
 
     // Фильтрация по подкатегории
     if (subcategory !== 'all') {
         if (category === 'weapon') {
-            if (subcategory === 'one_handed') {
-                filteredItems = filteredItems.filter(item => 
-                    item.weaponType === 'one_handed'
-                );
-            } else if (subcategory === 'two_handed') {
-                filteredItems = filteredItems.filter(item => 
-                    item.weaponType === 'two_handed'
-                );
-            } else if (subcategory === 'shield') {
-                filteredItems = filteredItems.filter(item => 
-                    item.weaponType === 'shield'
-                );
-            }
-        } else {
+            // Фильтрация оружия по типу
+            filteredItems = filteredItems.filter(item => {
+                if (subcategory === 'one_handed') return item.weaponType === 'one_handed';
+                if (subcategory === 'two_handed') return item.weaponType === 'two_handed';
+                if (subcategory === 'shield') return item.weaponType === 'shield';
+                return true;
+            });
+        } else if (['helmet', 'chest', 'gloves', 'legs', 'boots'].includes(category)) {
             // Фильтрация брони по материалу
-            filteredItems = filteredItems.filter(item => 
-                (item.material || 'cloth') === subcategory
-            );
+            filteredItems = filteredItems.filter(item => {
+                const itemMaterial = item.material || 'cloth'; // значение по умолчанию
+                return itemMaterial === subcategory;
+            });
         }
     }
+
+    console.log(`📊 После фильтра по подкатегории ${subcategory}: ${filteredItems.length} предметов`);
+    console.log('📦 Отфильтрованные предметы:', filteredItems.map(item => ({id: item.id, name: item.name, type: item.type, material: item.material})));
 
     return filteredItems;
 }
 
 getSubcategoriesForCategory(category) {
-    const subcategories = {
-        'weapon': {
-            'all': 'Все оружие',
-            'one_handed': 'Одноручное',
-            'two_handed': 'Двуручное', 
-            'shield': 'Щиты'
-        },
-        'helmet': this.getArmorSubcategories(),
-        'chest': this.getArmorSubcategories(),
-        'gloves': this.getArmorSubcategories(),
-        'legs': this.getArmorSubcategories(),
-        'boots': this.getArmorSubcategories()
+    const weaponSubcategories = {
+        'all': 'Все оружие',
+        'one_handed': 'Одноручное',
+        'two_handed': 'Двуручное', 
+        'shield': 'Щиты'
     };
     
-    return subcategories[category] || {};
+    const armorSubcategories = {
+        'all': 'Все материалы',
+        'cloth': 'Ткань',
+        'leather': 'Кожа',
+        'hide': 'Шкура',
+        'fur': 'Мех',
+        'bone': 'Кость',
+        'plate': 'Пластины',
+        'chain': 'Кольчуга',
+        'plate_mail': 'Латы'
+    };
+
+    const subcategoriesMap = {
+        'weapon': weaponSubcategories,
+        'helmet': armorSubcategories,
+        'chest': armorSubcategories,
+        'gloves': armorSubcategories,
+        'legs': armorSubcategories,
+        'boots': armorSubcategories
+    };
+    
+    return subcategoriesMap[category] || {};
 }
 
 getArmorSubcategories() {
