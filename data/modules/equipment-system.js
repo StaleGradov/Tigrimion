@@ -288,7 +288,30 @@ showShop(category = 'all', subcategory = 'all') {
     const filteredItems = this.filterItemsByCategory(category, subcategory);
     const subcategories = this.getSubcategoriesForCategory(category);
 
-    return `
+    console.log('🔍 Подкатегории для отображения:', subcategories);
+    console.log('📦 Количество подкатегорий:', Object.keys(subcategories).length);
+
+    const subcategoriesHTML = Object.keys(subcategories).length > 0 ? `
+        <div class="shop-subcategories">
+            <div class="subcategory-tabs">
+                ${Object.entries(subcategories).map(([key, name]) => {
+                    const count = this.getSubcategoryItemCount(category, key);
+                    console.log(`📋 Подкатегория: ${key} -> ${name}, количество: ${count}`);
+                    return `
+                        <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
+                                onclick="game.systems.equipment.showShop('${category}', '${key}')">
+                            ${name}
+                            <span class="subcategory-count">${count}</span>
+                        </button>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    ` : '';
+
+    console.log('🔄 HTML подкатегорий:', subcategoriesHTML);
+
+    const html = `
         <div class="overlay-content shop-overlay">
             <div class="overlay-header">
                 <h3>🏪 Магазин снаряжения</h3>
@@ -319,22 +342,7 @@ showShop(category = 'all', subcategory = 'all') {
                         onclick="game.systems.equipment.showShop('boots')">👢 Ботинки</button>
             </div>
             
-            ${Object.keys(subcategories).length > 0 ? `
-                <div class="shop-subcategories">
-                    <div class="subcategory-tabs">
-                        ${Object.entries(subcategories).map(([key, name]) => {
-                            const count = this.getSubcategoryItemCount(category, key);
-                            return `
-                                <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
-                                        onclick="game.systems.equipment.showShop('${category}', '${key}')">
-                                    ${name}
-                                    <span class="subcategory-count">${count}</span>
-                                </button>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            ` : ''}
+            ${subcategoriesHTML}
             
             <div class="shop-content">
                 <div class="items-grid">
@@ -346,6 +354,9 @@ showShop(category = 'all', subcategory = 'all') {
             </div>
         </div>
     `;
+
+    console.log('🎯 Финальный HTML магазина:', html);
+    return html;
 }
 
  filterItemsByCategory(category, subcategory = 'all') {
