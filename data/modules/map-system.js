@@ -157,29 +157,83 @@ class MapSystem {
         };
     }
 
-    // ========== НОВАЯ ФУНКЦИЯ: ПРЕОБРАЗОВАНИЕ КООРДИНАТ ==========
-    convertCoordinates(hexX, hexY, mapData) {
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) return { x: hexX, y: hexY };
+    // ========== ПРАВИЛЬНОЕ ПРЕОБРАЗОВАНИЕ КООРДИНАТ ==========
+    generateHexGridFromData(mapData) {
+        const cells = Object.values(mapData.cells);
+        const hexSize = mapData.cellSize || 41;
+        const hexWidth = Math.sqrt(3) * hexSize;
+        const hexHeight = 2 * hexSize;
         
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        const originalWidth = mapData.visual.canvasWidth;
-        const originalHeight = mapData.visual.canvasHeight;
+        // Находим границы сетки
+        const minRow = Math.min(...cells.map(cell => cell.row));
+        const maxRow = Math.max(...cells.map(cell => cell.row));
+        const minCol = Math.min(...cells.map(cell => cell.col));
+        const maxCol = Math.max(...cells.map(cell => cell.col));
         
-        // Вычисляем масштаб для вписывания
-        const scaleX = containerWidth / originalWidth;
-        const scaleY = containerHeight / originalHeight;
-        const scale = Math.min(scaleX, scaleY);
+        const gridHTML = cells.map(cellData => {
+            const isPlayerHere = cellData.col === this.playerTacticalPosition.x && 
+                               cellData.row === this.playerTacticalPosition.y;
+            
+            // ВЫЧИСЛЯЕМ КООРДИНАТЫ ПРАВИЛЬНО
+            const x = cellData.col * hexWidth + (cellData.row % 2) * hexWidth / 2;
+            const y = cellData.row * hexHeight * 0.75;
+            
+            // Преобразуем в координаты контейнера
+            const container = document.querySelector('.tactical-map-visual');
+            let finalX = x, finalY = y;
+            
+            if (container) {
+                // Центрируем всю сетку
+                const totalWidth = (maxCol - minCol + 1) * hexWidth;
+                const totalHeight = (maxRow - minRow + 1) * hexHeight * 0.75;
+                
+                const scaleX = container.clientWidth / totalWidth;
+                const scaleY = container.clientHeight / totalHeight;
+                const scale = Math.min(scaleX, scaleY) * 0.9; // Немного меньше для отступов
+                
+                const offsetX = (container.clientWidth - totalWidth * scale) / 2;
+                const offsetY = (container.clientHeight - totalHeight * scale) / 2;
+                
+                finalX = x * scale + offsetX;
+                finalY = y * scale + offsetY;
+            }
+            
+            const availableMoves = this.getHexNeighbors(
+                this.playerTacticalPosition.y, 
+                this.playerTacticalPosition.x
+            );
+            
+            const isReachable = availableMoves.some(move => 
+                move.row === cellData.row && move.col === cellData.col
+            );
+            
+            let cellClass = 'tactical-hex-cell';
+            let cellContent = this.getCellEmoji(cellData);
+            
+            if (isPlayerHere) {
+                cellClass += ' player-cell';
+                cellContent = '🎯';
+            } else if (isReachable) {
+                cellClass += ' reachable-cell';
+            } else {
+                cellClass += ` ${cellData.type}-cell`;
+            }
+            
+            if (!cellData.passable && !isPlayerHere) {
+                cellClass += ' impassable';
+            }
+            
+            return `
+                <div class="${cellClass}" 
+                     style="left: ${finalX}px; top: ${finalY}px;"
+                     onclick="game.systems.map.moveOnTacticalMap(${cellData.col}, ${cellData.row})"
+                     title="${this.getCellDescription(cellData)} - [${cellData.col},${cellData.row}]">
+                    ${cellContent}
+                </div>
+            `;
+        }).join('');
         
-        // Вычисляем смещение для центрирования
-        const offsetX = (containerWidth - originalWidth * scale) / 2;
-        const offsetY = (containerHeight - originalHeight * scale) / 2;
-        
-        return {
-            x: (hexX * scale) + offsetX,
-            y: (hexY * scale) + offsetY
-        };
+        return gridHTML;
     }
 
     // ========== НОВАЯ ФУНКЦИЯ: ПОЛУЧЕНИЕ СОСЕДНИХ КЛЕТОК ==========
@@ -469,61 +523,19 @@ class MapSystem {
         `;
     }
 
+    // ========== ОБНОВЛЕННАЯ ФУНКЦИЯ ОТРИСОВКИ СЕТКИ ==========
     generateTigrimionHexGrid() {
-        let gridHTML = '';
         const map = this.currentTacticalMap;
-        const cells = Object.values(map.cells);
-
+        
         // Получаем доступные для хода клетки
         const availableMoves = this.getHexNeighbors(
             this.playerTacticalPosition.y, 
             this.playerTacticalPosition.x
         );
-
-        cells.forEach(cellData => {
-            const isPlayerHere = cellData.col === this.playerTacticalPosition.x && 
-                               cellData.row === this.playerTacticalPosition.y;
-            
-            // Проверяем, доступна ли клетка для хода
-            const isReachable = availableMoves.some(move => 
-                move.row === cellData.row && move.col === cellData.col
-            );
-            
-            let cellClass = 'tactical-hex-cell';
-            let cellContent = '';
-            let title = `Позиция: [${cellData.col}, ${cellData.row}]`;
-
-            // Преобразуем координаты для правильного отображения
-            const convertedPos = this.convertCoordinates(cellData.x, cellData.y, map.jsonData);
-
-            if (isPlayerHere) {
-                cellClass += ' player-cell';
-                cellContent = '🎯';
-            } else if (isReachable) {
-                cellClass += ' reachable-cell';
-                cellContent = this.getCellEmoji(cellData);
-            } else {
-                cellClass += ` ${cellData.type}-cell`;
-                cellContent = this.getCellEmoji(cellData);
-            }
-            
-            title += ` - ${this.getCellDescription(cellData)}`;
-
-            // Добавляем стили для разных типов клеток
-            if (!cellData.passable && !isPlayerHere) {
-                cellClass += ' impassable';
-            }
-
-            gridHTML += `
-                <div class="${cellClass}" 
-                     style="left: ${convertedPos.x}px; top: ${convertedPos.y}px;"
-                     onclick="game.systems.map.moveOnTacticalMap(${cellData.col}, ${cellData.row})"
-                     title="${title}">
-                    ${cellContent}
-                </div>
-            `;
-        });
-
+        
+        // Генерируем сетку заново на основе данных
+        const gridHTML = this.generateHexGridFromData(map);
+        
         // Обновляем информацию о доступных ходах
         setTimeout(() => {
             const movesElement = document.getElementById('availableMoves');
