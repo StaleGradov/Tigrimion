@@ -870,6 +870,73 @@ body {
     border: 1px solid #f87171;
 }
 
+/* ========== СИСТЕМА ПОДКАТЕГОРИЙ ========== */
+.shop-subcategories {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.subcategory-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    text-align: center;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border-color: rgba(76, 201, 240, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border-color: #a855f7;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    font-weight: bold;
+    transform: translateY(-2px);
+}
+
+.subcategory-count {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.subcategory-tab.active .subcategory-count {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
 /* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
 .item-detail-modal {
     position: fixed;
@@ -1425,73 +1492,6 @@ body {
     }
 }
 
-/* ========== СИСТЕМА ПОДКАТЕГОРИЙ ========== */
-.shop-subcategories {
-    margin: 15px 0;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 12px;
-    border: 2px solid rgba(76, 201, 240, 0.4);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-.subcategory-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    align-items: center;
-}
-
-.subcategory-tab {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85em;
-    font-weight: 500;
-    backdrop-filter: blur(4px);
-    text-align: center;
-    min-width: 80px;
-    white-space: nowrap;
-}
-
-.subcategory-tab:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-    border-color: rgba(76, 201, 240, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-}
-
-.subcategory-tab.active {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    border-color: #a855f7;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-    font-weight: bold;
-    transform: translateY(-2px);
-}
-
-.subcategory-count {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 0.7em;
-    margin-left: 5px;
-    min-width: 20px;
-    text-align: center;
-}
-
-.subcategory-tab.active .subcategory-count {
-    background: rgba(255, 255, 255, 0.3);
-    font-weight: bold;
-}
-
 /* ========== ФИЛЬТРЫ И ИНФОРМАЦИЯ ========== */
 .filter-info {
     text-align: center;
@@ -1543,6 +1543,7 @@ body {
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
     }
 }
+
 /* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
 .rarity-common .item-background { 
     border: 3px solid #9ca3af !important;
@@ -1692,6 +1693,7 @@ body {
     border-radius: 8px;
     border: 1px dashed #475569;
 }
+
 /* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВАННЫХ ПРЕДМЕТОВ ========== */
 .slot-icon-mini img {
     width: 100% !important;
@@ -1753,129 +1755,4 @@ body {
     padding: 1px 4px;
     border-radius: 3px;
     width: calc(100% - 8px);
-}
-
-
-/* ========== СИСТЕМА ПОДКАТЕГОРИЙ ========== */
-.shop-subcategories {
-    margin: 15px 0;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 12px;
-    border: 2px solid rgba(76, 201, 240, 0.4);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-    display: block !important; /* Добавьте это */
-}
-
-.subcategory-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    align-items: center;
-}
-
-.subcategory-tab {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.85em;
-    font-weight: 500;
-    backdrop-filter: blur(4px);
-    text-align: center;
-    min-width: 80px;
-    white-space: nowrap;
-}
-
-.subcategory-tab:hover {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-    border-color: rgba(76, 201, 240, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-}
-
-.subcategory-tab.active {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    border-color: #a855f7;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-    font-weight: bold;
-    transform: translateY(-2px);
-}
-
-.subcategory-count {
-    display: inline-block;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 0.7em;
-    margin-left: 5px;
-    min-width: 20px;
-    text-align: center;
-}
-
-.subcategory-tab.active .subcategory-count {
-    background: rgba(255, 255, 255, 0.3);
-    font-weight: bold;
-}
-
-/* Убедитесь что эти стили не перезаписываются */
-.shop-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    justify-content: center;
-}
-
-.category-tab {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.9em;
-    backdrop-filter: blur(4px);
-}
-
-.category-tab:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
-}
-
-.category-tab.active {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    border-color: #4cc9f0;
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-}
-
-
-/* ВРЕМЕННЫЕ СТИЛИ ДЛЯ ОТЛАДКИ - УДАЛИТЬ ПОСЛЕ РЕШЕНИЯ ПРОБЛЕМЫ */
-.shop-subcategories {
-    display: block !important;
-    background: red !important;
-    border: 3px solid yellow !important;
-    padding: 20px !important;
-    margin: 20px 0 !important;
-}
-
-.subcategory-tabs {
-    display: flex !important;
-    background: blue !important;
-    padding: 10px !important;
-}
-
-.subcategory-tab {
-    background: green !important;
-    color: white !important;
-    padding: 10px !important;
-    margin: 5px !important;
-    border: 2px solid white !important;
 }
