@@ -159,40 +159,51 @@ class MapSystem {
     }
 
     // ========== CANVAS РЕНДЕРИНГ ==========
-    initCanvas() {
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) {
-            console.log("❌ Контейнер для карты не найден");
-            return;
-        }
-
-        // Очищаем контейнер
-        container.innerHTML = '';
-
-        // Создаем canvas
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'tacticalMapCanvas';
-        
-        // Устанавливаем размеры
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.cursor = 'pointer';
-        container.appendChild(this.canvas);
-
-        this.ctx = this.canvas.getContext('2d');
-        
-        // Рассчитываем масштаб и позиционирование
-        this.calculateMapPositioning();
-        
-        // Добавляем обработчики событий
-        this.setupCanvasEventListeners();
-        
-        console.log("✅ Canvas инициализирован");
-        this.drawTacticalMap();
+   initCanvas() {
+    const container = document.querySelector('.tactical-map-visual');
+    if (!container) {
+        console.log("❌ Контейнер для карты не найден");
+        return;
     }
+
+    // Очищаем контейнер
+    container.innerHTML = '';
+
+    // Создаем canvas
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'tacticalMapCanvas';
+    
+    // Устанавливаем размеры
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = '0';
+    this.canvas.style.left = '0';
+    this.canvas.style.cursor = 'pointer';
+    container.appendChild(this.canvas);
+
+    this.ctx = this.canvas.getContext('2d');
+    
+    // Отладочная информация
+    console.log("🔍 Проверка структуры карты:");
+    console.log("Текущая тактическая карта:", this.currentTacticalMap);
+    console.log("Клетки карты:", Object.keys(this.currentTacticalMap.cells).length);
+    console.log("Позиция игрока:", this.playerTacticalPosition);
+    
+    // Проверим несколько клеток вокруг игрока
+    const playerX = this.playerTacticalPosition.x;
+    const playerY = this.playerTacticalPosition.y;
+    console.log(`Клетка игрока [${playerX},${playerY}]:`, this.currentTacticalMap.cells[`${playerX},${playerY}`]);
+    
+    // Рассчитываем масштаб и позиционирование
+    this.calculateMapPositioning();
+    
+    // Добавляем обработчики событий
+    this.setupCanvasEventListeners();
+    
+    console.log("✅ Canvas инициализирован");
+    this.drawTacticalMap();
+}
 
     calculateMapPositioning() {
         if (!this.currentTacticalMap || !this.canvas) return;
@@ -579,18 +590,18 @@ drawAvailableMoves() {
     }
 
     // ========== ИСПРАВЛЕННАЯ СИСТЕМА СОСЕДЕЙ И ДВИЖЕНИЯ ==========
-    getAvailableMoves() {
-        if (!this.currentTacticalMap) return [];
-        
-        const currentRow = this.playerTacticalPosition.y;
-        const currentCol = this.playerTacticalPosition.x;
-        const neighbors = this.getHexNeighbors(currentRow, currentCol);
-        
-        console.log(`📍 Текущая позиция: [${currentCol}, ${currentRow}]`);
-        console.log(`🎯 Доступные ходы:`, neighbors.map(n => `[${n.col}, ${n.row}]`));
-        
-        return neighbors;
-    }
+   getAvailableMoves() {
+    if (!this.currentTacticalMap) return [];
+    
+    const currentRow = this.playerTacticalPosition.y;
+    const currentCol = this.playerTacticalPosition.x;
+    const neighbors = this.getHexNeighbors(currentRow, currentCol);
+    
+    console.log(`📍 Текущая позиция: [${currentCol}, ${currentRow}]`);
+    console.log(`🎯 Доступные ходы:`, neighbors.map(n => `[${n.col}, ${n.row}]`));
+    
+    return neighbors;
+}
 
   getHexNeighbors(currentRow, currentCol) {
     if (!this.currentTacticalMap) return [];
@@ -652,74 +663,79 @@ drawAvailableMoves() {
     return neighbors;
 }
 
-    isCellReachable(targetRow, targetCol) {
-        const currentRow = this.playerTacticalPosition.y;
-        const currentCol = this.playerTacticalPosition.x;
-        
-        // Нельзя ходить на ту же клетку
-        if (targetRow === currentRow && targetCol === currentCol) {
-            return false;
-        }
-        
-        const neighbors = this.getHexNeighbors(currentRow, currentCol);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === targetRow && neighbor.col === targetCol
-        );
-        
-        console.log(`🎯 Проверка достижимости [${targetCol}, ${targetRow}] от [${currentCol}, ${currentRow}]: ${isReachable}`);
-        return isReachable;
+  isCellReachable(targetRow, targetCol) {
+    const currentRow = this.playerTacticalPosition.y;
+    const currentCol = this.playerTacticalPosition.x;
+    
+    // Нельзя ходить на ту же клетку
+    if (targetRow === currentRow && targetCol === currentCol) {
+        console.log(`🚫 Нельзя ходить на ту же клетку [${targetCol},${targetRow}]`);
+        return false;
     }
+    
+    const neighbors = this.getHexNeighbors(currentRow, currentCol);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === targetRow && neighbor.col === targetCol
+    );
+    
+    console.log(`🎯 Проверка достижимости [${targetCol},${targetRow}] от [${currentCol},${currentRow}]: ${isReachable}`);
+    
+    if (!isReachable) {
+        console.log(`📋 Доступные ходы:`, neighbors.map(n => `[${n.col},${n.row}]`));
+    }
+    
+    return isReachable;
+}
+moveOnTacticalMap(x, y) {
+    if (!this.currentTacticalMap) return;
 
-    moveOnTacticalMap(x, y) {
-        if (!this.currentTacticalMap) return;
-
-        // Проверяем, что клетка существует
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (cellData.passable === false) {
-            console.log("🚫 Нельзя пройти на эту клетку");
-            if (window.game) {
-                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        // Проверяем, что клетка соседняя
-        if (!this.isCellReachable(y, x)) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она не соседняя");
-            if (window.game) {
-                window.game.showNotification("Можно ходить только на соседние клетки!", 'error');
-            }
-            return;
-        }
-
-        // Перемещаем игрока
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x, y};
-        
-        console.log(`✅ Успешное перемещение с [${oldPosition.x}, ${oldPosition.y}] на: [${x}, ${y}]`);
-        
-        // Взаимодействуем с объектом на клетке
-        if (cellData.type !== 'active' && cellData.type !== 'empty' && cellData.type !== 'player_start') {
-            this.interactWithTacticalCell(x, y);
-        }
-        
-        this.updateTacticalMapDisplay();
-        this.updateMovementInfo();
-        
+    // Проверяем, что клетка существует
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
         if (window.game) {
-            window.game.showNotification(`Перемещение на [${x}, ${y}]`, 'success');
+            window.game.showNotification("Эта клетка не существует!", 'error');
         }
+        return;
     }
+
+    if (cellData.passable === false) {
+        console.log("🚫 Нельзя пройти на эту клетку");
+        if (window.game) {
+            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // Проверяем, что клетка доступна для хода
+    if (!this.isCellReachable(y, x)) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // Перемещаем игрока
+    const oldPosition = {...this.playerTacticalPosition};
+    this.playerTacticalPosition = {x, y};
+    
+    console.log(`✅ Успешное перемещение с [${oldPosition.x}, ${oldPosition.y}] на: [${x}, ${y}]`);
+    
+    // Взаимодействуем с объектом на клетке
+    if (cellData.type !== 'active' && cellData.type !== 'empty' && cellData.type !== 'player_start') {
+        this.interactWithTacticalCell(x, y);
+    }
+    
+    this.updateTacticalMapDisplay();
+    this.updateMovementInfo();
+    
+    if (window.game) {
+        window.game.showNotification(`Перемещение на [${x}, ${y}]`, 'success');
+    }
+}
 
     interactWithTacticalCell(x, y) {
         const cellKey = `${x},${y}`;
