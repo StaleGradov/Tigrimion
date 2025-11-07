@@ -477,7 +477,7 @@ body {
     padding: 2rem;
 }
 
-.overlay-content {
+.overlay-content:not(.tactical-map-overlay) {
     background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
     border-radius: 12px;
     border: 1px solid #475569;
@@ -1576,56 +1576,6 @@ body {
 }
 
 /* ========== УВЕЛИЧЕННОЕ ОКНО ТАКТИЧЕСКОЙ КАРТЫ ========== */
-.tactical-map-overlay .overlay-content {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: calc(95vh - 80px) !important;
-}
-
-.tactical-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 15px;
-    overflow: hidden;
-    margin: 1rem;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
-}
-
-/* Убедимся, что canvas занимает всю область */
-#tacticalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .tactical-map-overlay .overlay-content {
-        max-width: 98vw !important;
-        max-height: 98vh !important;
-        width: 98vw !important;
-        height: 98vh !important;
-    }
-    
-    .tactical-map-content {
-        height: calc(98vh - 80px) !important;
-    }
-    
-    .tactical-map-visual {
-        min-height: 300px;
-    }
-}
-/* ========== УВЕЛИЧЕННОЕ ОКНО ТАКТИЧЕСКОЙ КАРТЫ ========== */
 .overlay-content.tactical-map-overlay {
     max-width: 95vw !important;
     max-height: 95vh !important;
@@ -1633,6 +1583,11 @@ body {
     height: 95vh !important;
     background: #000000 !important;
     margin: 2vh auto !important;
+    border-radius: 12px;
+    border: 1px solid #00ffff;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
 }
 
 .tactical-map-content {
