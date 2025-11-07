@@ -1,6 +1,6 @@
 "use strict";
 
-// ========== MODULE: MapSystem with Built-in Editor ==========
+// ========== MODULE: MapSystem with Advanced Built-in Editor ==========
 class MapSystem {
     constructor() {
         this.globalMaps = [];
@@ -262,13 +262,20 @@ class MapSystem {
 
     // ========== CANVAS RENDERING ==========
     initCanvas() {
-        const container = document.querySelector('.tactical-map-visual');
+        const container = document.querySelector('.tactical-map-visual') || 
+                         document.querySelector('.preview-container') ||
+                         document.querySelector('.game-container');
+        
         if (!container) {
             console.log("❌ Контейнер для карты не найден");
             return;
         }
 
-        container.innerHTML = '';
+        // Очищаем контейнер
+        const existingCanvas = container.querySelector('canvas');
+        if (existingCanvas) {
+            existingCanvas.remove();
+        }
 
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
@@ -291,17 +298,26 @@ class MapSystem {
     }
 
     calculateMapPositioning() {
-        if (!this.currentTacticalMap || !this.canvas) return;
+        if (!this.canvas) return;
 
-        const container = document.querySelector('.tactical-map-visual');
+        const container = this.canvas.parentElement;
         if (!container) return;
 
         const rect = container.getBoundingClientRect();
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
 
+        // Если нет текущей карты, создаем базовую сетку
+        if (!this.currentTacticalMap) {
+            this.createDefaultGrid();
+            return;
+        }
+
         const cells = Object.values(this.currentTacticalMap.cells);
-        if (cells.length === 0) return;
+        if (cells.length === 0) {
+            this.createDefaultGrid();
+            return;
+        }
 
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         
@@ -326,6 +342,44 @@ class MapSystem {
         this.mapOffset.y = (rect.height - mapHeight * this.mapScale) / 2 - minY * this.mapScale;
 
         console.log(`📐 Позиционирование: scale=${this.mapScale}, offset=(${this.mapOffset.x}, ${this.mapOffset.y})`);
+    }
+
+    createDefaultGrid() {
+        if (!this.currentTacticalMap) {
+            this.currentTacticalMap = {
+                id: 'editor_default',
+                name: 'Новая карта',
+                description: 'Создана в редакторе',
+                width: 15,
+                height: 15,
+                startPosition: {x: 7, y: 7},
+                cells: {},
+                cellSize: this.hexSize,
+                renderType: 'hex'
+            };
+        }
+
+        const hexSize = this.currentTacticalMap.cellSize;
+        const width = this.currentTacticalMap.width;
+        const height = this.currentTacticalMap.height;
+
+        for (let row = 0; row < height; row++) {
+            for (let col = 0; col < width; col++) {
+                const x = col * hexSize + (row % 2) * hexSize / 2;
+                const y = row * hexSize * 0.75;
+                const key = `${col},${row}`;
+                
+                this.currentTacticalMap.cells[key] = {
+                    type: 'active',
+                    passable: true,
+                    visible: true,
+                    row: row,
+                    col: col,
+                    x: x,
+                    y: y
+                };
+            }
+        }
     }
 
     setupCanvasEventListeners() {
@@ -424,20 +478,18 @@ class MapSystem {
     }
 
     drawTacticalMap() {
-        if (!this.ctx || !this.currentTacticalMap) return;
+        if (!this.ctx || !this.canvas) return;
 
-        const canvas = this.canvas;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.ctx.save();
         this.ctx.translate(this.mapOffset.x, this.mapOffset.y);
         this.ctx.scale(this.mapScale, this.mapScale);
 
         this.drawBackground();
-
         this.drawHexes();
 
-        if (!this.editor.isEditing) {
+        if (!this.editor.isEditing && this.currentTacticalMap) {
             this.drawAvailableMoves();
         }
 
@@ -451,6 +503,8 @@ class MapSystem {
     }
 
     drawBackground() {
+        if (!this.currentTacticalMap) return;
+
         // Если есть фоновое изображение, рисуем его
         if (this.backgroundImage) {
             const cells = Object.values(this.currentTacticalMap.cells);
@@ -538,6 +592,8 @@ class MapSystem {
     }
 
     drawHexGrid() {
+        if (!this.currentTacticalMap) return;
+        
         const cells = Object.values(this.currentTacticalMap.cells);
         const hexSize = this.currentTacticalMap.cellSize || 40;
         
@@ -564,6 +620,8 @@ class MapSystem {
     }
 
     drawHexes() {
+        if (!this.currentTacticalMap) return;
+        
         const cells = Object.values(this.currentTacticalMap.cells);
         
         cells.forEach(cell => {
@@ -592,7 +650,9 @@ class MapSystem {
 
         let fillColor = 'rgba(76, 201, 240, 0.2)';
         
-        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        if (this.currentTacticalMap.startPosition && 
+            cell.col === this.currentTacticalMap.startPosition.x && 
+            cell.row === this.currentTacticalMap.startPosition.y) {
             fillColor = 'rgba(74, 222, 128, 0.6)';
         } else if (cell.type === 'monster') {
             fillColor = 'rgba(239, 68, 68, 0.5)';
@@ -622,8 +682,10 @@ class MapSystem {
         let color = '#ffffff';
         let fontSize = 16;
 
-        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-            symbol = '🎯';
+        if (this.currentTacticalMap.startPosition && 
+            cell.col === this.currentTacticalMap.startPosition.x && 
+            cell.row === this.currentTacticalMap.startPosition.y) {
+            symbol = '⭐';
             fontSize = 20;
         } else {
             switch(cell.type) {
@@ -660,6 +722,8 @@ class MapSystem {
     }
 
     drawAvailableMoves() {
+        if (!this.currentTacticalMap) return;
+        
         const availableMoves = this.getAvailableMoves();
         
         this.ctx.save();
@@ -1416,7 +1480,7 @@ class MapSystem {
     }
 }
 
-// ========== BUILT-IN MAP EDITOR WITH IMAGE UPLOAD ==========
+// ========== ADVANCED MAP EDITOR WITH IMAGE UPLOAD ==========
 class MapEditor {
     constructor(mapSystem) {
         this.mapSystem = mapSystem;
@@ -1424,10 +1488,65 @@ class MapEditor {
         this.currentTool = 'terrain';
         this.selectedCellType = 'active';
         this.currentProject = null;
+        this.massEdit = false;
+        this.currentVisibility = 'visible';
+        this.deletionHistory = [];
+        this.maxHistorySize = 20;
         
         this.tools = {
             terrain: ['active', 'inactive'],
             objects: ['player_start', 'monster', 'chest', 'npc', 'exit', 'obstacle']
+        };
+
+        this.gameObjects = {
+            'player_start': { 
+                name: '🎯 Старт игрока', 
+                color: '#4ade80',
+                description: 'Начальная позиция игрока',
+                passable: true
+            },
+            'monster': { 
+                name: '👹 Монстр', 
+                color: '#ef4444',
+                description: 'Враждебное существо',
+                passable: false
+            },
+            'chest': { 
+                name: '📦 Сундук', 
+                color: '#f59e0b',
+                description: 'Сундук с сокровищами',
+                passable: true
+            },
+            'npc': { 
+                name: '🧙 NPC', 
+                color: '#3b82f6',
+                description: 'Неигровой персонаж',
+                passable: true
+            },
+            'exit': { 
+                name: '🚪 Выход', 
+                color: '#8b5cf6',
+                description: 'Выход с карты',
+                passable: true
+            },
+            'obstacle': { 
+                name: '🪨 Препятствие', 
+                color: '#6b7280',
+                description: 'Непроходимое препятствие',
+                passable: false
+            },
+            'active': { 
+                name: '🟢 Активная', 
+                color: '#22c55e',
+                description: 'Проходимая клетка',
+                passable: true
+            },
+            'inactive': { 
+                name: '🔴 Неактивная', 
+                color: '#ef4444',
+                description: 'Непроходимая клетка',
+                passable: false
+            }
         };
     }
 
@@ -1476,97 +1595,63 @@ class MapEditor {
         if (!container) return;
 
         container.innerHTML = `
-            <div class="map-editor-overlay">
-                <div class="editor-header">
-                    <h3>🎨 Редактор карт Tigrimion</h3>
+            <div class="map-editor-overlay" style="
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0, 10, 20, 0.95); z-index: 1000; 
+                display: flex; flex-direction: column; color: white;
+                font-family: Arial, sans-serif;
+            ">
+                <div class="editor-header" style="
+                    background: linear-gradient(45deg, #1a1a2e, #16213e);
+                    padding: 20px; border-bottom: 2px solid #00ffff;
+                    display: flex; justify-content: space-between; align-items: center;
+                ">
+                    <h3 style="margin: 0; color: #00ffff; text-shadow: 0 0 10px #00ffff;">
+                        🎨 Редактор карт Tigrimion PRO
+                    </h3>
                     <div class="editor-controls">
-                        <button class="btn-editor" onclick="game.systems.map.editor.toggleEditor()">
-                            🚪 Выйти
-                        </button>
+                        <button onclick="game.systems.map.editor.toggleEditor()" style="
+                            background: linear-gradient(45deg, #ff4444, #ff8800);
+                            border: none; color: white; padding: 10px 20px;
+                            border-radius: 25px; cursor: pointer; font-weight: bold;
+                        ">🚪 Выйти из редактора</button>
                     </div>
                 </div>
                 
-                <div class="editor-content">
-                    <div class="editor-toolbar">
-                        <div class="tool-section">
-                            <h4>🖼️ Фон карты</h4>
-                            <div class="image-upload-section">
-                                <button class="btn-editor-primary" onclick="game.systems.map.editor.uploadBackgroundImage()">
-                                    📁 Загрузить фон
-                                </button>
-                                <button class="btn-editor-secondary" onclick="game.systems.map.editor.removeBackgroundImage()">
-                                    🗑️ Удалить фон
-                                </button>
-                                <div class="image-preview" id="imagePreview">
-                                    ${this.mapSystem.backgroundImageUrl ? 
-                                        `<img src="${this.mapSystem.backgroundImageUrl}" alt="Preview" style="max-width: 100%; max-height: 100px; margin-top: 10px; border: 1px solid #444; border-radius: 5px;">` : 
-                                        '<div class="no-image" style="color: #888; font-size: 12px; margin-top: 10px;">Нет фонового изображения</div>'
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="tool-section">
-                            <h4>🗺️ Террайн</h4>
-                            ${this.tools.terrain.map(tool => `
-                                <button class="tool-btn ${this.selectedCellType === tool ? 'active' : ''}"
-                                        onclick="game.systems.map.editor.selectTool('terrain', '${tool}')">
-                                    ${this.getToolIcon(tool)} ${this.getToolName(tool)}
-                                </button>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="tool-section">
-                            <h4>🎯 Объекты</h4>
-                            ${this.tools.objects.map(tool => `
-                                <button class="tool-btn ${this.selectedCellType === tool ? 'active' : ''}"
-                                        onclick="game.systems.map.editor.selectTool('objects', '${tool}')">
-                                    ${this.getToolIcon(tool)} ${this.getToolName(tool)}
-                                </button>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="tool-section">
-                            <h4>⚡ Действия</h4>
-                            <button class="btn-editor-primary" onclick="game.systems.map.editor.newMap()">
-                                🆕 Новая карта
-                            </button>
-                            <button class="btn-editor-primary" onclick="game.systems.map.editor.loadMapProject()">
-                                📂 Загрузить проект
-                            </button>
-                            <button class="btn-editor-success" onclick="game.systems.map.editor.saveMapProject()">
-                                💾 Сохранить проект
-                            </button>
-                            <button class="btn-editor-export" onclick="game.systems.map.editor.exportForGame()">
-                                🎮 Экспорт в игру
-                            </button>
-                        </div>
-                        
-                        <div class="tool-section">
-                            <h4>ℹ️ Информация</h4>
-                            <div class="editor-info">
-                                <div>Текущий инструмент: <strong>${this.getToolName(this.selectedCellType)}</strong></div>
-                                <div>Режим: <strong>${this.isEditing ? 'Редактирование' : 'Просмотр'}</strong></div>
-                                <div>Клеток: <strong id="editorCellCount">0</strong></div>
-                                <div>Фон: <strong id="editorBackgroundStatus">${this.mapSystem.backgroundImageUrl ? 'Загружен' : 'Нет'}</strong></div>
-                            </div>
-                        </div>
+                <div class="editor-content" style="
+                    display: flex; flex: 1; overflow: hidden;
+                ">
+                    <div class="editor-toolbar" style="
+                        width: 350px; background: rgba(0, 20, 40, 0.9);
+                        padding: 20px; overflow-y: auto; border-right: 1px solid #00ffff;
+                    ">
+                        ${this.renderToolbar()}
                     </div>
                     
-                    <div class="editor-preview">
-                        <div class="preview-header">
-                            <h4>👁️ Предпросмотр карты</h4>
+                    <div class="editor-preview" style="flex: 1; position: relative;">
+                        <div class="preview-header" style="
+                            background: rgba(0, 0, 0, 0.7); padding: 15px;
+                            border-bottom: 1px solid #00ffff; display: flex;
+                            justify-content: space-between; align-items: center;
+                        ">
+                            <h4 style="margin: 0; color: #ffff00;">👁️ Предпросмотр карты</h4>
                             <div class="preview-controls">
-                                <button class="btn-small" onclick="game.systems.map.toggleGrid()">
-                                    ${this.mapSystem.showGrid ? '🔲 Сетка' : '🔳 Сетка'}
-                                </button>
-                                <button class="btn-small" onclick="game.systems.map.resetZoom()">
-                                    🔄 Сброс зума
-                                </button>
+                                <button onclick="game.systems.map.toggleGrid()" style="
+                                    background: rgba(0, 255, 255, 0.2); border: 1px solid #00ffff;
+                                    color: white; padding: 8px 15px; border-radius: 5px;
+                                    cursor: pointer; margin: 0 5px;
+                                ">${this.mapSystem.showGrid ? '🔲 Сетка' : '🔳 Сетка'}</button>
+                                <button onclick="game.systems.map.resetZoom()" style="
+                                    background: rgba(255, 215, 0, 0.2); border: 1px solid #ffd700;
+                                    color: white; padding: 8px 15px; border-radius: 5px;
+                                    cursor: pointer; margin: 0 5px;
+                                ">🔄 Сброс зума</button>
                             </div>
                         </div>
-                        <div class="preview-container">
-                            <!-- Canvas рендерится автоматически -->
+                        <div class="preview-container" style="
+                            width: 100%; height: calc(100% - 70px); position: relative;
+                        ">
+                            <!-- Canvas будет добавлен автоматически -->
                         </div>
                     </div>
                 </div>
@@ -1580,6 +1665,108 @@ class MapEditor {
         setTimeout(() => {
             this.mapSystem.initCanvas();
         }, 100);
+    }
+
+    renderToolbar() {
+        return `
+            <div class="tool-section" style="margin-bottom: 25px; padding: 15px; background: rgba(0, 255, 255, 0.1); border-radius: 10px;">
+                <h4 style="color: #00ffff; margin-bottom: 15px;">🖼️ Фон карты</h4>
+                <div class="image-upload-section">
+                    <button onclick="game.systems.map.editor.uploadBackgroundImage()" style="
+                        background: linear-gradient(45deg, #00ffff, #0080ff);
+                        border: none; color: #000; padding: 12px 20px;
+                        border-radius: 25px; cursor: pointer; font-weight: bold;
+                        width: 100%; margin-bottom: 10px;
+                    ">📁 Загрузить фон</button>
+                    <button onclick="game.systems.map.editor.removeBackgroundImage()" style="
+                        background: linear-gradient(45deg, #ff4444, #ff8800);
+                        border: none; color: white; padding: 10px 20px;
+                        border-radius: 25px; cursor: pointer; width: 100%;
+                    ">🗑️ Удалить фон</button>
+                    <div class="image-preview" id="imagePreview" style="margin-top: 15px;">
+                        ${this.mapSystem.backgroundImageUrl ? 
+                            `<img src="${this.mapSystem.backgroundImageUrl}" alt="Preview" style="max-width: 100%; max-height: 120px; border: 2px solid #00ffff; border-radius: 5px;">` : 
+                            '<div style="color: #888; font-size: 14px; text-align: center; padding: 20px;">Нет фонового изображения</div>'
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tool-section" style="margin-bottom: 25px; padding: 15px; background: rgba(0, 255, 0, 0.1); border-radius: 10px;">
+                <h4 style="color: #00ff00; margin-bottom: 15px;">🗺️ Террайн</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    ${this.tools.terrain.map(tool => `
+                        <button class="tool-btn ${this.selectedCellType === tool ? 'active' : ''}" 
+                                onclick="game.systems.map.editor.selectTool('terrain', '${tool}')" style="
+                            background: ${this.selectedCellType === tool ? 
+                                'rgba(0, 255, 0, 0.3)' : 'rgba(0, 255, 0, 0.1)'};
+                            border: 2px solid ${this.selectedCellType === tool ? '#00ff00' : '#008800'};
+                            color: white; padding: 12px 8px; border-radius: 8px;
+                            cursor: pointer; font-size: 12px; text-align: center;
+                        ">
+                            ${this.getToolIcon(tool)}<br>${this.getToolName(tool)}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="tool-section" style="margin-bottom: 25px; padding: 15px; background: rgba(255, 215, 0, 0.1); border-radius: 10px;">
+                <h4 style="color: #ffd700; margin-bottom: 15px;">🎯 Объекты</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    ${this.tools.objects.map(tool => `
+                        <button class="tool-btn ${this.selectedCellType === tool ? 'active' : ''}" 
+                                onclick="game.systems.map.editor.selectTool('objects', '${tool}')" style="
+                            background: ${this.selectedCellType === tool ? 
+                                'rgba(255, 215, 0, 0.3)' : 'rgba(255, 215, 0, 0.1)'};
+                            border: 2px solid ${this.selectedCellType === tool ? '#ffd700' : '#886600'};
+                            color: white; padding: 12px 8px; border-radius: 8px;
+                            cursor: pointer; font-size: 12px; text-align: center;
+                        ">
+                            ${this.getToolIcon(tool)}<br>${this.getToolName(tool)}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="tool-section" style="margin-bottom: 25px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 10px;">
+                <h4 style="color: #8b5cf6; margin-bottom: 15px;">⚡ Действия</h4>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                    <button onclick="game.systems.map.editor.newMap()" style="
+                        background: linear-gradient(45deg, #00ffff, #0080ff);
+                        border: none; color: #000; padding: 12px;
+                        border-radius: 8px; cursor: pointer; font-weight: bold;
+                    ">🆕 Новая карта</button>
+                    <button onclick="game.systems.map.editor.loadMapProject()" style="
+                        background: linear-gradient(45deg, #ffaa00, #ff8800);
+                        border: none; color: #000; padding: 12px;
+                        border-radius: 8px; cursor: pointer; font-weight: bold;
+                    ">📂 Загрузить проект</button>
+                    <button onclick="game.systems.map.editor.saveMapProject()" style="
+                        background: linear-gradient(45deg, #00ff00, #00cc00);
+                        border: none; color: #000; padding: 12px;
+                        border-radius: 8px; cursor: pointer; font-weight: bold;
+                    ">💾 Сохранить проект</button>
+                    <button onclick="game.systems.map.editor.exportForGame()" style="
+                        background: linear-gradient(45deg, #8b5cf6, #6d28d9);
+                        border: none; color: white; padding: 12px;
+                        border-radius: 8px; cursor: pointer; font-weight: bold;
+                    ">🎮 Экспорт в игру</button>
+                </div>
+            </div>
+
+            <div class="tool-section" style="margin-bottom: 25px; padding: 15px; background: rgba(255, 255, 255, 0.1); border-radius: 10px;">
+                <h4 style="color: #ffffff; margin-bottom: 15px;">ℹ️ Информация</h4>
+                <div class="editor-info" style="font-size: 14px; line-height: 1.5;">
+                    <div>Текущий инструмент: <strong style="color: #00ffff;">${this.getToolName(this.selectedCellType)}</strong></div>
+                    <div>Режим: <strong style="color: #ffff00;">${this.isEditing ? 'Редактирование' : 'Просмотр'}</strong></div>
+                    <div>Клеток: <strong style="color: #00ff00;" id="editorCellCount">0</strong></div>
+                    <div>Фон: <strong style="color: #ffd700;" id="editorBackgroundStatus">${this.mapSystem.backgroundImageUrl ? 'Загружен' : 'Нет'}</strong></div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #888;">
+                        ЛКМ - разместить • ПКМ - удалить • Shift - область
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     hideEditorUI() {
@@ -1628,7 +1815,7 @@ class MapEditor {
             // Показываем индикатор загрузки
             const preview = document.getElementById('imagePreview');
             if (preview) {
-                preview.innerHTML = '<div style="color: #00ffff;">🔄 Загрузка изображения...</div>';
+                preview.innerHTML = '<div style="color: #00ffff; text-align: center; padding: 20px;">🔄 Загрузка изображения...</div>';
             }
 
             await this.mapSystem.loadBackgroundImage(file);
@@ -1653,16 +1840,16 @@ class MapEditor {
         if (preview) {
             if (this.mapSystem.backgroundImageUrl) {
                 preview.innerHTML = `
-                    <div style="margin-top: 10px;">
+                    <div style="text-align: center;">
                         <img src="${this.mapSystem.backgroundImageUrl}" alt="Preview" 
-                             style="max-width: 100%; max-height: 100px; border: 1px solid #444; border-radius: 5px;">
-                        <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                             style="max-width: 100%; max-height: 120px; border: 2px solid #00ffff; border-radius: 5px;">
+                        <div style="font-size: 12px; color: #00ffff; margin-top: 5px;">
                             ✅ Фон загружен
                         </div>
                     </div>
                 `;
             } else {
-                preview.innerHTML = '<div style="color: #888; font-size: 12px; margin-top: 10px;">Нет фонового изображения</div>';
+                preview.innerHTML = '<div style="color: #888; font-size: 14px; text-align: center; padding: 20px;">Нет фонового изображения</div>';
             }
         }
     }
@@ -1682,7 +1869,12 @@ class MapEditor {
         
         const hex = this.mapSystem.getHexAtCanvasPosition(x, y);
         if (hex) {
-            this.editCell(hex.col, hex.row);
+            if (e.shiftKey) {
+                this.massEdit = true;
+                this.editHexArea(hex.col, hex.row, this.selectedCellType);
+            } else {
+                this.editCell(hex.col, hex.row);
+            }
         }
     }
 
@@ -1706,10 +1898,16 @@ class MapEditor {
         const cellKey = `${col},${row}`;
         const hexSize = this.mapSystem.hexSize;
         
+        // Сохраняем предыдущее состояние для истории
+        const previousCell = this.mapSystem.currentTacticalMap.cells[cellKey];
+        if (previousCell) {
+            this.addToDeletionHistory(previousCell);
+        }
+        
         this.mapSystem.currentTacticalMap.cells[cellKey] = {
             type: this.selectedCellType,
-            passable: !['inactive', 'obstacle', 'monster'].includes(this.selectedCellType),
-            visible: true,
+            passable: this.gameObjects[this.selectedCellType].passable,
+            visible: this.currentVisibility === 'visible',
             row: row,
             col: col,
             x: col * hexSize + (row % 2) * hexSize / 2,
@@ -1725,18 +1923,55 @@ class MapEditor {
         this.updateStats();
     }
 
-    selectTool(category, tool) {
-        this.selectedCellType = tool;
+    editHexArea(centerCol, centerRow, editType) {
+        if (!this.mapSystem.currentTacticalMap) return;
+
+        const radius = 2;
+        const affectedHexes = [];
         
-        document.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.classList.remove('active');
+        Object.values(this.mapSystem.currentTacticalMap.cells).forEach(cell => {
+            const distance = Math.sqrt(
+                Math.pow(cell.col - centerCol, 2) + 
+                Math.pow(cell.row - centerRow, 2)
+            );
+            
+            if (distance <= radius) {
+                // Сохраняем предыдущее состояние для истории
+                this.addToDeletionHistory(cell);
+                
+                cell.type = editType;
+                cell.passable = this.gameObjects[editType].passable;
+                affectedHexes.push(cell);
+            }
         });
         
-        const activeBtn = document.querySelector(`[onclick="game.systems.map.editor.selectTool('${category}', '${tool}')"]`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
+        this.mapSystem.drawTacticalMap();
+        this.updateStats();
+        console.log(`🔄 Область из ${affectedHexes.length} клеток изменена`);
+    }
+
+    addToDeletionHistory(cell) {
+        const historyItem = {
+            id: `${cell.col},${cell.row}`,
+            row: cell.row,
+            col: cell.col,
+            x: cell.x,
+            y: cell.y,
+            type: cell.type,
+            passable: cell.passable,
+            visible: cell.visible,
+            timestamp: Date.now()
+        };
         
+        this.deletionHistory.unshift(historyItem);
+        
+        if (this.deletionHistory.length > this.maxHistorySize) {
+            this.deletionHistory.pop();
+        }
+    }
+
+    selectTool(category, tool) {
+        this.selectedCellType = tool;
         this.updateStats();
     }
 
@@ -1777,8 +2012,12 @@ class MapEditor {
             jsonData: this.currentProject
         };
         
+        // Создаем базовую сетку
+        this.mapSystem.createDefaultGrid();
+        
         console.log(`🆕 Создана новая карта: ${mapName}`);
         this.updateStats();
+        this.mapSystem.drawTacticalMap();
     }
 
     async saveMapProject() {
@@ -1900,7 +2139,7 @@ class MapEditor {
         this.downloadJSON(gameMap, fileName);
         
         console.log(`🎮 Карта экспортирована: ${fileName}`);
-        alert(`✅ Карта "${gameMap.name}" экспортирована для игры!\nФайл: data/maps/tactical/${fileName}`);
+        alert(`✅ Карта "${gameMap.name}" экспортирована для игры!\nФайл: ${fileName}`);
     }
 
     convertToGameFormat(projectData) {
@@ -1940,17 +2179,18 @@ class MapEditor {
     collectObjects() {
         const cells = Object.values(this.mapSystem.currentTacticalMap.cells);
         return {
-            monsters: cells.filter(cell => cell.type === 'monster').map(cell => cell.id),
-            chests: cells.filter(cell => cell.type === 'chest').map(cell => cell.id),
-            npcs: cells.filter(cell => cell.type === 'npc').map(cell => cell.id),
-            exits: cells.filter(cell => cell.type === 'exit').map(cell => cell.id),
-            obstacles: cells.filter(cell => cell.type === 'obstacle').map(cell => cell.id)
+            monsters: cells.filter(cell => cell.type === 'monster').length,
+            chests: cells.filter(cell => cell.type === 'chest').length,
+            npcs: cells.filter(cell => cell.type === 'npc').length,
+            exits: cells.filter(cell => cell.type === 'exit').length,
+            obstacles: cells.filter(cell => cell.type === 'obstacle').length
         };
     }
 
     updateStats() {
-        const cellCount = this.mapSystem.currentTacticalMap ? 
-            Object.keys(this.mapSystem.currentTacticalMap.cells).length : 0;
+        if (!this.mapSystem.currentTacticalMap) return;
+        
+        const cellCount = Object.keys(this.mapSystem.currentTacticalMap.cells).length;
         
         const cellCountElement = document.getElementById('editorCellCount');
         if (cellCountElement) {
@@ -1981,7 +2221,7 @@ class MapEditor {
         const names = {
             'active': 'Активная',
             'inactive': 'Неактивная',
-            'player_start': 'Старт игрока',
+            'player_start': 'Старт',
             'monster': 'Монстр',
             'chest': 'Сундук',
             'npc': 'NPC',
