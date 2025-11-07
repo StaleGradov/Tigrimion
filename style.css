@@ -1754,3 +1754,105 @@ body {
     border-radius: 3px;
     width: calc(100% - 8px);
 }
+
+
+
+/* ========== СИСТЕМА ПОДКАТЕГОРИЙ - ИСПРАВЛЕНИЯ ========== */
+.shop-subcategories {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    display: block !important;
+}
+
+.subcategory-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85em;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    text-align: center;
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    border-color: rgba(76, 201, 240, 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border-color: #a855f7;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    font-weight: bold;
+    transform: translateY(-2px);
+}
+
+.subcategory-count {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7em;
+    margin-left: 5px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.subcategory-tab.active .subcategory-count {
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+/* Убедитесь что эти стили не перезаписываются */
+.shop-categories {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.category-tab {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9em;
+    backdrop-filter: blur(4px);
+}
+
+.category-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-color: #4cc9f0;
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+}
