@@ -1685,3 +1685,155 @@ body {
     z-index: 10;
     border: 1px solid #00ff00;
 }
+/* Стили встроенного редактора карт */
+.map-editor-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-header {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 15px 20px;
+    border-bottom: 2px solid #00ffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.editor-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.editor-toolbar {
+    width: 300px;
+    background: rgba(0, 20, 40, 0.95);
+    padding: 20px;
+    overflow-y: auto;
+    border-right: 1px solid #00ffff;
+}
+
+.editor-preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-header {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-container {
+    flex: 1;
+    position: relative;
+}
+
+.tool-section {
+    margin-bottom: 25px;
+}
+
+.tool-section h4 {
+    color: #00ffff;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.tool-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.3s;
+}
+
+.tool-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #00ffff;
+}
+
+.tool-btn.active {
+    background: rgba(0, 255, 255, 0.2);
+    border-color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.btn-editor {
+    padding: 8px 15px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-editor-primary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.btn-editor-success {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.btn-editor-export {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    margin: 5px 0;
+}
+
+.editor-info {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.btn-small {
+    padding: 5px 10px;
+    background: #6b7280;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin: 0 5px;
+}
