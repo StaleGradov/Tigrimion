@@ -280,21 +280,13 @@ debugItems() {
 }
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
 showShop(category = 'all', subcategory = 'all') {
-    if (!this.currentHero) {
-        console.log('❌ Нет текущего героя');
-        return '';
-    }
+    if (!this.currentHero) return '';
 
     this.currentCategory = category;
     this.currentSubcategory = subcategory;
 
-    console.log(`🏪 Открываем магазин: категория=${category}, подкатегория=${subcategory}`);
-    
     const filteredItems = this.filterItemsByCategory(category, subcategory);
     const subcategories = this.getSubcategoriesForCategory(category);
-
-    console.log(`📋 Подкатегории для ${category}:`, subcategories);
-    console.log(`🎯 Найдено предметов: ${filteredItems.length}`);
 
     return `
         <div class="overlay-content shop-overlay">
