@@ -389,7 +389,7 @@ body {
     background: rgba(30, 41, 59, 0.8);
     border: 2px dashed #475569;
     border-radius: 8px;
-    padding: 0.6rem;
+    padding: 0.3rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -398,6 +398,8 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+    position: relative;
 }
 
 .equipment-slot-mini:hover {
@@ -407,8 +409,21 @@ body {
 
 .equipment-slot-mini.equipped {
     border-style: solid;
-    border-color: #10b981;
-    background: rgba(16, 185, 129, 0.1);
+    padding: 0.2rem;
+}
+
+.equipment-slot-mini.equipped .slot-icon-mini {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.equipment-slot-mini.equipped .slot-icon-mini img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .equipment-slot-mini[data-rarity="common"] { border-color: #6b7280; }
@@ -416,6 +431,7 @@ body {
 .equipment-slot-mini[data-rarity="rare"] { border-color: #3b82f6; }
 .equipment-slot-mini[data-rarity="epic"] { border-color: #8b5cf6; }
 .equipment-slot-mini[data-rarity="legendary"] { border-color: #f59e0b; }
+.equipment-slot-mini[data-rarity="mythic"] { border-color: #ff6b6b; }
 
 .slot-icon-mini {
     font-size: 1.2rem;
@@ -423,9 +439,10 @@ body {
 }
 
 .slot-icon-mini img {
-    width: 20px;
-    height: 20px;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
+    display: block;
 }
 
 .slot-label-mini {
@@ -433,6 +450,17 @@ body {
     color: #9ca3af;
     text-align: center;
     line-height: 1.1;
+    margin-top: 0.2rem;
+}
+
+.equipment-slot-mini.equipped .slot-label-mini {
+    font-size: 0.6rem;
+    position: absolute;
+    bottom: 2px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1px 4px;
+    border-radius: 3px;
+    width: calc(100% - 8px);
 }
 
 /* ========== ОВЕРЛЕИ ========== */
@@ -514,21 +542,23 @@ body {
 
 .inventory-item {
     background: rgba(30, 41, 59, 0.8);
-    border: 2px solid #475569;
+    border: 3px solid #475569;
     border-radius: 8px;
-    padding: 1rem;
+    padding: 0;
     transition: all 0.2s ease;
     cursor: pointer;
     display: flex;
     gap: 12px;
     align-items: flex-start;
+    overflow: hidden;
 }
 
-.inventory-item[data-rarity="common"] { border-color: #6b7280; }
-.inventory-item[data-rarity="uncommon"] { border-color: #10b981; }
-.inventory-item[data-rarity="rare"] { border-color: #3b82f6; }
-.inventory-item[data-rarity="epic"] { border-color: #8b5cf6; }
-.inventory-item[data-rarity="legendary"] { border-color: #f59e0b; }
+.inventory-item[data-rarity="common"] { border-color: #9ca3af; }
+.inventory-item[data-rarity="uncommon"] { border-color: #4cc9f0; }
+.inventory-item[data-rarity="rare"] { border-color: #a855f7; }
+.inventory-item[data-rarity="epic"] { border-color: #f59e0b; }
+.inventory-item[data-rarity="legendary"] { border-color: #ffd700; }
+.inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
 
 .inventory-item:hover {
     transform: translateY(-2px);
@@ -536,28 +566,29 @@ body {
 }
 
 .inventory-item-image {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    background: transparent;
+    border-radius: 0;
     overflow: hidden;
+    padding: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .inventory-item-image img {
-    max-width: 50px;
-    max-height: 50px;
-    width: auto;
-    height: auto;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
 }
 
 .inventory-item-info {
     flex: 1;
     min-width: 0;
+    padding: 0.8rem;
 }
 
 .inventory-item-info strong {
@@ -723,13 +754,14 @@ body {
     position: relative;
     background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
     border-radius: 12px;
-    padding: 15px;
+    padding: 0;
     height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 3px solid transparent;
+    border: 4px solid transparent;
     transition: all 0.3s ease;
+    overflow: hidden;
 }
 
 .shop-item:hover .item-background {
@@ -743,19 +775,20 @@ body {
 .rarity-rare .item-background { border-color: #a855f7; }
 .rarity-epic .item-background { border-color: #f59e0b; }
 .rarity-legendary .item-background { border-color: #ffd700; }
+.rarity-mythic .item-background { border-color: #ff6b6b; }
 
 .item-image-container {
-    width: 120px;
+    width: 100%;
     height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    margin-bottom: 12px;
+    background: transparent;
+    border-radius: 0;
+    margin-bottom: 0;
     position: relative;
     overflow: hidden;
-    padding: 10px;
+    padding: 0;
 }
 
 .item-image-container img {
@@ -777,7 +810,7 @@ body {
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: 0;
 }
 
 .item-icon {
@@ -785,16 +818,13 @@ body {
 }
 
 .item-rarity-bar {
-    width: 100%;
-    height: 3px;
-    margin: 8px 0;
-    border-radius: 2px;
+    display: none;
 }
 
 .item-info {
     text-align: center;
     width: 100%;
-    padding: 0;
+    padding: 15px;
 }
 
 .item-name {
@@ -879,6 +909,38 @@ body {
     border: 2px solid rgba(76, 201, 240, 0.4);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    animation: slideDown 0.3s ease-out;
+}
+
+.subcategory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.subcategory-title {
+    color: #ffd700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.subcategory-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.subcategory-total {
+    background: rgba(76, 201, 240, 0.3);
+    color: #4cc9f0;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    border: 1px solid #4cc9f0;
 }
 
 .subcategory-tabs {
@@ -903,6 +965,7 @@ body {
     text-align: center;
     min-width: 80px;
     white-space: nowrap;
+    position: relative;
 }
 
 .subcategory-tab:hover {
@@ -920,6 +983,18 @@ body {
     transform: translateY(-2px);
 }
 
+.subcategory-tab.empty {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.subcategory-tab.empty:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    box-shadow: none;
+}
+
 .subcategory-count {
     display: inline-block;
     background: rgba(255, 255, 255, 0.2);
@@ -935,6 +1010,81 @@ body {
 .subcategory-tab.active .subcategory-count {
     background: rgba(255, 255, 255, 0.3);
     font-weight: bold;
+}
+
+.subcategory-indicator {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: #4cc9f0;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.subcategory-tab.active .subcategory-indicator {
+    opacity: 1;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.empty-subcategory-message {
+    text-align: center;
+    padding: 30px;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-subcategory-message::before {
+    content: "🎯";
+    display: block;
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+/* Специфичные цвета для разных типов подкатегорий */
+.subcategory-tab[data-subcategory="cloth"]:hover,
+.subcategory-tab[data-subcategory="cloth"].active {
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    border-color: #9ca3af;
+    box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+}
+
+.subcategory-tab[data-subcategory="leather"]:hover,
+.subcategory-tab[data-subcategory="leather"].active {
+    background: linear-gradient(135deg, #a16207, #854d0e);
+    border-color: #a16207;
+    box-shadow: 0 4px 15px rgba(161, 98, 7, 0.4);
+}
+
+.subcategory-tab[data-subcategory="plate"]:hover,
+.subcategory-tab[data-subcategory="plate"].active {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    border-color: #94a3b8;
+    box-shadow: 0 4px 15px rgba(148, 163, 184, 0.4);
+}
+
+.subcategory-tab[data-subcategory="chain"]:hover,
+.subcategory-tab[data-subcategory="chain"].active {
+    background: linear-gradient(135deg, #475569, #334155);
+    border-color: #475569;
+    box-shadow: 0 4px 15px rgba(71, 85, 105, 0.4);
 }
 
 /* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
@@ -1014,8 +1164,8 @@ body {
 .detail-item-background {
     background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
     border-radius: 12px;
-    padding: 20px;
-    border: 3px solid;
+    padding: 0;
+    border: 4px solid;
     margin-bottom: 10px;
     width: 250px;
     height: 188px;
@@ -1024,6 +1174,13 @@ body {
     justify-content: center;
     overflow: hidden;
 }
+
+.rarity-common .detail-item-background { border-color: #9ca3af; }
+.rarity-uncommon .detail-item-background { border-color: #4cc9f0; }
+.rarity-rare .detail-item-background { border-color: #a855f7; }
+.rarity-epic .detail-item-background { border-color: #f59e0b; }
+.rarity-legendary .detail-item-background { border-color: #ffd700; }
+.rarity-mythic .detail-item-background { border-color: #ff6b6b; }
 
 .detail-item-background img {
     width: 100%;
@@ -1063,6 +1220,7 @@ body {
 .item-rarity.rare { background: #4cc9f0; color: #1f2937; }
 .item-rarity.epic { background: #a855f7; color: white; }
 .item-rarity.legendary { background: #f59e0b; color: #1f2937; }
+.item-rarity.mythic { background: #ff6b6b; color: white; }
 
 .item-detail-info {
     display: flex;
@@ -1229,321 +1387,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* ========== ЭКРАН ОШИБКИ ========== */
-.error-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    text-align: center;
-}
-
-.error-content h1 {
-    color: #ef4444;
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.error-details {
-    background: rgba(239, 68, 68, 0.1);
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-bottom: 2rem;
-    border: 1px solid #ef4444;
-}
-
-/* ========== АДАПТИВНОСТЬ ========== */
-@media (max-width: 768px) {
-    .heroes-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .hero-overlay-panel {
-        position: relative;
-        bottom: auto;
-        left: auto;
-        transform: none;
-        width: 100%;
-        margin: 1rem 0;
-        border-radius: 0;
-    }
-    
-    .hero-fullscreen {
-        height: auto;
-        min-height: 100vh;
-    }
-    
-    .hero-overlay-stats {
-        grid-template-columns: 1fr;
-    }
-    
-    .equipment-slots-mini {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .top-action-bar {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .overlay-container {
-        padding: 1rem;
-    }
-    
-    .overlay-content {
-        max-height: 90vh;
-    }
-    
-    .inventory-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
-        padding: 10px;
-    }
-    
-    .item-image-container {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .item-detail-content {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .detail-item-background {
-        width: 100%;
-        height: 200px;
-        max-width: 300px;
-        margin: 0 auto;
-    }
-}
-
-@media (max-width: 480px) {
-    .equipment-slots-mini {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .items-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10px;
-    }
-    
-    .item-detail-content {
-        padding: 15px;
-    }
-}
-
-/* ========== АНИМАЦИИ ========== */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.hero-card, .overlay-content, .btn-primary, .btn-secondary {
-    animation: fadeIn 0.5s ease-out;
-}
-
-/* ========== ПОЛОСА ПРОКРУТКИ ========== */
-.overlay-body::-webkit-scrollbar {
-    width: 8px;
-}
-
-.overlay-body::-webkit-scrollbar-track {
-    background: #1e293b;
-    border-radius: 4px;
-}
-
-.overlay-body::-webkit-scrollbar-thumb {
-    background: #475569;
-    border-radius: 4px;
-}
-
-.overlay-body::-webkit-scrollbar-thumb:hover {
-    background: #64748b;
-}
-
-/* ========== УВЕДОМЛЕНИЯ ========== */
-.game-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    animation: slideInRight 0.3s ease-out;
-}
-
-.notification-content {
-    background: rgba(0, 0, 0, 0.9);
-    border-radius: 10px;
-    padding: 15px 20px;
-    border: 2px solid;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    min-width: 300px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-}
-
-.notification-info {
-    border-color: #4cc9f0;
-}
-
-.notification-success {
-    border-color: #4ade80;
-}
-
-.notification-error {
-    border-color: #f87171;
-}
-
-.notification-message {
-    color: white;
-    font-weight: bold;
-    flex: 1;
-}
-
-.notification-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 5px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.notification-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
-.rarity-common .item-background {
-    border: 3px solid #9ca3af !important;
-    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.4);
-}
-
-.rarity-uncommon .item-background {
-    border: 4px solid #4cc9f0 !important;
-    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
-}
-
-.rarity-rare .item-background {
-    border: 5px solid #a855f7 !important;
-    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
-}
-
-.rarity-epic .item-background {
-    border: 6px solid #f59e0b !important;
-    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-    animation: epic-pulse 3s ease-in-out infinite;
-}
-
-.rarity-legendary .item-background {
-    border: 8px solid #ffd700 !important;
-    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
-    animation: legendary-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes epic-pulse {
-    0% { 
-        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-        border-color: #f59e0b;
-    }
-    50% { 
-        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.9);
-        border-color: #fbbf24;
-    }
-    100% { 
-        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-        border-color: #f59e0b;
-    }
-}
-
-@keyframes legendary-glow {
-    from {
-        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
-        border-color: #ffd700;
-    }
-    to {
-        box-shadow: 0 15px 50px rgba(255, 215, 0, 1);
-        border-color: #fef08a;
-    }
-}
-
-/* ========== ФИЛЬТРЫ И ИНФОРМАЦИЯ ========== */
-.filter-info {
-    text-align: center;
-    margin-bottom: 10px;
-    background: rgba(76, 201, 240, 0.2);
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #4cc9f0;
-}
-
-.inventory-actions {
-    display: flex;
-    justify-content: center;
-    margin-top: 15px;
-}
-
-/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВКИ ========== */
-.equipment-slot-mini.equipped[data-rarity="common"] { border-color: #9ca3af !important; }
-.equipment-slot-mini.equipped[data-rarity="uncommon"] { border-color: #4cc9f0 !important; }
-.equipment-slot-mini.equipped[data-rarity="rare"] { border-color: #a855f7 !important; }
-.equipment-slot-mini.equipped[data-rarity="epic"] { border-color: #f59e0b !important; }
-.equipment-slot-mini.equipped[data-rarity="legendary"] { border-color: #ffd700 !important; }
-
-.equipment-slot-mini.equipped[data-rarity="epic"] {
-    animation: equipment-epic-pulse 3s ease-in-out infinite;
-}
-
-.equipment-slot-mini.equipped[data-rarity="legendary"] {
-    animation: equipment-legendary-glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes equipment-epic-pulse {
-    0% { 
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-    }
-    50% { 
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
-    }
-    100% { 
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-    }
-}
-
-@keyframes equipment-legendary-glow {
-    from {
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-    }
-    to {
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
-    }
-}
-
 /* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
 .rarity-common .item-background { 
     border: 3px solid #9ca3af !important;
@@ -1551,24 +1394,24 @@ body {
 }
 
 .rarity-uncommon .item-background { 
-    border: 4px solid #4ade80 !important;
-    box-shadow: 0 8px 25px rgba(74, 222, 128, 0.5);
+    border: 4px solid #4cc9f0 !important;
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
 }
 
 .rarity-rare .item-background { 
-    border: 5px solid #4cc9f0 !important;
-    box-shadow: 0 10px 30px rgba(76, 201, 240, 0.6);
+    border: 5px solid #a855f7 !important;
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
 }
 
 .rarity-epic .item-background { 
-    border: 6px solid #a855f7 !important;
-    box-shadow: 0 12px 35px rgba(168, 85, 247, 0.7);
+    border: 6px solid #f59e0b !important;
+    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
     animation: epic-pulse 3s ease-in-out infinite;
 }
 
 .rarity-legendary .item-background { 
-    border: 8px solid #f59e0b !important;
-    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.8);
+    border: 8px solid #ffd700 !important;
+    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
     animation: legendary-glow 2s ease-in-out infinite alternate;
 }
 
@@ -1578,23 +1421,6 @@ body {
     animation: mythic-pulse 1.5s ease-in-out infinite;
 }
 
-/* Цвета для экипированных предметов */
-.equipment-slot-mini.equipped[data-rarity="common"] { border-color: #9ca3af !important; }
-.equipment-slot-mini.equipped[data-rarity="uncommon"] { border-color: #4ade80 !important; }
-.equipment-slot-mini.equipped[data-rarity="rare"] { border-color: #4cc9f0 !important; }
-.equipment-slot-mini.equipped[data-rarity="epic"] { border-color: #a855f7 !important; }
-.equipment-slot-mini.equipped[data-rarity="legendary"] { border-color: #f59e0b !important; }
-.equipment-slot-mini.equipped[data-rarity="mythic"] { border-color: #ff6b6b !important; }
-
-/* Цвета для инвентаря */
-.inventory-item[data-rarity="common"] { border-color: #9ca3af; }
-.inventory-item[data-rarity="uncommon"] { border-color: #4ade80; }
-.inventory-item[data-rarity="rare"] { border-color: #4cc9f0; }
-.inventory-item[data-rarity="epic"] { border-color: #a855f7; }
-.inventory-item[data-rarity="legendary"] { border-color: #f59e0b; }
-.inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
-
-/* Анимации для редкостей */
 @keyframes epic-pulse {
     0% { 
         box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
@@ -1682,6 +1508,222 @@ body {
     }
 }
 
+/* ========== АДАПТИВНОСТЬ ========== */
+@media (max-width: 768px) {
+    .heroes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .hero-overlay-panel {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        margin: 1rem 0;
+        border-radius: 0;
+    }
+    
+    .hero-fullscreen {
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .hero-overlay-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .equipment-slots-mini {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .top-action-bar {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .overlay-container {
+        padding: 1rem;
+    }
+    
+    .overlay-content {
+        max-height: 90vh;
+    }
+    
+    .inventory-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .items-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 10px;
+    }
+    
+    .item-image-container {
+        height: 100px;
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item-background {
+        width: 100%;
+        height: 200px;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .shop-subcategories {
+        padding: 12px;
+        margin: 10px 0;
+    }
+    
+    .subcategory-tabs {
+        gap: 6px;
+    }
+    
+    .subcategory-tab {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .equipment-slots-mini {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        padding: 15px;
+    }
+    
+    .shop-subcategories {
+        padding: 10px;
+    }
+    
+    .subcategory-tabs {
+        gap: 4px;
+    }
+    
+    .subcategory-tab {
+        padding: 5px 10px;
+        font-size: 0.75em;
+        min-width: 60px;
+        border-width: 1px;
+    }
+    
+    .subcategory-count {
+        padding: 1px 4px;
+        font-size: 0.65em;
+        margin-left: 3px;
+        min-width: 16px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 360px) {
+    .subcategory-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .subcategory-tab {
+        width: 100%;
+        margin: 2px 0;
+        text-align: center;
+    }
+}
+
+/* ========== АНИМАЦИИ ========== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-card, .overlay-content, .btn-primary, .btn-secondary {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* ========== УВЕДОМЛЕНИЯ ========== */
+.game-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    padding: 15px 20px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-info {
+    border-color: #4cc9f0;
+}
+
+.notification-success {
+    border-color: #4ade80;
+}
+
+.notification-error {
+    border-color: #f87171;
+}
+
+.notification-message {
+    color: white;
+    font-weight: bold;
+    flex: 1;
+}
+
+.notification-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
 /* Стиль для пустых категорий */
 .empty-category {
     grid-column: 1 / -1;
@@ -1692,67 +1734,4 @@ body {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     border: 1px dashed #475569;
-}
-
-/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ ЭКИПИРОВАННЫХ ПРЕДМЕТОВ ========== */
-.slot-icon-mini img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
-    display: block;
-}
-
-.equipment-slot-mini {
-    position: relative;
-    background: rgba(30, 41, 59, 0.8);
-    border: 2px dashed #475569;
-    border-radius: 8px;
-    padding: 0.3rem;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-height: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
-
-.equipment-slot-mini.equipped {
-    border-style: solid;
-    padding: 0.2rem;
-}
-
-.equipment-slot-mini.equipped .slot-icon-mini {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.equipment-slot-mini.equipped .slot-icon-mini img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.slot-label-mini {
-    font-size: 0.65rem;
-    color: #9ca3af;
-    text-align: center;
-    line-height: 1.1;
-    margin-top: 0.2rem;
-}
-
-/* Уменьшаем текст для экипированных предметов */
-.equipment-slot-mini.equipped .slot-label-mini {
-    font-size: 0.6rem;
-    position: absolute;
-    bottom: 2px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 1px 4px;
-    border-radius: 3px;
-    width: calc(100% - 8px);
 }
