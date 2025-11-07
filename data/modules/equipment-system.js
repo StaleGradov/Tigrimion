@@ -507,10 +507,13 @@ filterItemsByCategory(category, subcategory = 'all') {
 }
 
 // Метод из старой версии - проверка соответствия категории
+// Метод из старой версии - проверка соответствия категории
 doesItemMatchCategory(item, category) {
     if (category === 'all') return true;
-    if (category === 'weapon') return item.type === 'weapon' && item.weaponType !== 'shield';
-    if (category === 'shield') return item.weaponType === 'shield';
+    if (category === 'weapon') {
+        // Включаем ВСЕ оружие включая щиты
+        return item.type === 'weapon';
+    }
     return item.type === category;
 }
 
