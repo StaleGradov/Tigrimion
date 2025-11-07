@@ -29,6 +29,10 @@ class MapSystem {
         this.mapOffset = { x: 0, y: 0 };
         this.mapScale = 1;
         
+        // Background image
+        this.backgroundImage = null;
+        this.backgroundImageUrl = '';
+        
         // Optimization
         this.lastHoveredHex = null;
         this.animationFrame = null;
@@ -42,6 +46,60 @@ class MapSystem {
     // ========== EDITOR INTEGRATION ==========
     showTacticalMapEditor() {
         this.showOverlay('tactical-map-editor');
+    }
+
+    // ========== BACKGROUND IMAGE METHODS ==========
+    loadBackgroundImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.backgroundImageUrl = e.target.result;
+                this.backgroundImage = new Image();
+                this.backgroundImage.onload = () => {
+                    console.log("✅ Фоновое изображение загружено:", this.backgroundImage.width, "x", this.backgroundImage.height);
+                    if (this.currentTacticalMap) {
+                        this.currentTacticalMap.image = this.backgroundImageUrl;
+                    }
+                    this.drawTacticalMap();
+                    resolve(this.backgroundImage);
+                };
+                this.backgroundImage.onerror = () => {
+                    console.error("❌ Ошибка загрузки изображения");
+                    reject(new Error("Не удалось загрузить изображение"));
+                };
+                this.backgroundImage.src = this.backgroundImageUrl;
+            };
+            reader.onerror = () => {
+                reject(new Error("Не удалось прочитать файл"));
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    setBackgroundImage(url) {
+        this.backgroundImageUrl = url;
+        this.backgroundImage = new Image();
+        this.backgroundImage.onload = () => {
+            console.log("✅ Фоновое изображение установлено");
+            if (this.currentTacticalMap) {
+                this.currentTacticalMap.image = url;
+            }
+            this.drawTacticalMap();
+        };
+        this.backgroundImage.onerror = () => {
+            console.error("❌ Ошибка загрузки фонового изображения");
+        };
+        this.backgroundImage.src = url;
+    }
+
+    removeBackgroundImage() {
+        this.backgroundImage = null;
+        this.backgroundImageUrl = '';
+        if (this.currentTacticalMap) {
+            this.currentTacticalMap.image = '';
+        }
+        this.drawTacticalMap();
+        console.log("🗑️ Фоновое изображение удалено");
     }
 
     // ========== MAIN METHODS ==========
@@ -71,14 +129,6 @@ class MapSystem {
         try {
             console.log("🔄 Загружаем JSON карты...");
             
-            const mapPaths = [
-                'data/maps/tactical/',
-                'data/maps/tactical-maps.json',
-                'maps/tactical-maps.json', 
-                'data/tactical-maps.json',
-                'tactical-maps.json'
-            ];
-            
             // Пробуем загрузить отдельные файлы карт
             const individualMaps = await this.loadIndividualMaps();
             if (individualMaps.length > 0) {
@@ -88,6 +138,13 @@ class MapSystem {
             }
             
             // Если отдельных карт нет, пробуем загрузить из единого файла
+            const mapPaths = [
+                'data/maps/tactical-maps.json',
+                'maps/tactical-maps.json', 
+                'data/tactical-maps.json',
+                'tactical-maps.json'
+            ];
+            
             for (const path of mapPaths) {
                 try {
                     const response = await fetch(path);
@@ -111,35 +168,9 @@ class MapSystem {
 
     async loadIndividualMaps() {
         try {
-            // Получаем список всех JSON файлов в папке tactical
-            const response = await fetch('data/maps/tactical/');
-            if (!response.ok) return [];
-            
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const links = doc.querySelectorAll('a[href$=".json"]');
-            
-            const maps = [];
-            
-            for (const link of links) {
-                try {
-                    const mapPath = `data/maps/tactical/${link.getAttribute('href')}`;
-                    const mapResponse = await fetch(mapPath);
-                    if (mapResponse.ok) {
-                        const mapData = await mapResponse.json();
-                        const tacticalMap = this.convertToTacticalMap(mapData);
-                        if (tacticalMap) {
-                            maps.push(tacticalMap);
-                            console.log(`✅ Загружена карта: ${tacticalMap.name}`);
-                        }
-                    }
-                } catch (error) {
-                    console.error(`❌ Ошибка загрузки карты ${link.getAttribute('href')}:`, error);
-                }
-            }
-            
-            return maps;
+            // В реальной игре здесь будет запрос к серверу для получения списка файлов
+            // Для демонстрации просто возвращаем пустой массив
+            return [];
         } catch (error) {
             console.log("❌ Не удалось загрузить отдельные карты:", error);
             return [];
@@ -166,7 +197,6 @@ class MapSystem {
 
     async processTigrimionJSONMaps(mapData) {
         if (Array.isArray(mapData)) {
-            // Если это массив карт
             for (const map of mapData) {
                 const tacticalMap = this.convertTigrimionJSONToMap(map);
                 if (tacticalMap) {
@@ -175,7 +205,6 @@ class MapSystem {
                 }
             }
         } else if (mapData.meta) {
-            // Если это одна карта в формате редактора
             const tacticalMap = this.convertTigrimionJSONToMap(mapData);
             if (tacticalMap) {
                 this.tacticalMaps.push(tacticalMap);
@@ -208,7 +237,6 @@ class MapSystem {
             };
         });
 
-        // Find start position
         let startPosition = {x: 0, y: 0};
         const startCell = cells.find(cell => cell.type === 'player_start');
         if (startCell) {
@@ -240,14 +268,11 @@ class MapSystem {
             return;
         }
 
-        // Clear container
         container.innerHTML = '';
 
-        // Create canvas
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // Set dimensions
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.position = 'absolute';
@@ -258,10 +283,7 @@ class MapSystem {
 
         this.ctx = this.canvas.getContext('2d');
         
-        // Calculate positioning
         this.calculateMapPositioning();
-        
-        // Add event listeners
         this.setupCanvasEventListeners();
         
         console.log("✅ Canvas инициализирован");
@@ -281,7 +303,6 @@ class MapSystem {
         const cells = Object.values(this.currentTacticalMap.cells);
         if (cells.length === 0) return;
 
-        // Find map boundaries
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         
         cells.forEach(cell => {
@@ -291,19 +312,16 @@ class MapSystem {
             maxY = Math.max(maxY, cell.y);
         });
 
-        // Add padding
         const hexSize = this.currentTacticalMap.cellSize || 40;
         const padding = hexSize * 2;
 
         const mapWidth = maxX - minX + hexSize * 2;
         const mapHeight = maxY - minY + hexSize * 2;
 
-        // Calculate scale to fit container
         const scaleX = (rect.width - padding * 2) / mapWidth;
         const scaleY = (rect.height - padding * 2) / mapHeight;
         this.mapScale = Math.min(scaleX, scaleY, 1);
 
-        // Center the map
         this.mapOffset.x = (rect.width - mapWidth * this.mapScale) / 2 - minX * this.mapScale;
         this.mapOffset.y = (rect.height - mapHeight * this.mapScale) / 2 - minY * this.mapScale;
 
@@ -340,7 +358,6 @@ class MapSystem {
     handleCanvasClick(e) {
         if (!this.currentTacticalMap) return;
 
-        // If editor is active, let it handle the click
         if (this.editor.isEditing) {
             this.editor.handleEditorClick(e);
             return;
@@ -360,7 +377,6 @@ class MapSystem {
     handleCanvasHover(e) {
         if (!this.currentTacticalMap) return;
 
-        // If editor is active, let it handle the hover
         if (this.editor.isEditing) {
             this.editor.handleEditorHover(e);
             return;
@@ -372,7 +388,6 @@ class MapSystem {
 
         const hex = this.getHexAtCanvasPosition(x, y);
         
-        // Optimization: redraw only if hex changed
         if (this.lastHoveredHex !== hex) {
             this.lastHoveredHex = hex;
             this.hoveredHex = hex;
@@ -392,7 +407,6 @@ class MapSystem {
         const cells = Object.values(this.currentTacticalMap.cells);
         const hexSize = (this.currentTacticalMap.cellSize || 40) * this.mapScale;
         
-        // Convert canvas coordinates to map coordinates
         const mapX = (canvasX - this.mapOffset.x) / this.mapScale;
         const mapY = (canvasY - this.mapOffset.y) / this.mapScale;
 
@@ -415,28 +429,20 @@ class MapSystem {
         const canvas = this.canvas;
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Save context for transformations
         this.ctx.save();
-        
-        // Apply scale and offset
         this.ctx.translate(this.mapOffset.x, this.mapOffset.y);
         this.ctx.scale(this.mapScale, this.mapScale);
 
-        // Draw background
         this.drawBackground();
 
-        // Draw cells
         this.drawHexes();
 
-        // Draw available moves (only in game mode)
         if (!this.editor.isEditing) {
             this.drawAvailableMoves();
         }
 
-        // Draw hover effect
         this.drawHoverEffect();
 
-        // Draw grid on top of everything
         if (this.showGrid) {
             this.drawHexGrid();
         }
@@ -445,18 +451,76 @@ class MapSystem {
     }
 
     drawBackground() {
-        const map = this.currentTacticalMap;
-        if (!map.image) {
-            return;
-        }
+        // Если есть фоновое изображение, рисуем его
+        if (this.backgroundImage) {
+            const cells = Object.values(this.currentTacticalMap.cells);
+            if (cells.length === 0) return;
 
-        const cells = Object.values(map.cells);
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            
+            cells.forEach(cell => {
+                const hexSize = this.currentTacticalMap.cellSize || 40;
+                minX = Math.min(minX, cell.x - hexSize);
+                minY = Math.min(minY, cell.y - hexSize);
+                maxX = Math.max(maxX, cell.x + hexSize);
+                maxY = Math.max(maxY, cell.y + hexSize);
+            });
+
+            const width = maxX - minX;
+            const height = maxY - minY;
+
+            this.ctx.drawImage(this.backgroundImage, minX, minY, width, height);
+        }
+        // Или используем изображение из данных карты
+        else if (this.currentTacticalMap.image) {
+            const img = new Image();
+            img.onload = () => {
+                const cells = Object.values(this.currentTacticalMap.cells);
+                if (cells.length === 0) return;
+
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                cells.forEach(cell => {
+                    const hexSize = this.currentTacticalMap.cellSize || 40;
+                    minX = Math.min(minX, cell.x - hexSize);
+                    minY = Math.min(minY, cell.y - hexSize);
+                    maxX = Math.max(maxX, cell.x + hexSize);
+                    maxY = Math.max(maxY, cell.y + hexSize);
+                });
+
+                const width = maxX - minX;
+                const height = maxY - minY;
+
+                this.ctx.drawImage(img, minX, minY, width, height);
+                this.drawHexes();
+                if (!this.editor.isEditing) {
+                    this.drawAvailableMoves();
+                }
+                this.drawHoverEffect();
+                if (this.showGrid) {
+                    this.drawHexGrid();
+                }
+            };
+            img.onerror = () => {
+                console.log("❌ Ошибка загрузки изображения карты");
+                this.drawFallbackBackground();
+            };
+            img.src = this.currentTacticalMap.image;
+        }
+        // Если нет изображения, рисуем градиентный фон
+        else {
+            this.drawFallbackBackground();
+        }
+    }
+
+    drawFallbackBackground() {
+        const cells = Object.values(this.currentTacticalMap.cells);
         if (cells.length === 0) return;
 
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         
         cells.forEach(cell => {
-            const hexSize = map.cellSize || 40;
+            const hexSize = this.currentTacticalMap.cellSize || 40;
             minX = Math.min(minX, cell.x - hexSize);
             minY = Math.min(minY, cell.y - hexSize);
             maxX = Math.max(maxX, cell.x + hexSize);
@@ -466,28 +530,11 @@ class MapSystem {
         const width = maxX - minX;
         const height = maxY - minY;
 
-        const img = new Image();
-        img.onload = () => {
-            this.ctx.drawImage(img, minX, minY, width, height);
-            // Redraw other elements
-            this.drawHexes();
-            if (!this.editor.isEditing) {
-                this.drawAvailableMoves();
-            }
-            this.drawHoverEffect();
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-        };
-        img.onerror = () => {
-            console.log("❌ Ошибка загрузки изображения карты");
-            const gradient = this.ctx.createLinearGradient(minX, minY, maxX, maxY);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(minX, minY, width, height);
-        };
-        img.src = map.image;
+        const gradient = this.ctx.createLinearGradient(minX, minY, maxX, maxY);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(minX, minY, width, height);
     }
 
     drawHexGrid() {
@@ -543,7 +590,6 @@ class MapSystem {
         }
         this.ctx.closePath();
 
-        // Fill colors
         let fillColor = 'rgba(76, 201, 240, 0.2)';
         
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
@@ -1021,6 +1067,13 @@ class MapSystem {
         }
 
         container.style.display = 'block';
+        
+        // Инициализируем canvas после показа оверлея
+        setTimeout(() => {
+            if (overlayType === 'tactical-map' || overlayType === 'tactical-map-editor') {
+                this.initCanvas();
+            }
+        }, 100);
     }
 
     hideOverlay() {
@@ -1358,11 +1411,12 @@ class MapSystem {
         console.log("Масштаб:", this.mapScale);
         console.log("Смещение:", this.mapOffset);
         console.log("Режим редактора:", this.editor.isEditing);
+        console.log("Фоновое изображение:", this.backgroundImageUrl ? "Загружено" : "Нет");
         console.groupEnd();
     }
 }
 
-// ========== BUILT-IN MAP EDITOR ==========
+// ========== BUILT-IN MAP EDITOR WITH IMAGE UPLOAD ==========
 class MapEditor {
     constructor(mapSystem) {
         this.mapSystem = mapSystem;
@@ -1435,6 +1489,24 @@ class MapEditor {
                 <div class="editor-content">
                     <div class="editor-toolbar">
                         <div class="tool-section">
+                            <h4>🖼️ Фон карты</h4>
+                            <div class="image-upload-section">
+                                <button class="btn-editor-primary" onclick="game.systems.map.editor.uploadBackgroundImage()">
+                                    📁 Загрузить фон
+                                </button>
+                                <button class="btn-editor-secondary" onclick="game.systems.map.editor.removeBackgroundImage()">
+                                    🗑️ Удалить фон
+                                </button>
+                                <div class="image-preview" id="imagePreview">
+                                    ${this.mapSystem.backgroundImageUrl ? 
+                                        `<img src="${this.mapSystem.backgroundImageUrl}" alt="Preview" style="max-width: 100%; max-height: 100px; margin-top: 10px; border: 1px solid #444; border-radius: 5px;">` : 
+                                        '<div class="no-image" style="color: #888; font-size: 12px; margin-top: 10px;">Нет фонового изображения</div>'
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tool-section">
                             <h4>🗺️ Террайн</h4>
                             ${this.tools.terrain.map(tool => `
                                 <button class="tool-btn ${this.selectedCellType === tool ? 'active' : ''}"
@@ -1476,6 +1548,7 @@ class MapEditor {
                                 <div>Текущий инструмент: <strong>${this.getToolName(this.selectedCellType)}</strong></div>
                                 <div>Режим: <strong>${this.isEditing ? 'Редактирование' : 'Просмотр'}</strong></div>
                                 <div>Клеток: <strong id="editorCellCount">0</strong></div>
+                                <div>Фон: <strong id="editorBackgroundStatus">${this.mapSystem.backgroundImageUrl ? 'Загружен' : 'Нет'}</strong></div>
                             </div>
                         </div>
                     </div>
@@ -1502,6 +1575,11 @@ class MapEditor {
         
         container.style.display = 'block';
         this.updateStats();
+        
+        // Инициализируем canvas для редактора
+        setTimeout(() => {
+            this.mapSystem.initCanvas();
+        }, 100);
     }
 
     hideEditorUI() {
@@ -1510,6 +1588,89 @@ class MapEditor {
             container.style.display = 'none';
             container.innerHTML = '';
         }
+    }
+
+    // ========== IMAGE UPLOAD METHODS ==========
+    uploadBackgroundImage() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.style.display = 'none';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.handleImageUpload(file);
+            }
+        };
+        
+        document.body.appendChild(input);
+        input.click();
+        document.body.removeChild(input);
+    }
+
+    async handleImageUpload(file) {
+        try {
+            // Проверяем размер файла (максимум 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert("❌ Файл слишком большой! Максимальный размер: 5MB");
+                return;
+            }
+
+            // Проверяем тип файла
+            if (!file.type.startsWith('image/')) {
+                alert("❌ Пожалуйста, выберите файл изображения");
+                return;
+            }
+
+            console.log("📁 Загружаем изображение:", file.name, file.size, "bytes");
+            
+            // Показываем индикатор загрузки
+            const preview = document.getElementById('imagePreview');
+            if (preview) {
+                preview.innerHTML = '<div style="color: #00ffff;">🔄 Загрузка изображения...</div>';
+            }
+
+            await this.mapSystem.loadBackgroundImage(file);
+            
+            // Обновляем превью
+            this.updateImagePreview();
+            this.updateStats();
+            
+            console.log("✅ Фоновое изображение успешно загружено");
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки изображения:", error);
+            alert("❌ Ошибка загрузки изображения: " + error.message);
+            
+            // Восстанавливаем превью в случае ошибки
+            this.updateImagePreview();
+        }
+    }
+
+    updateImagePreview() {
+        const preview = document.getElementById('imagePreview');
+        if (preview) {
+            if (this.mapSystem.backgroundImageUrl) {
+                preview.innerHTML = `
+                    <div style="margin-top: 10px;">
+                        <img src="${this.mapSystem.backgroundImageUrl}" alt="Preview" 
+                             style="max-width: 100%; max-height: 100px; border: 1px solid #444; border-radius: 5px;">
+                        <div style="font-size: 11px; color: #888; margin-top: 5px;">
+                            ✅ Фон загружен
+                        </div>
+                    </div>
+                `;
+            } else {
+                preview.innerHTML = '<div style="color: #888; font-size: 12px; margin-top: 10px;">Нет фонового изображения</div>';
+            }
+        }
+    }
+
+    removeBackgroundImage() {
+        this.mapSystem.removeBackgroundImage();
+        this.updateImagePreview();
+        this.updateStats();
     }
 
     handleEditorClick(e) {
@@ -1597,7 +1758,7 @@ class MapEditor {
                 }
             },
             visual: {
-                backgroundImage: "",
+                backgroundImage: this.mapSystem.backgroundImageUrl || "",
                 canvasWidth: 800,
                 canvasHeight: 600
             }
@@ -1612,6 +1773,7 @@ class MapEditor {
             width: 20,
             height: 20,
             cellSize: this.mapSystem.hexSize,
+            image: this.mapSystem.backgroundImageUrl,
             jsonData: this.currentProject
         };
         
@@ -1691,7 +1853,7 @@ class MapEditor {
                 objects: this.collectObjects()
             },
             visual: {
-                backgroundImage: this.mapSystem.currentTacticalMap.image || "",
+                backgroundImage: this.mapSystem.backgroundImageUrl || "",
                 canvasWidth: this.mapSystem.canvas?.width || 800,
                 canvasHeight: this.mapSystem.canvas?.height || 600
             },
@@ -1710,9 +1872,15 @@ class MapEditor {
             this.mapSystem.currentTacticalMap = tacticalMap;
             this.currentProject = projectData;
             
+            // Загружаем фоновое изображение если есть
+            if (projectData.visual?.backgroundImage) {
+                this.mapSystem.setBackgroundImage(projectData.visual.backgroundImage);
+            }
+            
             this.mapSystem.calculateMapPositioning();
             this.mapSystem.drawTacticalMap();
             this.updateStats();
+            this.updateImagePreview();
             
             console.log(`📂 Проект загружен: ${tacticalMap.name}`);
         }
@@ -1788,6 +1956,11 @@ class MapEditor {
         if (cellCountElement) {
             cellCountElement.textContent = cellCount;
         }
+        
+        const backgroundStatus = document.getElementById('editorBackgroundStatus');
+        if (backgroundStatus) {
+            backgroundStatus.textContent = this.mapSystem.backgroundImageUrl ? 'Загружен' : 'Нет';
+        }
     }
 
     getToolIcon(tool) {
@@ -1833,4 +2006,4 @@ class MapEditor {
 
 // Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен со встроенным редактором карт");
+console.log("📦 MapSystem модуль загружен со встроенным редактором карт и поддержкой загрузки изображений");
