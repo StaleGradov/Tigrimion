@@ -1911,8 +1911,9 @@ body {
 }
 
 .tactical-map-overlay {
-    background: rgba(0, 0, 0, 0.95) !important;
-    padding: 0 !important;
+    max-width: 1200px !important;
+    max-height: 90vh !important;
+    width: 95vw !important;
 }
 
 .tactical-map-header {
@@ -2133,9 +2134,10 @@ body {
         max-height: 300px;
     }
     
-    .tactical-map-visual {
-        height: 50vh;
-    }
+.tactical-map-visual {
+    min-height: 600px;
+    height: 70vh;
+}
 }
 
 @media (max-width: 768px) {
