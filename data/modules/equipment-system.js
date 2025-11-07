@@ -254,125 +254,146 @@ class EquipmentSystem {
     }
 
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-    showShop(category = 'all', subcategory = 'all') {
-        if (!this.currentHero) return '';
+   showShop(category = 'all', subcategory = 'all') {
+    if (!this.currentHero) return '';
 
-        this.currentCategory = category;
-        this.currentSubcategory = subcategory;
+    this.currentCategory = category;
+    this.currentSubcategory = subcategory;
 
-        const filteredItems = this.filterItemsByCategory(category, subcategory);
-        const subcategories = this.getSubcategoriesForCategory(category);
+    const filteredItems = this.filterItemsByCategory(category, subcategory);
+    const subcategories = this.getSubcategoriesForCategory(category);
 
-        return `
-            <div class="overlay-content shop-overlay">
-                <div class="overlay-header">
-                    <h3>🏪 Магазин снаряжения</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                
-                <div class="merchant-info">
-                    <div class="merchant-stats">
-                        <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)}</span>
-                        <span class="inventory-space">🎒 ${10 - this.currentHero.inventory.length}/10</span>
-                    </div>
-                </div>
-                
-                <div class="shop-categories">
-                    <button class="category-tab ${category === 'all' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('all')">Все предметы</button>
-                    <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('weapon')">⚔️ Оружие</button>
-                    <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('helmet')">⛑️ Шлемы</button>
-                    <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('chest')">👕 Броня</button>
-                    <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('gloves')">🧤 Перчатки</button>
-                    <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('legs')">👖 Поножи</button>
-                    <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
-                            onclick="game.systems.equipment.showShop('boots')">👢 Ботинки</button>
-                </div>
-                
-                ${Object.keys(subcategories).length > 0 ? `
-                    <div class="shop-subcategories">
-                        <div class="subcategory-tabs">
-                            ${Object.entries(subcategories).map(([key, name]) => `
-                                <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
-                                        onclick="game.systems.equipment.showShop('${category}', '${key}')">
-                                    ${name}
-                                    <span class="subcategory-count">${this.getSubcategoryItemCount(category, key)}</span>
-                                </button>
-                            `).join('')}
-                        </div>
-                    </div>
-                ` : ''}
-                
-                <div class="shop-content">
-                    <div class="items-grid">
-                        ${filteredItems.map(item => this.renderShopItem(item)).join('')}
-                        ${filteredItems.length === 0 ? '<div class="empty-category">Нет предметов в этой категории</div>' : ''}
-                    </div>
+    return `
+        <div class="overlay-content shop-overlay">
+            <div class="overlay-header">
+                <h3>🏪 Магазин снаряжения</h3>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            
+            <div class="merchant-info">
+                <div class="merchant-stats">
+                    <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)}</span>
+                    <span class="inventory-space">🎒 ${10 - this.currentHero.inventory.length}/10</span>
                 </div>
             </div>
-        `;
+            
+            <div class="shop-categories">
+                <button class="category-tab ${category === 'all' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('all')">Все предметы</button>
+                <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('weapon')">⚔️ Оружие</button>
+                <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('helmet')">⛑️ Шлемы</button>
+                <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('chest')">👕 Броня</button>
+                <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('gloves')">🧤 Перчатки</button>
+                <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('legs')">👖 Поножи</button>
+                <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
+                        onclick="game.systems.equipment.showShop('boots')">👢 Ботинки</button>
+            </div>
+            
+            ${Object.keys(subcategories).length > 0 ? `
+                <div class="shop-subcategories">
+                    <div class="subcategory-tabs">
+                        ${Object.entries(subcategories).map(([key, name]) => `
+                            <button class="subcategory-tab ${subcategory === key ? 'active' : ''}" 
+                                    onclick="game.systems.equipment.showShop('${category}', '${key}')">
+                                ${name}
+                                <span class="subcategory-count">${this.getSubcategoryItemCount(category, key)}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="shop-content">
+                <div class="items-grid">
+                    ${filteredItems.map(item => this.renderShopItem(item)).join('')}
+                    ${filteredItems.length === 0 ? '<div class="empty-category">Нет предметов в этой категории</div>' : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+  filterItemsByCategory(category, subcategory = 'all') {
+    const availableItems = this.items.filter(item => 
+        item.requiredLevel <= (this.currentHero?.level || 1)
+    );
+
+    let filteredItems = availableItems;
+
+    // Фильтрация по основной категории
+    if (category !== 'all') {
+        if (category === 'weapon') {
+            filteredItems = availableItems.filter(item => 
+                item.type === 'weapon'
+            );
+        } else {
+            filteredItems = availableItems.filter(item => item.type === category);
+        }
     }
 
-    filterItemsByCategory(category, subcategory = 'all') {
-        const availableItems = this.items.filter(item => 
-            item.requiredLevel <= (this.currentHero?.level || 1)
-        );
-
-        let filteredItems = availableItems;
-
-        // Фильтрация по основной категории
-        if (category !== 'all') {
-            if (category === 'weapon') {
-                filteredItems = availableItems.filter(item => 
-                    item.type === 'weapon' && item.weaponType !== 'shield'
+    // Фильтрация по подкатегории
+    if (subcategory !== 'all') {
+        if (category === 'weapon') {
+            if (subcategory === 'one_handed') {
+                filteredItems = filteredItems.filter(item => 
+                    item.weaponType === 'one_handed'
                 );
-            } else if (category === 'shield') {
-                filteredItems = availableItems.filter(item => 
+            } else if (subcategory === 'two_handed') {
+                filteredItems = filteredItems.filter(item => 
+                    item.weaponType === 'two_handed'
+                );
+            } else if (subcategory === 'shield') {
+                filteredItems = filteredItems.filter(item => 
                     item.weaponType === 'shield'
                 );
-            } else {
-                filteredItems = availableItems.filter(item => item.type === category);
             }
+        } else {
+            // Фильтрация брони по материалу
+            filteredItems = filteredItems.filter(item => 
+                (item.material || 'cloth') === subcategory
+            );
         }
-
-        // Фильтрация по подкатегории
-        if (subcategory !== 'all') {
-            if (category === 'weapon') {
-                filteredItems = filteredItems.filter(item => 
-                    item.weaponType === subcategory
-                );
-            } else {
-                filteredItems = filteredItems.filter(item => 
-                    (item.material || 'cloth') === subcategory
-                );
-            }
-        }
-
-        return filteredItems;
     }
 
-    getSubcategoriesForCategory(category) {
-        const subcategories = {
-            'weapon': {
-                'all': 'Все оружие',
-                'one_handed': 'Одноручное',
-                'two_handed': 'Двуручное', 
-                'shield': 'Щиты'
-            },
-            'helmet': this.getArmorSubcategories(),
-            'chest': this.getArmorSubcategories(),
-            'gloves': this.getArmorSubcategories(),
-            'legs': this.getArmorSubcategories(),
-            'boots': this.getArmorSubcategories()
-        };
-        
-        return subcategories[category] || {};
-    }
+    return filteredItems;
+}
+
+getSubcategoriesForCategory(category) {
+    const subcategories = {
+        'weapon': {
+            'all': 'Все оружие',
+            'one_handed': 'Одноручное',
+            'two_handed': 'Двуручное', 
+            'shield': 'Щиты'
+        },
+        'helmet': this.getArmorSubcategories(),
+        'chest': this.getArmorSubcategories(),
+        'gloves': this.getArmorSubcategories(),
+        'legs': this.getArmorSubcategories(),
+        'boots': this.getArmorSubcategories()
+    };
+    
+    return subcategories[category] || {};
+}
+
+getArmorSubcategories() {
+    return {
+        'all': 'Все материалы',
+        'cloth': 'Ткань',
+        'leather': 'Кожа',
+        'hide': 'Шкура',
+        'fur': 'Мех',
+        'bone': 'Кость',
+        'plate': 'Пластины',
+        'chain': 'Кольчуга',
+        'plate_mail': 'Латы'
+    };
+}
 
     getArmorSubcategories() {
         return {
