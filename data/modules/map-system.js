@@ -19,11 +19,23 @@ class MapSystem {
         // Для Canvas рендеринга
         this.canvas = null;
         this.ctx = null;
-        this.hexSize = 41;
+        this.hexSize = 40;
         this.showGrid = true;
         this.hoveredHex = null;
         
-        console.log("✅ MapSystem инициализирован");
+        // Настройки рендеринга как в редакторе
+        this.renderSettings = {
+            gridSize: 40,
+            gridAlpha: 0.3,
+            imageTransform: {
+                x: 0, y: 0, scale: 1, fit: 'contain'
+            }
+        };
+        
+        // Для точного позиционирования
+        this.gridMetrics = null;
+        
+        console.log("✅ MapSystem инициализирован с поддержкой редактора");
     }
 
     async loadMapData() {
@@ -106,9 +118,21 @@ class MapSystem {
             return null;
         }
 
+        // Сохраняем настройки рендеринга из редактора
+        if (jsonMap.renderSettings) {
+            this.renderSettings = { ...this.renderSettings, ...jsonMap.renderSettings };
+        }
+
+        // Сохраняем трансформацию изображения
+        if (jsonMap.imageTransform) {
+            this.renderSettings.imageTransform = { ...jsonMap.imageTransform };
+        }
+
         const cells = jsonMap.game.grid.cells;
-        const rows = Math.max(...cells.map(cell => cell.row)) + 1;
-        const cols = Math.max(...cells.map(cell => cell.col)) + 1;
+        
+        // Рассчитываем метрики сетки как в редакторе
+        const gridMetrics = this.calculateGridMetricsFromCells(cells);
+        this.gridMetrics = gridMetrics;
 
         let startPosition = {x: 0, y: 0};
         const startCell = cells.find(cell => cell.type === 'player_start');
@@ -119,12 +143,16 @@ class MapSystem {
         const convertedCells = {};
         cells.forEach(cell => {
             const key = `${cell.col},${cell.row}`;
+            
+            // Точное позиционирование как в редакторе
+            const screenPos = this.hexToScreenExact(cell.col, cell.row, gridMetrics);
+            
             convertedCells[key] = {
                 type: cell.type,
                 passable: cell.passable,
                 visible: cell.visible,
-                x: cell.x,
-                y: cell.y,
+                x: screenPos.x,
+                y: screenPos.y,
                 row: cell.row,
                 col: cell.col,
                 originalData: cell
@@ -135,8 +163,8 @@ class MapSystem {
             id: this.tacticalMaps.length + 1,
             name: jsonMap.meta?.name || "Карта Tigrimion",
             image: jsonMap.visual?.backgroundImage || "",
-            width: cols,
-            height: rows,
+            width: gridMetrics.cols,
+            height: gridMetrics.rows,
             startPosition: startPosition,
             description: jsonMap.meta?.description || "Создана в редакторе карт Tigrimion",
             localPosition: {x: 0, y: 0},
@@ -144,10 +172,78 @@ class MapSystem {
             jsonData: jsonMap,
             gameData: jsonMap.game,
             renderType: 'hex',
-            cellSize: jsonMap.game.grid.cellSize || 41,
+            cellSize: jsonMap.game.grid.cellSize || 40,
             canvasWidth: jsonMap.visual?.canvasWidth,
-            canvasHeight: jsonMap.visual?.canvasHeight
+            canvasHeight: jsonMap.visual?.canvasHeight,
+            // Настройки редактора
+            editorSettings: {
+                gridSize: jsonMap.game.grid.cellSize,
+                gridAlpha: jsonMap.renderSettings?.gridAlpha,
+                imageTransform: jsonMap.imageTransform
+            }
         };
+    }
+
+    // Расчет метрик сетки как в редакторе
+    calculateGridMetricsFromCells(cells) {
+        if (!cells || cells.length === 0) {
+            return {
+                hexWidth: 69.28,
+                hexHeight: 80,
+                minRow: 0,
+                maxRow: 0,
+                minCol: 0,
+                maxCol: 0,
+                cols: 1,
+                rows: 1,
+                gridWidth: 69.28,
+                gridHeight: 60
+            };
+        }
+
+        const rows = cells.map(cell => cell.row);
+        const cols = cells.map(cell => cell.col);
+        
+        const minRow = Math.min(...rows);
+        const maxRow = Math.max(...rows);
+        const minCol = Math.min(...cols);
+        const maxCol = Math.max(...cols);
+
+        const gridSize = this.renderSettings.gridSize;
+        const hexHeight = gridSize * 2;
+        const hexWidth = Math.sqrt(3) * gridSize;
+
+        return {
+            hexWidth,
+            hexHeight,
+            minRow,
+            maxRow,
+            minCol,
+            maxCol,
+            cols: maxCol - minCol + 1,
+            rows: maxRow - minRow + 1,
+            gridWidth: (maxCol - minCol + 1) * hexWidth,
+            gridHeight: (maxRow - minRow + 1) * hexHeight * 0.75
+        };
+    }
+
+    // Точное преобразование координат как в редакторе
+    hexToScreenExact(col, row, gridMetrics = null) {
+        const metrics = gridMetrics || this.gridMetrics;
+        if (!metrics) {
+            return this.hexToScreen(col, row); // fallback
+        }
+
+        const { hexWidth, hexHeight, minRow, minCol } = metrics;
+        
+        // Точная формула из редактора
+        const gridX = col - minCol;
+        const gridY = row - minRow;
+        
+        const x = gridX * hexWidth + (gridY % 2) * (hexWidth / 2);
+        const y = gridY * hexHeight * 0.75;
+
+        return { x, y };
     }
 
     // ========== CANVAS РЕНДЕРИНГ КАК В РЕДАКТОРЕ ==========
@@ -161,24 +257,46 @@ class MapSystem {
         // Очищаем контейнер
         container.innerHTML = '';
 
-        // Создаем canvas
+        // Создаем canvas с размерами из редактора
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
+        
+        // Устанавливаем точные размеры как в редакторе
+        if (this.currentTacticalMap?.canvasWidth && this.currentTacticalMap?.canvasHeight) {
+            this.canvas.width = this.currentTacticalMap.canvasWidth;
+            this.canvas.height = this.currentTacticalMap.canvasHeight;
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
+        } else {
+            // Адаптивные размеры
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
+            this.resizeCanvas();
+        }
+        
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
         this.canvas.style.cursor = 'pointer';
         container.appendChild(this.canvas);
 
         this.ctx = this.canvas.getContext('2d');
-        this.resizeCanvas();
+        
+        // Пересчитываем метрики для текущей карты
+        if (this.currentTacticalMap) {
+            this.gridMetrics = this.calculateGridMetricsFromCells(
+                Object.values(this.currentTacticalMap.cells).map(cell => ({
+                    row: cell.row,
+                    col: cell.col
+                }))
+            );
+        }
         
         // Добавляем обработчики событий
         this.setupCanvasEventListeners();
         
-        console.log("✅ Canvas инициализирован");
+        console.log("✅ Canvas инициализирован с настройками редактора");
+        this.drawTacticalMap();
     }
 
     resizeCanvas() {
@@ -243,13 +361,12 @@ class MapSystem {
         if (!this.currentTacticalMap) return null;
 
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 41;
+        const hexSize = this.currentTacticalMap.cellSize || this.renderSettings.gridSize;
         
         for (const cell of cells) {
-            const screenPos = this.hexToScreen(cell.col, cell.row);
             const distance = Math.sqrt(
-                Math.pow(x - screenPos.x, 2) + 
-                Math.pow(y - screenPos.y, 2)
+                Math.pow(x - cell.x, 2) + 
+                Math.pow(y - cell.y, 2)
             );
             
             if (distance <= hexSize * 0.9) {
@@ -260,7 +377,7 @@ class MapSystem {
     }
 
     hexToScreen(col, row) {
-        const hexSize = this.currentTacticalMap?.cellSize || 41;
+        const hexSize = this.currentTacticalMap?.cellSize || this.renderSettings.gridSize;
         const hexWidth = Math.sqrt(3) * hexSize;
         const hexHeight = 2 * hexSize;
 
@@ -327,19 +444,33 @@ class MapSystem {
     drawBackground() {
         const map = this.currentTacticalMap;
         if (!map.image) {
-            // Если нет изображения, рисуем градиентный фон
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
+            // Если нет изображения, рисуем градиентный фон как в редакторе
+            this.ctx.fillStyle = '#000000';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             return;
         }
 
         const img = new Image();
         img.onload = () => {
-            // Рисуем изображение на весь canvas
-            this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.save();
+            
+            // Применяем трансформацию из редактора
+            if (map.editorSettings?.imageTransform) {
+                const transform = map.editorSettings.imageTransform;
+                this.ctx.drawImage(
+                    img,
+                    transform.x,
+                    transform.y,
+                    img.naturalWidth * transform.scale,
+                    img.naturalHeight * transform.scale
+                );
+            } else {
+                // Стандартное отображение
+                this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            this.ctx.restore();
+            
             // Перерисовываем остальные элементы
             this.drawHexes();
             this.drawAvailableMoves();
@@ -350,11 +481,8 @@ class MapSystem {
         };
         img.onerror = () => {
             console.log("❌ Ошибка загрузки изображения карты");
-            // Рисуем градиентный фон при ошибке
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
+            // Фон как в редакторе при ошибке
+            this.ctx.fillStyle = '#000000';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         };
         img.src = map.image;
@@ -373,23 +501,24 @@ class MapSystem {
     }
 
     drawSingleHexOutline(cell) {
-        const screenPos = this.hexToScreen(cell.col, cell.row);
-        const hexSize = this.currentTacticalMap.cellSize || 41;
+        const hexSize = this.currentTacticalMap.cellSize || this.renderSettings.gridSize;
 
+        this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = screenPos.x + hexSize * Math.cos(angle);
-            const y = screenPos.y + hexSize * Math.sin(angle);
+            const x = cell.x + hexSize * Math.cos(angle);
+            const y = cell.y + hexSize * Math.sin(angle);
             
             if (i === 0) this.ctx.moveTo(x, y);
             else this.ctx.lineTo(x, y);
         }
         this.ctx.closePath();
 
-        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
+        this.ctx.strokeStyle = `rgba(0, 255, 255, ${this.renderSettings.gridAlpha})`;
         this.ctx.lineWidth = 1;
         this.ctx.stroke();
+        this.ctx.restore();
     }
 
     drawHexes() {
@@ -404,24 +533,23 @@ class MapSystem {
     }
 
     drawSingleHex(cell) {
-        const screenPos = this.hexToScreen(cell.col, cell.row);
-        const hexSize = this.currentTacticalMap.cellSize || 41;
+        const hexSize = this.currentTacticalMap.cellSize || this.renderSettings.gridSize;
 
         this.ctx.save();
         this.ctx.beginPath();
         
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = screenPos.x + hexSize * Math.cos(angle);
-            const y = screenPos.y + hexSize * Math.sin(angle);
+            const x = cell.x + hexSize * Math.cos(angle);
+            const y = cell.y + hexSize * Math.sin(angle);
             
             if (i === 0) this.ctx.moveTo(x, y);
             else this.ctx.lineTo(x, y);
         }
         this.ctx.closePath();
 
-        // Заливка в зависимости от типа клетки
-        let fillColor = 'rgba(76, 201, 240, 0.2)';
+        // Цвета заливки как в редакторе
+        let fillColor = 'rgba(0, 0, 0, 0.3)';
         
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             fillColor = 'rgba(74, 222, 128, 0.6)';
@@ -437,27 +565,57 @@ class MapSystem {
             fillColor = 'rgba(107, 114, 128, 0.7)';
         } else if (cell.type === 'player_start') {
             fillColor = 'rgba(74, 222, 128, 0.4)';
+        } else if (cell.type === 'active') {
+            fillColor = 'rgba(34, 197, 94, 0.3)';
+        } else if (cell.type === 'inactive') {
+            fillColor = 'rgba(239, 68, 68, 0.3)';
         }
 
         this.ctx.fillStyle = fillColor;
         this.ctx.fill();
+
+        // Обводка как в редакторе
+        if (this.showGrid) {
+            let strokeColor = `rgba(0, 255, 255, ${this.renderSettings.gridAlpha})`;
+            let lineWidth = 1;
+            
+            if (cell.type && cell.type !== 'active') {
+                const objColors = {
+                    'player_start': '#4ade80',
+                    'monster': '#ef4444', 
+                    'chest': '#f59e0b',
+                    'npc': '#3b82f6',
+                    'exit': '#8b5cf6',
+                    'obstacle': '#6b7280'
+                };
+                strokeColor = this.hexToRgba(objColors[cell.type] || '#00ffff', 0.9);
+                lineWidth = 3;
+            } else if (this.hoveredHex && this.hoveredHex.col === cell.col && this.hoveredHex.row === cell.row) {
+                strokeColor = 'rgba(255, 255, 255, 0.8)';
+                lineWidth = 2;
+            }
+            
+            this.ctx.strokeStyle = strokeColor;
+            this.ctx.lineWidth = lineWidth;
+            this.ctx.stroke();
+        }
+
         this.ctx.restore();
     }
 
     drawHexContent(cell) {
-        const screenPos = this.hexToScreen(cell.col, cell.row);
-        
         this.ctx.save();
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
         let symbol = '·';
         let color = '#ffffff';
-        let fontSize = 20;
+        let fontSize = 16;
 
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
-            fontSize = 24;
+            fontSize = 20;
+            color = '#ffffff';
         } else {
             switch(cell.type) {
                 case 'player_start':
@@ -479,12 +637,20 @@ class MapSystem {
                     symbol = '🪨';
                     color = '#6b7280';
                     break;
+                case 'active':
+                    symbol = '·';
+                    color = 'rgba(255, 255, 255, 0.5)';
+                    break;
+                case 'inactive':
+                    symbol = '·';
+                    color = 'rgba(255, 255, 255, 0.3)';
+                    break;
             }
         }
 
         this.ctx.font = `bold ${fontSize}px Arial`;
         this.ctx.fillStyle = color;
-        this.ctx.fillText(symbol, screenPos.x, screenPos.y);
+        this.ctx.fillText(symbol, cell.x, cell.y);
         this.ctx.restore();
     }
 
@@ -496,14 +662,13 @@ class MapSystem {
 
         this.ctx.save();
         availableMoves.forEach(move => {
-            const screenPos = this.hexToScreen(move.col, move.row);
-            const hexSize = this.currentTacticalMap.cellSize || 41;
+            const hexSize = this.currentTacticalMap.cellSize || this.renderSettings.gridSize;
 
             this.ctx.beginPath();
             for (let i = 0; i < 6; i++) {
                 const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = screenPos.x + hexSize * Math.cos(angle);
-                const y = screenPos.y + hexSize * Math.sin(angle);
+                const x = move.cell.x + hexSize * Math.cos(angle);
+                const y = move.cell.y + hexSize * Math.sin(angle);
                 
                 if (i === 0) this.ctx.moveTo(x, y);
                 else this.ctx.lineTo(x, y);
@@ -523,15 +688,14 @@ class MapSystem {
     drawHoverEffect() {
         if (!this.hoveredHex) return;
 
-        const screenPos = this.hexToScreen(this.hoveredHex.col, this.hoveredHex.row);
-        const hexSize = this.currentTacticalMap.cellSize || 41;
+        const hexSize = this.currentTacticalMap.cellSize || this.renderSettings.gridSize;
 
         this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = screenPos.x + hexSize * Math.cos(angle);
-            const y = screenPos.y + hexSize * Math.sin(angle);
+            const x = this.hoveredHex.x + hexSize * Math.cos(angle);
+            const y = this.hoveredHex.y + hexSize * Math.sin(angle);
             
             if (i === 0) this.ctx.moveTo(x, y);
             else this.ctx.lineTo(x, y);
@@ -542,6 +706,14 @@ class MapSystem {
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
         this.ctx.restore();
+    }
+
+    // Вспомогательная функция для цветов
+    hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
 
     // ========== ИСПРАВЛЕННАЯ СИСТЕМА СОСЕДЕЙ ==========
@@ -795,8 +967,9 @@ class MapSystem {
                 <div class="tactical-map-header">
                     <h4>${map.name}</h4>
                     <div class="map-controls">
-                        <button class="btn-secondary" onclick="game.systems.map.zoomIn()">🔍+</button>
-                        <button class="btn-secondary" onclick="game.systems.map.zoomOut()">🔍-</button>
+                        <button class="btn-secondary" onclick="game.systems.map.toggleGrid()">
+                            ${this.showGrid ? '🔲 Сетка' : '🔳 Сетка'}
+                        </button>
                         <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                     </div>
                 </div>
@@ -816,6 +989,18 @@ class MapSystem {
                         </div>
                         <div class="movement-info" id="movementInfo">
                             Доступные ходы: <span id="availableMoves">0</span>
+                        </div>
+                        <div class="map-editor-info">
+                            <div class="map-editor-stats">
+                                <div class="map-editor-stat">
+                                    <span>Размер клеток:</span>
+                                    <span>${map.cellSize}px</span>
+                                </div>
+                                <div class="map-editor-stat">
+                                    <span>Канвас:</span>
+                                    <span>${map.canvasWidth}×${map.canvasHeight}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1039,6 +1224,7 @@ class MapSystem {
         console.log(`🎲 Перемещение на тактическую позицию: [${x}, ${y}]`);
         
         this.updateTacticalMapDisplay();
+        this.updateMovementInfo();
     }
 
     interactWithTacticalCell(x, y) {
@@ -1106,6 +1292,19 @@ class MapSystem {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'tactical-map') {
             this.showOverlay('tactical-map');
+        }
+        this.drawTacticalMap();
+    }
+
+    updateMovementInfo() {
+        const availableMoves = this.getHexNeighbors(
+            this.playerTacticalPosition.y, 
+            this.playerTacticalPosition.x
+        );
+        
+        const movesElement = document.getElementById('availableMoves');
+        if (movesElement) {
+            movesElement.textContent = availableMoves.length;
         }
     }
 
@@ -1198,19 +1397,16 @@ class MapSystem {
         }
     }
 
-    updateMovementInfo() {
-        const availableMoves = this.getHexNeighbors(
-            this.playerTacticalPosition.y, 
-            this.playerTacticalPosition.x
-        );
-        
-        const movesElement = document.getElementById('availableMoves');
-        if (movesElement) {
-            movesElement.textContent = availableMoves.length;
-        }
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+    toggleGrid() {
+        this.showGrid = !this.showGrid;
+        this.drawTacticalMap();
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+    showTacticalMapEditor() {
+        this.showOverlay('tactical-map');
+    }
+
     zoomIn() {
         console.log("🔍 Увеличиваем масштаб");
         // Реализация масштабирования может быть добавлена позже
@@ -1220,12 +1416,8 @@ class MapSystem {
         console.log("🔍 Уменьшаем масштаб");
         // Реализация масштабирования может быть добавлена позже
     }
-
-    showTacticalMapEditor() {
-        this.showOverlay('tactical-map');
-    }
 }
 
 // Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с поддержкой Canvas рендеринга");
+console.log("📦 MapSystem модуль загружен с поддержкой Canvas рендеринга и редактора карт");
