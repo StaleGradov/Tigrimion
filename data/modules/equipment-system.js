@@ -406,8 +406,6 @@ showShop(category = 'all', subcategory = 'all') {
 }
 
 getSubcategoriesForCategory(category) {
-    console.log('🎯 Получаем подкатегории для:', category);
-    
     const weaponSubcategories = {
         'all': 'Все оружие',
         'one_handed': 'Одноручное',
@@ -436,35 +434,8 @@ getSubcategoriesForCategory(category) {
         'boots': armorSubcategories
     };
     
-    const result = subcategoriesMap[category] || {};
-    console.log('📋 Результат подкатегорий:', result);
-    return result;
-}
-    
-    const armorSubcategories = {
-        'all': 'Все материалы',
-        'cloth': 'Ткань',
-        'leather': 'Кожа',
-        'hide': 'Шкура',
-        'fur': 'Мех',
-        'bone': 'Кость',
-        'plate': 'Пластины',
-        'chain': 'Кольчуга',
-        'plate_mail': 'Латы'
-    };
-
-    const subcategoriesMap = {
-        'weapon': weaponSubcategories,
-        'helmet': armorSubcategories,
-        'chest': armorSubcategories,
-        'gloves': armorSubcategories,
-        'legs': armorSubcategories,
-        'boots': armorSubcategories
-    };
-    
     return subcategoriesMap[category] || {};
 }
-
 getArmorSubcategories() {
     return {
         'all': 'Все материалы',
