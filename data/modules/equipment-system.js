@@ -254,7 +254,7 @@ class EquipmentSystem {
     }
 
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-   showShop(category = 'all', subcategory = 'all') {
+showShop(category = 'all', subcategory = 'all') {
     if (!this.currentHero) return '';
 
     this.currentCategory = category;
@@ -318,7 +318,7 @@ class EquipmentSystem {
     `;
 }
 
-  filterItemsByCategory(category, subcategory = 'all') {
+ filterItemsByCategory(category, subcategory = 'all') {
     const availableItems = this.items.filter(item => 
         item.requiredLevel <= (this.currentHero?.level || 1)
     );
@@ -394,7 +394,6 @@ getArmorSubcategories() {
         'plate_mail': 'Латы'
     };
 }
-
     getArmorSubcategories() {
         return {
             'all': 'Все материалы',
@@ -408,10 +407,10 @@ getArmorSubcategories() {
         };
     }
 
-    getSubcategoryItemCount(category, subcategory) {
-        const items = this.filterItemsByCategory(category, subcategory);
-        return items.length;
-    }
+getSubcategoryItemCount(category, subcategory) {
+    const items = this.filterItemsByCategory(category, subcategory);
+    return items.length;
+}
 
     categorizeItems(items) {
         const categories = {
