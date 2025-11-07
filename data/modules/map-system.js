@@ -23,7 +23,7 @@ class MapSystem {
         this.showGrid = true;
         this.hoveredHex = null;
         
-        // Убраны все параметры масштабирования
+        // Позиционирование
         this.mapOffset = { x: 0, y: 0 };
         
         // Оптимизация рендеринга
@@ -64,11 +64,7 @@ class MapSystem {
             
             const mapPaths = [
                 'data/maps/tactical/tactical-maps.json',
-                'data/maps/tactical-maps.json',
-                'maps/tactical-maps.json', 
-                'data/tactical-maps.json',
-                'tactical-maps.json',
-                'data/modules/maps/tactical-maps.json'
+                'data/maps/tactical-maps.json'
             ];
             
             for (const path of mapPaths) {
@@ -117,8 +113,6 @@ class MapSystem {
         }
 
         const cells = jsonMap.game.grid.cells;
-        
-        // Создаем структуру клеток с правильными координатами
         const convertedCells = {};
         
         cells.forEach(cell => {
@@ -137,7 +131,6 @@ class MapSystem {
             };
         });
 
-        // Находим стартовую позицию
         let startPosition = {x: 0, y: 0};
         const startCell = cells.find(cell => cell.type === 'player_start');
         if (startCell) {
@@ -176,9 +169,9 @@ class MapSystem {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // Устанавливаем фиксированные размеры
-        this.canvas.width = 800;
-        this.canvas.height = 600;
+        // Устанавливаем размеры
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.position = 'absolute';
@@ -189,7 +182,7 @@ class MapSystem {
 
         this.ctx = this.canvas.getContext('2d');
         
-        // Рассчитываем позиционирование (без масштабирования)
+        // Рассчитываем позиционирование
         this.calculateMapPositioning();
         
         // Добавляем обработчики событий
@@ -202,7 +195,7 @@ class MapSystem {
     calculateMapPositioning() {
         if (!this.currentTacticalMap || !this.canvas) return;
 
-        // Просто центрируем карту без масштабирования
+        // Просто центрируем карту
         const container = document.querySelector('.tactical-map-visual');
         if (!container) return;
 
@@ -305,7 +298,7 @@ class MapSystem {
         // Сохраняем контекст для трансформаций
         this.ctx.save();
         
-        // Применяем только смещение (без масштабирования)
+        // Применяем только смещение
         this.ctx.translate(this.mapOffset.x, this.mapOffset.y);
 
         // Рисуем фон
@@ -533,7 +526,7 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    // ========== ИСПРАВЛЕННАЯ СИСТЕМА СОСЕДЕЙ И ДВИЖЕНИЯ ==========
+    // ========== СИСТЕМА СОСЕДЕЙ И ДВИЖЕНИЯ ==========
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
         
@@ -553,9 +546,8 @@ class MapSystem {
         const neighbors = [];
         const isEvenRow = currentRow % 2 === 0;
         
-        // ПРАВИЛЬНЫЕ направления для шестиугольной сетки (офсетные координаты)
+        // ПРАВИЛЬНЫЕ направления для шестиугольной сетки
         const directions = isEvenRow ? [
-            // Для ЧЕТНЫХ строк (0, 2, 4...)
             {dr: -1, dc: 0},   // север
             {dr: -1, dc: 1},   // северо-восток
             {dr: 0, dc: 1},    // восток
@@ -563,7 +555,6 @@ class MapSystem {
             {dr: 1, dc: -1},   // юго-запад
             {dr: 0, dc: -1}    // запад
         ] : [
-            // Для НЕЧЕТНЫХ строк (1, 3, 5...)
             {dr: -1, dc: -1},  // северо-запад
             {dr: -1, dc: 0},   // север
             {dr: 0, dc: 1},    // восток
@@ -574,32 +565,19 @@ class MapSystem {
         
         console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}], четная строка: ${isEvenRow}`);
         
-        directions.forEach(({dr, dc}, index) => {
+        directions.forEach(({dr, dc}) => {
             const newRow = currentRow + dr;
             const newCol = currentCol + dc;
             const cellKey = `${newCol},${newRow}`;
             const neighbor = this.currentTacticalMap.cells[cellKey];
-            
-            const directionNames = isEvenRow ? 
-                ['север', 'северо-восток', 'восток', 'юг', 'юго-запад', 'запад'] :
-                ['северо-запад', 'север', 'восток', 'юг', 'юго-восток', 'запад'];
             
             // Проверяем, что клетка существует, видима и проходима
             if (neighbor && neighbor.visible && neighbor.passable !== false) {
                 neighbors.push({
                     row: newRow,
                     col: newCol,
-                    cell: neighbor,
-                    direction: directionNames[index]
+                    cell: neighbor
                 });
-                console.log(`  ✅ ${directionNames[index]}: [${newCol},${newRow}] - ДОСТУПЕН`);
-            } else if (neighbor) {
-                console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - НЕДОСТУПЕН`, {
-                    visible: neighbor?.visible,
-                    passable: neighbor?.passable
-                });
-            } else {
-                console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - КЛЕТКА НЕ СУЩЕСТВУЕТ`);
             }
         });
         
@@ -613,7 +591,6 @@ class MapSystem {
         
         // Нельзя ходить на ту же клетку
         if (targetRow === currentRow && targetCol === currentCol) {
-            console.log(`🚫 Нельзя ходить на ту же клетку [${targetCol},${targetRow}]`);
             return false;
         }
         
@@ -621,12 +598,6 @@ class MapSystem {
         const isReachable = neighbors.some(neighbor => 
             neighbor.row === targetRow && neighbor.col === targetCol
         );
-        
-        console.log(`🎯 Проверка достижимости [${targetCol},${targetRow}] от [${currentCol},${currentRow}]: ${isReachable}`);
-        
-        if (!isReachable) {
-            console.log(`📋 Доступные ходы:`, neighbors.map(n => `[${n.col},${n.row}]`));
-        }
         
         return isReachable;
     }
@@ -839,13 +810,16 @@ class MapSystem {
         `;
     }
 
+    // ========== МЕТОД ДЛЯ ОТКРЫТИЯ РЕДАКТОРА ==========
+    showTacticalMapEditor() {
+        // Просто показываем тактическую карту
+        this.showOverlay('tactical-map');
+    }
+
     // ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ==========
     updateTacticalMapDisplay() {
-        const container = document.getElementById('overlay-container');
-        if (container && this.activeOverlay === 'tactical-map') {
-            this.showOverlay('tactical-map');
-        }
         this.drawTacticalMap();
+        this.updateMovementInfo();
     }
 
     updateMovementInfo() {
@@ -859,32 +833,29 @@ class MapSystem {
 
     // ========== УПРАВЛЕНИЕ ОВЕРЛЕЯМИ ==========
     showOverlay(overlayType) {
-        if (overlayType === 'tactical-map') {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
 
-            this.activeOverlay = overlayType;
-            
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="overlay-header">
-                        <h3>🎲 Тактическая карта</h3>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="overlay-body">
-                        ${this.renderTacticalMap()}
-                    </div>
+        this.activeOverlay = overlayType;
+        
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="overlay-header">
+                    <h3>🎲 Тактическая карта</h3>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                 </div>
-            `;
-            container.style.display = 'block';
-            
-            // Инициализируем Canvas после добавления в DOM
-            setTimeout(() => {
-                this.initCanvas();
-                this.updateMovementInfo();
-            }, 100);
-            
-        }
+                <div class="overlay-body">
+                    ${this.renderTacticalMap()}
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+        
+        // Инициализируем Canvas после добавления в DOM
+        setTimeout(() => {
+            this.initCanvas();
+            this.updateMovementInfo();
+        }, 100);
     }
 
     hideOverlay() {
