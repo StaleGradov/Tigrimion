@@ -1713,6 +1713,28 @@ body {
     margin-bottom: 0.3rem;
 }
 
+.movement-info {
+    background: rgba(255, 255, 0, 0.1);
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #ffff00;
+    margin: 0.8rem 0;
+    text-align: center;
+}
+
+.movement-info span {
+    color: #ffff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.zoom-info {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
 /* Адаптивность для мобильных */
 @media (max-width: 768px) {
     .tactical-map-overlay .overlay-content {
