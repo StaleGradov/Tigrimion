@@ -529,9 +529,8 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // Создаем магазин в основном оверлее
-                const shopContent = this.systems.equipment.showShop();
-                container.innerHTML = this.wrapShopInNewStyle(shopContent);
+                // ПРОСТО показываем магазин через систему экипировки
+                container.innerHTML = this.systems.equipment.showShop();
                 
                 // Добавляем обработчики для предметов магазина
                 setTimeout(() => this.attachShopItemHandlers(), 100);
@@ -541,28 +540,22 @@ class SafeHeroGame {
         container.style.display = 'block';
     }
 
-    // ========== ОБЕРТКА ДЛЯ МАГАЗИНА ==========
-    wrapShopInNewStyle(shopContent) {
-        return `
-            <div class="overlay-content shop-overlay">
-                <div class="overlay-header">
-                    <h3>🏪 Магазин снаряжения</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    ${shopContent}
-                </div>
-            </div>
-        `;
-    }
-
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
     attachShopItemHandlers() {
         const shopItems = document.querySelectorAll('.shop-item');
+        console.log(`Найдено предметов в магазине: ${shopItems.length}`);
+        
         shopItems.forEach(item => {
+            // Удаляем старые обработчики
+            item.replaceWith(item.cloneNode(true));
+        });
+
+        // Добавляем новые обработчики
+        document.querySelectorAll('.shop-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const itemId = item.getAttribute('data-item-id');
+                console.log(`Клик по предмету ID: ${itemId}`);
                 if (itemId) {
                     this.showItemDetailPopup(parseInt(itemId));
                 }
@@ -572,8 +565,12 @@ class SafeHeroGame {
 
     // ========== ВСПЛЫВАЮЩЕЕ ОКНО ПРЕДМЕТА ==========
     showItemDetailPopup(itemId) {
+        console.log(`Открываем попап для предмета ID: ${itemId}`);
         const item = this.systems.equipment.getItemById(itemId);
-        if (!item) return;
+        if (!item) {
+            console.error(`Предмет с ID ${itemId} не найден!`);
+            return;
+        }
 
         // Создаем отдельный контейнер для всплывающего окна предмета
         let itemPopup = document.getElementById('item-popup-container');
@@ -582,16 +579,19 @@ class SafeHeroGame {
             itemPopup.id = 'item-popup-container';
             itemPopup.className = 'popup-container';
             document.body.appendChild(itemPopup);
+            console.log("Создан новый попап-контейнер");
         }
 
         const canBuy = this.currentHero.gold >= item.price;
         const isOwned = this.systems.equipment.isItemOwned(itemId);
 
+        console.log(`Предмет: ${item.name}, Цена: ${item.price}, Можно купить: ${canBuy}, Уже есть: ${isOwned}`);
+
         itemPopup.innerHTML = `
             <div class="popup-overlay" onclick="game.closeItemDetailPopup()">
                 <div class="popup-content item-detail-popup" onclick="event.stopPropagation()">
                     <div class="popup-header">
-                        <h3>🔍 Детали предмета</h3>
+                        <h3>🔍 ${item.name}</h3>
                         <button class="btn-close" onclick="game.closeItemDetailPopup()">✕</button>
                     </div>
                     <div class="popup-body">
@@ -655,6 +655,7 @@ class SafeHeroGame {
         `;
 
         itemPopup.style.display = 'block';
+        console.log("Попап предмета открыт");
     }
 
     // ========== ПОКУПКА ИЗ ВСПЛЫВАЮЩЕГО ОКНА ==========
@@ -681,8 +682,8 @@ class SafeHeroGame {
     refreshShop() {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
-            const shopContent = this.systems.equipment.showShop();
-            container.innerHTML = this.wrapShopInNewStyle(shopContent);
+            // Просто перезагружаем магазин через систему экипировки
+            container.innerHTML = this.systems.equipment.showShop();
             setTimeout(() => this.attachShopItemHandlers(), 100);
         }
     }
