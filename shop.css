@@ -485,6 +485,22 @@
     transition: all 0.3s ease;
 }
 
+.detail-item-background {
+    background: transparent; /* Убираем градиентный фон */
+    border-radius: 15px;
+    padding: 0; /* Убираем внутренние отступы */
+    border: 4px solid;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
 /* Увеличили размер картинки */
 .detail-item-background img {
     width: 100%;
@@ -494,12 +510,7 @@
     cursor: zoom-in;
     max-width: 300px;
     max-height: 300px;
-}
-
-/* Эффект увеличения при наведении */
-.detail-item-background img:hover {
-    transform: scale(1.8);
-    z-index: 10;
+    padding: 10px; /* Добавим небольшой отступ чтобы картинка не касалась рамки */
 }
 
 .item-fallback-large {
@@ -508,9 +519,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent; /* Убираем фон у фолбэка */
     border-radius: 10px;
-    font-size: 4em; /* Увеличили иконку */
+    font-size: 4em;
 }
 
 .item-rarity {
