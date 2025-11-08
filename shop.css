@@ -483,31 +483,60 @@
     overflow: hidden;
     position: relative;
     transition: all 0.3s ease;
+    cursor: pointer; /* Добавляем курсор-указатель */
 }
 
-/* УВЕЛИЧИВАЕМ КАРТИНКУ */
+/* Базовый размер картинки */
 .detail-item-background img {
     width: 400px;
     height: 400px;
     object-fit: contain;
-    transition: transform 0.4s ease;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Плавная анимация */
     cursor: zoom-in;
 }
 
-
-
-.item-fallback-large {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border-radius: 10px;
-    font-size: 6em; /* Увеличиваем иконку фолбэка */
+/* Состояние увеличения */
+.detail-item-background img.zoomed {
+    transform: scale(2.5); /* Увеличение в 2.5 раза */
+    cursor: zoom-out;
+    z-index: 1000;
+    position: relative;
 }
 
-так нормально?
+/* Затемнение фона при увеличении */
+.detail-item-background::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.5s ease;
+    pointer-events: none;
+    border-radius: 15px;
+}
+
+.detail-item-background.zoomed::after {
+    background: rgba(0, 0, 0, 0.8); /* Затемнение фона */
+}
+
+/* Анимация появления */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(2.5);
+    }
+}
+
+.detail-item-background img.zoomed {
+    animation: zoomIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
 
 .item-rarity {
     padding: 8px 16px;
