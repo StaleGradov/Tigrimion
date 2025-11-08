@@ -595,21 +595,6 @@
     position: relative;
 }
 
-.detail-item-background {
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
-    border-radius: 15px;
-    padding: 30px;
-    border: 4px solid;
-    margin-bottom: 15px;
-    width: 100%;
-    height: 450px; /* Увеличили высоту контейнера */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-}
 
 .detail-item-background {
     background: transparent; /* Убираем градиентный фон */
@@ -618,7 +603,7 @@
     border: 4px solid;
     margin-bottom: 15px;
     width: 100%;
-    height: 950px;
+    height: 450px;
     display: flex;
     align-items: center;
     justify-content: center;
