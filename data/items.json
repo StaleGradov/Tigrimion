@@ -1713,7 +1713,7 @@
   },
   {
     "id": 79,
-    "name": "Жилет из заячьего меха",
+    "name": "Куртка из заячьей шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/krolik_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1729,13 +1729,13 @@
     "durability": 100,
     "price": 3,
     "sellPrice": 1.5,
-    "description": "Тёплый жилет лучников ополчения, сшитый из кроличьего меха. Его естественный цвет идеально маскирует в осенней листве, а мягкость позволяет часами лежать в засаде.",
+    "description": "Тёплый жилет лучников ополчения, сшитый из кроличьих шкур. Его естественный цвет идеально маскирует в зимнем снегу, а мягкость позволяет часами лежать в засаде.",
     "flavorText": "«В засаде у Ржавого Ручья мы сидели сутки. Кролики вокруг нас прыгали, а гоблины так и не поняли, откуда стрелы». — Ополченец-лучник Вилли.",
     "setName": "set_penetration1"
   },
   {
     "id": 80,
-    "name": "Жилет из волчьей шкуры",
+    "name": "Куртка из волчьей шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/wolfhide_armor.jpg",
     "type": "chest",
     "slot": "chest",
