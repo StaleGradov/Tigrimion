@@ -570,99 +570,156 @@ class SafeHeroGame {
         const isOwned = this.systems.equipment.isItemOwned(itemId);
 
         // Создаем модальное окно
-        // В методе showItemDetailModal обновите эту часть:
-const modalHTML = `
-    <div class="item-detail-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>🔍 Детали предмета</h4>
-                <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
-            </div>
-            <div class="item-detail-content">
-                <div class="item-detail-image">
-                    <div class="detail-item-background rarity-${item.rarity || 'common'}">
-                        <img src="${item.image}" alt="${item.name}" 
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                             class="item-detail-image-zoom">
-                        <div class="item-fallback-large" style="display: none;">
-                            <span>${this.getItemIcon(item.type)}</span>
-                        </div>
+        const modalHTML = `
+            <div class="item-detail-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>🔍 Детали предмета</h4>
+                        <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
                     </div>
-                    <div class="item-rarity ${item.rarity || 'common'}">
-                        ${this.getRarityName(item.rarity)}
-                    </div>
-                </div>
-                
-                <div class="item-detail-info">
-                    <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
-                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
-                    
-                    <div class="item-description">
-                        <p>${item.description || 'Описание отсутствует.'}</p>
-                    </div>
-                    
-                    ${item.flavor ? `
-                        <div class="item-flavor">
-                            "${item.flavor}"
-                        </div>
-                    ` : ''}
-                    
-                    <div class="item-stats-detailed">
-                        <h5>📊 Характеристики</h5>
-                        ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
-                            <div class="stat-line">
-                                <span>${this.getStatLabel(key)}</span>
-                                <span class="stat-value">+${value}</span>
-                            </div>
-                        `).join('') : '<div class="no-stats">Нет характеристик</div>'}
-                    </div>
-                    
-                    ${item.requirements ? `
-                        <div class="item-requirements">
-                            <h5>⚡ Требования</h5>
-                            ${Object.entries(item.requirements).map(([key, value]) => `
-                                <div class="stat-line">
-                                    <span>${this.getRequirementLabel(key)}</span>
-                                    <span class="stat-value">${value}</span>
+                    <div class="item-detail-content">
+                        <div class="item-detail-image">
+                            <div class="detail-item-background rarity-${item.rarity || 'common'}">
+                                <img src="${item.image}" alt="${item.name}" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                     class="item-detail-image-zoom">
+                                <div class="item-fallback-large" style="display: none;">
+                                    <span>${this.getItemIcon(item.type)}</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    
-                    <div class="item-actions">
-                        <div class="price-section">
-                            <span class="buy-price">💰 ${item.price} золота</span>
-                            ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
+                            </div>
+                            <div class="item-rarity ${item.rarity || 'common'}">
+                                ${this.getRarityName(item.rarity)}
+                            </div>
                         </div>
                         
-                        ${!isOwned ? `
-                            <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
-                                    onclick="game.buyItemFromModal(${itemId})" 
-                                    ${!canBuy ? 'disabled' : ''}>
-                                🛒 Купить
-                            </button>
-                            ${!canBuy ? `
-                                <div class="purchase-error">
-                                    ❌ Недостаточно золота
+                        <div class="item-detail-info">
+                            <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
+                            <div class="item-type">${this.getItemTypeName(item.type)}</div>
+                            
+                            <div class="item-description">
+                                <p>${item.description || 'Описание отсутствует.'}</p>
+                            </div>
+                            
+                            ${item.flavor ? `
+                                <div class="item-flavor">
+                                    "${item.flavor}"
                                 </div>
                             ` : ''}
-                        ` : `
-                            <button class="btn-primary owned" disabled>
-                                ✅ Уже куплено
-                            </button>
-                        `}
+                            
+                            <div class="item-stats-detailed">
+                                <h5>📊 Характеристики</h5>
+                                ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
+                                    <div class="stat-line">
+                                        <span>${this.getStatLabel(key)}</span>
+                                        <span class="stat-value">+${value}</span>
+                                    </div>
+                                `).join('') : '<div class="no-stats">Нет характеристик</div>'}
+                            </div>
+                            
+                            ${item.requirements ? `
+                                <div class="item-requirements">
+                                    <h5>⚡ Требования</h5>
+                                    ${Object.entries(item.requirements).map(([key, value]) => `
+                                        <div class="stat-line">
+                                            <span>${this.getRequirementLabel(key)}</span>
+                                            <span class="stat-value">${value}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="item-actions">
+                                <div class="price-section">
+                                    <span class="buy-price">💰 ${item.price} золота</span>
+                                    ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
+                                </div>
+                                
+                                ${!isOwned ? `
+                                    <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                            onclick="game.buyItemFromModal(${itemId})" 
+                                            ${!canBuy ? 'disabled' : ''}>
+                                        🛒 Купить
+                                    </button>
+                                    ${!canBuy ? `
+                                        <div class="purchase-error">
+                                            ❌ Недостаточно золота
+                                        </div>
+                                    ` : ''}
+                                ` : `
+                                    <button class="btn-primary owned" disabled>
+                                        ✅ Уже куплено
+                                    </button>
+                                `}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-`;
+        `;
 
         // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
+            
+            // Добавляем обработчики увеличения после создания DOM
+            setTimeout(() => {
+                this.attachImageZoomHandlers();
+            }, 100);
         }
+    }
+
+    // ========== СИСТЕМА УВЕЛИЧЕНИЯ КАРТИНОК ==========
+    attachImageZoomHandlers() {
+        const detailBackgrounds = document.querySelectorAll('.detail-item-background');
+        
+        detailBackgrounds.forEach(container => {
+            const img = container.querySelector('img');
+            if (!img) return;
+            
+            container.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleImageZoom(img, container);
+            });
+        });
+        
+        // Закрытие по клику вне картинки
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.detail-item-background')) {
+                this.closeAllZoomedImages();
+            }
+        });
+        
+        // Закрытие по ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeAllZoomedImages();
+            }
+        });
+    }
+
+    toggleImageZoom(img, container) {
+        const isZoomed = img.classList.contains('zoomed');
+        
+        // Закрываем все другие увеличенные картинки
+        this.closeAllZoomedImages();
+        
+        if (!isZoomed) {
+            // Увеличиваем текущую
+            img.classList.add('zoomed');
+            container.classList.add('zoomed');
+            
+            // Прокручиваем к картинке если нужно
+            img.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+        }
+    }
+
+    closeAllZoomedImages() {
+        const zoomedImages = document.querySelectorAll('.detail-item-background img.zoomed');
+        const zoomedContainers = document.querySelectorAll('.detail-item-background.zoomed');
+        
+        zoomedImages.forEach(img => img.classList.remove('zoomed'));
+        zoomedContainers.forEach(container => container.classList.remove('zoomed'));
     }
 
     // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
