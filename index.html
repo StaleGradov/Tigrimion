@@ -11,6 +11,39 @@
         <!-- Игра будет рендериться здесь динамически -->
     </div>
 
+    <!-- Затемнение фона для всплывающих окон -->
+    <div class="overlay-backdrop" id="itemDetailBackdrop"></div>
+
+    <!-- Всплывающее окно деталей предмета -->
+    <div class="item-detail-overlay" id="itemDetailOverlay">
+        <div class="item-detail-header">
+            <h3 class="item-detail-title" id="itemDetailTitle">Название предмета</h3>
+            <button class="btn-close" id="closeItemDetail">&times;</button>
+        </div>
+        <div class="item-detail-body">
+            <div class="item-detail-image" id="itemDetailImage" data-rarity="common">
+                <img src="" alt="Item Image" id="itemDetailImg">
+            </div>
+            <div class="item-detail-info">
+                <div class="item-detail-type" id="itemDetailType">Тип предмета</div>
+                <div class="item-detail-stats" id="itemDetailStats">
+                    <!-- Статы будут добавляться динамически -->
+                </div>
+                <div class="item-detail-description" id="itemDetailDescription">
+                    Описание предмета будет здесь...
+                </div>
+            </div>
+        </div>
+        <div class="item-detail-actions">
+            <div class="item-detail-price" id="itemDetailPrice">
+                <span>💰</span>
+                <span id="itemDetailPriceValue">0</span>
+            </div>
+            <button class="btn-primary" id="itemDetailBuyBtn">Купить</button>
+            <button class="btn-secondary" id="itemDetailCloseBtn">Закрыть</button>
+        </div>
+    </div>
+
     <!-- Основной скрипт игры -->
     <script src="script.js"></script>
 </body>
