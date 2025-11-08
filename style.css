@@ -1689,7 +1689,8 @@ body {
 .tactical-map-visual {
     position: relative !important;
     width: 100% !important;
-    height: 100% !important;
+    height: 70vh !important; /* Фиксированная высота */
+    min-height: 500px !important;
     background: #000000 !important;
     border: 2px solid #00ffff !important;
     border-radius: 15px !important;
@@ -1706,11 +1707,17 @@ body {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
-    cursor: pointer !important;
+    cursor: default !important; /* По умолчанию обычный курсор */
     background: transparent !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
+}
+
+/* Убираем любые трансформации и переходы */
+.tactical-map-visual * {
+    transform: none !important;
+    transition: none !important;
 }
 
 /* Убираем контролы масштабирования */
