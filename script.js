@@ -187,7 +187,6 @@ class SafeHeroGame {
         this.currentScreen = 'loading';
         this.currentHero = null;
         this.activeOverlay = null;
-        this.currentShopSubcategory = null; // Добавляем отслеживание текущей подкатегории магазина
         this.init();
     }
 
@@ -530,82 +529,15 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // Показываем магазин через систему экипировки
+                // ПРОСТО показываем магазин через систему экипировки
                 container.innerHTML = this.systems.equipment.showShop();
                 
-                // Сбрасываем текущую подкатегорию при открытии магазина
-                this.currentShopSubcategory = null;
-                
-                // Добавляем обработчики для предметов магазина и подкатегорий
-                setTimeout(() => {
-                    this.attachShopItemHandlers();
-                    this.attachShopSubcategoryHandlers();
-                }, 100);
+                // Добавляем обработчики для предметов магазина
+                setTimeout(() => this.attachShopItemHandlers(), 100);
                 break;
         }
 
         container.style.display = 'block';
-    }
-
-    // ========== СИСТЕМА ПОДКАТЕГОРИЙ МАГАЗИНА С ФОНАМИ ==========
-    attachShopSubcategoryHandlers() {
-        const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
-        console.log(`Найдено подкатегорий: ${subcategoryTabs.length}`);
-        
-        subcategoryTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const subcategory = tab.getAttribute('data-subcategory');
-                console.log(`Переключение на подкатегорию: ${subcategory}`);
-                
-                if (subcategory) {
-                    this.switchShopSubcategory(subcategory);
-                }
-            });
-        });
-    }
-
-    switchShopSubcategory(subcategoryType) {
-        console.log(`Активация подкатегории: ${subcategoryType}`);
-        
-        // Обновляем активную вкладку
-        document.querySelectorAll('.subcategory-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        
-        const activeTab = document.querySelector(`.subcategory-tab[data-subcategory="${subcategoryType}"]`);
-        if (activeTab) {
-            activeTab.classList.add('active');
-        }
-        
-        // Обновляем фон магазина
-        const shopOverlay = document.querySelector('.shop-overlay');
-        if (shopOverlay) {
-            // Удаляем все классы подкатегорий
-            const allSubcategories = [
-                'helmets', 'shoulders', 'chest', 'gloves', 'belts', 'legs', 'boots',
-                'onehanded', 'twohanded', 'ranged', 'staffs',
-                'amulets', 'rings', 'trinkets',
-                'potions', 'food', 'scrolls'
-            ];
-            
-            shopOverlay.classList.remove(...allSubcategories);
-            
-            // Добавляем класс текущей подкатегории
-            shopOverlay.classList.add(subcategoryType);
-        }
-        
-        // Сохраняем текущую подкатегорию
-        this.currentShopSubcategory = subcategoryType;
-        
-        // Обновляем предметы в магазине (если нужно фильтровать)
-        this.refreshShopItemsBySubcategory(subcategoryType);
-    }
-
-    refreshShopItemsBySubcategory(subcategoryType) {
-        // Здесь можно добавить логику фильтрации предметов по подкатегории
-        // Пока просто обновляем магазин
-        this.refreshShop();
     }
 
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
@@ -638,156 +570,99 @@ class SafeHeroGame {
         const isOwned = this.systems.equipment.isItemOwned(itemId);
 
         // Создаем модальное окно
-        const modalHTML = `
-            <div class="item-detail-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4>🔍 Детали предмета</h4>
-                        <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
+        // В методе showItemDetailModal обновите эту часть:
+const modalHTML = `
+    <div class="item-detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>🔍 Детали предмета</h4>
+                <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
+            </div>
+            <div class="item-detail-content">
+                <div class="item-detail-image">
+                    <div class="detail-item-background rarity-${item.rarity || 'common'}">
+                        <img src="${item.image}" alt="${item.name}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                             class="item-detail-image-zoom">
+                        <div class="item-fallback-large" style="display: none;">
+                            <span>${this.getItemIcon(item.type)}</span>
+                        </div>
                     </div>
-                    <div class="item-detail-content">
-                        <div class="item-detail-image">
-                            <div class="detail-item-background rarity-${item.rarity || 'common'}">
-                                <img src="${item.image}" alt="${item.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                                     class="item-detail-image-zoom">
-                                <div class="item-fallback-large" style="display: none;">
-                                    <span>${this.getItemIcon(item.type)}</span>
+                    <div class="item-rarity ${item.rarity || 'common'}">
+                        ${this.getRarityName(item.rarity)}
+                    </div>
+                </div>
+                
+                <div class="item-detail-info">
+                    <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
+                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
+                    
+                    <div class="item-description">
+                        <p>${item.description || 'Описание отсутствует.'}</p>
+                    </div>
+                    
+                    ${item.flavor ? `
+                        <div class="item-flavor">
+                            "${item.flavor}"
+                        </div>
+                    ` : ''}
+                    
+                    <div class="item-stats-detailed">
+                        <h5>📊 Характеристики</h5>
+                        ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
+                            <div class="stat-line">
+                                <span>${this.getStatLabel(key)}</span>
+                                <span class="stat-value">+${value}</span>
+                            </div>
+                        `).join('') : '<div class="no-stats">Нет характеристик</div>'}
+                    </div>
+                    
+                    ${item.requirements ? `
+                        <div class="item-requirements">
+                            <h5>⚡ Требования</h5>
+                            ${Object.entries(item.requirements).map(([key, value]) => `
+                                <div class="stat-line">
+                                    <span>${this.getRequirementLabel(key)}</span>
+                                    <span class="stat-value">${value}</span>
                                 </div>
-                            </div>
-                            <div class="item-rarity ${item.rarity || 'common'}">
-                                ${this.getRarityName(item.rarity)}
-                            </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="item-actions">
+                        <div class="price-section">
+                            <span class="buy-price">💰 ${item.price} золота</span>
+                            ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
                         </div>
                         
-                        <div class="item-detail-info">
-                            <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
-                            <div class="item-type">${this.getItemTypeName(item.type)}</div>
-                            
-                            <div class="item-description">
-                                <p>${item.description || 'Описание отсутствует.'}</p>
-                            </div>
-                            
-                            ${item.flavor ? `
-                                <div class="item-flavor">
-                                    "${item.flavor}"
+                        ${!isOwned ? `
+                            <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                    onclick="game.buyItemFromModal(${itemId})" 
+                                    ${!canBuy ? 'disabled' : ''}>
+                                🛒 Купить
+                            </button>
+                            ${!canBuy ? `
+                                <div class="purchase-error">
+                                    ❌ Недостаточно золота
                                 </div>
                             ` : ''}
-                            
-                            <div class="item-stats-detailed">
-                                <h5>📊 Характеристики</h5>
-                                ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
-                                    <div class="stat-line">
-                                        <span>${this.getStatLabel(key)}</span>
-                                        <span class="stat-value">+${value}</span>
-                                    </div>
-                                `).join('') : '<div class="no-stats">Нет характеристик</div>'}
-                            </div>
-                            
-                            ${item.requirements ? `
-                                <div class="item-requirements">
-                                    <h5>⚡ Требования</h5>
-                                    ${Object.entries(item.requirements).map(([key, value]) => `
-                                        <div class="stat-line">
-                                            <span>${this.getRequirementLabel(key)}</span>
-                                            <span class="stat-value">${value}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
-                            
-                            <div class="item-actions">
-                                <div class="price-section">
-                                    <span class="buy-price">💰 ${item.price} золота</span>
-                                    ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
-                                </div>
-                                
-                                ${!isOwned ? `
-                                    <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
-                                            onclick="game.buyItemFromModal(${itemId})" 
-                                            ${!canBuy ? 'disabled' : ''}>
-                                        🛒 Купить
-                                    </button>
-                                    ${!canBuy ? `
-                                        <div class="purchase-error">
-                                            ❌ Недостаточно золота
-                                        </div>
-                                    ` : ''}
-                                ` : `
-                                    <button class="btn-primary owned" disabled>
-                                        ✅ Уже куплено
-                                    </button>
-                                `}
-                            </div>
-                        </div>
+                        ` : `
+                            <button class="btn-primary owned" disabled>
+                                ✅ Уже куплено
+                            </button>
+                        `}
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+`;
 
         // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
-            
-            // Добавляем обработчики увеличения после создания DOM
-            setTimeout(() => {
-                this.attachImageZoomHandlers();
-            }, 100);
         }
-    }
-
-    // ========== СИСТЕМА УВЕЛИЧЕНИЯ КАРТИНОК ==========
-    attachImageZoomHandlers() {
-        const detailBackgrounds = document.querySelectorAll('.detail-item-background');
-        
-        detailBackgrounds.forEach(container => {
-            const img = container.querySelector('img');
-            if (!img) return;
-            
-            container.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.toggleImageZoom(img, container);
-            });
-        });
-        
-        // Закрытие по клику вне картинки
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.detail-item-background')) {
-                this.closeAllZoomedImages();
-            }
-        });
-        
-        // Закрытие по ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeAllZoomedImages();
-            }
-        });
-    }
-
-    toggleImageZoom(img, container) {
-        const isZoomed = img.classList.contains('zoomed');
-        
-        // Закрываем все другие увеличенные картинки
-        this.closeAllZoomedImages();
-        
-        if (!isZoomed) {
-            // Увеличиваем текущую
-            img.classList.add('zoomed');
-            container.classList.add('zoomed');
-            
-            // Прокручиваем к картинке если нужно
-            img.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-        }
-    }
-
-    closeAllZoomedImages() {
-        const zoomedImages = document.querySelectorAll('.detail-item-background img.zoomed');
-        const zoomedContainers = document.querySelectorAll('.detail-item-background.zoomed');
-        
-        zoomedImages.forEach(img => img.classList.remove('zoomed'));
-        zoomedContainers.forEach(container => container.classList.remove('zoomed'));
     }
 
     // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
@@ -812,15 +687,8 @@ class SafeHeroGame {
 
     // ========== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА ==========
     closeItemDetailModal() {
-        // Возвращаемся к магазину с сохранением текущей подкатегории
+        // Просто показываем магазин снова
         this.showOverlay('shop');
-        
-        // Восстанавливаем активную подкатегорию если была
-        if (this.currentShopSubcategory) {
-            setTimeout(() => {
-                this.switchShopSubcategory(this.currentShopSubcategory);
-            }, 100);
-        }
     }
 
     // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
@@ -828,15 +696,7 @@ class SafeHeroGame {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
             container.innerHTML = this.systems.equipment.showShop();
-            setTimeout(() => {
-                this.attachShopItemHandlers();
-                this.attachShopSubcategoryHandlers();
-                
-                // Восстанавливаем активную подкатегорию если была
-                if (this.currentShopSubcategory) {
-                    this.switchShopSubcategory(this.currentShopSubcategory);
-                }
-            }, 100);
+            setTimeout(() => this.attachShopItemHandlers(), 100);
         }
     }
 
@@ -880,7 +740,6 @@ class SafeHeroGame {
             container.style.display = 'none';
             container.innerHTML = '';
             this.activeOverlay = null;
-            this.currentShopSubcategory = null; // Сбрасываем подкатегорию при закрытии
         }
     }
 
@@ -1055,7 +914,6 @@ class SafeHeroGame {
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
         console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
-        console.log("Текущая подкатегория магазина:", this.currentShopSubcategory);
         
         alert("Информация выведена в консоль (F12)");
     }
