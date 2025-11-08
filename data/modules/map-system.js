@@ -252,8 +252,8 @@ class MapSystem {
         if (!this.canvas) return;
 
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
-        this.canvas.addEventListener('wheel', (e) => this.handleCanvasZoom(e));
+       // this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
+       // this.canvas.addEventListener('wheel', (e) => this.handleCanvasZoom(e));
 
         window.addEventListener('resize', () => {
             setTimeout(() => {
