@@ -470,25 +470,9 @@
 }
 
 .detail-item-background {
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+    background: transparent;
     border-radius: 15px;
-    padding: 30px;
-    border: 4px solid;
-    margin-bottom: 15px;
-    width: 100%;
-    height: 350px; /* Увеличили высоту контейнера */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.detail-item-background {
-    background: transparent; /* Убираем градиентный фон */
-    border-radius: 15px;
-    padding: 0; /* Убираем внутренние отступы */
+    padding: 0;
     border: 4px solid;
     margin-bottom: 15px;
     width: 100%;
@@ -501,17 +485,19 @@
     transition: all 0.3s ease;
 }
 
-/* Увеличили размер картинки */
+/* УВЕЛИЧИВАЕМ КАРТИНКУ */
 .detail-item-background img {
-    width: 100%;
-    height: 100%;
+    width: auto; /* Убираем 100% ширины */
+    height: auto; /* Убираем 100% высоты */
+    max-width: 320px; /* Увеличиваем максимальный размер */
+    max-height: 320px; /* Увеличиваем максимальный размер */
     object-fit: contain;
     transition: transform 0.4s ease;
     cursor: zoom-in;
-    max-width: 300px;
-    max-height: 300px;
-    padding: 10px; /* Добавим небольшой отступ чтобы картинка не касалась рамки */
+    padding: 15px; /* Увеличиваем отступ */
 }
+
+
 
 .item-fallback-large {
     width: 100%;
@@ -519,9 +505,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent; /* Убираем фон у фолбэка */
+    background: transparent;
     border-radius: 10px;
-    font-size: 4em;
+    font-size: 6em; /* Увеличиваем иконку фолбэка */
 }
 
 .item-rarity {
