@@ -1,96 +1,104 @@
 /* ========== МАГАЗИН ========== */
 .merchant-header {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    border: 3px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.3);
 }
 
 .hero-merchant-info {
     display: flex;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 .merchant-stats {
     display: flex;
-    gap: 20px;
-    background: rgba(76, 201, 240, 0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid #4cc9f0;
+    gap: 30px;
+    background: rgba(76, 201, 240, 0.3);
+    padding: 12px 24px;
+    border-radius: 25px;
+    border: 2px solid #4cc9f0;
+    font-size: 1.1em;
 }
 
 .gold-amount, .inventory-space {
     font-weight: bold;
-    font-size: 1em;
+    font-size: 1.2em;
+    color: #ffd700;
 }
 
 .shop-categories {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 30px;
     justify-content: center;
 }
 
 .category-tab {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
+    padding: 12px 24px;
+    border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.9em;
-    backdrop-filter: blur(4px);
+    font-size: 1.1em;
+    backdrop-filter: blur(10px);
+    font-weight: 600;
 }
 
 .category-tab:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
 }
 
 .category-tab.active {
     background: linear-gradient(135deg, #4cc9f0, #4361ee);
     border-color: #4cc9f0;
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
+    transform: translateY(-2px);
 }
 
 /* Стили для подкатегорий брони */
 .armor-subcategories {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin: 10px 0;
+    gap: 8px;
+    margin: 15px 0;
     justify-content: center;
 }
 
 .subcategory-tab {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: rgba(59, 130, 246, 0.15);
+    border: 2px solid rgba(59, 130, 246, 0.4);
     color: #60a5fa;
-    padding: 6px 12px;
-    border-radius: 15px;
+    padding: 8px 16px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 0.8em;
+    font-size: 0.9em;
+    font-weight: 500;
 }
 
 .subcategory-tab:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: translateY(-1px);
+    background: rgba(59, 130, 246, 0.25);
+    transform: translateY(-2px);
 }
 
 .subcategory-tab.active {
     background: linear-gradient(135deg, #3b82f6, #1d4ed8);
     border-color: #3b82f6;
     color: white;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
 }
 
 .merchant-items-container {
-    min-height: 500px;
+    min-height: 600px;
 }
 
 .shop-content {
@@ -98,42 +106,43 @@
 }
 
 .shop-category {
-    animation: fadeIn 0.3s ease-in-out;
+    animation: fadeIn 0.4s ease-in-out;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .category-title {
     color: #ffd700;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     text-align: center;
-    font-size: 1.2em;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    font-size: 1.8em;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
 }
 
 .items-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+    padding: 20px;
 }
 
 .shop-item {
     cursor: pointer;
     transition: all 0.3s ease;
-    border-radius: 12px;
+    border-radius: 15px;
     overflow: hidden;
-    min-height: 180px;
+    min-height: 220px;
 }
 
 .shop-item:hover {
-    transform: translateY(-5px) scale(1.02);
+    transform: translateY(-8px) scale(1.03);
 }
 
 .shop-item.owned {
@@ -147,21 +156,22 @@
 
 .item-background {
     position: relative;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+    border-radius: 15px;
     padding: 0;
     height: auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 4px solid transparent;
+    border: 5px solid transparent;
     transition: all 0.3s ease;
     overflow: hidden;
+    min-height: 220px;
 }
 
 .shop-item:hover .item-background {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* Стили редкости для магазина */
@@ -174,7 +184,7 @@
 
 .item-image-container {
     width: 100%;
-    height: 120px;
+    height: 150px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -184,6 +194,7 @@
     position: relative;
     overflow: hidden;
     padding: 0;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .item-image-container img {
@@ -191,11 +202,12 @@
     height: 100% !important;
     object-fit: contain;
     display: block;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s ease;
+    padding: 10px;
 }
 
 .shop-item:hover .item-image-container img {
-    transform: scale(1.2);
+    transform: scale(1.25);
 }
 
 .item-fallback {
@@ -209,7 +221,8 @@
 }
 
 .item-icon {
-    font-size: 2.5em;
+    font-size: 3em;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .item-rarity-bar {
@@ -219,67 +232,73 @@
 .item-info {
     text-align: center;
     width: 100%;
-    padding: 15px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
 }
 
 .item-name {
     font-weight: bold;
-    font-size: 1em;
-    margin-bottom: 6px;
+    font-size: 1.2em;
+    margin-bottom: 8px;
     color: white;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .item-type {
-    font-size: 0.8em;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 8px;
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    font-style: italic;
 }
 
 .item-stats-compact {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin-bottom: 10px;
+    gap: 8px;
+    margin-bottom: 15px;
     flex-wrap: wrap;
 }
 
 .item-stats-compact span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.75em;
-    border: 1px solid rgba(76, 201, 240, 0.3);
+    background: rgba(76, 201, 240, 0.3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    border: 1px solid rgba(76, 201, 240, 0.4);
+    font-weight: 500;
 }
 
 .item-price-tag {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
 }
 
 .price {
     font-weight: bold;
     color: #ffd700;
-    font-size: 0.9em;
+    font-size: 1.1em;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.5);
 }
 
 .owned-badge {
     background: rgba(74, 222, 128, 0.3);
     color: #4ade80;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 0.75em;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
     border: 1px solid #4ade80;
+    font-weight: 600;
 }
 
 .buy-status {
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 0.75em;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8em;
     font-weight: bold;
 }
 
@@ -297,78 +316,314 @@
 
 /* ========== УВЕЛИЧЕННОЕ ОКНО МАГАЗИНА ========== */
 .shop-overlay {
-    max-width: 1200px !important;
-    width: 95% !important;
-    max-height: 90vh !important;
+    max-width: 95vw !important;
+    width: 95vw !important;
+    max-height: 95vh !important;
+    height: 95vh !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    border: 3px solid #4cc9f0 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 0 60px rgba(76, 201, 240, 0.4) !important;
+}
+
+.shop-overlay .overlay-header {
+    padding: 25px 30px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-bottom: 2px solid #4cc9f0 !important;
+}
+
+.shop-overlay .overlay-header h3 {
+    font-size: 2em !important;
+    color: #4cc9f0 !important;
+    text-shadow: 0 2px 10px rgba(76, 201, 240, 0.5) !important;
+}
+
+.shop-overlay .overlay-body {
+    padding: 30px !important;
+    max-height: calc(95vh - 120px) !important;
 }
 
 .shop-overlay .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
-    gap: 15px !important;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+    gap: 20px !important;
 }
 
 .shop-overlay .shop-item {
-    min-height: 160px !important;
+    min-height: 200px !important;
 }
 
 .shop-overlay .item-image-container {
-    height: 100px !important;
+    height: 140px !important;
+}
+
+/* ========== ОКНО ПРЕДМЕТА ========== */
+.item-detail-overlay {
+    max-width: 90vw !important;
+    width: 90vw !important;
+    max-height: 90vh !important;
+    height: 90vh !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+    border: 3px solid #ffd700 !important;
+    border-radius: 20px !important;
+    box-shadow: 0 0 80px rgba(255, 215, 0, 0.5) !important;
+    z-index: 2000 !important;
+}
+
+.item-detail-overlay .overlay-header {
+    padding: 25px 30px !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-bottom: 2px solid #ffd700 !important;
+}
+
+.item-detail-overlay .overlay-header h3 {
+    font-size: 2.2em !important;
+    color: #ffd700 !important;
+    text-shadow: 0 2px 15px rgba(255, 215, 0, 0.6) !important;
+}
+
+.item-detail-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 !important;
+}
+
+.item-detail-main {
+    display: flex;
+    flex: 1;
+    gap: 30px;
+    padding: 30px;
+}
+
+.item-detail-image {
+    flex: 0 0 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+}
+
+.item-detail-image img {
+    max-width: 100%;
+    max-height: 350px;
+    object-fit: contain;
+}
+
+.item-detail-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.item-detail-name {
+    font-size: 2.5em;
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+}
+
+.item-detail-type {
+    font-size: 1.3em;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 20px;
+}
+
+.item-detail-stats {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.3);
+}
+
+.item-detail-stats h4 {
+    color: #4cc9f0;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.stat-value {
+    color: white;
+    font-weight: bold;
+}
+
+.item-detail-description {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
+.item-detail-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding: 25px 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-buy, .btn-close-item {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 180px;
+}
+
+.btn-buy {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-buy:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-close-item {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.btn-close-item:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-3px);
 }
 
 /* ========== ПРОКРУТКА МАГАЗИНА ========== */
 .shop-overlay .shop-content {
-    max-height: 60vh !important;
+    max-height: calc(95vh - 200px) !important;
     overflow-y: auto !important;
-    padding: 10px !important;
+    padding: 15px !important;
 }
 
 /* Полоса прокрутки */
 .shop-overlay .shop-content::-webkit-scrollbar {
-    width: 8px;
+    width: 12px;
 }
 
 .shop-overlay .shop-content::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 6px;
 }
 
 .shop-overlay .shop-content::-webkit-scrollbar-thumb {
-    background: #4cc9f0;
-    border-radius: 4px;
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 .shop-overlay .shop-content::-webkit-scrollbar-thumb:hover {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #3b82f6, #3730a3);
 }
 
 /* Адаптивность магазина */
 @media (max-width: 768px) {
     .items-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 15px;
-        padding: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        padding: 15px;
     }
     
     .item-image-container {
-        height: 100px;
+        height: 120px;
     }
     
     .shop-categories {
-        gap: 6px;
+        gap: 8px;
     }
     
     .category-tab {
-        padding: 6px 12px;
-        font-size: 0.8em;
+        padding: 10px 18px;
+        font-size: 1em;
+    }
+    
+    .shop-overlay {
+        max-width: 98vw !important;
+        width: 98vw !important;
+        max-height: 98vh !important;
+        height: 98vh !important;
+    }
+    
+    .item-detail-overlay {
+        max-width: 98vw !important;
+        width: 98vw !important;
+    }
+    
+    .item-detail-main {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .item-detail-image {
+        flex: none;
+        height: 250px;
     }
 }
 
 @media (max-width: 480px) {
     .items-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
     
     .shop-overlay .items-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: 1fr !important;
     }
+    
+    .item-detail-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-buy, .btn-close-item {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Анимация появления */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.shop-overlay, .item-detail-overlay {
+    animation: scaleIn 0.3s ease-out;
 }
