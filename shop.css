@@ -378,57 +378,72 @@
     height: 140px !important;
 }
 
-/* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
+/* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА (УВЕЛИЧЕННОЕ) ========== */
 .item-detail-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
+    padding: 20px;
 }
 
 .modal-content {
     background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border-radius: 15px;
+    border-radius: 20px;
     padding: 0;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
+    max-width: 900px; /* Увеличили ширину */
+    width: 95%;
+    max-height: 90vh; /* Увеличили высоту */
     overflow-y: auto;
-    border: 3px solid #4cc9f0;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    border: 4px solid #4cc9f0;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+    animation: modalAppear 0.4s ease-out;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+    padding: 20px 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid rgba(76, 201, 240, 0.4);
+    border-radius: 20px 20px 0 0;
 }
 
 .modal-header h4 {
     color: #ffd700;
     margin: 0;
-    font-size: 1.2em;
+    font-size: 1.5em;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
 }
 
 .close-modal {
-    background: none;
-    border: none;
+    background: rgba(248, 113, 113, 0.2);
+    border: 2px solid #f87171;
     color: white;
     font-size: 1.5em;
     cursor: pointer;
     padding: 0;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -437,55 +452,54 @@
 }
 
 .close-modal:hover {
-    background: rgba(248, 113, 113, 0.3);
-    color: #f87171;
+    background: rgba(248, 113, 113, 0.4);
+    transform: scale(1.1);
 }
 
 .item-detail-content {
     display: grid;
-    grid-template-columns: 250px 1fr;
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: 400px 1fr; /* Увеличили размер колонки с картинкой */
+    gap: 30px;
+    padding: 30px;
+    align-items: start;
 }
 
 .item-detail-image {
     text-align: center;
+    position: relative;
 }
 
 .detail-item-background {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-    border-radius: 12px;
-    padding: 20px;
-    border: 3px solid;
-    margin-bottom: 10px;
-    width: 250px;
-    height: 188px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+    border-radius: 15px;
+    padding: 30px;
+    border: 4px solid;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 350px; /* Увеличили высоту контейнера */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-/* Цвета рамок для редкостей */
-.rarity-common .detail-item-background { border-color: #9ca3af; }
-.rarity-uncommon .detail-item-background { border-color: #4cc9f0; }
-.rarity-rare .detail-item-background { border-color: #a855f7; }
-.rarity-epic .detail-item-background { border-color: #f59e0b; }
-.rarity-legendary .detail-item-background { border-color: #ffd700; }
-.rarity-mythic .detail-item-background { border-color: #ff6b6b; }
-
+/* Увеличили размер картинки */
 .detail-item-background img {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    transition: transform 0.3s ease;
+    transition: transform 0.4s ease;
     cursor: zoom-in;
+    max-width: 300px;
+    max-height: 300px;
 }
 
+/* Эффект увеличения при наведении */
 .detail-item-background img:hover {
-    transform: scale(2.5);
-    z-index: 1000;
-    position: relative;
+    transform: scale(1.8);
+    z-index: 10;
 }
 
 .item-fallback-large {
@@ -495,97 +509,81 @@
     align-items: center;
     justify-content: center;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    font-size: 3em;
+    border-radius: 10px;
+    font-size: 4em; /* Увеличили иконку */
 }
 
 .item-rarity {
-    padding: 4px 12px;
-    border-radius: 15px;
-    font-size: 0.8em;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
     font-weight: bold;
     text-transform: uppercase;
+    display: inline-block;
 }
-
-.item-rarity.common { background: #9ca3af; color: #1f2937; }
-.item-rarity.uncommon { background: #4ade80; color: #1f2937; }
-.item-rarity.rare { background: #4cc9f0; color: #1f2937; }
-.item-rarity.epic { background: #a855f7; color: white; }
-.item-rarity.legendary { background: #f59e0b; color: #1f2937; }
-.item-rarity.mythic { background: #ff6b6b; color: white; }
 
 .item-detail-info {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
 .item-name {
     font-weight: bold;
-    font-size: 1.1em;
-    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.rarity-common .item-name { color: #9ca3af; }
-.rarity-uncommon .item-name { color: #4cc9f0; }
-.rarity-rare .item-name { color: #a855f7; }
-.rarity-epic .item-name { 
-    color: #f59e0b;
-    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-}
-.rarity-legendary .item-name { 
-    color: #ffd700;
-    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-}
-.rarity-mythic .item-name { 
-    color: #ff6b6b;
-    text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+    font-size: 1.8em; /* Увеличили размер названия */
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    margin-bottom: 5px;
 }
 
 .item-type {
-    font-size: 1.3em;
+    font-size: 1.1em;
     color: #cbd5e1;
     font-style: italic;
-    margin-bottom: 25px;
-    text-align: center;
+    margin-bottom: 10px;
 }
 
 .item-description {
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.95em;
-    line-height: 1.4;
+    font-size: 1em;
+    line-height: 1.6;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #4cc9f0;
 }
 
 .item-flavor {
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.7);
     font-style: italic;
-    font-size: 0.85em;
+    font-size: 0.9em;
     text-align: center;
-    padding: 8px;
+    padding: 12px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
+    border-radius: 8px;
     border-left: 3px solid #4cc9f0;
 }
 
 .item-stats-detailed, .item-requirements {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .item-stats-detailed h5, .item-requirements h5 {
     color: #4cc9f0;
-    margin-bottom: 8px;
-    font-size: 0.9em;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+    padding-bottom: 5px;
 }
 
 .stat-line {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 4px 0;
-    font-size: 0.85em;
+    padding: 8px 0;
+    font-size: 0.95em;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -593,33 +591,48 @@
     border-bottom: none;
 }
 
+.stat-value {
+    font-weight: bold;
+    color: #4cc9f0;
+}
+
 .item-actions {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    margin-top: 10px;
 }
 
 .price-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     font-weight: bold;
+    font-size: 1.1em;
 }
 
 .buy-price {
     color: #ffd700;
+    font-size: 1.2em;
 }
 
 .sell-price {
     color: #4ade80;
+    font-size: 1.1em;
 }
 
-.purchase-error {
-    color: #f87171;
-    font-size: 0.8em;
-    text-align: center;
-    margin-top: 8px;
+.btn-primary {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    margin-top: 10px;
+}
+
+.btn-primary.owned {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
+    color: #4ade80;
 }
 
 .btn-primary.disabled {
@@ -627,6 +640,105 @@
     cursor: not-allowed;
     background: rgba(255, 255, 255, 0.1) !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.purchase-error {
+    color: #f87171;
+    font-size: 0.9em;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95%;
+        max-height: 95vh;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .detail-item-background {
+        height: 250px;
+        padding: 20px;
+    }
+    
+    .item-detail-image {
+        max-width: 100%;
+    }
+    
+    .detail-item-background img {
+        max-width: 200px;
+        max-height: 200px;
+    }
+    
+    .item-fallback-large {
+        font-size: 3em;
+    }
+    
+    .item-name {
+        font-size: 1.5em;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-header h4 {
+        font-size: 1.3em;
+    }
+}
+
+@media (max-width: 480px) {
+    .item-detail-content {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .detail-item-background {
+        height: 200px;
+        padding: 15px;
+    }
+    
+    .detail-item-background img {
+        max-width: 150px;
+        max-height: 150px;
+    }
+    
+    .item-name {
+        font-size: 1.3em;
+    }
+    
+    .price-section {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+
+/* Стили для скроллбара в модальном окне */
+.modal-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-radius: 5px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #3b82f6, #3730a3);
 }
 
 /* ========== ПРОКРУТКА МАГАЗИНА ========== */
