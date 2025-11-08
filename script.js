@@ -530,116 +530,21 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                container.innerHTML = this.createShopOverlay();
+                // Используем стандартный метод системы экипировки, но обернем в наш стиль
+                const shopContent = this.systems.equipment.showShop();
+                container.innerHTML = this.wrapShopInNewStyle(shopContent);
                 break;
         }
 
         container.style.display = 'block';
     }
 
-    // ========== НОВАЯ СИСТЕМА МАГАЗИНА С ОКНОМ ПРЕДМЕТА ==========
-    createShopOverlay() {
-        const items = this.systems.equipment.items;
-        const categories = this.getShopCategories(items);
-        
+    // ========== ОБЕРТКА ДЛЯ МАГАЗИНА ==========
+    wrapShopInNewStyle(shopContent) {
+        // Если система экипировки возвращает готовый HTML, оборачиваем его в наш стиль
         return `
             <div class="overlay-content shop-overlay">
-                <div class="overlay-header">
-                    <h3>🏪 Магазин приключенца</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div class="merchant-header">
-                        <h4>Добро пожаловать в магазин!</h4>
-                        <div class="hero-merchant-info">
-                            <div class="merchant-stats">
-                                <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)} золота</span>
-                                <span class="inventory-space">🎒 Свободно: ${this.getFreeInventorySlots()} слотов</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Основные категории -->
-                    <div class="shop-categories">
-                        ${Object.keys(categories).map(category => `
-                            <button class="category-tab" onclick="game.filterShopItems('${category}')">
-                                ${this.getCategoryName(category)}
-                            </button>
-                        `).join('')}
-                    </div>
-
-                    <!-- Подкатегории брони -->
-                    <div class="armor-subcategories">
-                        <button class="subcategory-tab" onclick="game.filterArmorSubcategory('cloth')">
-                            Ткань
-                        </button>
-                        <button class="subcategory-tab" onclick="game.filterArmorSubcategory('leather')">
-                            Кожа
-                        </button>
-                        <button class="subcategory-tab" onclick="game.filterArmorSubcategory('mail')">
-                            Кольчуга
-                        </button>
-                        <button class="subcategory-tab" onclick="game.filterArmorSubcategory('plate')">
-                            Латы
-                        </button>
-                    </div>
-
-                    <div class="shop-content" id="shopContent">
-                        ${this.renderShopItems(items)}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    renderShopItems(items) {
-        if (!items || items.length === 0) {
-            return '<div class="empty-category">Товары временно отсутствуют</div>';
-        }
-
-        return `
-            <div class="items-grid">
-                ${items.map(item => {
-                    const canBuy = this.currentHero.gold >= item.price;
-                    const isOwned = this.systems.equipment.isItemOwned(item.id);
-                    
-                    return `
-                        <div class="shop-item ${isOwned ? 'owned' : ''} ${!canBuy ? 'cannot-buy' : ''} rarity-${item.rarity || 'common'}" 
-                             onclick="game.showItemDetail(${item.id})">
-                            <div class="item-background">
-                                <div class="item-image-container">
-                                    <img src="${item.image}" alt="${item.name}"
-                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                                    <div class="item-fallback" style="display: none;">
-                                        <span class="item-icon">${this.getItemTypeIcon(item.type)}</span>
-                                    </div>
-                                </div>
-                                <div class="item-info">
-                                    <div class="item-name">${item.name}</div>
-                                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
-                                    
-                                    ${item.stats ? `
-                                        <div class="item-stats-compact">
-                                            ${Object.entries(item.stats).slice(0, 3).map(([key, value]) => `
-                                                <span>${this.getStatIcon(key)}+${value}</span>
-                                            `).join('')}
-                                        </div>
-                                    ` : ''}
-                                    
-                                    <div class="item-price-tag">
-                                        <div class="price">💰 ${item.price} золота</div>
-                                        ${isOwned ? 
-                                            '<div class="owned-badge">Уже есть</div>' : 
-                                            `<div class="buy-status ${canBuy ? 'can-buy' : 'cannot-buy'}">
-                                                ${canBuy ? 'Можно купить' : 'Недостаточно золота'}
-                                            </div>`
-                                        }
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
+                ${shopContent}
             </div>
         `;
     }
@@ -735,7 +640,11 @@ class SafeHeroGame {
             // Обновляем магазин
             const shopContent = document.getElementById('shopContent');
             if (shopContent) {
-                shopContent.innerHTML = this.renderShopItems(this.systems.equipment.items);
+                // Перезагружаем магазин
+                const container = document.getElementById('overlay-container');
+                if (container) {
+                    container.innerHTML = this.wrapShopInNewStyle(this.systems.equipment.showShop());
+                }
             }
             
         } else {
@@ -744,39 +653,6 @@ class SafeHeroGame {
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ МАГАЗИНА ==========
-    getShopCategories(items) {
-        const categories = {};
-        items.forEach(item => {
-            if (!categories[item.type]) {
-                categories[item.type] = [];
-            }
-            categories[item.type].push(item);
-        });
-        return categories;
-    }
-
-    getCategoryName(category) {
-        const names = {
-            'weapon': '⚔️ Оружие',
-            'armor': '🛡️ Броня', 
-            'potion': '🧪 Зелья',
-            'scroll': '📜 Свитки',
-            'misc': '📦 Разное'
-        };
-        return names[category] || category;
-    }
-
-    getItemTypeIcon(type) {
-        const icons = {
-            'weapon': '⚔️',
-            'armor': '🛡️',
-            'potion': '🧪', 
-            'scroll': '📜',
-            'misc': '📦'
-        };
-        return icons[type] || '📦';
-    }
-
     getItemTypeName(type) {
         const names = {
             'weapon': 'Оружие',
@@ -786,20 +662,6 @@ class SafeHeroGame {
             'misc': 'Предмет'
         };
         return names[type] || type;
-    }
-
-    getStatIcon(stat) {
-        const icons = {
-            'health': '❤️',
-            'damage': '⚔️',
-            'armor': '🛡️',
-            'speed': '🏃',
-            'magic': '🔮',
-            'strength': '💪',
-            'agility': '🌀',
-            'intelligence': '🧠'
-        };
-        return icons[stat] || '📊';
     }
 
     getStatLabel(stat) {
@@ -814,20 +676,6 @@ class SafeHeroGame {
             'intelligence': 'Интеллект'
         };
         return labels[stat] || stat;
-    }
-
-    getFreeInventorySlots() {
-        return this.systems.equipment ? this.systems.equipment.getFreeInventorySlots() : 0;
-    }
-
-    filterShopItems(category) {
-        // Реализация фильтрации по категориям
-        console.log('Фильтр по категории:', category);
-    }
-
-    filterArmorSubcategory(subcategory) {
-        // Реализация фильтрации по подкатегориям брони
-        console.log('Фильтр по подкатегории брони:', subcategory);
     }
 
     hideOverlay() {
