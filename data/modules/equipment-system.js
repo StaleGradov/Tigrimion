@@ -9,31 +9,32 @@ class EquipmentSystem {
         console.log("✅ EquipmentSystem инициализирован");
     }
 
-   async loadItemData() {
-    try {
-        console.log("📥 Загружаем данные предметов...");
-        
-        const response = await fetch('data/items.json');
-        if (!response.ok) {
-            throw new Error(`Ошибка загрузки items.json: ${response.status}`);
+    async loadItemData() {
+        try {
+            console.log("📥 Загружаем данные предметов...");
+            
+            const response = await fetch('data/items.json');
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки items.json: ${response.status}`);
+            }
+            
+            this.items = await response.json();
+            this.loadItemSetConfig();
+            
+            console.log(`✅ Загружено предметов: ${this.items.length}`);
+            
+            // Отладка
+            this.debugItems();
+            
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных предметов:", error);
+            this.createFallbackItems();
+            return true;
         }
-        
-        this.items = await response.json();
-        this.loadItemSetConfig();
-        
-        console.log(`✅ Загружено предметов: ${this.items.length}`);
-        
-        // Отладка
-        this.debugItems();
-        
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Ошибка загрузки данных предметов:", error);
-        this.createFallbackItems();
-        return true;
     }
-}
+
     // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
     loadItemSetConfig() {
         this.itemSets = {
@@ -67,561 +68,617 @@ class EquipmentSystem {
                 bonus: { type: "damage_mult", value: 0.25 },
                 description: "Комплект из 6 вещей даст +25% к урону"
             },
-              "set_king": {
-            name: "Стратегоса Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к урону"
-        },
-         "set_crit1": {
-            name: "Охотника Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit2": {
-            name: "Разведчика Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit3": {
-            name: "Лучника Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit4": {
-            name: "Элитного стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit5": {
-            name: "Командира лучников Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
-        },
-     "set_crit6": {
-            name: "Легендарного стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "crit_chance", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
-        },
-             "set_penetration1": {
-            name: "Стрелка Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.06 },
-            description: "Комплект из 6 вещей даст +6% к шансу игрорирования брони соперника"
-        },
-         "set_penetration2": {
-            name: "Следопыта Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.12 },
-            description: "Комплект из 6 вещей даст +12% к шансу игрорирования брони соперника"
-        },
-         "set_penetration3": {
-            name: "Охотника на монстров Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.18 },
-            description: "Комплект из 6 вещей даст +18% к шансу игрорирования брони соперника"
-        },
-         "set_penetration4": {
-            name: "Наемного убийцы Магнатов Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.24 },
-            description: "Комплект из 6 вещей даст +24% к шансу игрорирования брони соперника"
-        },
-         "set_penetration5": {
-            name: "Командира арбалетчиков Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к шансу игрорирования брони соперника"
-        },
-         "set_penetration6": {
-            name: "Мастера над арбалетами Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "armor_penetration", value: 0.36 },
-            description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
-        },
-           "set_rich1": {
-            name: "Сборщика трофеев Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к награде в золоте за убийство монстра"
-        },
-           "set_rich2": {
-            name: "Охотник на редких животных Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к награде в золоте за убийство монстра"
-        },
-           "set_rich3": {
-            name: "Профессионального истребителя опасных существ Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к награде в золоте за убийство монстра"
-        },
-           "set_rich4": {
-            name: "Коллекционера Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к награде в золоте за убийство монстра"
-        },
-           "set_rich5": {
-            name: "Ловца королевских тварей Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к награде в золоте за убийство монстра"
-        },
-           "set_rich6": {
-            name: "Легендарного зверолова Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "gold_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
-        },
+            "set_king": {
+                name: "Стратегоса Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "damage_mult", value: 0.3 },
+                description: "Комплект из 6 вещей даст +30% к урону"
+            },
+            "set_crit1": {
+                name: "Охотника Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.05 },
+                description: "Комплект из 6 вещей даст +5% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_crit2": {
+                name: "Разведчика Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_crit3": {
+                name: "Лучника Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.15 },
+                description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_crit4": {
+                name: "Элитного стрелка Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.2 },
+                description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_crit5": {
+                name: "Командира лучников Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.25 },
+                description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_crit6": {
+                name: "Легендарного стрелка Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "crit_chance", value: 0.3 },
+                description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
+            },
+            "set_penetration1": {
+                name: "Стрелка Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.06 },
+                description: "Комплект из 6 вещей даст +6% к шансу игрорирования брони соперника"
+            },
+            "set_penetration2": {
+                name: "Следопыта Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.12 },
+                description: "Комплект из 6 вещей даст +12% к шансу игрорирования брони соперника"
+            },
+            "set_penetration3": {
+                name: "Охотника на монстров Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.18 },
+                description: "Комплект из 6 вещей даст +18% к шансу игрорирования брони соперника"
+            },
+            "set_penetration4": {
+                name: "Наемного убийцы Магнатов Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.24 },
+                description: "Комплект из 6 вещей даст +24% к шансу игрорирования брони соперника"
+            },
+            "set_penetration5": {
+                name: "Командира арбалетчиков Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.3 },
+                description: "Комплект из 6 вещей даст +30% к шансу игрорирования брони соперника"
+            },
+            "set_penetration6": {
+                name: "Мастера над арбалетами Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "armor_penetration", value: 0.36 },
+                description: "Комплект из 6 вещей даст +36% к шансу игрорирования брони соперника"
+            },
+            "set_rich1": {
+                name: "Сборщика трофеев Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.05 },
+                description: "Комплект из 6 вещей даст +5% к награде в золоте за убийство монстра"
+            },
+            "set_rich2": {
+                name: "Охотник на редких животных Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к награде в золоте за убийство монстра"
+            },
+            "set_rich3": {
+                name: "Профессионального истребителя опасных существ Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.15 },
+                description: "Комплект из 6 вещей даст +15% к награде в золоте за убийство монстра"
+            },
+            "set_rich4": {
+                name: "Коллекционера Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.2 },
+                description: "Комплект из 6 вещей даст +20% к награде в золоте за убийство монстра"
+            },
+            "set_rich5": {
+                name: "Ловца королевских тварей Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.25 },
+                description: "Комплект из 6 вещей даст +25% к награде в золоте за убийство монстра"
+            },
+            "set_rich6": {
+                name: "Легендарного зверолова Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "gold_mult", value: 0.3 },
+                description: "Комплект из 6 вещей даст +30% к награде в золоте за убийство монстра"
+            },
             "set_vampire1": {
-            name: "Убийцы Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.01 },
-            description: "Комплект из 6 вещей даст +1% к вампиризму"
-        },
-           "set_vampire2": {
-            name: "Наемного убийцы Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.02 },
-            description: "Комплект из 6 вещей даст +2% к вампиризму"
-        },
+                name: "Убийцы Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.01 },
+                description: "Комплект из 6 вещей даст +1% к вампиризму"
+            },
+            "set_vampire2": {
+                name: "Наемного убийцы Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.02 },
+                description: "Комплект из 6 вещей даст +2% к вампиризму"
+            },
             "set_vampire3": {
-            name: "Темного стража Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.03 },
-            description: "Комплект из 6 вещей даст +3% к вампиризму"
-        },
-               "set_vampire4": {
-            name: "Легендарного зверолова Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.04 },
-            description: "Комплект из 6 вещей даст +4% к вампиризму"
-        },
-               "set_vampire5": {
-            name: "Охотника на вампиров, ставшего вампиром",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.05 },
-            description: "Комплект из 6 вещей даст +5% к вампиризму"
-        },
-               "set_vampire6": {
-            name: "Лорда вампиров...Арканиума? Откуда у лорда вампиров могли взяться доспехи из костей драконов..? Неужели драконы были здесь во времена вампиров?  ",
-            requiredPieces: 6,
-            bonus: { type: "vampirism", value: 0.06 },
-            description: "Комплект из 6 вещей даст +6% к вампиризму"
-        },
+                name: "Темного стража Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.03 },
+                description: "Комплект из 6 вещей даст +3% к вампиризму"
+            },
+            "set_vampire4": {
+                name: "Легендарного зверолова Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.04 },
+                description: "Комплект из 6 вещей даст +4% к вампиризму"
+            },
+            "set_vampire5": {
+                name: "Охотника на вампиров, ставшего вампиром",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.05 },
+                description: "Комплект из 6 вещей даст +5% к вампиризму"
+            },
+            "set_vampire6": {
+                name: "Лорда вампиров...Арканиума? Откуда у лорда вампиров могли взяться доспехи из костей драконов..? Неужели драконы были здесь во времена вампиров?  ",
+                requiredPieces: 6,
+                bonus: { type: "vampirism", value: 0.06 },
+                description: "Комплект из 6 вещей даст +6% к вампиризму"
+            },
             "set_regen1": {
-            name: "Грабителя Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.5 },
-            description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
-        },
+                name: "Грабителя Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 0.5 },
+                description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
+            },
             "set_regen2": {
-            name: "Бандита Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
-        },
+                name: "Бандита Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
+            },
             "set_regen3": {
-            name: "Опытного разбойника",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
-        },
-                   "set_regen4": {
-            name: "Вожака банды Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.4 },
-            description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
-        },
-                   "set_regen5": {
-            name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.8 },
-            description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
-        },
-                   "set_regen6": {
-            name: "Короля воров Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 1.6 },
-            description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
-        },
-           "set_health1": {
-            name: "Лесоруба Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.5 },
-            description: "Комплект из 6 вещей даст +5% к здоровью"
-        },
-           "set_health2": {
-            name: "Дровосека Арканиума", 
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к здоровью"
-        },
-           "set_health3": {
-            name: "Берсерка - воина гильдии воров Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.15 },
-            description: "Комплект из 6 вещей даст +15% к здоровью"
-        },
-           "set_healt4": {
-            name: "Наемника Ветерана Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к здоровью"
-        },
-           "set_health5": {
-            name: "Капитана стражи Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.25 },
-            description: "Комплект из 6 вещей даст +25% к здоровью"
-        },
-           "set_health6": {
-            name: "Лорда Воина Арканиума",
-            requiredPieces: 6,
-            bonus: { type: "health_mult", value: 0.3 },
-            description: "Комплект из 6 вещей даст +30% к здоровью"
-        },
-           "set_bron1": {
-            name: "Тяжелого отряда личной гвардии Царя Арканиума - Щит Царя",
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.005 },
-            description: "Комплект из 6 вещей даст +0,5% к броне"
-        },
-           "set_bron2": {
-            name: "Штурмовые отряды прорыва личной гвардии Царя Арканиума - Гнев Вулкана", 
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.01 },
-            description: "Комплект из 6 вещей даст +1% к броне"
-        },
-           "set_bron3": {
-            name: "Быстрых ударных групп Царя Арканиума - Стальная Буря",
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.015 },
-            description: "Комплект из 6 вещей даст +1,5% к броне"
-        },
-           "set_bron4": {
-            name: "Защитников левитационных кристаллов Арканиума - Нерушимые",
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.02 },
-            description: "Комплект из 6 вещей даст +2% к броне"
-        },
-           "set_bron5": {
-            name: "Элита боевых подразделений Арканиума - Наследники Титанов",
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.025 },
-            description: "Комплект из 6 вещей даст +2,5% к броне"
-        },
-           "set_bron6": {
-            name: "Мистические стражи Арканиума - Воплощение Воли. Охраняющие самые ценные артефакты и реликвии человечества",
-            requiredPieces: 6,
-            bonus: { type: "armor_mult", value: 0.03 },
-            description: "Комплект из 6 вещей даст +3% к броне"
-        }
+                name: "Опытного разбойника",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 0.2 },
+                description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
+            },
+            "set_regen4": {
+                name: "Вожака банды Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 0.4 },
+                description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
+            },
+            "set_regen5": {
+                name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 0.8 },
+                description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
+            },
+            "set_regen6": {
+                name: "Короля воров Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_regen_mult", value: 1.6 },
+                description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
+            },
+            "set_health1": {
+                name: "Лесоруба Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.5 },
+                description: "Комплект из 6 вещей даст +5% к здоровью"
+            },
+            "set_health2": {
+                name: "Дровосека Арканиума", 
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.1 },
+                description: "Комплект из 6 вещей даст +10% к здоровью"
+            },
+            "set_health3": {
+                name: "Берсерка - воина гильдии воров Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.15 },
+                description: "Комплект из 6 вещей даст +15% к здоровью"
+            },
+            "set_healt4": {
+                name: "Наемника Ветерана Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.2 },
+                description: "Комплект из 6 вещей даст +20% к здоровью"
+            },
+            "set_health5": {
+                name: "Капитана стражи Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.25 },
+                description: "Комплект из 6 вещей даст +25% к здоровью"
+            },
+            "set_health6": {
+                name: "Лорда Воина Арканиума",
+                requiredPieces: 6,
+                bonus: { type: "health_mult", value: 0.3 },
+                description: "Комплект из 6 вещей даст +30% к здоровью"
+            },
+            "set_bron1": {
+                name: "Тяжелого отряда личной гвардии Царя Арканиума - Щит Царя",
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.005 },
+                description: "Комплект из 6 вещей даст +0,5% к броне"
+            },
+            "set_bron2": {
+                name: "Штурмовые отряды прорыва личной гвардии Царя Арканиума - Гнев Вулкана", 
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.01 },
+                description: "Комплект из 6 вещей даст +1% к броне"
+            },
+            "set_bron3": {
+                name: "Быстрых ударных групп Царя Арканиума - Стальная Буря",
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.015 },
+                description: "Комплект из 6 вещей даст +1,5% к броне"
+            },
+            "set_bron4": {
+                name: "Защитников левитационных кристаллов Арканиума - Нерушимые",
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.02 },
+                description: "Комплект из 6 вещей даст +2% к броне"
+            },
+            "set_bron5": {
+                name: "Элита боевых подразделений Арканиума - Наследники Титанов",
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.025 },
+                description: "Комплект из 6 вещей даст +2,5% к броне"
+            },
+            "set_bron6": {
+                name: "Мистические стражи Арканиума - Воплощение Воли. Охраняющие самые ценные артефакты и реликвии человечества",
+                requiredPieces: 6,
+                bonus: { type: "armor_mult", value: 0.03 },
+                description: "Комплект из 6 вещей даст +3% к броне"
+            }
         };
     }
 
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+    isItemOwned(itemId) {
+        return this.currentHero && this.currentHero.inventory.includes(itemId);
+    }
 
-
-    
-// Добавьте этот метод в класс EquipmentSystem для отладки
-debugItems() {
-    console.log('=== ДЕБАГ ПРЕДМЕТОВ ===');
-    console.log(`Всего предметов: ${this.items.length}`);
-    
-    const categories = {};
-    this.items.forEach(item => {
-        if (!categories[item.type]) categories[item.type] = 0;
-        categories[item.type]++;
-        
-        if (item.type === 'weapon') {
-            console.log(`Оружие: ${item.name} (${item.weaponType})`);
-        } else if (item.material) {
-            console.log(`${item.type}: ${item.name} (${item.material})`);
+    addItemToInventory(itemId) {
+        if (this.currentHero && !this.currentHero.inventory.includes(itemId)) {
+            this.currentHero.inventory.push(itemId);
+            return true;
         }
-    });
-    
-    console.log('Распределение по категориям:', categories);
-}
+        return false;
+    }
+
+    debugItems() {
+        console.log('=== ДЕБАГ ПРЕДМЕТОВ ===');
+        console.log(`Всего предметов: ${this.items.length}`);
+        
+        const categories = {};
+        this.items.forEach(item => {
+            if (!categories[item.type]) categories[item.type] = 0;
+            categories[item.type]++;
+            
+            if (item.type === 'weapon') {
+                console.log(`Оружие: ${item.name} (${item.weaponType})`);
+            } else if (item.material) {
+                console.log(`${item.type}: ${item.name} (${item.material})`);
+            }
+        });
+        
+        console.log('Распределение по категориям:', categories);
+    }
+
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-// ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-// ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-showShop(category = 'all', subcategory = 'all') {
-    if (!this.currentHero) return '';
+    showShop(category = 'all', subcategory = 'all') {
+        if (!this.currentHero) return '';
 
-    this.currentCategory = category;
-    this.currentSubcategory = subcategory;
+        this.currentCategory = category;
+        this.currentSubcategory = subcategory;
 
-    console.log('🔍 Открываем магазин:', { category, subcategory });
+        console.log('🔍 Открываем магазин:', { category, subcategory });
 
-    const html = `
-        <div class="overlay-content shop-overlay" style="max-width: 1200px; width: 95%;">
-            <div class="overlay-header">
-                <h3>🏪 Магазин снаряжения</h3>
-                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-            </div>
-            
-            <div class="merchant-info">
-                <div class="merchant-stats">
-                    <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)}</span>
-                    <span class="inventory-space">🎒 ${this.currentHero.inventory.length}/10</span>
+        const html = `
+            <div class="overlay-content shop-overlay" style="max-width: 1200px; width: 95%;">
+                <div class="overlay-header">
+                    <h3>🏪 Магазин снаряжения</h3>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                
+                <div class="merchant-info">
+                    <div class="merchant-stats">
+                        <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)}</span>
+                        <span class="inventory-space">🎒 ${this.currentHero.inventory.length}/10</span>
+                    </div>
+                </div>
+                
+                <div class="shop-categories">
+                    <button class="category-tab ${category === 'all' ? 'active' : ''}" 
+                            data-category="all"
+                            onclick="game.systems.equipment.handleCategoryClick('all')">Все предметы</button>
+                    <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
+                            data-category="weapon"
+                            onclick="game.systems.equipment.handleCategoryClick('weapon')">⚔️ Оружие</button>
+                    <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
+                            data-category="helmet"
+                            onclick="game.systems.equipment.handleCategoryClick('helmet')">⛑️ Шлемы</button>
+                    <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
+                            data-category="chest"
+                            onclick="game.systems.equipment.handleCategoryClick('chest')">👕 Броня</button>
+                    <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
+                            data-category="gloves"
+                            onclick="game.systems.equipment.handleCategoryClick('gloves')">🧤 Перчатки</button>
+                    <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
+                            data-category="legs"
+                            onclick="game.systems.equipment.handleCategoryClick('legs')">👖 Поножи</button>
+                    <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
+                            data-category="boots"
+                            onclick="game.systems.equipment.handleCategoryClick('boots')">👢 Ботинки</button>
+                    <!-- НОВАЯ КАТЕГОРИЯ СЕТОВ -->
+                    <button class="category-tab ${category === 'set' ? 'active' : ''}" 
+                            data-category="set"
+                            onclick="game.systems.equipment.handleCategoryClick('set')">✨ Сеты</button>
+                </div>
+                
+                <div id="shop-subcategories-container"></div>
+                
+                <div class="shop-content" style="max-height: 60vh; overflow-y: auto;">
+                    <div class="items-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+                        ${this.renderShopItems(category, subcategory)}
+                    </div>
                 </div>
             </div>
-            
-            <div class="shop-categories">
-                <button class="category-tab ${category === 'all' ? 'active' : ''}" 
-                        data-category="all"
-                        onclick="game.systems.equipment.handleCategoryClick('all')">Все предметы</button>
-                <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
-                        data-category="weapon"
-                        onclick="game.systems.equipment.handleCategoryClick('weapon')">⚔️ Оружие</button>
-                <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
-                        data-category="helmet"
-                        onclick="game.systems.equipment.handleCategoryClick('helmet')">⛑️ Шлемы</button>
-                <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
-                        data-category="chest"
-                        onclick="game.systems.equipment.handleCategoryClick('chest')">👕 Броня</button>
-                <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
-                        data-category="gloves"
-                        onclick="game.systems.equipment.handleCategoryClick('gloves')">🧤 Перчатки</button>
-                <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
-                        data-category="legs"
-                        onclick="game.systems.equipment.handleCategoryClick('legs')">👖 Поножи</button>
-                <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
-                        data-category="boots"
-                        onclick="game.systems.equipment.handleCategoryClick('boots')">👢 Ботинки</button>
-            </div>
-            
-            <div id="shop-subcategories-container"></div>
-            
-            <div class="shop-content" style="max-height: 60vh; overflow-y: auto;">
-                <div class="items-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
-                    ${this.renderShopItems(category, subcategory)}
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Откладываем инициализацию подкатегорий после рендера
-    setTimeout(() => {
-        this.initializeSubcategories(category, subcategory);
-    }, 0);
-
-    return html;
-}
-
-// Новая система подкатегорий по аналогии со старой версией
-getSubcategories() {
-    return {
-        'helmet': {
-            'all': 'Все шлемы',
-            'cloth': 'Ткань',
-            'leather': 'Кожа', 
-            'hide': 'Шкура',
-            'fur': 'Мех',
-            'bone': 'Кости',
-            'plate': 'Пластины',
-            'chain': 'Кольчуга',
-            'plate_mail': 'Латы'
-        },
-        'chest': {
-            'all': 'Вся броня',
-            'cloth': 'Ткань',
-            'leather': 'Кожа',
-            'hide': 'Шкура', 
-            'fur': 'Мех',
-            'bone': 'Кости',
-            'plate': 'Пластины',
-            'chain': 'Кольчуга',
-            'plate_mail': 'Латы'
-        },
-        'gloves': {
-            'all': 'Все перчатки',
-            'cloth': 'Ткань',
-            'leather': 'Кожа',
-            'hide': 'Шкура',
-            'fur': 'Мех', 
-            'bone': 'Кости',
-            'plate': 'Пластины',
-            'chain': 'Кольчуга',
-            'plate_mail': 'Латы'
-        },
-        'legs': {
-            'all': 'Все поножи',
-            'cloth': 'Ткань',
-            'leather': 'Кожа',
-            'hide': 'Шкура',
-            'fur': 'Мех',
-            'bone': 'Кости',
-            'plate': 'Пластины', 
-            'chain': 'Кольчуга',
-            'plate_mail': 'Латы'
-        },
-        'boots': {
-            'all': 'Все ботинки',
-            'cloth': 'Ткань',
-            'leather': 'Кожа',
-            'hide': 'Шкура',
-            'fur': 'Мех',
-            'bone': 'Кости',
-            'plate': 'Пластины',
-            'chain': 'Кольчуга',
-            'plate_mail': 'Латы'
-        },
-        'weapon': {
-            'all': 'Все оружие',
-            'one_handed': 'Одноручное',
-            'two_handed': 'Двуручное', 
-            'shield': 'Щиты'
-        }
-    };
-}
-
-initializeSubcategories(category, currentSubcategory = 'all') {
-    const container = document.getElementById('shop-subcategories-container');
-    if (!container) return;
-
-    const subcategories = this.getSubcategories()[category];
-    if (!subcategories) {
-        container.innerHTML = '';
-        return;
-    }
-
-    let html = `<div class="shop-subcategories">
-        <div class="subcategory-tabs">`;
-    
-    Object.entries(subcategories).forEach(([key, name]) => {
-        const isActive = currentSubcategory === key;
-        const count = this.getSubcategoryItemCount(category, key);
-        html += `
-            <button class="subcategory-tab ${isActive ? 'active' : ''}" 
-                    data-subcategory="${key}"
-                    onclick="game.systems.equipment.handleSubcategoryClick('${category}', '${key}')">
-                ${name}
-                <span class="subcategory-count">${count}</span>
-            </button>
         `;
-    });
-    
-    html += `</div></div>`;
-    container.innerHTML = html;
 
-    console.log('✅ Подкатегории инициализированы для:', category);
-}
+        // Откладываем инициализацию подкатегорий после рендера
+        setTimeout(() => {
+            this.initializeSubcategories(category, subcategory);
+        }, 0);
 
-handleCategoryClick(category) {
-    console.log('🎯 Нажата категория:', category);
-    this.showShop(category, 'all');
-}
-
-handleSubcategoryClick(category, subcategory) {
-    console.log('🎯 Нажата подкатегория:', { category, subcategory });
-    
-    // Обновляем активные вкладки
-    const allSubTabs = document.querySelectorAll('.subcategory-tab');
-    allSubTabs.forEach(tab => tab.classList.remove('active'));
-    
-    const clickedTab = document.querySelector(`[data-subcategory="${subcategory}"]`);
-    if (clickedTab) {
-        clickedTab.classList.add('active');
-    }
-    
-    // Обновляем отображение предметов
-    this.updateShopItems(category, subcategory);
-}
-
-updateShopItems(category, subcategory) {
-    const itemsGrid = document.querySelector('.items-grid');
-    if (!itemsGrid) return;
-
-    itemsGrid.innerHTML = this.renderShopItems(category, subcategory);
-}
-
-renderShopItems(category, subcategory = 'all') {
-    const filteredItems = this.filterItemsByCategory(category, subcategory);
-    console.log(`📦 Отображаем ${filteredItems.length} предметов для:`, { category, subcategory });
-
-    if (filteredItems.length === 0) {
-        return '<div class="empty-category">📭 Нет предметов в этой категории</div>';
+        return html;
     }
 
-    return filteredItems.map(item => this.renderShopItem(item)).join('');
-}
-
-// Улучшенная фильтрация по аналогии со старой версией
-filterItemsByCategory(category, subcategory = 'all') {
-    console.log(`🔍 Фильтрация: категория=${category}, подкатегория=${subcategory}`);
-    
-    // Показываем ВСЕ предметы (без фильтра по уровню)
-    let filteredItems = this.items;
-    
-    // Фильтрация по основной категории
-    if (category !== 'all') {
-        filteredItems = filteredItems.filter(item => this.doesItemMatchCategory(item, category));
+    // Новая система подкатегорий
+    getSubcategories() {
+        return {
+            'helmet': {
+                'all': 'Все шлемы',
+                'cloth': 'Ткань',
+                'leather': 'Кожа', 
+                'hide': 'Шкура',
+                'fur': 'Мех',
+                'bone': 'Кости',
+                'plate': 'Пластины',
+                'chain': 'Кольчуга',
+                'plate_mail': 'Латы'
+            },
+            'chest': {
+                'all': 'Вся броня',
+                'cloth': 'Ткань',
+                'leather': 'Кожа',
+                'hide': 'Шкура', 
+                'fur': 'Мех',
+                'bone': 'Кости',
+                'plate': 'Пластины',
+                'chain': 'Кольчуга',
+                'plate_mail': 'Латы'
+            },
+            'gloves': {
+                'all': 'Все перчатки',
+                'cloth': 'Ткань',
+                'leather': 'Кожа',
+                'hide': 'Шкура',
+                'fur': 'Мех', 
+                'bone': 'Кости',
+                'plate': 'Пластины',
+                'chain': 'Кольчуга',
+                'plate_mail': 'Латы'
+            },
+            'legs': {
+                'all': 'Все поножи',
+                'cloth': 'Ткань',
+                'leather': 'Кожа',
+                'hide': 'Шкура',
+                'fur': 'Мех',
+                'bone': 'Кости',
+                'plate': 'Пластины', 
+                'chain': 'Кольчуга',
+                'plate_mail': 'Латы'
+            },
+            'boots': {
+                'all': 'Все ботинки',
+                'cloth': 'Ткань',
+                'leather': 'Кожа',
+                'hide': 'Шкура',
+                'fur': 'Мех',
+                'bone': 'Кости',
+                'plate': 'Пластины',
+                'chain': 'Кольчуга',
+                'plate_mail': 'Латы'
+            },
+            'weapon': {
+                'all': 'Все оружие',
+                'one_handed': 'Одноручное',
+                'two_handed': 'Двуручное', 
+                'shield': 'Щиты'
+            },
+            // НОВЫЕ ПОДКАТЕГОРИИ СЕТОВ
+            'set': {
+                'all': 'Все сеты',
+                'damage': '⚔️ Урон',
+                'crit': '🎯 Критический удар',
+                'penetration': '💥 Игнор Брони', 
+                'rich': '💰 Богатство',
+                'vampire': '🩸 Вампиризм',
+                'regen': '❤️ Регенерация',
+                'health': '💪 Здоровье',
+                'armor': '🛡️ Броня'
+            }
+        };
     }
 
-    // Фильтрация по подкатегории
-    if (subcategory !== 'all' && category !== 'all') {
-        filteredItems = this.filterItemsBySubcategory(filteredItems, category, subcategory);
-    }
+    initializeSubcategories(category, currentSubcategory = 'all') {
+        const container = document.getElementById('shop-subcategories-container');
+        if (!container) return;
 
-    console.log(`📊 Результат фильтрации: ${filteredItems.length} предметов`);
-    
-    // Сортируем по цене для удобства
-    return filteredItems.sort((a, b) => a.price - b.price);
-}
-
-// Метод из старой версии - проверка соответствия категории
-// Метод из старой версии - проверка соответствия категории
-doesItemMatchCategory(item, category) {
-    if (category === 'all') return true;
-    if (category === 'weapon') {
-        // Включаем ВСЕ оружие включая щиты
-        return item.type === 'weapon';
-    }
-    return item.type === category;
-}
-
-// Метод из старой версии - фильтрация по подкатегории
-filterItemsBySubcategory(items, category, subcategory) {
-    if (!subcategory || subcategory === 'all') return items;
-    
-    return items.filter(item => {
-        if (item.type !== category) return false;
-        
-        if (category === 'weapon') {
-            // Для оружия фильтруем по weaponType
-            return item.weaponType === subcategory;
-        } else {
-            // Для брони фильтруем по материалу
-            const itemMaterial = item.material || 'cloth';
-            return itemMaterial === subcategory;
+        const subcategories = this.getSubcategories()[category];
+        if (!subcategories) {
+            container.innerHTML = '';
+            return;
         }
-    });
-}
 
-getSubcategoryItemCount(category, subcategory) {
-    const items = this.filterItemsByCategory(category, subcategory);
-    return items.length;
-}
+        let html = `<div class="shop-subcategories">
+            <div class="subcategory-tabs">`;
+        
+        Object.entries(subcategories).forEach(([key, name]) => {
+            const isActive = currentSubcategory === key;
+            const count = this.getSubcategoryItemCount(category, key);
+            html += `
+                <button class="subcategory-tab ${isActive ? 'active' : ''}" 
+                        data-subcategory="${key}"
+                        onclick="game.systems.equipment.handleSubcategoryClick('${category}', '${key}')">
+                    ${name}
+                    <span class="subcategory-count">${count}</span>
+                </button>
+            `;
+        });
+        
+        html += `</div></div>`;
+        container.innerHTML = html;
+
+        console.log('✅ Подкатегории инициализированы для:', category);
+    }
+
+    handleCategoryClick(category) {
+        console.log('🎯 Нажата категория:', category);
+        this.showShop(category, 'all');
+    }
+
+    handleSubcategoryClick(category, subcategory) {
+        console.log('🎯 Нажата подкатегория:', { category, subcategory });
+        
+        // Обновляем активные вкладки
+        const allSubTabs = document.querySelectorAll('.subcategory-tab');
+        allSubTabs.forEach(tab => tab.classList.remove('active'));
+        
+        const clickedTab = document.querySelector(`[data-subcategory="${subcategory}"]`);
+        if (clickedTab) {
+            clickedTab.classList.add('active');
+        }
+        
+        // Обновляем отображение предметов
+        this.updateShopItems(category, subcategory);
+    }
+
+    updateShopItems(category, subcategory) {
+        const itemsGrid = document.querySelector('.items-grid');
+        if (!itemsGrid) return;
+
+        itemsGrid.innerHTML = this.renderShopItems(category, subcategory);
+    }
+
+    renderShopItems(category, subcategory = 'all') {
+        const filteredItems = this.filterItemsByCategory(category, subcategory);
+        console.log(`📦 Отображаем ${filteredItems.length} предметов для:`, { category, subcategory });
+
+        if (filteredItems.length === 0) {
+            return '<div class="empty-category">📭 Нет предметов в этой категории</div>';
+        }
+
+        return filteredItems.map(item => this.renderShopItem(item)).join('');
+    }
+
+    // Улучшенная фильтрация
+    filterItemsByCategory(category, subcategory = 'all') {
+        console.log(`🔍 Фильтрация: категория=${category}, подкатегория=${subcategory}`);
+        
+        // Показываем ВСЕ предметы (без фильтра по уровню)
+        let filteredItems = this.items;
+        
+        // Фильтрация по основной категории
+        if (category !== 'all') {
+            if (category === 'set') {
+                // Для категории сетов фильтруем предметы, которые принадлежат какому-либо сету
+                filteredItems = filteredItems.filter(item => item.setName && this.itemSets[item.setName]);
+            } else {
+                filteredItems = filteredItems.filter(item => this.doesItemMatchCategory(item, category));
+            }
+        }
+
+        // Фильтрация по подкатегории сетов
+        if (subcategory !== 'all' && category === 'set') {
+            filteredItems = this.filterSetItemsBySubcategory(filteredItems, subcategory);
+        }
+        // Фильтрация по подкатегории для остальных категорий
+        else if (subcategory !== 'all' && category !== 'all') {
+            filteredItems = this.filterItemsBySubcategory(filteredItems, category, subcategory);
+        }
+
+        console.log(`📊 Результат фильтрации: ${filteredItems.length} предметов`);
+        
+        // Сортируем по цене для удобства
+        return filteredItems.sort((a, b) => a.price - b.price);
+    }
+
+    // ========== ФИЛЬТРАЦИЯ СЕТОВ ПО ПОДКАТЕГОРИЯМ ==========
+    filterSetItemsBySubcategory(items, subcategory) {
+        const setBonusMap = {
+            'damage': ['set_beginner', 'set_warrior', 'set_guardian', 'set_hunter', 'set_complete', 'set_king'],
+            'crit': ['set_crit1', 'set_crit2', 'set_crit3', 'set_crit4', 'set_crit5', 'set_crit6'],
+            'penetration': ['set_penetration1', 'set_penetration2', 'set_penetration3', 'set_penetration4', 'set_penetration5', 'set_penetration6'],
+            'rich': ['set_rich1', 'set_rich2', 'set_rich3', 'set_rich4', 'set_rich5', 'set_rich6'],
+            'vampire': ['set_vampire1', 'set_vampire2', 'set_vampire3', 'set_vampire4', 'set_vampire5', 'set_vampire6'],
+            'regen': ['set_regen1', 'set_regen2', 'set_regen3', 'set_regen4', 'set_regen5', 'set_regen6'],
+            'health': ['set_health1', 'set_health2', 'set_health3', 'set_healt4', 'set_health5', 'set_health6'],
+            'armor': ['set_bron1', 'set_bron2', 'set_bron3', 'set_bron4', 'set_bron5', 'set_bron6']
+        };
+
+        if (subcategory === 'all') return items;
+        
+        const allowedSets = setBonusMap[subcategory] || [];
+        return items.filter(item => {
+            return item.setName && allowedSets.includes(item.setName);
+        });
+    }
+
+    // Метод из старой версии - проверка соответствия категории
+    doesItemMatchCategory(item, category) {
+        if (category === 'all') return true;
+        if (category === 'weapon') {
+            // Включаем ВСЕ оружие включая щиты
+            return item.type === 'weapon';
+        }
+        return item.type === category;
+    }
+
+    // Метод из старой версии - фильтрация по подкатегории
+    filterItemsBySubcategory(items, category, subcategory) {
+        if (!subcategory || subcategory === 'all') return items;
+        
+        return items.filter(item => {
+            if (item.type !== category) return false;
+            
+            if (category === 'weapon') {
+                // Для оружия фильтруем по weaponType
+                return item.weaponType === subcategory;
+            } else {
+                // Для брони фильтруем по материалу
+                const itemMaterial = item.material || 'cloth';
+                return itemMaterial === subcategory;
+            }
+        });
+    }
+
+    getSubcategoryItemCount(category, subcategory) {
+        const items = this.filterItemsByCategory(category, subcategory);
+        return items.length;
+    }
 
     renderShopItem(item) {
-        const isOwned = this.currentHero.inventory.includes(item.id);
+        const isOwned = this.isItemOwned(item.id);
         const canAfford = this.currentHero.gold >= item.price;
         const hasSpace = this.currentHero.inventory.length < 10;
         const canBuy = !isOwned && canAfford && hasSpace;
         const frameColor = this.getItemFrameColor(item.rarity);
         
+        // Получаем информацию о бонусе предмета
+        const bonusInfo = this.getBonusDisplayInfo(item);
+        
         return `
-            <div class="shop-item rarity-${item.rarity}" onclick="game.systems.equipment.showItemDetails(${item.id})">
-                <div class="item-background" style="border-color: ${frameColor};">
+            <div class="shop-item" data-item-id="${item.id}" onclick="game.showItemDetailModal(${item.id})">
+                <div class="item-background rarity-${item.rarity}" style="border-color: ${frameColor};">
                     <div class="item-image-container">
                         <img src="${item.image}" alt="${item.name}" 
                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
@@ -629,8 +686,6 @@ getSubcategoryItemCount(category, subcategory) {
                             <span class="item-icon">${this.getItemTypeIcon(item.type)}</span>
                         </div>
                     </div>
-                    
-                    <div class="item-rarity-bar" style="background: ${frameColor};"></div>
                     
                     <div class="item-info">
                         <div class="item-name" style="color: ${frameColor};">${item.name}</div>
@@ -640,7 +695,16 @@ getSubcategoryItemCount(category, subcategory) {
                             ${item.fixed_damage ? `<span>⚔️${item.fixed_damage}</span>` : ''}
                             ${item.fixed_armor ? `<span>🛡️${item.fixed_armor}</span>` : ''}
                             ${item.fixed_health ? `<span>❤️${item.fixed_health}</span>` : ''}
+                            <!-- ОТОБРАЖЕНИЕ БОНУСА ПРЕДМЕТА -->
+                            ${bonusInfo ? `<span class="item-bonus-display">${bonusInfo}</span>` : ''}
                         </div>
+                        
+                        <!-- ОТОБРАЖЕНИЕ ИНФОРМАЦИИ О СЕТЕ -->
+                        ${item.setName ? `
+                            <div class="item-set-info">
+                                ✨ ${this.itemSets[item.setName]?.name || 'Сет'}
+                            </div>
+                        ` : ''}
                         
                         <div class="item-price-tag">
                             <span class="price">💰 ${item.price}</span>
@@ -655,12 +719,33 @@ getSubcategoryItemCount(category, subcategory) {
         `;
     }
 
+    // ========== ПОЛУЧЕНИЕ ИНФОРМАЦИИ О БОНУСЕ ДЛЯ ОТОБРАЖЕНИЯ ==========
+    getBonusDisplayInfo(item) {
+        if (!item.bonus || item.bonus.type === 'none') return null;
+        
+        const bonusIcons = {
+            'health_mult': '💪',
+            'damage_mult': '⚔️',
+            'armor_mult': '🛡️',
+            'gold_mult': '💰',
+            'health_regen_mult': '❤️',
+            'crit_chance': '🎯',
+            'armor_penetration': '💥',
+            'vampirism': '🩸'
+        };
+        
+        const value = Math.round(item.bonus.value * 100);
+        const icon = bonusIcons[item.bonus.type] || '✨';
+        
+        return `${icon}+${value}%`;
+    }
+
     // ========== ДЕТАЛИ ПРЕДМЕТА И ПОКУПКА ==========
     showItemDetails(itemId) {
         const item = this.getItemById(itemId);
         if (!item) return;
 
-        const isOwned = this.currentHero.inventory.includes(item.id);
+        const isOwned = this.isItemOwned(item.id);
         const canAfford = this.currentHero.gold >= item.price;
         const hasSpace = this.currentHero.inventory.length < 10;
         const canBuy = !isOwned && canAfford && hasSpace;
@@ -692,15 +777,35 @@ getSubcategoryItemCount(category, subcategory) {
                         <div class="item-detail-info">
                             <div class="item-description">${item.description}</div>
                             
+                            <!-- ИНФОРМАЦИЯ О БОНУСЕ ПРЕДМЕТА -->
+                            ${item.bonus && item.bonus.type !== 'none' ? `
+                                <div class="item-bonus-info">
+                                    <h5>🎯 Бонус предмета:</h5>
+                                    <div class="bonus-display" style="color: #4cc9f0; font-weight: bold;">
+                                        ${this.formatBonus(item.bonus)}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
                             <div class="item-stats-detailed">
                                 <h5>Характеристики:</h5>
                                 ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span>+${item.fixed_damage}</span></div>` : ''}
                                 ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
                                 ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
-                                ${item.bonus && item.bonus.type !== 'none' ? 
-                                    `<div class="stat-line"><span>🎯 Бонус:</span> <span>${this.formatBonus(item.bonus)}</span></div>` : ''}
-                                ${item.setName ? `<div class="stat-line"><span>✨ Сет:</span> <span>${this.itemSets[item.setName]?.name || item.setName}</span></div>` : ''}
                             </div>
+                            
+                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
+                            ${item.setName && this.itemSets[item.setName] ? `
+                                <div class="item-set-details">
+                                    <h5>✨ Бонус сета:</h5>
+                                    <div class="set-info">
+                                        <strong>${this.itemSets[item.setName].name}</strong>
+                                        <div class="set-bonus">${this.formatBonus(this.itemSets[item.setName].bonus)}</div>
+                                        <div class="set-description">${this.itemSets[item.setName].description}</div>
+                                        <div class="set-requirements">Требуется предметов: ${this.itemSets[item.setName].requiredPieces}/6</div>
+                                    </div>
+                                </div>
+                            ` : ''}
                             
                             <div class="item-requirements">
                                 <h5>Требования:</h5>
@@ -752,13 +857,13 @@ getSubcategoryItemCount(category, subcategory) {
             return;
         }
 
-        if (this.currentHero.inventory.includes(itemId)) {
+        if (this.isItemOwned(itemId)) {
             this.showNotification('❌ У вас уже есть этот предмет');
             return;
         }
 
         this.currentHero.gold = parseFloat((this.currentHero.gold - item.price).toFixed(2));
-        this.currentHero.inventory.push(itemId);
+        this.addItemToInventory(itemId);
         
         this.showNotification(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`);
         this.closeItemModal();
@@ -770,7 +875,7 @@ getSubcategoryItemCount(category, subcategory) {
         const item = this.getItemById(itemId);
         if (!item) return;
 
-        if (!this.currentHero.inventory.includes(itemId)) {
+        if (!this.isItemOwned(itemId)) {
             this.showNotification('❌ Предмет не найден в инвентаре');
             return;
         }
