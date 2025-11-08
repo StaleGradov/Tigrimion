@@ -353,68 +353,113 @@ debugItems() {
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
 // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
 // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
-showShop(category = 'all', subcategory = 'all') {
-    if (!this.currentHero) return '';
-
-    this.currentCategory = category;
-    this.currentSubcategory = subcategory;
-
-    console.log('🔍 Открываем магазин:', { category, subcategory });
-
-    const html = `
-        <div class="overlay-content shop-overlay" style="max-width: 1200px; width: 95%;">
+showShop() {
+    return `
+        <div class="shop-overlay">
             <div class="overlay-header">
-                <h3>🏪 Магазин снаряжения</h3>
+                <h3>🏪 Магазин приключений</h3>
                 <button class="btn-close" onclick="game.hideOverlay()">✕</button>
             </div>
-            
-            <div class="merchant-info">
-                <div class="merchant-stats">
-                    <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)}</span>
-                    <span class="inventory-space">🎒 ${this.currentHero.inventory.length}/10</span>
+            <div class="overlay-body">
+                <div class="merchant-header">
+                    <h4>🛒 Торговец Громовержец</h4>
+                    <div class="hero-merchant-info">
+                        <div class="merchant-stats">
+                            <span class="gold-amount">💰 ${this.currentHero.gold.toFixed(2)} золота</span>
+                            <span class="inventory-space">🎒 ${this.getInventorySpace()}</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="shop-categories">
-                <button class="category-tab ${category === 'all' ? 'active' : ''}" 
-                        data-category="all"
-                        onclick="game.systems.equipment.handleCategoryClick('all')">Все предметы</button>
-                <button class="category-tab ${category === 'weapon' ? 'active' : ''}" 
-                        data-category="weapon"
-                        onclick="game.systems.equipment.handleCategoryClick('weapon')">⚔️ Оружие</button>
-                <button class="category-tab ${category === 'helmet' ? 'active' : ''}" 
-                        data-category="helmet"
-                        onclick="game.systems.equipment.handleCategoryClick('helmet')">⛑️ Шлемы</button>
-                <button class="category-tab ${category === 'chest' ? 'active' : ''}" 
-                        data-category="chest"
-                        onclick="game.systems.equipment.handleCategoryClick('chest')">👕 Броня</button>
-                <button class="category-tab ${category === 'gloves' ? 'active' : ''}" 
-                        data-category="gloves"
-                        onclick="game.systems.equipment.handleCategoryClick('gloves')">🧤 Перчатки</button>
-                <button class="category-tab ${category === 'legs' ? 'active' : ''}" 
-                        data-category="legs"
-                        onclick="game.systems.equipment.handleCategoryClick('legs')">👖 Поножи</button>
-                <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
-                        data-category="boots"
-                        onclick="game.systems.equipment.handleCategoryClick('boots')">👢 Ботинки</button>
-            </div>
-            
-            <div id="shop-subcategories-container"></div>
-            
-            <div class="shop-content" style="max-height: 60vh; overflow-y: auto;">
-                <div class="items-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
-                    ${this.renderShopItems(category, subcategory)}
+                
+                <div class="shop-categories">
+                    <button class="category-tab all active" onclick="game.systems.equipment.filterShopItems('all')">
+                        <span class="category-icon">📦</span>
+                        Все предметы
+                    </button>
+                    <button class="category-tab weapon" onclick="game.systems.equipment.filterShopItems('weapon')">
+                        <span class="category-icon">⚔️</span>
+                        Оружие
+                    </button>
+                    <button class="category-tab armor" onclick="game.systems.equipment.filterShopItems('armor')">
+                        <span class="category-icon">🛡️</span>
+                        Броня
+                    </button>
+                    <button class="category-tab material" onclick="game.systems.equipment.filterShopItems('material')">
+                        <span class="category-icon">🧵</span>
+                        Материалы
+                    </button>
+                    <button class="category-tab potion" onclick="game.systems.equipment.filterShopItems('potion')">
+                        <span class="category-icon">🧪</span>
+                        Зелья
+                    </button>
+                    <button class="category-tab scroll" onclick="game.systems.equipment.filterShopItems('scroll')">
+                        <span class="category-icon">📜</span>
+                        Свитки
+                    </button>
+                </div>
+
+                <!-- Подкатегории для брони (показываются только когда выбрана категория "Броня") -->
+                <div class="armor-subcategories" id="armorSubcategories">
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('helmet')">
+                        <span class="subcategory-icon">⛑️</span>
+                        Шлемы
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('chest')">
+                        <span class="subcategory-icon">👕</span>
+                        Нагрудники
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('gloves')">
+                        <span class="subcategory-icon">🧤</span>
+                        Перчатки
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('legs')">
+                        <span class="subcategory-icon">👖</span>
+                        Поножи
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('boots')">
+                        <span class="subcategory-icon">👢</span>
+                        Ботинки
+                    </button>
+                </div>
+
+                <!-- Подкатегории для материалов (показываются только когда выбрана категория "Материалы") -->
+                <div class="material-subcategories" id="materialSubcategories">
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('cloth')">
+                        <span class="subcategory-icon">🧵</span>
+                        Ткань
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('leather')">
+                        <span class="subcategory-icon">🐄</span>
+                        Кожа
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('fur')">
+                        <span class="subcategory-icon">🐻</span>
+                        Мех
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('hide')">
+                        <span class="subcategory-icon">🐂</span>
+                        Шкуры
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('metal')">
+                        <span class="subcategory-icon">⛓️</span>
+                        Металл
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('wood')">
+                        <span class="subcategory-icon">🪵</span>
+                        Дерево
+                    </button>
+                    <button class="subcategory-tab" onclick="game.systems.equipment.filterShopItems('gem')">
+                        <span class="subcategory-icon">💎</span>
+                        Самоцветы
+                    </button>
+                </div>
+
+                <div class="merchant-items-container">
+                    ${this.renderShopItems()}
                 </div>
             </div>
         </div>
     `;
-
-    // Откладываем инициализацию подкатегорий после рендера
-    setTimeout(() => {
-        this.initializeSubcategories(category, subcategory);
-    }, 0);
-
-    return html;
 }
 
 // Новая система подкатегорий по аналогии со старой версией
