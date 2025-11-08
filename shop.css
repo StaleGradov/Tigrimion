@@ -45,6 +45,7 @@
     margin-bottom: 25px;
     justify-content: center;
     padding: 0 20px;
+    width: 100%;
 }
 
 .category-tab {
@@ -61,59 +62,63 @@
     min-width: 140px;
     text-align: center;
 }
-/* Стили для подкатегорий материалов */
-.material-subcategories {
+
+/* Стили для контейнера подкатегорий магазина */
+.shop-subcategories {
+    width: 100%;
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
     justify-content: center;
+    margin: 15px 0;
     padding: 0 20px;
 }
 
-.material-subcategories .subcategory-tab {
-    background: rgba(139, 69, 19, 0.15);
-    border: 2px solid rgba(139, 69, 19, 0.4);
-    color: #d2691e;
-    padding: 12px 24px;
-    border-radius: 25px;
+.subcategory-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 90%;
+}
+
+.subcategory-tab {
+    background: rgba(76, 201, 240, 0.15);
+    border: 2px solid rgba(76, 201, 240, 0.4);
+    color: #4cc9f0;
+    padding: 10px 20px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-size: 1.1em;
+    font-size: 1em;
     font-weight: 600;
-    min-width: 120px;
+    min-width: 110px;
     text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.material-subcategories .subcategory-tab:hover {
-    background: rgba(139, 69, 19, 0.25);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+.subcategory-tab:hover {
+    background: rgba(76, 201, 240, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
 }
 
-.material-subcategories .subcategory-tab.active {
-    background: linear-gradient(135deg, #8b4513, #a0522d);
-    border-color: #8b4513;
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    border-color: #4cc9f0;
     color: white;
-    box-shadow: 0 5px 20px rgba(139, 69, 19, 0.5);
+    box-shadow: 0 4px 15px rgba(76, 201, 240, 0.5);
     transform: translateY(-2px);
 }
 
-/* Скрываем подкатегории по умолчанию */
-.armor-subcategories,
-.material-subcategories {
-    display: none;
+.subcategory-count {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
 }
 
-/* Показываем подкатегории только когда активна соответствующая категория */
-.category-tab.armor.active ~ .armor-subcategories,
-.category-tab.material.active ~ .material-subcategories {
-    display: flex;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Цвет для категории материалов */
-.category-tab.material .category-icon { color: #d2691e; }
 .category-tab:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-3px);
@@ -127,50 +132,15 @@
     transform: translateY(-2px);
 }
 
-/* Стили для подкатегорий брони */
-.armor-subcategories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 20px 0;
-    justify-content: center;
-    padding: 0 20px;
-}
-
-.subcategory-tab {
-    background: rgba(59, 130, 246, 0.15);
-    border: 2px solid rgba(59, 130, 246, 0.4);
-    color: #60a5fa;
-    padding: 12px 24px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.1em;
-    font-weight: 600;
-    min-width: 120px;
-    text-align: center;
-}
-
-.subcategory-tab:hover {
-    background: rgba(59, 130, 246, 0.25);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-}
-
-.subcategory-tab.active {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border-color: #3b82f6;
-    color: white;
-    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
-    transform: translateY(-2px);
-}
-
 .merchant-items-container {
     min-height: 600px;
 }
 
 .shop-content {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .shop-category {
