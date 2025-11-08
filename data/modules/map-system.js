@@ -159,51 +159,51 @@ class MapSystem {
     }
 
     // ========== CANVAS РЕНДЕРИНГ ==========
-   initCanvas() {
-    const container = document.querySelector('.tactical-map-visual');
-    if (!container) {
-        console.log("❌ Контейнер для карты не найден");
-        return;
+    initCanvas() {
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) {
+            console.log("❌ Контейнер для карты не найден");
+            return;
+        }
+
+        // Очищаем контейнер
+        container.innerHTML = '';
+
+        // Создаем canvas
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'tacticalMapCanvas';
+        
+        // Устанавливаем размеры
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.cursor = 'pointer';
+        container.appendChild(this.canvas);
+
+        this.ctx = this.canvas.getContext('2d');
+        
+        // Отладочная информация
+        console.log("🔍 Проверка структуры карты:");
+        console.log("Текущая тактическая карта:", this.currentTacticalMap);
+        console.log("Клетки карты:", Object.keys(this.currentTacticalMap.cells).length);
+        console.log("Позиция игрока:", this.playerTacticalPosition);
+        
+        // Проверим несколько клеток вокруг игрока
+        const playerX = this.playerTacticalPosition.x;
+        const playerY = this.playerTacticalPosition.y;
+        console.log(`Клетка игрока [${playerX},${playerY}]:`, this.currentTacticalMap.cells[`${playerX},${playerY}`]);
+        
+        // Рассчитываем масштаб и позиционирование
+        this.calculateMapPositioning();
+        
+        // Добавляем обработчики событий
+        this.setupCanvasEventListeners();
+        
+        console.log("✅ Canvas инициализирован");
+        this.drawTacticalMap();
     }
-
-    // Очищаем контейнер
-    container.innerHTML = '';
-
-    // Создаем canvas
-    this.canvas = document.createElement('canvas');
-    this.canvas.id = 'tacticalMapCanvas';
-    
-    // Устанавливаем размеры
-    this.canvas.style.width = '100%';
-    this.canvas.style.height = '100%';
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.top = '0';
-    this.canvas.style.left = '0';
-    this.canvas.style.cursor = 'pointer';
-    container.appendChild(this.canvas);
-
-    this.ctx = this.canvas.getContext('2d');
-    
-    // Отладочная информация
-    console.log("🔍 Проверка структуры карты:");
-    console.log("Текущая тактическая карта:", this.currentTacticalMap);
-    console.log("Клетки карты:", Object.keys(this.currentTacticalMap.cells).length);
-    console.log("Позиция игрока:", this.playerTacticalPosition);
-    
-    // Проверим несколько клеток вокруг игрока
-    const playerX = this.playerTacticalPosition.x;
-    const playerY = this.playerTacticalPosition.y;
-    console.log(`Клетка игрока [${playerX},${playerY}]:`, this.currentTacticalMap.cells[`${playerX},${playerY}`]);
-    
-    // Рассчитываем масштаб и позиционирование
-    this.calculateMapPositioning();
-    
-    // Добавляем обработчики событий
-    this.setupCanvasEventListeners();
-    
-    console.log("✅ Canvas инициализирован");
-    this.drawTacticalMap();
-}
 
     calculateMapPositioning() {
         if (!this.currentTacticalMap || !this.canvas) return;
@@ -252,8 +252,8 @@ class MapSystem {
         if (!this.canvas) return;
 
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-      //  this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
-   //     this.canvas.addEventListener('wheel', (e) => this.handleCanvasZoom(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
+        this.canvas.addEventListener('wheel', (e) => this.handleCanvasZoom(e));
 
         window.addEventListener('resize', () => {
             setTimeout(() => {
@@ -488,6 +488,17 @@ class MapSystem {
 
         this.ctx.fillStyle = fillColor;
         this.ctx.fill();
+        
+        // Отладочная информация - координаты клетки
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '10px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText(
+            `${cell.col},${cell.row}`, 
+            cell.x, 
+            cell.y - 25
+        );
+        
         this.ctx.restore();
     }
 
@@ -533,39 +544,53 @@ class MapSystem {
         this.ctx.restore();
     }
 
-drawAvailableMoves() {
-    const availableMoves = this.getAvailableMoves();
-    
-    this.ctx.save();
-    availableMoves.forEach(move => {
-        const hexSize = this.currentTacticalMap.cellSize || 40;
+    drawAvailableMoves() {
+        const availableMoves = this.getAvailableMoves();
+        
+        this.ctx.save();
+        availableMoves.forEach(move => {
+            const hexSize = this.currentTacticalMap.cellSize || 40;
 
-        this.ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = move.cell.x + hexSize * Math.cos(angle);
-            const y = move.cell.y + hexSize * Math.sin(angle);
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i + Math.PI / 6;
+                const x = move.cell.x + hexSize * Math.cos(angle);
+                const y = move.cell.y + hexSize * Math.sin(angle);
+                
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+
+            // Яркая подсветка доступных ходов
+            this.ctx.fillStyle = 'rgba(0, 255, 0, 0.4)';
+            this.ctx.fill();
             
-            if (i === 0) this.ctx.moveTo(x, y);
-            else this.ctx.lineTo(x, y);
-        }
-        this.ctx.closePath();
+            this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+            
+            // Добавляем координаты для отладки
+            this.ctx.fillStyle = '#000000';
+            this.ctx.font = 'bold 10px Arial';
+            this.ctx.fillText(
+                `${move.col},${move.row}`, 
+                move.cell.x - 15, 
+                move.cell.y + 5
+            );
+            
+            // Добавляем направление
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 8px Arial';
+            this.ctx.fillText(
+                move.direction, 
+                move.cell.x - 10, 
+                move.cell.y + 20
+            );
+        });
+        this.ctx.restore();
+    }
 
-        // Яркая подсветка доступных ходов
-        this.ctx.fillStyle = 'rgba(0, 255, 0, 0.4)';
-        this.ctx.fill();
-        
-        this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
-        this.ctx.lineWidth = 3;
-        this.ctx.stroke();
-        
-        // Добавляем номер направления для отладки
-        this.ctx.fillStyle = '#00ff00';
-        this.ctx.font = 'bold 12px Arial';
-        this.ctx.fillText(move.direction, move.cell.x - 15, move.cell.y + 5);
-    });
-    this.ctx.restore();
-}
     drawHoverEffect() {
         if (!this.hoveredHex) return;
 
@@ -589,153 +614,206 @@ drawAvailableMoves() {
         this.ctx.restore();
     }
 
-    // ========== ИСПРАВЛЕННАЯ СИСТЕМА СОСЕДЕЙ И ДВИЖЕНИЯ ==========
-   getAvailableMoves() {
-    if (!this.currentTacticalMap) return [];
-    
-    const currentRow = this.playerTacticalPosition.y;
-    const currentCol = this.playerTacticalPosition.x;
-    const neighbors = this.getHexNeighbors(currentRow, currentCol);
-    
-    console.log(`📍 Текущая позиция: [${currentCol}, ${currentRow}]`);
-    console.log(`🎯 Доступные ходы:`, neighbors.map(n => `[${n.col}, ${n.row}]`));
-    
-    return neighbors;
-}
-
-  getHexNeighbors(currentRow, currentCol) {
-    if (!this.currentTacticalMap) return [];
-    
-    const neighbors = [];
-    const isEvenRow = currentRow % 2 === 0;
-    
-    // ПРАВИЛЬНЫЕ направления для шестиугольной сетки (офсетные координаты)
-    const directions = isEvenRow ? [
-        // Для ЧЕТНЫХ строк (0, 2, 4...)
-        {dr: -1, dc: 0},   // север
-        {dr: -1, dc: 1},   // северо-восток
-        {dr: 0, dc: 1},    // восток
-        {dr: 1, dc: 0},    // юг
-        {dr: 1, dc: -1},   // юго-запад (ИСПРАВЛЕНО!)
-        {dr: 0, dc: -1}    // запад
-    ] : [
-        // Для НЕЧЕТНЫХ строк (1, 3, 5...)
-        {dr: -1, dc: -1},  // северо-запад (ИСПРАВЛЕНО!)
-        {dr: -1, dc: 0},   // север
-        {dr: 0, dc: 1},    // восток
-        {dr: 1, dc: 0},    // юг
-        {dr: 1, dc: 1},    // юго-восток (ИСПРАВЛЕНО!)
-        {dr: 0, dc: -1}    // запад
-    ];
-    
-    console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}], четная строка: ${isEvenRow}`);
-    
-    directions.forEach(({dr, dc}, index) => {
-        const newRow = currentRow + dr;
-        const newCol = currentCol + dc;
-        const cellKey = `${newCol},${newRow}`;
-        const neighbor = this.currentTacticalMap.cells[cellKey];
+    // ========== НОВАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ СОСЕДЕЙ ПО РАССТОЯНИЮ ==========
+    getAvailableMoves() {
+        if (!this.currentTacticalMap) return [];
         
-        const directionNames = isEvenRow ? 
-            ['север', 'северо-восток', 'восток', 'юг', 'юго-запад', 'запад'] :
-            ['северо-запад', 'север', 'восток', 'юг', 'юго-восток', 'запад'];
+        const currentRow = this.playerTacticalPosition.y;
+        const currentCol = this.playerTacticalPosition.x;
+        const neighbors = this.getHexNeighbors(currentRow, currentCol);
         
-        // Проверяем, что клетка существует, видима и проходима
-        if (neighbor && neighbor.visible && neighbor.passable !== false) {
-            neighbors.push({
-                row: newRow,
-                col: newCol,
-                cell: neighbor,
-                direction: directionNames[index]
-            });
-            console.log(`  ✅ ${directionNames[index]}: [${newCol},${newRow}] - ДОСТУПЕН`);
-        } else if (neighbor) {
-            console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - НЕДОСТУПЕН`, {
-                visible: neighbor?.visible,
-                passable: neighbor?.passable
-            });
-        } else {
-            console.log(`  ❌ ${directionNames[index]}: [${newCol},${newRow}] - КЛЕТКА НЕ СУЩЕСТВУЕТ`);
+        console.log(`📍 Текущая позиция: [${currentCol}, ${currentRow}]`);
+        console.log(`🎯 Доступные ходы:`, neighbors.map(n => `[${n.col}, ${n.row}]`));
+        
+        return neighbors;
+    }
+
+    // Основные геометрические константы для гексов
+    getHexGeometry(hexSize) {
+        return {
+            // Основные размеры
+            size: hexSize,
+            width: Math.sqrt(3) * hexSize,      // ~1.732 * hexSize
+            height: 2 * hexSize,                // 2.0 * hexSize
+            
+            // Расстояния между центрами
+            horizontalDistance: Math.sqrt(3) * hexSize,     // ~1.732 * hexSize
+            verticalDistance: 1.5 * hexSize,                // 1.5 * hexSize
+            diagonalDistance: Math.sqrt(3.25) * hexSize,    // ~1.803 * hexSize
+            
+            // Для проверки смежности
+            expectedAdjacentDistance: Math.sqrt(3) * hexSize, // ~1.732 * hexSize
+            tolerance: hexSize * 0.4  // Допуск 40% от размера
+        };
+    }
+
+    getHexNeighbors(currentRow, currentCol) {
+        if (!this.currentTacticalMap) return [];
+        
+        console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}]`);
+        
+        const neighbors = [];
+        const currentCell = this.currentTacticalMap.cells[`${currentCol},${currentRow}`];
+        
+        if (!currentCell) {
+            console.log("❌ Текущая клетка не найдена!");
+            return [];
         }
-    });
-    
-    console.log(`🎯 Итог: найдено ${neighbors.length} доступных соседей`);
-    return neighbors;
-}
-
-  isCellReachable(targetRow, targetCol) {
-    const currentRow = this.playerTacticalPosition.y;
-    const currentCol = this.playerTacticalPosition.x;
-    
-    // Нельзя ходить на ту же клетку
-    if (targetRow === currentRow && targetCol === currentCol) {
-        console.log(`🚫 Нельзя ходить на ту же клетку [${targetCol},${targetRow}]`);
-        return false;
+        
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+        const geometry = this.getHexGeometry(hexSize);
+        
+        console.log(`  📐 Геометрия гекса: размер=${hexSize}, ожидаемое расстояние=${geometry.expectedAdjacentDistance.toFixed(1)}`);
+        
+        // Проверяем все клетки на карте
+        Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
+            // Пропускаем текущую клетку
+            if (potentialNeighbor.col === currentCol && potentialNeighbor.row === currentRow) {
+                return;
+            }
+            
+            // Проверяем расстояние
+            const dx = potentialNeighbor.x - currentCell.x;
+            const dy = potentialNeighbor.y - currentCell.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const isAdjacent = this.areHexesAdjacent(currentCell, potentialNeighbor, hexSize);
+            
+            if (isAdjacent) {
+                const direction = this.getDirectionByAngle(dx, dy);
+                
+                if (potentialNeighbor.visible && potentialNeighbor.passable !== false) {
+                    neighbors.push({
+                        row: potentialNeighbor.row,
+                        col: potentialNeighbor.col,
+                        cell: potentialNeighbor,
+                        direction: direction,
+                        distance: distance
+                    });
+                    console.log(`  ✅ Сосед: [${potentialNeighbor.col},${potentialNeighbor.row}] - ${direction} (${distance.toFixed(1)}px)`);
+                }
+            }
+        });
+        
+        console.log(`🎯 Итог: найдено ${neighbors.length} доступных соседей`);
+        return neighbors;
     }
-    
-    const neighbors = this.getHexNeighbors(currentRow, currentCol);
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === targetRow && neighbor.col === targetCol
-    );
-    
-    console.log(`🎯 Проверка достижимости [${targetCol},${targetRow}] от [${currentCol},${currentRow}]: ${isReachable}`);
-    
-    if (!isReachable) {
-        console.log(`📋 Доступные ходы:`, neighbors.map(n => `[${n.col},${n.row}]`));
-    }
-    
-    return isReachable;
-}
-moveOnTacticalMap(x, y) {
-    if (!this.currentTacticalMap) return;
 
-    // Проверяем, что клетка существует
-    const cellKey = `${x},${y}`;
-    const cellData = this.currentTacticalMap.cells[cellKey];
-    
-    if (!cellData) {
-        console.log("🚫 Клетка не существует");
+    // Метод проверки смежности по расстоянию между центрами
+    areHexesAdjacent(cell1, cell2, hexSize) {
+        if (!cell1 || !cell2) return false;
+        
+        const geometry = this.getHexGeometry(hexSize);
+        
+        // Вычисляем расстояние между центрами
+        const dx = cell2.x - cell1.x;
+        const dy = cell2.y - cell1.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Проверяем все возможные расстояния для смежных гексов
+        const isHorizontalAdjacent = Math.abs(distance - geometry.horizontalDistance) < geometry.tolerance;
+        const isVerticalAdjacent = Math.abs(distance - geometry.verticalDistance) < geometry.tolerance;
+        const isDiagonalAdjacent = Math.abs(distance - geometry.diagonalDistance) < geometry.tolerance;
+        
+        const isAdjacent = isHorizontalAdjacent || isVerticalAdjacent || isDiagonalAdjacent;
+        
+        return isAdjacent;
+    }
+
+    // Определение направления по вектору
+    getDirectionByAngle(dx, dy) {
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        const normalizedAngle = (angle + 360) % 360;
+        
+        if (normalizedAngle >= 330 || normalizedAngle < 30) return 'восток';
+        if (normalizedAngle >= 30 && normalizedAngle < 90) return 'юго-восток';
+        if (normalizedAngle >= 90 && normalizedAngle < 150) return 'юг';
+        if (normalizedAngle >= 150 && normalizedAngle < 210) return 'юго-запад';
+        if (normalizedAngle >= 210 && normalizedAngle < 270) return 'запад';
+        if (normalizedAngle >= 270 && normalizedAngle < 330) return 'северо-запад';
+        
+        return 'неизвестно';
+    }
+
+    isCellReachable(targetRow, targetCol) {
+        const currentRow = this.playerTacticalPosition.y;
+        const currentCol = this.playerTacticalPosition.x;
+        
+        // Нельзя ходить на ту же клетку
+        if (targetRow === currentRow && targetCol === currentCol) {
+            console.log(`🚫 Нельзя ходить на ту же клетку [${targetCol},${targetRow}]`);
+            return false;
+        }
+        
+        const neighbors = this.getHexNeighbors(currentRow, currentCol);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === targetRow && neighbor.col === targetCol
+        );
+        
+        console.log(`🎯 Проверка достижимости [${targetCol},${targetRow}] от [${currentCol},${currentRow}]: ${isReachable}`);
+        
+        if (!isReachable) {
+            console.log(`📋 Доступные ходы:`, neighbors.map(n => `[${n.col},${n.row}]`));
+        }
+        
+        return isReachable;
+    }
+
+    moveOnTacticalMap(x, y) {
+        if (!this.currentTacticalMap) return;
+
+        // Проверяем, что клетка существует
+        const cellKey = `${x},${y}`;
+        const cellData = this.currentTacticalMap.cells[cellKey];
+        
+        if (!cellData) {
+            console.log("🚫 Клетка не существует");
+            if (window.game) {
+                window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
+        }
+
+        if (cellData.passable === false) {
+            console.log("🚫 Нельзя пройти на эту клетку");
+            if (window.game) {
+                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        // ПРОСТАЯ проверка достижимости
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        // Перемещаем игрока
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x, y};
+        
+        console.log(`✅ Успешное перемещение с [${oldPosition.x}, ${oldPosition.y}] на: [${x}, ${y}]`);
+        
+        // Взаимодействуем с объектом на клетке
+        if (cellData.type !== 'active' && cellData.type !== 'empty' && cellData.type !== 'player_start') {
+            this.interactWithTacticalCell(x, y);
+        }
+        
+        this.updateTacticalMapDisplay();
+        this.updateMovementInfo();
+        
         if (window.game) {
-            window.game.showNotification("Эта клетка не существует!", 'error');
+            window.game.showNotification(`Перемещение на [${x}, ${y}]`, 'success');
         }
-        return;
     }
-
-    if (cellData.passable === false) {
-        console.log("🚫 Нельзя пройти на эту клетку");
-        if (window.game) {
-            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-        }
-        return;
-    }
-
-    // Проверяем, что клетка доступна для хода
-    if (!this.isCellReachable(y, x)) {
-        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-        if (window.game) {
-            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-        }
-        return;
-    }
-
-    // Перемещаем игрока
-    const oldPosition = {...this.playerTacticalPosition};
-    this.playerTacticalPosition = {x, y};
-    
-    console.log(`✅ Успешное перемещение с [${oldPosition.x}, ${oldPosition.y}] на: [${x}, ${y}]`);
-    
-    // Взаимодействуем с объектом на клетке
-    if (cellData.type !== 'active' && cellData.type !== 'empty' && cellData.type !== 'player_start') {
-        this.interactWithTacticalCell(x, y);
-    }
-    
-    this.updateTacticalMapDisplay();
-    this.updateMovementInfo();
-    
-    if (window.game) {
-        window.game.showNotification(`Перемещение на [${x}, ${y}]`, 'success');
-    }
-}
 
     interactWithTacticalCell(x, y) {
         const cellKey = `${x},${y}`;
@@ -1447,8 +1525,46 @@ moveOnTacticalMap(x, y) {
         console.log("Смещение:", this.mapOffset);
         console.groupEnd();
     }
+
+    // ========== ОТЛАДОЧНЫЕ МЕТОДЫ ДЛЯ НОВОЙ СИСТЕМЫ ==========
+    debugHexDistances() {
+        if (!this.currentTacticalMap) return;
+        
+        const currentCell = this.currentTacticalMap.cells[
+            `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`
+        ];
+        
+        if (!currentCell) return;
+        
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+        const geometry = this.getHexGeometry(hexSize);
+        
+        console.log('🔍 ДЕТАЛЬНЫЙ АНАЛИЗ РАССТОЯНИЙ:');
+        console.log(`  Текущая клетка: [${currentCell.col},${currentCell.row}]`);
+        console.log(`  Геометрия: размер=${hexSize}, допуск=${geometry.tolerance.toFixed(1)}`);
+        console.log(`  Ожидаемые расстояния: горизонтальное=${geometry.horizontalDistance.toFixed(1)}, вертикальное=${geometry.verticalDistance.toFixed(1)}, диагональное=${geometry.diagonalDistance.toFixed(1)}`);
+        
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            if (cell === currentCell) return;
+            
+            const dx = cell.x - currentCell.x;
+            const dy = cell.y - currentCell.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const isHorizontal = Math.abs(distance - geometry.horizontalDistance) < geometry.tolerance;
+            const isVertical = Math.abs(distance - geometry.verticalDistance) < geometry.tolerance;
+            const isDiagonal = Math.abs(distance - geometry.diagonalDistance) < geometry.tolerance;
+            
+            let relation = '❌ ДАЛЕКО';
+            if (isHorizontal) relation = '✅ ГОРИЗОНТАЛЬНЫЙ СОСЕД';
+            else if (isVertical) relation = '✅ ВЕРТИКАЛЬНЫЙ СОСЕД';
+            else if (isDiagonal) relation = '✅ ДИАГОНАЛЬНЫЙ СОСЕД';
+            
+            console.log(`  [${cell.col},${cell.row}]: ${distance.toFixed(1)}px - ${relation}`);
+        });
+    }
 }
 
 // Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с поддержкой Canvas рендеринга и редактора карт");
+console.log("📦 MapSystem модуль загружен с поддержкой Canvas рендеринга и новой системой определения соседей");
