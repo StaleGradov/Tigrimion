@@ -288,6 +288,42 @@ class EquipmentSystem {
             requiredPieces: 6,
             bonus: { type: "health_mult", value: 0.3 },
             description: "Комплект из 6 вещей даст +30% к здоровью"
+        },
+           "set_bron1": {
+            name: "Тяжелого отряда личной гвардии Царя Арканиума - Щит Царя",
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.005 },
+            description: "Комплект из 6 вещей даст +0,5% к броне"
+        },
+           "set_bron2": {
+            name: "Штурмовые отряды прорыва личной гвардии Царя Арканиума - Гнев Вулкана", 
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.01 },
+            description: "Комплект из 6 вещей даст +1% к броне"
+        },
+           "set_bron3": {
+            name: "Быстрых ударных групп Царя Арканиума - Стальная Буря",
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.015 },
+            description: "Комплект из 6 вещей даст +1,5% к броне"
+        },
+           "set_bron4": {
+            name: "Защитников левитационных кристаллов Арканиума - Нерушимые",
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.02 },
+            description: "Комплект из 6 вещей даст +2% к броне"
+        },
+           "set_bron5": {
+            name: "Элита боевых подразделений Арканиума - Наследники Титанов",
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.025 },
+            description: "Комплект из 6 вещей даст +2,5% к броне"
+        },
+           "set_bron6": {
+            name: "Мистические стражи Арканиума - Воплощение Воли. Охраняющие самые ценные артефакты и реликвии человечества",
+            requiredPieces: 6,
+            bonus: { type: "armor_mult", value: 0.03 },
+            description: "Комплект из 6 вещей даст +3% к броне"
         }
         };
     }
