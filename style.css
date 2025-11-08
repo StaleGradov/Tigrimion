@@ -1765,3 +1765,388 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* ========== УЛУЧШЕННЫЙ МАГАЗИН ========== */
+.shop-overlay {
+    max-width: 1400px !important; /* Шире в полтора раза */
+    width: 95% !important;
+    max-height: 85vh !important; /* Немного ниже растянуть */
+    height: auto !important;
+}
+
+.shop-overlay .overlay-body {
+    padding: 1.5rem !important;
+    max-height: calc(85vh - 100px) !important;
+    overflow-y: auto !important;
+}
+
+/* Улучшенные категории */
+.shop-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 25px;
+    justify-content: center;
+    padding: 15px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 12px;
+    border: 1px solid #334155;
+}
+
+.category-tab {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
+    border: 2px solid #475569;
+    color: #e2e8f0;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    min-width: 120px;
+    text-align: center;
+}
+
+.category-tab:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(30, 41, 59, 0.9));
+    border-color: #3b82f6;
+    color: #3b82f6;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.category-tab.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Подкатегории - такие же как основные категории */
+.subcategories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 15px 0 25px 0;
+    justify-content: center;
+    padding: 12px;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+}
+
+.subcategory-tab {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.8));
+    border: 2px solid #475569;
+    color: #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    min-width: 100px;
+    text-align: center;
+}
+
+.subcategory-tab:hover {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(30, 41, 59, 0.8));
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    border-color: #8b5cf6;
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Улучшенная сетка предметов */
+.shop-overlay .items-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+    gap: 20px !important;
+    padding: 10px !important;
+}
+
+.shop-overlay .shop-item {
+    min-height: 180px !important;
+    cursor: pointer;
+}
+
+.shop-overlay .item-image-container {
+    height: 120px !important;
+}
+
+/* ========== ВСПЛЫВАЮЩЕЕ ОКНО ПРЕДМЕТА ========== */
+.item-detail-overlay {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 800px !important;
+    max-height: 90vh !important;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+    border-radius: 20px !important;
+    border: 3px solid #475569 !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7) !important;
+    z-index: 10000 !important; /* Выше всех остальных элементов */
+    display: none !important;
+    overflow: hidden !important;
+}
+
+.item-detail-overlay.active {
+    display: flex !important;
+    flex-direction: column !important;
+    animation: itemPopupAppear 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+@keyframes itemPopupAppear {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.7);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.item-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2rem 1rem 2rem;
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom: 2px solid #475569;
+}
+
+.item-detail-title {
+    color: #3b82f6;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.item-detail-body {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.item-detail-image {
+    flex: 0 0 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    border: 3px solid;
+    overflow: hidden;
+}
+
+.item-detail-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Цвета рамки в зависимости от редкости */
+.item-detail-image[data-rarity="common"] { border-color: #9ca3af; }
+.item-detail-image[data-rarity="uncommon"] { border-color: #4cc9f0; }
+.item-detail-image[data-rarity="rare"] { border-color: #a855f7; }
+.item-detail-image[data-rarity="epic"] { border-color: #f59e0b; }
+.item-detail-image[data-rarity="legendary"] { border-color: #ffd700; }
+.item-detail-image[data-rarity="mythic"] { border-color: #ff6b6b; }
+
+.item-detail-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.item-detail-type {
+    font-size: 1.2rem;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+.item-detail-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.item-detail-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+.stat-value {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.item-detail-description {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid #3b82f6;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
+.item-detail-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding: 1.5rem 2rem;
+    background: rgba(15, 23, 42, 0.8);
+    border-top: 2px solid #475569;
+}
+
+.item-detail-price {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #ffd700;
+    margin-right: auto;
+}
+
+/* Оверлей для затемнения фона */
+.overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999; /* Ниже окна предмета, но выше всего остального */
+    display: none;
+}
+
+.overlay-backdrop.active {
+    display: block;
+    animation: backdropFadeIn 0.3s ease;
+}
+
+@keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Адаптивность для всплывающего окна */
+@media (max-width: 768px) {
+    .item-detail-overlay {
+        width: 95% !important;
+        max-height: 95vh !important;
+    }
+    
+    .item-detail-body {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .item-detail-image {
+        flex: 0 0 250px;
+        height: 250px;
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    
+    .item-detail-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .item-detail-actions {
+        flex-direction: column;
+    }
+    
+    .item-detail-price {
+        margin-right: 0;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .item-detail-header {
+        padding: 1.5rem 1rem 1rem 1rem;
+    }
+    
+    .item-detail-title {
+        font-size: 1.4rem;
+    }
+    
+    .item-detail-body {
+        padding: 1rem;
+    }
+    
+    .item-detail-image {
+        height: 200px;
+    }
+}
+
+/* Улучшенная полоса прокрутки для магазина */
+.shop-overlay .overlay-body::-webkit-scrollbar {
+    width: 12px;
+}
+
+.shop-overlay .overlay-body::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 6px;
+}
+
+.shop-overlay .overlay-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 6px;
+    border: 2px solid rgba(30, 41, 59, 0.5);
+}
+
+.shop-overlay .overlay-body::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+}
+
+/* Анимация появления подкатегорий */
+.subcategories {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
