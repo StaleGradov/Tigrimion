@@ -1685,3 +1685,76 @@ body {
     z-index: 10;
     border: 1px solid #00ff00;
 }
+/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ КАРТ БЕЗ МАСШТАБИРОВАНИЯ ========== */
+.tactical-map-visual {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: #000000 !important;
+    border: 2px solid #00ffff !important;
+    border-radius: 15px !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+#tacticalMapCanvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Убираем контролы масштабирования */
+.zoom-controls {
+    display: none !important;
+}
+
+.zoom-info {
+    display: none !important;
+}
+
+/* Упрощаем header карты */
+.tactical-map-header .map-controls {
+    gap: 0.5rem;
+}
+
+/* Улучшаем информацию о позиции */
+.position-info {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 1rem;
+    border-top: 1px solid #00ffff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.player-position, .map-stats, .movement-info {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.movement-info span {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .position-info {
+        grid-template-columns: 1fr;
+    }
+}
