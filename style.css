@@ -1439,3 +1439,352 @@ body {
     display: block;
     margin-bottom: 0.5rem;
 }
+/* ========== СИСТЕМА ВСПЛЫВАЮЩИХ ОКОН ========== */
+.popup-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: none;
+}
+
+.popup-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.popup-content {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 20px;
+    border: 3px solid #ffd700;
+    box-shadow: 0 0 80px rgba(255, 215, 0, 0.5);
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: popupScaleIn 0.3s ease-out;
+}
+
+@keyframes popupScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 2px solid #ffd700;
+    border-radius: 20px 20px 0 0;
+}
+
+.popup-header h3 {
+    font-size: 2.2em;
+    color: #ffd700;
+    text-shadow: 0 2px 15px rgba(255, 215, 0, 0.6);
+    margin: 0;
+}
+
+.popup-body {
+    flex: 1;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* ========== МАКЕТ ВСПЛЫВАЮЩЕГО ОКНА ПРЕДМЕТА ========== */
+.item-detail-layout {
+    display: flex;
+    height: 70vh;
+    min-height: 500px;
+}
+
+.item-detail-left {
+    flex: 0 0 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 30px;
+}
+
+.item-popup-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+}
+
+.item-popup-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.item-detail-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+.item-popup-info {
+    flex: 1;
+}
+
+.item-popup-name {
+    font-size: 2.5em;
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.item-popup-type {
+    font-size: 1.3em;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.item-popup-stats {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 25px;
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.3);
+    margin-bottom: 25px;
+}
+
+.item-popup-stats h4 {
+    color: #4cc9f0;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.stat-grid-popup {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.stat-item-popup {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label-popup {
+    color: #cbd5e1;
+    font-weight: 500;
+    font-size: 1.1em;
+}
+
+.stat-value-popup {
+    color: white;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.no-stats {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 20px;
+}
+
+.item-popup-description {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 25px;
+}
+
+.item-popup-description h4 {
+    color: #cbd5e1;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+}
+
+.item-popup-description p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #e2e8f0;
+    margin: 0;
+}
+
+.item-popup-price {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    margin-bottom: 25px;
+}
+
+.price-label {
+    color: #cbd5e1;
+    font-size: 1.2em;
+}
+
+.price-value {
+    color: #ffd700;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-shadow: 0 2px 4px rgba(255, 215, 0, 0.5);
+}
+
+.item-popup-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-popup-buy, .btn-popup-close {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+}
+
+.btn-popup-buy {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-popup-buy:hover:not(.disabled):not(.owned) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+}
+
+.btn-popup-buy.disabled {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-popup-buy.owned {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    cursor: default;
+}
+
+.btn-popup-close {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.btn-popup-close:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-3px);
+}
+
+/* ========== АДАПТИВНОСТЬ ВСПЛЫВАЮЩИХ ОКОН ========== */
+@media (max-width: 1024px) {
+    .item-detail-layout {
+        flex-direction: column;
+        height: auto;
+        max-height: 80vh;
+    }
+    
+    .item-detail-left {
+        flex: none;
+        height: 300px;
+        min-height: 300px;
+    }
+    
+    .item-detail-right {
+        overflow-y: auto;
+        max-height: 50vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .popup-content {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+    
+    .popup-overlay {
+        padding: 1rem;
+    }
+    
+    .popup-header {
+        padding: 20px;
+    }
+    
+    .popup-header h3 {
+        font-size: 1.8em;
+    }
+    
+    .item-popup-name {
+        font-size: 2em;
+    }
+    
+    .item-popup-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-popup-buy, .btn-popup-close {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .item-detail-left {
+        height: 250px;
+        min-height: 250px;
+        padding: 15px;
+    }
+    
+    .item-detail-right {
+        padding: 20px;
+    }
+    
+    .item-popup-name {
+        font-size: 1.8em;
+    }
+    
+    .stat-grid-popup {
+        grid-template-columns: 1fr;
+    }
+}
