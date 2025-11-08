@@ -223,19 +223,20 @@ class MapSystem {
         console.log(`📐 Позиционирование: offset=(${this.mapOffset.x.toFixed(1)}, ${this.mapOffset.y.toFixed(1)})`);
     }
 
-    setupCanvasEventListeners() {
-        if (!this.canvas) return;
+setupCanvasEventListeners() {
+    if (!this.canvas) return;
 
-        this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-        this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
+    this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+    // УБРАТЬ СТРОКУ НИЖЕ - ВРЕМЕННО ОТКЛЮЧАЕМ ХОВЕР
+    // this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
 
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                this.calculateMapPositioning();
-                this.drawTacticalMap();
-            }, 100);
-        });
-    }
+    window.addEventListener('resize', () => {
+        setTimeout(() => {
+            this.calculateMapPositioning();
+            this.forceRedraw();
+        }, 100);
+    });
+}
 
     handleCanvasClick(e) {
         if (!this.currentTacticalMap) return;
