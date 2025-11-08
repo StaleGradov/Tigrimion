@@ -45,7 +45,6 @@
     margin-bottom: 25px;
     justify-content: center;
     padding: 0 20px;
-    width: 100%;
 }
 
 .category-tab {
@@ -63,62 +62,6 @@
     text-align: center;
 }
 
-/* Стили для контейнера подкатегорий магазина */
-.shop-subcategories {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin: 15px 0;
-    padding: 0 20px;
-}
-
-.subcategory-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    max-width: 90%;
-}
-
-.subcategory-tab {
-    background: rgba(76, 201, 240, 0.15);
-    border: 2px solid rgba(76, 201, 240, 0.4);
-    color: #4cc9f0;
-    padding: 10px 20px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1em;
-    font-weight: 600;
-    min-width: 110px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.subcategory-tab:hover {
-    background: rgba(76, 201, 240, 0.25);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
-}
-
-.subcategory-tab.active {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    border-color: #4cc9f0;
-    color: white;
-    box-shadow: 0 4px 15px rgba(76, 201, 240, 0.5);
-    transform: translateY(-2px);
-}
-
-.subcategory-count {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.8em;
-    font-weight: bold;
-}
-
 .category-tab:hover {
     background: rgba(255, 255, 255, 0.25);
     transform: translateY(-3px);
@@ -132,15 +75,50 @@
     transform: translateY(-2px);
 }
 
+/* Стили для подкатегорий брони */
+.armor-subcategories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    justify-content: center;
+    padding: 0 20px;
+}
+
+.subcategory-tab {
+    background: rgba(59, 130, 246, 0.15);
+    border: 2px solid rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+    padding: 12px 24px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1em;
+    font-weight: 600;
+    min-width: 120px;
+    text-align: center;
+}
+
+.subcategory-tab:hover {
+    background: rgba(59, 130, 246, 0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.subcategory-tab.active {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
 .merchant-items-container {
     min-height: 600px;
 }
 
 .shop-content {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .shop-category {
@@ -363,32 +341,10 @@
     width: 95vw !important;
     max-height: 95vh !important;
     height: 95vh !important;
-    background: url('https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/shop.jpg') no-repeat center center !important;
-    background-size: cover !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
     border: 3px solid #4cc9f0 !important;
     border-radius: 20px !important;
     box-shadow: 0 0 60px rgba(76, 201, 240, 0.4) !important;
-    position: relative;
-}
-
-/* Затемнение фона для лучшей читаемости текста */
-.shop-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(10, 10, 20, 0.85);
-    border-radius: 20px;
-    z-index: 0;
-}
-
-/* Убедитесь, что контент поверх затемнения */
-.shop-overlay .overlay-header,
-.shop-overlay .overlay-body {
-    position: relative;
-    z-index: 1;
 }
 
 .shop-overlay .overlay-header {
@@ -407,7 +363,6 @@
     padding: 30px !important;
     max-height: calc(95vh - 120px) !important;
     overflow-y: auto;
-    color: #e2e8f0; /* Улучшаем читаемость текста */
 }
 
 .shop-overlay .items-grid {
@@ -423,15 +378,6 @@
     height: 140px !important;
 }
 
-/* Улучшаем видимость карточек предметов на новом фоне */
-.shop-overlay .item-background {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-}
-
-.shop-overlay .item-info {
-    background: rgba(0, 0, 0, 0.6);
-}
 /* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА (УВЕЛИЧЕННОЕ) ========== */
 .item-detail-modal {
     position: fixed;
@@ -524,73 +470,59 @@
 }
 
 .detail-item-background {
-    background: transparent;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
     border-radius: 15px;
-    padding: 0;
+    padding: 30px;
     border: 4px solid;
     margin-bottom: 15px;
     width: 100%;
-    height: 450px;
+    height: 350px; /* Увеличили высоту контейнера */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     position: relative;
     transition: all 0.3s ease;
-    cursor: pointer; /* Добавляем курсор-указатель */
 }
 
-/* Базовый размер картинки */
-.detail-item-background img {
-    width: 400px;
-    height: 400px;
-    object-fit: contain;
-    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Плавная анимация */
-    cursor: zoom-in;
-}
-
-/* Состояние увеличения */
-.detail-item-background img.zoomed {
-    transform: scale(2.5); /* Увеличение в 2.5 раза */
-    cursor: zoom-out;
-    z-index: 1000;
-    position: relative;
-}
-
-/* Затемнение фона при увеличении */
-.detail-item-background::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0);
-    transition: background 0.5s ease;
-    pointer-events: none;
+.detail-item-background {
+    background: transparent; /* Убираем градиентный фон */
     border-radius: 15px;
+    padding: 0; /* Убираем внутренние отступы */
+    border: 4px solid;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-.detail-item-background.zoomed::after {
-    background: rgba(0, 0, 0, 0.8); /* Затемнение фона */
+/* Увеличили размер картинки */
+.detail-item-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+    cursor: zoom-in;
+    max-width: 300px;
+    max-height: 300px;
+    padding: 10px; /* Добавим небольшой отступ чтобы картинка не касалась рамки */
 }
 
-/* Анимация появления */
-@keyframes zoomIn {
-    from {
-        opacity: 0;
-        transform: scale(1);
-    }
-    to {
-        opacity: 1;
-        transform: scale(2.5);
-    }
+.item-fallback-large {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent; /* Убираем фон у фолбэка */
+    border-radius: 10px;
+    font-size: 4em;
 }
-
-.detail-item-background img.zoomed {
-    animation: zoomIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 
 .item-rarity {
     padding: 8px 16px;
