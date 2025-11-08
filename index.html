@@ -5,7 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tigrimion RPG</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="shop.css"> <!-- Добавьте эту строку -->
+    <link rel="stylesheet" href="shop.css">
+    <!-- Добавляем стили для увеличения картинок -->
+    <style>
+        /* Стили для увеличенных картинок в модальном окне */
+        .detail-item-background img.zoomed {
+            transform: scale(2.5);
+            cursor: zoom-out;
+            z-index: 10000;
+            position: relative;
+        }
+        
+        .detail-item-background.zoomed {
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+        }
+        
+        .detail-item-background.zoomed img {
+            position: relative;
+            z-index: 10001;
+        }
+        
+        /* Анимация для плавного увеличения */
+        .detail-item-background img {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Убедимся, что увеличенная картинка поверх всего */
+        .item-detail-modal .modal-content {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        .detail-item-background.zoomed::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9998;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -17,5 +59,36 @@
 
     <!-- Основной скрипт игры -->
     <script src="script.js"></script>
+    
+    <!-- Добавляем скрипт для обработки фонов магазина -->
+    <script>
+        // Дополнительные глобальные функции для работы с магазином
+        function handleShopSubcategoryClick(subcategory) {
+            if (window.game && window.game.switchShopSubcategory) {
+                window.game.switchShopSubcategory(subcategory);
+            }
+        }
+        
+        // Функция для закрытия всех модальных окон по ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (window.game) {
+                    const modal = document.querySelector('.item-detail-modal');
+                    if (modal) {
+                        window.game.closeItemDetailModal();
+                    } else {
+                        window.game.hideOverlay();
+                    }
+                }
+            }
+        });
+        
+        // Закрытие по клику на затемненную область
+        document.addEventListener('click', function(e) {
+            if (window.game && e.target.classList.contains('overlay-container')) {
+                window.game.hideOverlay();
+            }
+        });
+    </script>
 </body>
 </html>
