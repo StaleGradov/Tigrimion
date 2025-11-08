@@ -570,92 +570,93 @@ class SafeHeroGame {
         const isOwned = this.systems.equipment.isItemOwned(itemId);
 
         // Создаем модальное окно
-        const modalHTML = `
-            <div class="item-detail-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4>🔍 Детали предмета</h4>
-                        <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
+        // В методе showItemDetailModal обновите эту часть:
+const modalHTML = `
+    <div class="item-detail-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>🔍 Детали предмета</h4>
+                <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
+            </div>
+            <div class="item-detail-content">
+                <div class="item-detail-image">
+                    <div class="detail-item-background rarity-${item.rarity || 'common'}">
+                        <img src="${item.image}" alt="${item.name}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                             class="item-detail-image-zoom">
+                        <div class="item-fallback-large" style="display: none;">
+                            <span>${this.getItemIcon(item.type)}</span>
+                        </div>
                     </div>
-                    <div class="item-detail-content">
-                        <div class="item-detail-image">
-                            <div class="detail-item-background rarity-${item.rarity || 'common'}">
-                                <img src="${item.image}" alt="${item.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                                     class="item-detail-image-zoom">
-                                <div class="item-fallback-large" style="display: none;">
-                                    <span>${this.getItemIcon(item.type)}</span>
+                    <div class="item-rarity ${item.rarity || 'common'}">
+                        ${this.getRarityName(item.rarity)}
+                    </div>
+                </div>
+                
+                <div class="item-detail-info">
+                    <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
+                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
+                    
+                    <div class="item-description">
+                        <p>${item.description || 'Описание отсутствует.'}</p>
+                    </div>
+                    
+                    ${item.flavor ? `
+                        <div class="item-flavor">
+                            "${item.flavor}"
+                        </div>
+                    ` : ''}
+                    
+                    <div class="item-stats-detailed">
+                        <h5>📊 Характеристики</h5>
+                        ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
+                            <div class="stat-line">
+                                <span>${this.getStatLabel(key)}</span>
+                                <span class="stat-value">+${value}</span>
+                            </div>
+                        `).join('') : '<div class="no-stats">Нет характеристик</div>'}
+                    </div>
+                    
+                    ${item.requirements ? `
+                        <div class="item-requirements">
+                            <h5>⚡ Требования</h5>
+                            ${Object.entries(item.requirements).map(([key, value]) => `
+                                <div class="stat-line">
+                                    <span>${this.getRequirementLabel(key)}</span>
+                                    <span class="stat-value">${value}</span>
                                 </div>
-                            </div>
-                            <div class="item-rarity ${item.rarity || 'common'}">
-                                ${this.getRarityName(item.rarity)}
-                            </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="item-actions">
+                        <div class="price-section">
+                            <span class="buy-price">💰 ${item.price} золота</span>
+                            ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
                         </div>
                         
-                        <div class="item-detail-info">
-                            <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
-                            <div class="item-type">${this.getItemTypeName(item.type)}</div>
-                            
-                            <div class="item-description">
-                                <p>${item.description || 'Описание отсутствует.'}</p>
-                            </div>
-                            
-                            ${item.flavor ? `
-                                <div class="item-flavor">
-                                    "${item.flavor}"
+                        ${!isOwned ? `
+                            <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                    onclick="game.buyItemFromModal(${itemId})" 
+                                    ${!canBuy ? 'disabled' : ''}>
+                                🛒 Купить
+                            </button>
+                            ${!canBuy ? `
+                                <div class="purchase-error">
+                                    ❌ Недостаточно золота
                                 </div>
                             ` : ''}
-                            
-                            <div class="item-stats-detailed">
-                                <h5>📊 Характеристики</h5>
-                                ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
-                                    <div class="stat-line">
-                                        <span>${this.getStatLabel(key)}</span>
-                                        <span class="stat-value">+${value}</span>
-                                    </div>
-                                `).join('') : '<div class="no-stats">Нет характеристик</div>'}
-                            </div>
-                            
-                            ${item.requirements ? `
-                                <div class="item-requirements">
-                                    <h5>⚡ Требования</h5>
-                                    ${Object.entries(item.requirements).map(([key, value]) => `
-                                        <div class="stat-line">
-                                            <span>${this.getRequirementLabel(key)}</span>
-                                            <span class="stat-value">${value}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
-                            
-                            <div class="item-actions">
-                                <div class="price-section">
-                                    <span class="buy-price">💰 ${item.price} золота</span>
-                                    ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
-                                </div>
-                                
-                                ${!isOwned ? `
-                                    <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
-                                            onclick="game.buyItemFromModal(${itemId})" 
-                                            ${!canBuy ? 'disabled' : ''}>
-                                        🛒 Купить
-                                    </button>
-                                    ${!canBuy ? `
-                                        <div class="purchase-error">
-                                            ❌ Недостаточно золота
-                                        </div>
-                                    ` : ''}
-                                ` : `
-                                    <button class="btn-primary owned" disabled>
-                                        ✅ Уже куплено
-                                    </button>
-                                `}
-                            </div>
-                        </div>
+                        ` : `
+                            <button class="btn-primary owned" disabled>
+                                ✅ Уже куплено
+                            </button>
+                        `}
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    </div>
+`;
 
         // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
