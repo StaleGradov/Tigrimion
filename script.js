@@ -529,27 +529,82 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // ПРОСТО показываем магазин через систему экипировки
+                // Показываем магазин через систему экипировки
                 container.innerHTML = this.systems.equipment.showShop();
                 
-                // Добавляем обработчики для предметов магазина
-                setTimeout(() => this.attachShopItemHandlers(), 100);
+                // Добавляем обработчики для магазина
+                setTimeout(() => {
+                    this.attachShopItemHandlers();
+                    this.attachShopCategoryHandlers();
+                }, 100);
                 break;
         }
 
         container.style.display = 'block';
     }
 
+    // ========== СИСТЕМА ФИЛЬТРАЦИИ МАГАЗИНА ==========
+    attachShopCategoryHandlers() {
+        console.log("🔄 Инициализация обработчиков категорий магазина...");
+        
+        // Обработчики для основных категорий
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const category = tab.getAttribute('data-category');
+                console.log(`🎯 Нажата категория: ${category}`);
+                
+                // Обновляем активные вкладки
+                categoryTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Обновляем магазин
+                this.systems.equipment.handleCategoryClick(category);
+            });
+        });
+
+        // Обработчики для подкатегорий
+        this.attachSubcategoryHandlers();
+    }
+
+    attachSubcategoryHandlers() {
+        // Обработчики для подкатегорий будут добавляться динамически
+        // после рендера подкатегорий системой экипировки
+        setTimeout(() => {
+            const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+            console.log(`🔍 Найдено подкатегорий: ${subcategoryTabs.length}`);
+            
+            subcategoryTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const subcategory = tab.getAttribute('data-subcategory');
+                    const activeCategoryTab = document.querySelector('.category-tab.active');
+                    const category = activeCategoryTab ? activeCategoryTab.getAttribute('data-category') : 'all';
+                    
+                    console.log(`🎯 Нажата подкатегория: ${category} -> ${subcategory}`);
+                    
+                    // Обновляем активные вкладки подкатегорий
+                    subcategoryTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Обновляем отображение предметов
+                    this.systems.equipment.handleSubcategoryClick(category, subcategory);
+                });
+            });
+        }, 50);
+    }
+
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
     attachShopItemHandlers() {
         const shopItems = document.querySelectorAll('.shop-item');
-        console.log(`Найдено предметов в магазине: ${shopItems.length}`);
+        console.log(`🔍 Найдено предметов в магазине: ${shopItems.length}`);
         
         shopItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const itemId = item.getAttribute('data-item-id');
-                console.log(`Клик по предмету ID: ${itemId}`);
+                console.log(`🛒 Клик по предмету ID: ${itemId}`);
                 if (itemId) {
                     this.showItemDetailModal(parseInt(itemId));
                 }
@@ -559,10 +614,10 @@ class SafeHeroGame {
 
     // ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ==========
     showItemDetailModal(itemId) {
-        console.log(`Открываем модалку для предмета ID: ${itemId}`);
+        console.log(`🔍 Открываем модалку для предмета ID: ${itemId}`);
         const item = this.systems.equipment.getItemById(itemId);
         if (!item) {
-            console.error(`Предмет с ID ${itemId} не найден!`);
+            console.error(`❌ Предмет с ID ${itemId} не найден!`);
             return;
         }
 
@@ -613,7 +668,13 @@ class SafeHeroGame {
                                         <span>${this.getStatLabel(key)}</span>
                                         <span class="stat-value">+${value}</span>
                                     </div>
-                                `).join('') : '<div class="no-stats">Нет характеристик</div>'}
+                                `).join('') : 
+                                `
+                                    ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span class="stat-value">+${item.fixed_damage}</span></div>` : ''}
+                                    ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span class="stat-value">+${item.fixed_armor}</span></div>` : ''}
+                                    ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span class="stat-value">+${item.fixed_health}</span></div>` : ''}
+                                    ${item.bonus && item.bonus.type !== 'none' ? `<div class="stat-line"><span>🎯 Бонус:</span> <span class="stat-value">${this.systems.equipment.formatBonus(item.bonus)}</span></div>` : ''}
+                                `}
                             </div>
                             
                             ${item.requirements ? `
@@ -753,7 +814,10 @@ class SafeHeroGame {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
             container.innerHTML = this.systems.equipment.showShop();
-            setTimeout(() => this.attachShopItemHandlers(), 100);
+            setTimeout(() => {
+                this.attachShopItemHandlers();
+                this.attachShopCategoryHandlers();
+            }, 100);
         }
     }
 
@@ -789,6 +853,20 @@ class SafeHeroGame {
             'intelligence': 'Интеллект'
         };
         return labels[requirement] || requirement;
+    }
+
+    getStatLabel(stat) {
+        const labels = {
+            'health': 'Здоровье',
+            'damage': 'Урон',
+            'armor': 'Защита',
+            'speed': 'Скорость',
+            'magic': 'Магия',
+            'strength': 'Сила',
+            'agility': 'Ловкость', 
+            'intelligence': 'Интеллект'
+        };
+        return labels[stat] || stat;
     }
 
     hideOverlay() {
@@ -926,20 +1004,6 @@ class SafeHeroGame {
             'misc': 'Предмет'
         };
         return names[type] || type;
-    }
-
-    getStatLabel(stat) {
-        const labels = {
-            'health': 'Здоровье',
-            'damage': 'Урон',
-            'armor': 'Защита',
-            'speed': 'Скорость',
-            'magic': 'Магия',
-            'strength': 'Сила',
-            'agility': 'Ловкость', 
-            'intelligence': 'Интеллект'
-        };
-        return labels[stat] || stat;
     }
 
     showMainMenu() {
