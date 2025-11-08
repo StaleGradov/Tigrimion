@@ -1757,7 +1757,7 @@
   },
   {
     "id": 81,
-    "name": "Жилет из львиной шкуры",
+    "name": "Куртка из львиной шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/lionhide_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1779,7 +1779,7 @@
   },
   {
     "id": 82,
-    "name": "Жилет из тигриной шкуры",
+    "name": "Куртка из тигриной шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/tigerhide_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1801,7 +1801,7 @@
   },
   {
     "id": 83,
-    "name": "Жилет из медвежьей шкуры",
+    "name": "Куртка из медвежьей шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bearhide_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1823,7 +1823,7 @@
   },
   {
     "id": 84,
-    "name": "Жилет из драконьей шкуры",
+    "name": "Куртка из драконьей шкуры",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/dragonhide_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1845,7 +1845,7 @@
   },
   {
     "id": 85,
-    "name": "Жилет из заячьего меха",
+    "name": "Шуба из заячьего меха",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/zaic_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1867,7 +1867,7 @@
   },
   {
     "id": 86,
-    "name": "Жилет из меха куницы",
+    "name": "Шуба из меха куницы",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/kunica_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1889,7 +1889,7 @@
   },
   {
     "id": 87,
-    "name": "Жилет из меха песца",
+    "name": "Шуба из меха песца",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/pisec_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1911,7 +1911,7 @@
   },
   {
     "id": 88,
-    "name": "Жилет из меха рыси",
+    "name": "Шуба из меха рыси",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/ris_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1933,7 +1933,7 @@
   },
   {
     "id": 89,
-    "name": "Жилет из меха барса",
+    "name": "Шуба из меха барса",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bars_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -1955,7 +1955,7 @@
   },
   {
     "id": 90,
-    "name": "Жилет из меха мамонта",
+    "name": "Шуба из меха мамонта",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mamont_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2109,7 +2109,7 @@
   },
   {
     "id": 97,
-    "name": "Медный нагрудник",
+    "name": "Медный пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copperplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2131,7 +2131,7 @@
   },
   {
     "id": 98,
-    "name": "Бронзовый нагрудник",
+    "name": "Бронзовый пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bronzeplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2153,7 +2153,7 @@
   },
   {
     "id": 99,
-    "name": "Железный нагрудник",
+    "name": "Железный пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/ironplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2175,7 +2175,7 @@
   },
   {
     "id": 100,
-    "name": "Стальной нагрудник",
+    "name": "Стальной пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/stillplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2197,7 +2197,7 @@
   },
   {
     "id": 101,
-    "name": "Мифрильный нагрудник",
+    "name": "Мифрильный пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithrilplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
@@ -2219,7 +2219,7 @@
   },
   {
     "id": 102,
-    "name": "Адамантовый нагрудник",
+    "name": "Адамантовый пластинчатый нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/adamantplate_armor.jpg",
     "type": "chest",
     "slot": "chest",
