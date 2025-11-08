@@ -602,7 +602,7 @@
     border: 4px solid;
     margin-bottom: 15px;
     width: 100%;
-    height: 350px; /* Увеличили высоту контейнера */
+    height: 650px; /* Увеличили высоту контейнера */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -618,7 +618,7 @@
     border: 4px solid;
     margin-bottom: 15px;
     width: 100%;
-    height: 350px;
+    height: 650px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -634,8 +634,8 @@
     object-fit: contain;
     transition: transform 0.4s ease;
     cursor: zoom-in;
-    max-width: 300px;
-    max-height: 300px;
+    max-width: 580px;
+    max-height: 580px;
     padding: 10px; /* Добавим небольшой отступ чтобы картинка не касалась рамки */
 }
 
