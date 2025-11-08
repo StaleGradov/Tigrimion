@@ -529,7 +529,7 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // ПРОСТО показываем магазин через систему экипировки
+                // Показываем магазин через систему экипировки
                 container.innerHTML = this.systems.equipment.showShop();
                 
                 // Добавляем обработчики для предметов магазина
@@ -569,100 +569,165 @@ class SafeHeroGame {
         const canBuy = this.currentHero.gold >= item.price;
         const isOwned = this.systems.equipment.isItemOwned(itemId);
 
-        // Создаем модальное окно
-        // В методе showItemDetailModal обновите эту часть:
-const modalHTML = `
-    <div class="item-detail-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>🔍 Детали предмета</h4>
-                <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
-            </div>
-            <div class="item-detail-content">
-                <div class="item-detail-image">
-                    <div class="detail-item-background rarity-${item.rarity || 'common'}">
-                        <img src="${item.image}" alt="${item.name}" 
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                             class="item-detail-image-zoom">
-                        <div class="item-fallback-large" style="display: none;">
-                            <span>${this.getItemIcon(item.type)}</span>
-                        </div>
+        const modalHTML = `
+            <div class="item-detail-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>🔍 Детали предмета</h4>
+                        <button class="close-modal" onclick="game.closeItemDetailModal()">✕</button>
                     </div>
-                    <div class="item-rarity ${item.rarity || 'common'}">
-                        ${this.getRarityName(item.rarity)}
-                    </div>
-                </div>
-                
-                <div class="item-detail-info">
-                    <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
-                    <div class="item-type">${this.getItemTypeName(item.type)}</div>
-                    
-                    <div class="item-description">
-                        <p>${item.description || 'Описание отсутствует.'}</p>
-                    </div>
-                    
-                    ${item.flavor ? `
-                        <div class="item-flavor">
-                            "${item.flavor}"
-                        </div>
-                    ` : ''}
-                    
-                    <div class="item-stats-detailed">
-                        <h5>📊 Характеристики</h5>
-                        ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
-                            <div class="stat-line">
-                                <span>${this.getStatLabel(key)}</span>
-                                <span class="stat-value">+${value}</span>
-                            </div>
-                        `).join('') : '<div class="no-stats">Нет характеристик</div>'}
-                    </div>
-                    
-                    ${item.requirements ? `
-                        <div class="item-requirements">
-                            <h5>⚡ Требования</h5>
-                            ${Object.entries(item.requirements).map(([key, value]) => `
-                                <div class="stat-line">
-                                    <span>${this.getRequirementLabel(key)}</span>
-                                    <span class="stat-value">${value}</span>
+                    <div class="item-detail-content">
+                        <div class="item-detail-image">
+                            <div class="detail-item-background rarity-${item.rarity || 'common'}">
+                                <img src="${item.image}" alt="${item.name}" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                     class="item-detail-image-zoom">
+                                <div class="item-fallback-large" style="display: none;">
+                                    <span>${this.getItemIcon(item.type)}</span>
                                 </div>
-                            `).join('')}
-                        </div>
-                    ` : ''}
-                    
-                    <div class="item-actions">
-                        <div class="price-section">
-                            <span class="buy-price">💰 ${item.price} золота</span>
-                            ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
+                            </div>
+                            <div class="item-rarity ${item.rarity || 'common'}">
+                                ${this.getRarityName(item.rarity)}
+                            </div>
                         </div>
                         
-                        ${!isOwned ? `
-                            <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
-                                    onclick="game.buyItemFromModal(${itemId})" 
-                                    ${!canBuy ? 'disabled' : ''}>
-                                🛒 Купить
-                            </button>
-                            ${!canBuy ? `
-                                <div class="purchase-error">
-                                    ❌ Недостаточно золота
+                        <div class="item-detail-info">
+                            <div class="item-name rarity-${item.rarity || 'common'}">${item.name}</div>
+                            <div class="item-type">${this.getItemTypeName(item.type)}</div>
+                            
+                            <div class="item-description">
+                                <p>${item.description || 'Описание отсутствует.'}</p>
+                            </div>
+                            
+                            ${item.flavor ? `
+                                <div class="item-flavor">
+                                    "${item.flavor}"
                                 </div>
                             ` : ''}
-                        ` : `
-                            <button class="btn-primary owned" disabled>
-                                ✅ Уже куплено
-                            </button>
-                        `}
+                            
+                            <!-- ИНФОРМАЦИЯ О БОНУСЕ ПРЕДМЕТА -->
+                            ${item.bonus && item.bonus.type !== 'none' ? `
+                                <div class="item-bonus-info">
+                                    <h5>🎯 Бонус предмета:</h5>
+                                    <div class="bonus-display">
+                                        ${this.systems.equipment.formatBonus(item.bonus)}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="item-stats-detailed">
+                                <h5>📊 Характеристики</h5>
+                                ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
+                                    <div class="stat-line">
+                                        <span>${this.getStatLabel(key)}</span>
+                                        <span class="stat-value">+${value}</span>
+                                    </div>
+                                `).join('') : ''}
+                                ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span class="stat-value">+${item.fixed_damage}</span></div>` : ''}
+                                ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span class="stat-value">+${item.fixed_armor}</span></div>` : ''}
+                                ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span class="stat-value">+${item.fixed_health}</span></div>` : ''}
+                            </div>
+                            
+                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
+                            ${item.setName && this.systems.equipment.itemSets[item.setName] ? `
+                                <div class="item-set-details">
+                                    <h5>✨ Бонус сета:</h5>
+                                    <div class="set-info">
+                                        <strong>${this.systems.equipment.itemSets[item.setName].name}</strong>
+                                        <div class="set-bonus">${this.systems.equipment.formatBonus(this.systems.equipment.itemSets[item.setName].bonus)}</div>
+                                        <div class="set-description">${this.systems.equipment.itemSets[item.setName].description}</div>
+                                        <div class="set-requirements">Требуется предметов: ${this.systems.equipment.itemSets[item.setName].requiredPieces}/6</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${item.requirements ? `
+                                <div class="item-requirements">
+                                    <h5>⚡ Требования</h5>
+                                    ${Object.entries(item.requirements).map(([key, value]) => `
+                                        <div class="stat-line">
+                                            <span>${this.getRequirementLabel(key)}</span>
+                                            <span class="stat-value">${value}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="item-actions">
+                                <div class="price-section">
+                                    <span class="buy-price">💰 ${item.price} золота</span>
+                                    ${item.sellPrice ? `<span class="sell-price">💸 ${item.sellPrice} золота</span>` : ''}
+                                </div>
+                                
+                                ${!isOwned ? `
+                                    <button class="btn-primary ${!canBuy ? 'disabled' : ''}" 
+                                            onclick="game.buyItemFromModal(${itemId})" 
+                                            ${!canBuy ? 'disabled' : ''}>
+                                        🛒 Купить
+                                    </button>
+                                    ${!canBuy ? `
+                                        <div class="purchase-error">
+                                            ❌ Недостаточно золота
+                                        </div>
+                                    ` : ''}
+                                ` : `
+                                    <button class="btn-primary owned" disabled>
+                                        ✅ Уже куплено
+                                    </button>
+                                `}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-`;
+        `;
 
         // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
+            
+            // Добавляем обработчик для увеличения картинки
+            setTimeout(() => {
+                const zoomableImage = document.querySelector('.item-detail-image-zoom');
+                if (zoomableImage) {
+                    zoomableImage.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.showZoomedImage(item.image, item.name);
+                    });
+                }
+            }, 100);
         }
+    }
+
+    // ========== УВЕЛИЧЕНИЕ ИЗОБРАЖЕНИЯ ПРЕДМЕТА ==========
+    showZoomedImage(imageSrc, itemName) {
+        const zoomOverlay = document.createElement('div');
+        zoomOverlay.className = 'item-image-zoom-overlay';
+        
+        zoomOverlay.innerHTML = `
+            <div class="close-zoom" onclick="this.parentElement.remove()">×</div>
+            <img src="${imageSrc}" alt="${itemName}" class="item-image-zoomed"
+                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+        `;
+        
+        // Закрытие по клику на оверлей
+        zoomOverlay.addEventListener('click', (e) => {
+            if (e.target === zoomOverlay) {
+                zoomOverlay.remove();
+            }
+        });
+        
+        // Закрытие по ESC
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                zoomOverlay.remove();
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+        };
+        
+        document.addEventListener('keydown', handleKeyDown);
+        document.body.appendChild(zoomOverlay);
     }
 
     // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
@@ -698,40 +763,6 @@ const modalHTML = `
             container.innerHTML = this.systems.equipment.showShop();
             setTimeout(() => this.attachShopItemHandlers(), 100);
         }
-    }
-
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ МОДАЛЬНОГО ОКНА ==========
-    getItemIcon(itemType) {
-        const icons = {
-            'weapon': '⚔️',
-            'armor': '🛡️',
-            'potion': '🧪',
-            'scroll': '📜',
-            'misc': '📦'
-        };
-        return icons[itemType] || '📦';
-    }
-
-    getRarityName(rarity) {
-        const names = {
-            'common': 'Обычный',
-            'uncommon': 'Необычный',
-            'rare': 'Редкий',
-            'epic': 'Эпический',
-            'legendary': 'Легендарный',
-            'mythic': 'Мифический'
-        };
-        return names[rarity] || 'Обычный';
-    }
-
-    getRequirementLabel(requirement) {
-        const labels = {
-            'level': 'Уровень',
-            'strength': 'Сила',
-            'agility': 'Ловкость',
-            'intelligence': 'Интеллект'
-        };
-        return labels[requirement] || requirement;
     }
 
     hideOverlay() {
@@ -883,6 +914,39 @@ const modalHTML = `
             'intelligence': 'Интеллект'
         };
         return labels[stat] || stat;
+    }
+
+    getItemIcon(itemType) {
+        const icons = {
+            'weapon': '⚔️',
+            'armor': '🛡️',
+            'potion': '🧪',
+            'scroll': '📜',
+            'misc': '📦'
+        };
+        return icons[itemType] || '📦';
+    }
+
+    getRarityName(rarity) {
+        const names = {
+            'common': 'Обычный',
+            'uncommon': 'Необычный',
+            'rare': 'Редкий',
+            'epic': 'Эпический',
+            'legendary': 'Легендарный',
+            'mythic': 'Мифический'
+        };
+        return names[rarity] || 'Обычный';
+    }
+
+    getRequirementLabel(requirement) {
+        const labels = {
+            'level': 'Уровень',
+            'strength': 'Сила',
+            'agility': 'Ловкость',
+            'intelligence': 'Интеллект'
+        };
+        return labels[requirement] || requirement;
     }
 
     showMainMenu() {
