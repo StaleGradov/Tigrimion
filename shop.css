@@ -149,14 +149,12 @@
     padding: 20px;
 }
 
-/* ОБНОВЛЕННЫЕ СТИЛИ ДЛЯ ПРЕДМЕТОВ МАГАЗИНА */
 .shop-item {
     cursor: pointer;
     transition: all 0.3s ease;
     border-radius: 15px;
     overflow: hidden;
     min-height: 220px;
-    position: relative;
 }
 
 .shop-item:hover {
@@ -380,47 +378,255 @@
     height: 140px !important;
 }
 
-/* ========== ИНДИКАТОР КЛИКАБЕЛЬНОСТИ ========== */
-.shop-item::after {
-    content: '🔍';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
+/* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
+.item-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    padding: 0;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 3px solid #4cc9f0;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.modal-header h4 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
     width: 30px;
     height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+}
+
+.item-detail-content {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    padding: 20px;
+}
+
+.item-detail-image {
+    text-align: center;
+}
+
+.detail-item-background {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    border-radius: 12px;
+    padding: 20px;
+    border: 3px solid;
+    margin-bottom: 10px;
+    width: 250px;
+    height: 188px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Цвета рамок для редкостей */
+.rarity-common .detail-item-background { border-color: #9ca3af; }
+.rarity-uncommon .detail-item-background { border-color: #4cc9f0; }
+.rarity-rare .detail-item-background { border-color: #a855f7; }
+.rarity-epic .detail-item-background { border-color: #f59e0b; }
+.rarity-legendary .detail-item-background { border-color: #ffd700; }
+.rarity-mythic .detail-item-background { border-color: #ff6b6b; }
+
+.detail-item-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.detail-item-background img:hover {
+    transform: scale(2.5);
+    z-index: 1000;
+    position: relative;
+}
+
+.item-fallback-large {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 3em;
+}
+
+.item-rarity {
+    padding: 4px 12px;
+    border-radius: 15px;
     font-size: 0.8em;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 10;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
-.shop-item:hover::after {
-    opacity: 1;
+.item-rarity.common { background: #9ca3af; color: #1f2937; }
+.item-rarity.uncommon { background: #4ade80; color: #1f2937; }
+.item-rarity.rare { background: #4cc9f0; color: #1f2937; }
+.item-rarity.epic { background: #a855f7; color: white; }
+.item-rarity.legendary { background: #f59e0b; color: #1f2937; }
+.item-rarity.mythic { background: #ff6b6b; color: white; }
+
+.item-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-.shop-item.cannot-buy::after {
-    content: '🔒';
-    opacity: 0.7;
+.item-name {
+    font-weight: bold;
+    font-size: 1.1em;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
 }
 
-.shop-item.owned::after {
-    content: '✅';
-    opacity: 0.7;
+.rarity-common .item-name { color: #9ca3af; }
+.rarity-uncommon .item-name { color: #4cc9f0; }
+.rarity-rare .item-name { color: #a855f7; }
+.rarity-epic .item-name { 
+    color: #f59e0b;
+    text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+}
+.rarity-legendary .item-name { 
+    color: #ffd700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+}
+.rarity-mythic .item-name { 
+    color: #ff6b6b;
+    text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
 }
 
-/* ========== АНИМАЦИЯ НАВЕДЕНИЯ ДЛЯ КЛИКАБЕЛЬНЫХ ПРЕДМЕТОВ ========== */
-.shop-item:not(.cannot-buy):not(.owned):hover {
-    cursor: pointer;
+.item-type {
+    font-size: 1.3em;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 25px;
+    text-align: center;
 }
 
-.shop-item:not(.cannot-buy):not(.owned):hover .item-background {
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+.item-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+.item-flavor {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+    font-size: 0.85em;
+    text-align: center;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #4cc9f0;
+}
+
+.item-stats-detailed, .item-requirements {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-stats-detailed h5, .item-requirements h5 {
+    color: #4cc9f0;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    font-size: 0.85em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-line:last-child {
+    border-bottom: none;
+}
+
+.item-actions {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.buy-price {
+    color: #ffd700;
+}
+
+.sell-price {
+    color: #4ade80;
+}
+
+.purchase-error {
+    color: #f87171;
+    font-size: 0.8em;
+    text-align: center;
+    margin-top: 8px;
+}
+
+.btn-primary.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* ========== ПРОКРУТКА МАГАЗИНА ========== */
@@ -494,10 +700,16 @@
         height: 98vh !important;
     }
     
-    .shop-item::after {
-        width: 25px;
-        height: 25px;
-        font-size: 0.7em;
+    .item-detail-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .detail-item-background {
+        width: 100%;
+        height: 200px;
+        max-width: 300px;
+        margin: 0 auto;
     }
 }
 
@@ -526,10 +738,13 @@
         padding: 8px 12px;
     }
     
-    .shop-item::after {
-        width: 20px;
-        height: 20px;
-        font-size: 0.6em;
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .item-detail-content {
+        padding: 15px;
     }
 }
 
@@ -544,52 +759,4 @@
     border-radius: 8px;
     border: 1px dashed #475569;
     margin: 20px;
-}
-
-/* ========== СТИЛИ ДЛЯ ПРЕДМЕТОВ С РАЗНЫМИ СТАТУСАМИ ========== */
-.shop-item.can-buy {
-    cursor: pointer;
-}
-
-.shop-item.can-buy:hover {
-    transform: translateY(-8px) scale(1.03);
-}
-
-.shop-item.cannot-buy {
-    cursor: not-allowed;
-}
-
-.shop-item.owned {
-    cursor: default;
-}
-
-/* Индикатор доступности покупки */
-.item-availability {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8em;
-    z-index: 10;
-}
-
-.item-availability.can-buy {
-    color: #4ade80;
-    border: 1px solid #4ade80;
-}
-
-.item-availability.cannot-buy {
-    color: #f87171;
-    border: 1px solid #f87171;
-}
-
-.item-availability.owned {
-    color: #4cc9f0;
-    border: 1px solid #4cc9f0;
 }
