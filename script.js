@@ -202,9 +202,6 @@ class SafeHeroGame {
             
             await this.loadGameData();
             
-            // Инициализация обработчиков всплывающих окон
-            this.initItemDetailHandlers();
-            
             this.showHeroSelection();
             
         } catch (error) {
@@ -476,9 +473,6 @@ class SafeHeroGame {
                         </div>
                     </div>
                 </div>
-
-                <!-- Область для оверлеев (открывается поверх героя) -->
-                <div id="overlay-container" class="overlay-container"></div>
             </div>
         `;
     }
@@ -548,6 +542,134 @@ class SafeHeroGame {
         }
     }
 
+    // ========== СИСТЕМА ВСПЛЫВАЮЩИХ ОКОН ПРЕДМЕТОВ ==========
+    openItemDetail(item, context = 'shop') {
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
+
+        // Создаем HTML для окна предмета
+        const itemDetailHTML = `
+            <div class="overlay-content item-detail-overlay">
+                <div class="overlay-header">
+                    <h3 class="item-detail-title">${item.name}</h3>
+                    <button class="btn-close" onclick="game.closeItemDetail()">&times;</button>
+                </div>
+                <div class="item-detail-body">
+                    <div class="item-detail-image" data-rarity="${item.rarity || 'common'}">
+                        <img src="${item.image}" alt="${item.name}" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    </div>
+                    <div class="item-detail-info">
+                        <div class="item-detail-type">
+                            ${this.getItemTypeName(item.type)} • ${this.getRarityName(item.rarity)}
+                        </div>
+                        <div class="item-detail-stats">
+                            ${item.stats ? Object.entries(item.stats).map(([key, value]) => `
+                                <div class="item-detail-stat">
+                                    <span class="stat-label">${this.getStatLabel(key)}</span>
+                                    <span class="stat-value">+${value}</span>
+                                </div>
+                            `).join('') : '<div class="no-stats">Нет дополнительных характеристик</div>'}
+                        </div>
+                        <div class="item-detail-description">
+                            ${item.description || 'Описание отсутствует'}
+                        </div>
+                    </div>
+                </div>
+                <div class="item-detail-actions">
+                    <div class="item-detail-price">
+                        <span>💰</span>
+                        <span>${item.price ? item.price.toFixed(2) : '0'}</span>
+                    </div>
+                    ${context === 'shop' ? `
+                        <button class="btn-primary" id="itemDetailBuyBtn" 
+                                onclick="game.buyItemFromDetail(${item.id})">
+                            ${this.isItemOwned(item.id) ? 'Уже куплено' : 'Купить'}
+                        </button>
+                    ` : `
+                        <button class="btn-primary" id="itemDetailEquipBtn" 
+                                onclick="game.equipItemFromDetail(${item.id})">
+                            ${this.isItemEquipped(item.id) ? 'Снять' : 'Экипировать'}
+                        </button>
+                    `}
+                    <button class="btn-secondary" onclick="game.closeItemDetail()">
+                        Закрыть
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = itemDetailHTML;
+        container.style.display = 'block';
+        this.activeOverlay = 'item-detail';
+
+        // Обновляем состояние кнопки
+        this.updateItemDetailButton(item, context);
+    }
+
+    updateItemDetailButton(item, context) {
+        if (context === 'shop') {
+            const buyBtn = document.getElementById('itemDetailBuyBtn');
+            if (buyBtn) {
+                const isOwned = this.isItemOwned(item.id);
+                const canAfford = this.currentHero && this.currentHero.gold >= (item.price || 0);
+                
+                buyBtn.textContent = isOwned ? 'Уже куплено' : 'Купить';
+                buyBtn.disabled = isOwned || !canAfford;
+                
+                if (!canAfford && !isOwned) {
+                    buyBtn.title = 'Недостаточно золота';
+                }
+            }
+        } else {
+            const equipBtn = document.getElementById('itemDetailEquipBtn');
+            if (equipBtn) {
+                const isEquipped = this.isItemEquipped(item.id);
+                equipBtn.textContent = isEquipped ? 'Снять' : 'Экипировать';
+            }
+        }
+    }
+
+    buyItemFromDetail(itemId) {
+        if (this.systems.equipment.buyItem(itemId)) {
+            this.showNotification(`Предмет "${this.systems.equipment.getItemById(itemId).name}" куплен!`, 'success');
+            this.closeItemDetail();
+            // Обновляем магазин если он открыт
+            if (this.activeOverlay === 'shop') {
+                this.showOverlay('shop');
+            }
+        } else {
+            this.showNotification('Недостаточно золота!', 'error');
+        }
+    }
+
+    equipItemFromDetail(itemId) {
+        const item = this.systems.equipment.getItemById(itemId);
+        if (!item) return;
+
+        if (this.isItemEquipped(itemId)) {
+            this.systems.equipment.unequipItem(item.slot);
+            this.showNotification(`Предмет "${item.name}" снят`, 'info');
+        } else {
+            if (this.systems.equipment.equipItem(itemId)) {
+                this.showNotification(`Предмет "${item.name}" экипирован`, 'success');
+            } else {
+                this.showNotification('Не удалось экипировать предмет', 'error');
+            }
+        }
+        
+        this.closeItemDetail();
+        // Обновляем инвентарь и экран героя
+        if (this.activeOverlay === 'inventory') {
+            this.showOverlay('inventory');
+        }
+        this.showHeroGameScreen();
+    }
+
+    closeItemDetail() {
+        this.hideOverlay();
+    }
+
     showEquipmentForSlot(slot) {
         this.showOverlay('inventory');
         // Здесь можно добавить фильтрацию по слоту
@@ -591,104 +713,6 @@ class SafeHeroGame {
                 notification.remove();
             }
         }, 5000);
-    }
-
-    // ========== СИСТЕМА ВСПЛЫВАЮЩИХ ОКОН ПРЕДМЕТОВ ==========
-    openItemDetail(item, context = 'shop') {
-        const overlay = document.getElementById('itemDetailOverlay');
-        const backdrop = document.getElementById('itemDetailBackdrop');
-        const title = document.getElementById('itemDetailTitle');
-        const image = document.getElementById('itemDetailImage');
-        const img = document.getElementById('itemDetailImg');
-        const type = document.getElementById('itemDetailType');
-        const stats = document.getElementById('itemDetailStats');
-        const description = document.getElementById('itemDetailDescription');
-        const price = document.getElementById('itemDetailPriceValue');
-        const buyBtn = document.getElementById('itemDetailBuyBtn');
-        
-        // Заполняем данными
-        title.textContent = item.name;
-        img.src = item.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4=';
-        img.alt = item.name;
-        image.setAttribute('data-rarity', item.rarity || 'common');
-        type.textContent = `${this.getItemTypeName(item.type)} • ${this.getRarityName(item.rarity)}`;
-        description.textContent = item.description || 'Описание отсутствует';
-        price.textContent = item.price ? item.price.toFixed(2) : '0';
-        
-        // Очищаем и заполняем статы
-        stats.innerHTML = '';
-        if (item.stats) {
-            Object.entries(item.stats).forEach(([key, value]) => {
-                const statElement = document.createElement('div');
-                statElement.className = 'item-detail-stat';
-                statElement.innerHTML = `
-                    <span class="stat-label">${this.getStatLabel(key)}</span>
-                    <span class="stat-value">+${value}</span>
-                `;
-                stats.appendChild(statElement);
-            });
-        }
-        
-        // Настройка кнопки в зависимости от контекста
-        if (context === 'shop') {
-            const isOwned = this.isItemOwned(item.id);
-            const canAfford = this.currentHero && this.currentHero.gold >= (item.price || 0);
-            
-            buyBtn.textContent = isOwned ? 'Уже куплено' : 'Купить';
-            buyBtn.disabled = isOwned || !canAfford;
-            buyBtn.onclick = () => {
-                if (this.systems.equipment.buyItem(item.id)) {
-                    this.showNotification(`Предмет "${item.name}" куплен!`, 'success');
-                    this.closeItemDetail();
-                    // Обновляем магазин
-                    if (this.activeOverlay === 'shop') {
-                        this.showOverlay('shop');
-                    }
-                } else {
-                    this.showNotification('Недостаточно золота!', 'error');
-                }
-            };
-        } else {
-            // В инвентаре показываем кнопку экипировки
-            const isEquipped = this.isItemEquipped(item.id);
-            buyBtn.textContent = isEquipped ? 'Снять' : 'Экипировать';
-            buyBtn.onclick = () => {
-                if (isEquipped) {
-                    this.systems.equipment.unequipItem(item.slot);
-                    this.showNotification(`Предмет "${item.name}" снят`, 'info');
-                } else {
-                    if (this.systems.equipment.equipItem(item.id)) {
-                        this.showNotification(`Предмет "${item.name}" экипирован`, 'success');
-                    } else {
-                        this.showNotification('Не удалось экипировать предмет', 'error');
-                    }
-                }
-                this.closeItemDetail();
-                // Обновляем инвентарь и экран героя
-                if (this.activeOverlay === 'inventory') {
-                    this.showOverlay('inventory');
-                }
-                this.showHeroGameScreen();
-            };
-        }
-        
-        // Показываем окно
-        overlay.classList.add('active');
-        backdrop.classList.add('active');
-        
-        // Блокируем прокрутку body
-        document.body.style.overflow = 'hidden';
-    }
-
-    closeItemDetail() {
-        const overlay = document.getElementById('itemDetailOverlay');
-        const backdrop = document.getElementById('itemDetailBackdrop');
-        
-        overlay.classList.remove('active');
-        backdrop.classList.remove('active');
-        
-        // Восстанавливаем прокрутку body
-        document.body.style.overflow = '';
     }
 
     // Вспомогательные методы для предметов
@@ -743,20 +767,6 @@ class SafeHeroGame {
         if (!this.currentHero || !this.currentHero.equipment) return false;
         
         return Object.values(this.currentHero.equipment).includes(itemId);
-    }
-
-    // Инициализация обработчиков для всплывающих окон
-    initItemDetailHandlers() {
-        document.getElementById('closeItemDetail').addEventListener('click', () => this.closeItemDetail());
-        document.getElementById('itemDetailCloseBtn').addEventListener('click', () => this.closeItemDetail());
-        document.getElementById('itemDetailBackdrop').addEventListener('click', () => this.closeItemDetail());
-        
-        // Закрытие по ESC
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && document.getElementById('itemDetailOverlay').classList.contains('active')) {
-                this.closeItemDetail();
-            }
-        });
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
