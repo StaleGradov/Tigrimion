@@ -253,41 +253,41 @@ class EquipmentSystem {
             bonus: { type: "health_regen_mult", value: 1.6 },
             description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
         },
-                        "set_health1": {
-            name: "Грабителя Арканиума",
+           "set_health1": {
+            name: "Лесоруба Арканиума",
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.5 },
-            description: "Комплект из 6 вещей даст +5% к регенерации здоровья"
+            bonus: { type: "health_mult", value: 0.5 },
+            description: "Комплект из 6 вещей даст +5% к здоровью"
         },
-            "set_health2": {
-            name: "Бандита Арканиума", 
+           "set_health2": {
+            name: "Дровосека Арканиума", 
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.1 },
-            description: "Комплект из 6 вещей даст +10% к регенерации здоровья"
+            bonus: { type: "health_mult", value: 0.1 },
+            description: "Комплект из 6 вещей даст +10% к здоровью"
         },
-            "set_health3": {
-            name: "Опытного разбойника",
+           "set_health3": {
+            name: "Берсерка - воина гильдии воров Арканиума",
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.2 },
-            description: "Комплект из 6 вещей даст +20% к регенерации здоровья"
+            bonus: { type: "health_mult", value: 0.15 },
+            description: "Комплект из 6 вещей даст +15% к здоровью"
         },
-                   "set_healt4": {
-            name: "Вожака банды Арканиума",
+           "set_healt4": {
+            name: "Наемника Ветерана Арканиума",
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.4 },
-            description: "Комплект из 6 вещей даст +40% к регенерации здоровьяу"
+            bonus: { type: "health_mult", value: 0.2 },
+            description: "Комплект из 6 вещей даст +20% к здоровью"
         },
-                   "set_health5": {
-            name: "Берсерка, лучшего бойца воровской гильдии Арканиума",
+           "set_health5": {
+            name: "Капитана стражи Арканиума",
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 0.8 },
-            description: "Комплект из 6 вещей даст +80% к регенерации здоровья"
+            bonus: { type: "health_mult", value: 0.25 },
+            description: "Комплект из 6 вещей даст +25% к здоровью"
         },
-                   "set_health6": {
-            name: "Короля воров Арканиума",
+           "set_health6": {
+            name: "Лорда Воина Арканиума",
             requiredPieces: 6,
-            bonus: { type: "health_regen_mult", value: 1.6 },
-            description: "Комплект из 6 вещей даст +160% к регенерации здоровья"
+            bonus: { type: "health_mult", value: 0.3 },
+            description: "Комплект из 6 вещей даст +30% к здоровью"
         }
         };
     }
