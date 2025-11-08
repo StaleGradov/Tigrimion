@@ -487,14 +487,11 @@
 
 /* УВЕЛИЧИВАЕМ КАРТИНКУ */
 .detail-item-background img {
-    width: auto; /* Убираем 100% ширины */
-    height: auto; /* Убираем 100% высоты */
-    max-width: 320px; /* Увеличиваем максимальный размер */
-    max-height: 320px; /* Увеличиваем максимальный размер */
+    width: 300px;
+    height: 300px;
     object-fit: contain;
     transition: transform 0.4s ease;
     cursor: zoom-in;
-    padding: 15px; /* Увеличиваем отступ */
 }
 
 
