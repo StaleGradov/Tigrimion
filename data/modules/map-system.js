@@ -23,9 +23,8 @@ class MapSystem {
         this.showGrid = true;
         this.hoveredHex = null;
         
-        // Новые параметры для корректного позиционирования
+        // Убрали масштабирование и сложное позиционирование
         this.mapOffset = { x: 0, y: 0 };
-        this.mapScale = 1;
         
         // Оптимизация рендеринга
         this.lastHoveredHex = null;
@@ -116,7 +115,6 @@ class MapSystem {
 
         const cells = jsonMap.game.grid.cells;
         
-        // Простая обработка - используем оригинальные координаты
         const convertedCells = {};
         
         cells.forEach(cell => {
@@ -126,8 +124,8 @@ class MapSystem {
                 type: cell.type,
                 passable: cell.passable,
                 visible: cell.visible,
-                x: cell.x, // Используем оригинальные координаты
-                y: cell.y, // Используем оригинальные координаты
+                x: cell.x,
+                y: cell.y,
                 row: cell.row,
                 col: cell.col,
                 originalData: cell
@@ -145,8 +143,8 @@ class MapSystem {
             id: this.tacticalMaps.length + 1,
             name: jsonMap.meta?.name || "Карта Tigrimion",
             image: jsonMap.visual?.backgroundImage || "",
-            width: 20, // Временное значение
-            height: 20, // Временное значение
+            width: 20,
+            height: 20,
             startPosition: startPosition,
             description: jsonMap.meta?.description || "Создана в редакторе карт Tigrimion",
             localPosition: {x: 0, y: 0},
@@ -184,18 +182,7 @@ class MapSystem {
 
         this.ctx = this.canvas.getContext('2d');
         
-        // Отладочная информация
-        console.log("🔍 Проверка структуры карты:");
-        console.log("Текущая тактическая карта:", this.currentTacticalMap);
-        console.log("Клетки карты:", Object.keys(this.currentTacticalMap.cells).length);
-        console.log("Позиция игрока:", this.playerTacticalPosition);
-        
-        // Проверим несколько клеток вокруг игрока
-        const playerX = this.playerTacticalPosition.x;
-        const playerY = this.playerTacticalPosition.y;
-        console.log(`Клетка игрока [${playerX},${playerY}]:`, this.currentTacticalMap.cells[`${playerX},${playerY}`]);
-        
-        // Рассчитываем масштаб и позиционирование
+        // Рассчитываем позиционирование
         this.calculateMapPositioning();
         
         // Добавляем обработчики событий
@@ -215,45 +202,32 @@ class MapSystem {
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
 
-        // Получаем границы карты из данных клеток
+        // ПРОСТОЕ ПОЗИЦИОНИРОВАНИЕ БЕЗ МАСШТАБИРОВАНИЯ
+        // Центрируем карту в контейнере
         const cells = Object.values(this.currentTacticalMap.cells);
         if (cells.length === 0) return;
 
-        // Находим минимальные и максимальные координаты
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        
+        // Находим центр масс всех клеток
+        let centerX = 0, centerY = 0;
         cells.forEach(cell => {
-            minX = Math.min(minX, cell.x);
-            minY = Math.min(minY, cell.y);
-            maxX = Math.max(maxX, cell.x);
-            maxY = Math.max(maxY, cell.y);
+            centerX += cell.x;
+            centerY += cell.y;
         });
+        centerX /= cells.length;
+        centerY /= cells.length;
 
-        // Добавляем отступы для границ
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        const padding = hexSize * 2;
+        // Смещаем карту так, чтобы центр был в центре canvas
+        this.mapOffset.x = rect.width / 2 - centerX;
+        this.mapOffset.y = rect.height / 2 - centerY;
 
-        const mapWidth = maxX - minX + hexSize * 2;
-        const mapHeight = maxY - minY + hexSize * 2;
-
-        // Рассчитываем масштаб чтобы карта влезала в контейнер
-        const scaleX = (rect.width - padding * 2) / mapWidth;
-        const scaleY = (rect.height - padding * 2) / mapHeight;
-        this.mapScale = Math.min(scaleX, scaleY, 1); // Не увеличиваем больше 1x
-
-        // Центрируем карту
-        this.mapOffset.x = (rect.width - mapWidth * this.mapScale) / 2 - minX * this.mapScale;
-        this.mapOffset.y = (rect.height - mapHeight * this.mapScale) / 2 - minY * this.mapScale;
-
-        console.log(`📐 Позиционирование: scale=${this.mapScale}, offset=(${this.mapOffset.x}, ${this.mapOffset.y})`);
+        console.log(`📐 Позиционирование: offset=(${this.mapOffset.x.toFixed(1)}, ${this.mapOffset.y.toFixed(1)})`);
     }
 
     setupCanvasEventListeners() {
         if (!this.canvas) return;
 
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-       // this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
-       // this.canvas.addEventListener('wheel', (e) => this.handleCanvasZoom(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
 
         window.addEventListener('resize', () => {
             setTimeout(() => {
@@ -261,18 +235,6 @@ class MapSystem {
                 this.drawTacticalMap();
             }, 100);
         });
-    }
-
-    handleCanvasZoom(e) {
-        e.preventDefault();
-        
-        const zoomIntensity = 0.1;
-        const wheel = e.deltaY < 0 ? 1 : -1;
-        const zoom = Math.exp(wheel * zoomIntensity);
-        
-        this.mapScale = Math.max(0.3, Math.min(2, this.mapScale * zoom));
-        this.drawTacticalMap();
-        this.updateZoomDisplay();
     }
 
     handleCanvasClick(e) {
@@ -303,7 +265,6 @@ class MapSystem {
             this.lastHoveredHex = hex;
             this.hoveredHex = hex;
             
-            // Используем requestAnimationFrame для плавного рендеринга
             if (this.animationFrame) {
                 cancelAnimationFrame(this.animationFrame);
             }
@@ -317,11 +278,11 @@ class MapSystem {
         if (!this.currentTacticalMap) return null;
 
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = (this.currentTacticalMap.cellSize || 40) * this.mapScale;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
-        // Преобразуем координаты canvas в координаты карты
-        const mapX = (canvasX - this.mapOffset.x) / this.mapScale;
-        const mapY = (canvasY - this.mapOffset.y) / this.mapScale;
+        // Преобразуем координаты canvas в координаты карты (без масштаба)
+        const mapX = canvasX - this.mapOffset.x;
+        const mapY = canvasY - this.mapOffset.y;
 
         for (const cell of cells) {
             const distance = Math.sqrt(
@@ -329,7 +290,7 @@ class MapSystem {
                 Math.pow(mapY - cell.y, 2)
             );
             
-            if (distance <= hexSize * 0.6) { // Более точное определение попадания
+            if (distance <= hexSize * 0.6) {
                 return cell;
             }
         }
@@ -345,9 +306,8 @@ class MapSystem {
         // Сохраняем контекст для трансформаций
         this.ctx.save();
         
-        // Применяем масштаб и смещение
+        // Применяем только смещение (без масштаба)
         this.ctx.translate(this.mapOffset.x, this.mapOffset.y);
-        this.ctx.scale(this.mapScale, this.mapScale);
 
         // Рисуем фон
         this.drawBackground();
@@ -372,7 +332,7 @@ class MapSystem {
     drawBackground() {
         const map = this.currentTacticalMap;
         if (!map.image) {
-            return; // Фон будет нарисован в основном контейнере
+            return;
         }
 
         // Получаем границы для рисования фона
@@ -394,7 +354,6 @@ class MapSystem {
 
         const img = new Image();
         img.onload = () => {
-            // Рисуем изображение под всей картой
             this.ctx.drawImage(img, minX, minY, width, height);
             // Перерисовываем остальные элементы
             this.drawHexes();
@@ -488,17 +447,6 @@ class MapSystem {
 
         this.ctx.fillStyle = fillColor;
         this.ctx.fill();
-        
-        // Отладочная информация - координаты клетки
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '10px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText(
-            `${cell.col},${cell.row}`, 
-            cell.x, 
-            cell.y - 25
-        );
-        
         this.ctx.restore();
     }
 
@@ -569,24 +517,6 @@ class MapSystem {
             this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
             this.ctx.lineWidth = 3;
             this.ctx.stroke();
-            
-            // Добавляем координаты для отладки
-            this.ctx.fillStyle = '#000000';
-            this.ctx.font = 'bold 10px Arial';
-            this.ctx.fillText(
-                `${move.col},${move.row}`, 
-                move.cell.x - 15, 
-                move.cell.y + 5
-            );
-            
-            // Добавляем направление
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.font = 'bold 8px Arial';
-            this.ctx.fillText(
-                move.direction, 
-                move.cell.x - 10, 
-                move.cell.y + 20
-            );
         });
         this.ctx.restore();
     }
@@ -631,19 +561,14 @@ class MapSystem {
     // Основные геометрические константы для гексов
     getHexGeometry(hexSize) {
         return {
-            // Основные размеры
             size: hexSize,
-            width: Math.sqrt(3) * hexSize,      // ~1.732 * hexSize
-            height: 2 * hexSize,                // 2.0 * hexSize
-            
-            // Расстояния между центрами
-            horizontalDistance: Math.sqrt(3) * hexSize,     // ~1.732 * hexSize
-            verticalDistance: 1.5 * hexSize,                // 1.5 * hexSize
-            diagonalDistance: Math.sqrt(3.25) * hexSize,    // ~1.803 * hexSize
-            
-            // Для проверки смежности
-            expectedAdjacentDistance: Math.sqrt(3) * hexSize, // ~1.732 * hexSize
-            tolerance: hexSize * 0.4  // Допуск 40% от размера
+            width: Math.sqrt(3) * hexSize,
+            height: 2 * hexSize,
+            horizontalDistance: Math.sqrt(3) * hexSize,
+            verticalDistance: 1.5 * hexSize,
+            diagonalDistance: Math.sqrt(3.25) * hexSize,
+            expectedAdjacentDistance: Math.sqrt(3) * hexSize,
+            tolerance: hexSize * 0.4
         };
     }
 
@@ -662,8 +587,6 @@ class MapSystem {
         
         const hexSize = this.currentTacticalMap.cellSize || 40;
         const geometry = this.getHexGeometry(hexSize);
-        
-        console.log(`  📐 Геометрия гекса: размер=${hexSize}, ожидаемое расстояние=${geometry.expectedAdjacentDistance.toFixed(1)}`);
         
         // Проверяем все клетки на карте
         Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
@@ -1053,23 +976,14 @@ class MapSystem {
 
     renderTigrimionTacticalMap() {
         const map = this.currentTacticalMap;
-        const scalePercent = Math.round(this.mapScale * 100);
         
         return `
             <div class="map-container tactical-map tigrimion-tactical-map">
                 <div class="tactical-map-header">
                     <h4>${map.name}</h4>
                     <div class="map-controls">
-                        <div class="zoom-controls">
-                            <button class="zoom-btn" onclick="game.systems.map.zoomOut()">-</button>
-                            <span class="zoom-display">${scalePercent}%</span>
-                            <button class="zoom-btn" onclick="game.systems.map.zoomIn()">+</button>
-                        </div>
                         <button class="btn-secondary" onclick="game.systems.map.toggleGrid()">
                             ${this.showGrid ? '🔲 Сетка' : '🔳 Сетка'}
-                        </button>
-                        <button class="btn-secondary" onclick="game.systems.map.resetZoom()">
-                            🔄 Сброс
                         </button>
                         <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                     </div>
@@ -1089,9 +1003,6 @@ class MapSystem {
                         </div>
                         <div class="movement-info" id="movementInfo">
                             Доступные ходы: <span id="availableMoves">0</span>
-                        </div>
-                        <div class="zoom-info">
-                            Масштаб: ${scalePercent}% | Используйте колесо мыши для zoom
                         </div>
                     </div>
                 </div>
@@ -1328,13 +1239,6 @@ class MapSystem {
         }
     }
 
-    updateZoomDisplay() {
-        const zoomDisplay = document.querySelector('.zoom-display');
-        if (zoomDisplay) {
-            zoomDisplay.textContent = Math.round(this.mapScale * 100) + '%';
-        }
-    }
-
     // ========== УПРАВЛЕНИЕ ОВЕРЛЕЯМИ ==========
     showOverlay(overlayType) {
         if (overlayType === 'tactical-map') {
@@ -1360,7 +1264,6 @@ class MapSystem {
             setTimeout(() => {
                 this.initCanvas();
                 this.updateMovementInfo();
-                this.updateZoomDisplay();
             }, 100);
             
         } else {
@@ -1424,7 +1327,6 @@ class MapSystem {
             this.hoveredHex = null;
             this.lastHoveredHex = null;
             
-            // Отменяем анимацию
             if (this.animationFrame) {
                 cancelAnimationFrame(this.animationFrame);
                 this.animationFrame = null;
@@ -1440,24 +1342,6 @@ class MapSystem {
 
     showTacticalMapEditor() {
         this.showOverlay('tactical-map');
-    }
-
-    zoomIn() {
-        this.mapScale = Math.min(2, this.mapScale * 1.2);
-        this.drawTacticalMap();
-        this.updateZoomDisplay();
-    }
-
-    zoomOut() {
-        this.mapScale = Math.max(0.3, this.mapScale / 1.2);
-        this.drawTacticalMap();
-        this.updateZoomDisplay();
-    }
-
-    resetZoom() {
-        this.calculateMapPositioning();
-        this.drawTacticalMap();
-        this.updateZoomDisplay();
     }
 
     // ========== СИСТЕМА СОХРАНЕНИЯ/ЗАГРУЗКИ ==========
@@ -1521,50 +1405,11 @@ class MapSystem {
         console.log("Текущая локальная карта:", this.currentLocalMap?.name);
         console.log("Текущая тактическая карта:", this.currentTacticalMap?.name);
         console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
-        console.log("Масштаб:", this.mapScale);
         console.log("Смещение:", this.mapOffset);
         console.groupEnd();
-    }
-
-    // ========== ОТЛАДОЧНЫЕ МЕТОДЫ ДЛЯ НОВОЙ СИСТЕМЫ ==========
-    debugHexDistances() {
-        if (!this.currentTacticalMap) return;
-        
-        const currentCell = this.currentTacticalMap.cells[
-            `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`
-        ];
-        
-        if (!currentCell) return;
-        
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        const geometry = this.getHexGeometry(hexSize);
-        
-        console.log('🔍 ДЕТАЛЬНЫЙ АНАЛИЗ РАССТОЯНИЙ:');
-        console.log(`  Текущая клетка: [${currentCell.col},${currentCell.row}]`);
-        console.log(`  Геометрия: размер=${hexSize}, допуск=${geometry.tolerance.toFixed(1)}`);
-        console.log(`  Ожидаемые расстояния: горизонтальное=${geometry.horizontalDistance.toFixed(1)}, вертикальное=${geometry.verticalDistance.toFixed(1)}, диагональное=${geometry.diagonalDistance.toFixed(1)}`);
-        
-        Object.values(this.currentTacticalMap.cells).forEach(cell => {
-            if (cell === currentCell) return;
-            
-            const dx = cell.x - currentCell.x;
-            const dy = cell.y - currentCell.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const isHorizontal = Math.abs(distance - geometry.horizontalDistance) < geometry.tolerance;
-            const isVertical = Math.abs(distance - geometry.verticalDistance) < geometry.tolerance;
-            const isDiagonal = Math.abs(distance - geometry.diagonalDistance) < geometry.tolerance;
-            
-            let relation = '❌ ДАЛЕКО';
-            if (isHorizontal) relation = '✅ ГОРИЗОНТАЛЬНЫЙ СОСЕД';
-            else if (isVertical) relation = '✅ ВЕРТИКАЛЬНЫЙ СОСЕД';
-            else if (isDiagonal) relation = '✅ ДИАГОНАЛЬНЫЙ СОСЕД';
-            
-            console.log(`  [${cell.col},${cell.row}]: ${distance.toFixed(1)}px - ${relation}`);
-        });
     }
 }
 
 // Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с поддержкой Canvas рендеринга и новой системой определения соседей");
+console.log("📦 MapSystem модуль загружен с новой системой определения соседей");
