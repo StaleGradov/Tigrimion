@@ -341,10 +341,32 @@
     width: 95vw !important;
     max-height: 95vh !important;
     height: 95vh !important;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    background: url('https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/shop.jpg') no-repeat center center !important;
+    background-size: cover !important;
     border: 3px solid #4cc9f0 !important;
     border-radius: 20px !important;
     box-shadow: 0 0 60px rgba(76, 201, 240, 0.4) !important;
+    position: relative;
+}
+
+/* Затемнение фона для лучшей читаемости текста */
+.shop-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 20, 0.85);
+    border-radius: 20px;
+    z-index: 0;
+}
+
+/* Убедитесь, что контент поверх затемнения */
+.shop-overlay .overlay-header,
+.shop-overlay .overlay-body {
+    position: relative;
+    z-index: 1;
 }
 
 .shop-overlay .overlay-header {
@@ -363,6 +385,7 @@
     padding: 30px !important;
     max-height: calc(95vh - 120px) !important;
     overflow-y: auto;
+    color: #e2e8f0; /* Улучшаем читаемость текста */
 }
 
 .shop-overlay .items-grid {
@@ -378,6 +401,15 @@
     height: 140px !important;
 }
 
+/* Улучшаем видимость карточек предметов на новом фоне */
+.shop-overlay .item-background {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.shop-overlay .item-info {
+    background: rgba(0, 0, 0, 0.6);
+}
 /* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА (УВЕЛИЧЕННОЕ) ========== */
 .item-detail-modal {
     position: fixed;
