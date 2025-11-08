@@ -1318,29 +1318,51 @@
     "setName": "set_health6"
   },
   {
-    "id": 61,
-    "name": "Бронзовый латный шлем",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
+ "id": 61,
+    "name": "Медный латный шлем",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copperplatemail_helmet.jpg",
     "type": "helmet",
     "slot": "helmet",
-    "rarity": "uncommon",
+    "rarity": "common",
     "material": "plate_mail",
     "fixed_damage": 0,
     "fixed_armor": 8,
-    "fixed_health": 5,
-    "bonus": {"type": "armor_mult", "value": 0.08},
+    "fixed_health": 40,
+    "bonus": {"type": "armor_mult", "value": 0.005},
     "requiredLevel": 1,
-    "requiredClass": ["warrior", "gladiator"],
+    "requiredClass": [],
     "requiredRace": [],
     "durability": 100,
-    "price": 80,
-    "sellPrice": 40,
+    "price": 8,
+    "sellPrice": 4,
     "description": "Прочный медный шлем",
     "flavorText": "Не пропускает удары",
-    "setName": "set_warrior"
+    "setName": "set_bron1"
   },
   {
     "id": 62,
+    "name": "Бронзовый латный шлем",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copperplatemail_helmet.jpg",
+    "type": "helmet",
+    "slot": "helmet",
+    "rarity": "common",
+    "material": "plate_mail",
+    "fixed_damage": 0,
+    "fixed_armor": 8,
+    "fixed_health": 40,
+    "bonus": {"type": "armor_mult", "value": 0.005},
+    "requiredLevel": 1,
+    "requiredClass": [],
+    "requiredRace": [],
+    "durability": 100,
+    "price": 8,
+    "sellPrice": 4,
+    "description": "Прочный медный шлем",
+    "flavorText": "Не пропускает удары",
+    "setName": "set_bron1"
+  },
+  {
+    "id": 63,
     "name": "Железный латный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
     "type": "helmet",
@@ -1362,7 +1384,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 63,
+    "id": 64,
     "name": "Стальной латный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
     "type": "helmet",
@@ -1384,7 +1406,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 64,
+    "id": 65,
     "name": "Мифрильный латный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
     "type": "helmet",
@@ -1406,7 +1428,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 65,
+    "id": 66,
     "name": "Адамантовый латный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
     "type": "helmet",
@@ -1429,7 +1451,7 @@
   },
 
   {
-    "id": 66,
+    "id": 67,
     "name": "Медный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_helmet.jpg",
     "type": "helmet",
@@ -1450,7 +1472,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 67,
+    "id": 68,
     "name": "Железный шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_helmet.jpg",
     "type": "helmet",
@@ -1471,7 +1493,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 68,
+    "id": 69,
     "name": "Стальной шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_helmet.jpg",
     "type": "helmet",
@@ -1492,7 +1514,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 69,
+    "id": 70,
     "name": "Мифриловый шлем",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_helmet.jpg",
     "type": "helmet",
@@ -1514,7 +1536,7 @@
   },
 
   {
-    "id": 70, 
+    "id": 71, 
     "name": "Кожаный доспех",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/leather_armor.jpg",
     "type": "chest",
@@ -1535,7 +1557,7 @@
     "setName": "set_beginner"
   },
   {
-    "id": 71, 
+    "id": 72, 
     "name": "Медный нагрудник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_chest.jpg",
     "type": "chest",
@@ -1556,7 +1578,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 72, 
+    "id": 73, 
     "name": "Железная кираса",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_chest.jpg",
     "type": "chest",
@@ -1577,7 +1599,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 73, 
+    "id": 74, 
     "name": "Стальная броня",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_chest.jpg",
     "type": "chest",
@@ -1598,7 +1620,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 74, 
+    "id": 75, 
     "name": "Мифриловая броня",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_chest.jpg",
     "type": "chest",
@@ -1620,7 +1642,7 @@
   },
 
   {
-    "id": 75,
+    "id": 76,
     "name": "Кожаные перчатки",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/leather_gloves.jpg",
     "type": "gloves",
@@ -1641,7 +1663,7 @@
     "setName": "set_beginner"
   },
   {
-    "id": 76,
+    "id": 77,
     "name": "Медные рукавицы",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_gloves.jpg",
     "type": "gloves",
@@ -1662,7 +1684,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 77,
+    "id": 78,
     "name": "Железные перчатки",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_gloves.jpg",
     "type": "gloves",
@@ -1683,7 +1705,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 78,
+    "id": 79,
     "name": "Стальные рукавицы",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_gloves.jpg",
     "type": "gloves",
@@ -1704,7 +1726,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 79,
+    "id": 80,
     "name": "Мифриловые перчатки",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_gloves.jpg",
     "type": "gloves",
@@ -1726,7 +1748,7 @@
   },
 
   {
-    "id": 80,
+    "id": 81,
     "name": "Кожаные поножи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/leather_leggings.jpg",
     "type": "legs", 
@@ -1747,7 +1769,7 @@
     "setName": "set_beginner"
   },
   {
-    "id": 81,
+    "id": 82,
     "name": "Медные поножи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_leggings.jpg",
     "type": "legs", 
@@ -1768,7 +1790,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 82,
+    "id": 83,
     "name": "Железные поножи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_leggings.jpg",
     "type": "legs", 
@@ -1789,7 +1811,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 83,
+    "id": 84,
     "name": "Стальные поножи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_leggings.jpg",
     "type": "legs", 
