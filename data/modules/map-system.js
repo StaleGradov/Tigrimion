@@ -192,37 +192,52 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
-    calculateMapPositioning() {
-        if (!this.currentTacticalMap || !this.canvas) return;
+   calculateMapPositioning() {
+    if (!this.currentTacticalMap || !this.canvas) return;
 
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) return;
+    const container = document.querySelector('.tactical-map-visual');
+    if (!container) return;
 
-        const rect = container.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+    const rect = container.getBoundingClientRect();
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
 
-        // ПРОСТОЕ ПОЗИЦИОНИРОВАНИЕ БЕЗ МАСШТАБИРОВАНИЯ
-        // Центрируем карту в контейнере
-        const cells = Object.values(this.currentTacticalMap.cells);
-        if (cells.length === 0) return;
+    console.log(`📐 Контейнер: ${rect.width}x${rect.height}`);
+    console.log(`📐 Canvas: ${this.canvas.width}x${this.canvas.height}`);
 
-        // Находим центр масс всех клеток
-        let centerX = 0, centerY = 0;
-        cells.forEach(cell => {
-            centerX += cell.x;
-            centerY += cell.y;
-        });
-        centerX /= cells.length;
-        centerY /= cells.length;
+    const cells = Object.values(this.currentTacticalMap.cells);
+    if (cells.length === 0) return;
 
-        // Смещаем карту так, чтобы центр был в центре canvas
-        this.mapOffset.x = rect.width / 2 - centerX;
-        this.mapOffset.y = rect.height / 2 - centerY;
+    // Находим границы ВСЕХ клеток
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    cells.forEach(cell => {
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+        // Учитываем размер гекса при расчете границ
+        minX = Math.min(minX, cell.x - hexSize);
+        minY = Math.min(minY, cell.y - hexSize);
+        maxX = Math.max(maxX, cell.x + hexSize);
+        maxY = Math.max(maxY, cell.y + hexSize);
+    });
 
-        console.log(`📐 Позиционирование: offset=(${this.mapOffset.x.toFixed(1)}, ${this.mapOffset.y.toFixed(1)})`);
-    }
+    console.log(`📐 Границы карты: X[${minX.toFixed(0)}-${maxX.toFixed(0)}] Y[${minY.toFixed(0)}-${maxY.toFixed(0)}]`);
 
+    // Центрируем карту ПРОСТО - помещаем центр масс в центр canvas
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    
+    this.mapOffset.x = rect.width / 2 - centerX;
+    this.mapOffset.y = rect.height / 2 - centerY;
+
+    console.log(`📐 Центр карты: (${centerX.toFixed(1)}, ${centerY.toFixed(1)})`);
+    console.log(`📐 Смещение: (${this.mapOffset.x.toFixed(1)}, ${this.mapOffset.y.toFixed(1)})`);
+
+    // Отладочная информация о нескольких клетках
+    console.log("🔍 Примеры клеток:");
+    cells.slice(0, 3).forEach(cell => {
+        console.log(`  [${cell.col},${cell.row}] -> (${cell.x}, ${cell.y})`);
+    });
+}
 setupCanvasEventListeners() {
     if (!this.canvas) return;
 
@@ -275,28 +290,52 @@ setupCanvasEventListeners() {
         }
     }
 
-    getHexAtCanvasPosition(canvasX, canvasY) {
-        if (!this.currentTacticalMap) return null;
+   getHexAtCanvasPosition(canvasX, canvasY) {
+    if (!this.currentTacticalMap) return null;
 
-        const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 40;
+    const cells = Object.values(this.currentTacticalMap.cells);
+    const hexSize = this.currentTacticalMap.cellSize || 40;
+    
+    console.log(`🎯 Canvas click: (${canvasX}, ${canvasY})`);
+    console.log(`🎯 Map offset: (${this.mapOffset.x}, ${this.mapOffset.y})`);
+    
+    // ПРАВИЛЬНОЕ преобразование: вычитаем смещение
+    const mapX = canvasX - this.mapOffset.x;
+    const mapY = canvasY - this.mapOffset.y;
+    
+    console.log(`🎯 Map coordinates: (${mapX}, ${mapY})`);
+
+    let closestCell = null;
+    let minDistance = Infinity;
+
+    for (const cell of cells) {
+        const distance = Math.sqrt(
+            Math.pow(mapX - cell.x, 2) + 
+            Math.pow(mapY - cell.y, 2)
+        );
         
-        // Преобразуем координаты canvas в координаты карты (без масштаба)
-        const mapX = canvasX - this.mapOffset.x;
-        const mapY = canvasY - this.mapOffset.y;
-
-        for (const cell of cells) {
-            const distance = Math.sqrt(
-                Math.pow(mapX - cell.x, 2) + 
-                Math.pow(mapY - cell.y, 2)
-            );
-            
-            if (distance <= hexSize * 0.6) {
-                return cell;
-            }
+        // Ищем ближайшую клетку
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestCell = cell;
         }
-        return null;
+        
+        // Если попадаем точно в клетку
+        if (distance <= hexSize * 0.6) {
+            console.log(`✅ Точное попадание в [${cell.col},${cell.row}] - расстояние: ${distance.toFixed(1)}`);
+            return cell;
+        }
     }
+    
+    // Если не попали точно, но есть ближайшая клетка в пределах досягаемости
+    if (closestCell && minDistance <= hexSize * 1.2) {
+        console.log(`🎯 Ближайшая клетка [${closestCell.col},${closestCell.row}] - расстояние: ${minDistance.toFixed(1)}`);
+        return closestCell;
+    }
+    
+    console.log(`❌ Не попали ни в одну клетку. Ближайшая: ${minDistance.toFixed(1)}px`);
+    return null;
+}
 
     drawTacticalMap() {
         if (!this.ctx || !this.currentTacticalMap) return;
@@ -328,6 +367,8 @@ setupCanvasEventListeners() {
         }
 
         this.ctx.restore();
+        
+        this.drawDebugOverlay();
     }
 
     drawBackground() {
@@ -544,7 +585,47 @@ setupCanvasEventListeners() {
         this.ctx.stroke();
         this.ctx.restore();
     }
-
+drawDebugOverlay() {
+    if (!this.ctx) return;
+    
+    this.ctx.save();
+    
+    // Рисуем отладочную информацию поверх всего
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    this.ctx.fillRect(10, 10, 300, 120);
+    
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.font = '12px monospace';
+    this.ctx.textAlign = 'left';
+    
+    this.ctx.fillText(`Canvas: ${this.canvas.width}x${this.canvas.height}`, 20, 30);
+    this.ctx.fillText(`Offset: (${this.mapOffset.x.toFixed(1)}, ${this.mapOffset.y.toFixed(1)})`, 20, 50);
+    this.ctx.fillText(`Cells: ${Object.keys(this.currentTacticalMap.cells).length}`, 20, 70);
+    
+    if (this.playerTacticalPosition) {
+        this.ctx.fillText(`Player: [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`, 20, 90);
+    }
+    
+    this.ctx.fillText(`Hover: ${this.hoveredHex ? `[${this.hoveredHex.col},${this.hoveredHex.row}]` : 'none'}`, 20, 110);
+    
+    // Рисуем перекрестие в центре canvas
+    this.ctx.strokeStyle = '#ff0000';
+    this.ctx.lineWidth = 1;
+    
+    // Вертикальная линия
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.canvas.width / 2, 0);
+    this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+    this.ctx.stroke();
+    
+    // Горизонтальная линия
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, this.canvas.height / 2);
+    this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
+    this.ctx.stroke();
+    
+    this.ctx.restore();
+}
     // ========== НОВАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ СОСЕДЕЙ ПО РАССТОЯНИЮ ==========
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
