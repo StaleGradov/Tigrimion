@@ -82,31 +82,31 @@ class EquipmentSystem {
      "set_crit2": {
             name: "Разведчика Арканиума",
             requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.1 },
+            bonus: { type: "crit_chance", value: 0.1 },
             description: "Комплект из 6 вещей даст +10% к шансу критического удара(наносящего х2 урона)"
         },
      "set_crit3": {
             name: "Лучника Арканиума",
             requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.15 },
+            bonus: { type: "crit_chance", value: 0.15 },
             description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
         },
      "set_crit4": {
             name: "Элитного стрелка Арканиума",
             requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.2 },
+            bonus: { type: "crit_chance", value: 0.2 },
             description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
         },
      "set_crit5": {
             name: "Командира лучников Арканиума",
             requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.25 },
+            bonus: { type: "crit_chance", value: 0.25 },
             description: "Комплект из 6 вещей даст +25% к шансу критического удара(наносящего х2 урона)"
         },
      "set_crit6": {
             name: "Легендарного стрелка Арканиума",
             requiredPieces: 6,
-            bonus: { type: "damage_mult", value: 0.3 },
+            bonus: { type: "crit_chance", value: 0.3 },
             description: "Комплект из 6 вещей даст +30% к шансу критического удара(наносящего х2 урона)"
         },
              "set_penetration1": {
