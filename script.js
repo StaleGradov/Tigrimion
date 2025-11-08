@@ -187,6 +187,7 @@ class SafeHeroGame {
         this.currentScreen = 'loading';
         this.currentHero = null;
         this.activeOverlay = null;
+        this.currentShopSubcategory = null; // Добавляем отслеживание текущей подкатегории магазина
         this.init();
     }
 
@@ -529,15 +530,82 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // ПРОСТО показываем магазин через систему экипировки
+                // Показываем магазин через систему экипировки
                 container.innerHTML = this.systems.equipment.showShop();
                 
-                // Добавляем обработчики для предметов магазина
-                setTimeout(() => this.attachShopItemHandlers(), 100);
+                // Сбрасываем текущую подкатегорию при открытии магазина
+                this.currentShopSubcategory = null;
+                
+                // Добавляем обработчики для предметов магазина и подкатегорий
+                setTimeout(() => {
+                    this.attachShopItemHandlers();
+                    this.attachShopSubcategoryHandlers();
+                }, 100);
                 break;
         }
 
         container.style.display = 'block';
+    }
+
+    // ========== СИСТЕМА ПОДКАТЕГОРИЙ МАГАЗИНА С ФОНАМИ ==========
+    attachShopSubcategoryHandlers() {
+        const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+        console.log(`Найдено подкатегорий: ${subcategoryTabs.length}`);
+        
+        subcategoryTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const subcategory = tab.getAttribute('data-subcategory');
+                console.log(`Переключение на подкатегорию: ${subcategory}`);
+                
+                if (subcategory) {
+                    this.switchShopSubcategory(subcategory);
+                }
+            });
+        });
+    }
+
+    switchShopSubcategory(subcategoryType) {
+        console.log(`Активация подкатегории: ${subcategoryType}`);
+        
+        // Обновляем активную вкладку
+        document.querySelectorAll('.subcategory-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        const activeTab = document.querySelector(`.subcategory-tab[data-subcategory="${subcategoryType}"]`);
+        if (activeTab) {
+            activeTab.classList.add('active');
+        }
+        
+        // Обновляем фон магазина
+        const shopOverlay = document.querySelector('.shop-overlay');
+        if (shopOverlay) {
+            // Удаляем все классы подкатегорий
+            const allSubcategories = [
+                'helmets', 'shoulders', 'chest', 'gloves', 'belts', 'legs', 'boots',
+                'onehanded', 'twohanded', 'ranged', 'staffs',
+                'amulets', 'rings', 'trinkets',
+                'potions', 'food', 'scrolls'
+            ];
+            
+            shopOverlay.classList.remove(...allSubcategories);
+            
+            // Добавляем класс текущей подкатегории
+            shopOverlay.classList.add(subcategoryType);
+        }
+        
+        // Сохраняем текущую подкатегорию
+        this.currentShopSubcategory = subcategoryType;
+        
+        // Обновляем предметы в магазине (если нужно фильтровать)
+        this.refreshShopItemsBySubcategory(subcategoryType);
+    }
+
+    refreshShopItemsBySubcategory(subcategoryType) {
+        // Здесь можно добавить логику фильтрации предметов по подкатегории
+        // Пока просто обновляем магазин
+        this.refreshShop();
     }
 
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
@@ -744,8 +812,15 @@ class SafeHeroGame {
 
     // ========== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА ==========
     closeItemDetailModal() {
-        // Просто показываем магазин снова
+        // Возвращаемся к магазину с сохранением текущей подкатегории
         this.showOverlay('shop');
+        
+        // Восстанавливаем активную подкатегорию если была
+        if (this.currentShopSubcategory) {
+            setTimeout(() => {
+                this.switchShopSubcategory(this.currentShopSubcategory);
+            }, 100);
+        }
     }
 
     // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
@@ -753,7 +828,15 @@ class SafeHeroGame {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
             container.innerHTML = this.systems.equipment.showShop();
-            setTimeout(() => this.attachShopItemHandlers(), 100);
+            setTimeout(() => {
+                this.attachShopItemHandlers();
+                this.attachShopSubcategoryHandlers();
+                
+                // Восстанавливаем активную подкатегорию если была
+                if (this.currentShopSubcategory) {
+                    this.switchShopSubcategory(this.currentShopSubcategory);
+                }
+            }, 100);
         }
     }
 
@@ -797,6 +880,7 @@ class SafeHeroGame {
             container.style.display = 'none';
             container.innerHTML = '';
             this.activeOverlay = null;
+            this.currentShopSubcategory = null; // Сбрасываем подкатегорию при закрытии
         }
     }
 
@@ -971,6 +1055,7 @@ class SafeHeroGame {
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
         console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
+        console.log("Текущая подкатегория магазина:", this.currentShopSubcategory);
         
         alert("Информация выведена в консоль (F12)");
     }
