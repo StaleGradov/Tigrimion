@@ -365,6 +365,7 @@ class EquipmentSystem {
     showShop(category = 'all', subcategory = 'all') {
         if (!this.currentHero) return '';
 
+        // Сохраняем текущее состояние
         this.currentCategory = category;
         this.currentSubcategory = subcategory;
 
@@ -543,11 +544,18 @@ class EquipmentSystem {
 
     handleCategoryClick(category) {
         console.log('🎯 Нажата категория:', category);
+        // Сохраняем состояние перед переходом
+        this.currentCategory = category;
+        this.currentSubcategory = 'all'; // Сбрасываем подкатегорию при смене категории
         this.showShop(category, 'all');
     }
 
     handleSubcategoryClick(category, subcategory) {
         console.log('🎯 Нажата подкатегория:', { category, subcategory });
+        
+        // Сохраняем состояние
+        this.currentCategory = category;
+        this.currentSubcategory = subcategory;
         
         // Обновляем активные вкладки
         const allSubTabs = document.querySelectorAll('.subcategory-tab');
@@ -841,6 +849,24 @@ class EquipmentSystem {
     closeItemModal() {
         const modal = document.querySelector('.item-detail-modal');
         if (modal) modal.remove();
+        
+        // ВОССТАНАВЛИВАЕМ магазин с сохраненной категорией
+        if (window.game && window.game.showOverlay) {
+            // Используем текущие сохраненные категории
+            const currentCategory = this.currentCategory || 'all';
+            const currentSubcategory = this.currentSubcategory || 'all';
+            
+            // Показываем магазин с сохраненным состоянием
+            const container = document.getElementById('overlay-container');
+            if (container) {
+                container.innerHTML = this.showShop(currentCategory, currentSubcategory);
+                setTimeout(() => {
+                    if (window.game.attachShopItemHandlers) {
+                        window.game.attachShopItemHandlers();
+                    }
+                }, 100);
+            }
+        }
     }
 
     buyItem(itemId) {
@@ -867,8 +893,8 @@ class EquipmentSystem {
         
         this.showNotification(`🛒 Куплено: ${item.name} за ${item.price.toFixed(2)} золота`);
         this.closeItemModal();
-        game.hideOverlay();
-        game.showOverlay('shop');
+        // НЕ закрываем оверлей полностью, а обновляем магазин с сохраненным состоянием
+        this.refreshShopWithSavedState();
     }
 
     sellItem(itemId) {
@@ -893,8 +919,24 @@ class EquipmentSystem {
 
         this.showNotification(`💰 Продано: ${item.name} за ${sellPrice.toFixed(2)} золота`);
         this.closeItemModal();
-        game.hideOverlay();
-        game.showOverlay('shop');
+        // НЕ закрываем оверлей полностью, а обновляем магазин с сохраненным состоянием
+        this.refreshShopWithSavedState();
+    }
+
+    // Новый метод для обновления магазина с сохраненным состоянием
+    refreshShopWithSavedState() {
+        const currentCategory = this.currentCategory || 'all';
+        const currentSubcategory = this.currentSubcategory || 'all';
+        
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.innerHTML = this.showShop(currentCategory, currentSubcategory);
+            setTimeout(() => {
+                if (window.game && window.game.attachShopItemHandlers) {
+                    window.game.attachShopItemHandlers();
+                }
+            }, 100);
+        }
     }
 
     // ========== ИНВЕНТАРЬ И ЭКИПИРОВКА ==========
