@@ -2899,7 +2899,7 @@
   },
   {
     "id": 133,
-    "name": "Перчатки из заячьего меха",
+    "name": "Варежки из заячьего меха",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/zaic_gloves.jpg",
     "type": "gloves",
     "slot": "gloves",
@@ -2921,7 +2921,7 @@
   },
   {
     "id": 134,
-    "name": "Перчатки из меха куницы",
+    "name": "Варежки из меха куницы",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/kunica_gloves.jpg",
     "type": "gloves",
     "slot": "gloves",
@@ -2943,7 +2943,7 @@
   },
   {
     "id": 135,
-    "name": "Перчатки из меха песца",
+    "name": "Варежки из меха песца",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/pisec_gloves.jpg",
     "type": "gloves",
     "slot": "gloves",
