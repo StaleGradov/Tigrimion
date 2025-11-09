@@ -5667,138 +5667,6 @@
   },
   {
     "id": 259,
-    "name": "Еловый лук",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "common",
-    "fixed_damage": 6,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.01},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 2.5,
-    "sellPrice": 1.25,
-    "description": "Первый лук учеников гильдии лучников. Медные усиления на плечах лука помогают новичкам освоить основы стрельбы.",
-    "flavorText": "«Медным луком старый Фенрис учил нас чувствовать ветер. Говорил: стрела летит туда, куда смотрит душа, а не глаза». — Ученик лучник Лиам.",
-    "setName": "set_crit1"
-  },
-  {
-    "id": 260,
-    "name": "Сосновый лук",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bronze_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "uncommon",
-    "fixed_damage": 12,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.02},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 5,
-    "sellPrice": 2.5,
-    "description": "Лук городских патрульных. Бронзовые вставки обеспечивают дополнительную мощь для стрельбы через городские стены.",
-    "flavorText": "«Бронзовым луком нёс дозор на Стене Рассвета. Он помнит каждую стрелу, выпущенную по троллям у Ржавого Ручья». — Патрульный Арлин.",
-    "setName": "set_crit2"
-  },
-  {
-    "id": 261,
-    "name": "Дубовый лук",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "rare",
-    "fixed_damage": 18,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.04},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 10,
-    "sellPrice": 5,
-    "description": "Стандартное оружие лучников королевской стражи. Железные плечи лука выдерживают долгую службу в любую погоду.",
-    "flavorText": "«Железный лук Стражи. Не для охоты, а для защиты. Каждая стрела — это клятва, данная городу и его жителям». — Лучник стражи Каэлин.",
-    "setName": "set_crit3"
-  },
-  {
-    "id": 262,
-    "name": "Лук из бамбука",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "epic",
-    "fixed_damage": 24,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.06},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 20,
-    "sellPrice": 10,
-    "description": "Оружие охотников за головами. Стальные плечи лука позволяют пробивать даже лёгкие доспехи с большого расстояния.",
-    "flavorText": "«Этим луком взял десяток наградных. Сталь не подводит даже в самый ответственный момент, когда от одного выстрела зависит всё». — Охотник Дэриан.",
-    "setName": "set_crit4"
-  },
-  {
-    "id": 263,
-    "name": "Лук из ясеня",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "legendary",
-    "fixed_damage": 30,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.08},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 40,
-    "sellPrice": 20,
-    "description": "Церемониальный лук командиров лучников. Мифрильные вставки сияют даже в лунную ночь, вдохновляя лучников на подвиги.",
-    "flavorText": "«Когда натягиваешь тетиву этого лука, понимаешь — это не просто оружие. Это символ доверия тех, кто стоит за твоей спиной». — Командир лучников Сильван.",
-    "setName": "set_crit5"
-  },
-  {
-    "id": 264,
-    "name": "Лук из Акации",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/adamantium_bow.jpg",
-    "type": "weapon",
-    "weaponType": "one_handed",
-    "slot": "main_hand",
-    "rarity": "mythic",
-    "fixed_damage": 36,
-    "fixed_armor": 0,
-    "fixed_health": 0,
-    "bonus": {"type": "crit_chance", "value": 0.1},
-    "requiredLevel": 1,
-    "requiredClass": [],
-    "requiredRace": [],
-    "durability": 100,
-    "price": 80,
-    "sellPrice": 40,
-    "description": "Легендарный лук королевских снайперов. Говорят, его стрелы могут поразить цель за горизонтом.",
-    "flavorText": "«Этот лук видел падение тиранов и рождение героев. Его тетива поёт песню судьбы, а стрелы несут правосудие». — Легенда Гильдии Лучников.",
-    "setName": "set_crit6"
-  },
-  {
-    "id": 265,
     "name": "Длинный еловый лук",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_copper_bow.jpg",
     "type": "weapon",
@@ -5820,7 +5688,7 @@
     "setName": "set_crit1"
   },
   {
-    "id": 266,
+    "id": 260,
     "name": "Длинный сосновый лук",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_bronze_bow.jpg",
     "type": "weapon",
@@ -5842,7 +5710,7 @@
     "setName": "set_crit2"
   },
   {
-    "id": 267,
+    "id": 261,
     "name": "Длинный дубовый лук",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_iron_bow.jpg",
     "type": "weapon",
@@ -5864,7 +5732,7 @@
     "setName": "set_crit3"
   },
   {
-    "id": 268,
+    "id": 262,
     "name": "Длинный бамбуковый лук",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_steel_bow.jpg",
     "type": "weapon",
@@ -5886,7 +5754,7 @@
     "setName": "set_crit4"
   },
   {
-    "id": 269,
+    "id": 263,
     "name": "Длинный лук из ясеня",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_mithril_bow.jpg",
     "type": "weapon",
@@ -5908,7 +5776,7 @@
     "setName": "set_crit5"
   },
   {
-    "id": 270,
+    "id": 264,
     "name": "Длинный лук из акации",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_adamantium_bow.jpg",
     "type": "weapon",
@@ -5930,7 +5798,7 @@
     "setName": "set_crit6"
   },
   {
-    "id": 271,
+    "id": 265,
     "name": "Медный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_crossbow.jpg",
     "type": "weapon",
@@ -5952,7 +5820,7 @@
     "setName": "set_beginner"
   },
   {
-    "id": 272,
+    "id": 266,
     "name": "Бронзовый арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/bronze_crossbow.jpg",
     "type": "weapon",
@@ -5974,7 +5842,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 273,
+    "id": 267,
     "name": "Железный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/iron_crossbow.jpg",
     "type": "weapon",
@@ -5996,7 +5864,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 274,
+    "id": 268,
     "name": "Стальной арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/steel_crossbow.jpg",
     "type": "weapon",
@@ -6018,7 +5886,7 @@
     "setName": "set_hunter"
   },
   {
-    "id": 275,
+    "id": 269,
     "name": "Мифрильный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/mithril_crossbow.jpg",
     "type": "weapon",
@@ -6040,7 +5908,7 @@
     "setName": "set_complete"
   },
   {
-    "id": 276,
+    "id": 270,
     "name": "Адамантовый арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/adamantium_crossbow.jpg",
     "type": "weapon",
@@ -6062,7 +5930,7 @@
     "setName": "set_king"
   },
   {
-    "id": 277,
+    "id": 271,
     "name": "Двуручный медный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_copper_crossbow.jpg",
     "type": "weapon",
@@ -6084,7 +5952,7 @@
     "setName": "set_beginner"
   },
   {
-    "id": 278,
+    "id": 272,
     "name": "Двуручный бронзовый арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_bronze_crossbow.jpg",
     "type": "weapon",
@@ -6106,7 +5974,7 @@
     "setName": "set_warrior"
   },
   {
-    "id": 279,
+    "id": 273,
     "name": "Двуручный железный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_iron_crossbow.jpg",
     "type": "weapon",
@@ -6128,7 +5996,7 @@
     "setName": "set_guardian"
   },
   {
-    "id": 280,
+    "id": 274,
     "name": "Двуручный стальной арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_steel_crossbow.jpg",
     "type": "weapon",
@@ -6150,7 +6018,7 @@
     "setName": "set_hunter"
   },
   {
-    "id": 281,
+    "id": 275,
     "name": "Двуручный мифрильный арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_mithril_crossbow.jpg",
     "type": "weapon",
@@ -6172,7 +6040,7 @@
     "setName": "set_complete"
   },
   {
-    "id": 282,
+    "id": 276,
     "name": "Двуручный адамантовый арбалет",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_adamantium_crossbow.jpg",
     "type": "weapon",
