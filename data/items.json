@@ -2636,7 +2636,7 @@
 {
     "id": 121,
     "name": "Перчатки из овечьей кожи",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/ovca_gloves.jpg",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/ovca_glove.jpg",
     "type": "gloves",
     "slot": "gloves",
     "rarity": "common",
