@@ -529,8 +529,10 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // Показываем магазин через систему экипировки
-                container.innerHTML = this.systems.equipment.showShop();
+                // Показываем магазин через систему экипировки с сохранением текущей категории
+                const currentCategory = this.systems.equipment.currentCategory || 'all';
+                const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+                container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
                 
                 // Добавляем обработчики для предметов магазина
                 setTimeout(() => this.attachShopItemHandlers(), 100);
@@ -752,15 +754,12 @@ class SafeHeroGame {
 
     // ========== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА ==========
     closeItemDetailModal() {
-        // Просто показываем магазин снова
-        this.showOverlay('shop');
-    }
-
-    // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
-    refreshShop() {
+        // Восстанавливаем магазин с сохраненным состоянием
         const container = document.getElementById('overlay-container');
-        if (container && this.activeOverlay === 'shop') {
-            container.innerHTML = this.systems.equipment.showShop();
+        if (container && this.systems.equipment) {
+            const currentCategory = this.systems.equipment.currentCategory || 'all';
+            const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+            container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
             setTimeout(() => this.attachShopItemHandlers(), 100);
         }
     }
@@ -1068,6 +1067,17 @@ class SafeHeroGame {
         setInterval(() => {
             this.saveGame();
         }, 30000); // Сохраняем каждые 30 секунд
+    }
+
+    // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
+    refreshShop() {
+        const container = document.getElementById('overlay-container');
+        if (container && this.activeOverlay === 'shop') {
+            const currentCategory = this.systems.equipment.currentCategory || 'all';
+            const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+            container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+            setTimeout(() => this.attachShopItemHandlers(), 100);
+        }
     }
 }
 
