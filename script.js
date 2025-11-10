@@ -863,26 +863,7 @@ class SafeHeroGame {
         };
         return sagas[saga] || saga;
     }
-formatBonus(bonus) {
-    if (!bonus || bonus.type === 'none') return 'Нет бонуса';
-    
-    const bonusNames = {
-        'health_mult': 'Здоровье',
-        'damage_mult': 'Урон', 
-        'armor_mult': 'Броня',
-        'gold_mult': 'Золото',
-        'health_regen_mult': 'Регенерация',
-        'crit_chance': 'Криты',
-        'armor_penetration': 'Пенетрация',
-        'vampirism': 'Вампиризм'
-    };
 
-    // ИСПРАВЛЕННАЯ ВЕРСИЯ - используем toFixed(1) вместо Math.round
-    const value = (bonus.value * 100).toFixed(1);
-    return bonusNames[bonus.type] ? 
-        `${bonusNames[bonus.type]} +${value}%` : 
-        `Бонус: +${value}%`;
-}
     getSlotIcon(slot) {
         const icons = {
             'main_hand': '⚔️',
