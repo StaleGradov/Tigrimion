@@ -728,25 +728,27 @@ class EquipmentSystem {
     }
 
     // ========== ПОЛУЧЕНИЕ ИНФОРМАЦИИ О БОНУСЕ ДЛЯ ОТОБРАЖЕНИЯ ==========
-    getBonusDisplayInfo(item) {
-        if (!item.bonus || item.bonus.type === 'none') return null;
-        
-        const bonusIcons = {
-            'health_mult': '💪',
-            'damage_mult': '⚔️',
-            'armor_mult': '🛡️',
-            'gold_mult': '💰',
-            'health_regen_mult': '❤️',
-            'crit_chance': '🎯',
-            'armor_penetration': '💥',
-            'vampirism': '🩸'
-        };
-        
-        const value = Math.round(item.bonus.value * 100);
-        const icon = bonusIcons[item.bonus.type] || '✨';
-        
-        return `${icon}+${value}%`;
-    }
+ // Также нужно обновить метод getBonusDisplayInfo в EquipmentSystem
+getBonusDisplayInfo(item) {
+    if (!item.bonus || item.bonus.type === 'none') return null;
+    
+    const bonusIcons = {
+        'health_mult': '💪',
+        'damage_mult': '⚔️',
+        'armor_mult': '🛡️',
+        'gold_mult': '💰',
+        'health_regen_mult': '❤️',
+        'crit_chance': '🎯',
+        'armor_penetration': '💥',
+        'vampirism': '🩸'
+    };
+    
+    // Используем toFixed(1) вместо Math.round для отображения десятых долей
+    const value = (item.bonus.value * 100).toFixed(1);
+    const icon = bonusIcons[item.bonus.type] || '✨';
+    
+    return `${icon}+${value}%`;
+}
 
     // ========== ДЕТАЛИ ПРЕДМЕТА И ПОКУПКА ==========
     showItemDetails(itemId) {
