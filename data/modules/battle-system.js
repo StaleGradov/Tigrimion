@@ -90,10 +90,8 @@ class BattleSystem {
             return;
         }
 
-        const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
-            window.game.systems.bonus
-        );
+        // ВАЖНО: Используем ЕДИНЫЙ метод расчета характеристик для боя
+        const heroStats = this.calculateHeroStatsForBattle(hero);
 
         const heroHealthPercent = (heroStats.currentHealth / heroStats.maxHealth) * 100;
         const monsterHealthPercent = (this.currentMonster.currentHealth / this.currentMonster.health) * 100;
@@ -104,6 +102,34 @@ class BattleSystem {
         } else {
             this.showStandardBattleScreen(hero, heroStats, heroHealthPercent, monsterHealthPercent);
         }
+    }
+
+    // НОВЫЙ МЕТОД: расчет характеристик героя для боя с учетом экипировки
+    calculateHeroStatsForBattle(hero) {
+        if (!window.game || !window.game.systems.level) {
+            console.warn("⚠️ Система уровней не доступна, используем базовые значения");
+            return {
+                currentHealth: hero.currentHealth || hero.baseHealth,
+                maxHealth: hero.baseHealth,
+                damage: hero.baseDamage,
+                armor: hero.baseArmor
+            };
+        }
+
+        // Используем ЕДИНЫЙ метод расчета из системы уровней
+        const stats = window.game.systems.level.calculateHeroStats(hero, window.game.systems.bonus);
+        
+        // Убедимся, что текущее здоровье корректно
+        if (!hero.currentHealth || hero.currentHealth <= 0) {
+            hero.currentHealth = stats.maxHealth;
+        }
+        
+        return {
+            currentHealth: hero.currentHealth,
+            maxHealth: stats.maxHealth,
+            damage: stats.damage,
+            armor: stats.armor
+        };
     }
 
     // НОВЫЙ МЕТОД: бой с картой
@@ -277,10 +303,9 @@ class BattleSystem {
 
         this.battleRound++;
         const hero = window.game.systems.hero.currentHero;
-        const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
-            window.game.systems.bonus
-        );
+        
+        // ВАЖНО: Используем ЕДИНЫЙ метод расчета характеристик
+        const heroStats = this.calculateHeroStatsForBattle(hero);
 
         // Атака героя
         const heroDamage = Math.max(1, heroStats.damage - this.currentMonster.armor);
@@ -296,7 +321,7 @@ class BattleSystem {
 
         // Атака монстра
         const monsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
-        hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - monsterDamage;
+        hero.currentHealth = heroStats.currentHealth - monsterDamage;
         
         this.addBattleLog(`👹 ${this.currentMonster.name} наносит ${monsterDamage} урона!`);
 
@@ -314,16 +339,15 @@ class BattleSystem {
 
         this.battleRound++;
         const hero = window.game.systems.hero.currentHero;
-        const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
-            window.game.systems.bonus
-        );
+        
+        // ВАЖНО: Используем ЕДИНЫЙ метод расчета характеристик
+        const heroStats = this.calculateHeroStatsForBattle(hero);
 
         // Блокирование снижает урон
         const baseMonsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
         const blockedDamage = Math.max(1, Math.floor(baseMonsterDamage * 0.5)); // 50% снижение
         
-        hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - blockedDamage;
+        hero.currentHealth = heroStats.currentHealth - blockedDamage;
         
         this.addBattleLog(`🛡️ ${hero.name} блокирует атаку! Получено ${blockedDamage} урона`);
 
@@ -348,13 +372,10 @@ class BattleSystem {
             this.addBattleLog("❌ Не удалось сбежать!");
             // Монстр атакует при неудачном побеге
             const hero = window.game.systems.hero.currentHero;
-            const heroStats = window.game.systems.level.calculateHeroStats(
-                hero, 
-                window.game.systems.bonus
-            );
+            const heroStats = this.calculateHeroStatsForBattle(hero);
             
             const monsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
-            hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - monsterDamage;
+            hero.currentHealth = heroStats.currentHealth - monsterDamage;
             
             this.addBattleLog(`👹 ${this.currentMonster.name} атакует в спину! ${monsterDamage} урона`);
             
@@ -380,6 +401,9 @@ class BattleSystem {
             
             this.addBattleLog(`🎉 ПОБЕДА! +${reward} золота, +${experience} опыта`);
             
+            // Сохраняем игру после победы
+            window.game.saveGame();
+            
             // Если это бой при перемещении, завершаем перемещение
             if (this.battleType === 'movement' && mapSystem) {
                 setTimeout(() => {
@@ -394,25 +418,33 @@ class BattleSystem {
             
         } else if (fled) {
             this.addBattleLog("🏃 Бой окончен - успешный побег");
+            
+            // Сохраняем игру после побега
+            window.game.saveGame();
+            
             // При побеге не перемещаемся
             setTimeout(() => {
-                this.returnToTacticalMap();
+                this.returnToGame();
             }, 2000);
         } else {
-            hero.currentHealth = 1; // Оставляем 1 HP при поражении
+            // ПРИ СМЕРТИ: устанавливаем здоровье в 1 для начала регенерации
+            hero.currentHealth = 1;
             hero.deaths = (hero.deaths || 0) + 1;
             
-            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
+            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен, начинается восстановление...");
+            
+            // Сохраняем игру после смерти
+            window.game.saveGame();
             
             // Если это бой при перемещении, возвращаем на старт
             if (this.battleType === 'movement' && mapSystem) {
                 setTimeout(() => {
                     mapSystem.completeMovementAfterBattle(false);
-                    this.returnToTacticalMap();
+                    this.returnToGame();
                 }, 2000);
             } else {
                 setTimeout(() => {
-                    this.returnToTacticalMap();
+                    this.returnToGame();
                 }, 2000);
             }
         }
@@ -450,7 +482,7 @@ class BattleSystem {
                             'Монстр повержен! Вы победили в бою.'}
                     </div>
                     
-                    <button class="btn-primary" onclick="game.systems.battle.returnToTacticalMap()">
+                    <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
                         ${this.battleType === 'movement' ? 'Продолжить исследование' : 'Вернуться к игре'}
                     </button>
                 </div>
@@ -460,11 +492,21 @@ class BattleSystem {
         this.injectVictoryStyles();
     }
 
-    // НОВЫЙ МЕТОД: возврат к тактической карте
-    returnToTacticalMap() {
-        if (window.game && window.game.systems.hero) {
-            window.game.systems.hero.showHeroGameScreen();
+    // ИСПРАВЛЕННЫЙ МЕТОД: возврат к игре с восстановлением интерфейса
+    returnToGame() {
+        if (window.game && window.game.restoreInterfaceAfterBattle) {
+            window.game.restoreInterfaceAfterBattle();
+        } else {
+            // Резервный метод
+            if (window.game && window.game.systems.hero) {
+                window.game.systems.hero.showHeroGameScreen();
+            }
         }
+    }
+
+    // Старый метод для обратной совместимости
+    returnToTacticalMap() {
+        this.returnToGame();
     }
 
     addBattleLog(message) {
@@ -803,4 +845,4 @@ class BattleSystem {
 
 // Регистрируем систему в глобальной области
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с системой боев при перемещении");
+console.log("📦 BattleSystem модуль загружен с исправленной системой боев");
