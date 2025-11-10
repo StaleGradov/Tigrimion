@@ -3559,7 +3559,7 @@
   },
   {
     "id": 163,
-    "name": "Хлопковые поножи",
+    "name": "Хлопковые штаны",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/hlopok_leggings.jpg",
     "type": "legs",
     "slot": "legs",
@@ -3580,7 +3580,7 @@
   },
   {
     "id": 164,
-    "name": "Льняные поножи",
+    "name": "Льняные штаны",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/len_leggings.jpg",
     "type": "legs",
     "slot": "legs",
@@ -3601,7 +3601,7 @@
   },
   {
     "id": 165,
-    "name": "Шелковые поножи",
+    "name": "Шелковые штаны",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/shelk_leggings.jpg",
     "type": "legs",
     "slot": "legs",
@@ -3623,7 +3623,7 @@
   },
   {
     "id": 166,
-    "name": "Бархатные поножи",
+    "name": "Бархатные штаны",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/barhat_leggings.jpg",
     "type": "legs",
     "slot": "legs",
