@@ -68,6 +68,7 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
+    // ИСПРАВЛЕННЫЙ МЕТОД: расчет характеристик с учетом экипировки
     calculateHeroStats(hero = null) {
         const targetHero = hero || this.currentHero;
         if (!targetHero) return {};
@@ -75,46 +76,59 @@ class HeroSystem {
         // Базовая логика расчета характеристик
         const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
         
-        let health = Math.round(targetHero.baseHealth * levelMultiplier);
-        let damage = Math.round(targetHero.baseDamage * levelMultiplier);
-        let armor = Math.round(targetHero.baseArmor * levelMultiplier);
+        let baseHealth = Math.round(targetHero.baseHealth * levelMultiplier);
+        let baseDamage = Math.round(targetHero.baseDamage * levelMultiplier);
+        let baseArmor = Math.round(targetHero.baseArmor * levelMultiplier);
         
         // Применяем бонусы от экипировки если система доступна
         if (window.game && window.game.systems.bonus) {
             try {
                 const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero);
                 
-                health += targetHero.baseHealth * totals.health_mult;
-                damage += targetHero.baseDamage * totals.damage_mult;
-                armor += targetHero.baseArmor * totals.armor_mult;
+                // Умножаем базовые характеристики на бонусы
+                baseHealth += targetHero.baseHealth * totals.health_mult;
+                baseDamage += targetHero.baseDamage * totals.damage_mult;
+                baseArmor += targetHero.baseArmor * totals.armor_mult;
                 
-                // ФИКСИРОВАННЫЕ характеристики от экипировки
-                Object.values(targetHero.equipment).forEach(itemId => {
-                    if (itemId && window.game.systems.equipment) {
-                        const item = window.game.systems.equipment.getItemById(itemId);
-                        if (item) {
-                            damage += item.fixed_damage || 0;
-                            armor += item.fixed_armor || 0;
-                            health += item.fixed_health || 0;
-                        }
-                    }
-                });
             } catch (error) {
                 console.warn("⚠️ Ошибка расчета бонусов, используем базовые значения:", error);
             }
         }
         
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+        // ФИКСИРОВАННЫЕ характеристики от экипировки
+        let equipmentHealth = 0;
+        let equipmentDamage = 0;
+        let equipmentArmor = 0;
         
-        // УБИРАЕМ вызов getCurrentHealthForDisplay чтобы избежать рекурсии
-        const currentHealth = targetHero.currentHealth || health;
+        if (window.game && window.game.systems.equipment) {
+            Object.values(targetHero.equipment).forEach(itemId => {
+                if (itemId) {
+                    const item = window.game.systems.equipment.getItemById(itemId);
+                    if (item) {
+                        equipmentDamage += item.fixed_damage || 0;
+                        equipmentArmor += item.fixed_armor || 0;
+                        equipmentHealth += item.fixed_health || 0;
+                    }
+                }
+            });
+        }
+        
+        // ИТОГОВЫЕ характеристики
+        const totalHealth = baseHealth + equipmentHealth;
+        const totalDamage = baseDamage + equipmentDamage;
+        const totalArmor = baseArmor + equipmentArmor;
+        
+        const power = Math.round((totalHealth / 10) + (totalDamage * 1.5) + (totalArmor * 2));
+        
+        // УБИРАЕМ рекурсию - используем сохраненное текущее здоровье
+        const currentHealth = targetHero.currentHealth || totalHealth;
         
         return {
-            health: Math.round(health),
+            health: Math.round(totalHealth),
             currentHealth: Math.floor(currentHealth),
-            maxHealth: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
+            maxHealth: Math.round(totalHealth),
+            damage: Math.round(totalDamage),
+            armor: Math.round(totalArmor),
             power: power
         };
     }
@@ -125,9 +139,8 @@ class HeroSystem {
         
         // Если currentHealth не установлен, вычисляем максимальное здоровье БЕЗ рекурсии
         if (!targetHero.currentHealth) {
-            const baseHealth = targetHero.baseHealth || 100;
-            const levelMultiplier = 1 + ((targetHero.level || 1) - 1) * 0.1;
-            targetHero.currentHealth = Math.round(baseHealth * levelMultiplier);
+            const stats = this.calculateHeroStats(targetHero);
+            targetHero.currentHealth = stats.maxHealth;
         }
         
         return targetHero.currentHealth;
@@ -594,4 +607,4 @@ class HeroSystem {
 
 // Регистрируем систему в глобальной области
 window.HeroSystem = HeroSystem;
-console.log("📦 HeroSystem модуль загружен");
+console.log("📦 HeroSystem модуль загружен с исправленной системой героя");
