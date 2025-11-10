@@ -30,6 +30,9 @@ class MapSystem {
         this.lastHoveredHex = null;
         this.animationFrame = null;
         
+        // НОВОЕ: для системы боев при перемещении
+        this.pendingMovement = null;
+        
         console.log("✅ MapSystem инициализирован");
     }
 
@@ -91,7 +94,7 @@ class MapSystem {
 
     async processTigrimionJSONMaps(mapData) {
         if (!mapData || !mapData.meta) {
-            console.warn("❌ Неверный формат JSON карт Tigrimion");
+            console.warn("❌ Неверный формат JSON карты Tigrimion");
             return;
         }
 
@@ -628,6 +631,126 @@ drawDebugOverlay() {
     
     this.ctx.restore();
 }
+
+    // ========== НОВАЯ СИСТЕМА БОЕВ ПРИ ПЕРЕМЕЩЕНИИ ==========
+    moveOnTacticalMap(x, y) {
+        if (!this.currentTacticalMap) return;
+
+        // Проверяем, что клетка существует
+        const cellKey = `${x},${y}`;
+        const cellData = this.currentTacticalMap.cells[cellKey];
+        
+        if (!cellData) {
+            console.log("🚫 Клетка не существует");
+            if (window.game) {
+                window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
+        }
+
+        if (cellData.passable === false) {
+            console.log("🚫 Нельзя пройти на эту клетку");
+            if (window.game) {
+                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        // ПРОСТАЯ проверка достижимости
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        // ЗАПУСКАЕМ БОЙ ПЕРЕД ПЕРЕМЕЩЕНИЕМ
+        this.startBattleForMovement(x, y);
+    }
+
+    // НОВЫЙ МЕТОД: запуск боя при перемещении
+    startBattleForMovement(targetX, targetY) {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) {
+            console.error("❌ BattleSystem не доступна");
+            return;
+        }
+
+        // Сохраняем целевую позицию для использования после боя
+        this.pendingMovement = { x: targetX, y: targetY };
+        
+        // Выбираем случайного монстра
+        const randomMonster = this.getRandomMonster();
+        
+        // Запускаем бой
+        battleSystem.startBattleWithMonster(randomMonster.id, 'movement');
+        
+        console.log(`⚔️ Запуск боя при перемещении на [${targetX}, ${targetY}]`);
+    }
+
+    // НОВЫЙ МЕТОД: получение случайного монстра
+    getRandomMonster() {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem || !battleSystem.monsters || battleSystem.monsters.length === 0) {
+            // Возвращаем тестового монстра если система не загружена
+            return {
+                id: 1,
+                name: "Случайный монстр",
+                health: 30,
+                maxHealth: 30,
+                damage: 5,
+                armor: 2,
+                reward: 10,
+                experience: 5
+            };
+        }
+        
+        const randomIndex = Math.floor(Math.random() * battleSystem.monsters.length);
+        return battleSystem.monsters[randomIndex];
+    }
+
+    // НОВЫЙ МЕТОД: завершение боя и перемещение
+    completeMovementAfterBattle(victory) {
+        if (!this.pendingMovement) return;
+
+        const targetX = this.pendingMovement.x;
+        const targetY = this.pendingMovement.y;
+        
+        if (victory) {
+            // При победе перемещаем на целевую клетку
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            console.log(`✅ Успешное перемещение после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+            
+            // Обновляем отображение
+            this.updateTacticalMapDisplay();
+            
+        } else {
+            // При поражении возвращаем на стартовую позицию
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+            
+            console.log(`💀 Поражение! Возврат на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
+            
+            // Обновляем отображение
+            this.updateTacticalMapDisplay();
+            
+            if (window.game) {
+                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
+            }
+        }
+        
+        // Очищаем ожидающее перемещение
+        this.pendingMovement = null;
+    }
+
     // ========== НОВАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ СОСЕДЕЙ ПО РАССТОЯНИЮ ==========
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
@@ -764,62 +887,6 @@ drawDebugOverlay() {
         }
         
         return isReachable;
-    }
-
-    moveOnTacticalMap(x, y) {
-        if (!this.currentTacticalMap) return;
-
-        // Проверяем, что клетка существует
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (cellData.passable === false) {
-            console.log("🚫 Нельзя пройти на эту клетку");
-            if (window.game) {
-                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        // ПРОСТАЯ проверка достижимости
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        // Перемещаем игрока
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x, y};
-        
-        console.log(`✅ Успешное перемещение с [${oldPosition.x}, ${oldPosition.y}] на: [${x}, ${y}]`);
-        
-        // Взаимодействуем с объектом на клетке
-        if (cellData.type !== 'active' && cellData.type !== 'empty' && cellData.type !== 'player_start') {
-            this.interactWithTacticalCell(x, y);
-        }
-        
-        this.updateTacticalMapDisplay();
-        this.updateMovementInfo();
-        
-        if (window.game) {
-            window.game.showNotification(`Перемещение на [${x}, ${y}]`, 'success');
-        }
     }
 
     interactWithTacticalCell(x, y) {
@@ -1428,6 +1495,10 @@ drawDebugOverlay() {
         this.showOverlay('tactical-map');
     }
 
+    forceRedraw() {
+        this.drawTacticalMap();
+    }
+
     // ========== СИСТЕМА СОХРАНЕНИЯ/ЗАГРУЗКИ ==========
     saveMapState() {
         const state = {
@@ -1496,4 +1567,4 @@ drawDebugOverlay() {
 
 // Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с новой системой определения соседей");
+console.log("📦 MapSystem модуль загружен с новой системой боев при перемещении");
