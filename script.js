@@ -293,7 +293,7 @@ class SafeHeroGame {
                 <div class="heroes-grid">
                     ${heroes.map(hero => {
                         const isUnlocked = hero.unlocked || hero.id === 1;
-                        const stats = this.systems.hero.calculateHeroStats(hero);
+                        const stats = this.systems.level.calculateHeroStats(hero, this.systems.bonus);
                         
                         return `
                             <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
@@ -363,7 +363,7 @@ class SafeHeroGame {
         if (!this.currentHero) return;
 
         const app = document.getElementById('app');
-        const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+        const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
         
         app.innerHTML = `
             <div class="hero-game-screen">
