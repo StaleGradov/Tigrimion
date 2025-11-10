@@ -355,48 +355,21 @@ class BonusSystem {
         return activeSetBonuses;
     }
 
-   calculateTotalBonuses(hero, items = []) {
-    const activeBonuses = this.getAllActiveBonuses(hero);
-    const setBonuses = this.getActiveSetBonuses(hero, items);
-    
-    const totals = {
-        health_mult: 0,
-        damage_mult: 0, 
-        armor_mult: 0,
-        gold_mult: 0,
-        health_regen_mult: 0,
-        crit_chance: 0,
-        armor_penetration: 0,
-        vampirism: 0,
-        all_stats_mult: 0
-    };
-    
-    // Суммирование обычных бонусов (без округления)
-    Object.values(activeBonuses).forEach(bonusGroup => {
-        bonusGroup.forEach(bonus => {
-            if (totals.hasOwnProperty(bonus.type)) {
-                totals[bonus.type] += bonus.value; // Просто складываем значения
-            }
-        });
-    });
-    
-    // Добавление бонусов от сетов (без округления)
-    setBonuses.forEach(setBonus => {
-        if (setBonus.bonus && totals.hasOwnProperty(setBonus.bonus.type)) {
-            totals[setBonus.bonus.type] += setBonus.bonus.value; // Просто складываем значения
-        }
-    });
-    
-    // Применение бонуса "все характеристики" к отдельным статам
-    if (totals.all_stats_mult > 0) {
-        totals.health_mult += totals.all_stats_mult;
-        totals.damage_mult += totals.all_stats_mult;
-        totals.armor_mult += totals.all_stats_mult;
-        totals.health_regen_mult += totals.all_stats_mult;
-    }
-    
-    return totals;
-}
+    calculateTotalBonuses(hero, items = []) {
+        const activeBonuses = this.getAllActiveBonuses(hero);
+        const setBonuses = this.getActiveSetBonuses(hero, items);
+        
+        const totals = {
+            health_mult: 0,
+            damage_mult: 0, 
+            armor_mult: 0,
+            gold_mult: 0,
+            health_regen_mult: 0,
+            crit_chance: 0,
+            armor_penetration: 0,
+            vampirism: 0,
+            all_stats_mult: 0
+        };
         
         // Суммирование обычных бонусов
         Object.values(activeBonuses).forEach(bonusGroup => {
@@ -439,28 +412,19 @@ class BonusSystem {
         return icons[bonusType] || '🎯';
     }
 
-  formatBonus(bonus) {
-    if (!bonus || bonus.type === 'none') return 'Нет бонуса';
-    
-    const bonusNames = {
-        'health_mult': 'Здоровье',
-        'damage_mult': 'Урон', 
-        'armor_mult': 'Броня',
-        'gold_mult': 'Золото',
-        'health_regen_mult': 'Регенерация',
-        'crit_chance': 'Криты',
-        'armor_penetration': 'Пенетрация',
-        'vampirism': 'Вампиризм'
-    };
-
-    // Изменяем форматирование для отображения десятичных долей
-    const value = bonus.type.includes('_mult') ? 
-        (bonus.value * 100).toFixed(1) : (bonus.value * 100).toFixed(1);
+    formatBonus(bonus) {
+        if (!bonus || bonus.type === 'none') return 'Нет бонуса';
         
-    return bonusNames[bonus.type] ? 
-        `${bonusNames[bonus.type]} +${value}%` : 
-        `Бонус: +${value}%`;
-}
+        const bonusNames = {
+            'health_mult': 'Здоровье',
+            'damage_mult': 'Урон', 
+            'armor_mult': 'Броня',
+            'gold_mult': 'Золото',
+            'health_regen_mult': 'Регенерация',
+            'crit_chance': 'Криты',
+            'armor_penetration': 'Пенетрация',
+            'vampirism': 'Вампиризм'
+        };
 
         const value = bonus.type.includes('_mult') ? 
             Math.round(bonus.value * 100) : Math.round(bonus.value * 100);
