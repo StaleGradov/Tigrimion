@@ -4,9 +4,11 @@ class BattleSystem {
         this.monsters = [];
         this.battleActive = false;
         this.currentMonster = null;
+        this.currentHero = null; // ⭐ ДОБАВЛЯЕМ СВОЙСТВО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
         this.battleLog = [];
         this.battleRound = 0;
         this.battleType = 'normal'; // 'normal' или 'movement'
+        this.battleContext = 'normal'; // ⭐ ДОБАВЛЯЕМ КОНТЕКСТ БОЯ
         console.log("✅ BattleSystem инициализирован");
     }
 
@@ -52,13 +54,20 @@ class BattleSystem {
         console.log("🔄 Созданы тестовые монстры");
     }
 
-    startBattleWithMonster(monsterId, battleType = 'normal') {
+    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: принимает героя и контекст
+    startBattleWithMonster(hero, monsterId, context = 'normal') {
+        if (!hero) {
+            console.error("❌ Не могу начать бой: герой не передан");
+            return;
+        }
+
         const monster = this.monsters.find(m => m.id === monsterId);
         if (!monster) {
             console.error("❌ Монстр не найден:", monsterId);
             return;
         }
 
+        this.currentHero = hero; // ⭐ СОХРАНЯЕМ ГЕРОЯ
         this.currentMonster = {
             ...monster,
             currentHealth: monster.health
@@ -67,10 +76,11 @@ class BattleSystem {
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
-        this.battleType = battleType; // 'normal' или 'movement'
+        this.battleType = context; // 'normal' или 'movement'
+        this.battleContext = context; // ⭐ СОХРАНЯЕМ КОНТЕКСТ
         
         this.addBattleLog(`⚔️ Бой начался! Противник: ${monster.name}`);
-        console.log(`⚔️ Начинаем бой с: ${monster.name}, тип: ${battleType}`);
+        console.log(`⚔️ Начинаем бой героя ${hero.name} с: ${monster.name}, тип: ${context}`);
         
         this.showBattleScreen();
     }
@@ -79,19 +89,13 @@ class BattleSystem {
         const app = document.getElementById('app');
         if (!app) return;
 
-        if (!this.battleActive || !this.currentMonster) {
-            app.innerHTML = '<div class="battle-error">Бой не активен</div>';
-            return;
-        }
-
-        const hero = window.game?.systems?.hero?.currentHero;
-        if (!hero) {
-            app.innerHTML = '<div class="battle-error">Герой не выбран</div>';
+        if (!this.battleActive || !this.currentMonster || !this.currentHero) {
+            app.innerHTML = '<div class="battle-error">Бой не активен или герой не выбран</div>';
             return;
         }
 
         const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
+            this.currentHero, 
             window.game.systems.bonus
         );
 
@@ -100,14 +104,14 @@ class BattleSystem {
 
         // Если это бой при перемещении, показываем разделенный экран
         if (this.battleType === 'movement') {
-            this.showBattleWithMapScreen(hero, heroStats, heroHealthPercent, monsterHealthPercent);
+            this.showBattleWithMapScreen(heroStats, heroHealthPercent, monsterHealthPercent);
         } else {
-            this.showStandardBattleScreen(hero, heroStats, heroHealthPercent, monsterHealthPercent);
+            this.showStandardBattleScreen(heroStats, heroHealthPercent, monsterHealthPercent);
         }
     }
 
     // НОВЫЙ МЕТОД: бой с картой
-    showBattleWithMapScreen(hero, heroStats, heroHealthPercent, monsterHealthPercent) {
+    showBattleWithMapScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
         const app = document.getElementById('app');
         
         app.innerHTML = `
@@ -126,10 +130,10 @@ class BattleSystem {
                         <div class="battle-combatants">
                             <div class="combatant hero-combatant">
                                 <div class="combatant-image">
-                                    <img src="${hero.image}" alt="${hero.name}">
+                                    <img src="${this.currentHero.image}" alt="${this.currentHero.name}">
                                 </div>
                                 <div class="combatant-info">
-                                    <h4>${hero.name}</h4>
+                                    <h4>${this.currentHero.name}</h4>
                                     <div class="health-bar">
                                         <div class="health-fill" style="width: ${heroHealthPercent}%"></div>
                                     </div>
@@ -194,7 +198,7 @@ class BattleSystem {
     }
 
     // СТАРЫЙ МЕТОД: стандартный бой
-    showStandardBattleScreen(hero, heroStats, heroHealthPercent, monsterHealthPercent) {
+    showStandardBattleScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
         const app = document.getElementById('app');
 
         app.innerHTML = `
@@ -207,10 +211,10 @@ class BattleSystem {
                 <div class="battle-combatants">
                     <div class="combatant hero-combatant">
                         <div class="combatant-image">
-                            <img src="${hero.image}" alt="${hero.name}">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}">
                         </div>
                         <div class="combatant-info">
-                            <h4>${hero.name}</h4>
+                            <h4>${this.currentHero.name}</h4>
                             <div class="health-bar">
                                 <div class="health-fill" style="width: ${heroHealthPercent}%"></div>
                             </div>
@@ -273,12 +277,11 @@ class BattleSystem {
     }
 
     battleAttack() {
-        if (!this.battleActive || !this.currentMonster) return;
+        if (!this.battleActive || !this.currentMonster || !this.currentHero) return;
 
         this.battleRound++;
-        const hero = window.game.systems.hero.currentHero;
         const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
+            this.currentHero, 
             window.game.systems.bonus
         );
 
@@ -286,7 +289,7 @@ class BattleSystem {
         const heroDamage = Math.max(1, heroStats.damage - this.currentMonster.armor);
         this.currentMonster.currentHealth -= heroDamage;
         
-        this.addBattleLog(`🗡️ ${hero.name} наносит ${heroDamage} урона!`);
+        this.addBattleLog(`🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!`);
 
         // Проверка смерти монстра
         if (this.currentMonster.currentHealth <= 0) {
@@ -296,12 +299,12 @@ class BattleSystem {
 
         // Атака монстра
         const monsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
-        hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - monsterDamage;
+        this.currentHero.currentHealth = (this.currentHero.currentHealth || heroStats.maxHealth) - monsterDamage;
         
         this.addBattleLog(`👹 ${this.currentMonster.name} наносит ${monsterDamage} урона!`);
 
         // Проверка смерти героя
-        if (hero.currentHealth <= 0) {
+        if (this.currentHero.currentHealth <= 0) {
             this.endBattle(false);
             return;
         }
@@ -310,12 +313,11 @@ class BattleSystem {
     }
 
     battleBlock() {
-        if (!this.battleActive || !this.currentMonster) return;
+        if (!this.battleActive || !this.currentMonster || !this.currentHero) return;
 
         this.battleRound++;
-        const hero = window.game.systems.hero.currentHero;
         const heroStats = window.game.systems.level.calculateHeroStats(
-            hero, 
+            this.currentHero, 
             window.game.systems.bonus
         );
 
@@ -323,12 +325,12 @@ class BattleSystem {
         const baseMonsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
         const blockedDamage = Math.max(1, Math.floor(baseMonsterDamage * 0.5)); // 50% снижение
         
-        hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - blockedDamage;
+        this.currentHero.currentHealth = (this.currentHero.currentHealth || heroStats.maxHealth) - blockedDamage;
         
-        this.addBattleLog(`🛡️ ${hero.name} блокирует атаку! Получено ${blockedDamage} урона`);
+        this.addBattleLog(`🛡️ ${this.currentHero.name} блокирует атаку! Получено ${blockedDamage} урона`);
 
         // Проверка смерти героя
-        if (hero.currentHealth <= 0) {
+        if (this.currentHero.currentHealth <= 0) {
             this.endBattle(false);
             return;
         }
@@ -337,7 +339,7 @@ class BattleSystem {
     }
 
     fleeBattle() {
-        if (!this.battleActive) return;
+        if (!this.battleActive || !this.currentHero) return;
 
         this.addBattleLog("🏃 Герой пытается сбежать...");
         
@@ -347,18 +349,17 @@ class BattleSystem {
         } else {
             this.addBattleLog("❌ Не удалось сбежать!");
             // Монстр атакует при неудачном побеге
-            const hero = window.game.systems.hero.currentHero;
             const heroStats = window.game.systems.level.calculateHeroStats(
-                hero, 
+                this.currentHero, 
                 window.game.systems.bonus
             );
             
             const monsterDamage = Math.max(1, this.currentMonster.damage - heroStats.armor);
-            hero.currentHealth = (hero.currentHealth || heroStats.maxHealth) - monsterDamage;
+            this.currentHero.currentHealth = (this.currentHero.currentHealth || heroStats.maxHealth) - monsterDamage;
             
             this.addBattleLog(`👹 ${this.currentMonster.name} атакует в спину! ${monsterDamage} урона`);
             
-            if (hero.currentHealth <= 0) {
+            if (this.currentHero.currentHealth <= 0) {
                 this.endBattle(false);
             } else {
                 this.showBattleScreen();
@@ -367,21 +368,30 @@ class BattleSystem {
     }
 
     endBattle(victory, fled = false) {
-        const hero = window.game.systems.hero.currentHero;
+        if (!this.currentHero) {
+            console.error("❌ Не могу завершить бой: герой не установлен");
+            return;
+        }
+
         const mapSystem = window.game.systems.map;
         
         if (victory) {
             const reward = this.currentMonster.reward;
             const experience = this.currentMonster.experience;
             
-            hero.gold += reward;
-            window.game.systems.level.addExperience(hero, experience);
-            hero.monstersKilled = (hero.monstersKilled || 0) + 1;
+            this.currentHero.gold += reward;
+            window.game.systems.level.addExperience(this.currentHero, experience);
+            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + 1;
             
             this.addBattleLog(`🎉 ПОБЕДА! +${reward} золота, +${experience} опыта`);
             
+            // Сохраняем игру после победы
+            if (window.game) {
+                window.game.saveGame();
+            }
+            
             // Если это бой при перемещении, завершаем перемещение
-            if (this.battleType === 'movement' && mapSystem) {
+            if (this.battleContext === 'movement' && mapSystem) {
                 setTimeout(() => {
                     mapSystem.completeMovementAfterBattle(true);
                     this.showVictoryScreen(reward, experience);
@@ -394,18 +404,27 @@ class BattleSystem {
             
         } else if (fled) {
             this.addBattleLog("🏃 Бой окончен - успешный побег");
+            // Сохраняем игру после побега
+            if (window.game) {
+                window.game.saveGame();
+            }
             // При побеге не перемещаемся
             setTimeout(() => {
                 this.returnToTacticalMap();
             }, 2000);
         } else {
-            hero.currentHealth = 1; // Оставляем 1 HP при поражении
-            hero.deaths = (hero.deaths || 0) + 1;
+            this.currentHero.currentHealth = 1; // Оставляем 1 HP при поражении
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             
             this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
             
+            // Сохраняем игру после поражения
+            if (window.game) {
+                window.game.saveGame();
+            }
+            
             // Если это бой при перемещении, возвращаем на старт
-            if (this.battleType === 'movement' && mapSystem) {
+            if (this.battleContext === 'movement' && mapSystem) {
                 setTimeout(() => {
                     mapSystem.completeMovementAfterBattle(false);
                     this.returnToTacticalMap();
@@ -419,6 +438,17 @@ class BattleSystem {
 
         this.battleActive = false;
         this.currentMonster = null;
+        this.currentHero = null; // ⭐ ОЧИЩАЕМ ГЕРОЯ ПОСЛЕ БОЯ
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: завершение боя (для вызова извне)
+    completeBattle(victory) {
+        if (this.battleContext === 'movement' && window.game?.systems?.map) {
+            // Сообщаем системе карт о результате боя
+            window.game.systems.map.completeMovementAfterBattle(victory);
+        }
+        
+        this.endBattle(victory);
     }
 
     // НОВЫЙ МЕТОД: экран победы
@@ -445,13 +475,13 @@ class BattleSystem {
                     </div>
                     
                     <div class="victory-message">
-                        ${this.battleType === 'movement' ? 
+                        ${this.battleContext === 'movement' ? 
                             'Монстр повержен! Вы успешно достигли клетки.' : 
                             'Монстр повержен! Вы победили в бою.'}
                     </div>
                     
                     <button class="btn-primary" onclick="game.systems.battle.returnToTacticalMap()">
-                        ${this.battleType === 'movement' ? 'Продолжить исследование' : 'Вернуться к игре'}
+                        ${this.battleContext === 'movement' ? 'Продолжить исследование' : 'Вернуться к игре'}
                     </button>
                 </div>
             </div>
