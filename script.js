@@ -68,6 +68,62 @@ class ModuleLoader {
             }
             .btn-primary { background: #3b82f6; color: white; }
             .btn-secondary { background: #6b7280; color: white; }
+            
+            /* Стили для шкалы здоровья */
+            .health-bar-container {
+                width: 100%;
+                background: #333;
+                border-radius: 10px;
+                margin: 10px 0;
+                overflow: hidden;
+                position: relative;
+                border: 2px solid #444;
+            }
+            
+            .health-bar {
+                height: 30px;
+                background: linear-gradient(90deg, #e74c3c, #f39c12);
+                border-radius: 8px;
+                transition: width 0.5s ease;
+                position: relative;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+                min-width: 50px;
+            }
+            
+            .health-bar.regening {
+                background: linear-gradient(90deg, #2ecc71, #27ae60);
+                animation: pulseHealth 1s infinite;
+            }
+            
+            @keyframes pulseHealth {
+                0% { opacity: 1; }
+                50% { opacity: 0.8; }
+                100% { opacity: 1; }
+            }
+            
+            .health-numbers {
+                position: absolute;
+                right: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 14px;
+                font-weight: bold;
+                z-index: 2;
+            }
+            
+            /* Стили для экрана героя */
+            .hero-overlay-panel {
+                background: rgba(0, 0, 0, 0.8);
+                padding: 20px;
+                border-radius: 15px;
+                margin: 20px;
+                max-width: 500px;
+            }
         `;
         
         const style = document.createElement('style');
@@ -179,7 +235,7 @@ class ModuleLoader {
     }
 }
 
-// ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ ==========
+// ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ С ИСПРАВЛЕННОЙ СИСТЕМОЙ ХАРАКТЕРИСТИК ==========
 class SafeHeroGame {
     constructor() {
         this.moduleLoader = new ModuleLoader();
@@ -188,6 +244,7 @@ class SafeHeroGame {
         this.currentHero = null;
         this.activeOverlay = null;
         this.isSaveLoaded = false;
+        this.healthUpdateInterval = null;
         this.init();
     }
 
@@ -203,14 +260,12 @@ class SafeHeroGame {
             
             await this.loadGameData();
             
-            // ⭐ ВАЖНО: Загружаем сохранение ДО показа интерфейса
             console.log("📂 Пытаемся загрузить сохранение...");
             const saveLoaded = this.loadSave();
             if (saveLoaded) {
                 console.log("✅ Сохранение загружено");
                 this.isSaveLoaded = true;
                 
-                // Если есть текущий герой, показываем его экран
                 if (this.currentHero) {
                     console.log(`🎯 Восстановлен герой: ${this.currentHero.name}`);
                     this.showHeroGameScreen();
@@ -222,10 +277,9 @@ class SafeHeroGame {
                 this.showHeroSelection();
             }
             
-            // Запускаем автосохранение
             this.startAutosave();
             
-            // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ
+            // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ С ВИЗУАЛЬНЫМ ОБНОВЛЕНИЕМ
             this.startHealthRegeneration();
             
         } catch (error) {
@@ -272,13 +326,186 @@ class SafeHeroGame {
         }
     }
 
-    // ========== УЛУЧШЕННАЯ СИСТЕМА СОХРАНЕНИЯ ==========
+    // ========== УЛУЧШЕННАЯ СИСТЕМА РАСЧЕТА ХАРАКТЕРИСТИК ==========
+    calculateHeroStats(hero = null) {
+        const targetHero = hero || this.currentHero;
+        if (!targetHero) return this.getEmptyStats();
+        
+        // ⭐ ИСПОЛЬЗУЕМ LevelSystem ДЛЯ ПРАВИЛЬНОГО РАСЧЕТА
+        if (this.systems.level && this.systems.bonus) {
+            return this.systems.level.calculateHeroStats(targetHero, this.systems.bonus);
+        }
+        
+        // ⭐ РЕЗЕРВНЫЙ РАСЧЕТ ЕСЛИ СИСТЕМЫ НЕДОСТУПНЫ
+        return this.calculateStatsFallback(targetHero);
+    }
+
+    calculateStatsFallback(hero) {
+        // Базовые характеристики с учетом уровня
+        const levelMultiplier = 1 + (hero.level - 1) * 0.1;
+        
+        let baseMaxHealth = Math.round(hero.baseHealth * levelMultiplier);
+        let baseDamage = Math.round(hero.baseDamage * levelMultiplier);
+        let baseArmor = Math.round(hero.baseArmor * levelMultiplier);
+        
+        // Бонусы от экипировки
+        let equipmentHealth = 0;
+        let equipmentDamage = 0;
+        let equipmentArmor = 0;
+        
+        if (hero.equipment && this.systems.equipment) {
+            Object.values(hero.equipment).forEach(itemId => {
+                if (itemId) {
+                    const item = this.systems.equipment.getItemById(itemId);
+                    if (item) {
+                        equipmentDamage += item.fixed_damage || 0;
+                        equipmentArmor += item.fixed_armor || 0;
+                        equipmentHealth += item.fixed_health || 0;
+                    }
+                }
+            });
+        }
+        
+        // Применяем бонусы от расы, класса, саги
+        let finalHealth = baseMaxHealth + equipmentHealth;
+        let finalDamage = baseDamage + equipmentDamage;
+        let finalArmor = baseArmor + equipmentArmor;
+        
+        // Бонусы от расы, класса, саги (упрощенная версия)
+        if (this.systems.bonus) {
+            try {
+                const totals = this.systems.bonus.calculateTotalBonuses(hero);
+                
+                finalHealth += baseMaxHealth * totals.health_mult;
+                finalDamage += baseDamage * totals.damage_mult;
+                finalArmor += baseArmor * totals.armor_mult;
+                
+            } catch (error) {
+                console.warn("⚠️ Ошибка расчета бонусов:", error);
+            }
+        }
+        
+        // Убедимся что значения не отрицательные
+        finalHealth = Math.max(1, Math.round(finalHealth));
+        finalDamage = Math.max(1, Math.round(finalDamage));
+        finalArmor = Math.max(0, Math.round(finalArmor));
+        
+        // Рассчитываем текущее здоровье
+        const currentHealth = Math.min(hero.currentHealth || finalHealth, finalHealth);
+        
+        // Мощность героя
+        const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
+        
+        return {
+            currentHealth: Math.floor(currentHealth),
+            maxHealth: Math.round(finalHealth),
+            damage: Math.round(finalDamage),
+            armor: Math.round(finalArmor),
+            power: power,
+            // ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ
+            healthRegen: 1.0,
+            critChance: 0.05,
+            vampirism: 0.0
+        };
+    }
+
+    getEmptyStats() {
+        return {
+            currentHealth: 0,
+            maxHealth: 0,
+            damage: 0,
+            armor: 0,
+            power: 0,
+            healthRegen: 0,
+            critChance: 0,
+            vampirism: 0
+        };
+    }
+
+    // ========== УЛУЧШЕННАЯ СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
+    startHealthRegeneration() {
+        // Останавливаем предыдущий интервал если есть
+        if (this.healthUpdateInterval) {
+            clearInterval(this.healthUpdateInterval);
+        }
+        
+        this.healthUpdateInterval = setInterval(() => {
+            if (this.currentHero && this.systems.level) {
+                const stats = this.calculateHeroStats(this.currentHero);
+                
+                if (this.currentHero.currentHealth < stats.maxHealth) {
+                    // Базовая регенерация + бонусы
+                    const baseRegen = 1; // 1 хит в секунду
+                    const bonusRegen = stats.healthRegen * baseRegen;
+                    const totalRegen = baseRegen + bonusRegen;
+                    
+                    const oldHealth = this.currentHero.currentHealth;
+                    this.currentHero.currentHealth = Math.min(
+                        stats.maxHealth, 
+                        this.currentHero.currentHealth + totalRegen
+                    );
+                    
+                    // ⭐ ВИЗУАЛЬНОЕ ОБНОВЛЕНИЕ ЕСЛИ ЭКРАН ГЕРОЯ ОТКРЫТ
+                    if (this.currentScreen === 'hero') {
+                        this.updateHealthDisplay();
+                    }
+                    
+                    // Логируем только если здоровье изменилось значительно
+                    if (Math.floor(this.currentHero.currentHealth) !== Math.floor(oldHealth)) {
+                        console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${Math.floor(this.currentHero.currentHealth)}/${stats.maxHealth})`);
+                    }
+                    
+                    // Автосохранение при значительном восстановлении
+                    if (Math.random() < 0.05) { // 5% шанс на автосохранение
+                        this.saveGame();
+                    }
+                }
+            }
+        }, 1000); // Каждую секунду
+    }
+
+    // ========== ОБНОВЛЕНИЕ ОТОБРАЖЕНИЯ ЗДОРОВЬЯ В РЕАЛЬНОМ ВРЕМЕНИ ==========
+    updateHealthDisplay() {
+        if (!this.currentHero) return;
+        
+        const stats = this.calculateHeroStats(this.currentHero);
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+        
+        // Обновляем шкалу здоровья
+        const healthBar = document.querySelector('.health-bar');
+        const healthNumbers = document.querySelector('.health-numbers');
+        const statValueElements = document.querySelectorAll('.overlay-stat-value');
+        
+        if (healthBar) {
+            healthBar.style.width = healthPercent + '%';
+            
+            // Добавляем анимацию регенерации
+            if (stats.currentHealth < stats.maxHealth) {
+                healthBar.classList.add('regening');
+            } else {
+                healthBar.classList.remove('regening');
+            }
+        }
+        
+        if (healthNumbers) {
+            healthNumbers.textContent = `${Math.floor(stats.currentHealth)}/${stats.maxHealth}`;
+        }
+        
+        // Обновляем цифры в статистике
+        statValueElements.forEach(element => {
+            const label = element.previousElementSibling;
+            if (label && label.textContent.includes('❤️')) {
+                element.textContent = `${Math.floor(stats.currentHealth)}/${stats.maxHealth}`;
+            }
+        });
+    }
+
+    // ========== СИСТЕМА СОХРАНЕНИЯ (без изменений) ==========
     saveGame() {
         try {
             if (this.currentHero && this.systems.equipment && this.systems.hero) {
                 const saveData = {
                     currentHeroId: this.currentHero.id,
-                    // Сохраняем ВСЕХ героев с их прогрессом
                     heroes: this.systems.hero.heroes.map(hero => ({
                         id: hero.id,
                         name: hero.name,
@@ -298,7 +525,7 @@ class SafeHeroGame {
                         inventory: [...hero.inventory],
                         equipment: {...hero.equipment},
                         unlocked: hero.unlocked,
-                        currentHealth: hero.currentHealth || hero.baseHealth // ⭐ СОХРАНЯЕМ ТЕКУЩЕЕ ЗДОРОВЬЕ
+                        currentHealth: hero.currentHealth || hero.baseHealth
                     })),
                     timestamp: Date.now(),
                     version: "1.0"
@@ -308,9 +535,7 @@ class SafeHeroGame {
                 console.log("💾 Игра сохранена", {
                     hero: this.currentHero.name,
                     gold: this.currentHero.gold,
-                    inventory: this.currentHero.inventory.length,
-                    equipment: Object.values(this.currentHero.equipment).filter(Boolean).length,
-                    currentHealth: this.currentHero.currentHealth // ⭐ ЛОГИРУЕМ ЗДОРОВЬЕ
+                    health: `${Math.floor(this.currentHero.currentHealth)}/${this.calculateHeroStats().maxHealth}`
                 });
                 return true;
             }
@@ -328,11 +553,9 @@ class SafeHeroGame {
                 console.log("📂 Загружаем сохранение:", data);
                 
                 if (data.heroes && this.systems.hero) {
-                    // Восстанавливаем прогресс каждого героя
                     data.heroes.forEach(savedHero => {
                         const existingHero = this.systems.hero.heroes.find(h => h.id === savedHero.id);
                         if (existingHero) {
-                            // Сохраняем только изменяемые поля
                             const preservedFields = ['name', 'image', 'race', 'class', 'saga', 'story'];
                             
                             preservedFields.forEach(field => {
@@ -341,16 +564,14 @@ class SafeHeroGame {
                                 }
                             });
                             
-                            // Обновляем прогресс
                             existingHero.gold = savedHero.gold || existingHero.gold;
                             existingHero.level = savedHero.level || existingHero.level;
                             existingHero.experience = savedHero.experience || existingHero.experience;
                             existingHero.monstersKilled = savedHero.monstersKilled || existingHero.monstersKilled;
                             existingHero.deaths = savedHero.deaths || existingHero.deaths;
                             existingHero.healthRegen = savedHero.healthRegen || existingHero.healthRegen;
-                            existingHero.currentHealth = savedHero.currentHealth || existingHero.currentHealth; // ⭐ ЗАГРУЖАЕМ ТЕКУЩЕЕ ЗДОРОВЬЕ
+                            existingHero.currentHealth = savedHero.currentHealth || existingHero.currentHealth;
                             
-                            // ВАЖНО: Восстанавливаем инвентарь и экипировку
                             existingHero.inventory = savedHero.inventory || [];
                             existingHero.equipment = savedHero.equipment || {
                                 main_hand: null,
@@ -367,9 +588,7 @@ class SafeHeroGame {
                             console.log(`✅ Загружен герой: ${existingHero.name}`, {
                                 level: existingHero.level,
                                 gold: existingHero.gold,
-                                inventory: existingHero.inventory.length,
-                                equipment: Object.values(existingHero.equipment).filter(Boolean).length,
-                                currentHealth: existingHero.currentHealth // ⭐ ЛОГИРУЕМ ЗДОРОВЬЕ
+                                health: `${Math.floor(existingHero.currentHealth)}/${this.calculateHeroStats(existingHero).maxHealth}`
                             });
                         }
                     });
@@ -377,7 +596,6 @@ class SafeHeroGame {
                     console.log("✅ Прогресс всех героев загружен");
                 }
                 
-                // Восстанавливаем текущего героя
                 if (data.currentHeroId && this.systems.hero) {
                     this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
                     if (this.currentHero && this.systems.equipment) {
@@ -396,9 +614,7 @@ class SafeHeroGame {
         return false;
     }
 
-    // ========== УЛУЧШЕННОЕ АВТОСОХРАНЕНИЕ ==========
     startAutosave() {
-        // Сохраняем каждые 30 секунд
         setInterval(() => {
             if (this.currentHero) {
                 this.saveGame();
@@ -406,7 +622,6 @@ class SafeHeroGame {
             }
         }, 30000);
         
-        // Сохраняем при закрытии страницы
         window.addEventListener('beforeunload', () => {
             if (this.currentHero) {
                 this.saveGame();
@@ -415,34 +630,7 @@ class SafeHeroGame {
         });
     }
 
-    // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
-    startHealthRegeneration() {
-        setInterval(() => {
-            if (this.currentHero && this.systems.level) {
-                const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
-                
-                if (this.currentHero.currentHealth < stats.maxHealth) {
-                    // Базовая регенерация + бонусы от предметов
-                    const baseRegen = 1; // 1 хит в секунду
-                    const bonusRegen = stats.healthRegen * baseRegen;
-                    const totalRegen = baseRegen + bonusRegen;
-                    
-                    this.currentHero.currentHealth = Math.min(
-                        stats.maxHealth, 
-                        this.currentHero.currentHealth + totalRegen
-                    );
-                    
-                    // Автосохранение при восстановлении здоровья
-                    if (Math.random() < 0.1) { // 10% шанс на автосохранение
-                        this.saveGame();
-                    }
-                    
-                    console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
-                }
-            }
-        }, 1000); // Каждую секунду
-    }
-
+    // ========== ОСНОВНЫЕ ЭКРАНЫ ИНТЕРФЕЙСА ==========
     showLoadingScreen(message) {
         const app = document.getElementById('app');
         if (app) {
@@ -465,14 +653,6 @@ class SafeHeroGame {
         }
     }
 
-    updateLoadingProgress(percent, message) {
-        const progress = document.getElementById('loadingProgress');
-        const status = document.getElementById('moduleStatus');
-        
-        if (progress) progress.style.width = percent + '%';
-        if (status) status.textContent = message;
-    }
-
     showHeroSelection() {
         const app = document.getElementById('app');
         if (!app) return;
@@ -488,7 +668,7 @@ class SafeHeroGame {
                 <div class="heroes-grid">
                     ${heroes.map(hero => {
                         const isUnlocked = hero.unlocked || hero.id === 1;
-                        const stats = this.systems.level.calculateHeroStats(hero, this.systems.bonus);
+                        const stats = this.calculateHeroStats(hero);
                         
                         return `
                             <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
@@ -505,7 +685,7 @@ class SafeHeroGame {
                                     </div>
                                     <div class="hero-stats">
                                         <div class="stat-row">
-                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                            <span>❤️ ${Math.floor(stats.currentHealth)}/${stats.maxHealth}</span>
                                             <span>⚔️ ${stats.damage}</span>
                                             <span>🛡️ ${stats.armor}</span>
                                         </div>
@@ -545,14 +725,12 @@ class SafeHeroGame {
         this.currentHero = hero;
         this.systems.hero.currentHero = hero;
         
-        // Устанавливаем текущего героя в системе экипировки
         if (this.systems.equipment) {
             this.systems.equipment.setCurrentHero(hero);
         }
         
         console.log(`🎯 Выбран герой: ${hero.name}`);
         
-        // ⭐ СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
         this.saveGame();
         
         this.showHeroGameScreen();
@@ -561,8 +739,11 @@ class SafeHeroGame {
     showHeroGameScreen() {
         if (!this.currentHero) return;
 
+        this.currentScreen = 'hero'; // Устанавливаем флаг что экран героя активен
+        
         const app = document.getElementById('app');
-        const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
+        const stats = this.calculateHeroStats(this.currentHero);
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
         
         app.innerHTML = `
             <div class="hero-game-screen">
@@ -608,13 +789,20 @@ class SafeHeroGame {
                                 <div class="hero-overlay-level">⚡ Ур. ${this.currentHero.level}</div>
                             </div>
                             
+                            <!-- ⭐ БОЛЬШАЯ ШКАЛА ЗДОРОВЬЯ С АНИМАЦИЕЙ -->
+                            <div class="health-display-section">
+                                <h4>❤️ Здоровье</h4>
+                                <div class="health-bar-container">
+                                    <div class="health-bar ${stats.currentHealth < stats.maxHealth ? 'regening' : ''}" 
+                                         style="width: ${healthPercent}%">
+                                        <div class="health-numbers">${Math.floor(stats.currentHealth)}/${stats.maxHealth}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- Основные параметры -->
                             <div class="hero-overlay-stats">
                                 <div class="overlay-stat-group">
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">❤️ Здоровье</span>
-                                        <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
-                                    </div>
                                     <div class="overlay-stat-row">
                                         <span class="overlay-stat-label">⚔️ Мощь</span>
                                         <span class="overlay-stat-value">${stats.damage}</span>
@@ -623,13 +811,13 @@ class SafeHeroGame {
                                         <span class="overlay-stat-label">🛡️ Защита</span>
                                         <span class="overlay-stat-value">${stats.armor}</span>
                                     </div>
-                                </div>
-                                
-                                <div class="overlay-stat-group">
                                     <div class="overlay-stat-row">
                                         <span class="overlay-stat-label">💰 Золото</span>
                                         <span class="overlay-stat-value">${this.currentHero.gold.toFixed(2)}</span>
                                     </div>
+                                </div>
+                                
+                                <div class="overlay-stat-group">
                                     <div class="overlay-stat-row">
                                         <span class="overlay-stat-label">🌟 Сила</span>
                                         <span class="overlay-stat-value">${stats.power}</span>
@@ -638,9 +826,13 @@ class SafeHeroGame {
                                         <span class="overlay-stat-label">🧬 Раса</span>
                                         <span class="overlay-stat-value">${this.getRaceName(this.currentHero.race)}</span>
                                     </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">⚔️ Класс</span>
+                                        <span class="overlay-stat-value">${this.getClassName(this.currentHero.class)}</span>
+                                    </div>
                                 </div>
 
-                                <!-- ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ -->
+                                <!-- ⭐ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ -->
                                 <div class="overlay-stat-group">
                                     <div class="overlay-stat-row">
                                         <span class="overlay-stat-label">🎯 Крит</span>
@@ -700,10 +892,8 @@ class SafeHeroGame {
         const itemId = this.currentHero.equipment[slot];
         
         if (itemId) {
-            // Если есть предмет - снимаем его
             this.systems.equipment.unequipItem(slot);
         } else {
-            // Если нет предмета - показываем инвентарь для экипировки
             this.showEquipmentForSlot(slot);
         }
     }
@@ -746,7 +936,6 @@ class SafeHeroGame {
 
             case 'tactical-map':
                 if (this.systems.map) {
-                    // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
                     this.systems.map.setCurrentHero(this.currentHero);
                     this.systems.map.showTacticalMapEditor();
                 } else {
@@ -759,12 +948,10 @@ class SafeHeroGame {
                 break;
 
             case 'shop':
-                // Показываем магазин через систему экипировки с сохранением текущей категории
                 const currentCategory = this.systems.equipment.currentCategory || 'all';
                 const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
                 container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
                 
-                // Добавляем обработчики для предметов магазина
                 setTimeout(() => this.attachShopItemHandlers(), 100);
                 break;
         }
@@ -772,7 +959,6 @@ class SafeHeroGame {
         container.style.display = 'block';
     }
 
-    // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
     attachShopItemHandlers() {
         const shopItems = document.querySelectorAll('.shop-item');
         console.log(`Найдено предметов в магазине: ${shopItems.length}`);
@@ -789,7 +975,6 @@ class SafeHeroGame {
         });
     }
 
-    // ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ==========
     showItemDetailModal(itemId) {
         console.log(`Открываем модалку для предмета ID: ${itemId}`);
         const item = this.systems.equipment.getItemById(itemId);
@@ -837,7 +1022,6 @@ class SafeHeroGame {
                                 </div>
                             ` : ''}
                             
-                            <!-- ИНФОРМАЦИЯ О БОНУСЕ ПРЕДМЕТА -->
                             ${item.bonus && item.bonus.type !== 'none' ? `
                                 <div class="item-bonus-info">
                                     <h5>🎯 Бонус предмета:</h5>
@@ -860,7 +1044,6 @@ class SafeHeroGame {
                                 ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span class="stat-value">+${item.fixed_health}</span></div>` : ''}
                             </div>
                             
-                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
                             ${item.setName && this.systems.equipment.itemSets[item.setName] ? `
                                 <div class="item-set-details">
                                     <h5>✨ Бонус сета:</h5>
@@ -914,12 +1097,10 @@ class SafeHeroGame {
             </div>
         `;
 
-        // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
             
-            // Добавляем обработчик для увеличения картинки
             setTimeout(() => {
                 const zoomableImage = document.querySelector('.item-detail-image-zoom');
                 if (zoomableImage) {
@@ -932,7 +1113,6 @@ class SafeHeroGame {
         }
     }
 
-    // ========== УВЕЛИЧЕНИЕ ИЗОБРАЖЕНИЯ ПРЕДМЕТА ==========
     showZoomedImage(imageSrc, itemName) {
         const zoomOverlay = document.createElement('div');
         zoomOverlay.className = 'item-image-zoom-overlay';
@@ -943,14 +1123,12 @@ class SafeHeroGame {
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
         `;
         
-        // Закрытие по клику на оверлей
         zoomOverlay.addEventListener('click', (e) => {
             if (e.target === zoomOverlay) {
                 zoomOverlay.remove();
             }
         });
         
-        // Закрытие по ESC
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
                 zoomOverlay.remove();
@@ -962,7 +1140,6 @@ class SafeHeroGame {
         document.body.appendChild(zoomOverlay);
     }
 
-    // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
     buyItemFromModal(itemId) {
         const item = this.systems.equipment.getItemById(itemId);
         if (!item) return;
@@ -971,13 +1148,11 @@ class SafeHeroGame {
             this.currentHero.gold -= item.price;
             this.systems.equipment.addItemToInventory(itemId);
             
-            // ⭐ СОХРАНЕНИЕ ПОСЛЕ ПОКУПКИ
             this.saveGame();
             
             this.showNotification(`✅ Предмет "${item.name}" куплен!`, 'success');
             this.closeItemDetailModal();
             
-            // Обновляем магазин
             this.refreshShop();
             
         } else {
@@ -985,9 +1160,7 @@ class SafeHeroGame {
         }
     }
 
-    // ========== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА ==========
     closeItemDetailModal() {
-        // Восстанавливаем магазин с сохраненным состоянием
         const container = document.getElementById('overlay-container');
         if (container && this.systems.equipment) {
             const currentCategory = this.systems.equipment.currentCategory || 'all';
@@ -1209,11 +1382,14 @@ class SafeHeroGame {
         console.log("Загруженные модули:", this.moduleLoader.loadedModules);
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
-        console.log("Инвентарь текущего героя:", this.currentHero?.inventory);
-        console.log("Экипировка текущего героя:", this.currentHero?.equipment);
-        console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
         
-        // Проверяем сохранение
+        if (this.currentHero) {
+            const stats = this.calculateHeroStats();
+            console.log("Характеристики героя:", stats);
+            console.log("Инвентарь:", this.currentHero.inventory);
+            console.log("Экипировка:", this.currentHero.equipment);
+        }
+        
         const save = localStorage.getItem('tigrimionSave');
         if (save) {
             const data = JSON.parse(save);
@@ -1254,7 +1430,6 @@ class SafeHeroGame {
         console.error("💀 ПАНИКА:", error);
     }
 
-    // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
     refreshShop() {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
@@ -1263,6 +1438,14 @@ class SafeHeroGame {
             container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
             setTimeout(() => this.attachShopItemHandlers(), 100);
         }
+    }
+
+    updateLoadingProgress(percent, message) {
+        const progress = document.getElementById('loadingProgress');
+        const status = document.getElementById('moduleStatus');
+        
+        if (progress) progress.style.width = percent + '%';
+        if (status) status.textContent = message;
     }
 }
 
