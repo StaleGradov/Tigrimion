@@ -133,8 +133,11 @@ class LevelSystem {
     calculateHeroStats(hero, bonusSystem) {
         if (!hero) return {};
         
+        // ⭐ ПЕРЕСЧИТЫВАЕМ БОНУСЫ С УЧЕТОМ ЭКИПИРОВКИ
         const totals = bonusSystem ? bonusSystem.calculateTotalBonuses(hero) : {
-            health_mult: 0, damage_mult: 0, armor_mult: 0
+            health_mult: 0, damage_mult: 0, armor_mult: 0,
+            health_regen_mult: 0, crit_chance: 0, armor_penetration: 0, 
+            vampirism: 0, gold_mult: 0
         };
         
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
@@ -144,10 +147,28 @@ class LevelSystem {
         let baseDamage = hero.baseDamage * levelMultiplier; 
         let baseArmor = hero.baseArmor * levelMultiplier;
         
-        // Применение процентных бонусов
-        let health = baseHealth + (hero.baseHealth * totals.health_mult);
-        let damage = baseDamage + (hero.baseDamage * totals.damage_mult);
-        let armor = baseArmor + (hero.baseArmor * totals.armor_mult);
+        // ⭐ ДОБАВЛЯЕМ БОНУСЫ ОТ ПРЕДМЕТОВ ЭКИПИРОВКИ
+        let itemHealth = 0;
+        let itemDamage = 0;
+        let itemArmor = 0;
+        
+        if (hero.equipment && window.game && window.game.systems && window.game.systems.equipment) {
+            Object.values(hero.equipment).forEach(itemId => {
+                if (itemId) {
+                    const item = window.game.systems.equipment.getItemById(itemId);
+                    if (item) {
+                        itemHealth += item.fixed_health || 0;
+                        itemDamage += item.fixed_damage || 0;
+                        itemArmor += item.fixed_armor || 0;
+                    }
+                }
+            });
+        }
+        
+        // Применяем все бонусы
+        let health = baseHealth + itemHealth + (baseHealth * totals.health_mult);
+        let damage = baseDamage + itemDamage + (baseDamage * totals.damage_mult);
+        let armor = baseArmor + itemArmor + (baseArmor * totals.armor_mult);
         
         // Расчет общей силы
         const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
@@ -161,7 +182,13 @@ class LevelSystem {
             power: power,
             baseHealth: Math.round(baseHealth),
             baseDamage: Math.round(baseDamage), 
-            baseArmor: Math.round(baseArmor)
+            baseArmor: Math.round(baseArmor),
+            // ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ
+            healthRegen: totals.health_regen_mult || 0,
+            critChance: totals.crit_chance || 0,
+            armorPenetration: totals.armor_penetration || 0,
+            vampirism: totals.vampirism || 0,
+            goldMultiplier: totals.gold_mult || 0
         };
     }
 }
