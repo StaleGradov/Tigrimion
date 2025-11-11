@@ -668,55 +668,64 @@ class MapSystem {
     }
 
     // ========== НОВАЯ СИСТЕМА БОЕВ ПРИ ПЕРЕМЕЩЕНИИ ==========
-    moveOnTacticalMap(x, y) {
-        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
+   moveOnTacticalMap(x, y) {
+    // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
         }
-
-        if (!this.currentTacticalMap) return;
-
-        // Проверяем, что клетка существует
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (cellData.passable === false) {
-            console.log("🚫 Нельзя пройти на эту клетку");
-            if (window.game) {
-                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        // ПРОСТАЯ проверка достижимости
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        // ЗАПУСКАЕМ БОЙ ПЕРЕД ПЕРЕМЕЩЕНИЕМ
-        this.startBattleForMovement(x, y);
+        return;
     }
+
+    // ⭐ ПРОВЕРЯЕМ, НЕ ИДЕТ ЛИ УЖЕ БОЙ
+    if (window.game.systems.battle && window.game.systems.battle.battleActive) {
+        console.log("⚔️ Бой уже идет, нельзя перемещаться");
+        if (window.game) {
+            window.game.showNotification("⚔️ Сначала завершите текущий бой!", 'warning');
+        }
+        return;
+    }
+
+    if (!this.currentTacticalMap) return;
+
+    // Проверяем, что клетка существует
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    if (cellData.passable === false) {
+        console.log("🚫 Нельзя пройти на эту клетку");
+        if (window.game) {
+            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // ПРОСТАЯ проверка достижимости
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // ЗАПУСКАЕМ БОЙ ПЕРЕД ПЕРЕМЕЩЕНИЕМ
+    this.startBattleForMovement(x, y);
+}
 
     // НОВЫЙ МЕТОД: запуск боя при перемещении
     startBattleForMovement(targetX, targetY) {
