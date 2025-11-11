@@ -225,6 +225,9 @@ class SafeHeroGame {
             // Запускаем автосохранение
             this.startAutosave();
             
+            // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ
+            this.startHealthRegeneration();
+            
         } catch (error) {
             console.error("💀 Критическая ошибка инициализации:", error);
             this.panic(error);
@@ -295,7 +298,7 @@ class SafeHeroGame {
                         inventory: [...hero.inventory],
                         equipment: {...hero.equipment},
                         unlocked: hero.unlocked,
-                        currentHealth: hero.currentHealth || hero.baseHealth
+                        currentHealth: hero.currentHealth || hero.baseHealth // ⭐ СОХРАНЯЕМ ТЕКУЩЕЕ ЗДОРОВЬЕ
                     })),
                     timestamp: Date.now(),
                     version: "1.0"
@@ -306,7 +309,8 @@ class SafeHeroGame {
                     hero: this.currentHero.name,
                     gold: this.currentHero.gold,
                     inventory: this.currentHero.inventory.length,
-                    equipment: Object.values(this.currentHero.equipment).filter(Boolean).length
+                    equipment: Object.values(this.currentHero.equipment).filter(Boolean).length,
+                    currentHealth: this.currentHero.currentHealth // ⭐ ЛОГИРУЕМ ЗДОРОВЬЕ
                 });
                 return true;
             }
@@ -344,7 +348,7 @@ class SafeHeroGame {
                             existingHero.monstersKilled = savedHero.monstersKilled || existingHero.monstersKilled;
                             existingHero.deaths = savedHero.deaths || existingHero.deaths;
                             existingHero.healthRegen = savedHero.healthRegen || existingHero.healthRegen;
-                            existingHero.currentHealth = savedHero.currentHealth || existingHero.currentHealth;
+                            existingHero.currentHealth = savedHero.currentHealth || existingHero.currentHealth; // ⭐ ЗАГРУЖАЕМ ТЕКУЩЕЕ ЗДОРОВЬЕ
                             
                             // ВАЖНО: Восстанавливаем инвентарь и экипировку
                             existingHero.inventory = savedHero.inventory || [];
@@ -364,7 +368,8 @@ class SafeHeroGame {
                                 level: existingHero.level,
                                 gold: existingHero.gold,
                                 inventory: existingHero.inventory.length,
-                                equipment: Object.values(existingHero.equipment).filter(Boolean).length
+                                equipment: Object.values(existingHero.equipment).filter(Boolean).length,
+                                currentHealth: existingHero.currentHealth // ⭐ ЛОГИРУЕМ ЗДОРОВЬЕ
                             });
                         }
                     });
@@ -409,32 +414,35 @@ class SafeHeroGame {
             }
         });
     }
-startHealthRegeneration() {
-    setInterval(() => {
-        if (this.currentHero && this.systems.level) {
-            const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
-            
-            if (this.currentHero.currentHealth < stats.maxHealth) {
-                // Базовая регенерация + бонусы от предметов
-                const baseRegen = 1; // 1 хит в секунду
-                const bonusRegen = stats.healthRegen * baseRegen;
-                const totalRegen = baseRegen + bonusRegen;
+
+    // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
+    startHealthRegeneration() {
+        setInterval(() => {
+            if (this.currentHero && this.systems.level) {
+                const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
                 
-                this.currentHero.currentHealth = Math.min(
-                    stats.maxHealth, 
-                    this.currentHero.currentHealth + totalRegen
-                );
-                
-                // Автосохранение при восстановлении здоровья
-                if (Math.random() < 0.1) { // 10% шанс на автосохранение
-                    this.saveGame();
+                if (this.currentHero.currentHealth < stats.maxHealth) {
+                    // Базовая регенерация + бонусы от предметов
+                    const baseRegen = 1; // 1 хит в секунду
+                    const bonusRegen = stats.healthRegen * baseRegen;
+                    const totalRegen = baseRegen + bonusRegen;
+                    
+                    this.currentHero.currentHealth = Math.min(
+                        stats.maxHealth, 
+                        this.currentHero.currentHealth + totalRegen
+                    );
+                    
+                    // Автосохранение при восстановлении здоровья
+                    if (Math.random() < 0.1) { // 10% шанс на автосохранение
+                        this.saveGame();
+                    }
+                    
+                    console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
                 }
-                
-                console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
             }
-        }
-    }, 1000); // Каждую секунду
-}
+        }, 1000); // Каждую секунду
+    }
+
     showLoadingScreen(message) {
         const app = document.getElementById('app');
         if (app) {
@@ -631,6 +639,22 @@ startHealthRegeneration() {
                                         <span class="overlay-stat-value">${this.getRaceName(this.currentHero.race)}</span>
                                     </div>
                                 </div>
+
+                                <!-- ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ -->
+                                <div class="overlay-stat-group">
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🎯 Крит</span>
+                                        <span class="overlay-stat-value">${(stats.critChance * 100).toFixed(1)}%</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">❤️ Реген</span>
+                                        <span class="overlay-stat-value">+${(stats.healthRegen * 100).toFixed(1)}%</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🩸 Вампир</span>
+                                        <span class="overlay-stat-value">${(stats.vampirism * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Экипировка -->
@@ -722,6 +746,8 @@ startHealthRegeneration() {
 
             case 'tactical-map':
                 if (this.systems.map) {
+                    // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
+                    this.systems.map.setCurrentHero(this.currentHero);
                     this.systems.map.showTacticalMapEditor();
                 } else {
                     container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
