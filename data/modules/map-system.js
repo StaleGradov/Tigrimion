@@ -740,10 +740,14 @@ drawTestPattern() {
     }
 
     // ========== OVERLAY SYSTEM ==========
+        // ========== OVERLAY SYSTEM ==========
     showOverlay(overlayType) {
         if (overlayType === 'tactical-map') {
             const container = document.getElementById('overlay-container');
-            if (!container) return;
+            if (!container) {
+                console.error("❌ Контейнер оверлея не найден!");
+                return;
+            }
 
             this.activeOverlay = overlayType;
             
@@ -760,9 +764,20 @@ drawTestPattern() {
             `;
             container.style.display = 'block';
             
-            // Инициализируем Canvas после добавления в DOM
+            console.log("✅ Оверлей тактической карты создан");
+            
+            // Инициализируем Canvas после добавления в DOM с небольшой задержкой
             setTimeout(() => {
+                console.log("🕒 Запуск инициализации Canvas...");
                 this.initCanvas();
+                
+                // Если через 2 секунды canvas не создан, пробуем принудительно
+                setTimeout(() => {
+                    if (!this.canvasInitialized) {
+                        console.warn("⚠️ Canvas не инициализирован, пробуем принудительно...");
+                        this.forceCanvasInit();
+                    }
+                }, 2000);
             }, 100);
         }
     }
