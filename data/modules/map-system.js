@@ -13,6 +13,9 @@ class MapSystem {
         this.playerLocalPosition = {x: 0, y: 0}; 
         this.playerTacticalPosition = {x: 0, y: 0};
         
+        // ⭐ ДОБАВЛЯЕМ СВОЙСТВО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
+        this.currentHero = null;
+        
         this.loadedJSONMaps = new Map();
         this.activeOverlay = null;
         
@@ -37,6 +40,29 @@ class MapSystem {
         this.canvasInitialized = false;
         
         console.log("✅ MapSystem инициализирован");
+    }
+
+    // ========== СИСТЕМА ГЕРОЯ ==========
+    setCurrentHero(hero) {
+        this.currentHero = hero;
+        console.log(`🎯 Установлен герой для карты: ${hero?.name || 'нет'}`);
+        
+        // Если герой установлен, обновляем позиции на картах
+        if (hero) {
+            this.updatePlayerPositionsFromHero(hero);
+        }
+    }
+
+    updatePlayerPositionsFromHero(hero) {
+        // Здесь можно синхронизировать позиции героя с позициями на картах
+        // Например, если у героя есть сохраненные позиции
+        if (hero.mapPosition) {
+            this.playerGlobalPosition = hero.mapPosition.global || this.playerGlobalPosition;
+            this.playerLocalPosition = hero.mapPosition.local || this.playerLocalPosition;
+            this.playerTacticalPosition = hero.mapPosition.tactical || this.playerTacticalPosition;
+        }
+        
+        console.log(`📍 Позиции обновлены для героя: ${hero.name}`);
     }
 
     async loadMapData() {
@@ -643,6 +669,15 @@ class MapSystem {
 
     // ========== НОВАЯ СИСТЕМА БОЕВ ПРИ ПЕРЕМЕЩЕНИИ ==========
     moveOnTacticalMap(x, y) {
+        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран!");
+            if (window.game) {
+                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+            }
+            return;
+        }
+
         if (!this.currentTacticalMap) return;
 
         // Проверяем, что клетка существует
@@ -691,16 +726,70 @@ class MapSystem {
             return;
         }
 
+        // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В БОЕВУЮ СИСТЕМУ
+        if (!this.currentHero) {
+            console.error("❌ Не могу начать бой: герой не выбран");
+            return;
+        }
+
         // Сохраняем целевую позицию для использования после боя
         this.pendingMovement = { x: targetX, y: targetY };
         
         // Выбираем случайного монстра
         const randomMonster = this.getRandomMonster();
         
-        // Запускаем бой
-        battleSystem.startBattleWithMonster(randomMonster.id, 'movement');
+        // Запускаем бой с передачей героя
+        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
         
-        console.log(`⚔️ Запуск боя при перемещении на [${targetX}, ${targetY}]`);
+        console.log(`⚔️ Запуск боя при перемещении героя ${this.currentHero.name} на [${targetX}, ${targetY}]`);
+    }
+
+    // НОВЫЙ МЕТОД: завершение боя и перемещение
+    completeMovementAfterBattle(victory) {
+        if (!this.pendingMovement) return;
+
+        const targetX = this.pendingMovement.x;
+        const targetY = this.pendingMovement.y;
+        
+        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
+        if (!this.currentHero) {
+            console.error("❌ Не могу завершить перемещение: герой не выбран");
+            return;
+        }
+        
+        if (victory) {
+            // При победе перемещаем на целевую клетку
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+            
+            // Сохраняем состояние карты
+            this.saveMapState();
+            
+            // Обновляем отображение
+            this.updateTacticalMapDisplay();
+            
+        } else {
+            // При поражении возвращаем на стартовую позицию
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+            
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
+            
+            // Сохраняем состояние карты
+            this.saveMapState();
+            
+            // Обновляем отображение
+            this.updateTacticalMapDisplay();
+            
+            if (window.game) {
+                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
+            }
+        }
+        
+        // Очищаем ожидающее перемещение
+        this.pendingMovement = null;
     }
 
     // НОВЫЙ МЕТОД: получение случайного монстра
@@ -722,48 +811,6 @@ class MapSystem {
         
         const randomIndex = Math.floor(Math.random() * battleSystem.monsters.length);
         return battleSystem.monsters[randomIndex];
-    }
-
-    // НОВЫЙ МЕТОД: завершение боя и перемещение
-    completeMovementAfterBattle(victory) {
-        if (!this.pendingMovement) return;
-
-        const targetX = this.pendingMovement.x;
-        const targetY = this.pendingMovement.y;
-        
-        if (victory) {
-            // При победе перемещаем на целевую клетку
-            const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {x: targetX, y: targetY};
-            
-            console.log(`✅ Успешное перемещение после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-            
-            // Сохраняем состояние карты
-            this.saveMapState();
-            
-            // Обновляем отображение
-            this.updateTacticalMapDisplay();
-            
-        } else {
-            // При поражении возвращаем на стартовую позицию
-            const startPosition = this.currentTacticalMap.startPosition;
-            this.playerTacticalPosition = {...startPosition};
-            
-            console.log(`💀 Поражение! Возврат на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
-            
-            // Сохраняем состояние карты
-            this.saveMapState();
-            
-            // Обновляем отображение
-            this.updateTacticalMapDisplay();
-            
-            if (window.game) {
-                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
-            }
-        }
-        
-        // Очищаем ожидающее перемещение
-        this.pendingMovement = null;
     }
 
     // ========== НОВАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ СОСЕДЕЙ ПО РАССТОЯНИЮ ==========
@@ -1511,6 +1558,19 @@ class MapSystem {
     }
 
     showTacticalMapEditor() {
+        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ ПЕРЕД ОТКРЫТИЕМ КАРТЫ
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран для тактической карты!");
+            if (window.game) {
+                window.game.showNotification("❌ Сначала выберите героя!", 'error');
+                // Автоматически показываем выбор героя
+                setTimeout(() => {
+                    window.game.showHeroSelection();
+                }, 1000);
+            }
+            return;
+        }
+        
         this.showOverlay('tactical-map');
     }
 
@@ -1583,6 +1643,7 @@ class MapSystem {
         console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
         console.log("Смещение:", this.mapOffset);
         console.log("Canvas инициализирован:", this.canvasInitialized);
+        console.log("Текущий герой:", this.currentHero?.name || 'нет');
         console.groupEnd();
     }
 }
