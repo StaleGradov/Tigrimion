@@ -618,7 +618,7 @@ class SafeHeroGame {
                                             this.systems.equipment.getItemById(itemId) : null;
                                         return `
                                             <div class="equipment-slot-mini ${slot} ${item ? 'equipped' : 'empty'}"
-                                                 onclick="game.showEquipmentForSlot('${slot}')"
+                                                 onclick="game.handleEquipmentSlotClick('${slot}')"
                                                  ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
                                                 <div class="slot-icon-mini">
                                                     ${item ? 
@@ -644,6 +644,19 @@ class SafeHeroGame {
                 <div id="overlay-container" class="overlay-container"></div>
             </div>
         `;
+    }
+
+    // ========== ОБРАБОТЧИК КЛИКА ПО СЛОТУ ЭКИПИРОВКИ ==========
+    handleEquipmentSlotClick(slot) {
+        const itemId = this.currentHero.equipment[slot];
+        
+        if (itemId) {
+            // Если есть предмет - снимаем его
+            this.systems.equipment.unequipItem(slot);
+        } else {
+            // Если нет предмета - показываем инвентарь для экипировки
+            this.showEquipmentForSlot(slot);
+        }
     }
 
     // ========== СИСТЕМА УПРАВЛЕНИЯ ОКНАМИ ==========
