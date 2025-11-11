@@ -187,6 +187,7 @@ class SafeHeroGame {
         this.currentScreen = 'loading';
         this.currentHero = null;
         this.activeOverlay = null;
+        this.isSaveLoaded = false;
         this.init();
     }
 
@@ -202,7 +203,27 @@ class SafeHeroGame {
             
             await this.loadGameData();
             
-            this.showHeroSelection();
+            // ⭐ ВАЖНО: Загружаем сохранение ДО показа интерфейса
+            console.log("📂 Пытаемся загрузить сохранение...");
+            const saveLoaded = this.loadSave();
+            if (saveLoaded) {
+                console.log("✅ Сохранение загружено");
+                this.isSaveLoaded = true;
+                
+                // Если есть текущий герой, показываем его экран
+                if (this.currentHero) {
+                    console.log(`🎯 Восстановлен герой: ${this.currentHero.name}`);
+                    this.showHeroGameScreen();
+                } else {
+                    this.showHeroSelection();
+                }
+            } else {
+                console.log("🆕 Сохранение не найдено, начинаем новую игру");
+                this.showHeroSelection();
+            }
+            
+            // Запускаем автосохранение
+            this.startAutosave();
             
         } catch (error) {
             console.error("💀 Критическая ошибка инициализации:", error);
@@ -246,6 +267,147 @@ class SafeHeroGame {
         } catch (error) {
             throw new Error(`Ошибка загрузки данных: ${error.message}`);
         }
+    }
+
+    // ========== УЛУЧШЕННАЯ СИСТЕМА СОХРАНЕНИЯ ==========
+    saveGame() {
+        try {
+            if (this.currentHero && this.systems.equipment && this.systems.hero) {
+                const saveData = {
+                    currentHeroId: this.currentHero.id,
+                    // Сохраняем ВСЕХ героев с их прогрессом
+                    heroes: this.systems.hero.heroes.map(hero => ({
+                        id: hero.id,
+                        name: hero.name,
+                        image: hero.image,
+                        race: hero.race,
+                        class: hero.class,
+                        saga: hero.saga,
+                        baseHealth: hero.baseHealth,
+                        baseDamage: hero.baseDamage,
+                        baseArmor: hero.baseArmor,
+                        gold: hero.gold,
+                        level: hero.level,
+                        experience: hero.experience,
+                        monstersKilled: hero.monstersKilled || 0,
+                        deaths: hero.deaths || 0,
+                        healthRegen: hero.healthRegen || 1.0,
+                        inventory: [...hero.inventory],
+                        equipment: {...hero.equipment},
+                        unlocked: hero.unlocked,
+                        currentHealth: hero.currentHealth || hero.baseHealth
+                    })),
+                    timestamp: Date.now(),
+                    version: "1.0"
+                };
+                
+                localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
+                console.log("💾 Игра сохранена", {
+                    hero: this.currentHero.name,
+                    gold: this.currentHero.gold,
+                    inventory: this.currentHero.inventory.length,
+                    equipment: Object.values(this.currentHero.equipment).filter(Boolean).length
+                });
+                return true;
+            }
+        } catch (error) {
+            console.error("❌ Ошибка сохранения:", error);
+        }
+        return false;
+    }
+
+    loadSave() {
+        try {
+            const save = localStorage.getItem('tigrimionSave');
+            if (save) {
+                const data = JSON.parse(save);
+                console.log("📂 Загружаем сохранение:", data);
+                
+                if (data.heroes && this.systems.hero) {
+                    // Восстанавливаем прогресс каждого героя
+                    data.heroes.forEach(savedHero => {
+                        const existingHero = this.systems.hero.heroes.find(h => h.id === savedHero.id);
+                        if (existingHero) {
+                            // Сохраняем только изменяемые поля
+                            const preservedFields = ['name', 'image', 'race', 'class', 'saga', 'story'];
+                            
+                            preservedFields.forEach(field => {
+                                if (savedHero[field]) {
+                                    existingHero[field] = savedHero[field];
+                                }
+                            });
+                            
+                            // Обновляем прогресс
+                            existingHero.gold = savedHero.gold || existingHero.gold;
+                            existingHero.level = savedHero.level || existingHero.level;
+                            existingHero.experience = savedHero.experience || existingHero.experience;
+                            existingHero.monstersKilled = savedHero.monstersKilled || existingHero.monstersKilled;
+                            existingHero.deaths = savedHero.deaths || existingHero.deaths;
+                            existingHero.healthRegen = savedHero.healthRegen || existingHero.healthRegen;
+                            existingHero.currentHealth = savedHero.currentHealth || existingHero.currentHealth;
+                            
+                            // ВАЖНО: Восстанавливаем инвентарь и экипировку
+                            existingHero.inventory = savedHero.inventory || [];
+                            existingHero.equipment = savedHero.equipment || {
+                                main_hand: null,
+                                off_hand: null,
+                                helmet: null,
+                                chest: null,
+                                gloves: null,
+                                legs: null,
+                                boots: null
+                            };
+                            
+                            existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
+                            
+                            console.log(`✅ Загружен герой: ${existingHero.name}`, {
+                                level: existingHero.level,
+                                gold: existingHero.gold,
+                                inventory: existingHero.inventory.length,
+                                equipment: Object.values(existingHero.equipment).filter(Boolean).length
+                            });
+                        }
+                    });
+                    
+                    console.log("✅ Прогресс всех героев загружен");
+                }
+                
+                // Восстанавливаем текущего героя
+                if (data.currentHeroId && this.systems.hero) {
+                    this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
+                    if (this.currentHero && this.systems.equipment) {
+                        this.systems.equipment.setCurrentHero(this.currentHero);
+                    }
+                    console.log("✅ Текущий герой восстановлен:", this.currentHero?.name);
+                }
+                
+                return true;
+            }
+        } catch (error) {
+            console.error("❌ Ошибка загрузки сохранения:", error);
+            localStorage.removeItem('tigrimionSave');
+            console.log("🗑️ Битое сохранение удалено");
+        }
+        return false;
+    }
+
+    // ========== УЛУЧШЕННОЕ АВТОСОХРАНЕНИЕ ==========
+    startAutosave() {
+        // Сохраняем каждые 30 секунд
+        setInterval(() => {
+            if (this.currentHero) {
+                this.saveGame();
+                console.log("💾 Автосохранение выполнено");
+            }
+        }, 30000);
+        
+        // Сохраняем при закрытии страницы
+        window.addEventListener('beforeunload', () => {
+            if (this.currentHero) {
+                this.saveGame();
+                console.log("💾 Сохранение при закрытии страницы");
+            }
+        });
     }
 
     showLoadingScreen(message) {
@@ -356,6 +518,10 @@ class SafeHeroGame {
         }
         
         console.log(`🎯 Выбран герой: ${hero.name}`);
+        
+        // ⭐ СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
+        this.saveGame();
+        
         this.showHeroGameScreen();
     }
 
@@ -601,9 +767,9 @@ class SafeHeroGame {
                                 <p>${item.description || 'Описание отсутствует.'}</p>
                             </div>
                             
-                            ${item.flavor ? `
+                            ${item.flavorText ? `
                                 <div class="item-flavor">
-                                    "${item.flavor}"
+                                    "${item.flavorText}"
                                 </div>
                             ` : ''}
                             
@@ -740,6 +906,9 @@ class SafeHeroGame {
         if (this.currentHero.gold >= item.price) {
             this.currentHero.gold -= item.price;
             this.systems.equipment.addItemToInventory(itemId);
+            
+            // ⭐ СОХРАНЕНИЕ ПОСЛЕ ПОКУПКИ
+            this.saveGame();
             
             this.showNotification(`✅ Предмет "${item.name}" куплен!`, 'success');
             this.closeItemDetailModal();
@@ -976,7 +1145,18 @@ class SafeHeroGame {
         console.log("Загруженные модули:", this.moduleLoader.loadedModules);
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
+        console.log("Инвентарь текущего героя:", this.currentHero?.inventory);
+        console.log("Экипировка текущего героя:", this.currentHero?.equipment);
         console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
+        
+        // Проверяем сохранение
+        const save = localStorage.getItem('tigrimionSave');
+        if (save) {
+            const data = JSON.parse(save);
+            console.log("Данные в сохранении:", data);
+        } else {
+            console.log("Сохранение не найдено");
+        }
         
         alert("Информация выведена в консоль (F12)");
     }
@@ -1010,65 +1190,6 @@ class SafeHeroGame {
         console.error("💀 ПАНИКА:", error);
     }
 
-    // ========== СИСТЕМА СОХРАНЕНИЯ ==========
-    saveGame() {
-        if (this.currentHero) {
-            const saveData = {
-                currentHeroId: this.currentHero.id,
-                heroes: this.systems.hero.heroes,
-                timestamp: Date.now()
-            };
-            
-            localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-            console.log("💾 Игра сохранена");
-        }
-    }
-
-    loadSave() {
-        try {
-            const save = localStorage.getItem('tigrimionSave');
-            if (save) {
-                const data = JSON.parse(save);
-                
-                // Загружаем прогресс героев
-                if (data.heroes && this.systems.hero) {
-                    const savedHeroes = data.heroes;
-                    this.systems.hero.heroes = this.systems.hero.heroes.map(freshHero => {
-                        const savedHero = savedHeroes.find(h => h.id === freshHero.id);
-                        if (savedHero) {
-                            return {
-                                ...freshHero,
-                                ...savedHero
-                            };
-                        }
-                        return freshHero;
-                    });
-                }
-                
-                // Восстанавливаем текущего героя
-                if (data.currentHeroId) {
-                    this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
-                    if (this.currentHero && this.systems.equipment) {
-                        this.systems.equipment.setCurrentHero(this.currentHero);
-                    }
-                }
-                
-                console.log("📂 Сохранение загружено");
-                return true;
-            }
-        } catch (error) {
-            console.error("❌ Ошибка загрузки сохранения:", error);
-        }
-        return false;
-    }
-
-    // ========== СИСТЕМА АВТОСОХРАНЕНИЯ ==========
-    startAutosave() {
-        setInterval(() => {
-            this.saveGame();
-        }, 30000); // Сохраняем каждые 30 секунд
-    }
-
     // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
     refreshShop() {
         const container = document.getElementById('overlay-container');
@@ -1085,13 +1206,6 @@ class SafeHeroGame {
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🎮 Запуск Tigrimion RPG...");
     window.game = new SafeHeroGame();
-    
-    // Добавляем обработчик закрытия страницы для сохранения
-    window.addEventListener('beforeunload', () => {
-        if (window.game) {
-            window.game.saveGame();
-        }
-    });
 });
 
 // ========== ГЛОБАЛЬНЫЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
