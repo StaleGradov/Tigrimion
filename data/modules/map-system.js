@@ -145,52 +145,97 @@ class MapSystem {
     }
 
     // ========== CANVAS SYSTEM ==========
-    initCanvas() {
-        console.log("🎨 Инициализация Canvas...");
-        
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) {
-            console.error("❌ Контейнер для карты не найден!");
-            return;
+ initCanvas() {
+    console.log("🎨 Инициализация Canvas...");
+    
+    const container = document.querySelector('.tactical-map-visual');
+    if (!container) {
+        console.error("❌ Контейнер .tactical-map-visual не найден!");
+        // Попробуем найти другой контейнер
+        const altContainer = document.getElementById('tacticalMapVisual');
+        if (altContainer) {
+            console.log("✅ Найден контейнер по ID");
+            this.createCanvas(altContainer);
         }
+        return;
+    }
+    
+    this.createCanvas(container);
+}
 
-        // Очищаем контейнер
-        container.innerHTML = '';
+createCanvas(container) {
+    console.log("🖌️ Создание Canvas...");
+    
+    // Очищаем контейнер
+    container.innerHTML = '';
+    
+    // Создаем canvas
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'tacticalMapCanvas';
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.background = '#ff0000'; // Красный для отладки
+    this.canvas.style.border = '3px solid yellow';
+    
+    container.appendChild(this.canvas);
 
-        // Создаем canvas
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'tacticalMapCanvas';
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.background = '#1a1a2e';
-        this.canvas.style.cursor = 'pointer';
-        
-        container.appendChild(this.canvas);
-
-        // Получаем контекст
-        this.ctx = this.canvas.getContext('2d');
-        if (!this.ctx) {
-            console.error("❌ Не удалось получить контекст Canvas");
-            return;
-        }
-
-        // Устанавливаем размеры canvas
-        const rect = container.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
-
-        console.log(`📐 Canvas создан: ${this.canvas.width}x${this.canvas.height}`);
-
-        // Добавляем обработчики событий
-        this.setupCanvasEventListeners();
-        
-        this.canvasInitialized = true;
-        console.log("✅ Canvas успешно инициализирован");
-        
-        // Рисуем карту
-        this.drawTacticalMap();
+    // Получаем контекст
+    this.ctx = this.canvas.getContext('2d');
+    if (!this.ctx) {
+        console.error("❌ Не удалось получить контекст Canvas");
+        return;
     }
 
+    // Устанавливаем размеры
+    const rect = container.getBoundingClientRect();
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+
+    console.log(`📐 Canvas создан: ${this.canvas.width}x${this.canvas.height}`, {
+        containerRect: rect,
+        canvasStyle: {
+            width: this.canvas.style.width,
+            height: this.canvas.style.height
+        }
+    });
+
+    // Добавляем обработчики
+    this.setupCanvasEventListeners();
+    
+    this.canvasInitialized = true;
+    console.log("✅ Canvas успешно инициализирован");
+    
+    // Рисуем тестовый квадрат
+    this.drawTestPattern();
+}
+
+drawTestPattern() {
+    if (!this.ctx || !this.canvas) return;
+    
+    // Очищаем
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Рисуем тестовый узор
+    this.ctx.fillStyle = '#00ff00';
+    this.ctx.fillRect(10, 10, 100, 100);
+    
+    this.ctx.fillStyle = '#0000ff';
+    this.ctx.fillRect(this.canvas.width - 110, 10, 100, 100);
+    
+    this.ctx.fillStyle = '#ffff00';
+    this.ctx.fillRect(10, this.canvas.height - 110, 100, 100);
+    
+    this.ctx.fillStyle = '#ff00ff';
+    this.ctx.fillRect(this.canvas.width - 110, this.canvas.height - 110, 100, 100);
+    
+    // Текст по центру
+    this.ctx.fillStyle = '#ffffff';
+    this.ctx.font = '20px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('CANVAS WORKS!', this.canvas.width / 2, this.canvas.height / 2);
+    
+    console.log("✅ Тестовый узор нарисован");
+}
     setupCanvasEventListeners() {
         if (!this.canvas) return;
 
