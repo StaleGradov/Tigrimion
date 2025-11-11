@@ -2782,245 +2782,43 @@ body {
 
 .btn-battle-block:hover { 
     background: linear-gradient(135deg, #256
-/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ТАКТИЧЕСКОЙ КАРТЫ ========== */
+                                
+/* ========== FORCED TACTICAL MAP STYLES ========== */
 .tactical-map-visual {
     position: relative !important;
     width: 100% !important;
     height: 600px !important;
     min-height: 600px !important;
-    background: #000000 !important;
-    border: 2px solid #00ffff !important;
-    border-radius: 15px !important;
-    overflow: hidden !important;
-    margin: 10px 0 !important;
-}
-
-#tacticalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    background: #000 !important;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: auto !important;
-    min-height: 700px !important;
-}
-
-.canvas-placeholder {
-    background: #1a1a2e;
-    border: 2px dashed #00ffff;
-    border-radius: 10px;
-    font-size: 16px !important;
-    color: #00ffff !important;
-}
-
-/* Для боевого экрана с картой */
-.battle-screen-with-map .tactical-map-visual {
-    height: 100% !important;
-    min-height: 400px !important;
-    margin: 0 !important;
-    border: 1px solid #00ffff !important;
-}
-
-.battle-screen-with-map .tactical-map-content {
-    min-height: auto !important;
-    height: 100% !important;
-}
-/* ========== FIXED TACTICAL MAP STYLES ========== */
-.tactical-map-visual {
-    position: relative !important;
-    width: 100% !important;
-    height: 600px !important;
-    min-height: 600px !important;
-    background: #1a1a2e !important;
-    border: 2px solid #00ffff !important;
+    background: #ff0000 !important;
+    border: 10px solid #00ff00 !important;
     border-radius: 10px !important;
     overflow: hidden !important;
     margin: 10px 0 !important;
+    display: block !important;
+    box-sizing: border-box !important;
 }
 
 #tacticalMapCanvas {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
-    background: #1a1a2e !important;
+    background: #0000ff !important;
+    border: 5px solid yellow !important;
 }
 
 .tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: auto !important;
-}
-
-.position-info {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 1rem;
-    border-top: 1px solid #00ffff;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.player-position, .map-stats, .movement-info {
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(0, 255, 255, 0.1);
-    border-radius: 5px;
-    border: 1px solid rgba(0, 255, 255, 0.3);
-}
-
-.movement-info span {
-    color: #00ff00;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Для боевого экрана */
-.battle-screen-with-map .tactical-map-visual {
-    height: 100% !important;
-    min-height: 400px !important;
-    margin: 0 !important;
-}
-
-.battle-screen-with-map .tactical-map-content {
-    height: 100% !important;
-}
-/* ========== DEBUG TACTICAL MAP STYLES ========== */
-.tactical-map-visual {
-    position: relative !important;
-    width: 100% !important;
-    height: 600px !important;
-    min-height: 600px !important;
-    background: #ff0000 !important; /* Красный фон для отладки */
-    border: 5px solid #00ff00 !important; /* Зеленая рамка для отладки */
-    border-radius: 10px !important;
-    overflow: hidden !important;
-    margin: 10px 0 !important;
-}
-
-#tacticalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    background: #0000ff !important; /* Синий фон для отладки */
-    border: 3px solid yellow !important;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
     height: auto !important;
     min-height: 700px !important;
 }
 
 .position-info {
-    background: rgba(255, 0, 0, 0.3) !important; /* Красный для отладки */
-    padding: 1rem;
-    border-top: 3px solid yellow !important;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.player-position, .map-stats, .movement-info {
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(0, 255, 0, 0.3) !important; /* Зеленый для отладки */
-    border-radius: 5px;
-    border: 2px solid purple !important;
-}
-
-.movement-info span {
-    color: #ff00ff !important;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Принудительные стили для контейнера */
-.tactical-map-container {
-    width: 100% !important;
-    height: 600px !important;
-    background: orange !important;
-    border: 3px solid black !important;
-}
-
-/* Убедимся что оверлей виден */
-.overlay-content.tactical-map-overlay {
-    background: #000 !important;
-    border: 5px solid red !important;
-}
-
-.overlay-body {
-    background: #333 !important;
-}
-/* ========== ULTRA DEBUG STYLES ========== */
-.tactical-map-visual {
-    position: relative !important;
-    width: 100% !important;
-    height: 600px !important;
-    min-height: 600px !important;
-    background: #ff0000 !important; /* ЯРКО-КРАСНЫЙ */
-    border: 10px solid #00ff00 !important; /* ЯРКО-ЗЕЛЕНАЯ РАМКА */
-    border-radius: 10px !important;
-    overflow: hidden !important;
-    margin: 10px 0 !important;
-    box-shadow: 0 0 20px yellow !important; /* ЖЕЛТАЯ ТЕНЬ */
-}
-
-#tacticalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    background: #0000ff !important; /* ЯРКО-СИНИЙ */
-    border: 5px solid yellow !important; /* ЖЕЛТАЯ РАМКА */
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: auto !important;
-    min-height: 700px !important;
-    background: rgba(255, 0, 255, 0.3) !important; /* ФИОЛЕТОВЫЙ */
-}
-
-.position-info {
-    background: rgba(255, 255, 0, 0.8) !important; /* ЖЕЛТЫЙ */
+    background: rgba(255, 255, 0, 0.8) !important;
     padding: 1rem;
     border-top: 5px solid red !important;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
     gap: 0.5rem;
     font-size: 0.9rem;
-}
-
-.player-position, .map-stats, .movement-info {
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(0, 255, 255, 0.8) !important; /* ГОЛУБОЙ */
-    border-radius: 5px;
-    border: 3px solid purple !important;
-    color: black !important;
-    font-weight: bold !important;
-}
-
-.movement-info span {
-    color: #ff0000 !important; /* КРАСНЫЙ */
-    font-weight: bold;
-    font-size: 1.5em !important;
-}
-
-/* Принудительные стили для оверлея */
-.overlay-content.tactical-map-overlay {
-    background: #000 !important;
-    border: 5px solid cyan !important;
-}
-
-.overlay-body {
-    background: #222 !important;
-    border: 3px solid magenta !important;
 }
