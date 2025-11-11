@@ -2829,3 +2829,63 @@ body {
     min-height: auto !important;
     height: 100% !important;
 }
+/* ========== FIXED TACTICAL MAP STYLES ========== */
+.tactical-map-visual {
+    position: relative !important;
+    width: 100% !important;
+    height: 600px !important;
+    min-height: 600px !important;
+    background: #1a1a2e !important;
+    border: 2px solid #00ffff !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    margin: 10px 0 !important;
+}
+
+#tacticalMapCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    background: #1a1a2e !important;
+}
+
+.tactical-map-content {
+    display: flex;
+    flex-direction: column;
+    height: auto !important;
+}
+
+.position-info {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 1rem;
+    border-top: 1px solid #00ffff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.player-position, .map-stats, .movement-info {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.movement-info span {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Для боевого экрана */
+.battle-screen-with-map .tactical-map-visual {
+    height: 100% !important;
+    min-height: 400px !important;
+    margin: 0 !important;
+}
+
+.battle-screen-with-map .tactical-map-content {
+    height: 100% !important;
+}
