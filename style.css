@@ -2783,42 +2783,52 @@ body {
 .btn-battle-block:hover { 
     background: linear-gradient(135deg, #256
                                 
-/* ========== FORCED TACTICAL MAP STYLES ========== */
+/* ========== TACTICAL MAP STYLES ========== */
 .tactical-map-visual {
     position: relative !important;
     width: 100% !important;
     height: 600px !important;
     min-height: 600px !important;
-    background: #ff0000 !important;
-    border: 10px solid #00ff00 !important;
+    background: #1a1a2e !important;
+    border: 2px solid #00ffff !important;
     border-radius: 10px !important;
     overflow: hidden !important;
     margin: 10px 0 !important;
-    display: block !important;
-    box-sizing: border-box !important;
 }
 
 #tacticalMapCanvas {
     width: 100% !important;
     height: 100% !important;
     display: block !important;
-    background: #0000ff !important;
-    border: 5px solid yellow !important;
+    background: #1a1a2e !important;
 }
 
 .tactical-map-content {
-    display: flex !important;
-    flex-direction: column !important;
+    display: flex;
+    flex-direction: column;
     height: auto !important;
-    min-height: 700px !important;
 }
 
 .position-info {
-    background: rgba(255, 255, 0, 0.8) !important;
+    background: rgba(0, 20, 40, 0.9);
     padding: 1rem;
-    border-top: 5px solid red !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    border-top: 1px solid #00ffff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     font-size: 0.9rem;
+}
+
+.player-position, .map-stats, .movement-info {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.movement-info span {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.1em;
 }
