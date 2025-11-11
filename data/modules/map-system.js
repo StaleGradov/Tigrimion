@@ -203,16 +203,24 @@ class MapSystem {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // Устанавливаем размеры
+        // Устанавливаем фиксированные размеры
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.position = 'absolute';
         this.canvas.style.top = '0';
         this.canvas.style.left = '0';
         this.canvas.style.cursor = 'pointer';
+        this.canvas.style.background = '#000';
         container.appendChild(this.canvas);
 
         this.ctx = this.canvas.getContext('2d');
+        
+        // Устанавливаем фиксированные размеры canvas
+        const rect = container.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+
+        console.log(`📐 Canvas размеры: ${this.canvas.width}x${this.canvas.height}`);
         
         // Рассчитываем позиционирование
         this.calculateMapPositioning();
@@ -228,50 +236,43 @@ class MapSystem {
     calculateMapPositioning() {
         if (!this.currentTacticalMap || !this.canvas) return;
 
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) return;
-
-        const rect = container.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
-
-        console.log(`📐 Container: ${rect.width}x${rect.height}`);
-
-        // ПРОСТОЕ РЕШЕНИЕ: центрируем карту вручную
         const cells = Object.values(this.currentTacticalMap.cells);
         
         if (cells.length > 0) {
-            // Находим средние координаты
-            let avgX = 0, avgY = 0;
+            // Находим границы всех клеток
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             cells.forEach(cell => {
-                avgX += cell.x;
-                avgY += cell.y;
+                const hexSize = this.currentTacticalMap.cellSize || 40;
+                minX = Math.min(minX, cell.x - hexSize);
+                minY = Math.min(minY, cell.y - hexSize);
+                maxX = Math.max(maxX, cell.x + hexSize);
+                maxY = Math.max(maxY, cell.y + hexSize);
             });
-            avgX /= cells.length;
-            avgY /= cells.length;
+
+            const mapWidth = maxX - minX;
+            const mapHeight = maxY - minY;
             
-            // Смещаем все клетки так, чтобы центр был в центре canvas
-            const centerCanvasX = rect.width / 2;
-            const centerCanvasY = rect.height / 2;
+            // Вычисляем масштаб чтобы карта влезла в canvas
+            const scaleX = this.canvas.width / (mapWidth * 1.2);
+            const scaleY = this.canvas.height / (mapHeight * 1.2);
+            const scale = Math.min(scaleX, scaleY, 1); // Не увеличиваем больше 1x
             
-            // Вычисляем необходимое смещение
-            const offsetX = centerCanvasX - avgX;
-            const offsetY = centerCanvasY - avgY;
+            // Центрируем карту
+            const offsetX = (this.canvas.width - mapWidth * scale) / 2 - minX * scale;
+            const offsetY = (this.canvas.height - mapHeight * scale) / 2 - minY * scale;
             
-            console.log(`📐 Center of cells: (${avgX.toFixed(1)}, ${avgY.toFixed(1)})`);
-            console.log(`📐 Center of canvas: (${centerCanvasX}, ${centerCanvasY})`);
-            console.log(`📐 Required offset: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
+            console.log(`📐 Масштаб: ${scale}, смещение: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
             
-            // ПРИМЕНЯЕМ СМЕЩЕНИЕ КО ВСЕМ КЛЕТКАМ
+            // Применяем трансформацию ко всем клеткам
             cells.forEach(cell => {
-                cell.x += offsetX;
-                cell.y += offsetY;
+                cell.renderX = cell.x * scale + offsetX;
+                cell.renderY = cell.y * scale + offsetY;
+                cell.renderSize = (this.currentTacticalMap.cellSize || 40) * scale;
             });
             
-            console.log("✅ Cells repositioned to center");
+            console.log("✅ Карта отмасштабирована и отцентрирована");
         }
         
-        // Обнуляем смещение, т.к. мы уже сдвинули клетки
         this.mapOffset.x = 0;
         this.mapOffset.y = 0;
     }
@@ -334,29 +335,20 @@ class MapSystem {
         if (!this.currentTacticalMap) return null;
 
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 40;
         
-        console.log(`🎯 Raw click: (${canvasX}, ${canvasY})`);
-
-        // ИСПОЛЬЗУЕМ ПРЯМЫЕ КООРДИНАТЫ БЕЗ СМЕЩЕНИЙ
-        const mapX = canvasX;
-        const mapY = canvasY;
-        
-        console.log(`🎯 Checking at: (${mapX}, ${mapY})`);
-
         for (const cell of cells) {
+            const hexSize = cell.renderSize || 40;
             const distance = Math.sqrt(
-                Math.pow(mapX - cell.x, 2) + 
-                Math.pow(mapY - cell.y, 2)
+                Math.pow(canvasX - cell.renderX, 2) + 
+                Math.pow(canvasY - cell.renderY, 2)
             );
             
             if (distance <= hexSize * 0.6) {
-                console.log(`✅ Hit cell [${cell.col},${cell.row}] at (${cell.x},${cell.y}) - distance: ${distance.toFixed(1)}`);
+                console.log(`✅ Hit cell [${cell.col},${cell.row}] at (${cell.renderX},${cell.renderY}) - distance: ${distance.toFixed(1)}`);
                 return cell;
             }
         }
         
-        console.log(`❌ No cell found`);
         return null;
     }
 
@@ -401,11 +393,11 @@ class MapSystem {
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         
         cells.forEach(cell => {
-            const hexSize = map.cellSize || 40;
-            minX = Math.min(minX, cell.x - hexSize);
-            minY = Math.min(minY, cell.y - hexSize);
-            maxX = Math.max(maxX, cell.x + hexSize);
-            maxY = Math.max(maxY, cell.y + hexSize);
+            const hexSize = cell.renderSize || 40;
+            minX = Math.min(minX, cell.renderX - hexSize);
+            minY = Math.min(minY, cell.renderY - hexSize);
+            maxX = Math.max(maxX, cell.renderX + hexSize);
+            maxY = Math.max(maxY, cell.renderY + hexSize);
         });
 
         const width = maxX - minX;
@@ -436,7 +428,6 @@ class MapSystem {
 
     drawHexGrid() {
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         this.ctx.save();
         this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
@@ -447,8 +438,8 @@ class MapSystem {
                 this.ctx.beginPath();
                 for (let i = 0; i < 6; i++) {
                     const angle = Math.PI / 3 * i + Math.PI / 6;
-                    const x = cell.x + hexSize * Math.cos(angle);
-                    const y = cell.y + hexSize * Math.sin(angle);
+                    const x = cell.renderX + cell.renderSize * Math.cos(angle);
+                    const y = cell.renderY + cell.renderSize * Math.sin(angle);
                     
                     if (i === 0) this.ctx.moveTo(x, y);
                     else this.ctx.lineTo(x, y);
@@ -472,15 +463,15 @@ class MapSystem {
     }
 
     drawSingleHex(cell) {
-        const hexSize = this.currentTacticalMap.cellSize || 40;
+        const hexSize = cell.renderSize || 40;
 
         this.ctx.save();
         this.ctx.beginPath();
         
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = cell.x + hexSize * Math.cos(angle);
-            const y = cell.y + hexSize * Math.sin(angle);
+            const x = cell.renderX + hexSize * Math.cos(angle);
+            const y = cell.renderY + hexSize * Math.sin(angle);
             
             if (i === 0) this.ctx.moveTo(x, y);
             else this.ctx.lineTo(x, y);
@@ -516,11 +507,11 @@ class MapSystem {
 
         let symbol = '·';
         let color = '#ffffff';
-        let fontSize = 16;
+        let fontSize = Math.max(12, (cell.renderSize || 40) * 0.4); // Адаптивный размер шрифта
 
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
-            fontSize = 20;
+            fontSize = Math.max(16, (cell.renderSize || 40) * 0.5);
         } else {
             switch(cell.type) {
                 case 'player_start':
@@ -547,7 +538,7 @@ class MapSystem {
 
         this.ctx.font = `bold ${fontSize}px Arial`;
         this.ctx.fillStyle = color;
-        this.ctx.fillText(symbol, cell.x, cell.y);
+        this.ctx.fillText(symbol, cell.renderX, cell.renderY);
         this.ctx.restore();
     }
 
@@ -556,13 +547,13 @@ class MapSystem {
         
         this.ctx.save();
         availableMoves.forEach(move => {
-            const hexSize = this.currentTacticalMap.cellSize || 40;
+            const hexSize = move.cell.renderSize || 40;
 
             this.ctx.beginPath();
             for (let i = 0; i < 6; i++) {
                 const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = move.cell.x + hexSize * Math.cos(angle);
-                const y = move.cell.y + hexSize * Math.sin(angle);
+                const x = move.cell.renderX + hexSize * Math.cos(angle);
+                const y = move.cell.renderY + hexSize * Math.sin(angle);
                 
                 if (i === 0) this.ctx.moveTo(x, y);
                 else this.ctx.lineTo(x, y);
@@ -583,14 +574,14 @@ class MapSystem {
     drawHoverEffect() {
         if (!this.hoveredHex) return;
 
-        const hexSize = this.currentTacticalMap.cellSize || 40;
+        const hexSize = this.hoveredHex.renderSize || 40;
 
         this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = this.hoveredHex.x + hexSize * Math.cos(angle);
-            const y = this.hoveredHex.y + hexSize * Math.sin(angle);
+            const x = this.hoveredHex.renderX + hexSize * Math.cos(angle);
+            const y = this.hoveredHex.renderY + hexSize * Math.sin(angle);
             
             if (i === 0) this.ctx.moveTo(x, y);
             else this.ctx.lineTo(x, y);
@@ -613,13 +604,13 @@ class MapSystem {
         cells.forEach(cell => {
             this.ctx.fillStyle = '#ff0000';
             this.ctx.beginPath();
-            this.ctx.arc(cell.x, cell.y, 5, 0, Math.PI * 2);
+            this.ctx.arc(cell.renderX, cell.renderY, 5, 0, Math.PI * 2);
             this.ctx.fill();
             
             // Подписываем координаты
             this.ctx.fillStyle = '#ffffff';
             this.ctx.font = '10px Arial';
-            this.ctx.fillText(`[${cell.col},${cell.row}]`, cell.x + 8, cell.y - 8);
+            this.ctx.fillText(`[${cell.col},${cell.row}]`, cell.renderX + 8, cell.renderY - 8);
         });
         
         this.ctx.restore();
@@ -668,64 +659,64 @@ class MapSystem {
     }
 
     // ========== НОВАЯ СИСТЕМА БОЕВ ПРИ ПЕРЕМЕЩЕНИИ ==========
-   moveOnTacticalMap(x, y) {
-    // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
-    if (!this.currentHero) {
-        console.error("❌ Герой не выбран!");
-        if (window.game) {
-            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+    moveOnTacticalMap(x, y) {
+        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран!");
+            if (window.game) {
+                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+            }
+            return;
         }
-        return;
-    }
 
-    // ⭐ ПРОВЕРЯЕМ, НЕ ИДЕТ ЛИ УЖЕ БОЙ
-    if (window.game.systems.battle && window.game.systems.battle.battleActive) {
-        console.log("⚔️ Бой уже идет, нельзя перемещаться");
-        if (window.game) {
-            window.game.showNotification("⚔️ Сначала завершите текущий бой!", 'warning');
+        // ⭐ ПРОВЕРЯЕМ, НЕ ИДЕТ ЛИ УЖЕ БОЙ
+        if (window.game.systems.battle && window.game.systems.battle.battleActive) {
+            console.log("⚔️ Бой уже идет, нельзя перемещаться");
+            if (window.game) {
+                window.game.showNotification("⚔️ Сначала завершите текущий бой!", 'warning');
+            }
+            return;
         }
-        return;
-    }
 
-    if (!this.currentTacticalMap) return;
+        if (!this.currentTacticalMap) return;
 
-    // Проверяем, что клетка существует
-    const cellKey = `${x},${y}`;
-    const cellData = this.currentTacticalMap.cells[cellKey];
-    
-    if (!cellData) {
-        console.log("🚫 Клетка не существует");
-        if (window.game) {
-            window.game.showNotification("Эта клетка не существует!", 'error');
+        // Проверяем, что клетка существует
+        const cellKey = `${x},${y}`;
+        const cellData = this.currentTacticalMap.cells[cellKey];
+        
+        if (!cellData) {
+            console.log("🚫 Клетка не существует");
+            if (window.game) {
+                window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
         }
-        return;
-    }
 
-    if (cellData.passable === false) {
-        console.log("🚫 Нельзя пройти на эту клетку");
-        if (window.game) {
-            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+        if (cellData.passable === false) {
+            console.log("🚫 Нельзя пройти на эту клетку");
+            if (window.game) {
+                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+            }
+            return;
         }
-        return;
-    }
 
-    // ПРОСТАЯ проверка достижимости
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === y && neighbor.col === x
-    );
+        // ПРОСТАЯ проверка достижимости
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
 
-    if (!isReachable) {
-        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-        if (window.game) {
-            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
         }
-        return;
-    }
 
-    // ЗАПУСКАЕМ БОЙ ПЕРЕД ПЕРЕМЕЩЕНИЕМ
-    this.startBattleForMovement(x, y);
-}
+        // ЗАПУСКАЕМ БОЙ ПЕРЕД ПЕРЕМЕЩЕНИЕМ
+        this.startBattleForMovement(x, y);
+    }
 
     // НОВЫЙ МЕТОД: запуск боя при перемещении
     startBattleForMovement(targetX, targetY) {
@@ -1212,8 +1203,11 @@ class MapSystem {
                 </div>
                 
                 <div class="tactical-map-content" id="tacticalMapContent">
-                    <div class="tactical-map-visual" id="tacticalMapVisual">
+                    <div class="tactical-map-visual" id="tacticalMapVisual" style="height: 600px; min-height: 600px;">
                         <!-- Canvas будет добавлен автоматически -->
+                        <div class="canvas-placeholder" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #ccc; font-size: 18px;">
+                            Загрузка карты...
+                        </div>
                     </div>
                     
                     <div class="position-info">
