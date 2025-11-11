@@ -145,112 +145,58 @@ class MapSystem {
     }
 
     // ========== CANVAS SYSTEM ==========
- initCanvas() {
-    console.log("🎨 Инициализация Canvas...");
-    
-    const container = document.querySelector('.tactical-map-visual');
-    if (!container) {
-        console.error("❌ Контейнер .tactical-map-visual не найден!");
-        // Попробуем найти другой контейнер
-        const altContainer = document.getElementById('tacticalMapVisual');
-        if (altContainer) {
-            console.log("✅ Найден контейнер по ID");
-            this.createCanvas(altContainer);
+    initCanvas() {
+        console.log("🎨 Инициализация Canvas...");
+        
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) {
+            console.error("❌ Контейнер .tactical-map-visual не найден!");
+            return;
         }
-        return;
-    }
-    
-    this.createCanvas(container);
-}
-
-createCanvas(container) {
-    console.log("🖌️ Создание Canvas...");
-    console.log("📦 Контейнер:", container);
-    console.log("📏 Стили контейнера:", {
-        width: container.style.width,
-        height: container.style.height,
-        display: container.style.display,
-        visibility: container.style.visibility
-    });
-    
-    // Очищаем контейнер
-    container.innerHTML = '';
-    
-    // Создаем canvas
-    this.canvas = document.createElement('canvas');
-    this.canvas.id = 'tacticalMapCanvas';
-    this.canvas.style.width = '100%';
-    this.canvas.style.height = '100%';
-    this.canvas.style.background = '#ff0000';
-    this.canvas.style.border = '3px solid yellow';
-    this.canvas.style.display = 'block';
-    
-    container.appendChild(this.canvas);
-
-    // Получаем контекст
-    this.ctx = this.canvas.getContext('2d');
-    if (!this.ctx) {
-        console.error("❌ Не удалось получить контекст Canvas");
-        return;
+        
+        this.createCanvas(container);
     }
 
-    // ПРИНУДИТЕЛЬНО устанавливаем размеры
-    const containerRect = container.getBoundingClientRect();
-    console.log("📐 Размеры контейнера:", containerRect);
-    
-    // Если контейнер имеет 0 высоту, устанавливаем фиксированные размеры
-    let canvasWidth = containerRect.width;
-    let canvasHeight = containerRect.height;
-    
-    if (canvasHeight === 0) {
-        console.warn("⚠️ Высота контейнера 0, устанавливаем фиксированную высоту 600px");
-        canvasHeight = 600;
-        container.style.height = '600px';
-        container.style.minHeight = '600px';
+    createCanvas(container) {
+        console.log("🖌️ Создание Canvas...");
+        
+        // Очищаем контейнер
+        container.innerHTML = '';
+        
+        // Создаем canvas
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'tacticalMapCanvas';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.background = '#1a1a2e';
+        this.canvas.style.cursor = 'pointer';
+        
+        container.appendChild(this.canvas);
+
+        // Получаем контекст
+        this.ctx = this.canvas.getContext('2d');
+        if (!this.ctx) {
+            console.error("❌ Не удалось получить контекст Canvas");
+            return;
+        }
+
+        // Устанавливаем размеры
+        const rect = container.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+
+        console.log(`📐 Canvas создан: ${this.canvas.width}x${this.canvas.height}`);
+
+        // Добавляем обработчики
+        this.setupCanvasEventListeners();
+        
+        this.canvasInitialized = true;
+        console.log("✅ Canvas успешно инициализирован");
+        
+        // Рисуем карту
+        this.drawTacticalMap();
     }
-    
-    this.canvas.width = canvasWidth;
-    this.canvas.height = canvasHeight;
-    
-    console.log(`📐 Canvas установлен: ${this.canvas.width}x${this.canvas.height}`);
 
-    // Добавляем обработчики
-    this.setupCanvasEventListeners();
-    
-    this.canvasInitialized = true;
-    console.log("✅ Canvas успешно инициализирован");
-    
-    // Рисуем тестовый квадрат
-    this.drawTestPattern();
-}
-
-drawTestPattern() {
-    if (!this.ctx || !this.canvas) return;
-    
-    // Очищаем
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    // Рисуем тестовый узор
-    this.ctx.fillStyle = '#00ff00';
-    this.ctx.fillRect(10, 10, 100, 100);
-    
-    this.ctx.fillStyle = '#0000ff';
-    this.ctx.fillRect(this.canvas.width - 110, 10, 100, 100);
-    
-    this.ctx.fillStyle = '#ffff00';
-    this.ctx.fillRect(10, this.canvas.height - 110, 100, 100);
-    
-    this.ctx.fillStyle = '#ff00ff';
-    this.ctx.fillRect(this.canvas.width - 110, this.canvas.height - 110, 100, 100);
-    
-    // Текст по центру
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.font = '20px Arial';
-    this.ctx.textAlign = 'center';
-    this.ctx.fillText('CANVAS WORKS!', this.canvas.width / 2, this.canvas.height / 2);
-    
-    console.log("✅ Тестовый узор нарисован");
-}
     setupCanvasEventListeners() {
         if (!this.canvas) return;
 
@@ -312,10 +258,9 @@ drawTestPattern() {
         if (!this.currentTacticalMap) return null;
 
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = 40; // Базовый размер для расчетов
+        const hexSize = 40;
         
         for (const cell of cells) {
-            // Используем реальные координаты из данных карты
             const distance = Math.sqrt(
                 Math.pow(canvasX - cell.x, 2) + 
                 Math.pow(canvasY - cell.y, 2)
@@ -703,59 +648,60 @@ drawTestPattern() {
     }
 
     // ========== MAP RENDERING ==========
-  renderTacticalMap() {
-    if (!this.currentTacticalMap) {
-        return '<div class="map-error">Тактическая карта не загружена</div>';
-    }
+    renderTacticalMap() {
+        if (!this.currentTacticalMap) {
+            return '<div class="map-error">Тактическая карта не загружена</div>';
+        }
 
-    const map = this.currentTacticalMap;
-    
-    return `
-        <div class="map-container tactical-map tigrimion-tactical-map">
-            <div class="tactical-map-header">
-                <h4>${map.name}</h4>
-                <div class="map-controls">
-                    <button class="btn-secondary" onclick="game.systems.map.toggleGrid()">
-                        ${this.showGrid ? '🔲 Сетка' : '🔳 Сетка'}
-                    </button>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-            </div>
-            
-            <div class="tactical-map-content" id="tacticalMapContent">
-                <div class="tactical-map-visual" id="tacticalMapVisual" 
-                     style="height: 600px !important; min-height: 600px !important; background: #ff0000 !important; border: 10px solid #00ff00 !important; border-radius: 10px !important; position: relative !important; display: block !important; overflow: hidden !important;">
-                    <!-- Canvas будет добавлен автоматически -->
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: white; font-size: 20px; font-weight: bold;">
-                        Контейнер карты (должен быть красным с зеленой рамкой)
+        const map = this.currentTacticalMap;
+        
+        return `
+            <div class="map-container tactical-map tigrimion-tactical-map">
+                <div class="tactical-map-header">
+                    <h4>${map.name}</h4>
+                    <div class="map-controls">
+                        <button class="btn-secondary" onclick="game.systems.map.toggleGrid()">
+                            ${this.showGrid ? '🔲 Сетка' : '🔳 Сетка'}
+                        </button>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                     </div>
                 </div>
                 
-                <div class="position-info">
-                    <div class="player-position">
-                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                <div class="tactical-map-content" id="tacticalMapContent">
+                    <div class="tactical-map-visual" id="tacticalMapVisual" 
+                         style="height: 600px; min-height: 600px; background: #1a1a2e; border: 2px solid #00ffff; border-radius: 10px; position: relative;">
+                        <!-- Canvas будет добавлен автоматически -->
                     </div>
-                    <div class="map-stats">
-                        Размер: ${map.width} × ${map.height} | Клеток: ${Object.keys(map.cells).length}
-                    </div>
-                    <div class="movement-info" id="movementInfo">
-                        Доступные ходы: <span id="availableMoves">${this.getAvailableMoves().length}</span>
+                    
+                    <div class="position-info">
+                        <div class="player-position">
+                            Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                        </div>
+                        <div class="map-stats">
+                            Размер: ${map.width} × ${map.height} | Клеток: ${Object.keys(map.cells).length}
+                        </div>
+                        <div class="movement-info" id="movementInfo">
+                            Доступные ходы: <span id="availableMoves">${this.getAvailableMoves().length}</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    `;
-}
+        `;
+    }
+
+    renderGlobalMap() {
+        return '<div class="map-error">Глобальная карта в разработке</div>';
+    }
+
+    renderLocalMap() {
+        return '<div class="map-error">Локальная карта в разработке</div>';
+    }
 
     // ========== OVERLAY SYSTEM ==========
-        // ========== OVERLAY SYSTEM ==========
     showOverlay(overlayType) {
         if (overlayType === 'tactical-map') {
             const container = document.getElementById('overlay-container');
-            if (!container) {
-                console.error("❌ Контейнер оверлея не найден!");
-                return;
-            }
+            if (!container) return;
 
             this.activeOverlay = overlayType;
             
@@ -774,18 +720,10 @@ drawTestPattern() {
             
             console.log("✅ Оверлей тактической карты создан");
             
-            // Инициализируем Canvas после добавления в DOM с небольшой задержкой
+            // Инициализируем Canvas после добавления в DOM
             setTimeout(() => {
                 console.log("🕒 Запуск инициализации Canvas...");
                 this.initCanvas();
-                
-                // Если через 2 секунды canvas не создан, пробуем принудительно
-                setTimeout(() => {
-                    if (!this.canvasInitialized) {
-                        console.warn("⚠️ Canvas не инициализирован, пробуем принудительно...");
-                        this.forceCanvasInit();
-                    }
-                }, 2000);
             }, 100);
         }
     }
