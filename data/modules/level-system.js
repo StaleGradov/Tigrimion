@@ -54,7 +54,6 @@ class LevelSystem {
         
         let newLevel = oldLevel;
         
-        // Проверка повышения уровня
         while (hero.experience >= this.levelRequirements[newLevel + 1] && this.levelRequirements[newLevel + 1]) {
             newLevel++;
         }
@@ -68,7 +67,6 @@ class LevelSystem {
         const levelsGained = newLevel - hero.level;
         hero.level = newLevel;
         
-        // Увеличение характеристик
         const healthIncrease = 10 * levelsGained;
         const damageIncrease = 2 * levelsGained;
         const armorIncrease = 1 * levelsGained;
@@ -77,7 +75,6 @@ class LevelSystem {
         hero.baseDamage += damageIncrease;
         hero.baseArmor += armorIncrease;
         
-        // Восстанавливаем здоровье при повышении уровня
         if (hero.currentHealth) {
             hero.currentHealth += healthIncrease;
         }
@@ -100,8 +97,6 @@ class LevelSystem {
             8: 40
         };
         
-        // Здесь будет логика разблокировки новых героев
-        // Пока просто логируем
         Object.keys(heroUnlockLevels).forEach(heroId => {
             const requiredLevel = heroUnlockLevels[heroId];
             if (hero.level >= requiredLevel) {
@@ -130,8 +125,9 @@ class LevelSystem {
         };
     }
 
+    // ⭐ УЛУЧШЕННЫЙ РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ ВСЕХ БОНУСОВ
     calculateHeroStats(hero, bonusSystem) {
-        if (!hero) return {};
+        if (!hero) return this.getEmptyStats();
         
         // ⭐ ПРАВИЛЬНЫЙ РАСЧЕТ: база + фиксированные + (база * сумма_процентов)
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
@@ -180,9 +176,12 @@ class LevelSystem {
         // Расчет общей силы
         const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
         
+        // ⭐ ТЕКУЩЕЕ ЗДОРОВЬЕ - не может превышать максимальное
+        const currentHealth = Math.min(hero.currentHealth || finalHealth, finalHealth);
+        
         return {
             health: finalHealth,
-            currentHealth: hero.currentHealth || finalHealth,
+            currentHealth: Math.floor(currentHealth),
             maxHealth: finalHealth,
             damage: finalDamage,
             armor: finalArmor,
@@ -196,7 +195,39 @@ class LevelSystem {
             critChance: totals.crit_chance,
             armorPenetration: totals.armor_penetration,
             vampirism: totals.vampirism,
-            goldMultiplier: totals.gold_mult
+            goldMultiplier: totals.gold_mult,
+            
+            // ⭐ ИНФОРМАЦИЯ О БОНУСАХ ДЛЯ ОТЛАДКИ
+            _bonuses: totals,
+            _baseValues: {
+                health: baseHealth,
+                damage: baseDamage,
+                armor: baseArmor
+            },
+            _itemBonuses: {
+                health: itemHealth,
+                damage: itemDamage, 
+                armor: itemArmor
+            }
+        };
+    }
+
+    getEmptyStats() {
+        return {
+            health: 0,
+            currentHealth: 0,
+            maxHealth: 0,
+            damage: 0,
+            armor: 0,
+            power: 0,
+            baseHealth: 0,
+            baseDamage: 0,
+            baseArmor: 0,
+            healthRegen: 0,
+            critChance: 0,
+            armorPenetration: 0,
+            vampirism: 0,
+            goldMultiplier: 0
         };
     }
 }
