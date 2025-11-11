@@ -840,6 +840,48 @@ class EquipmentSystem {
         game.showHeroGameScreen();
     }
 
+    // ========== СНЯТИЕ ПРЕДМЕТА ==========
+    unequipItem(slot) {
+        if (!this.currentHero) return;
+        
+        const itemId = this.currentHero.equipment[slot];
+        if (!itemId) {
+            this.showNotification('❌ В этом слоте ничего не надето');
+            return;
+        }
+
+        const item = this.getItemById(itemId);
+        if (!item) return;
+
+        // Проверяем место в инвентаре
+        if (this.currentHero.inventory.length >= 10) {
+            this.showNotification('❌ Инвентарь полон! Максимум 10 предметов');
+            return;
+        }
+
+        // Особый случай: если снимаем двуручное оружие
+        if (item.weaponType === 'two_handed') {
+            this.currentHero.equipment.main_hand = null;
+            this.currentHero.equipment.off_hand = null;
+        } else {
+            this.currentHero.equipment[slot] = null;
+        }
+
+        // Добавляем предмет обратно в инвентарь
+        this.currentHero.inventory.push(itemId);
+        
+        // ⭐ СОХРАНЕНИЕ ПОСЛЕ СНЯТИЯ ⭐
+        if (window.game) window.game.saveGame();
+        
+        this.showNotification(`📦 Снято: ${item.name}`);
+        
+        // Обновляем интерфейс
+        if (window.game) {
+            window.game.hideOverlay();
+            window.game.showHeroGameScreen();
+        }
+    }
+
     unequipToInventory(slot) {
         const itemId = this.currentHero.equipment[slot];
         if (!itemId) return false;
