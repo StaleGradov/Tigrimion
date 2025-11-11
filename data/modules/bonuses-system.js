@@ -139,6 +139,7 @@ class BonusSystem {
         return activeSetBonuses;
     }
 
+    // ⭐ УЛУЧШЕННЫЙ РАСЧЕТ СУММАРНЫХ БОНУСОВ
     calculateTotalBonuses(hero, items = []) {
         const activeBonuses = this.getAllActiveBonuses(hero);
         const setBonuses = this.getActiveSetBonuses(hero, items);
@@ -170,6 +171,20 @@ class BonusSystem {
                 totals[setBonus.bonus.type] += setBonus.bonus.value;
             }
         });
+        
+        // ⭐ ДОБАВЛЯЕМ БОНУСЫ ОТ ЭКИПИРОВКИ
+        if (hero.equipment && items.length > 0) {
+            Object.values(hero.equipment).forEach(itemId => {
+                if (itemId) {
+                    const item = items.find(item => item.id === itemId);
+                    if (item && item.bonus && item.bonus.type !== 'none') {
+                        if (totals.hasOwnProperty(item.bonus.type)) {
+                            totals[item.bonus.type] += item.bonus.value;
+                        }
+                    }
+                }
+            });
+        }
         
         // Применение бонуса "все характеристики" к отдельным статам
         if (totals.all_stats_mult > 0) {
@@ -215,10 +230,8 @@ class BonusSystem {
         // ⭐ ФОРМАТИРОВАНИЕ С ДЕСЯТЫМИ ДОЛЯМИ
         let formattedValue;
         if (bonus.type === 'gold_mult') {
-            // Для золота - целые проценты
             formattedValue = Math.round(value);
         } else {
-            // Для остальных - десятые доли, если нужно
             formattedValue = Number.isInteger(value) ? 
                 value.toFixed(0) : value.toFixed(1);
         }
@@ -228,7 +241,6 @@ class BonusSystem {
             `Бонус: +${formattedValue}%`;
     }
 
-    // Метод для получения бонусов от экипировки (будет использоваться основным классом)
     getEquipmentBonuses(hero, items) {
         if (!hero || !items) return [];
         
@@ -249,7 +261,6 @@ class BonusSystem {
         return equipmentBonuses;
     }
 
-    // Комплексный метод для получения всех бонусов (раса, класс, сага, экипировка, сеты)
     getAllBonusesWithEquipment(hero, items) {
         if (!hero) return { race: [], class: [], saga: [], equipment: [], sets: [] };
         
@@ -274,7 +285,6 @@ class BonusSystem {
         };
     }
 
-    // Метод для расчета характеристик с учетом всех бонусов
     calculateStatsWithBonuses(baseStats, hero, items = []) {
         const totals = this.calculateTotalBonuses(hero, items);
         
