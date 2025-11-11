@@ -4,11 +4,11 @@ class BattleSystem {
         this.monsters = [];
         this.battleActive = false;
         this.currentMonster = null;
-        this.currentHero = null; // ⭐ ДОБАВЛЯЕМ СВОЙСТВО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
+        this.currentHero = null;
         this.battleLog = [];
         this.battleRound = 0;
-        this.battleType = 'normal'; // 'normal' или 'movement'
-        this.battleContext = 'normal'; // ⭐ ДОБАВЛЯЕМ КОНТЕКСТ БОЯ
+        this.battleType = 'normal';
+        this.battleContext = 'normal';
         console.log("✅ BattleSystem инициализирован");
     }
 
@@ -54,7 +54,6 @@ class BattleSystem {
         console.log("🔄 Созданы тестовые монстры");
     }
 
-    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: принимает героя и контекст
     startBattleWithMonster(hero, monsterId, context = 'normal') {
         if (!hero) {
             console.error("❌ Не могу начать бой: герой не передан");
@@ -67,7 +66,7 @@ class BattleSystem {
             return;
         }
 
-        this.currentHero = hero; // ⭐ СОХРАНЯЕМ ГЕРОЯ
+        this.currentHero = hero;
         this.currentMonster = {
             ...monster,
             currentHealth: monster.health
@@ -76,8 +75,8 @@ class BattleSystem {
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
-        this.battleType = context; // 'normal' или 'movement'
-        this.battleContext = context; // ⭐ СОХРАНЯЕМ КОНТЕКСТ
+        this.battleType = context;
+        this.battleContext = context;
         
         this.addBattleLog(`⚔️ Бой начался! Противник: ${monster.name}`);
         console.log(`⚔️ Начинаем бой героя ${hero.name} с: ${monster.name}, тип: ${context}`);
@@ -102,7 +101,6 @@ class BattleSystem {
         const heroHealthPercent = (heroStats.currentHealth / heroStats.maxHealth) * 100;
         const monsterHealthPercent = (this.currentMonster.currentHealth / this.currentMonster.health) * 100;
 
-        // Если это бой при перемещении, показываем разделенный экран
         if (this.battleType === 'movement') {
             this.showBattleWithMapScreen(heroStats, heroHealthPercent, monsterHealthPercent);
         } else {
@@ -110,7 +108,6 @@ class BattleSystem {
         }
     }
 
-    // НОВЫЙ МЕТОД: бой с картой
     showBattleWithMapScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
         const app = document.getElementById('app');
         
@@ -143,6 +140,8 @@ class BattleSystem {
                                     <div class="combatant-stats">
                                         <span>⚔️ ${heroStats.damage}</span>
                                         <span>🛡️ ${heroStats.armor}</span>
+                                        ${heroStats.critChance > 0 ? `<span>🎯 ${(heroStats.critChance * 100).toFixed(1)}%</span>` : ''}
+                                        ${heroStats.vampirism > 0 ? `<span>🩸 ${(heroStats.vampirism * 100).toFixed(1)}%</span>` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -197,7 +196,6 @@ class BattleSystem {
         this.injectBattleWithMapStyles();
     }
 
-    // СТАРЫЙ МЕТОД: стандартный бой
     showStandardBattleScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
         const app = document.getElementById('app');
 
@@ -224,6 +222,8 @@ class BattleSystem {
                             <div class="combatant-stats">
                                 <span>⚔️ ${heroStats.damage}</span>
                                 <span>🛡️ ${heroStats.armor}</span>
+                                ${heroStats.critChance > 0 ? `<span>🎯 ${(heroStats.critChance * 100).toFixed(1)}%</span>` : ''}
+                                ${heroStats.vampirism > 0 ? `<span>🩸 ${(heroStats.vampirism * 100).toFixed(1)}%</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -285,11 +285,33 @@ class BattleSystem {
             window.game.systems.bonus
         );
 
+        // ⭐ ПРОВЕРКА КРИТИЧЕСКОГО УДАРА
+        let isCritical = false;
+        let critMultiplier = 1;
+        if (Math.random() < heroStats.critChance) {
+            isCritical = true;
+            critMultiplier = 2;
+            this.addBattleLog(`💥 КРИТИЧЕСКИЙ УДАР!`);
+        }
+
         // Атака героя
-        const heroDamage = Math.max(1, heroStats.damage - this.currentMonster.armor);
+        const baseHeroDamage = Math.max(1, heroStats.damage - this.currentMonster.armor);
+        const heroDamage = Math.floor(baseHeroDamage * critMultiplier);
         this.currentMonster.currentHealth -= heroDamage;
         
         this.addBattleLog(`🗡️ ${this.currentHero.name} наносит ${heroDamage} урона!`);
+
+        // ⭐ ВАМПИРИЗМ - восстановление здоровья от урона (округление ВВЕРХ)
+        if (heroStats.vampirism > 0) {
+            const vampHeal = Math.ceil(heroDamage * heroStats.vampirism);
+            if (vampHeal > 0) {
+                this.currentHero.currentHealth = Math.min(
+                    heroStats.maxHealth,
+                    this.currentHero.currentHealth + vampHeal
+                );
+                this.addBattleLog(`🩸 Вампиризм: +${vampHeal} здоровья`);
+            }
+        }
 
         // Проверка смерти монстра
         if (this.currentMonster.currentHealth <= 0) {
@@ -438,20 +460,17 @@ class BattleSystem {
 
         this.battleActive = false;
         this.currentMonster = null;
-        this.currentHero = null; // ⭐ ОЧИЩАЕМ ГЕРОЯ ПОСЛЕ БОЯ
+        this.currentHero = null;
     }
 
-    // ⭐ НОВЫЙ МЕТОД: завершение боя (для вызова извне)
     completeBattle(victory) {
         if (this.battleContext === 'movement' && window.game?.systems?.map) {
-            // Сообщаем системе карт о результате боя
             window.game.systems.map.completeMovementAfterBattle(victory);
         }
         
         this.endBattle(victory);
     }
 
-    // НОВЫЙ МЕТОД: экран победы
     showVictoryScreen(reward, experience) {
         const app = document.getElementById('app');
         if (!app) return;
@@ -490,7 +509,6 @@ class BattleSystem {
         this.injectVictoryStyles();
     }
 
-    // НОВЫЙ МЕТОД: возврат к тактической карте
     returnToTacticalMap() {
         if (window.game && window.game.systems.hero) {
             window.game.systems.hero.showHeroGameScreen();
@@ -504,7 +522,6 @@ class BattleSystem {
         }
     }
 
-    // НОВЫЙ МЕТОД: стили для боя с картой
     injectBattleWithMapStyles() {
         const styles = `
             .battle-screen-with-map {
@@ -593,6 +610,8 @@ class BattleSystem {
                 justify-content: space-around;
                 font-size: 0.8rem;
                 color: #9ca3af;
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
             .battle-log {
@@ -674,7 +693,6 @@ class BattleSystem {
         document.head.appendChild(style);
     }
 
-    // СТАРЫЙ МЕТОД: стили для стандартного боя
     injectBattleStyles() {
         const styles = `
             .battle-screen {
@@ -727,6 +745,16 @@ class BattleSystem {
                 color: #f59e0b;
             }
             
+            .combatant-stats {
+                display: flex;
+                justify-content: space-around;
+                font-size: 0.9rem;
+                color: #9ca3af;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+            }
+            
             .battle-actions {
                 display: flex;
                 gap: 1rem;
@@ -766,7 +794,6 @@ class BattleSystem {
         document.head.appendChild(style);
     }
 
-    // НОВЫЙ МЕТОД: стили для экрана победы
     injectVictoryStyles() {
         const styles = `
             .victory-screen {
