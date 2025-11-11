@@ -409,7 +409,32 @@ class SafeHeroGame {
             }
         });
     }
-
+startHealthRegeneration() {
+    setInterval(() => {
+        if (this.currentHero && this.systems.level) {
+            const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
+            
+            if (this.currentHero.currentHealth < stats.maxHealth) {
+                // Базовая регенерация + бонусы от предметов
+                const baseRegen = 1; // 1 хит в секунду
+                const bonusRegen = stats.healthRegen * baseRegen;
+                const totalRegen = baseRegen + bonusRegen;
+                
+                this.currentHero.currentHealth = Math.min(
+                    stats.maxHealth, 
+                    this.currentHero.currentHealth + totalRegen
+                );
+                
+                // Автосохранение при восстановлении здоровья
+                if (Math.random() < 0.1) { // 10% шанс на автосохранение
+                    this.saveGame();
+                }
+                
+                console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
+            }
+        }
+    }, 1000); // Каждую секунду
+}
     showLoadingScreen(message) {
         const app = document.getElementById('app');
         if (app) {
