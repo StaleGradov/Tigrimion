@@ -2268,3 +2268,225 @@ body {
     font-size: 0.8em;
     font-weight: bold;
 }
+/* ========== СТИЛИ ДЛЯ ИНВЕНТАРЯ С ПРОДАЖЕЙ ========== */
+
+/* Стили для кнопок в инвентаре */
+.inventory-item-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-small:hover {
+    transform: translateY(-2px);
+}
+
+.btn-sell {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.btn-sell:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Стили для модального окна предмета в инвентаре */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.action-buttons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn-primary {
+    background: linear-gradient(135deg, #4cc9f0, #4361ee);
+    color: white;
+}
+
+.action-buttons .btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.action-buttons .btn-sell {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.action-buttons .disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-buttons button:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Улучшенные стили для предметов инвентаря */
+.inventory-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.inventory-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.inventory-item-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.inventory-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.inventory-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inventory-item-info strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+.inventory-item-info .item-stats {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.inventory-item-info .item-stats span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.inventory-item-info small {
+    color: rgba(255, 255, 255, 0.8);
+    display: block;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .inventory-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .inventory-item-image {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+    
+    .inventory-item-actions {
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+/* Стили для подтверждения продажи */
+.confirm-sell-dialog {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #f59e0b;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.confirm-sell-dialog h4 {
+    color: #f59e0b;
+    margin-bottom: 15px;
+}
+
+.confirm-sell-dialog p {
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.confirm-sell-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.confirm-sell-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.confirm-sell-buttons .confirm-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.confirm-sell-buttons .cancel-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.confirm-sell-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
