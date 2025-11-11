@@ -407,10 +407,6 @@ class EquipmentSystem {
                     <button class="category-tab ${category === 'boots' ? 'active' : ''}" 
                             data-category="boots"
                             onclick="game.systems.equipment.handleCategoryClick('boots')">👢 Ботинки</button>
-                    <!-- НОВАЯ КАТЕГОРИЯ СЕТОВ -->
-                    <button class="category-tab ${category === 'set' ? 'active' : ''}" 
-                            data-category="set"
-                            onclick="game.systems.equipment.handleCategoryClick('set')">✨ Сеты</button>
                 </div>
                 
                 <div id="shop-subcategories-container"></div>
@@ -494,18 +490,6 @@ class EquipmentSystem {
                 'one_handed': 'Одноручное',
                 'two_handed': 'Двуручное', 
                 'shield': 'Щиты'
-            },
-            // НОВЫЕ ПОДКАТЕГОРИИ СЕТОВ
-            'set': {
-                'all': 'Все сеты',
-                'damage': '⚔️ Урон',
-                'crit': '🎯 Критический удар',
-                'penetration': '💥 Игнор Брони', 
-                'rich': '💰 Богатство',
-                'vampire': '🩸 Вампиризм',
-                'regen': '❤️ Регенерация',
-                'health': '💪 Здоровье',
-                'armor': '🛡️ Броня'
             }
         };
     }
@@ -613,20 +597,11 @@ class EquipmentSystem {
         
         // Фильтрация по основной категории
         if (category !== 'all') {
-            if (category === 'set') {
-                // Для категории сетов фильтруем предметы, которые принадлежат какому-либо сету
-                filteredItems = filteredItems.filter(item => item.setName && this.itemSets[item.setName]);
-            } else {
-                filteredItems = filteredItems.filter(item => this.doesItemMatchCategory(item, category));
-            }
+            filteredItems = filteredItems.filter(item => this.doesItemMatchCategory(item, category));
         }
 
-        // Фильтрация по подкатегории сетов
-        if (subcategory !== 'all' && category === 'set') {
-            filteredItems = this.filterSetItemsBySubcategory(filteredItems, subcategory);
-        }
-        // Фильтрация по подкатегории для остальных категорий
-        else if (subcategory !== 'all' && category !== 'all') {
+        // Фильтрация по подкатегории
+        if (subcategory !== 'all' && category !== 'all') {
             filteredItems = this.filterItemsBySubcategory(filteredItems, category, subcategory);
         }
 
@@ -634,27 +609,6 @@ class EquipmentSystem {
         
         // Сортируем по цене для удобства
         return filteredItems.sort((a, b) => a.price - b.price);
-    }
-
-    // ========== ФИЛЬТРАЦИЯ СЕТОВ ПО ПОДКАТЕГОРИЯМ ==========
-    filterSetItemsBySubcategory(items, subcategory) {
-        const setBonusMap = {
-            'damage': ['set_beginner', 'set_warrior', 'set_guardian', 'set_hunter', 'set_complete', 'set_king'],
-            'crit': ['set_crit1', 'set_crit2', 'set_crit3', 'set_crit4', 'set_crit5', 'set_crit6'],
-            'penetration': ['set_penetration1', 'set_penetration2', 'set_penetration3', 'set_penetration4', 'set_penetration5', 'set_penetration6'],
-            'rich': ['set_rich1', 'set_rich2', 'set_rich3', 'set_rich4', 'set_rich5', 'set_rich6'],
-            'vampire': ['set_vampire1', 'set_vampire2', 'set_vampire3', 'set_vampire4', 'set_vampire5', 'set_vampire6'],
-            'regen': ['set_regen1', 'set_regen2', 'set_regen3', 'set_regen4', 'set_regen5', 'set_regen6'],
-            'health': ['set_health1', 'set_health2', 'set_health3', 'set_health4', 'set_health5', 'set_health6'],
-            'armor': ['set_bron1', 'set_bron2', 'set_bron3', 'set_bron4', 'set_bron5', 'set_bron6']
-        };
-
-        if (subcategory === 'all') return items;
-        
-        const allowedSets = setBonusMap[subcategory] || [];
-        return items.filter(item => {
-            return item.setName && allowedSets.includes(item.setName);
-        });
     }
 
     // Метод из старой версии - проверка соответствия категории
@@ -723,13 +677,6 @@ class EquipmentSystem {
                             ${bonusInfo ? `<span class="item-bonus-display">${bonusInfo}</span>` : ''}
                         </div>
                         
-                        <!-- ОТОБРАЖЕНИЕ ИНФОРМАЦИИ О СЕТЕ -->
-                        ${item.setName ? `
-                            <div class="item-set-info">
-                                ✨ ${this.itemSets[item.setName]?.name || 'Сет'}
-                            </div>
-                        ` : ''}
-                        
                         <div class="item-price-tag">
                             <span class="price">💰 ${item.price}</span>
                             ${isOwned ? 
@@ -758,10 +705,19 @@ class EquipmentSystem {
             'vampirism': '🩸'
         };
         
-        const value = Math.round(item.bonus.value * 100);
+        const value = item.bonus.value * 100;
         const icon = bonusIcons[item.bonus.type] || '✨';
         
-        return `${icon}+${value}%`;
+        // ⭐ ДРОБНЫЕ ЗНАЧЕНИЯ В ОТОБРАЖЕНИИ
+        let formattedValue;
+        if (item.bonus.type === 'gold_mult') {
+            formattedValue = Math.round(value);
+        } else {
+            formattedValue = Number.isInteger(value) ? 
+                value.toFixed(0) : value.toFixed(1);
+        }
+        
+        return `${icon}+${formattedValue}%`;
     }
 
     // ========== ДЕТАЛИ ПРЕДМЕТА И ПОКУПКА ==========
@@ -817,19 +773,6 @@ class EquipmentSystem {
                                 ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
                                 ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
                             </div>
-                            
-                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
-                            ${item.setName && this.itemSets[item.setName] ? `
-                                <div class="item-set-details">
-                                    <h5>✨ Бонус сета:</h5>
-                                    <div class="set-info">
-                                        <strong>${this.itemSets[item.setName].name}</strong>
-                                        <div class="set-bonus">${this.formatBonus(this.itemSets[item.setName].bonus)}</div>
-                                        <div class="set-description">${this.itemSets[item.setName].description}</div>
-                                        <div class="set-requirements">Требуется предметов: ${this.itemSets[item.setName].requiredPieces}/6</div>
-                                    </div>
-                                </div>
-                            ` : ''}
                             
                             <div class="item-requirements">
                                 <h5>Требования:</h5>
@@ -1135,19 +1078,6 @@ class EquipmentSystem {
                                 ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
                                 ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
                             </div>
-                            
-                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
-                            ${item.setName && this.itemSets[item.setName] ? `
-                                <div class="item-set-details">
-                                    <h5>✨ Бонус сета:</h5>
-                                    <div class="set-info">
-                                        <strong>${this.itemSets[item.setName].name}</strong>
-                                        <div class="set-bonus">${this.formatBonus(this.itemSets[item.setName].bonus)}</div>
-                                        <div class="set-description">${this.itemSets[item.setName].description}</div>
-                                        <div class="set-requirements">Требуется предметов: ${this.itemSets[item.setName].requiredPieces}/6</div>
-                                    </div>
-                                </div>
-                            ` : ''}
                             
                             <div class="item-actions">
                                 <div class="price-section">
@@ -1497,10 +1427,22 @@ class EquipmentSystem {
             'vampirism': 'Вампиризм'
         };
 
-        const value = Math.round(bonus.value * 100);
+        const value = bonus.value * 100;
+        
+        // ⭐ ФОРМАТИРОВАНИЕ С ДЕСЯТЫМИ ДОЛЯМИ
+        let formattedValue;
+        if (bonus.type === 'gold_mult') {
+            // Для золота - целые проценты
+            formattedValue = Math.round(value);
+        } else {
+            // Для остальных - десятые доли, если нужно
+            formattedValue = Number.isInteger(value) ? 
+                value.toFixed(0) : value.toFixed(1);
+        }
+        
         return bonusNames[bonus.type] ? 
-            `${bonusNames[bonus.type]} +${value}%` : 
-            `Бонус: +${value}%`;
+            `${bonusNames[bonus.type]} +${formattedValue}%` : 
+            `Бонус: +${formattedValue}%`;
     }
 
     showNotification(message) {
@@ -1513,62 +1455,10 @@ class EquipmentSystem {
     }
 
     createFallbackItems() {
-        this.items = [
-            {
-                id: 1,
-                name: "Малое зелье здоровья",
-                type: "potion",
-                value: 20,
-                price: 25,
-                heal: 20,
-                image: "images/items/potion1.jpg",
-                description: "Восстанавливает 20 здоровья",
-                rarity: "common"
-            },
-            {
-                id: 2,
-                name: "Простой меч",
-                type: "weapon",
-                weaponType: "one_handed",
-                slot: "main_hand",
-                fixed_damage: 5,
-                price: 100,
-                image: "images/items/sword1.jpg",
-                description: "Простой железный меч",
-                requiredLevel: 1,
-                rarity: "common"
-            },
-            {
-                id: 3,
-                name: "Деревянный щит",
-                type: "weapon",
-                weaponType: "shield",
-                slot: "off_hand",
-                fixed_armor: 3,
-                price: 80,
-                image: "images/items/shield1.jpg",
-                description: "Простой деревянный щит",
-                requiredLevel: 1,
-                rarity: "common"
-            },
-            {
-                id: 4,
-                name: "Кожаный шлем",
-                type: "helmet",
-                slot: "helmet",
-                fixed_armor: 2,
-                fixed_health: 10,
-                price: 120,
-                image: "images/items/helmet1.jpg",
-                description: "Кожаный шлем",
-                requiredLevel: 1,
-                material: "leather",
-                rarity: "common"
-            }
-        ];
-        
+        // ⭐ ПУСТОЙ МАССИВ - не создаем тестовые предметы
+        this.items = [];
         this.loadItemSetConfig();
-        console.log("🔄 Созданы тестовые предметы");
+        console.log("🔄 Создан пустой список предметов (тестовые предметы отключены)");
     }
 
     // Метод для установки текущего героя
