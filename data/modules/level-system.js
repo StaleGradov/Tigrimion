@@ -133,26 +133,20 @@ class LevelSystem {
     calculateHeroStats(hero, bonusSystem) {
         if (!hero) return {};
         
-        // ⭐ ПЕРЕСЧИТЫВАЕМ БОНУСЫ С УЧЕТОМ ЭКИПИРОВКИ
-        const totals = bonusSystem ? bonusSystem.calculateTotalBonuses(hero) : {
-            health_mult: 0, damage_mult: 0, armor_mult: 0,
-            health_regen_mult: 0, crit_chance: 0, armor_penetration: 0, 
-            vampirism: 0, gold_mult: 0
-        };
-        
+        // ⭐ ПРАВИЛЬНЫЙ РАСЧЕТ: база + фиксированные + (база * сумма_процентов)
         const levelMultiplier = 1 + (hero.level - 1) * 0.1;
         
-        // Базовые характеристики (уровень)
-        let baseHealth = hero.baseHealth * levelMultiplier;
-        let baseDamage = hero.baseDamage * levelMultiplier; 
-        let baseArmor = hero.baseArmor * levelMultiplier;
+        // БАЗОВЫЕ характеристики (только от героя и уровня)
+        let baseHealth = Math.round(hero.baseHealth * levelMultiplier);
+        let baseDamage = Math.round(hero.baseDamage * levelMultiplier);
+        let baseArmor = Math.round(hero.baseArmor * levelMultiplier);
         
-        // ⭐ ДОБАВЛЯЕМ БОНУСЫ ОТ ПРЕДМЕТОВ ЭКИПИРОВКИ
+        // ФИКСИРОВАННЫЕ бонусы от экипировки
         let itemHealth = 0;
         let itemDamage = 0;
         let itemArmor = 0;
         
-        if (hero.equipment && window.game && window.game.systems && window.game.systems.equipment) {
+        if (hero.equipment && window.game?.systems?.equipment) {
             Object.values(hero.equipment).forEach(itemId => {
                 if (itemId) {
                     const item = window.game.systems.equipment.getItemById(itemId);
@@ -165,30 +159,44 @@ class LevelSystem {
             });
         }
         
-        // Применяем все бонусы
-        let health = baseHealth + itemHealth + (baseHealth * totals.health_mult);
-        let damage = baseDamage + itemDamage + (baseDamage * totals.damage_mult);
-        let armor = baseArmor + itemArmor + (baseArmor * totals.armor_mult);
+        // ⭐ ПРОЦЕНТНЫЕ бонусы (аддитивные)
+        const items = window.game?.systems?.equipment?.items || [];
+        const totals = bonusSystem ? bonusSystem.calculateTotalBonuses(hero, items) : {
+            health_mult: 0, damage_mult: 0, armor_mult: 0,
+            health_regen_mult: 0, crit_chance: 0, armor_penetration: 0, 
+            vampirism: 0, gold_mult: 0
+        };
+        
+        // ⭐ ПРАВИЛЬНЫЙ ПОРЯДОК: база + фиксированные + (база * сумма_процентов)
+        let finalHealth = baseHealth + itemHealth + (baseHealth * totals.health_mult);
+        let finalDamage = baseDamage + itemDamage + (baseDamage * totals.damage_mult);
+        let finalArmor = baseArmor + itemArmor + (baseArmor * totals.armor_mult);
+        
+        // Округляем только конечные значения
+        finalHealth = Math.round(finalHealth);
+        finalDamage = Math.round(finalDamage);
+        finalArmor = Math.round(finalArmor);
         
         // Расчет общей силы
-        const power = Math.round((health / 10) + (damage * 1.5) + (armor * 2));
+        const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
         
         return {
-            health: Math.round(health),
-            currentHealth: hero.currentHealth || Math.round(health),
-            maxHealth: Math.round(health),
-            damage: Math.round(damage),
-            armor: Math.round(armor),
+            health: finalHealth,
+            currentHealth: hero.currentHealth || finalHealth,
+            maxHealth: finalHealth,
+            damage: finalDamage,
+            armor: finalArmor,
             power: power,
             baseHealth: Math.round(baseHealth),
             baseDamage: Math.round(baseDamage), 
             baseArmor: Math.round(baseArmor),
-            // ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ
-            healthRegen: totals.health_regen_mult || 0,
-            critChance: totals.crit_chance || 0,
-            armorPenetration: totals.armor_penetration || 0,
-            vampirism: totals.vampirism || 0,
-            goldMultiplier: totals.gold_mult || 0
+            
+            // ⭐ ДРОБНЫЕ ЗНАЧЕНИЯ для бонусов (без округления)
+            healthRegen: totals.health_regen_mult,
+            critChance: totals.crit_chance,
+            armorPenetration: totals.armor_penetration,
+            vampirism: totals.vampirism,
+            goldMultiplier: totals.gold_mult
         };
     }
 }
