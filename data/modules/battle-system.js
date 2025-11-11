@@ -114,7 +114,10 @@ class BattleSystem {
         app.innerHTML = `
             <div class="battle-screen-with-map">
                 <div class="tactical-map-side">
-                    ${window.game.systems.map.renderTacticalMap()}
+                    <!-- Вставляем тактическую карту как оверлей, а не заменяем весь экран -->
+                    <div class="tactical-map-container">
+                        ${window.game.systems.map.renderTacticalMap()}
+                    </div>
                 </div>
                 
                 <div class="battle-side">
@@ -193,7 +196,12 @@ class BattleSystem {
             </div>
         `;
 
-        this.injectBattleWithMapStyles();
+        // Инициализируем canvas после рендера
+        setTimeout(() => {
+            if (window.game.systems.map) {
+                window.game.systems.map.initCanvas();
+            }
+        }, 100);
     }
 
     showStandardBattleScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
@@ -398,8 +406,8 @@ class BattleSystem {
         const mapSystem = window.game.systems.map;
         
         if (victory) {
-            const reward = this.currentMonster.reward;
-            const experience = this.currentMonster.experience;
+            const reward = this.currentMonster.reward || 10;
+            const experience = this.currentMonster.experience || 5;
             
             this.currentHero.gold += reward;
             window.game.systems.level.addExperience(this.currentHero, experience);
@@ -460,7 +468,6 @@ class BattleSystem {
 
         this.battleActive = false;
         this.currentMonster = null;
-        this.currentHero = null;
     }
 
     completeBattle(victory) {
@@ -472,11 +479,12 @@ class BattleSystem {
     }
 
     showVictoryScreen(reward, experience) {
-        const app = document.getElementById('app');
-        if (!app) return;
+        // Вместо замены всего экрана, обновляем только боевую часть
+        const battleSide = document.querySelector('.battle-side');
+        if (!battleSide) return;
 
-        app.innerHTML = `
-            <div class="battle-screen victory-screen">
+        battleSide.innerHTML = `
+            <div class="battle-container victory-container">
                 <header class="battle-header">
                     <h2>🎉 ПОБЕДА!</h2>
                 </header>
@@ -505,11 +513,10 @@ class BattleSystem {
                 </div>
             </div>
         `;
-
-        this.injectVictoryStyles();
     }
 
     returnToTacticalMap() {
+        // Закрываем боевой экран и возвращаемся к обычному экрану героя
         if (window.game && window.game.systems.hero) {
             window.game.systems.hero.showHeroGameScreen();
         }
@@ -549,142 +556,6 @@ class BattleSystem {
                 padding: 1rem;
                 display: flex;
                 flex-direction: column;
-            }
-            
-            .battle-combatants {
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-                margin: 1rem 0;
-            }
-            
-            .combatant {
-                background: rgba(55, 65, 81, 0.8);
-                border-radius: 10px;
-                padding: 1rem;
-                text-align: center;
-                backdrop-filter: blur(10px);
-            }
-            
-            .combatant-image img {
-                width: 80px;
-                height: 80px;
-                border-radius: 10px;
-                object-fit: cover;
-                border: 2px solid #4b5563;
-            }
-            
-            .vs-divider {
-                text-align: center;
-                font-size: 1.5rem;
-                font-weight: bold;
-                color: #f59e0b;
-                margin: 0.5rem 0;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            
-            .health-bar {
-                width: 100%;
-                height: 15px;
-                background: #4b5563;
-                border-radius: 8px;
-                overflow: hidden;
-                margin: 0.5rem 0;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-            }
-            
-            .health-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #ef4444, #f59e0b);
-                transition: width 0.3s ease;
-            }
-            
-            .health-text {
-                font-size: 0.9rem;
-                color: #cbd5e1;
-                margin: 0.3rem 0;
-            }
-            
-            .combatant-stats {
-                display: flex;
-                justify-content: space-around;
-                font-size: 0.8rem;
-                color: #9ca3af;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-            }
-            
-            .battle-log {
-                flex: 1;
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 1rem 0;
-                overflow-y: auto;
-                max-height: 200px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .battle-log h4 {
-                color: #f59e0b;
-                margin-bottom: 0.5rem;
-                font-size: 1rem;
-            }
-            
-            .log-entries {
-                font-size: 0.9rem;
-            }
-            
-            .log-entry {
-                padding: 0.25rem 0;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                color: #e5e7eb;
-            }
-            
-            .battle-actions {
-                display: flex;
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-            
-            .btn-battle-attack, .btn-battle-block, .btn-battle-flee {
-                padding: 12px;
-                border: none;
-                border-radius: 6px;
-                font-size: 1rem;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                font-weight: bold;
-            }
-            
-            .btn-battle-attack { 
-                background: linear-gradient(135deg, #ef4444, #dc2626);
-                color: white;
-            }
-            
-            .btn-battle-block { 
-                background: linear-gradient(135deg, #3b82f6, #2563eb);
-                color: white;
-            }
-            
-            .btn-battle-flee { 
-                background: linear-gradient(135deg, #6b7280, #4b5563);
-                color: white;
-            }
-            
-            .btn-battle-attack:hover { 
-                background: linear-gradient(135deg, #dc2626, #b91c1c);
-                transform: translateY(-2px);
-            }
-            
-            .btn-battle-block:hover { 
-                background: linear-gradient(135deg, #2563eb, #1d4ed8);
-                transform: translateY(-2px);
-            }
-            
-            .btn-battle-flee:hover { 
-                background: linear-gradient(135deg, #4b5563, #374151);
-                transform: translateY(-2px);
             }
         `;
         
@@ -860,4 +731,4 @@ class BattleSystem {
 
 // Регистрируем систему в глобальной области
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с системой боев при перемещении");
+console.log("📦 BattleSystem модуль загружен с исправленной системой боев при перемещении");
