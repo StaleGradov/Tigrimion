@@ -81,7 +81,24 @@ class BattleSystem {
         this.addBattleLog(`⚔️ Бой начался! Противник: ${monster.name}`);
         console.log(`⚔️ Начинаем бой героя ${hero.name} с: ${monster.name}, тип: ${context}`);
         
+        // ⭐ ИСПРАВЛЕНИЕ: Скрываем тактическую карту перед показом боя
+        this.hideTacticalMap();
+        
         this.showBattleScreen();
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Скрытие тактической карты
+    hideTacticalMap() {
+        const overlayContainer = document.getElementById('overlay-container');
+        if (overlayContainer) {
+            overlayContainer.style.display = 'none';
+            overlayContainer.innerHTML = '';
+        }
+        
+        // Также скрываем любые другие оверлеи
+        if (window.game) {
+            window.game.activeOverlay = null;
+        }
     }
 
     showBattleScreen() {
@@ -528,16 +545,25 @@ class BattleSystem {
     // ⭐ НОВЫЙ МЕТОД: Возврат к игре без перезагрузки карты
     returnToGame() {
         if (this.battleContext === 'movement') {
-            // Просто закрываем боевой экран - карта уже обновлена
-            if (window.game && window.game.systems.hero) {
+            // Для боя при перемещении возвращаемся к тактической карте
+            if (window.game && window.game.systems.map) {
+                // Сначала показываем экран героя
                 window.game.systems.hero.showHeroGameScreen();
+                
+                // Затем через небольшую задержку открываем карту
+                setTimeout(() => {
+                    window.game.systems.map.showOverlay('tactical-map');
+                }, 100);
             }
         } else {
-            // Для обычного боя возвращаемся к экрану героя
+            // Для обычного боя просто возвращаемся к экрану героя
             if (window.game && window.game.systems.hero) {
                 window.game.systems.hero.showHeroGameScreen();
             }
         }
+        
+        this.battleActive = false;
+        this.currentMonster = null;
     }
 
     addBattleLog(message) {
