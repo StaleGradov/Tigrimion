@@ -3012,3 +3012,409 @@ body {
     font-size: 1rem;
     margin: 1rem;
 }
+/* ========== СТИЛИ ДЛЯ ИНТЕРАКТИВНОГО БОЯ ========== */
+.battle-screen-interactive {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 1rem;
+    color: white;
+}
+
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #4b5563;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.battle-header h2 {
+    color: #ef4444;
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.battle-round {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #ef4444;
+    font-weight: bold;
+}
+
+.btn-battle-back {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-battle-back:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+}
+
+.battle-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.hero-status, .enemies-status {
+    flex: 1;
+    min-width: 300px;
+}
+
+.battle-vs {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #f59e0b;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.combatant-hero, .combatant-enemy {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(55, 65, 81, 0.8);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 2px solid #4b5563;
+}
+
+.combatant-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.combatant-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.enemy-symbol {
+    font-size: 3rem;
+}
+
+.combatant-info {
+    flex: 1;
+}
+
+.combatant-info h4 {
+    margin-bottom: 0.5rem;
+    color: #f59e0b;
+}
+
+.health-bar {
+    width: 100%;
+    height: 20px;
+    background: #4b5563;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f59e0b);
+    transition: width 0.3s ease;
+}
+
+.health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.combatant-stats {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.combatant-stats span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+/* Сетка боя */
+.battle-grid-interactive {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.grid-side h4 {
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+}
+
+.grid-positions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0.5rem;
+    min-height: 300px;
+}
+
+.grid-cell {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+}
+
+.grid-cell.empty {
+    opacity: 0.3;
+}
+
+.grid-cell.selectable {
+    cursor: pointer;
+    border-color: #00ff00;
+    animation: pulse-glow 2s infinite;
+}
+
+.grid-cell.selectable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.grid-cell.dead {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 5px rgba(0, 255, 0, 0.3); }
+    50% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); }
+    100% { box-shadow: 0 0 5px rgba(0, 255, 0, 0.3); }
+}
+
+.unit-display {
+    text-align: center;
+    width: 100%;
+}
+
+.unit-symbol {
+    font-size: 2rem;
+    margin-bottom: 0.3rem;
+}
+
+.unit-name {
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+    color: #cbd5e1;
+}
+
+.unit-health {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.health-bar-small {
+    flex: 1;
+    height: 6px;
+    background: #4b5563;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.health-fill-small {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f59e0b);
+    transition: width 0.3s ease;
+}
+
+.health-text-small {
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: right;
+}
+
+/* Управление боем */
+.battle-controls {
+    margin-bottom: 2rem;
+}
+
+.battle-hint {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.battle-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-battle-flee {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-battle-flee:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+}
+
+/* Лог боя */
+.battle-log-container {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battle-log-container h4 {
+    color: #f59e0b;
+    margin-bottom: 0.8rem;
+}
+
+.battle-log-entries {
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.log-entry {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* Результаты боя */
+.battle-result-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 2rem;
+}
+
+.result-content {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 3rem;
+    border-radius: 15px;
+    text-align: center;
+    border: 3px solid;
+    max-width: 500px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+}
+
+.result-content.victory {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(0, 0, 0, 0.8));
+}
+
+.result-content.defeat {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(0, 0, 0, 0.8));
+}
+
+.result-content.flee {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(0, 0, 0, 0.8));
+}
+
+.result-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.result-stats {
+    margin: 2rem 0;
+}
+
+.stat {
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .battle-status {
+        flex-direction: column;
+    }
+    
+    .battle-vs {
+        order: -1;
+        margin: 1rem 0;
+    }
+    
+    .battle-grid-interactive {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .combatant-hero, .combatant-enemy {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .battle-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .grid-positions {
+        min-height: 200px;
+    }
+}
