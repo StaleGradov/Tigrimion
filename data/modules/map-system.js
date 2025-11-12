@@ -170,6 +170,9 @@ class MapSystem {
         this.canvas.style.height = '100%';
         this.canvas.style.background = '#1a1a2e';
         this.canvas.style.cursor = 'pointer';
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
         
         container.appendChild(this.canvas);
 
@@ -181,9 +184,7 @@ class MapSystem {
         }
 
         // Устанавливаем размеры
-        const rect = container.getBoundingClientRect();
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        this.calculateMapPositioning();
 
         console.log(`📐 Canvas создан: ${this.canvas.width}x${this.canvas.height}`);
 
@@ -197,6 +198,58 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
+    // ⭐ ДОБАВЛЯЕМ МЕТОД ЦЕНТРИРОВАНИЯ КАРТЫ ИЗ СТАРОГО ФАЙЛА
+    calculateMapPositioning() {
+        if (!this.currentTacticalMap || !this.canvas) return;
+
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+
+        console.log(`📐 Container: ${rect.width}x${rect.height}`);
+
+        // ПРОСТОЕ РЕШЕНИЕ: центрируем карту вручную
+        const cells = Object.values(this.currentTacticalMap.cells);
+        
+        if (cells.length > 0) {
+            // Находим средние координаты
+            let avgX = 0, avgY = 0;
+            cells.forEach(cell => {
+                avgX += cell.x;
+                avgY += cell.y;
+            });
+            avgX /= cells.length;
+            avgY /= cells.length;
+            
+            // Смещаем все клетки так, чтобы центр был в центре canvas
+            const centerCanvasX = rect.width / 2;
+            const centerCanvasY = rect.height / 2;
+            
+            // Вычисляем необходимое смещение
+            const offsetX = centerCanvasX - avgX;
+            const offsetY = centerCanvasY - avgY;
+            
+            console.log(`📐 Center of cells: (${avgX.toFixed(1)}, ${avgY.toFixed(1)})`);
+            console.log(`📐 Center of canvas: (${centerCanvasX}, ${centerCanvasY})`);
+            console.log(`📐 Required offset: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
+            
+            // ПРИМЕНЯЕМ СМЕЩЕНИЕ КО ВСЕМ КЛЕТКАМ
+            cells.forEach(cell => {
+                cell.x += offsetX;
+                cell.y += offsetY;
+            });
+            
+            console.log("✅ Cells repositioned to center");
+        }
+        
+        // Обнуляем смещение, т.к. мы уже сдвинули клетки
+        this.mapOffset.x = 0;
+        this.mapOffset.y = 0;
+    }
+
     setupCanvasEventListeners() {
         if (!this.canvas) return;
 
@@ -206,13 +259,8 @@ class MapSystem {
         window.addEventListener('resize', () => {
             setTimeout(() => {
                 if (this.canvasInitialized && this.canvas) {
-                    const container = document.querySelector('.tactical-map-visual');
-                    if (container) {
-                        const rect = container.getBoundingClientRect();
-                        this.canvas.width = rect.width;
-                        this.canvas.height = rect.height;
-                        this.drawTacticalMap();
-                    }
+                    this.calculateMapPositioning();
+                    this.drawTacticalMap();
                 }
             }, 100);
         });
