@@ -5,8 +5,8 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/copper_spear.jpg",
     "type": "weapon",
     "weaponType": "one_handed",
-    "attackType": "melee", // ⭐ НОВОЕ ПОЛЕ
-    "attackRange": 1,       // ⭐ НОВОЕ ПОЛЕ - дистанция атаки (1 = ближний бой)
+    "attackType": "melee",
+    "attackRange": 1,
     "slot": "main_hand",
     "rarity": "common",
     "fixed_damage": 5,
@@ -5849,8 +5849,8 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_iron_crossbow.jpg",
     "type": "weapon",
     "weaponType": "two_handed",
-    "attackType": "ranged", // ⭐ НОВОЕ ПОЛЕ
-    "attackRange": 3,        // ⭐ НОВОЕ ПОЛЕ - дистанция атаки (3 = может бить любую цель)
+    "attackType": "ranged",
+    "attackRange": 3,
     "slot": "main_hand",
     "rarity": "rare",
     "fixed_damage": 39,
@@ -7237,8 +7237,8 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_adamantium_sword.jpg",
     "type": "weapon",
     "weaponType": "two_handed",
-    "attackType": "melee", // ⭐ НОВОЕ ПОЛЕ
-    "attackRange": 1,       // ⭐ НОВОЕ ПОЛЕ - дистанция атаки (1 = ближний бой)
+    "attackType": "melee",
+    "attackRange": 1,
     "slot": "main_hand",
     "rarity": "mythic",
     "fixed_damage": 108,
