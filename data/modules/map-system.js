@@ -28,6 +28,10 @@ class MapSystem {
         this.pendingMovement = null;
         this.canvasInitialized = false;
         
+        // ⭐ ДОБАВЛЯЕМ МАСШТАБИРОВАНИЕ
+        this.scale = 1.0;
+        this.baseCellSize = 40;
+        
         console.log("✅ MapSystem инициализирован");
     }
 
@@ -109,6 +113,21 @@ class MapSystem {
         const cells = jsonMap.game.grid.cells;
         const convertedCells = {};
         
+        // ⭐ НАХОДИМ МАКСИМАЛЬНЫЕ КООРДИНАТЫ ДЛЯ МАСШТАБИРОВАНИЯ
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        
+        cells.forEach(cell => {
+            minX = Math.min(minX, cell.x);
+            minY = Math.min(minY, cell.y);
+            maxX = Math.max(maxX, cell.x);
+            maxY = Math.max(maxY, cell.y);
+        });
+        
+        const mapWidth = maxX - minX;
+        const mapHeight = maxY - minY;
+        
+        console.log(`📐 Исходные размеры карты: ${mapWidth}x${mapHeight}`);
+        
         cells.forEach(cell => {
             const key = `${cell.col},${cell.row}`;
             convertedCells[key] = {
@@ -140,7 +159,13 @@ class MapSystem {
             cells: convertedCells,
             jsonData: jsonMap,
             renderType: 'hex',
-            cellSize: jsonMap.game.grid.cellSize || 40
+            cellSize: jsonMap.game.grid.cellSize || 40,
+            // ⭐ СОХРАНЯЕМ ИСХОДНЫЕ РАЗМЕРЫ ДЛЯ МАСШТАБИРОВАНИЯ
+            originalBounds: {
+                minX, minY, maxX, maxY,
+                width: mapWidth,
+                height: mapHeight
+            }
         };
     }
 
@@ -183,7 +208,7 @@ class MapSystem {
             return;
         }
 
-        // Устанавливаем размеры
+        // Устанавливаем размеры и масштабируем
         this.calculateMapPositioning();
 
         console.log(`📐 Canvas создан: ${this.canvas.width}x${this.canvas.height}`);
@@ -213,48 +238,46 @@ class MapSystem {
         const rect = container.getBoundingClientRect();
         console.log(`📐 Container rect: ${rect.width}x${rect.height}`);
         
-        // Если высота 0, используем минимальную высоту
-        const effectiveHeight = rect.height > 0 ? rect.height : 600;
         this.canvas.width = rect.width;
-        this.canvas.height = effectiveHeight;
+        this.canvas.height = rect.height;
 
         console.log(`📐 Canvas size: ${this.canvas.width}x${this.canvas.height}`);
 
         const cells = Object.values(this.currentTacticalMap.cells);
         
-        if (cells.length > 0) {
-            // Находим границы всех клеток
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        if (cells.length > 0 && this.currentTacticalMap.originalBounds) {
+            const bounds = this.currentTacticalMap.originalBounds;
             
+            // ⭐ ВЫЧИСЛЯЕМ МАСШТАБ ДЛЯ ВМЕЩЕНИЯ КАРТЫ В CANVAS
+            const scaleX = (this.canvas.width * 0.8) / bounds.width;
+            const scaleY = (this.canvas.height * 0.8) / bounds.height;
+            this.scale = Math.min(scaleX, scaleY, 1.5); // Ограничиваем максимальный масштаб
+            
+            console.log(`📐 Масштаб: ${this.scale.toFixed(2)} (X: ${scaleX.toFixed(2)}, Y: ${scaleY.toFixed(2)})`);
+            
+            // Центрируем карту
+            const scaledWidth = bounds.width * this.scale;
+            const scaledHeight = bounds.height * this.scale;
+            
+            const offsetX = (this.canvas.width - scaledWidth) / 2;
+            const offsetY = (this.canvas.height - scaledHeight) / 2;
+            
+            console.log(`📐 Смещение: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
+            
+            // ⭐ ПРИМЕНЯЕМ МАСШТАБ И СМЕЩЕНИЕ КО ВСЕМ КЛЕТКАМ
             cells.forEach(cell => {
-                minX = Math.min(minX, cell.x);
-                minY = Math.min(minY, cell.y);
-                maxX = Math.max(maxX, cell.x);
-                maxY = Math.max(maxY, cell.y);
+                // Масштабируем относительно центра карты
+                const scaledX = (cell.x - bounds.minX) * this.scale + offsetX;
+                const scaledY = (cell.y - bounds.minY) * this.scale + offsetY;
+                
+                cell.x = scaledX;
+                cell.y = scaledY;
             });
             
-            const width = maxX - minX;
-            const height = maxY - minY;
-            const centerCellsX = minX + width / 2;
-            const centerCellsY = minY + height / 2;
+            // ⭐ ТАКЖЕ МАСШТАБИРУЕМ РАЗМЕР КЛЕТОК
+            this.currentTacticalMap.cellSize = this.baseCellSize * this.scale;
             
-            const centerCanvasX = this.canvas.width / 2;
-            const centerCanvasY = this.canvas.height / 2;
-            
-            const offsetX = centerCanvasX - centerCellsX;
-            const offsetY = centerCanvasY - centerCellsY;
-            
-            console.log(`📐 Center of cells: (${centerCellsX.toFixed(1)}, ${centerCellsY.toFixed(1)})`);
-            console.log(`📐 Center of canvas: (${centerCanvasX}, ${centerCanvasY})`);
-            console.log(`📐 Required offset: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
-            
-            // Применяем смещение ко всем клеткам
-            cells.forEach(cell => {
-                cell.x += offsetX;
-                cell.y += offsetY;
-            });
-            
-            console.log("✅ Cells repositioned to center");
+            console.log(`✅ Карта масштабирована. Размер клетки: ${this.currentTacticalMap.cellSize.toFixed(1)}`);
         }
         
         this.mapOffset.x = 0;
@@ -317,7 +340,7 @@ class MapSystem {
         if (!this.currentTacticalMap) return null;
 
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         for (const cell of cells) {
             const distance = Math.sqrt(
@@ -325,7 +348,7 @@ class MapSystem {
                 Math.pow(canvasY - cell.y, 2)
             );
             
-            if (distance <= hexSize * 0.8) {
+            if (distance <= hexSize * 0.6) {
                 return cell;
             }
         }
@@ -373,7 +396,7 @@ class MapSystem {
 
     drawHexes() {
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         cells.forEach(cell => {
             if (cell.visible) {
@@ -433,11 +456,11 @@ class MapSystem {
 
         let symbol = '·';
         let color = '#ffffff';
-        let fontSize = 16;
+        let fontSize = 16 * this.scale; // ⭐ МАСШТАБИРУЕМ РАЗМЕР ШРИФТА
 
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
-            fontSize = 20;
+            fontSize = 20 * this.scale;
         } else {
             switch(cell.type) {
                 case 'player_start':
@@ -470,7 +493,7 @@ class MapSystem {
 
     drawHexGrid() {
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         this.ctx.save();
         this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
@@ -496,7 +519,7 @@ class MapSystem {
 
     drawAvailableMoves() {
         const availableMoves = this.getAvailableMoves();
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         this.ctx.save();
         availableMoves.forEach(move => {
@@ -524,7 +547,8 @@ class MapSystem {
     drawHoverEffect() {
         if (!this.hoveredHex) return;
 
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+
         this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < 6; i++) {
@@ -656,7 +680,7 @@ class MapSystem {
         
         if (!currentCell) return [];
         
-        const hexSize = 40;
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         const geometry = this.getHexGeometry(hexSize);
         
         Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
@@ -812,15 +836,8 @@ class MapSystem {
         
         console.log("✅ Оверлей тактической карты создан");
         
-        // Принудительно устанавливаем высоту через небольшой таймаут
+        // Даем время DOM обновиться перед инициализацией Canvas
         setTimeout(() => {
-            const visualContainer = document.querySelector('.tactical-map-visual');
-            if (visualContainer) {
-                console.log("🔄 Принудительная установка высоты контейнера...");
-                visualContainer.style.height = '600px';
-                visualContainer.style.minHeight = '600px';
-            }
-            
             console.log("🕒 Запуск инициализации Canvas...");
             this.initCanvas();
         }, 100);
@@ -860,7 +877,8 @@ class MapSystem {
             tacticalMaps: this.tacticalMaps.length,
             currentTacticalMap: !!this.currentTacticalMap,
             canvasInitialized: this.canvasInitialized,
-            activeOverlay: this.activeOverlay
+            activeOverlay: this.activeOverlay,
+            scale: this.scale
         };
     }
 
@@ -869,7 +887,9 @@ class MapSystem {
             tacticalMaps: this.tacticalMaps.length,
             currentMap: this.currentTacticalMap?.name,
             playerPosition: this.playerTacticalPosition,
-            canvasInitialized: this.canvasInitialized
+            canvasInitialized: this.canvasInitialized,
+            scale: this.scale,
+            cellSize: this.currentTacticalMap?.cellSize
         });
     }
 
@@ -886,6 +906,10 @@ class MapSystem {
                 "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300},
                 "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300},
                 "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350}
+            },
+            originalBounds: {
+                minX: 250, minY: 250, maxX: 350, maxY: 350,
+                width: 100, height: 100
             }
         }];
     }
@@ -899,6 +923,10 @@ class MapSystem {
             startPosition: {x: 1, y: 1},
             cells: {
                 "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 200, y: 200}
+            },
+            originalBounds: {
+                minX: 200, minY: 200, maxX: 200, maxY: 200,
+                width: 0, height: 0
             }
         }];
     }
