@@ -2975,3 +2975,40 @@ body {
         min-width: auto;
     }
 }
+/* Стиль для полноэкранного боя с информацией о карте */
+.battle-screen-fullscreen {
+    padding: 2rem;
+    background: #1f2937;
+    color: white;
+    min-height: 100vh;
+}
+
+.battle-header-with-map-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #4b5563;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.map-context-info {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #00ffff;
+    font-size: 1rem;
+}
+
+.btn-battle-back {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 1rem;
+}
