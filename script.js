@@ -76,42 +76,61 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-   async loadModule(moduleName) {
-    if (this.loadedModules.has(moduleName)) {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-
-    try {
-        const modulePath = `data/modules/${moduleName}.js`;
-        console.log(`📥 Загружаем модуль: ${modulePath}`);
-        
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+    async loadModule(moduleName) {
+        if (this.loadedModules.has(moduleName)) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
         }
-        
-        const moduleCode = await response.text();
-        
-        // ⭐ ИСПРАВЛЕНИЕ: Убираем проблемную строку с removeChild
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.textContent = moduleCode;
-        document.head.appendChild(script);
-        // ⭐ УБИРАЕМ ЭТУ СТРОКУ: document.head.removeChild(script);
-        
-        this.loadedModules.add(moduleName);
-        console.log(`✅ Модуль ${moduleName} успешно загружен`);
-        return true;
-        
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-        return false;
+
+        try {
+            const modulePath = `data/modules/${moduleName}.js`;
+            console.log(`📥 Загружаем модуль: ${modulePath}`);
+            
+            const response = await fetch(modulePath);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+            }
+            
+            const moduleCode = await response.text();
+            
+            // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
+            const blob = new Blob([moduleCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                script.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+                };
+                document.head.appendChild(script);
+            });
+            
+            this.loadedModules.add(moduleName);
+            console.log(`✅ Модуль ${moduleName} успешно загружен`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            return false;
+        }
     }
-}
 
     isModuleAvailable(moduleName) {
-        return typeof window[this.getClassName(moduleName)] !== 'undefined';
+        const classMap = {
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem'
+        };
+        return typeof window[classMap[moduleName]] !== 'undefined';
     }
 
     getClassName(moduleName) {
@@ -127,8 +146,8 @@ class ModuleLoader {
     }
 
     async waitForAllModules() {
-        const maxAttempts = 100;
-        const checkInterval = 100;
+        const maxAttempts = 50; // Уменьшил количество попыток
+        const checkInterval = 200;
         
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
             const loaded = this.requiredModules.every(module => 
@@ -144,14 +163,24 @@ class ModuleLoader {
                 console.log("⏳ Ожидание модулей...");
             }
             
-            if (attempt % 10 === 0) {
+            if (attempt % 5 === 0) {
                 console.log(`⏳ Попытка ${attempt}/${maxAttempts}...`);
+                // Покажем какие модули уже загружены
+                const loadedList = this.requiredModules
+                    .filter(m => this.isModuleAvailable(m))
+                    .map(m => this.getClassName(m));
+                console.log(`📦 Загружены: ${loadedList.join(', ')}`);
             }
             
             await new Promise(resolve => setTimeout(resolve, checkInterval));
         }
         
-        throw new Error(`Модули не загрузились за ${maxAttempts/10} секунд`);
+        // Покажем какие модули не загрузились
+        const failedModules = this.requiredModules
+            .filter(m => !this.isModuleAvailable(m))
+            .map(m => this.getClassName(m));
+        
+        throw new Error(`Модули не загрузились за ${maxAttempts * checkInterval / 1000} секунд. Не загружены: ${failedModules.join(', ')}`);
     }
 
     async loadAllModules() {
@@ -174,7 +203,8 @@ class ModuleLoader {
         
         if (failedModules.length > 0) {
             console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
-            throw new Error(`Не удалось загрузить модули: ${failedModules.map(f => f.module).join(', ')}`);
+            // Не бросаем ошибку сразу, пробуем продолжить с тем что есть
+            console.log("🔄 Продолжаем с доступными модулями...");
         }
         
         return await this.waitForAllModules();
