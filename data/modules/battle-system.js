@@ -1,3 +1,5 @@
+"use strict";
+
 // ========== MODULE: BattleSystem ==========
 class BattleSystem {
     constructor() {
@@ -37,19 +39,38 @@ class BattleSystem {
     }
 
     createFallbackMonsters() {
-        this.monsters = [];
-        for (let i = 1; i <= 10; i++) {
-            this.monsters.push({
-                id: i,
-                name: `Монстр ${i}`,
-                health: 20 + i * 5,
-                damage: 5 + i * 2,
-                armor: 2 + Math.floor(i/3),
-                experience: 5 + i * 2,
-                reward: 10 + i * 3,
-                attackType: i % 2 === 0 ? "ranged" : "melee"
-            });
-        }
+        this.monsters = [
+            {
+                id: 1,
+                name: "Лютоволк",
+                health: 300,
+                damage: 25,
+                armor: 5,
+                experience: 50,
+                reward: 100,
+                attackType: "melee"
+            },
+            {
+                id: 2,
+                name: "Гоблин",
+                health: 150,
+                damage: 15,
+                armor: 2,
+                experience: 25,
+                reward: 50,
+                attackType: "melee"
+            },
+            {
+                id: 3,
+                name: "Орк",
+                health: 400,
+                damage: 35,
+                armor: 8,
+                experience: 75,
+                reward: 150,
+                attackType: "melee"
+            }
+        ];
         console.log("🔄 Созданы тестовые монстры");
     }
 
@@ -72,12 +93,16 @@ class BattleSystem {
         this.battleContext = context;
         
         console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
-        this.showTacticalBattleScreen();
+        this.showInteractiveBattle();
     }
 
     generateMonsterGroup(baseMonsterId) {
         const baseMonster = this.monsters.find(m => m.id === baseMonsterId);
-        if (!baseMonster) return [];
+        if (!baseMonster) {
+            // Если монстр не найден, используем случайного
+            const randomIndex = Math.floor(Math.random() * this.monsters.length);
+            baseMonster = this.monsters[randomIndex];
+        }
 
         const roll = Math.random() * 100;
         let monsterCount = 1;
@@ -93,7 +118,8 @@ class BattleSystem {
             const monsterCopy = {
                 ...baseMonster,
                 battleId: i + 1,
-                currentHealth: baseMonster.health
+                currentHealth: baseMonster.health,
+                name: `${baseMonster.name} ${i + 1}`
             };
             monsterGroup.push(monsterCopy);
         }
@@ -105,6 +131,7 @@ class BattleSystem {
         this.battleGrid.allies = [null, null, null, null, null, null];
         this.battleGrid.enemies = [null, null, null, null, null, null];
         
+        // Размещаем героя в центре заднего ряда
         this.battleGrid.allies[3] = {
             type: 'hero',
             data: hero,
@@ -114,6 +141,7 @@ class BattleSystem {
         };
 
         this.placeMonstersOnGrid(monsters);
+        this.updateAvailableTargets();
     }
 
     placeMonstersOnGrid(monsters) {
@@ -153,162 +181,274 @@ class BattleSystem {
         });
     }
 
-    showTacticalBattleScreen() {
+    // ========== ИНТЕРАКТИВНЫЙ ИНТЕРФЕЙС БОЯ ==========
+    showInteractiveBattle() {
         const app = document.getElementById('app');
         if (!app) return;
 
         app.innerHTML = `
-            <div class="tactical-battle-screen">
+            <div class="battle-screen-interactive">
                 <header class="battle-header">
                     <h2>⚔️ ТАКТИЧЕСКИЙ БОЙ</h2>
                     <div class="battle-round">Раунд: ${this.battleRound}</div>
+                    <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
+                        ← Назад к карте
+                    </button>
                 </header>
                 
-                <div class="battle-grid-container">
-                    <div class="battle-grid allies-grid">
-                        <div class="grid-header">ВАШ ОТРЯД</div>
-                        <div class="grid-positions">
-                            ${this.renderBattleGrid('allies')}
+                <div class="battle-status">
+                    <div class="hero-status">
+                        <div class="combatant-hero">
+                            <div class="combatant-image">
+                                <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                                <div class="combatant-fallback" style="display: none;">🎯</div>
+                            </div>
+                            <div class="combatant-info">
+                                <h4>${this.currentHero.name}</h4>
+                                <div class="health-bar">
+                                    <div class="health-fill" style="width: ${(this.battleGrid.allies[3].currentHealth / this.battleGrid.allies[3].maxHealth) * 100}%"></div>
+                                    <div class="health-text">${Math.ceil(this.battleGrid.allies[3].currentHealth)}/${this.battleGrid.allies[3].maxHealth}</div>
+                                </div>
+                                <div class="combatant-stats">
+                                    <span>⚔️ ${this.getHeroDamage()}</span>
+                                    <span>🛡️ ${this.getHeroArmor()}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="battle-vs">VS</div>
                     
-                    <div class="battle-grid enemies-grid">
-                        <div class="grid-header">ПРОТИВНИКИ</div>
+                    <div class="enemies-status">
+                        ${this.renderEnemiesStatus()}
+                    </div>
+                </div>
+                
+                <div class="battle-grid-interactive">
+                    <div class="grid-side allies-side">
+                        <h4>ВАШ ОТРЯД</h4>
                         <div class="grid-positions">
-                            ${this.renderBattleGrid('enemies')}
+                            ${this.renderInteractiveGrid('allies')}
+                        </div>
+                    </div>
+                    
+                    <div class="grid-side enemies-side">
+                        <h4>ПРОТИВНИКИ</h4>
+                        <div class="grid-positions">
+                            ${this.renderInteractiveGrid('enemies')}
                         </div>
                     </div>
                 </div>
                 
-                <div class="tactical-battle-log">
-                    <h4>📜 Ход боя:</h4>
-                    <div class="log-entries">
-                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                <div class="battle-controls">
+                    <div class="battle-hint" id="battleHint">
+                        ${this.getBattleHint()}
+                    </div>
+                    
+                    <div class="battle-actions">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
                     </div>
                 </div>
                 
-                <div class="battle-hint" id="battleHint">
-                    Выберите цель для атаки
+                <div class="battle-log-container">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                    </div>
                 </div>
             </div>
         `;
-
-        this.updateAvailableTargets();
     }
 
-    renderBattleGrid(side) {
+    renderInteractiveGrid(side) {
         const grid = this.battleGrid[side];
         let html = '';
         
-        for (let row = 0; row < 3; row++) {
-            for (let col = 0; col < 2; col++) {
-                const position = row * 2 + col;
-                const unit = grid[position];
-                html += this.renderBattlePosition(unit, position, side);
-            }
+        for (let position = 0; position < 6; position++) {
+            const unit = grid[position];
+            html += this.renderInteractiveGridCell(unit, position, side);
         }
         
         return html;
     }
 
-    renderBattlePosition(unit, position, side) {
+    renderInteractiveGridCell(unit, position, side) {
         const isEnemy = side === 'enemies';
         const isEmpty = !unit;
         
-        let unitHtml = '';
-        let healthBar = '';
-        let clickHandler = '';
-        let cssClass = `battle-position ${isEnemy ? 'enemy-position' : 'ally-position'}`;
+        let cellClass = 'grid-cell';
+        let content = '';
+        let onClick = '';
         
         if (isEmpty) {
-            unitHtml = '<div class="empty-slot">⚫</div>';
-            cssClass += ' empty';
+            cellClass += ' empty';
+            content = '⚫';
         } else {
             const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
-            healthBar = `
-                <div class="position-health-bar">
-                    <div class="health-fill" style="width: ${healthPercent}%"></div>
-                    <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
+            const isAlive = unit.currentHealth > 0;
+            
+            let unitSymbol = isEnemy ? '👹' : '🎯';
+            if (!isAlive) {
+                unitSymbol = '💀';
+                cellClass += ' dead';
+            } else {
+                cellClass += ' alive';
+            }
+            
+            content = `
+                <div class="unit-display">
+                    <div class="unit-symbol">${unitSymbol}</div>
+                    <div class="unit-name">${unit.data.name}</div>
+                    <div class="unit-health">
+                        <div class="health-bar-small">
+                            <div class="health-fill-small" style="width: ${healthPercent}%"></div>
+                        </div>
+                        <div class="health-text-small">${Math.ceil(unit.currentHealth)}</div>
+                    </div>
                 </div>
             `;
             
-            unitHtml = `
-                <div class="unit-icon">
-                    <span>${isEnemy ? '👹' : '🎯'}</span>
-                </div>
-                <div class="unit-name">${unit.data.name}</div>
-            `;
-            
-            if (isEnemy) {
-                clickHandler = `onclick="game.systems.battle.selectTarget(${position})"`;
-                cssClass += ' selectable';
+            // Делаем врагов кликабельными, если они живы и доступны для атаки
+            if (isEnemy && isAlive && this.availableTargets.includes(position)) {
+                cellClass += ' selectable';
+                onClick = `onclick="game.systems.battle.selectTarget(${position})"`;
             }
         }
         
-        return `<div class="${cssClass}" ${clickHandler} data-position="${position}">${unitHtml}${healthBar}</div>`;
+        return `
+            <div class="${cellClass}" ${onClick} data-position="${position}" data-side="${side}">
+                ${content}
+            </div>
+        `;
     }
 
-    selectTarget(position) {
-        if (!this.availableTargets.includes(position)) return;
+    renderEnemiesStatus() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
         
-        this.selectedTarget = position;
-        this.executeAttack(position);
+        return aliveMonsters.map(monster => `
+            <div class="combatant-enemy">
+                <div class="combatant-image">
+                    <div class="enemy-symbol">👹</div>
+                </div>
+                <div class="combatant-info">
+                    <h4>${monster.data.name}</h4>
+                    <div class="health-bar">
+                        <div class="health-fill" style="width: ${(monster.currentHealth / monster.maxHealth) * 100}%"></div>
+                        <div class="health-text">${Math.ceil(monster.currentHealth)}/${monster.maxHealth}</div>
+                    </div>
+                    <div class="combatant-stats">
+                        <span>⚔️ ${monster.data.damage}</span>
+                        <span>🛡️ ${monster.data.armor || 0}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
     }
 
-    updateAvailableTargets() {
-        const hero = this.battleGrid.allies[3];
-        if (!hero) return;
+    getHeroDamage() {
+        if (!this.currentHero || !window.game?.systems?.level) return 0;
+        const stats = window.game.systems.level.calculateHeroStats(this.currentHero, window.game.systems.bonus);
+        return stats.damage;
+    }
 
-        const attackType = this.getHeroAttackType(hero.data);
+    getHeroArmor() {
+        if (!this.currentHero || !window.game?.systems?.level) return 0;
+        const stats = window.game.systems.level.calculateHeroStats(this.currentHero, window.game.systems.bonus);
+        return stats.armor;
+    }
+
+    getBattleHint() {
+        if (this.availableTargets.length === 0) {
+            return "Ожидание хода противника...";
+        }
         
-        if (attackType === 'ranged') {
-            this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => 
-                this.battleGrid.enemies[pos] && this.battleGrid.enemies[pos].currentHealth > 0
-            );
+        const targetCount = this.availableTargets.length;
+        if (targetCount === 1) {
+            return "Кликните на врага для атаки (доступна 1 цель)";
         } else {
-            this.availableTargets = [0, 1, 2].filter(pos => 
-                this.battleGrid.enemies[pos] && this.battleGrid.enemies[pos].currentHealth > 0
-            );
+            return `Кликните на врага для атаки (доступно ${targetCount} целей)`;
         }
     }
 
-    getHeroAttackType(hero) {
-        const equippedWeaponId = hero.equipment?.main_hand;
-        if (equippedWeaponId && window.game.systems.equipment) {
-            const weapon = window.game.systems.equipment.getItemById(equippedWeaponId);
-            return weapon?.attackType || 'melee';
+    // ========== ОСНОВНАЯ ЛОГИКА БОЯ ==========
+    selectTarget(position) {
+        if (!this.availableTargets.includes(position)) {
+            console.log("❌ Цель недоступна для атаки");
+            return;
         }
-        return 'melee';
+
+        const target = this.battleGrid.enemies[position];
+        if (!target || target.currentHealth <= 0) {
+            console.log("❌ Цель уже мертва");
+            return;
+        }
+
+        this.selectedTarget = position;
+        console.log(`🎯 Выбрана цель: ${target.data.name} на позиции ${position}`);
+        
+        this.executeAttack(position);
     }
 
     executeAttack(targetPosition) {
         const hero = this.battleGrid.allies[3];
         const target = this.battleGrid.enemies[targetPosition];
-        if (!hero || !target) return;
+        
+        if (!hero || !target) {
+            console.error("❌ Ошибка атаки: герой или цель не найдены");
+            return;
+        }
 
         this.battleRound++;
         
+        // Расчет урона
         const heroStats = window.game.systems.level.calculateHeroStats(hero.data, window.game.systems.bonus);
         const baseDamage = heroStats.damage;
         const targetArmor = target.data.armor || 0;
-        const finalDamage = Math.max(1, baseDamage - targetArmor);
         
+        // Критический удар
+        const isCrit = Math.random() < (heroStats.critChance || 0.1);
+        const critMultiplier = isCrit ? 2 : 1;
+        const finalDamage = Math.max(1, Math.floor((baseDamage - targetArmor) * critMultiplier));
+        
+        // Нанесение урона
         target.currentHealth -= finalDamage;
-        this.addBattleLog(`🗡️ ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
         
+        // Вампиризм
+        if (heroStats.vampirism && heroStats.vampirism > 0) {
+            const healAmount = Math.floor(finalDamage * heroStats.vampirism);
+            hero.currentHealth = Math.min(hero.currentHealth + healAmount, hero.maxHealth);
+            if (healAmount > 0) {
+                this.addBattleLog(`🩸 ${hero.data.name} поглощает ${healAmount} здоровья!`);
+            }
+        }
+        
+        // Логирование
+        if (isCrit) {
+            this.addBattleLog(`💥 КРИТИЧЕСКИЙ УДАР! ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
+        } else {
+            this.addBattleLog(`🗡️ ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
+        }
+        
+        // Проверка смерти цели
         if (target.currentHealth <= 0) {
+            target.currentHealth = 0;
             this.addBattleLog(`💀 ${target.data.name} повержен!`);
-            this.battleGrid.enemies[targetPosition] = null;
             
+            // Проверка конца боя
             if (this.isBattleOver()) {
                 this.endTacticalBattle(true);
                 return;
             }
         }
         
-        setTimeout(() => this.executeMonsterTurns(), 1000);
+        // Обновление интерфейса
+        this.updateBattleDisplay();
+        
+        // Ход монстров
+        setTimeout(() => this.executeMonsterTurns(), 1500);
     }
 
     executeMonsterTurns() {
@@ -318,11 +458,24 @@ class BattleSystem {
             return;
         }
         
-        aliveMonsters.forEach(monster => {
+        let monsterIndex = 0;
+        const executeNextMonster = () => {
+            if (monsterIndex >= aliveMonsters.length) {
+                // Все монстры походили
+                this.updateAvailableTargets();
+                this.updateBattleDisplay();
+                return;
+            }
+            
+            const monster = aliveMonsters[monsterIndex];
             this.executeMonsterAttack(monster);
-        });
+            monsterIndex++;
+            
+            // Задержка между атаками монстров
+            setTimeout(executeNextMonster, 1000);
+        };
         
-        this.updateAvailableTargets();
+        executeNextMonster();
     }
 
     executeMonsterAttack(monster) {
@@ -337,8 +490,48 @@ class BattleSystem {
         this.addBattleLog(`👹 ${monster.data.name} атакует героя и наносит ${finalDamage} урона!`);
         
         if (hero.currentHealth <= 0) {
+            hero.currentHealth = 0;
+            this.addBattleLog(`💀 ${hero.data.name} повержен!`);
             this.endTacticalBattle(false);
         }
+    }
+
+    updateAvailableTargets() {
+        const hero = this.battleGrid.allies[3];
+        if (!hero) return;
+
+        const attackType = this.getHeroAttackType(hero.data);
+        
+        if (attackType === 'ranged') {
+            // Дальний бой - можно атаковать любых врагов
+            this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => {
+                const unit = this.battleGrid.enemies[pos];
+                return unit && unit.currentHealth > 0;
+            });
+        } else {
+            // Ближний бой - только передняя линия
+            this.availableTargets = [0, 1, 2].filter(pos => {
+                const unit = this.battleGrid.enemies[pos];
+                return unit && unit.currentHealth > 0;
+            });
+            
+            // Если передняя линия пуста, можно атаковать любых врагов
+            if (this.availableTargets.length === 0) {
+                this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => {
+                    const unit = this.battleGrid.enemies[pos];
+                    return unit && unit.currentHealth > 0;
+                });
+            }
+        }
+    }
+
+    getHeroAttackType(hero) {
+        const equippedWeaponId = hero.equipment?.main_hand;
+        if (equippedWeaponId && window.game.systems.equipment) {
+            const weapon = window.game.systems.equipment.getItemById(equippedWeaponId);
+            return weapon?.attackType || 'melee';
+        }
+        return 'melee';
     }
 
     isBattleOver() {
@@ -347,8 +540,33 @@ class BattleSystem {
         return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
     }
 
-    endTacticalBattle(victory) {
-        if (victory) {
+    // ========== СИСТЕМА ПОБЕГА ==========
+    tryToFlee() {
+        const fleeChance = 0.4; // 40% шанс сбежать
+        
+        if (Math.random() < fleeChance) {
+            this.addBattleLog("🏃 Вам удалось сбежать с поля боя!");
+            this.endTacticalBattle(false, true);
+        } else {
+            this.addBattleLog("❌ Попытка сбежать не удалась! Противники атакуют.");
+            this.executeMonsterTurns();
+        }
+        
+        this.updateBattleDisplay();
+    }
+
+    // ========== ЗАВЕРШЕНИЕ БОЯ ==========
+    endTacticalBattle(victory, fled = false) {
+        if (fled) {
+            // При побеге - минимальные потери
+            const hero = this.battleGrid.allies[3];
+            if (hero) {
+                const damage = Math.floor(hero.maxHealth * 0.1); // 10% от макс здоровья
+                hero.currentHealth = Math.max(1, hero.currentHealth - damage);
+                this.addBattleLog(`🏃 Вы сбежали, получив ${damage} урона`);
+            }
+        } else if (victory) {
+            // Победа - награда
             const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
             const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
             
@@ -358,39 +576,85 @@ class BattleSystem {
             
             this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
         } else {
+            // Поражение
             this.currentHero.currentHealth = 1;
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
         }
         
+        // Сохранение игры
         if (window.game) window.game.saveGame();
+        
+        // Завершение движения на карте
         if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
+            window.game.systems.map.completeMovementAfterBattle(victory && !fled);
         }
         
         this.battleActive = false;
-        this.currentMonsters = [];
-        this.showTacticalBattleResult(victory);
+        this.showBattleResult(victory, fled);
     }
 
-    showTacticalBattleResult(victory) {
+    showBattleResult(victory, fled = false) {
         const app = document.getElementById('app');
         if (!app) return;
 
-        app.innerHTML = `
-            <div class="battle-result-screen">
-                <div class="result-content ${victory ? 'victory' : 'defeat'}">
-                    <h2>${victory ? '🎉 ПОБЕДА!' : '💀 ПОРАЖЕНИЕ'}</h2>
-                    <div class="result-stats">
-                        <div class="stat">Убито монстров: ${this.currentMonsters.length}</div>
-                        <div class="stat">Потрачено раундов: ${this.battleRound}</div>
+        let resultHTML = '';
+        
+        if (fled) {
+            resultHTML = `
+                <div class="battle-result-screen">
+                    <div class="result-content flee">
+                        <h2>🏃 УСПЕШНОЕ ОТСТУПЛЕНИЕ</h2>
+                        <div class="result-stats">
+                            <div class="stat">Вы успешно сбежали с поля боя</div>
+                            <div class="stat">Получены легкие ранения</div>
+                            <div class="stat">Раундов: ${this.battleRound}</div>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
+                            Продолжить
+                        </button>
                     </div>
-                    <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
-                        Продолжить
-                    </button>
                 </div>
-            </div>
-        `;
+            `;
+        } else if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            resultHTML = `
+                <div class="battle-result-screen">
+                    <div class="result-content victory">
+                        <h2>🎉 ПОБЕДА!</h2>
+                        <div class="result-stats">
+                            <div class="stat">Убито монстров: ${this.currentMonsters.length}</div>
+                            <div class="stat">Получено золота: ${totalReward}</div>
+                            <div class="stat">Получено опыта: ${totalExperience}</div>
+                            <div class="stat">Потрачено раундов: ${this.battleRound}</div>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            resultHTML = `
+                <div class="battle-result-screen">
+                    <div class="result-content defeat">
+                        <h2>💀 ПОРАЖЕНИЕ</h2>
+                        <div class="result-stats">
+                            <div class="stat">Герой повержен в бою</div>
+                            <div class="stat">Здоровье восстановлено до 1</div>
+                            <div class="stat">Потрачено раундов: ${this.battleRound}</div>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        app.innerHTML = resultHTML;
     }
 
     returnToGame() {
@@ -405,9 +669,50 @@ class BattleSystem {
         this.currentMonsters = [];
     }
 
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     addBattleLog(message) {
-        this.battleLog.push(message);
-        if (this.battleLog.length > 10) this.battleLog.shift();
+        this.battleLog.push(`[Раунд ${this.battleRound}] ${message}`);
+        if (this.battleLog.length > 8) this.battleLog.shift();
+        this.updateBattleLog();
+    }
+
+    updateBattleLog() {
+        const logContainer = document.getElementById('battleLogEntries');
+        if (logContainer) {
+            logContainer.innerHTML = this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('');
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    }
+
+    updateBattleDisplay() {
+        const hintElement = document.getElementById('battleHint');
+        if (hintElement) {
+            hintElement.textContent = this.getBattleHint();
+        }
+        
+        // Обновляем сетку
+        const alliesGrid = document.querySelector('.allies-side .grid-positions');
+        const enemiesGrid = document.querySelector('.enemies-side .grid-positions');
+        
+        if (alliesGrid) {
+            alliesGrid.innerHTML = this.renderInteractiveGrid('allies');
+        }
+        if (enemiesGrid) {
+            enemiesGrid.innerHTML = this.renderInteractiveGrid('enemies');
+        }
+        
+        // Обновляем статус героя и врагов
+        const enemiesStatus = document.querySelector('.enemies-status');
+        if (enemiesStatus) {
+            enemiesStatus.innerHTML = this.renderEnemiesStatus();
+        }
+        
+        this.updateBattleLog();
+    }
+
+    // Старый метод для совместимости
+    showTacticalBattleScreen() {
+        this.showInteractiveBattle();
     }
 
     hideTacticalMap() {
@@ -420,9 +725,9 @@ class BattleSystem {
     }
 
     showBattleScreen() {
-        this.showTacticalBattleScreen();
+        this.showInteractiveBattle();
     }
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен");
+console.log("📦 BattleSystem модуль загружен с интерактивным интерфейсом");
