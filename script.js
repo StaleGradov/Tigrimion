@@ -961,11 +961,43 @@ class SafeHeroGame {
         document.addEventListener('keydown', handleKeyDown);
         document.body.appendChild(zoomOverlay);
     }
-// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ЗДЕСЬ:
+// В класс SafeHeroGame добавить эти методы:
+
+// ⭐ НОВЫЙ МЕТОД: Возврат к тактической карте
 returnToTacticalMap() {
-    // Закрываем боевой экран и возвращаемся к тактической карте
-    if (this.systems.map) {
-        this.systems.map.showOverlay('tactical-map');
+    // Сначала скрываем боевой экран
+    const app = document.getElementById('app');
+    if (app) {
+        // Показываем экран героя
+        this.showHeroGameScreen();
+        
+        // Затем открываем тактическую карту
+        setTimeout(() => {
+            if (this.systems.map) {
+                this.systems.map.showOverlay('tactical-map');
+            }
+        }, 100);
+    }
+}
+
+// ⭐ НОВЫЙ МЕТОД: Управление боем и картой
+manageBattleWithMap() {
+    // Этот метод будет вызываться когда нужно показать бой поверх карты
+    if (this.systems.battle && this.systems.battle.battleActive) {
+        this.systems.battle.showBattleScreen();
+    }
+}
+
+// ⭐ НОВЫЙ МЕТОД: Начать бой при перемещении
+startMovementBattle(hero, monsterId) {
+    if (this.systems.battle) {
+        // Скрываем карту перед боем
+        this.hideOverlay();
+        
+        // Запускаем бой
+        setTimeout(() => {
+            this.systems.battle.startBattleWithMonster(hero, monsterId, 'movement');
+        }, 50);
     }
 }
 
