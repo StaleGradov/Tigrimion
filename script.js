@@ -260,6 +260,19 @@ class SafeHeroGame {
             // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ
             this.startHealthRegeneration();
             
+            // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизация HeroSystem после загрузки
+            setTimeout(() => {
+                if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
+                    this.systems.hero.currentHero = this.currentHero;
+                    console.log("✅ HeroSystem синхронизирован с текущим героем");
+                    
+                    // Принудительно обновляем интерфейс если нужно
+                    if (this.currentScreen === 'hero-game') {
+                        this.systems.hero.showHeroGameScreen();
+                    }
+                }
+            }, 1000);
+            
         } catch (error) {
             console.error("💀 Критическая ошибка инициализации:", error);
             this.panic(error);
@@ -415,6 +428,10 @@ class SafeHeroGame {
                     if (this.currentHero && this.systems.equipment) {
                         this.systems.equipment.setCurrentHero(this.currentHero);
                     }
+                    
+                    // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизируем HeroSystem
+                    this.systems.hero.currentHero = this.currentHero;
+                    
                     console.log("✅ Текущий герой восстановлен:", this.currentHero?.name);
                 }
                 
@@ -450,8 +467,9 @@ class SafeHeroGame {
     // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
     startHealthRegeneration() {
         setInterval(() => {
-            if (this.currentHero && this.systems.level) {
-                const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
+            if (this.currentHero && this.systems.hero) {
+                // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
+                const stats = this.systems.hero.calculateHeroStats(this.currentHero);
                 
                 if (this.currentHero.currentHealth < stats.maxHealth) {
                     // Базовая регенерация + бонусы от предметов
@@ -520,7 +538,8 @@ class SafeHeroGame {
                 <div class="heroes-grid">
                     ${heroes.map(hero => {
                         const isUnlocked = hero.unlocked || hero.id === 1;
-                        const stats = this.systems.level.calculateHeroStats(hero, this.systems.bonus);
+                        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
+                        const stats = this.systems.hero.calculateHeroStats(hero);
                         
                         return `
                             <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
@@ -594,7 +613,8 @@ class SafeHeroGame {
         if (!this.currentHero) return;
 
         const app = document.getElementById('app');
-        const stats = this.systems.level.calculateHeroStats(this.currentHero, this.systems.bonus);
+        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
+        const stats = this.systems.hero.calculateHeroStats(this.currentHero);
         
         app.innerHTML = `
             <div class="hero-game-screen">
@@ -672,20 +692,26 @@ class SafeHeroGame {
                                     </div>
                                 </div>
 
-                                <!-- ⭐ ДОБАВЛЯЕМ ДОПОЛНИТЕЛЬНЫЕ ХАРАКТЕРИСТИКИ -->
+                                <!-- ⭐ АКТИВНЫЕ БОНУСЫ ИЗ HERO SYSTEM -->
                                 <div class="overlay-stat-group">
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🎯 Крит</span>
-                                        <span class="overlay-stat-value">${(stats.critChance * 100).toFixed(1)}%</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">❤️ Реген</span>
-                                        <span class="overlay-stat-value">+${(stats.healthRegen * 100).toFixed(1)}%</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🩸 Вампир</span>
-                                        <span class="overlay-stat-value">${(stats.vampirism * 100).toFixed(1)}%</span>
-                                    </div>
+                                    ${stats.activeBonuses && stats.activeBonuses.length > 0 ? 
+                                        stats.activeBonuses.slice(0, 4).map(bonus => `
+                                            <div class="overlay-stat-row">
+                                                <span class="overlay-stat-label">${bonus.label}</span>
+                                                <span class="overlay-stat-value">${bonus.display}</span>
+                                            </div>
+                                        `).join('') : 
+                                        `<div class="overlay-stat-row">
+                                            <span class="overlay-stat-label">🎯 Бонусы</span>
+                                            <span class="overlay-stat-value">Нет активных</span>
+                                        </div>`
+                                    }
+                                    ${stats.activeBonuses && stats.activeBonuses.length > 4 ? 
+                                        `<div class="overlay-stat-row">
+                                            <span class="overlay-stat-label">✨ Ещё</span>
+                                            <span class="overlay-stat-value">+${stats.activeBonuses.length - 4}</span>
+                                        </div>` : ''
+                                    }
                                 </div>
                             </div>
                             
@@ -993,45 +1019,44 @@ class SafeHeroGame {
         document.addEventListener('keydown', handleKeyDown);
         document.body.appendChild(zoomOverlay);
     }
-// В класс SafeHeroGame добавить эти методы:
 
-// ⭐ НОВЫЙ МЕТОД: Возврат к тактической карте
-returnToTacticalMap() {
-    // Сначала скрываем боевой экран
-    const app = document.getElementById('app');
-    if (app) {
-        // Показываем экран героя
-        this.showHeroGameScreen();
-        
-        // Затем открываем тактическую карту
-        setTimeout(() => {
-            if (this.systems.map) {
-                this.systems.map.showOverlay('tactical-map');
-            }
-        }, 100);
+    // ⭐ НОВЫЙ МЕТОД: Возврат к тактической карте
+    returnToTacticalMap() {
+        // Сначала скрываем боевой экран
+        const app = document.getElementById('app');
+        if (app) {
+            // Показываем экран героя
+            this.showHeroGameScreen();
+            
+            // Затем открываем тактическую карту
+            setTimeout(() => {
+                if (this.systems.map) {
+                    this.systems.map.showOverlay('tactical-map');
+                }
+            }, 100);
+        }
     }
-}
 
-// ⭐ НОВЫЙ МЕТОД: Управление боем и картой
-manageBattleWithMap() {
-    // Этот метод будет вызываться когда нужно показать бой поверх карты
-    if (this.systems.battle && this.systems.battle.battleActive) {
-        this.systems.battle.showBattleScreen();
+    // ⭐ НОВЫЙ МЕТОД: Управление боем и картой
+    manageBattleWithMap() {
+        // Этот метод будет вызываться когда нужно показать бой поверх карты
+        if (this.systems.battle && this.systems.battle.battleActive) {
+            this.systems.battle.showBattleScreen();
+        }
     }
-}
 
-// ⭐ НОВЫЙ МЕТОД: Начать бой при перемещении
-startMovementBattle(hero, monsterId) {
-    if (this.systems.battle) {
-        // Скрываем карту перед боем
-        this.hideOverlay();
-        
-        // Запускаем бой
-        setTimeout(() => {
-            this.systems.battle.startBattleWithMonster(hero, monsterId, 'movement');
-        }, 50);
+    // ⭐ НОВЫЙ МЕТОД: Начать бой при перемещении
+    startMovementBattle(hero, monsterId) {
+        if (this.systems.battle) {
+            // Скрываем карту перед боем
+            this.hideOverlay();
+            
+            // Запускаем бой
+            setTimeout(() => {
+                this.systems.battle.startBattleWithMonster(hero, monsterId, 'movement');
+            }, 50);
+        }
     }
-}
 
     // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
     buyItemFromModal(itemId) {
@@ -1280,6 +1305,7 @@ startMovementBattle(hero, monsterId) {
         console.log("Загруженные модули:", this.moduleLoader.loadedModules);
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
+        console.log("Текущий герой в HeroSystem:", this.systems.hero?.currentHero);
         console.log("Инвентарь текущего героя:", this.currentHero?.inventory);
         console.log("Экипировка текущего героя:", this.currentHero?.equipment);
         console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
