@@ -903,6 +903,16 @@ class SafeHeroGame {
         this.activeOverlay = overlayType;
 
         switch(overlayType) {
+            case 'tactical-map':
+                // ⭐ ИСПРАВЛЕНИЕ: Всегда устанавливаем текущего героя перед показом карты
+                if (this.systems.map) {
+                    this.systems.map.setCurrentHero(this.currentHero);
+                    this.systems.map.showOverlay('tactical-map');
+                } else {
+                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+                }
+                break;
+                
             case 'global-map':
                 container.innerHTML = `
                     <div class="overlay-content map-overlay">
@@ -931,16 +941,6 @@ class SafeHeroGame {
                 `;
                 break;
 
-            case 'tactical-map':
-                // ⭐ ИСПРАВЛЕНИЕ: Используем правильный метод MapSystem
-                if (this.systems.map) {
-                    this.systems.map.setCurrentHero(this.currentHero);
-                    this.systems.map.showOverlay('tactical-map');
-                } else {
-                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-                }
-                break;
-
             case 'inventory':
                 container.innerHTML = this.systems.equipment.showInventory();
                 break;
@@ -955,6 +955,30 @@ class SafeHeroGame {
         }
 
         container.style.display = 'block';
+    }
+
+    // НОВЫЙ МЕТОД: возврат на тактическую карту после боя
+    returnToTacticalMapAfterBattle() {
+        console.log("🔄 Возврат на тактическую карту после боя");
+        
+        // ⭐ ВАЖНО: Восстанавливаем оверлей тактической карты
+        if (this.systems.map) {
+            // Убедимся, что герой все еще установлен
+            this.systems.map.setCurrentHero(this.currentHero);
+            
+            // Показываем тактическую карту с текущим состоянием
+            this.showOverlay('tactical-map');
+            
+            // Обновляем отображение
+            setTimeout(() => {
+                if (this.systems.map.canvasInitialized) {
+                    this.systems.map.drawTacticalMap();
+                }
+            }, 100);
+        } else {
+            // Если что-то пошло не так, возвращаем на экран героя
+            this.showHeroGameScreen();
+        }
     }
 
     attachShopItemHandlers() {
