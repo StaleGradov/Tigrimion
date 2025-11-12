@@ -10,7 +10,6 @@ class BattleSystem {
         this.battleType = 'normal';
         this.battleContext = 'normal';
         
-        // НОВЫЕ ПОЛЯ ДЛЯ СЕТКИ 3×2
         this.battleGrid = {
             allies: [null, null, null, null, null, null],
             enemies: [null, null, null, null, null, null]
@@ -18,21 +17,18 @@ class BattleSystem {
         this.selectedTarget = null;
         this.availableTargets = [];
         
-        console.log("✅ BattleSystem инициализирован с новой сеткой 3×2");
+        console.log("✅ BattleSystem инициализирован");
     }
 
     async loadBattleData() {
         try {
             console.log("📥 Загружаем данные монстров...");
             const response = await fetch('data/enemies.json');
-            if (!response.ok) {
-                throw new Error(`Ошибка загрузки enemies.json: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             this.monsters = await response.json();
             console.log(`✅ Загружено монстров: ${this.monsters.length}`);
             return true;
-            
         } catch (error) {
             console.error("❌ Ошибка загрузки данных монстров:", error);
             this.createFallbackMonsters();
@@ -42,30 +38,21 @@ class BattleSystem {
 
     createFallbackMonsters() {
         this.monsters = [];
-        for (let i = 1; i <= 20; i++) {
+        for (let i = 1; i <= 10; i++) {
             this.monsters.push({
                 id: i,
                 name: `Монстр ${i}`,
-                image: "images/monsters/monster1.jpg",
-                description: `Монстр уровня ${Math.ceil(i/5)}`,
                 health: 20 + i * 5,
-                maxHealth: 20 + i * 5,
                 damage: 5 + i * 2,
-                attack: 5 + i,
-                defense: 2 + Math.floor(i/2),
                 armor: 2 + Math.floor(i/3),
-                speed: 3 + Math.floor(i/5),
                 experience: 5 + i * 2,
                 reward: 10 + i * 3,
-                power: 15 + i * 4,
-                attackType: i % 2 === 0 ? "ranged" : "melee",
-                preferredPosition: i % 2 === 0 ? "back" : "front"
+                attackType: i % 2 === 0 ? "ranged" : "melee"
             });
         }
         console.log("🔄 Созданы тестовые монстры");
     }
 
-    // ОБНОВЛЕННЫЙ МЕТОД: Начать бой с группой монстров
     startBattleWithMonster(hero, monsterId, context = 'normal') {
         if (!hero) {
             console.error("❌ Не могу начать бой: герой не передан");
@@ -73,37 +60,27 @@ class BattleSystem {
         }
 
         const monsterGroup = this.generateMonsterGroup(monsterId);
-        if (!monsterGroup || monsterGroup.length === 0) {
-            console.error("❌ Не удалось сгенерировать группу монстров");
-            return;
-        }
+        if (!monsterGroup) return;
 
         this.currentHero = hero;
         this.currentMonsters = monsterGroup;
-        
         this.setupBattleGrid(hero, monsterGroup);
         
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
-        this.battleType = context;
         this.battleContext = context;
         
-        this.addBattleLog(`⚔️ Бой начался! Противников: ${monsterGroup.length}`);
         console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
-        
-        this.hideTacticalMap();
         this.showTacticalBattleScreen();
     }
 
-    // НОВЫЙ МЕТОД: Генерация группы монстров
     generateMonsterGroup(baseMonsterId) {
         const baseMonster = this.monsters.find(m => m.id === baseMonsterId);
         if (!baseMonster) return [];
 
         const roll = Math.random() * 100;
         let monsterCount = 1;
-        
         if (roll <= 70) monsterCount = 1;
         else if (roll <= 85) monsterCount = 2;
         else if (roll <= 93) monsterCount = 3;
@@ -111,15 +88,12 @@ class BattleSystem {
         else if (roll <= 99) monsterCount = 5;
         else monsterCount = 6;
 
-        console.log(`🎲 Генерация группы: ${monsterCount} монстров (шанс: ${roll.toFixed(1)}%)`);
-
         const monsterGroup = [];
         for (let i = 0; i < monsterCount; i++) {
             const monsterCopy = {
                 ...baseMonster,
                 battleId: i + 1,
-                currentHealth: baseMonster.health,
-                position: null
+                currentHealth: baseMonster.health
             };
             monsterGroup.push(monsterCopy);
         }
@@ -127,7 +101,6 @@ class BattleSystem {
         return monsterGroup;
     }
 
-    // НОВЫЙ МЕТОД: Настройка боевой сетки
     setupBattleGrid(hero, monsters) {
         this.battleGrid.allies = [null, null, null, null, null, null];
         this.battleGrid.enemies = [null, null, null, null, null, null];
@@ -143,7 +116,6 @@ class BattleSystem {
         this.placeMonstersOnGrid(monsters);
     }
 
-    // НОВЫЙ МЕТОД: Расстановка монстров на сетке
     placeMonstersOnGrid(monsters) {
         const frontLinePositions = [0, 1, 2];
         const backLinePositions = [3, 4, 5];
@@ -153,54 +125,34 @@ class BattleSystem {
 
         monsters.forEach(monster => {
             const attackType = monster.attackType || 'melee';
+            let position;
             
             if (attackType === 'melee' && frontLineCount < 3) {
-                const position = frontLinePositions[frontLineCount];
-                this.battleGrid.enemies[position] = {
-                    type: 'monster',
-                    data: monster,
-                    position: position,
-                    maxHealth: monster.health,
-                    currentHealth: monster.currentHealth
-                };
-                monster.position = position;
-                frontLineCount++;
+                position = frontLinePositions[frontLineCount++];
             } else if (attackType === 'ranged' && backLineCount < 3) {
-                const position = backLinePositions[backLineCount];
-                this.battleGrid.enemies[position] = {
-                    type: 'monster',
-                    data: monster,
-                    position: position,
-                    maxHealth: monster.health,
-                    currentHealth: monster.currentHealth
-                };
-                monster.position = position;
-                backLineCount++;
+                position = backLinePositions[backLineCount++];
             } else {
                 const availablePositions = [...frontLinePositions, ...backLinePositions]
                     .filter(pos => !this.battleGrid.enemies[pos]);
-                
                 if (availablePositions.length > 0) {
-                    const position = availablePositions[0];
-                    this.battleGrid.enemies[position] = {
-                        type: 'monster',
-                        data: monster,
-                        position: position,
-                        maxHealth: monster.health,
-                        currentHealth: monster.currentHealth
-                    };
-                    monster.position = position;
-                    
+                    position = availablePositions[0];
                     if (position < 3) frontLineCount++;
                     else backLineCount++;
                 }
             }
-        });
 
-        console.log("🎯 Расстановка монстров завершена:", this.battleGrid.enemies.map(m => m ? m.data.name : 'null'));
+            if (position !== undefined) {
+                this.battleGrid.enemies[position] = {
+                    type: 'monster',
+                    data: monster,
+                    position: position,
+                    maxHealth: monster.health,
+                    currentHealth: monster.currentHealth
+                };
+            }
+        });
     }
 
-    // НОВЫЙ МЕТОД: Показать тактический экран боя
     showTacticalBattleScreen() {
         const app = document.getElementById('app');
         if (!app) return;
@@ -213,7 +165,6 @@ class BattleSystem {
                 </header>
                 
                 <div class="battle-grid-container">
-                    <!-- Сетка союзников -->
                     <div class="battle-grid allies-grid">
                         <div class="grid-header">ВАШ ОТРЯД</div>
                         <div class="grid-positions">
@@ -221,10 +172,8 @@ class BattleSystem {
                         </div>
                     </div>
                     
-                    <!-- Разделитель -->
                     <div class="battle-vs">VS</div>
                     
-                    <!-- Сетка противников -->
                     <div class="battle-grid enemies-grid">
                         <div class="grid-header">ПРОТИВНИКИ</div>
                         <div class="grid-positions">
@@ -233,28 +182,22 @@ class BattleSystem {
                     </div>
                 </div>
                 
-                <!-- Лог боя -->
                 <div class="tactical-battle-log">
                     <h4>📜 Ход боя:</h4>
                     <div class="log-entries">
-                        ${this.battleLog.map(entry => `
-                            <div class="log-entry">${entry}</div>
-                        `).join('')}
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
                     </div>
                 </div>
                 
-                <!-- Подсказка -->
                 <div class="battle-hint" id="battleHint">
                     Выберите цель для атаки
                 </div>
             </div>
         `;
 
-        this.injectTacticalBattleStyles();
         this.updateAvailableTargets();
     }
 
-    // НОВЫЙ МЕТОД: Отрисовка боевой сетки
     renderBattleGrid(side) {
         const grid = this.battleGrid[side];
         let html = '';
@@ -263,7 +206,6 @@ class BattleSystem {
             for (let col = 0; col < 2; col++) {
                 const position = row * 2 + col;
                 const unit = grid[position];
-                
                 html += this.renderBattlePosition(unit, position, side);
             }
         }
@@ -271,7 +213,6 @@ class BattleSystem {
         return html;
     }
 
-    // НОВЫЙ МЕТОД: Отрисовка позиции в сетке
     renderBattlePosition(unit, position, side) {
         const isEnemy = side === 'enemies';
         const isEmpty = !unit;
@@ -293,15 +234,9 @@ class BattleSystem {
                 </div>
             `;
             
-            const imageUrl = unit.data.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjODg4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+${isEnemy ? '👹' : '🎯'}</dGV4dD48L3N2Zz4=';
-            
             unitHtml = `
                 <div class="unit-icon">
-                    <img src="${imageUrl}" alt="${unit.data.name}" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <div class="unit-fallback" style="display: none;">
-                        <span>${isEnemy ? '👹' : '🎯'}</span>
-                    </div>
+                    <span>${isEnemy ? '👹' : '🎯'}</span>
                 </div>
                 <div class="unit-name">${unit.data.name}</div>
             `;
@@ -312,50 +247,21 @@ class BattleSystem {
             }
         }
         
-        return `
-            <div class="${cssClass}" ${clickHandler} data-position="${position}">
-                ${unitHtml}
-                ${healthBar}
-            </div>
-        `;
+        return `<div class="${cssClass}" ${clickHandler} data-position="${position}">${unitHtml}${healthBar}</div>`;
     }
 
-    // НОВЫЙ МЕТОД: Выбор цели для атаки
     selectTarget(position) {
-        if (!this.availableTargets.includes(position)) {
-            console.log("🚫 Цель недоступна для атаки");
-            return;
-        }
-
+        if (!this.availableTargets.includes(position)) return;
+        
         this.selectedTarget = position;
-        const targetUnit = this.battleGrid.enemies[position];
-        
-        console.log(`🎯 Выбрана цель: ${targetUnit.data.name} на позиции ${position}`);
-        
-        this.highlightSelectedTarget(position);
         this.executeAttack(position);
     }
 
-    // НОВЫЙ МЕТОД: Подсветка выбранной цели
-    highlightSelectedTarget(position) {
-        document.querySelectorAll('.battle-position').forEach(el => {
-            el.classList.remove('selected', 'available');
-        });
-        
-        const targetElement = document.querySelector(`.enemy-position[data-position="${position}"]`);
-        if (targetElement) {
-            targetElement.classList.add('selected');
-        }
-    }
-
-    // НОВЫЙ МЕТОД: Обновление доступных целей
     updateAvailableTargets() {
         const hero = this.battleGrid.allies[3];
         if (!hero) return;
 
         const attackType = this.getHeroAttackType(hero.data);
-        
-        this.availableTargets = [];
         
         if (attackType === 'ranged') {
             this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => 
@@ -366,12 +272,8 @@ class BattleSystem {
                 this.battleGrid.enemies[pos] && this.battleGrid.enemies[pos].currentHealth > 0
             );
         }
-        
-        this.highlightAvailableTargets();
-        this.updateBattleHint(attackType);
     }
 
-    // НОВЫЙ МЕТОД: Определение типа атаки героя
     getHeroAttackType(hero) {
         const equippedWeaponId = hero.equipment?.main_hand;
         if (equippedWeaponId && window.game.systems.equipment) {
@@ -381,36 +283,10 @@ class BattleSystem {
         return 'melee';
     }
 
-    // НОВЫЙ МЕТОД: Подсветка доступных целей
-    highlightAvailableTargets() {
-        document.querySelectorAll('.enemy-position').forEach(el => {
-            const position = parseInt(el.getAttribute('data-position'));
-            if (this.availableTargets.includes(position)) {
-                el.classList.add('available');
-            } else {
-                el.classList.remove('available');
-            }
-        });
-    }
-
-    // НОВЫЙ МЕТОД: Обновление подсказки
-    updateBattleHint(attackType) {
-        const hintElement = document.getElementById('battleHint');
-        if (hintElement) {
-            const targetType = attackType === 'ranged' ? 'любого противника' : 'противника в первом ряду';
-            hintElement.textContent = `Выберите ${targetType} для атаки (${attackType === 'ranged' ? 'дальний бой' : 'ближний бой'})`;
-        }
-    }
-
-    // НОВЫЙ МЕТОД: Выполнение атаки
     executeAttack(targetPosition) {
         const hero = this.battleGrid.allies[3];
         const target = this.battleGrid.enemies[targetPosition];
-        
-        if (!hero || !target) {
-            console.error("❌ Не могу выполнить атаку: герой или цель не найдены");
-            return;
-        }
+        if (!hero || !target) return;
 
         this.battleRound++;
         
@@ -420,9 +296,6 @@ class BattleSystem {
         const finalDamage = Math.max(1, baseDamage - targetArmor);
         
         target.currentHealth -= finalDamage;
-        
-        this.playAttackAnimation(3, targetPosition, finalDamage);
-        
         this.addBattleLog(`🗡️ ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
         
         if (target.currentHealth <= 0) {
@@ -435,77 +308,23 @@ class BattleSystem {
             }
         }
         
-        setTimeout(() => {
-            this.executeMonsterTurns();
-        }, 1000);
+        setTimeout(() => this.executeMonsterTurns(), 1000);
     }
 
-    // НОВЫЙ МЕТОД: Анимация атаки
-    playAttackAnimation(attackerPosition, targetPosition, damage) {
-        const attackerEl = document.querySelector(`.ally-position[data-position="${attackerPosition}"]`);
-        const targetEl = document.querySelector(`.enemy-position[data-position="${targetPosition}"]`);
-        
-        if (attackerEl && targetEl) {
-            attackerEl.style.transform = 'translateX(10px)';
-            setTimeout(() => {
-                attackerEl.style.transform = 'translateX(0)';
-                
-                targetEl.classList.add('hit-effect');
-                setTimeout(() => {
-                    targetEl.classList.remove('hit-effect');
-                }, 500);
-                
-            }, 300);
-        }
-        
-        this.updateHealthDisplay(targetPosition);
-    }
-
-    // НОВЫЙ МЕТОД: Обновление отображения здоровья
-    updateHealthDisplay(position) {
-        const unit = this.battleGrid.enemies[position];
-        if (!unit) return;
-        
-        const positionEl = document.querySelector(`.enemy-position[data-position="${position}"]`);
-        if (positionEl) {
-            const healthBar = positionEl.querySelector('.health-fill');
-            const healthText = positionEl.querySelector('.health-text');
-            
-            if (healthBar && healthText) {
-                const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
-                healthBar.style.width = `${healthPercent}%`;
-                healthText.textContent = `${Math.ceil(unit.currentHealth)}/${unit.maxHealth}`;
-            }
-        }
-    }
-
-    // НОВЫЙ МЕТОД: Ход монстров
     executeMonsterTurns() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        
         if (aliveMonsters.length === 0) {
             this.endTacticalBattle(true);
             return;
         }
         
-        let monsterIndex = 0;
-        const executeNextMonsterTurn = () => {
-            if (monsterIndex >= aliveMonsters.length) {
-                this.updateAvailableTargets();
-                return;
-            }
-            
-            const monster = aliveMonsters[monsterIndex];
+        aliveMonsters.forEach(monster => {
             this.executeMonsterAttack(monster);
-            
-            monsterIndex++;
-            setTimeout(executeNextMonsterTurn, 800);
-        };
+        });
         
-        executeNextMonsterTurn();
+        this.updateAvailableTargets();
     }
 
-    // НОВЫЙ МЕТОД: Атака монстра
     executeMonsterAttack(monster) {
         const hero = this.battleGrid.allies[3];
         if (!hero) return;
@@ -515,74 +334,23 @@ class BattleSystem {
         const finalDamage = Math.max(1, monsterDamage - heroArmor);
         
         hero.currentHealth -= finalDamage;
-        
         this.addBattleLog(`👹 ${monster.data.name} атакует героя и наносит ${finalDamage} урона!`);
         
-        this.playMonsterAttackAnimation(monster.position, 3, finalDamage);
-        
         if (hero.currentHealth <= 0) {
-            this.addBattleLog(`💀 ${hero.data.name} повержен!`);
             this.endTacticalBattle(false);
         }
     }
 
-    // НОВЫЙ МЕТОД: Анимация атаки монстра
-    playMonsterAttackAnimation(monsterPosition, targetPosition, damage) {
-        const monsterEl = document.querySelector(`.enemy-position[data-position="${monsterPosition}"]`);
-        const targetEl = document.querySelector(`.ally-position[data-position="${targetPosition}"]`);
-        
-        if (monsterEl && targetEl) {
-            monsterEl.style.transform = 'translateX(-10px)';
-            setTimeout(() => {
-                monsterEl.style.transform = 'translateX(0)';
-                
-                targetEl.classList.add('hit-effect');
-                setTimeout(() => {
-                    targetEl.classList.remove('hit-effect');
-                }, 500);
-                
-            }, 300);
-        }
-        
-        this.updateHeroHealthDisplay();
-    }
-
-    // НОВЫЙ МЕТОД: Обновление здоровья героя
-    updateHeroHealthDisplay() {
-        const hero = this.battleGrid.allies[3];
-        if (!hero) return;
-        
-        const heroEl = document.querySelector('.ally-position[data-position="3"]');
-        if (heroEl) {
-            const healthBar = heroEl.querySelector('.health-fill');
-            const healthText = heroEl.querySelector('.health-text');
-            
-            if (healthBar && healthText) {
-                const healthPercent = (hero.currentHealth / hero.maxHealth) * 100;
-                healthBar.style.width = `${healthPercent}%`;
-                healthText.textContent = `${Math.ceil(hero.currentHealth)}/${hero.maxHealth}`;
-            }
-        }
-    }
-
-    // НОВЫЙ МЕТОД: Проверка окончания боя
     isBattleOver() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
         const hero = this.battleGrid.allies[3];
-        
         return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
     }
 
-    // ОБНОВЛЕННЫЙ МЕТОД: Завершение тактического боя
     endTacticalBattle(victory) {
         if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => {
-                return sum + (monster.reward || 10);
-            }, 0);
-            
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => {
-                return sum + (monster.experience || 5);
-            }, 0);
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
             
             this.currentHero.gold += totalReward;
             window.game.systems.level.addExperience(this.currentHero, totalExperience);
@@ -595,22 +363,16 @@ class BattleSystem {
             this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
         }
         
-        if (window.game) {
-            window.game.saveGame();
-        }
-        
-        // ⭐ ВАЖНОЕ ОБНОВЛЕНИЕ: Уведомляем карту о завершении боя
+        if (window.game) window.game.saveGame();
         if (this.battleContext === 'movement' && window.game.systems.map) {
             window.game.systems.map.completeMovementAfterBattle(victory);
         }
         
         this.battleActive = false;
         this.currentMonsters = [];
-        
         this.showTacticalBattleResult(victory);
     }
 
-    // НОВЫЙ МЕТОД: Показать результат боя
     showTacticalBattleResult(victory) {
         const app = document.getElementById('app');
         if (!app) return;
@@ -631,248 +393,36 @@ class BattleSystem {
         `;
     }
 
-    // ОБНОВЛЕННЫЙ МЕТОД: Возврат к игре
     returnToGame() {
-        if (this.battleContext === 'movement') {
-            if (window.game && window.game.systems.map) {
-                window.game.showHeroGameScreen();
-                
-                setTimeout(() => {
-                    window.game.systems.map.showOverlay('tactical-map');
-                }, 100);
-            }
-        } else {
-            if (window.game) {
-                window.game.showHeroGameScreen();
-            }
+        if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
+            window.game.showHeroGameScreen();
+            setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
+        } else if (window.game) {
+            window.game.showHeroGameScreen();
         }
         
         this.battleActive = false;
         this.currentMonsters = [];
     }
 
-    // НОВЫЙ МЕТОД: Стили для тактического боя
-    injectTacticalBattleStyles() {
-        const styles = `
-            <style>
-            .tactical-battle-screen {
-                padding: 1rem;
-                background: #1f2937;
-                color: white;
-                min-height: 100vh;
-            }
-            
-            .battle-grid-container {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 2rem;
-                margin: 2rem 0;
-            }
-            
-            .battle-grid {
-                flex: 1;
-                background: rgba(55, 65, 81, 0.8);
-                border-radius: 12px;
-                padding: 1rem;
-                border: 2px solid #4b5563;
-            }
-            
-            .grid-header {
-                text-align: center;
-                font-weight: bold;
-                margin-bottom: 1rem;
-                color: #f59e0b;
-                font-size: 1.2rem;
-            }
-            
-            .grid-positions {
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(3, 1fr);
-                gap: 0.5rem;
-                min-height: 400px;
-            }
-            
-            .battle-position {
-                background: rgba(255, 255, 255, 0.1);
-                border: 2px solid rgba(255, 255, 255, 0.2);
-                border-radius: 8px;
-                padding: 0.5rem;
-                text-align: center;
-                transition: all 0.3s ease;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                min-height: 120px;
-            }
-            
-            .battle-position.empty {
-                opacity: 0.3;
-            }
-            
-            .battle-position.selectable {
-                cursor: pointer;
-            }
-            
-            .battle-position.available {
-                border-color: #4ade80;
-                background: rgba(74, 222, 128, 0.1);
-            }
-            
-            .battle-position.available:hover {
-                border-color: #22c55e;
-                background: rgba(74, 222, 128, 0.2);
-                transform: scale(1.05);
-            }
-            
-            .battle-position.selected {
-                border-color: #3b82f6;
-                background: rgba(59, 130, 246, 0.2);
-                transform: scale(1.05);
-            }
-            
-            .unit-icon {
-                width: 60px;
-                height: 60px;
-                margin-bottom: 0.5rem;
-            }
-            
-            .unit-icon img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                border-radius: 8px;
-            }
-            
-            .unit-name {
-                font-size: 0.9rem;
-                font-weight: bold;
-                margin-bottom: 0.5rem;
-            }
-            
-            .position-health-bar {
-                width: 100%;
-                height: 8px;
-                background: #4b5563;
-                border-radius: 4px;
-                overflow: hidden;
-                position: relative;
-            }
-            
-            .health-fill {
-                height: 100%;
-                background: linear-gradient(90deg, #ef4444, #f59e0b);
-                transition: width 0.3s ease;
-            }
-            
-            .health-text {
-                font-size: 0.7rem;
-                color: #cbd5e1;
-                margin-top: 2px;
-            }
-            
-            .battle-vs {
-                font-size: 2rem;
-                font-weight: bold;
-                color: #f59e0b;
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            
-            .tactical-battle-log {
-                background: rgba(0, 0, 0, 0.4);
-                border-radius: 8px;
-                padding: 1rem;
-                margin: 1rem 0;
-                max-height: 150px;
-                overflow-y: auto;
-                border: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .battle-hint {
-                text-align: center;
-                padding: 1rem;
-                background: rgba(59, 130, 246, 0.1);
-                border-radius: 8px;
-                border: 1px solid #3b82f6;
-                font-weight: bold;
-            }
-            
-            .hit-effect {
-                animation: hitFlash 0.5s ease;
-            }
-            
-            @keyframes hitFlash {
-                0% { background: rgba(239, 68, 68, 0.3); }
-                100% { background: transparent; }
-            }
-            
-            .battle-result-screen {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                background: #1f2937;
-            }
-            
-            .result-content {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 3rem;
-                border-radius: 15px;
-                text-align: center;
-                border: 3px solid;
-            }
-            
-            .result-content.victory {
-                border-color: #10b981;
-                background: rgba(16, 185, 129, 0.1);
-            }
-            
-            .result-content.defeat {
-                border-color: #ef4444;
-                background: rgba(239, 68, 68, 0.1);
-            }
-            
-            .result-stats {
-                margin: 2rem 0;
-            }
-            
-            .stat {
-                margin: 0.5rem 0;
-                font-size: 1.1rem;
-            }
-            </style>
-        `;
-        
-        document.head.insertAdjacentHTML('beforeend', styles);
+    addBattleLog(message) {
+        this.battleLog.push(message);
+        if (this.battleLog.length > 10) this.battleLog.shift();
     }
 
-    // СТАРЫЕ МЕТОДЫ ДЛЯ СОВМЕСТИМОСТИ
     hideTacticalMap() {
         const overlayContainer = document.getElementById('overlay-container');
         if (overlayContainer) {
             overlayContainer.style.display = 'none';
             overlayContainer.innerHTML = '';
         }
-        
-        if (window.game) {
-            window.game.activeOverlay = null;
-        }
+        if (window.game) window.game.activeOverlay = null;
     }
 
-    addBattleLog(message) {
-        this.battleLog.push(message);
-        if (this.battleLog.length > 10) {
-            this.battleLog.shift();
-        }
-    }
-
-    // Метод для обратной совместимости
     showBattleScreen() {
         this.showTacticalBattleScreen();
     }
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с тактической сеткой 3×2");
+console.log("📦 BattleSystem модуль загружен");
