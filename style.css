@@ -2565,3 +2565,35 @@ body {
         font-size: 14px;
     }
 }
+/* ========== ДОБАВИТЬ В CSS ========== */
+
+/* Плавные переходы для оверлеев */
+.overlay-container {
+    transition: opacity 0.3s ease;
+}
+
+/* Анимация появления/исчезновения экрана боя */
+.battle-screen-with-map {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Улучшенные стили для тактической карты */
+.tactical-map-overlay {
+    transition: all 0.3s ease;
+}
+
+.tactical-map-content {
+    position: relative;
+    overflow: hidden;
+}
