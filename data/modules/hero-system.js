@@ -104,6 +104,15 @@ class HeroSystem {
         if (window.game) {
             window.game.currentHero = hero;
             window.game.systems.equipment.setCurrentHero(hero);
+            
+            // ⭐ СИНХРОНИЗАЦИЯ С ДРУГИМИ СИСТЕМАМИ
+            if (window.game.systems.battle) {
+                window.game.systems.battle.currentHero = hero;
+            }
+            if (window.game.systems.shop) {
+                window.game.systems.shop.currentHero = hero;
+            }
+            
             // СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
             window.game.saveGame();
         }
@@ -118,310 +127,316 @@ class HeroSystem {
             this.showNotification(`🎉 Герой ${hero.name} разблокирован!`);
             // СОХРАНЯЕМ ПРИ РАЗБЛОКИРОВКЕ
             if (window.game) window.game.saveGame();
+            
+            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+            this.showHeroSelection();
+            
             return true;
         }
         return false;
     }
 
     // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
-// ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
-calculateHeroStats(hero = null) {
-    const targetHero = hero || this.currentHero;
-    if (!targetHero) return { 
-        currentHealth: 0, maxHealth: 0, damage: 0, armor: 0, power: 0,
-        activeBonuses: []
-    };
-    
-    console.log("🔍 calculateHeroStats вызван для героя:", targetHero.name);
-    
-    // Базовые характеристики с учетом уровня
-    const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
-    
-    let baseMaxHealth = Math.round(targetHero.baseHealth * levelMultiplier);
-    let baseDamage = Math.round(targetHero.baseDamage * levelMultiplier);
-    let baseArmor = Math.round(targetHero.baseArmor * levelMultiplier);
-    
-    console.log("📊 Базовые статы:", { baseMaxHealth, baseDamage, baseArmor });
-    
-    // Бонусы от экипировки - ФИКСИРОВАННЫЕ значения
-    let equipmentHealth = 0;
-    let equipmentDamage = 0;
-    let equipmentArmor = 0;
-    
-    // ПРОЦЕНТНЫЕ бонусы от экипировки (для отображения)
-    let equipmentPercentBonuses = [];
-    
-    // Применяем бонусы от предметов
-    Object.values(targetHero.equipment).forEach(itemId => {
-        if (itemId && window.game && window.game.systems.equipment) {
-            const item = window.game.systems.equipment.getItemById(itemId);
-            if (item) {
-                console.log("🎒 Предмет экипировки:", item.name, item.bonus);
-                
-                // ФИКСИРОВАННЫЕ бонусы
-                equipmentDamage += item.fixed_damage || 0;
-                equipmentArmor += item.fixed_armor || 0;
-                equipmentHealth += item.fixed_health || 0;
-                
-                // ПРОЦЕНТНЫЕ бонусы (добавляем в массив для системы бонусов)
-                if (item.bonus && item.bonus.type !== 'none') {
-                    equipmentPercentBonuses.push({
-                        ...item.bonus,
-                        source: "equipment",
-                        itemName: item.name
-                    });
+    calculateHeroStats(hero = null) {
+        const targetHero = hero || this.currentHero;
+        if (!targetHero) return { 
+            currentHealth: 0, maxHealth: 0, damage: 0, armor: 0, power: 0,
+            activeBonuses: []
+        };
+        
+        console.log("🔍 calculateHeroStats вызван для героя:", targetHero.name);
+        
+        // Базовые характеристики с учетом уровня
+        const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
+        
+        let baseMaxHealth = Math.round(targetHero.baseHealth * levelMultiplier);
+        let baseDamage = Math.round(targetHero.baseDamage * levelMultiplier);
+        let baseArmor = Math.round(targetHero.baseArmor * levelMultiplier);
+        
+        console.log("📊 Базовые статы:", { baseMaxHealth, baseDamage, baseArmor });
+        
+        // Бонусы от экипировки - ФИКСИРОВАННЫЕ значения
+        let equipmentHealth = 0;
+        let equipmentDamage = 0;
+        let equipmentArmor = 0;
+        
+        // ПРОЦЕНТНЫЕ бонусы от экипировки (для отображения)
+        let equipmentPercentBonuses = [];
+        
+        // Применяем бонусы от предметов
+        Object.values(targetHero.equipment).forEach(itemId => {
+            if (itemId && window.game && window.game.systems.equipment) {
+                const item = window.game.systems.equipment.getItemById(itemId);
+                if (item) {
+                    console.log("🎒 Предмет экипировки:", item.name, item.bonus);
+                    
+                    // ФИКСИРОВАННЫЕ бонусы
+                    equipmentDamage += item.fixed_damage || 0;
+                    equipmentArmor += item.fixed_armor || 0;
+                    equipmentHealth += item.fixed_health || 0;
+                    
+                    // ПРОЦЕНТНЫЕ бонусы (добавляем в массив для системы бонусов)
+                    if (item.bonus && item.bonus.type !== 'none') {
+                        equipmentPercentBonuses.push({
+                            ...item.bonus,
+                            source: "equipment",
+                            itemName: item.name
+                        });
+                    }
                 }
             }
-        }
-    });
-    
-    console.log("🎯 Бонусы от экипировки:", { 
-        equipmentHealth, 
-        equipmentDamage, 
-        equipmentArmor,
-        percentBonuses: equipmentPercentBonuses 
-    });
-    
-    // Промежуточные значения с фиксированными бонусами
-    let intermediateHealth = baseMaxHealth + equipmentHealth;
-    let intermediateDamage = baseDamage + equipmentDamage;
-    let intermediateArmor = baseArmor + equipmentArmor;
-    
-    console.log("📈 Промежуточные статы (после фикс. бонусов):", {
-        health: intermediateHealth,
-        damage: intermediateDamage, 
-        armor: intermediateArmor
-    });
-    
-    // Активные бонусы для отображения
-    let activeBonuses = [];
-    let finalHealth = intermediateHealth;
-    let finalDamage = intermediateDamage;
-    let finalArmor = intermediateArmor;
-    
-    if (window.game && window.game.systems.bonus) {
-        try {
-            console.log("🎲 Проверяем систему бонусов...");
-            
-            // Создаем временного героя с промежуточными статами для расчета процентных бонусов
-            const tempHeroForBonusCalc = {
-                ...targetHero,
-                baseHealth: intermediateHealth,
-                baseDamage: intermediateDamage, 
-                baseArmor: intermediateArmor
-            };
-            
-            // Проверяем бонусы расы/класса/саги
-            const raceBonus = window.game.systems.bonus.bonuses.races[targetHero.race];
-            const classBonus = window.game.systems.bonus.bonuses.classes[targetHero.class];
-            const sagaBonus = window.game.systems.bonus.bonuses.sagas[targetHero.saga];
-            
-            console.log("🧬 Бонус расы:", raceBonus);
-            console.log("⚔️ Бонус класса:", classBonus);
-            console.log("📖 Бонус саги:", sagaBonus);
-            
-            // Получаем все предметы для расчета сетов
-            const items = window.game.systems.equipment ? window.game.systems.equipment.items : [];
-            
-            // ⭐ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: передаем промежуточные статы для процентных бонусов
-            const totals = window.game.systems.bonus.calculateTotalBonuses(tempHeroForBonusCalc, items);
-            
-            console.log("📊 РАССЧИТАННЫЕ БОНУСЫ:", totals);
-            
-            // Применяем процентные бонусы к ПРОМЕЖУТОЧНЫМ характеристикам
-            finalHealth = Math.round(intermediateHealth * (1 + totals.health_mult));
-            finalDamage = Math.round(intermediateDamage * (1 + totals.damage_mult));
-            finalArmor = Math.round(intermediateArmor * (1 + totals.armor_mult));
-            
-            console.log("📊 Статы после процентных бонусов:", {
-                health: finalHealth,
-                damage: finalDamage,
-                armor: finalArmor
-            });
-            
-            // Собираем ВСЕ бонусы для отображения
-            activeBonuses = [
-                {
-                    type: 'health_mult',
-                    value: totals.health_mult,
-                    label: '💪 Здоровье',
-                    display: `+${(totals.health_mult * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'damage_mult',
-                    value: totals.damage_mult,
-                    label: '⚔️ Урон',
-                    display: `+${(totals.damage_mult * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'armor_mult',
-                    value: totals.armor_mult,
-                    label: '🛡️ Броня',
-                    display: `+${(totals.armor_mult * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'crit_chance',
-                    value: totals.crit_chance,
-                    label: '🎯 Крит',
-                    display: `${(totals.crit_chance * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'health_regen_mult',
-                    value: totals.health_regen_mult,
-                    label: '❤️ Реген',
-                    display: `+${(totals.health_regen_mult * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'vampirism',
-                    value: totals.vampirism,
-                    label: '🩸 Вампир',
-                    display: `${(totals.vampirism * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'armor_penetration',
-                    value: totals.armor_penetration,
-                    label: '💥 Пенетрация',
-                    display: `${(totals.armor_penetration * 100).toFixed(1)}%`
-                },
-                {
-                    type: 'gold_mult',
-                    value: totals.gold_mult,
-                    label: '💰 Золото',
-                    display: `+${(totals.gold_mult * 100).toFixed(1)}%`
-                }
-            ];
-            
-            console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ:", activeBonuses);
-            
-        } catch (error) {
-            console.error("💥 Ошибка расчета бонусов:", error);
-            // В случае ошибки используем промежуточные значения
+        });
+        
+        console.log("🎯 Бонусы от экипировки:", { 
+            equipmentHealth, 
+            equipmentDamage, 
+            equipmentArmor,
+            percentBonuses: equipmentPercentBonuses 
+        });
+        
+        // Промежуточные значения с фиксированными бонусы
+        let intermediateHealth = baseMaxHealth + equipmentHealth;
+        let intermediateDamage = baseDamage + equipmentDamage;
+        let intermediateArmor = baseArmor + equipmentArmor;
+        
+        console.log("📈 Промежуточные статы (после фикс. бонусов):", {
+            health: intermediateHealth,
+            damage: intermediateDamage, 
+            armor: intermediateArmor
+        });
+        
+        // Активные бонусы для отображения
+        let activeBonuses = [];
+        let finalHealth = intermediateHealth;
+        let finalDamage = intermediateDamage;
+        let finalArmor = intermediateArmor;
+        
+        if (window.game && window.game.systems.bonus) {
+            try {
+                console.log("🎲 Проверяем систему бонусов...");
+                
+                // Создаем временного героя с промежуточными статами для расчета процентных бонусов
+                const tempHeroForBonusCalc = {
+                    ...targetHero,
+                    baseHealth: intermediateHealth,
+                    baseDamage: intermediateDamage, 
+                    baseArmor: intermediateArmor
+                };
+                
+                // Проверяем бонусы расы/класса/саги
+                const raceBonus = window.game.systems.bonus.bonuses.races[targetHero.race];
+                const classBonus = window.game.systems.bonus.bonuses.classes[targetHero.class];
+                const sagaBonus = window.game.systems.bonus.bonuses.sagas[targetHero.saga];
+                
+                console.log("🧬 Бонус расы:", raceBonus);
+                console.log("⚔️ Бонус класса:", classBonus);
+                console.log("📖 Бонус саги:", sagaBonus);
+                
+                // Получаем все предметы для расчета сетов
+                const items = window.game.systems.equipment ? window.game.systems.equipment.items : [];
+                
+                // ⭐ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: передаем промежуточные статы для процентных бонусов
+                const totals = window.game.systems.bonus.calculateTotalBonuses(tempHeroForBonusCalc, items);
+                
+                console.log("📊 РАССЧИТАННЫЕ БОНУСЫ:", totals);
+                
+                // Применяем процентные бонусы к ПРОМЕЖУТОЧНЫМ характеристикам
+                finalHealth = Math.round(intermediateHealth * (1 + totals.health_mult));
+                finalDamage = Math.round(intermediateDamage * (1 + totals.damage_mult));
+                finalArmor = Math.round(intermediateArmor * (1 + totals.armor_mult));
+                
+                console.log("📊 Статы после процентных бонусов:", {
+                    health: finalHealth,
+                    damage: finalDamage,
+                    armor: finalArmor
+                });
+                
+                // Собираем ВСЕ бонусы для отображения
+                activeBonuses = [
+                    {
+                        type: 'health_mult',
+                        value: totals.health_mult,
+                        label: '💪 Здоровье',
+                        display: `+${(totals.health_mult * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'damage_mult',
+                        value: totals.damage_mult,
+                        label: '⚔️ Урон',
+                        display: `+${(totals.damage_mult * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'armor_mult',
+                        value: totals.armor_mult,
+                        label: '🛡️ Броня',
+                        display: `+${(totals.armor_mult * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'crit_chance',
+                        value: totals.crit_chance,
+                        label: '🎯 Крит',
+                        display: `${(totals.crit_chance * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'health_regen_mult',
+                        value: totals.health_regen_mult,
+                        label: '❤️ Реген',
+                        display: `+${(totals.health_regen_mult * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'vampirism',
+                        value: totals.vampirism,
+                        label: '🩸 Вампир',
+                        display: `${(totals.vampirism * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'armor_penetration',
+                        value: totals.armor_penetration,
+                        label: '💥 Пенетрация',
+                        display: `${(totals.armor_penetration * 100).toFixed(1)}%`
+                    },
+                    {
+                        type: 'gold_mult',
+                        value: totals.gold_mult,
+                        label: '💰 Золото',
+                        display: `+${(totals.gold_mult * 100).toFixed(1)}%`
+                    }
+                ];
+                
+                console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ:", activeBonuses);
+                
+            } catch (error) {
+                console.error("💥 Ошибка расчета бонусов:", error);
+                // В случае ошибки используем промежуточные значения
+                finalHealth = intermediateHealth;
+                finalDamage = intermediateDamage;
+                finalArmor = intermediateArmor;
+            }
+        } else {
+            console.warn("⚠️ Система бонусов не доступна!");
+            // Если система бонусов недоступна, используем промежуточные значения
             finalHealth = intermediateHealth;
             finalDamage = intermediateDamage;
             finalArmor = intermediateArmor;
         }
-    } else {
-        console.warn("⚠️ Система бонусов не доступна!");
-        // Если система бонусов недоступна, используем промежуточные значения
-        finalHealth = intermediateHealth;
-        finalDamage = intermediateDamage;
-        finalArmor = intermediateArmor;
+        
+        // Рассчитываем текущее здоровье (не может превышать максимальное)
+        const currentHealth = Math.min(targetHero.currentHealth || finalHealth, finalHealth);
+        
+        // Мощность героя для сравнения
+        const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
+        
+        console.log("✅ ФИНАЛЬНЫЕ СТАТЫ:", {
+            currentHealth, 
+            maxHealth: finalHealth, 
+            damage: finalDamage, 
+            armor: finalArmor, 
+            power
+        });
+        
+        const result = {
+            currentHealth: Math.floor(currentHealth),
+            maxHealth: Math.round(finalHealth),
+            damage: Math.round(finalDamage),
+            armor: Math.round(finalArmor),
+            power: power,
+            activeBonuses: activeBonuses
+        };
+        
+        // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Обновляем интерфейс если это текущий герой
+        if (targetHero === this.currentHero) {
+            setTimeout(() => {
+                this.updateHeroDisplay(result);
+            }, 0);
+        }
+        
+        return result;
     }
-    
-    // Рассчитываем текущее здоровье (не может превышать максимальное)
-    const currentHealth = Math.min(targetHero.currentHealth || finalHealth, finalHealth);
-    
-    // Мощность героя для сравнения
-    const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
-    
-    console.log("✅ ФИНАЛЬНЫЕ СТАТЫ:", {
-        currentHealth, 
-        maxHealth: finalHealth, 
-        damage: finalDamage, 
-        armor: finalArmor, 
-        power
-    });
-    
-    const result = {
-        currentHealth: Math.floor(currentHealth),
-        maxHealth: Math.round(finalHealth),
-        damage: Math.round(finalDamage),
-        armor: Math.round(finalArmor),
-        power: power,
-        activeBonuses: activeBonuses
-    };
-    
-    // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Обновляем интерфейс если это текущий герой
-    if (targetHero === this.currentHero) {
-        setTimeout(() => {
-            this.updateHeroDisplay(result);
-        }, 0);
-    }
-    
-    return result;
-}
 
-// ⭐ НОВЫЙ МЕТОД: Обновление отображения героя
-updateHeroDisplay(stats) {
-    if (!this.currentHero) return;
-    
-    console.log("🔄 Обновление интерфейса героя...");
-    
-    // Находим элементы DOM для обновления
-    const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
-    const damageElements = document.querySelectorAll('.overlay-stat-row:nth-child(2) .overlay-stat-value');
-    const armorElements = document.querySelectorAll('.overlay-stat-row:nth-child(3) .overlay-stat-value');
-    const powerElements = document.querySelectorAll('.overlay-stat-row:nth-child(5) .overlay-stat-value');
-    
-    // Обновляем значения в первой группе статов
-    if (healthElements[0]) {
-        healthElements[0].textContent = `${stats.currentHealth}/${stats.maxHealth}`;
-        console.log("❤️ Здоровье обновлено:", `${stats.currentHealth}/${stats.maxHealth}`);
+    // ⭐ НОВЫЙ МЕТОД: Обновление отображения героя
+    updateHeroDisplay(stats) {
+        if (!this.currentHero) return;
+        
+        console.log("🔄 Обновление интерфейса героя...");
+        
+        // Находим элементы DOM для обновления
+        const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
+        const damageElements = document.querySelectorAll('.overlay-stat-row:nth-child(2) .overlay-stat-value');
+        const armorElements = document.querySelectorAll('.overlay-stat-row:nth-child(3) .overlay-stat-value');
+        const powerElements = document.querySelectorAll('.overlay-stat-row:nth-child(5) .overlay-stat-value');
+        
+        // Обновляем значения в первой группе статов
+        if (healthElements[0]) {
+            healthElements[0].textContent = `${stats.currentHealth}/${stats.maxHealth}`;
+            console.log("❤️ Здоровье обновлено:", `${stats.currentHealth}/${stats.maxHealth}`);
+        }
+        if (damageElements[0]) {
+            damageElements[0].textContent = `${stats.damage}`;
+            console.log("⚔️ Урон обновлен:", stats.damage);
+        }
+        if (armorElements[0]) {
+            armorElements[0].textContent = `${stats.armor}`;
+            console.log("🛡️ Броня обновлена:", stats.armor);
+        }
+        if (powerElements[0]) {
+            powerElements[0].textContent = `${stats.power}`;
+            console.log("🌟 Сила обновлена:", stats.power);
+        }
+        
+        // Также обновляем бонусы если они есть
+        this.updateBonusDisplay(stats.activeBonuses);
+        
+        console.log("✅ Интерфейс героя обновлен с новыми статами");
     }
-    if (damageElements[0]) {
-        damageElements[0].textContent = `${stats.damage}`;
-        console.log("⚔️ Урон обновлен:", stats.damage);
-    }
-    if (armorElements[0]) {
-        armorElements[0].textContent = `${stats.armor}`;
-        console.log("🛡️ Броня обновлена:", stats.armor);
-    }
-    if (powerElements[0]) {
-        powerElements[0].textContent = `${stats.power}`;
-        console.log("🌟 Сила обновлена:", stats.power);
-    }
-    
-    // Также обновляем бонусы если они есть
-    this.updateBonusDisplay(stats.activeBonuses);
-    
-    console.log("✅ Интерфейс героя обновлен с новыми статами");
-}
 
-// ⭐ ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновление отображения бонусов
-updateBonusDisplay(activeBonuses) {
-    if (!activeBonuses || activeBonuses.length === 0) return;
-    
-    // Находим контейнер для бонусов
-    const bonusContainer = document.querySelector('.overlay-stat-group:nth-child(3)');
-    if (!bonusContainer) return;
-    
-    console.log("🎯 Обновление отображения бонусов...");
-    
-    // Очищаем текущие бонусы
-    bonusContainer.innerHTML = '';
-    
-    // Добавляем бонусы (показываем первые 4 для компактности)
-    const bonusesToShow = activeBonuses.slice(0, 4);
-    
-    bonusesToShow.forEach(bonus => {
-        const bonusRow = document.createElement('div');
-        bonusRow.className = 'overlay-stat-row';
-        bonusRow.innerHTML = `
-            <span class="overlay-stat-label">${bonus.label}</span>
-            <span class="overlay-stat-value">${bonus.display}</span>
-        `;
-        bonusContainer.appendChild(bonusRow);
-    });
-    
-    // Если бонусов больше 4, показываем индикатор
-    if (activeBonuses.length > 4) {
-        const moreRow = document.createElement('div');
-        moreRow.className = 'overlay-stat-row';
-        moreRow.innerHTML = `
-            <span class="overlay-stat-label">✨ Ещё</span>
-            <span class="overlay-stat-value">+${activeBonuses.length - 4}</span>
-        `;
-        bonusContainer.appendChild(moreRow);
+    // ⭐ ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновление отображения бонусов
+    updateBonusDisplay(activeBonuses) {
+        if (!activeBonuses || activeBonuses.length === 0) return;
+        
+        // Находим контейнер для бонусов
+        const bonusContainer = document.querySelector('.overlay-stat-group:nth-child(3)');
+        if (!bonusContainer) return;
+        
+        console.log("🎯 Обновление отображения бонусов...");
+        
+        // Очищаем текущие бонусы
+        bonusContainer.innerHTML = '';
+        
+        // Добавляем бонусы (показываем первые 4 для компактности)
+        const bonusesToShow = activeBonuses.slice(0, 4);
+        
+        bonusesToShow.forEach(bonus => {
+            const bonusRow = document.createElement('div');
+            bonusRow.className = 'overlay-stat-row';
+            bonusRow.innerHTML = `
+                <span class="overlay-stat-label">${bonus.label}</span>
+                <span class="overlay-stat-value">${bonus.display}</span>
+            `;
+            bonusContainer.appendChild(bonusRow);
+        });
+        
+        // Если бонусов больше 4, показываем индикатор
+        if (activeBonuses.length > 4) {
+            const moreRow = document.createElement('div');
+            moreRow.className = 'overlay-stat-row';
+            moreRow.innerHTML = `
+                <span class="overlay-stat-label">✨ Ещё</span>
+                <span class="overlay-stat-value">+${activeBonuses.length - 4}</span>
+            `;
+            bonusContainer.appendChild(moreRow);
+        }
+        
+        console.log("✅ Бонусы обновлены, показано:", bonusesToShow.length);
     }
-    
-    console.log("✅ Бонусы обновлены, показано:", bonusesToShow.length);
-}
 
     // ========== УПРАВЛЕНИЕ ЗДОРОВЬЕМ ==========
     takeDamage(hero, damage) {
         const stats = this.calculateHeroStats(hero);
         const actualDamage = Math.max(1, damage - stats.armor);
         hero.currentHealth = Math.max(0, stats.currentHealth - actualDamage);
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.calculateHeroStats();
         
         // СОХРАНЯЕМ ПРИ ИЗМЕНЕНИИ ЗДОРОВЬЯ
         if (window.game) window.game.saveGame();
@@ -432,6 +447,9 @@ updateBonusDisplay(activeBonuses) {
     heal(hero, amount) {
         const stats = this.calculateHeroStats(hero);
         hero.currentHealth = Math.min(stats.maxHealth, (hero.currentHealth || stats.currentHealth) + amount);
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.calculateHeroStats();
         
         // СОХРАНЯЕМ ПРИ ЛЕЧЕНИИ
         if (window.game) window.game.saveGame();
@@ -446,6 +464,9 @@ updateBonusDisplay(activeBonuses) {
         if (hero.currentHealth < stats.maxHealth) {
             const healAmount = Math.min(stats.maxHealth - hero.currentHealth, hero.healthRegen);
             hero.currentHealth += healAmount;
+            
+            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+            this.calculateHeroStats();
             
             // СОХРАНЯЕМ ПРИ РЕГЕНЕРАЦИИ
             if (window.game) window.game.saveGame();
@@ -462,6 +483,9 @@ updateBonusDisplay(activeBonuses) {
         
         if (hero.experience >= neededExp) {
             this.levelUp(hero);
+        } else {
+            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДАЖЕ ЕСЛИ УРОВЕНЬ НЕ ПОВЫСИЛСЯ
+            this.calculateHeroStats();
         }
         
         // СОХРАНЯЕМ ПРИ ПОЛУЧЕНИИ ОПЫТА
@@ -484,6 +508,9 @@ updateBonusDisplay(activeBonuses) {
         hero.currentHealth = stats.maxHealth;
         
         this.showNotification(`🎉 ${hero.name} достиг ${hero.level} уровня!`);
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.showHeroGameScreen();
         
         // Проверяем разблокировку новых героев
         this.checkHeroUnlocks();
@@ -546,6 +573,10 @@ updateBonusDisplay(activeBonuses) {
 
         this.showNotification(`🎯 Надето: ${item.name}`);
         
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.calculateHeroStats();
+        this.showHeroGameScreen();
+        
         // СОХРАНЯЕМ ПРИ ЭКИПИРОВКЕ
         if (window.game) window.game.saveGame();
         
@@ -566,6 +597,10 @@ updateBonusDisplay(activeBonuses) {
 
         this.currentHero.equipment[slot] = null;
         this.currentHero.inventory.push(itemId);
+
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.calculateHeroStats();
+        this.showHeroGameScreen();
 
         // СОХРАНЯЕМ ПРИ СНЯТИИ
         if (window.game) window.game.saveGame();
@@ -722,7 +757,7 @@ updateBonusDisplay(activeBonuses) {
                                 <!-- ⭐ АКТИВНЫЕ БОНУСЫ -->
                                 <div class="overlay-stat-group">
                                     ${stats.activeBonuses.length > 0 ? 
-                                        stats.activeBonuses.slice(0, 3).map(bonus => `
+                                        stats.activeBonuses.slice(0, 4).map(bonus => `
                                             <div class="overlay-stat-row">
                                                 <span class="overlay-stat-label">${bonus.label}</span>
                                                 <span class="overlay-stat-value">${bonus.display}</span>
@@ -733,10 +768,10 @@ updateBonusDisplay(activeBonuses) {
                                             <span class="overlay-stat-value">Нет активных</span>
                                         </div>`
                                     }
-                                    ${stats.activeBonuses.length > 3 ? 
+                                    ${stats.activeBonuses.length > 4 ? 
                                         `<div class="overlay-stat-row">
                                             <span class="overlay-stat-label">✨ Ещё</span>
-                                            <span class="overlay-stat-value">+${stats.activeBonuses.length - 3}</span>
+                                            <span class="overlay-stat-value">+${stats.activeBonuses.length - 4}</span>
                                         </div>` : ''
                                     }
                                 </div>
@@ -1146,10 +1181,11 @@ updateBonusDisplay(activeBonuses) {
         
         this.showNotification(`🔄 ${this.currentHero.name} сброшен к начальным значениям`);
         
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.showHeroGameScreen();
+        
         // СОХРАНЯЕМ ПРИ СБРОСЕ
         if (window.game) window.game.saveGame();
-        
-        this.showHeroGameScreen();
     }
 }
 
