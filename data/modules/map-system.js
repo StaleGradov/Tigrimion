@@ -700,32 +700,65 @@ class MapSystem {
     // ========== OVERLAY SYSTEM ==========
     showOverlay(overlayType) {
         if (overlayType === 'tactical-map') {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
-
-            this.activeOverlay = overlayType;
+            console.log("🎲 Показываем тактическую карту...");
             
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="overlay-header">
-                        <h3>🎲 Тактическая карта</h3>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="overlay-body">
-                        ${this.renderTacticalMap()}
-                    </div>
-                </div>
-            `;
-            container.style.display = 'block';
+            // Проверяем необходимые условия
+            if (!this.currentHero) {
+                console.error("❌ Герой не выбран!");
+                if (window.game) {
+                    window.game.showNotification("❌ Сначала выберите героя!", 'error');
+                }
+                return;
+            }
             
-            console.log("✅ Оверлей тактической карты создан");
+            if (!this.currentTacticalMap) {
+                console.warn("⚠️ Нет текущей тактической карты, пытаемся загрузить...");
+                this.loadMapData().then(() => {
+                    if (this.currentTacticalMap) {
+                        this.showTacticalMapEditor();
+                    } else {
+                        console.error("❌ Не удалось загрузить карты!");
+                        if (window.game) {
+                            window.game.showNotification("❌ Не удалось загрузить карты!", 'error');
+                        }
+                    }
+                });
+                return;
+            }
             
-            // Инициализируем Canvas после добавления в DOM
-            setTimeout(() => {
-                console.log("🕒 Запуск инициализации Canvas...");
-                this.initCanvas();
-            }, 100);
+            this.showTacticalMapEditor();
         }
+    }
+
+    showTacticalMapEditor() {
+        const container = document.getElementById('overlay-container');
+        if (!container) {
+            console.error("❌ Контейнер оверлея не найден!");
+            return;
+        }
+
+        this.activeOverlay = 'tactical-map';
+        
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="overlay-header">
+                    <h3>🎲 Тактическая карта</h3>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                <div class="overlay-body" style="padding: 0; background: #000;">
+                    ${this.renderTacticalMap()}
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+        
+        console.log("✅ Оверлей тактической карты создан");
+        
+        // Даем время DOM обновиться перед инициализацией Canvas
+        setTimeout(() => {
+            console.log("🕒 Запуск инициализации Canvas...");
+            this.initCanvas();
+        }, 50);
     }
 
     hideOverlay() {
@@ -735,18 +768,6 @@ class MapSystem {
             container.innerHTML = '';
             this.activeOverlay = null;
         }
-    }
-
-    showTacticalMapEditor() {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Сначала выберите героя!", 'error');
-            }
-            return;
-        }
-        
-        this.showOverlay('tactical-map');
     }
 
     // ========== UTILITY METHODS ==========
@@ -765,6 +786,26 @@ class MapSystem {
         if (this.canvasInitialized) {
             this.drawTacticalMap();
         }
+    }
+
+    // ========== ОТЛАДОЧНЫЕ МЕТОДЫ ==========
+    checkSystemStatus() {
+        return {
+            currentHero: !!this.currentHero,
+            tacticalMaps: this.tacticalMaps.length,
+            currentTacticalMap: !!this.currentTacticalMap,
+            canvasInitialized: this.canvasInitialized,
+            activeOverlay: this.activeOverlay
+        };
+    }
+
+    debugInfo() {
+        console.log("MapSystem Debug:", {
+            tacticalMaps: this.tacticalMaps.length,
+            currentMap: this.currentTacticalMap?.name,
+            playerPosition: this.playerTacticalPosition,
+            canvasInitialized: this.canvasInitialized
+        });
     }
 
     createTestMaps() {
@@ -806,15 +847,6 @@ class MapSystem {
 
     saveMapState() {
         // Сохранение состояния карты
-    }
-
-    debugInfo() {
-        console.log("MapSystem Debug:", {
-            tacticalMaps: this.tacticalMaps.length,
-            currentMap: this.currentTacticalMap?.name,
-            playerPosition: this.playerTacticalPosition,
-            canvasInitialized: this.canvasInitialized
-        });
     }
 }
 
