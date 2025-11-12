@@ -48,7 +48,8 @@ class BattleSystem {
                 armor: 5,
                 experience: 50,
                 reward: 100,
-                attackType: "melee"
+                attackType: "melee",
+                image: "images/monsters/wolf.jpg"
             },
             {
                 id: 2,
@@ -58,7 +59,8 @@ class BattleSystem {
                 armor: 2,
                 experience: 25,
                 reward: 50,
-                attackType: "melee"
+                attackType: "melee",
+                image: "images/monsters/goblin.jpg"
             },
             {
                 id: 3,
@@ -68,7 +70,19 @@ class BattleSystem {
                 armor: 8,
                 experience: 75,
                 reward: 150,
-                attackType: "melee"
+                attackType: "melee",
+                image: "images/monsters/orc.jpg"
+            },
+            {
+                id: 4,
+                name: "Тигр",
+                health: 360,
+                damage: 50,
+                armor: 10,
+                experience: 80,
+                reward: 180,
+                attackType: "melee",
+                image: "images/monsters/tiger.jpg"
             }
         ];
         console.log("🔄 Созданы тестовые монстры");
@@ -93,7 +107,7 @@ class BattleSystem {
         this.battleContext = context;
         
         console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
-        this.showInteractiveBattle();
+        this.showFullscreenBattle();
     }
 
     generateMonsterGroup(baseMonsterId) {
@@ -131,11 +145,11 @@ class BattleSystem {
         this.battleGrid.allies = [null, null, null, null, null, null];
         this.battleGrid.enemies = [null, null, null, null, null, null];
         
-        // Размещаем героя в центре заднего ряда
-        this.battleGrid.allies[3] = {
+        // Размещаем героя в левой части (позиции 0, 2, 4)
+        this.battleGrid.allies[0] = {
             type: 'hero',
             data: hero,
-            position: 3,
+            position: 0,
             maxHealth: hero.baseHealth,
             currentHealth: hero.currentHealth || hero.baseHealth
         };
@@ -145,27 +159,30 @@ class BattleSystem {
     }
 
     placeMonstersOnGrid(monsters) {
-        const frontLinePositions = [0, 1, 2];
-        const backLinePositions = [3, 4, 5];
+        // Левая колонка (0, 2, 4) - ближний бой
+        // Правая колонка (1, 3, 5) - дальний бой
+        const meleePositions = [0, 2, 4];  // Левая колонка
+        const rangedPositions = [1, 3, 5]; // Правая колонка
         
-        let frontLineCount = 0;
-        let backLineCount = 0;
+        let meleeCount = 0;
+        let rangedCount = 0;
 
         monsters.forEach(monster => {
             const attackType = monster.attackType || 'melee';
             let position;
             
-            if (attackType === 'melee' && frontLineCount < 3) {
-                position = frontLinePositions[frontLineCount++];
-            } else if (attackType === 'ranged' && backLineCount < 3) {
-                position = backLinePositions[backLineCount++];
+            if (attackType === 'melee' && meleeCount < 3) {
+                position = meleePositions[meleeCount++];
+            } else if (attackType === 'ranged' && rangedCount < 3) {
+                position = rangedPositions[rangedCount++];
             } else {
-                const availablePositions = [...frontLinePositions, ...backLinePositions]
+                // Если не хватает мест в нужном типе, размещаем в доступных
+                const availablePositions = [...meleePositions, ...rangedPositions]
                     .filter(pos => !this.battleGrid.enemies[pos]);
                 if (availablePositions.length > 0) {
                     position = availablePositions[0];
-                    if (position < 3) frontLineCount++;
-                    else backLineCount++;
+                    if (meleePositions.includes(position)) meleeCount++;
+                    else rangedCount++;
                 }
             }
 
@@ -181,79 +198,60 @@ class BattleSystem {
         });
     }
 
-    // ========== ИНТЕРАКТИВНЫЙ ИНТЕРФЕЙС БОЯ ==========
-    showInteractiveBattle() {
+    // ========== ПОЛНОЭКРАННЫЙ ИНТЕРФЕЙС БОЯ ==========
+    showFullscreenBattle() {
         const app = document.getElementById('app');
         if (!app) return;
 
+        const heroStats = window.game.systems.level.calculateHeroStats(this.currentHero, window.game.systems.bonus);
+
         app.innerHTML = `
-            <div class="battle-screen-interactive">
+            <div class="battle-screen-fullscreen">
                 <header class="battle-header">
-                    <h2>⚔️ ТАКТИЧЕСКИЙ БОЙ</h2>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
+                    <div class="header-left">
+                        <h2>⚔️ ТАКТИЧЕСКИЙ БОЙ</h2>
+                        <div class="battle-round">Раунд: ${this.battleRound}</div>
+                    </div>
                     <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
                         ← Назад к карте
                     </button>
                 </header>
                 
-                <div class="battle-status">
-                    <div class="hero-status">
-                        <div class="combatant-hero">
-                            <div class="combatant-image">
-                                <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
-                                <div class="combatant-fallback" style="display: none;">🎯</div>
-                            </div>
-                            <div class="combatant-info">
-                                <h4>${this.currentHero.name}</h4>
-                                <div class="health-bar">
-                                    <div class="health-fill" style="width: ${(this.battleGrid.allies[3].currentHealth / this.battleGrid.allies[3].maxHealth) * 100}%"></div>
-                                    <div class="health-text">${Math.ceil(this.battleGrid.allies[3].currentHealth)}/${this.battleGrid.allies[3].maxHealth}</div>
-                                </div>
-                                <div class="combatant-stats">
-                                    <span>⚔️ ${this.getHeroDamage()}</span>
-                                    <span>🛡️ ${this.getHeroArmor()}</span>
-                                </div>
+                <div class="battle-main-area">
+                    <div class="battle-grid-fullscreen">
+                        <div class="grid-side allies-side">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderFullscreenGrid('allies')}
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="battle-vs">VS</div>
-                    
-                    <div class="enemies-status">
-                        ${this.renderEnemiesStatus()}
-                    </div>
-                </div>
-                
-                <div class="battle-grid-interactive">
-                    <div class="grid-side allies-side">
-                        <h4>ВАШ ОТРЯД</h4>
-                        <div class="grid-positions">
-                            ${this.renderInteractiveGrid('allies')}
+                        
+                        <div class="vs-separator">
+                            <div class="vs-text">VS</div>
                         </div>
-                    </div>
-                    
-                    <div class="grid-side enemies-side">
-                        <h4>ПРОТИВНИКИ</h4>
-                        <div class="grid-positions">
-                            ${this.renderInteractiveGrid('enemies')}
+                        
+                        <div class="grid-side enemies-side">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderFullscreenGrid('enemies')}
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="battle-controls">
-                    <div class="battle-hint" id="battleHint">
+                <div class="battle-controls-fullscreen">
+                    <div class="battle-hint-fullscreen" id="battleHint">
                         ${this.getBattleHint()}
                     </div>
                     
-                    <div class="battle-actions">
+                    <div class="battle-actions-fullscreen">
                         <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
                             🏃 Попытаться сбежать
                         </button>
                     </div>
                 </div>
                 
-                <div class="battle-log-container">
+                <div class="battle-log-fullscreen">
                     <h4>📜 Ход боя:</h4>
                     <div class="battle-log-entries" id="battleLogEntries">
                         ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
@@ -263,53 +261,83 @@ class BattleSystem {
         `;
     }
 
-    renderInteractiveGrid(side) {
+    renderFullscreenGrid(side) {
         const grid = this.battleGrid[side];
         let html = '';
         
-        for (let position = 0; position < 6; position++) {
-            const unit = grid[position];
-            html += this.renderInteractiveGridCell(unit, position, side);
+        // Создаем сетку 6x6 (2 колонки x 3 ряда)
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 2; col++) {
+                const position = row * 2 + col;
+                const unit = grid[position];
+                html += this.renderFullscreenGridCell(unit, position, side);
+            }
         }
         
         return html;
     }
 
-    renderInteractiveGridCell(unit, position, side) {
+    renderFullscreenGridCell(unit, position, side) {
         const isEnemy = side === 'enemies';
         const isEmpty = !unit;
         
-        let cellClass = 'grid-cell';
+        let cellClass = 'grid-cell-fullscreen';
         let content = '';
         let onClick = '';
         
         if (isEmpty) {
             cellClass += ' empty';
-            content = '⚫';
+            content = '<div class="empty-slot">⚫</div>';
         } else {
             const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
             const isAlive = unit.currentHealth > 0;
             
-            let unitSymbol = isEnemy ? '👹' : '🎯';
-            if (!isAlive) {
-                unitSymbol = '💀';
-                cellClass += ' dead';
+            let stats = '';
+            if (isEnemy) {
+                stats = `
+                    <div class="unit-stats">
+                        <div class="stat-line">
+                            <span>⚔️ ${unit.data.damage}</span>
+                            <span>🛡️ ${unit.data.armor || 0}</span>
+                        </div>
+                    </div>
+                `;
             } else {
-                cellClass += ' alive';
+                const heroStats = window.game.systems.level.calculateHeroStats(unit.data, window.game.systems.bonus);
+                stats = `
+                    <div class="unit-stats">
+                        <div class="stat-line">
+                            <span>⚔️ ${heroStats.damage}</span>
+                            <span>🛡️ ${heroStats.armor}</span>
+                        </div>
+                    </div>
+                `;
             }
             
             content = `
-                <div class="unit-display">
-                    <div class="unit-symbol">${unitSymbol}</div>
-                    <div class="unit-name">${unit.data.name}</div>
-                    <div class="unit-health">
-                        <div class="health-bar-small">
-                            <div class="health-fill-small" style="width: ${healthPercent}%"></div>
+                <div class="unit-display-fullscreen">
+                    <div class="unit-image">
+                        <img src="${unit.data.image}" alt="${unit.data.name}" 
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                        <div class="image-fallback" style="display: none;">
+                            ${isEnemy ? '👹' : '🎯'}
                         </div>
-                        <div class="health-text-small">${Math.ceil(unit.currentHealth)}</div>
+                    </div>
+                    <div class="unit-info">
+                        <div class="unit-name">${unit.data.name}</div>
+                        <div class="health-bar-fullscreen">
+                            <div class="health-fill" style="width: ${healthPercent}%"></div>
+                            <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
+                        </div>
+                        ${stats}
                     </div>
                 </div>
             `;
+            
+            if (!isAlive) {
+                cellClass += ' dead';
+                content += '<div class="dead-overlay">💀</div>';
+            }
             
             // Делаем врагов кликабельными, если они живы и доступны для атаки
             if (isEnemy && isAlive && this.availableTargets.includes(position)) {
@@ -323,41 +351,6 @@ class BattleSystem {
                 ${content}
             </div>
         `;
-    }
-
-    renderEnemiesStatus() {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        
-        return aliveMonsters.map(monster => `
-            <div class="combatant-enemy">
-                <div class="combatant-image">
-                    <div class="enemy-symbol">👹</div>
-                </div>
-                <div class="combatant-info">
-                    <h4>${monster.data.name}</h4>
-                    <div class="health-bar">
-                        <div class="health-fill" style="width: ${(monster.currentHealth / monster.maxHealth) * 100}%"></div>
-                        <div class="health-text">${Math.ceil(monster.currentHealth)}/${monster.maxHealth}</div>
-                    </div>
-                    <div class="combatant-stats">
-                        <span>⚔️ ${monster.data.damage}</span>
-                        <span>🛡️ ${monster.data.armor || 0}</span>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    getHeroDamage() {
-        if (!this.currentHero || !window.game?.systems?.level) return 0;
-        const stats = window.game.systems.level.calculateHeroStats(this.currentHero, window.game.systems.bonus);
-        return stats.damage;
-    }
-
-    getHeroArmor() {
-        if (!this.currentHero || !window.game?.systems?.level) return 0;
-        const stats = window.game.systems.level.calculateHeroStats(this.currentHero, window.game.systems.bonus);
-        return stats.armor;
     }
 
     getBattleHint() {
@@ -393,7 +386,7 @@ class BattleSystem {
     }
 
     executeAttack(targetPosition) {
-        const hero = this.battleGrid.allies[3];
+        const hero = this.battleGrid.allies[0]; // Герой теперь на позиции 0
         const target = this.battleGrid.enemies[targetPosition];
         
         if (!hero || !target) {
@@ -479,7 +472,7 @@ class BattleSystem {
     }
 
     executeMonsterAttack(monster) {
-        const hero = this.battleGrid.allies[3];
+        const hero = this.battleGrid.allies[0];
         if (!hero) return;
         
         const monsterDamage = monster.data.damage || 5;
@@ -497,7 +490,7 @@ class BattleSystem {
     }
 
     updateAvailableTargets() {
-        const hero = this.battleGrid.allies[3];
+        const hero = this.battleGrid.allies[0];
         if (!hero) return;
 
         const attackType = this.getHeroAttackType(hero.data);
@@ -509,13 +502,13 @@ class BattleSystem {
                 return unit && unit.currentHealth > 0;
             });
         } else {
-            // Ближний бой - только передняя линия
-            this.availableTargets = [0, 1, 2].filter(pos => {
+            // Ближний бой - только левая колонка (0, 2, 4)
+            this.availableTargets = [0, 2, 4].filter(pos => {
                 const unit = this.battleGrid.enemies[pos];
                 return unit && unit.currentHealth > 0;
             });
             
-            // Если передняя линия пуста, можно атаковать любых врагов
+            // Если левая колонка пуста, можно атаковать любых врагов
             if (this.availableTargets.length === 0) {
                 this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => {
                     const unit = this.battleGrid.enemies[pos];
@@ -536,7 +529,7 @@ class BattleSystem {
 
     isBattleOver() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        const hero = this.battleGrid.allies[3];
+        const hero = this.battleGrid.allies[0];
         return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
     }
 
@@ -559,7 +552,7 @@ class BattleSystem {
     endTacticalBattle(victory, fled = false) {
         if (fled) {
             // При побеге - минимальные потери
-            const hero = this.battleGrid.allies[3];
+            const hero = this.battleGrid.allies[0];
             if (hero) {
                 const damage = Math.floor(hero.maxHealth * 0.1); // 10% от макс здоровья
                 hero.currentHealth = Math.max(1, hero.currentHealth - damage);
@@ -691,20 +684,14 @@ class BattleSystem {
         }
         
         // Обновляем сетку
-        const alliesGrid = document.querySelector('.allies-side .grid-positions');
-        const enemiesGrid = document.querySelector('.enemies-side .grid-positions');
+        const alliesGrid = document.querySelector('.allies-side .grid-container-6x6');
+        const enemiesGrid = document.querySelector('.enemies-side .grid-container-6x6');
         
         if (alliesGrid) {
-            alliesGrid.innerHTML = this.renderInteractiveGrid('allies');
+            alliesGrid.innerHTML = this.renderFullscreenGrid('allies');
         }
         if (enemiesGrid) {
-            enemiesGrid.innerHTML = this.renderInteractiveGrid('enemies');
-        }
-        
-        // Обновляем статус героя и врагов
-        const enemiesStatus = document.querySelector('.enemies-status');
-        if (enemiesStatus) {
-            enemiesStatus.innerHTML = this.renderEnemiesStatus();
+            enemiesGrid.innerHTML = this.renderFullscreenGrid('enemies');
         }
         
         this.updateBattleLog();
@@ -712,7 +699,7 @@ class BattleSystem {
 
     // Старый метод для совместимости
     showTacticalBattleScreen() {
-        this.showInteractiveBattle();
+        this.showFullscreenBattle();
     }
 
     hideTacticalMap() {
@@ -725,9 +712,9 @@ class BattleSystem {
     }
 
     showBattleScreen() {
-        this.showInteractiveBattle();
+        this.showFullscreenBattle();
     }
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с интерактивным интерфейсом");
+console.log("📦 BattleSystem модуль загружен с полноэкранным интерфейсом");
