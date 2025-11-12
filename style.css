@@ -2597,3 +2597,381 @@ body {
     position: relative;
     overflow: hidden;
 }
+/* ========== РАСТЯНУТОЕ ОКНО БОЯ С КАРТОЙ ========== */
+.battle-screen-with-map {
+    display: grid;
+    grid-template-columns: 30% 70%; /* Карта 30%, бой 70% */
+    height: 100vh;
+    background: #1f2937;
+}
+
+.tactical-map-side {
+    background: #000;
+    overflow: hidden;
+    position: relative;
+    border-right: 3px solid #4b5563;
+    padding: 1rem;
+}
+
+.battle-map-preview {
+    color: white;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.battle-map-preview h3 {
+    color: #00ffff;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.map-position-info {
+    background: rgba(0, 255, 255, 0.1);
+    padding: 0.8rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border: 1px solid #00ffff;
+}
+
+.battle-map-controls {
+    margin-top: 2rem;
+}
+
+.battle-side.expanded {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+}
+
+.battle-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #4b5563;
+}
+
+.battle-header h2 {
+    color: #ef4444;
+    font-size: 2.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.battle-round {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #ef4444;
+    font-weight: bold;
+}
+
+/* Увеличиваем размеры для растянутого окна */
+.battle-combatants {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 2rem 0;
+    gap: 3rem;
+}
+
+.combatant {
+    background: rgba(55, 65, 81, 0.9);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 2px solid #4b5563;
+    min-width: 280px;
+    flex: 1;
+}
+
+.combatant-image img {
+    width: 140px;
+    height: 140px;
+    border-radius: 15px;
+    object-fit: cover;
+    border: 3px solid #4b5563;
+    margin-bottom: 1rem;
+}
+
+.combatant-info h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #f59e0b;
+}
+
+.vs-divider {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #f59e0b;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.health-bar {
+    width: 100%;
+    height: 25px;
+    background: #4b5563;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f59e0b);
+    transition: width 0.3s ease;
+}
+
+.health-text {
+    font-size: 1.1rem;
+    color: #cbd5e1;
+    margin: 0.5rem 0;
+    font-weight: bold;
+}
+
+.combatant-stats {
+    display: flex;
+    justify-content: space-around;
+    font-size: 1rem;
+    color: #9ca3af;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1rem;
+}
+
+.combatant-stats span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.battle-log {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    overflow-y: auto;
+    max-height: 300px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.battle-log h4 {
+    color: #f59e0b;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.log-entries {
+    font-size: 1rem;
+}
+
+.log-entry {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.battle-actions {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.btn-battle-attack, 
+.btn-battle-block, 
+.btn-battle-flee {
+    padding: 18px 30px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    flex: 1;
+}
+
+.btn-battle-attack { 
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.btn-battle-block { 
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.btn-battle-flee { 
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+}
+
+.btn-battle-attack:hover { 
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-battle-block:hover { 
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.btn-battle-flee:hover { 
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+}
+
+/* Стили для экрана победы в бою */
+.victory-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.victory-content {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3rem;
+    border-radius: 20px;
+    border: 3px solid #10b981;
+    max-width: 600px;
+    width: 100%;
+}
+
+.victory-rewards {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin: 2rem 0;
+}
+
+.reward-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(16, 185, 129, 0.2);
+    padding: 1.5rem;
+    border-radius: 15px;
+    min-width: 150px;
+    border: 2px solid rgba(16, 185, 129, 0.5);
+}
+
+.reward-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.reward-text {
+    font-weight: bold;
+    font-size: 1.3rem;
+    color: white;
+}
+
+.victory-message {
+    font-size: 1.4rem;
+    margin: 2rem 0;
+    color: white;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+/* Стили для результата боя */
+.battle-result {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.battle-result-content {
+    background: rgba(0, 0, 0, 0.6);
+    padding: 3rem;
+    border-radius: 20px;
+    border: 3px solid;
+    max-width: 600px;
+    width: 100%;
+}
+
+.result-message {
+    font-size: 1.3rem;
+    margin: 2rem 0;
+    color: white;
+    line-height: 1.5;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .battle-screen-with-map {
+        grid-template-columns: 1fr;
+        grid-template-rows: 200px 1fr;
+    }
+    
+    .tactical-map-side {
+        border-right: none;
+        border-bottom: 3px solid #4b5563;
+        padding: 0.5rem;
+    }
+    
+    .battle-side.expanded {
+        padding: 1rem;
+    }
+    
+    .battle-combatants {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .combatant {
+        min-width: auto;
+        width: 100%;
+        padding: 1rem;
+    }
+    
+    .combatant-image img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .vs-divider {
+        order: -1;
+        margin: 0;
+    }
+    
+    .battle-actions {
+        flex-direction: column;
+    }
+    
+    .btn-battle-attack, 
+    .btn-battle-block, 
+    .btn-battle-flee {
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+    
+    .victory-rewards {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .reward-item {
+        min-width: auto;
+    }
+}
