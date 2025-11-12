@@ -124,7 +124,7 @@ class HeroSystem {
     }
 
     // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
-  // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
+ // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
 calculateHeroStats(hero = null) {
     const targetHero = hero || this.currentHero;
     if (!targetHero) return { 
@@ -166,58 +166,67 @@ calculateHeroStats(hero = null) {
     
     if (window.game && window.game.systems.bonus) {
         try {
+            // ВАЖНО: Передаем items в calculateTotalBonuses!
             const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero, window.game.systems.equipment.items);
+            
+            console.log("📊 Рассчитанные бонусы:", totals); // ДЕБАГ
             
             // Применяем процентные бонусы к характеристикам
             finalHealth = Math.round(finalHealth * (1 + totals.health_mult));
             finalDamage = Math.round(finalDamage * (1 + totals.damage_mult));
             finalArmor = Math.round(finalArmor * (1 + totals.armor_mult));
             
-            // Собираем только ненулевые бонусы для отображения
-            if (totals.crit_chance > 0) {
-                activeBonuses.push({
+            // Собираем ВСЕ бонусы для отображения (даже нулевые)
+            activeBonuses = [
+                {
+                    type: 'health_mult',
+                    value: totals.health_mult,
+                    label: '💪 Здоровье',
+                    display: `+${(totals.health_mult * 100).toFixed(1)}%`
+                },
+                {
+                    type: 'damage_mult',
+                    value: totals.damage_mult,
+                    label: '⚔️ Урон',
+                    display: `+${(totals.damage_mult * 100).toFixed(1)}%`
+                },
+                {
+                    type: 'armor_mult',
+                    value: totals.armor_mult,
+                    label: '🛡️ Броня',
+                    display: `+${(totals.armor_mult * 100).toFixed(1)}%`
+                },
+                {
                     type: 'crit_chance',
                     value: totals.crit_chance,
                     label: '🎯 Крит',
                     display: `${(totals.crit_chance * 100).toFixed(1)}%`
-                });
-            }
-            
-            if (totals.health_regen_mult > 0) {
-                activeBonuses.push({
+                },
+                {
                     type: 'health_regen_mult',
                     value: totals.health_regen_mult,
                     label: '❤️ Реген',
                     display: `+${(totals.health_regen_mult * 100).toFixed(1)}%`
-                });
-            }
-            
-            if (totals.vampirism > 0) {
-                activeBonuses.push({
+                },
+                {
                     type: 'vampirism',
                     value: totals.vampirism,
                     label: '🩸 Вампир',
                     display: `${(totals.vampirism * 100).toFixed(1)}%`
-                });
-            }
-            
-            if (totals.armor_penetration > 0) {
-                activeBonuses.push({
+                },
+                {
                     type: 'armor_penetration',
                     value: totals.armor_penetration,
                     label: '💥 Пенетрация',
                     display: `${(totals.armor_penetration * 100).toFixed(1)}%`
-                });
-            }
-            
-            if (totals.gold_mult > 0) {
-                activeBonuses.push({
+                },
+                {
                     type: 'gold_mult',
                     value: totals.gold_mult,
                     label: '💰 Золото',
                     display: `+${(totals.gold_mult * 100).toFixed(1)}%`
-                });
-            }
+                }
+            ];
             
             // Убедимся что значения не отрицательные
             finalHealth = Math.max(1, finalHealth);
@@ -227,30 +236,6 @@ calculateHeroStats(hero = null) {
         } catch (error) {
             console.warn("⚠️ Ошибка расчета бонусов:", error);
         }
-    }
-    
-    // Если нет активных бонусов, но система бонусов работает - покажем нулевые значения
-    if (activeBonuses.length === 0 && window.game && window.game.systems.bonus) {
-        activeBonuses.push(
-            {
-                type: 'crit_chance',
-                value: 0,
-                label: '🎯 Крит',
-                display: '0.0%'
-            },
-            {
-                type: 'health_regen_mult',
-                value: 0,
-                label: '❤️ Реген',
-                display: '+0.0%'
-            },
-            {
-                type: 'vampirism',
-                value: 0,
-                label: '🩸 Вампир',
-                display: '0.0%'
-            }
-        );
     }
     
     // Рассчитываем текущее здоровье (не может превышать максимальное)
