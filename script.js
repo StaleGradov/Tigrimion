@@ -500,7 +500,7 @@ class SafeHeroGame {
         });
     }
 
-    // ========== СИСТЕМА СОХРАНЕНИЯ (без изменений) ==========
+    // ========== СИСТЕМА СОХРАНЕНИЯ ==========
     saveGame() {
         try {
             if (this.currentHero && this.systems.equipment && this.systems.hero) {
@@ -758,9 +758,6 @@ class SafeHeroGame {
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">
                         🎲 Тактическая карта
                     </button>
-                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">
-                        🎨 Создать карту
-                    </button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">
                         🎒 Инвентарь
                     </button>
@@ -935,9 +932,10 @@ class SafeHeroGame {
                 break;
 
             case 'tactical-map':
+                // ⭐ ИСПРАВЛЕНИЕ: Используем правильный метод MapSystem
                 if (this.systems.map) {
                     this.systems.map.setCurrentHero(this.currentHero);
-                    this.systems.map.showTacticalMapEditor();
+                    this.systems.map.showOverlay('tactical-map');
                 } else {
                     container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
                 }
@@ -1377,11 +1375,37 @@ class SafeHeroGame {
         `;
     }
 
+    // ========== ОТЛАДОЧНЫЕ МЕТОДЫ ДЛЯ КАРТ ==========
+    debugMapSystem() {
+        if (this.systems.map) {
+            const status = this.systems.map.checkSystemStatus();
+            console.log("=== MAP SYSTEM DEBUG ===", status);
+            
+            if (!status.currentHero) {
+                console.error("❌ Герой не установлен в MapSystem!");
+            }
+            if (!status.currentTacticalMap) {
+                console.error("❌ Текущая тактическая карта не установлена!");
+            }
+            if (status.tacticalMaps === 0) {
+                console.error("❌ Нет загруженных тактических карт!");
+            }
+            
+            return status;
+        } else {
+            console.error("❌ MapSystem не инициализирован!");
+            return null;
+        }
+    }
+
     showDebugInfo() {
         console.log("=== ДЕБАГ ИНФОРМАЦИЯ ===");
         console.log("Загруженные модули:", this.moduleLoader.loadedModules);
         console.log("Системы:", this.systems);
         console.log("Текущий герой:", this.currentHero);
+        
+        // Добавляем отладку карт
+        this.debugMapSystem();
         
         if (this.currentHero) {
             const stats = this.calculateHeroStats();
