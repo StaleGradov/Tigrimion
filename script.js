@@ -76,37 +76,39 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
-
-        try {
-            const modulePath = `data/modules/${moduleName}.js`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            
-            const moduleCode = await response.text();
-            
-            const script = document.createElement('script');
-            script.textContent = moduleCode;
-            document.head.appendChild(script);
-            document.head.removeChild(script);
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
-        }
+   async loadModule(moduleName) {
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
     }
+
+    try {
+        const modulePath = `data/modules/${moduleName}.js`;
+        console.log(`📥 Загружаем модуль: ${modulePath}`);
+        
+        const response = await fetch(modulePath);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        }
+        
+        const moduleCode = await response.text();
+        
+        // ⭐ ИСПРАВЛЕНИЕ: Убираем проблемную строку с removeChild
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.textContent = moduleCode;
+        document.head.appendChild(script);
+        // ⭐ УБИРАЕМ ЭТУ СТРОКУ: document.head.removeChild(script);
+        
+        this.loadedModules.add(moduleName);
+        console.log(`✅ Модуль ${moduleName} успешно загружен`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        return false;
+    }
+}
 
     isModuleAvailable(moduleName) {
         return typeof window[this.getClassName(moduleName)] !== 'undefined';
