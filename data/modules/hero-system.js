@@ -124,7 +124,7 @@ class HeroSystem {
     }
 
     // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
- // ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
+// ========== РАСЧЕТ ХАРАКТЕРИСТИК ==========
 calculateHeroStats(hero = null) {
     const targetHero = hero || this.currentHero;
     if (!targetHero) return { 
@@ -132,12 +132,16 @@ calculateHeroStats(hero = null) {
         activeBonuses: []
     };
     
+    console.log("🔍 calculateHeroStats вызван для героя:", targetHero.name);
+    
     // Базовые характеристики с учетом уровня
     const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
     
     let baseMaxHealth = Math.round(targetHero.baseHealth * levelMultiplier);
     let baseDamage = Math.round(targetHero.baseDamage * levelMultiplier);
     let baseArmor = Math.round(targetHero.baseArmor * levelMultiplier);
+    
+    console.log("📊 Базовые статы:", { baseMaxHealth, baseDamage, baseArmor });
     
     // Бонусы от экипировки
     let equipmentHealth = 0;
@@ -149,12 +153,15 @@ calculateHeroStats(hero = null) {
         if (itemId && window.game && window.game.systems.equipment) {
             const item = window.game.systems.equipment.getItemById(itemId);
             if (item) {
+                console.log("🎒 Предмет экипировки:", item.name, item.bonus);
                 equipmentDamage += item.fixed_damage || 0;
                 equipmentArmor += item.fixed_armor || 0;
                 equipmentHealth += item.fixed_health || 0;
             }
         }
     });
+    
+    console.log("🎯 Бонусы от экипировки:", { equipmentHealth, equipmentDamage, equipmentArmor });
     
     // Применяем процентные бонусы если система бонусов доступна
     let finalHealth = baseMaxHealth + equipmentHealth;
@@ -166,17 +173,31 @@ calculateHeroStats(hero = null) {
     
     if (window.game && window.game.systems.bonus) {
         try {
-            // ВАЖНО: Передаем items в calculateTotalBonuses!
-            const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero, window.game.systems.equipment.items);
+            console.log("🎲 Проверяем систему бонусов...");
             
-            console.log("📊 Рассчитанные бонусы:", totals); // ДЕБАГ
+            // Проверяем доступность items
+            const items = window.game.systems.equipment ? window.game.systems.equipment.items : [];
+            console.log("📦 Доступно предметов для расчета:", items.length);
+            
+            // Проверяем бонусы расы/класса/саги
+            const raceBonus = window.game.systems.bonus.bonuses.races[targetHero.race];
+            const classBonus = window.game.systems.bonus.bonuses.classes[targetHero.class];
+            const sagaBonus = window.game.systems.bonus.bonuses.sagas[targetHero.saga];
+            
+            console.log("🧬 Бонус расы:", raceBonus);
+            console.log("⚔️ Бонус класса:", classBonus);
+            console.log("📖 Бонус саги:", sagaBonus);
+            
+            const totals = window.game.systems.bonus.calculateTotalBonuses(targetHero, items);
+            
+            console.log("📊 РАССЧИТАННЫЕ БОНУСЫ:", totals);
             
             // Применяем процентные бонусы к характеристикам
             finalHealth = Math.round(finalHealth * (1 + totals.health_mult));
             finalDamage = Math.round(finalDamage * (1 + totals.damage_mult));
             finalArmor = Math.round(finalArmor * (1 + totals.armor_mult));
             
-            // Собираем ВСЕ бонусы для отображения (даже нулевые)
+            // Собираем ВСЕ бонусы для отображения
             activeBonuses = [
                 {
                     type: 'health_mult',
@@ -228,14 +249,18 @@ calculateHeroStats(hero = null) {
                 }
             ];
             
+            console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ:", activeBonuses);
+            
             // Убедимся что значения не отрицательные
             finalHealth = Math.max(1, finalHealth);
             finalDamage = Math.max(1, finalDamage);
             finalArmor = Math.max(0, finalArmor);
             
         } catch (error) {
-            console.warn("⚠️ Ошибка расчета бонусов:", error);
+            console.error("💥 Ошибка расчета бонусов:", error);
         }
+    } else {
+        console.warn("⚠️ Система бонусов не доступна!");
     }
     
     // Рассчитываем текущее здоровье (не может превышать максимальное)
@@ -243,6 +268,10 @@ calculateHeroStats(hero = null) {
     
     // Мощность героя для сравнения
     const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
+    
+    console.log("✅ ФИНАЛЬНЫЕ СТАТЫ:", {
+        currentHealth, maxHealth: finalHealth, damage: finalDamage, armor: finalArmor, power
+    });
     
     return {
         currentHealth: Math.floor(currentHealth),
