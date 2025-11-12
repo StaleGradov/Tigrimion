@@ -198,45 +198,57 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
-    // ⭐ ДОБАВЛЯЕМ МЕТОД ЦЕНТРИРОВАНИЯ КАРТЫ ИЗ СТАРОГО ФАЙЛА
     calculateMapPositioning() {
-        if (!this.currentTacticalMap || !this.canvas) return;
+        if (!this.currentTacticalMap || !this.canvas) {
+            console.log("❌ Нет карты или canvas для позиционирования");
+            return;
+        }
 
         const container = document.querySelector('.tactical-map-visual');
-        if (!container) return;
+        if (!container) {
+            console.log("❌ Контейнер не найден");
+            return;
+        }
 
         const rect = container.getBoundingClientRect();
+        console.log(`📐 Container rect: ${rect.width}x${rect.height}`);
+        
+        // Если высота 0, используем минимальную высоту
+        const effectiveHeight = rect.height > 0 ? rect.height : 600;
         this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
+        this.canvas.height = effectiveHeight;
 
-        console.log(`📐 Container: ${rect.width}x${rect.height}`);
+        console.log(`📐 Canvas size: ${this.canvas.width}x${this.canvas.height}`);
 
-        // ПРОСТОЕ РЕШЕНИЕ: центрируем карту вручную
         const cells = Object.values(this.currentTacticalMap.cells);
         
         if (cells.length > 0) {
-            // Находим средние координаты
-            let avgX = 0, avgY = 0;
+            // Находим границы всех клеток
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            
             cells.forEach(cell => {
-                avgX += cell.x;
-                avgY += cell.y;
+                minX = Math.min(minX, cell.x);
+                minY = Math.min(minY, cell.y);
+                maxX = Math.max(maxX, cell.x);
+                maxY = Math.max(maxY, cell.y);
             });
-            avgX /= cells.length;
-            avgY /= cells.length;
             
-            // Смещаем все клетки так, чтобы центр был в центре canvas
-            const centerCanvasX = rect.width / 2;
-            const centerCanvasY = rect.height / 2;
+            const width = maxX - minX;
+            const height = maxY - minY;
+            const centerCellsX = minX + width / 2;
+            const centerCellsY = minY + height / 2;
             
-            // Вычисляем необходимое смещение
-            const offsetX = centerCanvasX - avgX;
-            const offsetY = centerCanvasY - avgY;
+            const centerCanvasX = this.canvas.width / 2;
+            const centerCanvasY = this.canvas.height / 2;
             
-            console.log(`📐 Center of cells: (${avgX.toFixed(1)}, ${avgY.toFixed(1)})`);
+            const offsetX = centerCanvasX - centerCellsX;
+            const offsetY = centerCanvasY - centerCellsY;
+            
+            console.log(`📐 Center of cells: (${centerCellsX.toFixed(1)}, ${centerCellsY.toFixed(1)})`);
             console.log(`📐 Center of canvas: (${centerCanvasX}, ${centerCanvasY})`);
             console.log(`📐 Required offset: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
             
-            // ПРИМЕНЯЕМ СМЕЩЕНИЕ КО ВСЕМ КЛЕТКАМ
+            // Применяем смещение ко всем клеткам
             cells.forEach(cell => {
                 cell.x += offsetX;
                 cell.y += offsetY;
@@ -245,7 +257,6 @@ class MapSystem {
             console.log("✅ Cells repositioned to center");
         }
         
-        // Обнуляем смещение, т.к. мы уже сдвинули клетки
         this.mapOffset.x = 0;
         this.mapOffset.y = 0;
     }
@@ -716,8 +727,7 @@ class MapSystem {
                 </div>
                 
                 <div class="tactical-map-content" id="tacticalMapContent">
-                    <div class="tactical-map-visual" id="tacticalMapVisual" 
-                         style="height: 600px; min-height: 600px; background: #1a1a2e; border: 2px solid #00ffff; border-radius: 10px; position: relative;">
+                    <div class="tactical-map-visual" id="tacticalMapVisual">
                         <!-- Canvas будет добавлен автоматически -->
                     </div>
                     
@@ -802,11 +812,18 @@ class MapSystem {
         
         console.log("✅ Оверлей тактической карты создан");
         
-        // Даем время DOM обновиться перед инициализацией Canvas
+        // Принудительно устанавливаем высоту через небольшой таймаут
         setTimeout(() => {
+            const visualContainer = document.querySelector('.tactical-map-visual');
+            if (visualContainer) {
+                console.log("🔄 Принудительная установка высоты контейнера...");
+                visualContainer.style.height = '600px';
+                visualContainer.style.minHeight = '600px';
+            }
+            
             console.log("🕒 Запуск инициализации Canvas...");
             this.initCanvas();
-        }, 50);
+        }, 100);
     }
 
     hideOverlay() {
