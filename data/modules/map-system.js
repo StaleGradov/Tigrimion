@@ -13,49 +13,39 @@ class MapSystem {
         this.playerLocalPosition = {x: 0, y: 0}; 
         this.playerTacticalPosition = {x: 0, y: 0};
         
-        // ⭐ ДОБАВЛЯЕМ СВОЙСТВО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
         this.currentHero = null;
         
         this.loadedJSONMaps = new Map();
         this.activeOverlay = null;
         
-        // Для Canvas рендеринга
         this.canvas = null;
         this.ctx = null;
         this.hexSize = 40;
         this.showGrid = true;
         this.hoveredHex = null;
         
-        // Убрали масштабирование и сложное позиционирование
         this.mapOffset = { x: 0, y: 0 };
         
-        // Оптимизация рендеринга
         this.lastHoveredHex = null;
         this.animationFrame = null;
         
-        // НОВОЕ: для системы боев при перемещении
         this.pendingMovement = null;
         
-        // НОВОЕ: состояние canvas
         this.canvasInitialized = false;
         
         console.log("✅ MapSystem инициализирован");
     }
 
-    // ========== СИСТЕМА ГЕРОЯ ==========
     setCurrentHero(hero) {
         this.currentHero = hero;
         console.log(`🎯 Установлен герой для карты: ${hero?.name || 'нет'}`);
         
-        // Если герой установлен, обновляем позиции на картах
         if (hero) {
             this.updatePlayerPositionsFromHero(hero);
         }
     }
 
     updatePlayerPositionsFromHero(hero) {
-        // Здесь можно синхронизировать позиции героя с позициями на картах
-        // Например, если у героя есть сохраненные позиции
         if (hero.mapPosition) {
             this.playerGlobalPosition = hero.mapPosition.global || this.playerGlobalPosition;
             this.playerLocalPosition = hero.mapPosition.local || this.playerLocalPosition;
@@ -164,7 +154,6 @@ class MapSystem {
             };
         });
 
-        // Находим стартовую позицию
         let startPosition = {x: 0, y: 0};
         const startCell = cells.find(cell => cell.type === 'player_start');
         if (startCell) {
@@ -188,7 +177,6 @@ class MapSystem {
         };
     }
 
-    // ========== CANVAS РЕНДЕРИНГ ==========
     initCanvas() {
         const container = document.querySelector('.tactical-map-visual');
         if (!container) {
@@ -196,14 +184,11 @@ class MapSystem {
             return;
         }
 
-        // Очищаем контейнер
         container.innerHTML = '';
 
-        // Создаем canvas
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // Устанавливаем размеры
         this.canvas.style.width = '100%';
         this.canvas.style.height = '100%';
         this.canvas.style.position = 'absolute';
@@ -214,10 +199,8 @@ class MapSystem {
 
         this.ctx = this.canvas.getContext('2d');
         
-        // Рассчитываем позиционирование
         this.calculateMapPositioning();
         
-        // Добавляем обработчики событий
         this.setupCanvasEventListeners();
         
         this.canvasInitialized = true;
@@ -237,11 +220,9 @@ class MapSystem {
 
         console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-        // ПРОСТОЕ РЕШЕНИЕ: центрируем карту вручную
         const cells = Object.values(this.currentTacticalMap.cells);
         
         if (cells.length > 0) {
-            // Находим средние координаты
             let avgX = 0, avgY = 0;
             cells.forEach(cell => {
                 avgX += cell.x;
@@ -250,11 +231,9 @@ class MapSystem {
             avgX /= cells.length;
             avgY /= cells.length;
             
-            // Смещаем все клетки так, чтобы центр был в центре canvas
             const centerCanvasX = rect.width / 2;
             const centerCanvasY = rect.height / 2;
             
-            // Вычисляем необходимое смещение
             const offsetX = centerCanvasX - avgX;
             const offsetY = centerCanvasY - avgY;
             
@@ -262,7 +241,6 @@ class MapSystem {
             console.log(`📐 Center of canvas: (${centerCanvasX}, ${centerCanvasY})`);
             console.log(`📐 Required offset: (${offsetX.toFixed(1)}, ${offsetY.toFixed(1)})`);
             
-            // ПРИМЕНЯЕМ СМЕЩЕНИЕ КО ВСЕМ КЛЕТКАМ
             cells.forEach(cell => {
                 cell.x += offsetX;
                 cell.y += offsetY;
@@ -271,7 +249,6 @@ class MapSystem {
             console.log("✅ Cells repositioned to center");
         }
         
-        // Обнуляем смещение, т.к. мы уже сдвинули клетки
         this.mapOffset.x = 0;
         this.mapOffset.y = 0;
     }
@@ -280,8 +257,6 @@ class MapSystem {
         if (!this.canvas) return;
 
         this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
-        // УБРАТЬ СТРОКУ НИЖЕ - ВРЕМЕННО ОТКЛЮЧАЕМ ХОВЕР
-        // this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
 
         window.addEventListener('resize', () => {
             setTimeout(() => {
@@ -307,29 +282,6 @@ class MapSystem {
         }
     }
 
-    handleCanvasHover(e) {
-        if (!this.currentTacticalMap) return;
-
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const hex = this.getHexAtCanvasPosition(x, y);
-        
-        // Оптимизация: перерисовываем только если изменилась клетка
-        if (this.lastHoveredHex !== hex) {
-            this.lastHoveredHex = hex;
-            this.hoveredHex = hex;
-            
-            if (this.animationFrame) {
-                cancelAnimationFrame(this.animationFrame);
-            }
-            this.animationFrame = requestAnimationFrame(() => {
-                this.drawTacticalMap();
-            });
-        }
-    }
-
     getHexAtCanvasPosition(canvasX, canvasY) {
         if (!this.currentTacticalMap) return null;
 
@@ -338,7 +290,6 @@ class MapSystem {
         
         console.log(`🎯 Raw click: (${canvasX}, ${canvasY})`);
 
-        // ИСПОЛЬЗУЕМ ПРЯМЫЕ КООРДИНАТЫ БЕЗ СМЕЩЕНИЙ
         const mapX = canvasX;
         const mapY = canvasY;
         
@@ -385,7 +336,6 @@ class MapSystem {
     drawBackground() {
         const map = this.currentTacticalMap;
         if (!map.image) {
-            // Рисуем градиентный фон если нет изображения
             const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
             gradient.addColorStop(0, '#1a1a2e');
             gradient.addColorStop(1, '#16213e');
@@ -394,7 +344,6 @@ class MapSystem {
             return;
         }
 
-        // Получаем границы для рисования фона
         const cells = Object.values(map.cells);
         if (cells.length === 0) return;
 
@@ -414,7 +363,6 @@ class MapSystem {
         const img = new Image();
         img.onload = () => {
             this.ctx.drawImage(img, minX, minY, width, height);
-            // Перерисовываем остальные элементы
             this.drawHexes();
             this.drawAvailableMoves();
             this.drawHoverEffect();
@@ -424,7 +372,6 @@ class MapSystem {
         };
         img.onerror = () => {
             console.log("❌ Ошибка загрузки изображения карты");
-            // Градиентный фон при ошибке
             const gradient = this.ctx.createLinearGradient(minX, minY, maxX, maxY);
             gradient.addColorStop(0, '#1a1a2e');
             gradient.addColorStop(1, '#16213e');
@@ -487,7 +434,6 @@ class MapSystem {
         }
         this.ctx.closePath();
 
-        // Цвета заливки
         let fillColor = 'rgba(76, 201, 240, 0.2)';
         
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
@@ -569,7 +515,6 @@ class MapSystem {
             }
             this.ctx.closePath();
 
-            // Яркая подсветка доступных ходов
             this.ctx.fillStyle = 'rgba(0, 255, 0, 0.4)';
             this.ctx.fill();
             
@@ -608,7 +553,6 @@ class MapSystem {
         
         this.ctx.save();
         
-        // Рисуем красные точки в реальных координатах всех клеток
         const cells = Object.values(this.currentTacticalMap.cells);
         cells.forEach(cell => {
             this.ctx.fillStyle = '#ff0000';
@@ -616,7 +560,6 @@ class MapSystem {
             this.ctx.arc(cell.x, cell.y, 5, 0, Math.PI * 2);
             this.ctx.fill();
             
-            // Подписываем координаты
             this.ctx.fillStyle = '#ffffff';
             this.ctx.font = '10px Arial';
             this.ctx.fillText(`[${cell.col},${cell.row}]`, cell.x + 8, cell.y - 8);
@@ -630,7 +573,6 @@ class MapSystem {
         
         this.ctx.save();
         
-        // Рисуем отладочную информацию поверх всего
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         this.ctx.fillRect(10, 10, 300, 120);
         
@@ -648,17 +590,14 @@ class MapSystem {
         
         this.ctx.fillText(`Hover: ${this.hoveredHex ? `[${this.hoveredHex.col},${this.hoveredHex.row}]` : 'none'}`, 20, 110);
         
-        // Рисуем перекрестие в центре canvas
         this.ctx.strokeStyle = '#ff0000';
         this.ctx.lineWidth = 1;
         
-        // Вертикальная линия
         this.ctx.beginPath();
         this.ctx.moveTo(this.canvas.width / 2, 0);
         this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
         this.ctx.stroke();
         
-        // Горизонтальная линия
         this.ctx.beginPath();
         this.ctx.moveTo(0, this.canvas.height / 2);
         this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
@@ -667,9 +606,8 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    // ========== НОВАЯ СИСТЕМА БОЕВ ПРИ ПЕРЕМЕЩЕНИИ ==========
+    // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
     moveOnTacticalMap(x, y) {
-        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
         if (!this.currentHero) {
             console.error("❌ Герой не выбран!");
             if (window.game) {
@@ -680,7 +618,6 @@ class MapSystem {
 
         if (!this.currentTacticalMap) return;
 
-        // Проверяем, что клетка существует
         const cellKey = `${x},${y}`;
         const cellData = this.currentTacticalMap.cells[cellKey];
         
@@ -700,7 +637,6 @@ class MapSystem {
             return;
         }
 
-        // ПРОСТАЯ проверка достижимости
         const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
         const isReachable = neighbors.some(neighbor => 
             neighbor.row === y && neighbor.col === x
@@ -714,81 +650,85 @@ class MapSystem {
             return;
         }
 
-        // ⭐ ИСПРАВЛЕНИЕ: Сначала скрываем карту, потом запускаем бой
         this.hideOverlay();
         
-        // Запускаем бой с небольшой задержкой для плавного перехода
         setTimeout(() => {
-            this.startBattleForMovement(x, y);
+            this.startTacticalBattleForMovement(x, y);
         }, 50);
     }
 
-    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Запуск боя при перемещении
-    startBattleForMovement(targetX, targetY) {
+    startTacticalBattleForMovement(targetX, targetY) {
         const battleSystem = window.game?.systems?.battle;
         if (!battleSystem) {
             console.error("❌ BattleSystem не доступна");
             return;
         }
 
-        // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В БОЕВУЮ СИСТЕМУ
         if (!this.currentHero) {
             console.error("❌ Не могу начать бой: герой не выбран");
             return;
         }
 
-        // Сохраняем целевую позицию для использования после боя
         this.pendingMovement = { x: targetX, y: targetY };
         
-        // Выбираем случайного монстра
         const randomMonster = this.getRandomMonster();
         
-        // Запускаем бой с передачей героя
         battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
         
-        console.log(`⚔️ Запуск боя при перемещении героя ${this.currentHero.name} на [${targetX}, ${targetY}]`);
+        console.log(`⚔️ Запуск тактического боя при перемещении героя ${this.currentHero.name} на [${targetX}, ${targetY}]`);
     }
 
-    // ⭐ ИСПРАВЛЕНИЕ: ПРАВИЛЬНОЕ ЗАВЕРШЕНИЕ БОЯ ==========
+    getRandomMonster() {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem || !battleSystem.monsters || battleSystem.monsters.length === 0) {
+            return {
+                id: 1,
+                name: "Случайный монстр",
+                health: 30,
+                maxHealth: 30,
+                damage: 5,
+                armor: 2,
+                reward: 10,
+                experience: 5,
+                attackType: "melee"
+            };
+        }
+        
+        const randomIndex = Math.floor(Math.random() * battleSystem.monsters.length);
+        return battleSystem.monsters[randomIndex];
+    }
+
     completeMovementAfterBattle(victory) {
         if (!this.pendingMovement) return;
 
         const targetX = this.pendingMovement.x;
         const targetY = this.pendingMovement.y;
         
-        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ
         if (!this.currentHero) {
             console.error("❌ Не могу завершить перемещение: герой не выбран");
             return;
         }
         
         if (victory) {
-            // При победе перемещаем на целевую клетку
             const oldPosition = {...this.playerTacticalPosition};
             this.playerTacticalPosition = {x: targetX, y: targetY};
             
             console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
             
-            // Сохраняем состояние карты
             this.saveMapState();
             
-            // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ ОТКРЫВАЕМ КАРТУ ЗАНОВО
-            // Просто обновляем отображение если карта уже открыта
             if (this.activeOverlay === 'tactical-map') {
                 this.updateTacticalMapDisplay();
             }
             
         } else {
-            // При поражении возвращаем на стартовую позицию
             const startPosition = this.currentTacticalMap.startPosition;
             this.playerTacticalPosition = {...startPosition};
             
             console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
             
-            // Сохраняем состояние карты
             this.saveMapState();
             
-            // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ ОТКРЫВАЕМ КАРТУ ЗАНОВО
             if (this.activeOverlay === 'tactical-map') {
                 this.updateTacticalMapDisplay();
             }
@@ -798,36 +738,9 @@ class MapSystem {
             }
         }
         
-        // Очищаем ожидающее перемещение
         this.pendingMovement = null;
-        
-        // ⭐ НОВОЕ: ВОЗВРАЩАЕМСЯ НА ЭКРАН БОЯ ДЛЯ ПРОСМОТРА РЕЗУЛЬТАТОВ
-        // Не закрываем карту автоматически
-        console.log("🎯 Бой завершен, карта остается открытой для дальнейших действий");
     }
 
-    // НОВЫЙ МЕТОД: получение случайного монстра
-    getRandomMonster() {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem || !battleSystem.monsters || battleSystem.monsters.length === 0) {
-            // Возвращаем тестового монстра если система не загружена
-            return {
-                id: 1,
-                name: "Случайный монстр",
-                health: 30,
-                maxHealth: 30,
-                damage: 5,
-                armor: 2,
-                reward: 10,
-                experience: 5
-            };
-        }
-        
-        const randomIndex = Math.floor(Math.random() * battleSystem.monsters.length);
-        return battleSystem.monsters[randomIndex];
-    }
-
-    // ========== НОВАЯ СИСТЕМА ОПРЕДЕЛЕНИЯ СОСЕДЕЙ ПО РАССТОЯНИЮ ==========
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
         
@@ -841,7 +754,6 @@ class MapSystem {
         return neighbors;
     }
 
-    // Основные геометрические константы для гексов
     getHexGeometry(hexSize) {
         return {
             size: hexSize,
@@ -871,14 +783,11 @@ class MapSystem {
         const hexSize = this.currentTacticalMap.cellSize || 40;
         const geometry = this.getHexGeometry(hexSize);
         
-        // Проверяем все клетки на карте
         Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
-            // Пропускаем текущую клетку
             if (potentialNeighbor.col === currentCol && potentialNeighbor.row === currentRow) {
                 return;
             }
             
-            // Проверяем расстояние
             const dx = potentialNeighbor.x - currentCell.x;
             const dy = potentialNeighbor.y - currentCell.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -905,18 +814,15 @@ class MapSystem {
         return neighbors;
     }
 
-    // Метод проверки смежности по расстоянию между центрами
     areHexesAdjacent(cell1, cell2, hexSize) {
         if (!cell1 || !cell2) return false;
         
         const geometry = this.getHexGeometry(hexSize);
         
-        // Вычисляем расстояние между центрами
         const dx = cell2.x - cell1.x;
         const dy = cell2.y - cell1.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Проверяем все возможные расстояния для смежных гексов
         const isHorizontalAdjacent = Math.abs(distance - geometry.horizontalDistance) < geometry.tolerance;
         const isVerticalAdjacent = Math.abs(distance - geometry.verticalDistance) < geometry.tolerance;
         const isDiagonalAdjacent = Math.abs(distance - geometry.diagonalDistance) < geometry.tolerance;
@@ -926,7 +832,6 @@ class MapSystem {
         return isAdjacent;
     }
 
-    // Определение направления по вектору
     getDirectionByAngle(dx, dy) {
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
         const normalizedAngle = (angle + 360) % 360;
@@ -941,83 +846,6 @@ class MapSystem {
         return 'неизвестно';
     }
 
-    isCellReachable(targetRow, targetCol) {
-        const currentRow = this.playerTacticalPosition.y;
-        const currentCol = this.playerTacticalPosition.x;
-        
-        // Нельзя ходить на ту же клетку
-        if (targetRow === currentRow && targetCol === currentCol) {
-            console.log(`🚫 Нельзя ходить на ту же клетку [${targetCol},${targetRow}]`);
-            return false;
-        }
-        
-        const neighbors = this.getHexNeighbors(currentRow, currentCol);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === targetRow && neighbor.col === targetCol
-        );
-        
-        console.log(`🎯 Проверка достижимости [${targetCol},${targetRow}] от [${currentCol},${currentRow}]: ${isReachable}`);
-        
-        if (!isReachable) {
-            console.log(`📋 Доступные ходы:`, neighbors.map(n => `[${n.col},${n.row}]`));
-        }
-        
-        return isReachable;
-    }
-
-    interactWithTacticalCell(x, y) {
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) return;
-
-        console.log(`🎲 Взаимодействие с: ${cellData.type}`, cellData);
-
-        switch(cellData.type) {
-            case 'monster':
-                this.startBattle(cellData.monsterId);
-                break;
-            case 'chest':
-                this.openChest(cellData);
-                break;
-            case 'npc':
-                this.talkToNPC(cellData);
-                break;
-            case 'exit':
-                this.useExit(cellData, x, y);
-                break;
-        }
-    }
-
-    startBattle(monsterId) {
-        console.log(`⚔️ Начинаем бой с монстром ID: ${monsterId}`);
-        if (window.game && window.game.systems.battle) {
-            window.game.systems.battle.startBattleWithMonster(monsterId);
-        }
-    }
-
-    openChest(chestData) {
-        console.log(`📦 Открываем сундук:`, chestData);
-        if (window.game) {
-            window.game.showNotification(`Найден сундук с добычей!`, 'success');
-        }
-    }
-
-    talkToNPC(npcData) {
-        console.log(`🧙 Общаемся с NPC:`, npcData);
-        if (window.game) {
-            window.game.showNotification('NPC: "Приветствую, путник!"', 'info');
-        }
-    }
-
-    useExit(exitData, x, y) {
-        console.log(`🚪 Используем выход:`, exitData);
-        if (window.game) {
-            window.game.showNotification('Выход с карты!', 'info');
-        }
-    }
-
-    // ========== ОСНОВНЫЕ МЕТОДЫ КАРТ ==========
     createTestMaps() {
         this.globalMaps = [{
             id: 1,
@@ -1154,7 +982,6 @@ class MapSystem {
         );
     }
 
-    // ========== ОТРИСОВКА КАРТ ==========
     renderGlobalMap() {
         if (!this.currentGlobalMap) return '<div class="map-error">Глобальная карта не загружена</div>';
 
@@ -1311,7 +1138,7 @@ class MapSystem {
         return gridHTML;
     }
 
-     generateTacticalMapGrid() {
+    generateTacticalMapGrid() {
         let gridHTML = '';
         const { width, height } = this.currentTacticalMap;
 
@@ -1387,7 +1214,6 @@ class MapSystem {
         return descriptions[cellData.type] || cellData.type;
     }
 
-    // ========== ДВИЖЕНИЕ И ВЗАИМОДЕЙСТВИЯ ==========
     moveOnGlobalMap(x, y) {
         const localMap = this.findLocalMapAtPosition(x, y);
         if (!localMap) {
@@ -1442,7 +1268,6 @@ class MapSystem {
         }
     }
 
-    // ========== ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ==========
     updateGameDisplay() {
         if (window.game && window.game.systems.hero && window.game.systems.hero.currentHero) {
             window.game.systems.hero.showHeroGameScreen();
@@ -1455,7 +1280,6 @@ class MapSystem {
             this.showOverlay('tactical-map');
         }
         
-        // Перерисовываем canvas если он инициализирован
         if (this.canvasInitialized) {
             this.drawTacticalMap();
         }
@@ -1470,7 +1294,6 @@ class MapSystem {
         }
     }
 
-    // ========== УПРАВЛЕНИЕ ОВЕРЛЕЯМИ ==========
     showOverlay(overlayType) {
         if (overlayType === 'tactical-map') {
             const container = document.getElementById('overlay-container');
@@ -1491,7 +1314,6 @@ class MapSystem {
             `;
             container.style.display = 'block';
             
-            // Инициализируем Canvas после добавления в DOM
             setTimeout(() => {
                 this.initCanvas();
                 this.updateMovementInfo();
@@ -1565,19 +1387,16 @@ class MapSystem {
         }
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     toggleGrid() {
         this.showGrid = !this.showGrid;
         this.drawTacticalMap();
     }
 
     showTacticalMapEditor() {
-        // ⭐ ПРОВЕРЯЕМ НАЛИЧИЕ ГЕРОЯ ПЕРЕД ОТКРЫТИЕМ КАРТЫ
         if (!this.currentHero) {
             console.error("❌ Герой не выбран для тактической карты!");
             if (window.game) {
                 window.game.showNotification("❌ Сначала выберите героя!", 'error');
-                // Автоматически показываем выбор героя
                 setTimeout(() => {
                     window.game.showHeroSelection();
                 }, 1000);
@@ -1594,7 +1413,6 @@ class MapSystem {
         }
     }
 
-    // ========== СИСТЕМА СОХРАНЕНИЯ/ЗАГРУЗКИ ==========
     saveMapState() {
         const state = {
             playerGlobalPosition: this.playerGlobalPosition,
@@ -1645,7 +1463,6 @@ class MapSystem {
         }
     }
 
-    // ========== ДЕБАГ ИНФОРМАЦИЯ ==========
     debugInfo() {
         console.group("🗺️ MapSystem Debug Info");
         console.log("Глобальная позиция:", this.playerGlobalPosition);
@@ -1662,6 +1479,5 @@ class MapSystem {
     }
 }
 
-// Регистрируем систему в глобальной области
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с исправленной системой карт");
+console.log("📦 MapSystem модуль загружен с интеграцией тактического боя");
