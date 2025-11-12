@@ -961,6 +961,13 @@ class SafeHeroGame {
         document.addEventListener('keydown', handleKeyDown);
         document.body.appendChild(zoomOverlay);
     }
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ЗДЕСЬ:
+returnToTacticalMap() {
+    // Закрываем боевой экран и возвращаемся к тактической карте
+    if (this.systems.map) {
+        this.systems.map.showOverlay('tactical-map');
+    }
+}
 
     // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
     buyItemFromModal(itemId) {
