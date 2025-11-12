@@ -322,7 +322,7 @@ calculateHeroStats(hero = null) {
         power
     });
     
-    return {
+    const result = {
         currentHealth: Math.floor(currentHealth),
         maxHealth: Math.round(finalHealth),
         damage: Math.round(finalDamage),
@@ -330,6 +330,91 @@ calculateHeroStats(hero = null) {
         power: power,
         activeBonuses: activeBonuses
     };
+    
+    // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Обновляем интерфейс если это текущий герой
+    if (targetHero === this.currentHero) {
+        setTimeout(() => {
+            this.updateHeroDisplay(result);
+        }, 0);
+    }
+    
+    return result;
+}
+
+// ⭐ НОВЫЙ МЕТОД: Обновление отображения героя
+updateHeroDisplay(stats) {
+    if (!this.currentHero) return;
+    
+    console.log("🔄 Обновление интерфейса героя...");
+    
+    // Находим элементы DOM для обновления
+    const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
+    const damageElements = document.querySelectorAll('.overlay-stat-row:nth-child(2) .overlay-stat-value');
+    const armorElements = document.querySelectorAll('.overlay-stat-row:nth-child(3) .overlay-stat-value');
+    const powerElements = document.querySelectorAll('.overlay-stat-row:nth-child(5) .overlay-stat-value');
+    
+    // Обновляем значения в первой группе статов
+    if (healthElements[0]) {
+        healthElements[0].textContent = `${stats.currentHealth}/${stats.maxHealth}`;
+        console.log("❤️ Здоровье обновлено:", `${stats.currentHealth}/${stats.maxHealth}`);
+    }
+    if (damageElements[0]) {
+        damageElements[0].textContent = `${stats.damage}`;
+        console.log("⚔️ Урон обновлен:", stats.damage);
+    }
+    if (armorElements[0]) {
+        armorElements[0].textContent = `${stats.armor}`;
+        console.log("🛡️ Броня обновлена:", stats.armor);
+    }
+    if (powerElements[0]) {
+        powerElements[0].textContent = `${stats.power}`;
+        console.log("🌟 Сила обновлена:", stats.power);
+    }
+    
+    // Также обновляем бонусы если они есть
+    this.updateBonusDisplay(stats.activeBonuses);
+    
+    console.log("✅ Интерфейс героя обновлен с новыми статами");
+}
+
+// ⭐ ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновление отображения бонусов
+updateBonusDisplay(activeBonuses) {
+    if (!activeBonuses || activeBonuses.length === 0) return;
+    
+    // Находим контейнер для бонусов
+    const bonusContainer = document.querySelector('.overlay-stat-group:nth-child(3)');
+    if (!bonusContainer) return;
+    
+    console.log("🎯 Обновление отображения бонусов...");
+    
+    // Очищаем текущие бонусы
+    bonusContainer.innerHTML = '';
+    
+    // Добавляем бонусы (показываем первые 4 для компактности)
+    const bonusesToShow = activeBonuses.slice(0, 4);
+    
+    bonusesToShow.forEach(bonus => {
+        const bonusRow = document.createElement('div');
+        bonusRow.className = 'overlay-stat-row';
+        bonusRow.innerHTML = `
+            <span class="overlay-stat-label">${bonus.label}</span>
+            <span class="overlay-stat-value">${bonus.display}</span>
+        `;
+        bonusContainer.appendChild(bonusRow);
+    });
+    
+    // Если бонусов больше 4, показываем индикатор
+    if (activeBonuses.length > 4) {
+        const moreRow = document.createElement('div');
+        moreRow.className = 'overlay-stat-row';
+        moreRow.innerHTML = `
+            <span class="overlay-stat-label">✨ Ещё</span>
+            <span class="overlay-stat-value">+${activeBonuses.length - 4}</span>
+        `;
+        bonusContainer.appendChild(moreRow);
+    }
+    
+    console.log("✅ Бонусы обновлены, показано:", bonusesToShow.length);
 }
 
     // ========== УПРАВЛЕНИЕ ЗДОРОВЬЕМ ==========
