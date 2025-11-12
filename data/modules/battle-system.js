@@ -113,14 +113,23 @@ class BattleSystem {
         
         app.innerHTML = `
             <div class="battle-screen-with-map">
+                <!-- Левая часть - карта (30%) -->
                 <div class="tactical-map-side">
-                    <!-- Вставляем тактическую карту как оверлей, а не заменяем весь экран -->
-                    <div class="tactical-map-container">
-                        ${window.game.systems.map.renderTacticalMap()}
+                    <div class="battle-map-preview">
+                        <h3>🎲 Тактическая карта</h3>
+                        <div class="map-position-info">
+                            Позиция: [${window.game?.systems?.map?.playerTacticalPosition?.x || 0}, ${window.game?.systems?.map?.playerTacticalPosition?.y || 0}]
+                        </div>
+                        <div class="battle-map-controls">
+                            <button class="btn-small" onclick="game.returnToTacticalMap()">
+                                📍 Вернуться к карте
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="battle-side">
+                <!-- Правая часть - бой (70%) -->
+                <div class="battle-side expanded">
                     <div class="battle-container">
                         <header class="battle-header">
                             <h2>⚔️ БОЙ ПРИ ПЕРЕМЕЩЕНИИ</h2>
@@ -172,7 +181,7 @@ class BattleSystem {
                         </div>
                         
                         <div class="battle-log">
-                            <h4>Лог боя:</h4>
+                            <h4>📜 Лог боя:</h4>
                             <div class="log-entries">
                                 ${this.battleLog.map(entry => `
                                     <div class="log-entry">${entry}</div>
@@ -195,13 +204,6 @@ class BattleSystem {
                 </div>
             </div>
         `;
-
-        // Инициализируем canvas после рендера
-        setTimeout(() => {
-            if (window.game.systems.map) {
-                window.game.systems.map.initCanvas();
-            }
-        }, 100);
     }
 
     showStandardBattleScreen(heroStats, heroHealthPercent, monsterHealthPercent) {
@@ -259,7 +261,7 @@ class BattleSystem {
                 </div>
                 
                 <div class="battle-log">
-                    <h4>Лог боя:</h4>
+                    <h4>📜 Лог боя:</h4>
                     <div class="log-entries">
                         ${this.battleLog.map(entry => `
                             <div class="log-entry">${entry}</div>
@@ -420,16 +422,13 @@ class BattleSystem {
                 window.game.saveGame();
             }
             
-            // Если это бой при перемещении, завершаем перемещение
+            // ⭐ ИСПРАВЛЕНИЕ: Не открываем карту заново, просто завершаем бой
             if (this.battleContext === 'movement' && mapSystem) {
-                setTimeout(() => {
-                    mapSystem.completeMovementAfterBattle(true);
-                    this.showVictoryScreen(reward, experience);
-                }, 2000);
+                // Сообщаем карте о завершении боя, но не показываем её
+                mapSystem.completeMovementAfterBattle(true);
+                this.showVictoryScreen(reward, experience);
             } else {
-                setTimeout(() => {
-                    this.showVictoryScreen(reward, experience);
-                }, 2000);
+                this.showVictoryScreen(reward, experience);
             }
             
         } else if (fled) {
@@ -439,9 +438,7 @@ class BattleSystem {
                 window.game.saveGame();
             }
             // При побеге не перемещаемся
-            setTimeout(() => {
-                this.returnToTacticalMap();
-            }, 2000);
+            this.showBattleResult("Успешный побег!", "green");
         } else {
             this.currentHero.currentHealth = 1; // Оставляем 1 HP при поражении
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
@@ -453,16 +450,12 @@ class BattleSystem {
                 window.game.saveGame();
             }
             
-            // Если это бой при перемещении, возвращаем на старт
+            // ⭐ ИСПРАВЛЕНИЕ: Не открываем карту заново
             if (this.battleContext === 'movement' && mapSystem) {
-                setTimeout(() => {
-                    mapSystem.completeMovementAfterBattle(false);
-                    this.returnToTacticalMap();
-                }, 2000);
+                mapSystem.completeMovementAfterBattle(false);
+                this.showBattleResult("Поражение! Возврат на старт.", "red");
             } else {
-                setTimeout(() => {
-                    this.returnToTacticalMap();
-                }, 2000);
+                this.showBattleResult("Поражение!", "red");
             }
         }
 
@@ -470,16 +463,33 @@ class BattleSystem {
         this.currentMonster = null;
     }
 
-    completeBattle(victory) {
-        if (this.battleContext === 'movement' && window.game?.systems?.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
-        }
-        
-        this.endBattle(victory);
+    // ⭐ НОВЫЙ МЕТОД: Показ результата боя без перезагрузки карты
+    showBattleResult(message, color = "white") {
+        const battleSide = document.querySelector('.battle-side');
+        if (!battleSide) return;
+
+        battleSide.innerHTML = `
+            <div class="battle-container battle-result">
+                <header class="battle-header">
+                    <h2 style="color: ${color}">${message}</h2>
+                </header>
+                
+                <div class="battle-result-content">
+                    <div class="result-message">
+                        ${this.battleContext === 'movement' ? 
+                            'Бой завершен. Вы можете продолжить исследование карты.' : 
+                            'Бой завершен.'}
+                    </div>
+                    
+                    <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
+                        Продолжить игру
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
     showVictoryScreen(reward, experience) {
-        // Вместо замены всего экрана, обновляем только боевую часть
         const battleSide = document.querySelector('.battle-side');
         if (!battleSide) return;
 
@@ -507,7 +517,7 @@ class BattleSystem {
                             'Монстр повержен! Вы победили в бою.'}
                     </div>
                     
-                    <button class="btn-primary" onclick="game.systems.battle.returnToTacticalMap()">
+                    <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
                         ${this.battleContext === 'movement' ? 'Продолжить исследование' : 'Вернуться к игре'}
                     </button>
                 </div>
@@ -515,10 +525,18 @@ class BattleSystem {
         `;
     }
 
-    returnToTacticalMap() {
-        // Закрываем боевой экран и возвращаемся к обычному экрану героя
-        if (window.game && window.game.systems.hero) {
-            window.game.systems.hero.showHeroGameScreen();
+    // ⭐ НОВЫЙ МЕТОД: Возврат к игре без перезагрузки карты
+    returnToGame() {
+        if (this.battleContext === 'movement') {
+            // Просто закрываем боевой экран - карта уже обновлена
+            if (window.game && window.game.systems.hero) {
+                window.game.systems.hero.showHeroGameScreen();
+            }
+        } else {
+            // Для обычного боя возвращаемся к экрану героя
+            if (window.game && window.game.systems.hero) {
+                window.game.systems.hero.showHeroGameScreen();
+            }
         }
     }
 
@@ -527,41 +545,6 @@ class BattleSystem {
         if (this.battleLog.length > 10) {
             this.battleLog.shift();
         }
-    }
-
-    injectBattleWithMapStyles() {
-        const styles = `
-            .battle-screen-with-map {
-                display: grid;
-                grid-template-columns: 1fr 400px;
-                height: 100vh;
-                background: #1f2937;
-            }
-            
-            .tactical-map-side {
-                background: #000;
-                overflow: hidden;
-                position: relative;
-            }
-            
-            .battle-side {
-                background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-                border-left: 2px solid #4b5563;
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .battle-container {
-                flex: 1;
-                padding: 1rem;
-                display: flex;
-                flex-direction: column;
-            }
-        `;
-        
-        const style = document.createElement('style');
-        style.textContent = styles;
-        document.head.appendChild(style);
     }
 
     injectBattleStyles() {
@@ -657,69 +640,6 @@ class BattleSystem {
             .log-entry {
                 padding: 0.25rem 0;
                 border-bottom: 1px solid #4b5563;
-            }
-        `;
-        
-        const style = document.createElement('style');
-        style.textContent = styles;
-        document.head.appendChild(style);
-    }
-
-    injectVictoryStyles() {
-        const styles = `
-            .victory-screen {
-                background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }
-            
-            .victory-content {
-                text-align: center;
-                padding: 2rem;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 15px;
-                backdrop-filter: blur(10px);
-                border: 2px solid rgba(255, 255, 255, 0.2);
-                max-width: 500px;
-            }
-            
-            .victory-rewards {
-                display: flex;
-                justify-content: center;
-                gap: 2rem;
-                margin: 2rem 0;
-            }
-            
-            .reward-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                background: rgba(255, 255, 255, 0.2);
-                padding: 1rem;
-                border-radius: 10px;
-                min-width: 120px;
-                border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-            
-            .reward-icon {
-                font-size: 2rem;
-                margin-bottom: 0.5rem;
-            }
-            
-            .reward-text {
-                font-weight: bold;
-                font-size: 1.1rem;
-                color: white;
-            }
-            
-            .victory-message {
-                font-size: 1.2rem;
-                margin: 2rem 0;
-                color: white;
-                font-weight: bold;
             }
         `;
         
