@@ -2565,235 +2565,46 @@ body {
         font-size: 14px;
     }
 }
-/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ БОЯ С КАРТОЙ ========== */
-.battle-screen-with-map {
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    height: 100vh;
-    background: #1f2937;
-    position: relative;
-}
 
-.tactical-map-side {
-    background: #000;
-    overflow: hidden;
-    position: relative;
-    padding: 10px;
-}
-
-.tactical-map-container {
-    width: 100%;
-    height: 100%;
-    background: #000;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.battle-side {
-    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-    border-left: 2px solid #4b5563;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-}
-
-.battle-container {
-    flex: 1;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    background: rgba(30, 41, 59, 0.8);
-    border-radius: 10px;
-    border: 1px solid #475569;
-}
-
-.victory-container {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: center;
-}
-
-.victory-container .battle-header h2 {
-    color: white;
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-/* Убедимся, что тактическая карта отображается правильно */
-.tactical-map-overlay {
-    max-width: none !important;
-    max-height: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    margin: 0 !important;
-    border: none !important;
+/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ТАКТИЧЕСКОЙ КАРТЫ ========== */
+.overlay-content.tactical-map-overlay {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    width: 95vw !important;
+    height: 95vh !important;
     background: #000 !important;
+    margin: 2.5vh auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.tactical-map-overlay .overlay-body {
+    padding: 0 !important;
+    background: #000 !important;
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
 }
 
 .tactical-map-content {
+    display: flex !important;
+    flex-direction: column !important;
     height: 100% !important;
+    flex: 1 !important;
 }
 
 .tactical-map-visual {
-    height: 100% !important;
-    min-height: auto !important;
-    margin: 0 !important;
-    border: none !important;
-    border-radius: 0 !important;
-}
-
-/* Улучшенные стили для боевого интерфейса */
-.battle-combatants {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.combatant {
-    background: rgba(55, 65, 81, 0.9);
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-    border: 2px solid #4b5563;
-}
-
-.combatant-image img {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    object-fit: cover;
-    border: 2px solid #4b5563;
-}
-
-.vs-divider {
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #f59e0b;
-    margin: 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.health-bar {
-    width: 100%;
-    height: 20px;
-    background: #4b5563;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 0.5rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s ease;
-}
-
-.health-text {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    margin: 0.3rem 0;
-    font-weight: bold;
-}
-
-.combatant-stats {
-    display: flex;
-    justify-content: space-around;
-    font-size: 0.8rem;
-    color: #9ca3af;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-
-.combatant-stats span {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 0.3rem 0.6rem;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.battle-log {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 1rem;
-    margin: 1rem 0;
-    overflow-y: auto;
-    max-height: 200px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.battle-log h4 {
-    color: #f59e0b;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.log-entries {
-    font-size: 0.9rem;
-}
-
-.log-entry {
-    padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-}
-
-.battle-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.btn-battle-attack, .btn-battle-block, .btn-battle-flee {
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-}
-
-.btn-battle-attack { 
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.btn-battle-block { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-}
-
-.btn-battle-flee { 
-    background: linear-gradient(135deg, #6b7280, #4b5563);
-    color: white;
-}
-
-.btn-battle-attack:hover { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-}
-
-.btn-battle-block:hover { 
-    background: linear-gradient(135deg, #256
-                                
-/* ========== TACTICAL MAP STYLES ========== */
-.tactical-map-visual {
-    position: relative !important;
     width: 100% !important;
-    height: 600px !important;
-    min-height: 600px !important;
+    height: 70vh !important;
+    min-height: 500px !important;
     background: #1a1a2e !important;
     border: 2px solid #00ffff !important;
     border-radius: 10px !important;
-    overflow: hidden !important;
-    margin: 10px 0 !important;
+    margin: 10px !important;
+    position: relative !important;
+    display: block !important;
+    flex-shrink: 0 !important;
 }
 
 #tacticalMapCanvas {
@@ -2801,12 +2612,7 @@ body {
     height: 100% !important;
     display: block !important;
     background: #1a1a2e !important;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: auto !important;
+    cursor: pointer !important;
 }
 
 .position-info {
@@ -2817,6 +2623,7 @@ body {
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
 .player-position, .map-stats, .movement-info {
@@ -2826,6 +2633,22 @@ body {
     border-radius: 5px;
     border: 1px solid rgba(0, 255, 255, 0.3);
 }
+
+.movement-info {
+    grid-column: 1 / -1;
+}
+
+.movement-info span {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Убедимся, что оверлей правильно отображается */
+.overlay-container {
+    z-index: 10000 !important;
+}
+
 
 .movement-info span {
     color: #00ff00;
