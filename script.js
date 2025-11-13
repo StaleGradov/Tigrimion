@@ -628,21 +628,34 @@ class SafeHeroGame {
         }
     }
 
-    // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ИСПРАВЛЕНИЯ LAYOUT ПОЛОСОК ЗДОРОВЬЯ
-    fixHealthBarLayout() {
-        setTimeout(() => {
-            const healthSections = document.querySelectorAll('.health-display-section, .experience-display-section');
-            healthSections.forEach(section => {
-                section.style.margin = '0';
-                section.style.padding = '8px 0';
-            });
-            
-            const barContainers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
-            barContainers.forEach(container => {
-                container.style.margin = '4px 0 0 0';
-            });
-        }, 100);
-    }
+  // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ИСПРАВЛЕНИЯ LAYOUT ПОЛОСОК ЗДОРОВЬЯ
+fixHealthBarLayout() {
+    setTimeout(() => {
+        // Принудительно исправляем все полоски здоровья
+        const healthBars = document.querySelectorAll('.health-bar, .experience-bar');
+        healthBars.forEach(bar => {
+            bar.style.margin = '0';
+            bar.style.padding = '0';
+            bar.style.position = 'relative';
+        });
+        
+        const containers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
+        containers.forEach(container => {
+            container.style.margin = '4px 0 0 0';
+            container.style.padding = '0';
+            container.style.position = 'relative';
+        });
+        
+        const sections = document.querySelectorAll('.health-display-section, .experience-display-section');
+        sections.forEach(section => {
+            section.style.margin = '0';
+            section.style.padding = '8px 0';
+            section.style.position = 'relative';
+        });
+        
+        console.log("✅ Layout полосок здоровья исправлен");
+    }, 300);
+}
 
     showHeroGameScreen() {
         if (!this.currentHero) return;
