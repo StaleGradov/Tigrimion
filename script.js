@@ -76,50 +76,52 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
-
-        try {
-            const modulePath = `data/modules/${moduleName}.js?v=${Date.now()}`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            
-            const moduleCode = await response.text();
-            
-            // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
-            const blob = new Blob([moduleCode], { type: 'application/javascript' });
-            const url = URL.createObjectURL(blob);
-            
-            await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve();
-                };
-                script.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-                };
-                document.head.appendChild(script);
-            });
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
-        }
+  async loadModule(moduleName) {
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
     }
+
+    try {
+        // ⭐ ДОБАВЛЯЕМ ВЕРСИЮ ДЛЯ ОБХОДА КЕША
+        const version = Date.now();
+        const modulePath = `data/modules/${moduleName}.js?v=${version}`;
+        console.log(`📥 Загружаем модуль: ${modulePath}`);
+        
+        const response = await fetch(modulePath);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+        }
+        
+        const moduleCode = await response.text();
+        
+        // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
+        const blob = new Blob([moduleCode], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve();
+            };
+            script.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+            };
+            document.head.appendChild(script);
+        });
+        
+        this.loadedModules.add(moduleName);
+        console.log(`✅ Модуль ${moduleName} успешно загружен`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        return false;
+    }
+}
 
     isModuleAvailable(moduleName) {
         const classMap = {
