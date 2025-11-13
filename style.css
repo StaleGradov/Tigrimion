@@ -3797,3 +3797,222 @@ body {
     gap: 8px;
     flex-wrap: wrap;
 }
+/* БРОНЯ ПО БОКАМ ГЕРОЯ */
+.hero-armor-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 20%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.armor-left, .armor-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 30px;
+    pointer-events: auto;
+}
+
+.armor-slot {
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #555;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.armor-slot.equipped {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.2);
+    transform: scale(1.05);
+}
+
+.armor-slot:hover {
+    transform: scale(1.1);
+    border-color: #90cdf4;
+}
+
+.armor-slot.relic-slot {
+    border: 2px dashed #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.armor-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.armor-icon img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.armor-label {
+    font-size: 10px;
+    text-align: center;
+    color: #ccc;
+    max-width: 70px;
+    line-height: 1.2;
+}
+
+.armor-rarity {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.armor-rarity.common { background: #a0a0a0; }
+.armor-rarity.uncommon { background: #00ff00; }
+.armor-rarity.rare { background: #0070dd; }
+.armor-rarity.epic { background: #a335ee; }
+.armor-rarity.legendary { background: #ff8000; }
+.armor-rarity.mythic { background: #e6cc80; }
+
+/* ИНФОРМАЦИЯ ВНИЗУ */
+.hero-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 3px solid #3b82f6;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.info-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    gap: 20px;
+    align-items: center;
+}
+
+.info-left, .info-right {
+    flex: 1;
+    max-width: 30%;
+}
+
+.info-center {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.info-section h4 {
+    margin-bottom: 8px;
+    color: #90cdf4;
+    font-size: 12px;
+}
+
+.origin-line, .bonus-line, .stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    margin-bottom: 4px;
+    padding: 2px 0;
+}
+
+.origin-line span, .stat-line span {
+    color: #ccc;
+    min-width: 50px;
+}
+
+.origin-line strong, .bonus-line strong, .stat-line strong {
+    color: white;
+    margin: 0 8px;
+}
+
+.origin-line em {
+    color: #68d391;
+    font-size: 10px;
+    font-style: normal;
+}
+
+.bonus-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+/* Полоски в центре */
+.compact-bars {
+    width: 100%;
+    max-width: 400px;
+}
+
+.health-bar-container, .experience-bar-container {
+    height: 28px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.health-bar, .experience-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    transition: width 0.3s ease;
+}
+
+.bar-text {
+    position: relative;
+    z-index: 2;
+}
+
+.health-bar {
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.experience-bar {
+    background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+/* Быстрые статы */
+.hero-quick-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.quick-stat {
+    background: rgba(59, 130, 246, 0.3);
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    border: 1px solid #3b82f6;
+}
