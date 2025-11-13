@@ -260,7 +260,7 @@ class HeroSystem {
                     armor: finalArmor
                 });
                 
-                // Собираем ВСЕ бонусы для отображения
+                // ⭐ ФИЛЬТРАЦИЯ БОНУСОВ: показываем только активные (value > 0)
                 activeBonuses = [
                     {
                         type: 'health_mult',
@@ -271,13 +271,13 @@ class HeroSystem {
                     {
                         type: 'damage_mult',
                         value: totals.damage_mult,
-                        label: '⚔️ Урон',
+                        label: '⚔️ Урон', // ⭐ ИЗМЕНЕНО: "Мощь" → "Урон"
                         display: `+${(totals.damage_mult * 100).toFixed(1)}%`
                     },
                     {
                         type: 'armor_mult',
                         value: totals.armor_mult,
-                        label: '🛡️ Броня',
+                        label: '🛡️ Броня', // ⭐ ИЗМЕНЕНО: "Защита" → "Броня"
                         display: `+${(totals.armor_mult * 100).toFixed(1)}%`
                     },
                     {
@@ -310,9 +310,9 @@ class HeroSystem {
                         label: '💰 Золото',
                         display: `+${(totals.gold_mult * 100).toFixed(1)}%`
                     }
-                ];
+                ].filter(bonus => bonus.value > 0); // ⭐ ФИЛЬТРУЕМ ТОЛЬКО АКТИВНЫЕ БОНУСЫ
                 
-                console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ:", activeBonuses);
+                console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ (после фильтрации):", activeBonuses);
                 
             } catch (error) {
                 console.error("💥 Ошибка расчета бонусов:", error);
@@ -368,6 +368,29 @@ class HeroSystem {
         if (!currentHero) return;
         
         console.log("🔄 Обновление интерфейса героя...");
+        
+        // Обновляем полоску здоровья
+        const healthBar = document.getElementById('heroHealthBar');
+        if (healthBar) {
+            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+            healthBar.style.width = `${healthPercent}%`;
+            healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
+            
+            if (currentHero.currentHealth < stats.maxHealth) {
+                healthBar.classList.add('regening');
+            } else {
+                healthBar.classList.remove('regening');
+            }
+        }
+        
+        // Обновляем полоску опыта
+        const expBar = document.getElementById('heroExperienceBar');
+        if (expBar) {
+            const expPercent = this.getExperiencePercent(currentHero);
+            const neededExp = this.getExperienceForNextLevel(currentHero.level);
+            expBar.style.width = `${expPercent}%`;
+            expBar.textContent = `${currentHero.experience}/${neededExp}`;
+        }
         
         // Находим элементы DOM для обновления
         const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
@@ -437,6 +460,105 @@ class HeroSystem {
         }
         
         console.log("✅ Бонусы обновлены, показано:", bonusesToShow.length);
+    }
+
+    // ========== МЕТОДЫ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ==========
+    getExperiencePercent(hero) {
+        const neededExp = this.getExperienceForNextLevel(hero.level);
+        return neededExp > 0 ? Math.min(100, (hero.experience / neededExp) * 100) : 0;
+    }
+
+    getExperienceForNextLevel(level) {
+        return Math.floor(100 * Math.pow(1.5, level - 1));
+    }
+
+    startHealthBarUpdates() {
+        // Обновляем полоски каждую секунду
+        setInterval(() => {
+            if (this.currentHero) {
+                this.updateHealthAndExperienceBars();
+            }
+        }, 1000);
+    }
+
+    updateHealthAndExperienceBars() {
+        const currentHero = this.currentHero || window.game?.currentHero;
+        if (!currentHero) return;
+
+        const stats = this.calculateHeroStats(currentHero);
+        
+        // Обновляем полоску здоровья
+        const healthBar = document.getElementById('heroHealthBar');
+        if (healthBar) {
+            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+            healthBar.style.width = `${healthPercent}%`;
+            healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
+            
+            // Добавляем анимацию регенерации
+            if (currentHero.currentHealth < stats.maxHealth) {
+                healthBar.classList.add('regening');
+            } else {
+                healthBar.classList.remove('regening');
+            }
+        }
+        
+        // Обновляем полоску опыта
+        const expBar = document.getElementById('heroExperienceBar');
+        if (expBar) {
+            const expPercent = this.getExperiencePercent(currentHero);
+            const neededExp = this.getExperienceForNextLevel(currentHero.level);
+            expBar.style.width = `${expPercent}%`;
+            expBar.textContent = `${currentHero.experience}/${neededExp}`;
+        }
+    }
+
+    // ========== ОТОБРАЖЕНИЕ ИНФОРМАЦИИ О РАСЕ, ПРОФЕССИИ И САГЕ ==========
+    getRaceBonusDescription(race) {
+        const bonuses = {
+            'human': '+30% к золоту',
+            'elf': '+20% к урону', 
+            'dwarf': '+30% к здоровью',
+            'ork': '+30% к регенерации',
+            'laitar': '5% вампиризма',
+            'dragon': '+15% к броне',
+            'fairy': '25% пенетрации брони',
+            'halfling': '20% шанс крита'
+        };
+        return bonuses[race] || 'Нет бонуса';
+    }
+
+    getClassBonusDescription(className) {
+        const bonuses = {
+            'warrior': '+15% к броне',
+            'hunter': '25% пенетрации брони',
+            'mage': '+20% к урону',
+            'bounty_hunter': '20% шанс крита',
+            'merchant': '+30% к золоту',
+            'thief': '+30% к золоту',
+            'fighter': '+30% к регенерации',
+            'antiquarian': '+30% к золоту',
+            'death_mage': '5% вампиризма',
+            'sorcerer': '+20% к урону',
+            'archer': '20% шанс крита',
+            'healer': '+30% к здоровью',
+            'gladiator': '+20% к урону', // ⭐ ГЛАДИАТОР
+            'blacksmith': '+15% к броне'
+        };
+        return bonuses[className] || 'Нет бонуса';
+    }
+
+    getSagaBonusDescription(saga) {
+        const bonuses = {
+            'golden_egg': '+30% к здоровью',
+            'vulkanor': '25% пенетрации брони', // ⭐ ВУЛКАНОР
+            'well': '+30% к золоту',
+            'pets': '+20% к урону',
+            'following_sun': '+30% к регенерации',
+            'vampire_crown': '5% вампиризма',
+            'tiger_eye': '20% шанс крита',
+            'sky_phenomena': '+15% к броне'
+        };
+        return bonuses[saga] || 'Нет бонуса';
     }
 
     // ========== УПРАВЛЕНИЕ ЗДОРОВЬЕМ ==========
@@ -542,10 +664,6 @@ class HeroSystem {
         if (window.game) window.game.saveGame();
         
         return targetHero.level;
-    }
-
-    getExperienceForNextLevel(level) {
-        return Math.floor(100 * Math.pow(1.5, level - 1));
     }
 
     checkHeroUnlocks() {
@@ -769,6 +887,45 @@ class HeroSystem {
                                 <div class="hero-overlay-level">⚡ Ур. ${currentHero.level}</div>
                             </div>
                             
+                            <!-- ⭐ БОЛЬШАЯ КРАСНАЯ ПОЛОСКА ЗДОРОВЬЯ -->
+                            <div class="health-display-section">
+                                <h4>❤️ Здоровье</h4>
+                                <div class="health-bar-container">
+                                    <div class="health-bar" id="heroHealthBar" 
+                                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
+                                        ${stats.currentHealth}/${stats.maxHealth}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ⭐ ПОЛОСКА ОПЫТА -->
+                            <div class="experience-display-section">
+                                <h4>🌟 Опыт</h4>
+                                <div class="experience-bar-container">
+                                    <div class="experience-bar" id="heroExperienceBar" 
+                                         style="width: ${this.getExperiencePercent(currentHero)}%">
+                                        ${currentHero.experience}/${this.getExperienceForNextLevel(currentHero.level)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ⭐ ИНФОРМАЦИЯ О РАСЕ, ПРОФЕССИИ И САГЕ -->
+                            <div class="hero-origins-section">
+                                <h4>🎭 Происхождение</h4>
+                                <div class="origin-item">
+                                    <span class="origin-type">🧬 Раса: ${this.getRaceName(currentHero.race)}</span>
+                                    <span class="origin-bonus">${this.getRaceBonusDescription(currentHero.race)}</span>
+                                </div>
+                                <div class="origin-item">
+                                    <span class="origin-type">⚔️ Профессия: ${this.getClassName(currentHero.class)}</span>
+                                    <span class="origin-bonus">${this.getClassBonusDescription(currentHero.class)}</span>
+                                </div>
+                                <div class="origin-item">
+                                    <span class="origin-type">📖 Сага: ${this.getSagaName(currentHero.saga)}</span>
+                                    <span class="origin-bonus">${this.getSagaBonusDescription(currentHero.saga)}</span>
+                                </div>
+                            </div>
+
                             <!-- Основные параметры -->
                             <div class="hero-overlay-stats">
                                 <div class="overlay-stat-group">
@@ -777,11 +934,11 @@ class HeroSystem {
                                         <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
                                     </div>
                                     <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">⚔️ Мощь</span>
+                                        <span class="overlay-stat-label">⚔️ Урон</span>
                                         <span class="overlay-stat-value">${stats.damage}</span>
                                     </div>
                                     <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🛡️ Защита</span>
+                                        <span class="overlay-stat-label">🛡️ Броня</span>
                                         <span class="overlay-stat-value">${stats.armor}</span>
                                     </div>
                                 </div>
@@ -801,7 +958,7 @@ class HeroSystem {
                                     </div>
                                 </div>
 
-                                <!-- ⭐ АКТИВНЫЕ БОНУСЫ -->
+                                <!-- ⭐ АКТИВНЫЕ БОНУСЫ (ТОЛЬКО С value > 0) -->
                                 <div class="overlay-stat-group">
                                     ${stats.activeBonuses.length > 0 ? 
                                         stats.activeBonuses.slice(0, 4).map(bonus => `
@@ -823,9 +980,6 @@ class HeroSystem {
                                     }
                                 </div>
                             </div>
-                            
-                            <!-- ⭐ СИЛЬНЫЕ СТОРОНЫ -->
-                            ${this.renderHeroStrengths()}
                             
                             <!-- Экипировка -->
                             <div class="hero-overlay-equipment">
@@ -864,252 +1018,10 @@ class HeroSystem {
             </div>
         `;
         
+        // Запускаем обновление полосок в реальном времени
+        this.startHealthBarUpdates();
+        
         console.log("✅ Интерфейс героя отрендерен с актуальными статами");
-    }
-
-    // ========== СИСТЕМА СИЛЬНЫХ СТОРОН ==========
-    getHeroStrengths() {
-        const currentHero = this.currentHero || window.game?.currentHero;
-        if (!currentHero) return [];
-        
-        const strengths = [];
-        const bonusSystem = window.game?.systems?.bonus;
-        const equipmentSystem = window.game?.systems?.equipment;
-        
-        if (!bonusSystem || !equipmentSystem) return strengths;
-        
-        // Получаем все активные бонусы
-        const allBonuses = bonusSystem.getAllBonusesWithEquipment(currentHero, equipmentSystem.items);
-        
-        // Бонусы от расы
-        if (allBonuses.race.length > 0) {
-            allBonuses.race.forEach(bonus => {
-                if (this.isRelevantBonus(bonus)) {
-                    strengths.push({
-                        source: 'race',
-                        name: this.getRaceName(currentHero.race),
-                        bonus: bonus,
-                        icon: '🧬',
-                        description: this.getBonusDescription(bonus)
-                    });
-                }
-            });
-        }
-        
-        // Бонусы от класса
-        if (allBonuses.class.length > 0) {
-            allBonuses.class.forEach(bonus => {
-                if (this.isRelevantBonus(bonus)) {
-                    strengths.push({
-                        source: 'class', 
-                        name: this.getClassName(currentHero.class),
-                        bonus: bonus,
-                        icon: '⚔️',
-                        description: this.getBonusDescription(bonus)
-                    });
-                }
-            });
-        }
-        
-        // Бонусы от саги
-        if (allBonuses.saga.length > 0) {
-            allBonuses.saga.forEach(bonus => {
-                if (this.isRelevantBonus(bonus)) {
-                    strengths.push({
-                        source: 'saga',
-                        name: this.getSagaName(currentHero.saga),
-                        bonus: bonus,
-                        icon: '📖',
-                        description: this.getBonusDescription(bonus)
-                    });
-                }
-            });
-        }
-        
-        // Бонусы от экипировки (оружие и доспехи)
-        if (allBonuses.equipment.length > 0) {
-            const equipmentBonuses = this.getEquipmentStrengths(allBonuses.equipment, equipmentSystem);
-            strengths.push(...equipmentBonuses);
-        }
-        
-        // Бонусы от сетов
-        if (allBonuses.sets.length > 0) {
-            allBonuses.sets.forEach(setBonus => {
-                if (this.isRelevantBonus(setBonus)) {
-                    strengths.push({
-                        source: 'set',
-                        name: `${setBonus.setName || 'Сет'} (${setBonus.pieces}/6)`,
-                        bonus: setBonus,
-                        icon: '✨',
-                        description: this.getBonusDescription(setBonus)
-                    });
-                }
-            });
-        }
-        
-        return strengths;
-    }
-
-    // Получение бонусов от экипировки с группировкой
-    getEquipmentStrengths(equipmentBonuses, equipmentSystem) {
-        const strengths = [];
-        const weaponBonuses = [];
-        const armorBonuses = [];
-        
-        equipmentBonuses.forEach(bonusData => {
-            if (!this.isRelevantBonus(bonusData)) return;
-            
-            const item = equipmentSystem.getItemById(bonusData.itemId || this.findItemIdByName(equipmentSystem, bonusData.itemName));
-            if (!item) return;
-            
-            // Определяем тип предмета
-            if (item.type === 'weapon') {
-                weaponBonuses.push({
-                    bonus: bonusData,
-                    item: item
-                });
-            } else {
-                armorBonuses.push({
-                    bonus: bonusData,
-                    item: item
-                });
-            }
-        });
-        
-        // Группируем бонусы оружия
-        if (weaponBonuses.length > 0) {
-            const weaponStrength = this.groupEquipmentBonuses(weaponBonuses, 'Оружие', '⚔️');
-            if (weaponStrength) strengths.push(weaponStrength);
-        }
-        
-        // Группируем бонусы брони
-        if (armorBonuses.length > 0) {
-            const armorStrength = this.groupEquipmentBonuses(armorBonuses, 'Доспехи', '🛡️');
-            if (armorStrength) strengths.push(armorStrength);
-        }
-        
-        return strengths;
-    }
-
-    // Группировка бонусов от экипировки
-    groupEquipmentBonuses(bonuses, categoryName, icon) {
-        const relevantBonuses = bonuses.filter(bonusData => this.isRelevantBonus(bonusData.bonus));
-        if (relevantBonuses.length === 0) return null;
-        
-        // Если только один бонус - показываем конкретный предмет
-        if (relevantBonuses.length === 1) {
-            const bonusData = relevantBonuses[0];
-            return {
-                source: 'equipment',
-                name: bonusData.item.name,
-                bonus: bonusData.bonus,
-                icon: icon,
-                description: this.getBonusDescription(bonusData.bonus)
-            };
-        }
-        
-        // Если несколько бонусы - группируем по типу
-        const bonusTypes = {};
-        relevantBonuses.forEach(bonusData => {
-            const bonusType = bonusData.bonus.type;
-            if (!bonusTypes[bonusType]) {
-                bonusTypes[bonusType] = {
-                    type: bonusType,
-                    totalValue: 0,
-                    count: 0
-                };
-            }
-            bonusTypes[bonusType].totalValue += bonusData.bonus.value;
-            bonusTypes[bonusType].count++;
-        });
-        
-        // Создаем суммарный бонус для отображения
-        const mainBonusType = Object.keys(bonusTypes)[0]; // Берем первый тип для отображения
-        const mainBonus = bonusTypes[mainBonusType];
-        
-        return {
-            source: 'equipment',
-            name: categoryName,
-            bonus: {
-                type: mainBonusType,
-                value: mainBonus.totalValue,
-                description: `${this.getBonusTypeName(mainBonusType)} от ${mainBonus.count} предметов`
-            },
-            icon: icon,
-            description: this.getBonusDescription({
-                type: mainBonusType,
-                value: mainBonus.totalValue
-            })
-        };
-    }
-
-    // Вспомогательные методы для системы сильных сторон
-    isRelevantBonus(bonus) {
-        if (!bonus) return false;
-        const relevantTypes = ['crit_chance', 'health_regen_mult', 'vampirism'];
-        return relevantTypes.includes(bonus.type);
-    }
-
-    getBonusDescription(bonus) {
-        if (!bonus) return '';
-        
-        const value = bonus.value * 100;
-        let formattedValue = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1);
-        
-        const descriptions = {
-            'crit_chance': `🎯 Крит +${formattedValue}%`,
-            'health_regen_mult': `❤️ Реген +${formattedValue}%`,
-            'vampirism': `🩸 Вампир +${formattedValue}%`
-        };
-        
-        return descriptions[bonus.type] || `Бонус +${formattedValue}%`;
-    }
-
-    getBonusTypeName(bonusType) {
-        const names = {
-            'crit_chance': 'Крит',
-            'health_regen_mult': 'Регенерация',
-            'vampirism': 'Вампиризм'
-        };
-        return names[bonusType] || bonusType;
-    }
-
-    findItemIdByName(equipmentSystem, itemName) {
-        const item = equipmentSystem.items.find(item => item.name === itemName);
-        return item ? item.id : null;
-    }
-
-    // ========== ОТОБРАЖЕНИЕ СИЛЬНЫХ СТОРОН В ИНТЕРФЕЙСЕ ==========
-    renderHeroStrengths() {
-        const strengths = this.getHeroStrengths();
-        
-        if (strengths.length === 0) {
-            return `
-                <div class="hero-strengths-section">
-                    <h4>💪 Сильные стороны</h4>
-                    <div class="no-strengths">Нет активных бонусов</div>
-                </div>
-            `;
-        }
-        
-        const strengthsHTML = strengths.map(strength => `
-            <div class="strength-item" data-source="${strength.source}">
-                <div class="strength-header">
-                    <span class="strength-icon">${strength.icon}</span>
-                    <span class="strength-name">${strength.name}</span>
-                </div>
-                <div class="strength-bonus">${strength.description}</div>
-            </div>
-        `).join('');
-        
-        return `
-            <div class="hero-strengths-section">
-                <h4>💪 Сильные стороны</h4>
-                <div class="strengths-list">
-                    ${strengthsHTML}
-                </div>
-            </div>
-        `;
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
