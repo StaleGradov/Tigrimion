@@ -625,167 +625,214 @@ class SafeHeroGame {
         this.showHeroGameScreen();
     }
 
-  showHeroGameScreen() {
-    if (!this.currentHero) return;
+showHeroGameScreen() {
+    if (!this.currentHero) {
+        console.error("❌ Нет текущего героя для отображения");
+        this.showHeroSelection();
+        return;
+    }
 
     const app = document.getElementById('app');
-    const stats = this.calculateHeroStats(this.currentHero);
-    
-    app.innerHTML = `
-        <div class="hero-game-screen">
-            <!-- Верхняя панель кнопок -->
-            <div class="top-action-bar">
-                <!-- ... кнопки без изменений ... -->
-            </div>
+    if (!app) return;
 
-            <!-- Основное окно героя -->
-            <div class="hero-main-window">
-                <div class="hero-fullscreen">
-                    <!-- Фон - картинка героя -->
-                    <div class="hero-background">
-                        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-                             onerror="this.src='fallback-image.jpg'">
-                    </div>
-                    
-                    <!-- БРОНЯ ПО БОКАМ ГЕРОЯ -->
-                    <div class="hero-armor-overlay">
-                        <!-- Левая броня -->
-                        <div class="armor-left">
-                            ${this.renderArmorSlot('main_hand', 'Основная рука')}
-                            ${this.renderArmorSlot('off_hand', 'Вторая рука')}
-                            ${this.renderArmorSlot('helmet', 'Шлем')}
-                            ${this.renderArmorSlot('relic', 'Реликвия', true)}
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем доступность HeroSystem
+    if (!this.systems.hero || typeof this.systems.hero.calculateHeroStats !== 'function') {
+        console.error("❌ HeroSystem не доступен или calculateHeroStats не функция");
+        console.log("Состояние систем:", {
+            hero: this.systems.hero,
+            hasCalculateHeroStats: !!this.systems.hero?.calculateHeroStats,
+            systems: Object.keys(this.systems)
+        });
+        
+        this.showFallbackHeroScreen();
+        return;
+    }
+
+    try {
+        // ⭐ ИСПРАВЛЕНИЕ: вызываем calculateHeroStats из HeroSystem, а не из SafeHeroGame
+        const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+        
+        // Остальной код рендеринга...
+        app.innerHTML = `
+            <div class="hero-game-screen">
+                <!-- Верхняя панель кнопок -->
+                <div class="top-action-bar">
+                    <button class="btn-top" onclick="game.showOverlay('global-map')">
+                        🗺️ Глобальная карта
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('local-map')">
+                        📍 Локальная карта
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('tactical-map')">
+                        🎲 Тактическая карта
+                    </button>
+                    <button class="btn-top" onclick="game.systems.map?.showTacticalMapEditor()">
+                        🎨 Создать карту
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('inventory')">
+                        🎒 Инвентарь
+                    </button>
+                    <button class="btn-top" onclick="game.showOverlay('shop')">
+                        🏪 Магазин
+                    </button>
+                    <button class="btn-top" onclick="game.showHeroSelection()">
+                        🔁 Сменить героя
+                    </button>
+                </div>
+
+                <!-- Основное окно героя -->
+                <div class="hero-main-window">
+                    <div class="hero-fullscreen">
+                        <!-- Фон - картинка героя -->
+                        <div class="hero-background">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                         </div>
                         
-                        <!-- Правая броня -->
-                        <div class="armor-right">
-                            ${this.renderArmorSlot('chest', 'Кираса')}
-                            ${this.renderArmorSlot('gloves', 'Перчатки')}
-                            ${this.renderArmorSlot('legs', 'Поножи')}
-                            ${this.renderArmorSlot('boots', 'Ботинки')}
+                        <!-- БРОНЯ ПО БОКАМ ГЕРОЯ -->
+                        <div class="hero-armor-overlay">
+                            <!-- Левая броня -->
+                            <div class="armor-left">
+                                ${this.renderArmorSlot('main_hand', 'Основная рука')}
+                                ${this.renderArmorSlot('off_hand', 'Вторая рука')}
+                                ${this.renderArmorSlot('helmet', 'Шлем')}
+                                ${this.renderArmorSlot('relic', 'Реликвия', true)}
+                            </div>
+                            
+                            <!-- Правая броня -->
+                            <div class="armor-right">
+                                ${this.renderArmorSlot('chest', 'Кираса')}
+                                ${this.renderArmorSlot('gloves', 'Перчатки')}
+                                ${this.renderArmorSlot('legs', 'Поножи')}
+                                ${this.renderArmorSlot('boots', 'Ботинки')}
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- ИНФОРМАЦИЯ ВНИЗУ -->
-                    <div class="hero-info-overlay">
-                        <div class="info-container">
-                            
-                            <!-- Левый блок - Основные параметры -->
-                            <div class="info-left">
-                                <div class="info-section">
-                                    <h4>🧬 Происхождение</h4>
-                                    <div class="origin-line">
-                                        <span>Раса:</span>
-                                        <strong>${this.getRaceName(this.currentHero.race)}</strong>
-                                        <em>${this.getRaceBonusDescription(this.currentHero.race)}</em>
+                        
+                        <!-- ИНФОРМАЦИЯ ВНИЗУ -->
+                        <div class="hero-info-overlay">
+                            <div class="info-container">
+                                
+                                <!-- Левый блок - Основные параметры -->
+                                <div class="info-left">
+                                    <div class="info-section">
+                                        <h4>🧬 Происхождение</h4>
+                                        <div class="origin-line">
+                                            <span>Раса:</span>
+                                            <strong>${this.getRaceName(this.currentHero.race)}</strong>
+                                            <em>${this.systems.hero.getRaceBonusDescription(this.currentHero.race)}</em>
+                                        </div>
+                                        <div class="origin-line">
+                                            <span>Класс:</span>
+                                            <strong>${this.getClassName(this.currentHero.class)}</strong>
+                                            <em>${this.systems.hero.getClassBonusDescription(this.currentHero.class)}</em>
+                                        </div>
+                                        <div class="origin-line">
+                                            <span>Сага:</span>
+                                            <strong>${this.getSagaName(this.currentHero.saga)}</strong>
+                                            <em>${this.systems.hero.getSagaBonusDescription(this.currentHero.saga)}</em>
+                                        </div>
                                     </div>
-                                    <div class="origin-line">
-                                        <span>Класс:</span>
-                                        <strong>${this.getClassName(this.currentHero.class)}</strong>
-                                        <em>${this.getClassBonusDescription(this.currentHero.class)}</em>
-                                    </div>
-                                    <div class="origin-line">
-                                        <span>Сага:</span>
-                                        <strong>${this.getSagaName(this.currentHero.saga)}</strong>
-                                        <em>${this.getSagaBonusDescription(this.currentHero.saga)}</em>
+                                    
+                                    <div class="info-section">
+                                        <h4>🎯 Активные бонусы</h4>
+                                        ${stats.activeBonuses && stats.activeBonuses.length > 0 ? 
+                                            stats.activeBonuses.map(bonus => `
+                                                <div class="bonus-line">
+                                                    <span>${bonus.label}</span>
+                                                    <strong>${bonus.display}</strong>
+                                                </div>
+                                            `).join('') : 
+                                            '<div class="bonus-line">Нет активных бонусов</div>'
+                                        }
                                     </div>
                                 </div>
                                 
-                                <div class="info-section">
-                                    <h4>🎯 Активные бонусы</h4>
-                                    ${stats.activeBonuses && stats.activeBonuses.length > 0 ? 
-                                        stats.activeBonuses.map(bonus => `
-                                            <div class="bonus-line">
-                                                <span>${bonus.label}</span>
-                                                <strong>${bonus.display}</strong>
-                                            </div>
-                                        `).join('') : 
-                                        '<div class="bonus-line">Нет активных бонусов</div>'
-                                    }
-                                </div>
-                            </div>
-                            
-                            <!-- Центральный блок - Полоски -->
-                            <div class="info-center">
-                                <div class="compact-bars">
-                                    <div class="health-display-section">
-                                        <div class="health-bar-container">
-                                            <div class="health-bar" id="heroHealthBar" 
-                                                 style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                                                <span class="bar-text">${stats.currentHealth}/${stats.maxHealth} ❤️</span>
+                                <!-- Центральный блок - Полоски -->
+                                <div class="info-center">
+                                    <div class="compact-bars">
+                                        <div class="health-display-section">
+                                            <div class="health-bar-container">
+                                                <div class="health-bar" id="heroHealthBar" 
+                                                     style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
+                                                    <span class="bar-text">${stats.currentHealth}/${stats.maxHealth} ❤️</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="experience-display-section">
-                                        <div class="experience-bar-container">
-                                            <div class="experience-bar" id="heroExperienceBar" 
-                                                 style="width: ${this.getExperiencePercent(this.currentHero)}%">
-                                                <span class="bar-text">${this.currentHero.experience}/${this.getExperienceForNextLevel(this.currentHero.level)} ⭐</span>
+                                        <div class="experience-display-section">
+                                            <div class="experience-bar-container">
+                                                <div class="experience-bar" id="heroExperienceBar" 
+                                                     style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
+                                                    <span class="bar-text">${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)} ⭐</span>
+                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="hero-quick-stats">
+                                        <div class="quick-stat">
+                                            <span>⚡ Ур. ${this.currentHero.level}</span>
+                                        </div>
+                                        <div class="quick-stat">
+                                            <span>💰 ${this.currentHero.gold.toFixed(0)}</span>
+                                        </div>
+                                        <div class="quick-stat">
+                                            <span>🌟 ${stats.power}</span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="hero-quick-stats">
-                                    <div class="quick-stat">
-                                        <span>⚡ Ур. ${this.currentHero.level}</span>
-                                    </div>
-                                    <div class="quick-stat">
-                                        <span>💰 ${this.currentHero.gold.toFixed(0)}</span>
-                                    </div>
-                                    <div class="quick-stat">
-                                        <span>🌟 ${stats.power}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Правый блок - Детальные статы -->
-                            <div class="info-right">
-                                <div class="info-section">
-                                    <h4>📊 Характеристики</h4>
-                                    <div class="stat-line">
-                                        <span>❤️ Здоровье:</span>
-                                        <strong>${stats.currentHealth}/${stats.maxHealth}</strong>
-                                    </div>
-                                    <div class="stat-line">
-                                        <span>⚔️ Урон:</span>
-                                        <strong>${stats.damage}</strong>
-                                    </div>
-                                    <div class="stat-line">
-                                        <span>🛡️ Броня:</span>
-                                        <strong>${stats.armor}</strong>
-                                    </div>
-                                    <div class="stat-line">
-                                        <span>🎯 Крит:</span>
-                                        <strong>${this.getCritChance(stats)}%</strong>
-                                    </div>
-                                    <div class="stat-line">
-                                        <span>🩸 Вампир:</span>
-                                        <strong>${this.getVampirism(stats)}%</strong>
-                                    </div>
-                                    <div class="stat-line">
-                                        <span>💥 Пенетр.:</span>
-                                        <strong>${this.getArmorPenetration(stats)}%</strong>
+                                <!-- Правый блок - Детальные статы -->
+                                <div class="info-right">
+                                    <div class="info-section">
+                                        <h4>📊 Характеристики</h4>
+                                        <div class="stat-line">
+                                            <span>❤️ Здоровье:</span>
+                                            <strong>${stats.currentHealth}/${stats.maxHealth}</strong>
+                                        </div>
+                                        <div class="stat-line">
+                                            <span>⚔️ Урон:</span>
+                                            <strong>${stats.damage}</strong>
+                                        </div>
+                                        <div class="stat-line">
+                                            <span>🛡️ Броня:</span>
+                                            <strong>${stats.armor}</strong>
+                                        </div>
+                                        <div class="stat-line">
+                                            <span>🎯 Крит:</span>
+                                            <strong>${this.getCritChance(stats)}%</strong>
+                                        </div>
+                                        <div class="stat-line">
+                                            <span>🩸 Вампир:</span>
+                                            <strong>${this.getVampirism(stats)}%</strong>
+                                        </div>
+                                        <div class="stat-line">
+                                            <span>💥 Пенетр.:</span>
+                                            <strong>${this.getArmorPenetration(stats)}%</strong>
+                                        </div>
                                     </div>
                                 </div>
+                                
                             </div>
-                            
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div id="overlay-container" class="overlay-container"></div>
-        </div>
-    `;
-    
-    // Запускаем обновление полосок
-    setTimeout(() => {
-        if (this.startHealthBarUpdates) {
-            this.startHealthBarUpdates();
-        }
-    }, 100);
+                <div id="overlay-container" class="overlay-container"></div>
+            </div>
+        `;
+        
+        // Запускаем обновление полосок
+        setTimeout(() => {
+            if (this.systems.hero && this.systems.hero.startHealthBarUpdates) {
+                this.systems.hero.startHealthBarUpdates();
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error("❌ Ошибка при отображении экрана героя:", error);
+        this.showFallbackHeroScreen();
+    }
 }
 
 // Новый метод для рендеринга слотов брони
