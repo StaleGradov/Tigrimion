@@ -83,7 +83,7 @@ class ModuleLoader {
         }
 
         try {
-            const modulePath = `data/modules/${moduleName}.js`;
+            const modulePath = `data/modules/${moduleName}.js?v=${Date.now()}`;
             console.log(`📥 Загружаем модуль: ${modulePath}`);
             
             const response = await fetch(modulePath);
