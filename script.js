@@ -625,13 +625,16 @@ class SafeHeroGame {
         this.showHeroGameScreen();
     }
 
-    showHeroGameScreen() {
-        if (!this.currentHero) return;
+   showHeroGameScreen() {
+    if (!this.currentHero) return;
 
-        const app = document.getElementById('app');
-        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
+    const app = document.getElementById('app');
+    
+    // ⭐ ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ: Убедимся что используем актуальный HeroSystem
+    if (this.systems.hero && this.systems.hero.calculateHeroStats) {
         const stats = this.systems.hero.calculateHeroStats(this.currentHero);
         
+        // ⭐ ПРИНУДИТЕЛЬНОЕ СОЗДАНИЕ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА
         app.innerHTML = `
             <div class="hero-game-screen">
                 <!-- Верхняя панель кнопок -->
@@ -676,6 +679,45 @@ class SafeHeroGame {
                                 <div class="hero-overlay-level">⚡ Ур. ${this.currentHero.level}</div>
                             </div>
                             
+                            <!-- ⭐ БОЛЬШАЯ КРАСНАЯ ПОЛОСКА ЗДОРОВЬЯ -->
+                            <div class="health-display-section">
+                                <h4>❤️ Здоровье</h4>
+                                <div class="health-bar-container">
+                                    <div class="health-bar" id="heroHealthBar" 
+                                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
+                                        ${stats.currentHealth}/${stats.maxHealth}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ⭐ ПОЛОСКА ОПЫТА -->
+                            <div class="experience-display-section">
+                                <h4>🌟 Опыт</h4>
+                                <div class="experience-bar-container">
+                                    <div class="experience-bar" id="heroExperienceBar" 
+                                         style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
+                                        ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ⭐ ИНФОРМАЦИЯ О РАСЕ, ПРОФЕССИИ И САГЕ -->
+                            <div class="hero-origins-section">
+                                <h4>🎭 Происхождение</h4>
+                                <div class="origin-item">
+                                    <span class="origin-type">🧬 Раса: ${this.getRaceName(this.currentHero.race)}</span>
+                                    <span class="origin-bonus">${this.systems.hero.getRaceBonusDescription(this.currentHero.race)}</span>
+                                </div>
+                                <div class="origin-item">
+                                    <span class="origin-type">⚔️ Профессия: ${this.getClassName(this.currentHero.class)}</span>
+                                    <span class="origin-bonus">${this.systems.hero.getClassBonusDescription(this.currentHero.class)}</span>
+                                </div>
+                                <div class="origin-item">
+                                    <span class="origin-type">📖 Сага: ${this.getSagaName(this.currentHero.saga)}</span>
+                                    <span class="origin-bonus">${this.systems.hero.getSagaBonusDescription(this.currentHero.saga)}</span>
+                                </div>
+                            </div>
+
                             <!-- Основные параметры -->
                             <div class="hero-overlay-stats">
                                 <div class="overlay-stat-group">
@@ -684,11 +726,11 @@ class SafeHeroGame {
                                         <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
                                     </div>
                                     <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">⚔️ Мощь</span>
+                                        <span class="overlay-stat-label">⚔️ Урон</span>
                                         <span class="overlay-stat-value">${stats.damage}</span>
                                     </div>
                                     <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🛡️ Защита</span>
+                                        <span class="overlay-stat-label">🛡️ Броня</span>
                                         <span class="overlay-stat-value">${stats.armor}</span>
                                     </div>
                                 </div>
@@ -767,7 +809,28 @@ class SafeHeroGame {
                 <div id="overlay-container" class="overlay-container"></div>
             </div>
         `;
+        
+        // ⭐ ЗАПУСКАЕМ ОБНОВЛЕНИЕ ПОЛОСОК СРАЗУ ПОСЛЕ РЕНДЕРА
+        setTimeout(() => {
+            if (this.systems.hero) {
+                this.systems.hero.startHealthBarUpdates();
+                // ⭐ ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ СТАТОВ
+                this.systems.hero.calculateHeroStats();
+                
+                // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Принудительно обновляем полоски через 500мс
+                setTimeout(() => {
+                    this.systems.hero.updateHealthAndExperienceBars();
+                }, 500);
+            }
+        }, 100);
+        
+        console.log("✅ Интерфейс героя отрендерен с полосками здоровья и опыта");
+    } else {
+        console.error("❌ HeroSystem не доступен для отображения интерфейса");
+        // Фолбэк: показываем выбор героя
+        this.showHeroSelection();
     }
+}
 
     // ========== ОБРАБОТЧИК КЛИКА ПО СЛОТУ ЭКИПИРОВКИ ==========
     handleEquipmentSlotClick(slot) {
