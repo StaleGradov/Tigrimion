@@ -3612,340 +3612,369 @@ body {
 }
 /* ========== ИСПРАВЛЕННЫЙ ИНТЕРФЕЙС ГЕРОЯ V4 ========== */
 
+/* Основной контейнер всего окна героя */
 .hero-main-window-v2 {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 1.5rem;
-    max-width: 1600px; /* Увеличили для больших слотов */
-    margin: 0 auto;
-    width: 100%;
-    padding: 1rem;
-    min-height: 90vh; /* Увеличили высоту */
+    flex: 1; /* Занимает всё доступное пространство */
+    display: flex; /* Включаем flexbox для расположения элементов */
+    justify-content: center; /* Выравниваем по центру по горизонтали */
+    align-items: flex-start; /* Выравниваем элементы по верху */
+    gap: 1.5rem; /* Расстояние между колонками */
+    max-width: 1600px; /* Максимальная ширина всего контейнера */
+    margin: 0 auto; /* Центрируем контейнер по горизонтали */
+    width: 100%; /* Занимает 100% ширины родителя */
+    padding: 1rem; /* Внутренние отступы со всех сторон */
+    min-height: 90vh; /* Минимальная высота - 90% высоты экрана */
 }
 
+/* Боковые колонки для экипировки (левая и правая) */
 .equipment-column-v2 {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem; /* Увеличили отступ между слотами */
-    width: 160px; /* Увеличили ширину столбцов */
-    flex-shrink: 0;
+    display: flex; /* Flexbox для вертикального расположения слотов */
+    flex-direction: column; /* Слоты располагаются вертикально */
+    gap: 1.5rem; /* Расстояние между слотами экипировки */
+    width: 160px; /* Фиксированная ширина колонки */
+    flex-shrink: 0; /* Запрещаем сжатие колонки */
 }
 
+/* Центральная область с картинкой героя и информацией */
 .hero-center-area-v2 {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    flex: 1;
-    max-width: 800px; /* Увеличили для большей картинки */
+    display: flex; /* Flexbox для вертикального расположения */
+    flex-direction: column; /* Элементы располагаются вертикально */
+    align-items: center; /* Центрируем по горизонтали */
+    gap: 1rem; /* Расстояние между картинкой и информацией */
+    flex: 1; /* Занимает всё оставшееся пространство */
+    max-width: 800px; /* Максимальная ширина центральной области */
 }
 
-/* ФИКС: Картинка занимает ВСЮ высоту без обрезки */
+/* Контейнер для картинки героя */
 .hero-image-container-v2 {
-    width: 100%;
-    height: 800px; /* ЕЩЕ БОЛЬШЕ увеличили высоту */
-    position: relative;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 15px;
-    overflow: hidden;
-    border: 3px solid #334155;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    width: 100%; /* Занимает всю ширину родителя */
+    height: 800px; /* Фиксированная высота контейнера */
+    position: relative; /* Для позиционирования дочерних элементов */
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); /* Градиентный фон */
+    border-radius: 15px; /* Скругленные углы */
+    overflow: hidden; /* Скрываем всё что выходит за границы */
+    border: 3px solid #334155; /* Рамка вокруг контейнера */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Тень для объема */
 }
 
+/* Сама картинка героя */
 .hero-image-container-v2 img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* Вернули contain чтобы не обрезало */
-    display: block;
+    width: 100%; /* Занимает всю ширину контейнера */
+    height: 100%; /* Занимает всю высоту контейнера */
+    object-fit: contain; /* Сохраняет пропорции, не обрезая изображение */
+    display: block; /* Убирает лишние отступы снизу */
 }
 
-/* ФИКС: УВЕЛИЧИЛИ слоты в 2 раза */
+/* Слот экипировки (квадратная ячейка для предмета) */
 .equipment-slot-column-v2 {
-    background: rgba(30, 41, 59, 0.95);
-    border: 3px solid #475569;
-    border-radius: 12px;
-    padding: 0;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    height: 160px; /* УВЕЛИЧИЛИ в 2 раза */
-    width: 160px; /* УВЕЛИЧИЛИ в 2 раза */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.3rem;
-    position: relative;
-    overflow: hidden;
+    background: rgba(30, 41, 59, 0.95); /* Полупрозрачный темно-синий фон */
+    border: 3px solid #475569; /* Серая рамка по умолчанию */
+    border-radius: 12px; /* Скругленные углы */
+    padding: 0; /* Убираем внутренние отступы */
+    text-align: center; /* Выравниваем текст по центру */
+    cursor: pointer; /* Курсор-указатель при наведении */
+    transition: all 0.3s ease; /* Плавные анимации при изменениях */
+    height: 160px; /* Фиксированная высота слота */
+    width: 160px; /* Фиксированная ширина слота */
+    display: flex; /* Flexbox для расположения содержимого */
+    flex-direction: column; /* Вертикальное расположение иконки и текста */
+    align-items: center; /* Центрируем по горизонтали */
+    justify-content: space-between; /* Распределяем пространство между элементами */
+    gap: 0.3rem; /* Небольшое расстояние между элементами */
+    position: relative; /* Для позиционирования дочерних элементов */
+    overflow: hidden; /* Скрываем всё что выходит за границы */
 }
 
+/* Эффект при наведении на слот */
 .equipment-slot-column-v2:hover {
-    border-color: #3b82f6;
-    background: rgba(59, 130, 246, 0.15);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6; /* Синяя рамка при наведении */
+    background: rgba(59, 130, 246, 0.15); /* Светло-синий фон при наведении */
+    transform: translateY(-3px); /* Поднимаем слот на 3px */
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); /* Синяя тень при наведении */
 }
 
+/* Стиль для занятого слота (с предметом) */
 .equipment-slot-column-v2.equipped {
-    border-style: solid;
+    border-style: solid; /* Сплошная рамка вместо пунктирной */
 }
 
-/* ФИКС: Цвета редкостей */
+/* Цвета рамок в зависимости от редкости предмета */
 .equipment-slot-column-v2[data-rarity="common"] { 
-    border-color: #9ca3af !important; 
-    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+    border-color: #9ca3af !important; /* Серый для обычного */
+    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3); /* Серая тень */
 }
 .equipment-slot-column-v2[data-rarity="uncommon"] { 
-    border-color: #4cc9f0 !important; 
-    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.4);
+    border-color: #4cc9f0 !important; /* Голубой для необычного */
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.4); /* Голубая тень */
 }
 .equipment-slot-column-v2[data-rarity="rare"] { 
-    border-color: #a855f7 !important; 
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+    border-color: #a855f7 !important; /* Фиолетовый для редкого */
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5); /* Фиолетовая тень */
 }
 .equipment-slot-column-v2[data-rarity="epic"] { 
-    border-color: #f59e0b !important; 
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+    border-color: #f59e0b !important; /* Оранжевый для эпического */
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6); /* Оранжевая тень */
 }
 .equipment-slot-column-v2[data-rarity="legendary"] { 
-    border-color: #ffd700 !important; 
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
+    border-color: #ffd700 !important; /* Золотой для легендарного */
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7); /* Золотая тень */
 }
 .equipment-slot-column-v2[data-rarity="mythic"] { 
-    border-color: #ff6b6b !important; 
-    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.7);
+    border-color: #ff6b6b !important; /* Красный для мифического */
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.7); /* Красная тень */
 }
 
-/* ФИКС: УВЕЛИЧИЛИ иконки почти до рамок */
+/* Контейнер для иконки предмета внутри слота */
 .slot-icon-column-v2 {
-    font-size: 3.5rem; /* Увеличили иконки */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 110px; /* Увеличили область иконок */
-    flex: 1;
-    padding: 0.5rem;
+    font-size: 3.5rem; /* Размер эмодзи-иконок */
+    display: flex; /* Flexbox для центрирования */
+    align-items: center; /* Вертикальное центрирование */
+    justify-content: center; /* Горизонтальное центрирование */
+    width: 100%; /* Занимает всю ширину слота */
+    height: 110px; /* Высота области для иконки */
+    flex: 1; /* Занимает всё доступное пространство */
+    padding: 0.5rem; /* Внутренние отступы */
 }
 
+/* Изображение предмета внутри иконки */
 .slot-icon-column-v2 img {
-    width: 90px !important; /* УВЕЛИЧИЛИ почти до рамок */
-    height: 90px !important;
-    object-fit: contain;
-    max-width: 90px;
-    max-height: 90px;
+    width: 90px !important; /* Фиксированная ширина изображения */
+    height: 90px !important; /* Фиксированная высота изображения */
+    object-fit: contain; /* Сохраняет пропорции изображения */
+    max-width: 90px; /* Максимальная ширина */
+    max-height: 90px; /* Максимальная высота */
 }
 
+/* Подпись под слотом (название типа экипировки) */
 .slot-label-column-v2 {
-    font-size: 0.8rem;
-    color: #cbd5e1;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.2;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.3);
-    width: 100%;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.8rem; /* Небольшой размер шрифта */
+    color: #cbd5e1; /* Светло-серый цвет текста */
+    font-weight: 600; /* Полужирный шрифт */
+    text-align: center; /* Выравнивание по центру */
+    line-height: 1.2; /* Межстрочный интервал */
+    padding: 0.5rem; /* Внутренние отступы */
+    background: rgba(0, 0, 0, 0.3); /* Полупрозрачный черный фон */
+    width: 100%; /* Занимает всю ширину */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Верхняя граница */
 }
 
+/* Панель с полосками здоровья/опыта поверх картинки */
 .hero-overlay-stats-v2 {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(15, 23, 42, 0.98);
-    backdrop-filter: blur(15px);
-    padding: 1rem; /* Уменьшили отступы для компактности */
-    border-top: 2px solid #334155;
-    border-radius: 0 0 12px 12px;
+    position: absolute; /* Абсолютное позиционирование */
+    bottom: 0; /* Прижимаем к низу */
+    left: 0; /* Прижимаем к левому краю */
+    right: 0; /* Прижимаем к правому краю */
+    background: rgba(15, 23, 42, 0.98); /* Полупрозрачный темно-синий фон */
+    backdrop-filter: blur(15px); /* Размытие фона под панелью */
+    padding: 1rem; /* Внутренние отступы */
+    border-top: 2px solid #334155; /* Верхняя граница */
+    border-radius: 0 0 12px 12px; /* Скругляем только нижние углы */
 }
 
+/* Контейнер для всей информации под картинкой */
 .hero-full-info-v2 {
-    width: 100%;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem; /* Уменьшили отступы */
+    width: 100%; /* Занимает всю ширину */
+    margin-top: 1rem; /* Отступ сверху от картинки */
+    display: flex; /* Flexbox для вертикального расположения */
+    flex-direction: column; /* Элементы располагаются вертикально */
+    gap: 0.8rem; /* Расстояние между секциями информации */
 }
 
-/* ФИКС: Сделали более компактными секции */
+/* Секция с информацией о происхождении (раса, класс, сага) */
 .hero-origins-section-v2 {
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 10px;
-    padding: 0.8rem; /* Уменьшили отступы */
+    background: rgba(255, 215, 0, 0.1); /* Полупрозрачный золотой фон */
+    border: 1px solid rgba(255, 215, 0, 0.3); /* Золотая рамка */
+    border-radius: 10px; /* Скругленные углы */
+    padding: 0.8rem; /* Внутренние отступы */
 }
 
+/* Заголовок секции происхождения */
 .hero-origins-section-v2 h4 {
-    color: #ffd700;
-    margin-bottom: 0.6rem; /* Уменьшили отступ */
-    font-size: 1rem; /* Уменьшили шрифт */
-    text-align: center;
+    color: #ffd700; /* Золотой цвет текста */
+    margin-bottom: 0.6rem; /* Отступ снизу */
+    font-size: 1rem; /* Размер шрифта */
+    text-align: center; /* Выравнивание по центру */
 }
 
+/* Отдельная строка в секции происхождения */
 .origin-item-v2 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.3rem 0; /* Уменьшили отступы */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.8rem; /* Уменьшили шрифт */
+    display: flex; /* Flexbox для расположения типа и бонуса */
+    justify-content: space-between; /* Распределяем по краям */
+    align-items: center; /* Выравниваем по вертикали */
+    padding: 0.3rem 0; /* Вертикальные отступы */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Разделительная линия */
+    font-size: 0.8rem; /* Небольшой размер шрифта */
 }
 
+/* Убираем разделитель у последнего элемента */
 .origin-item-v2:last-child {
     border-bottom: none;
 }
 
+/* Текст с типом происхождения (например, "Раса: Гном") */
 .origin-type-v2 {
-    font-weight: bold;
-    color: #cbd5e1;
-    font-size: 0.8rem; /* Уменьшили шрифт */
+    font-weight: bold; /* Полужирный шрифт */
+    color: #cbd5e1; /* Светло-серый цвет */
+    font-size: 0.8rem; /* Небольшой размер шрифта */
 }
 
+/* Текст с бонусом происхождения */
 .origin-bonus-v2 {
-    color: #4cc9f0;
-    font-size: 0.75rem; /* Уменьшили шрифт */
-    text-align: right;
+    color: #4cc9f0; /* Голубой цвет текста */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
+    text-align: right; /* Выравнивание по правому краю */
 }
 
+/* Секция с активными бонусами */
 .hero-bonuses-section-v2 {
-    background: rgba(76, 201, 240, 0.1);
-    border: 1px solid rgba(76, 201, 240, 0.3);
-    border-radius: 10px;
-    padding: 0.8rem; /* Уменьшили отступы */
+    background: rgba(76, 201, 240, 0.1); /* Полупрозрачный голубой фон */
+    border: 1px solid rgba(76, 201, 240, 0.3); /* Голубая рамка */
+    border-radius: 10px; /* Скругленные углы */
+    padding: 0.8rem; /* Внутренние отступы */
 }
 
+/* Заголовок секции бонусов */
 .hero-bonuses-section-v2 h4 {
-    color: #4cc9f0;
-    margin-bottom: 0.6rem; /* Уменьшили отступ */
-    font-size: 1rem; /* Уменьшили шрифт */
-    text-align: center;
+    color: #4cc9f0; /* Голубой цвет текста */
+    margin-bottom: 0.6rem; /* Отступ снизу */
+    font-size: 1rem; /* Размер шрифта */
+    text-align: center; /* Выравнивание по центру */
 }
 
+/* Сетка для отображения бонусов в 2 колонки */
 .bonuses-grid-v2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem; /* Уменьшили отступы */
+    display: grid; /* CSS Grid для расположения */
+    grid-template-columns: 1fr 1fr; /* Две колонки равной ширины */
+    gap: 0.5rem; /* Расстояние между ячейками */
 }
 
+/* Отдельный бонус в сетке */
 .bonus-item-v2 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.3rem 0; /* Уменьшили отступы */
-    font-size: 0.75rem; /* Уменьшили шрифт */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; /* Flexbox для расположения названия и значения */
+    justify-content: space-between; /* Распределяем по краям */
+    align-items: center; /* Выравниваем по вертикали */
+    padding: 0.3rem 0; /* Вертикальные отступы */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Разделительная линия */
 }
 
+/* Убираем разделитель у последнего элемента */
 .bonus-item-v2:last-child {
     border-bottom: none;
 }
 
+/* Название бонуса (например, "Здоровье") */
 .bonus-label-v2 {
-    color: #cbd5e1;
-    font-size: 0.75rem; /* Уменьшили шрифт */
+    color: #cbd5e1; /* Светло-серый цвет */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
 }
 
+/* Значение бонуса (например, "+30.0%") */
 .bonus-value-v2 {
-    font-weight: 600;
-    color: white;
-    font-size: 0.75rem; /* Уменьшили шрифт */
+    font-weight: 600; /* Полужирный шрифт */
+    color: white; /* Белый цвет текста */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
 }
 
-/* ФИКС: Сделали компактные параметры еще компактнее */
+/* Сетка для компактного отображения основных параметров */
 .compact-stats-v2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem; /* Уменьшили отступы */
-    width: 100%;
-    margin-bottom: 0.8rem; /* Уменьшили отступ */
+    display: grid; /* CSS Grid для расположения */
+    grid-template-columns: 1fr 1fr; /* Две колонки равной ширины */
+    gap: 0.5rem; /* Расстояние между ячейками */
+    width: 100%; /* Занимает всю ширину */
+    margin-bottom: 0.8rem; /* Отступ снизу */
 }
 
+/* Отдельный параметр в компактной сетке */
 .compact-stat-v2 {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.2rem 0; /* Уменьшили отступы */
-    font-size: 0.8rem; /* Уменьшили шрифт */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex; /* Flexbox для расположения названия и значения */
+    justify-content: space-between; /* Распределяем по краям */
+    align-items: center; /* Выравниваем по вертикали */
+    padding: 0.2rem 0; /* Очень маленькие вертикальные отступы */
+    font-size: 0.8rem; /* Небольшой размер шрифта */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* Разделительная линия */
 }
 
+/* Убираем разделитель у последнего элемента */
 .compact-stat-v2:last-child {
     border-bottom: none;
 }
 
+/* Название параметра (например, "⚔️ Урон") */
 .stat-label-v2 {
-    color: #cbd5e1;
-    font-size: 0.75rem; /* Уменьшили шрифт */
+    color: #cbd5e1; /* Светло-серый цвет */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
 }
 
+/* Значение параметра (например, "260") */
 .stat-value-v2 {
-    font-weight: 700;
-    color: white;
-    font-size: 0.75rem; /* Уменьшили шрифт */
+    font-weight: 700; /* Жирный шрифт */
+    color: white; /* Белый цвет текста */
+    font-size: 0.75rem; /* Очень маленький размер шрифта */
 }
 
-/* Адаптивность */
+/* ========== АДАПТИВНОСТЬ ДЛЯ РАЗНЫХ ЭКРАНОВ ========== */
+
+/* Для экранов меньше 1024px (планшеты) */
 @media (max-width: 1024px) {
     .hero-main-window-v2 {
-        gap: 1rem;
+        gap: 1rem; /* Уменьшаем расстояние между колонками */
     }
     
     .hero-image-container-v2 {
-        height: 600px;
+        height: 600px; /* Уменьшаем высоту картинки */
     }
     
     .equipment-slot-column-v2 {
-        height: 140px;
+        height: 140px; /* Уменьшаем размер слотов */
         width: 140px;
     }
     
     .slot-icon-column-v2 img {
-        width: 80px !important;
+        width: 80px !important; /* Уменьшаем иконки */
         height: 80px !important;
     }
 }
 
+/* Для экранов меньше 768px (мобильные телефоны) */
 @media (max-width: 768px) {
     .hero-main-window-v2 {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
+        flex-direction: column; /* Меняем на вертикальное расположение */
+        align-items: center; /* Центрируем всё */
+        gap: 1.5rem; /* Увеличиваем расстояние между элементами */
     }
     
     .equipment-column-v2 {
-        flex-direction: row;
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        order: 3;
+        flex-direction: row; /* Меняем на горизонтальное расположение слотов */
+        width: 100%; /* Занимаем всю ширину */
+        justify-content: center; /* Центрируем слоты */
+        flex-wrap: wrap; /* Разрешаем перенос на новую строку */
+        gap: 1rem; /* Расстояние между слотами */
+        order: 3; /* Помещаем колонки экипировки в конец */
     }
     
     .equipment-slot-column-v2 {
-        height: 120px;
+        height: 120px; /* Еще больше уменьшаем слоты */
         width: 120px;
-        flex: 0 0 calc(25% - 1rem);
+        flex: 0 0 calc(25% - 1rem); /* 4 слота в строке с отступами */
     }
     
     .hero-center-area-v2 {
-        order: 1;
-        max-width: 100%;
+        order: 1; /* Помещаем центральную область в начало */
+        max-width: 100%; /* Занимаем всю ширину */
     }
     
     .hero-image-container-v2 {
-        height: 500px;
-        width: 100%;
+        height: 500px; /* Еще больше уменьшаем картинку */
+        width: 100%; /* Занимаем всю ширину */
     }
     
     .bonuses-grid-v2 {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Меняем на одну колонку для бонусов */
     }
     
     .slot-icon-column-v2 img {
-        width: 70px !important;
+        width: 70px !important; /* Еще больше уменьшаем иконки */
         height: 70px !important;
     }
 }
