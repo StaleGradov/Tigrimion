@@ -76,60 +76,50 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
- async loadModule(moduleName) {
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Принудительно перезагружаем hero-system при каждом вызове
-    if (moduleName === 'hero-system') {
-        // Удаляем из загруженных модулей и из глобальной области
-        this.loadedModules.delete('hero-system');
-        delete window.HeroSystem; // ⭐ УДАЛЯЕМ ИЗ ГЛОБАЛЬНОЙ ОБЛАСТИ
-        console.log("🔄 Принудительная перезагрузка hero-system");
-    }
-    
-    if (this.loadedModules.has(moduleName) && moduleName !== 'hero-system') {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-
-    try {
-        // ⭐ ДОБАВЛЯЕМ ВЕРСИЮ ДЛЯ ОБХОДА КЕША
-        const version = Date.now();
-        const modulePath = `data/modules/${moduleName}.js?v=${version}`;
-        console.log(`📥 Загружаем модуль: ${modulePath}`);
-        
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+    async loadModule(moduleName) {
+        if (this.loadedModules.has(moduleName)) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
         }
-        
-        const moduleCode = await response.text();
-        
-        // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
-        const blob = new Blob([moduleCode], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = () => {
-                URL.revokeObjectURL(url);
-                resolve();
-            };
-            script.onerror = () => {
-                URL.revokeObjectURL(url);
-                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-            };
-            document.head.appendChild(script);
-        });
-        
-        this.loadedModules.add(moduleName);
-        console.log(`✅ Модуль ${moduleName} успешно загружен`);
-        return true;
-        
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-        return false;
+
+        try {
+            const modulePath = `data/modules/${moduleName}.js`;
+            console.log(`📥 Загружаем модуль: ${modulePath}`);
+            
+            const response = await fetch(modulePath);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+            }
+            
+            const moduleCode = await response.text();
+            
+            // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
+            const blob = new Blob([moduleCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                script.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+                };
+                document.head.appendChild(script);
+            });
+            
+            this.loadedModules.add(moduleName);
+            console.log(`✅ Модуль ${moduleName} успешно загружен`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            return false;
+        }
     }
-}
 
     isModuleAvailable(moduleName) {
         const classMap = {
@@ -289,29 +279,23 @@ class SafeHeroGame {
         }
     }
 
-  async initializeSystems() {
-    console.log("⚙️ Инициализация игровых систем...");
-    
-    try {
-        // ⭐ ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА HERO SYSTEM
-        if (window.HeroSystem) {
-            delete window.HeroSystem;
-            console.log("🔄 HeroSystem принудительно перезагружен");
+    async initializeSystems() {
+        console.log("⚙️ Инициализация игровых систем...");
+        
+        try {
+            this.systems.bonus = new BonusSystem();
+            this.systems.level = new LevelSystem();
+            this.systems.battle = new BattleSystem();
+            this.systems.equipment = new EquipmentSystem();
+            this.systems.hero = new HeroSystem();
+            this.systems.map = new MapSystem();
+            
+            console.log("✅ Все системы инициализированы");
+            
+        } catch (error) {
+            throw new Error(`Ошибка инициализации систем: ${error.message}`);
         }
-        
-        this.systems.bonus = new BonusSystem();
-        this.systems.level = new LevelSystem();
-        this.systems.battle = new BattleSystem();
-        this.systems.equipment = new EquipmentSystem();
-        this.systems.hero = new HeroSystem(); // ⭐ ЭТОТ КОД ДОЛЖЕН БЫТЬ ИЗ ОБНОВЛЕННОГО ФАЙЛА
-        this.systems.map = new MapSystem();
-        
-        console.log("✅ Все системы инициализированы");
-        
-    } catch (error) {
-        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
-}
 
     async loadGameData() {
         console.log("📂 Загрузка игровых данных...");
@@ -625,34 +609,13 @@ class SafeHeroGame {
         this.showHeroGameScreen();
     }
 
-showHeroGameScreen() {
-    if (!this.currentHero) {
-        console.error("❌ Нет текущего героя для отображения");
-        this.showHeroSelection();
-        return;
-    }
+    showHeroGameScreen() {
+        if (!this.currentHero) return;
 
-    const app = document.getElementById('app');
-    if (!app) return;
-
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем доступность HeroSystem
-    if (!this.systems.hero || typeof this.systems.hero.calculateHeroStats !== 'function') {
-        console.error("❌ HeroSystem не доступен или calculateHeroStats не функция");
-        console.log("Состояние систем:", {
-            hero: this.systems.hero,
-            hasCalculateHeroStats: !!this.systems.hero?.calculateHeroStats,
-            systems: Object.keys(this.systems)
-        });
-        
-        this.showFallbackHeroScreen();
-        return;
-    }
-
-    try {
-        // ⭐ ИСПРАВЛЕНИЕ: вызываем calculateHeroStats из HeroSystem, а не из SafeHeroGame
+        const app = document.getElementById('app');
+        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
         const stats = this.systems.hero.calculateHeroStats(this.currentHero);
         
-        // Остальной код рендеринга...
         app.innerHTML = `
             <div class="hero-game-screen">
                 <!-- Верхняя панель кнопок -->
@@ -666,7 +629,7 @@ showHeroGameScreen() {
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">
                         🎲 Тактическая карта
                     </button>
-                    <button class="btn-top" onclick="game.systems.map?.showTacticalMapEditor()">
+                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">
                         🎨 Создать карту
                     </button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">
@@ -680,7 +643,7 @@ showHeroGameScreen() {
                     </button>
                 </div>
 
-                <!-- Основное окно героя -->
+                <!-- Основное окно героя (полноэкранное) -->
                 <div class="hero-main-window">
                     <div class="hero-fullscreen">
                         <!-- Фон - картинка героя -->
@@ -689,203 +652,106 @@ showHeroGameScreen() {
                                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
                         </div>
                         
-                        <!-- БРОНЯ ПО БОКАМ ГЕРОЯ -->
-                        <div class="hero-armor-overlay">
-                            <!-- Левая броня -->
-                            <div class="armor-left">
-                                ${this.renderArmorSlot('main_hand', 'Основная рука')}
-                                ${this.renderArmorSlot('off_hand', 'Вторая рука')}
-                                ${this.renderArmorSlot('helmet', 'Шлем')}
-                                ${this.renderArmorSlot('relic', 'Реликвия', true)}
+                        <!-- Панель параметров поверх картинки -->
+                        <div class="hero-overlay-panel">
+                            <!-- Верхняя строка - имя и уровень -->
+                            <div class="hero-overlay-header">
+                                <div class="hero-overlay-name">${this.currentHero.name}</div>
+                                <div class="hero-overlay-level">⚡ Ур. ${this.currentHero.level}</div>
                             </div>
                             
-                            <!-- Правая броня -->
-                            <div class="armor-right">
-                                ${this.renderArmorSlot('chest', 'Кираса')}
-                                ${this.renderArmorSlot('gloves', 'Перчатки')}
-                                ${this.renderArmorSlot('legs', 'Поножи')}
-                                ${this.renderArmorSlot('boots', 'Ботинки')}
-                            </div>
-                        </div>
-                        
-                        <!-- ИНФОРМАЦИЯ ВНИЗУ -->
-                        <div class="hero-info-overlay">
-                            <div class="info-container">
-                                
-                                <!-- Левый блок - Основные параметры -->
-                                <div class="info-left">
-                                    <div class="info-section">
-                                        <h4>🧬 Происхождение</h4>
-                                        <div class="origin-line">
-                                            <span>Раса:</span>
-                                            <strong>${this.getRaceName(this.currentHero.race)}</strong>
-                                            <em>${this.systems.hero.getRaceBonusDescription(this.currentHero.race)}</em>
-                                        </div>
-                                        <div class="origin-line">
-                                            <span>Класс:</span>
-                                            <strong>${this.getClassName(this.currentHero.class)}</strong>
-                                            <em>${this.systems.hero.getClassBonusDescription(this.currentHero.class)}</em>
-                                        </div>
-                                        <div class="origin-line">
-                                            <span>Сага:</span>
-                                            <strong>${this.getSagaName(this.currentHero.saga)}</strong>
-                                            <em>${this.systems.hero.getSagaBonusDescription(this.currentHero.saga)}</em>
-                                        </div>
+                            <!-- Основные параметры -->
+                            <div class="hero-overlay-stats">
+                                <div class="overlay-stat-group">
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">❤️ Здоровье</span>
+                                        <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
                                     </div>
-                                    
-                                    <div class="info-section">
-                                        <h4>🎯 Активные бонусы</h4>
-                                        ${stats.activeBonuses && stats.activeBonuses.length > 0 ? 
-                                            stats.activeBonuses.map(bonus => `
-                                                <div class="bonus-line">
-                                                    <span>${bonus.label}</span>
-                                                    <strong>${bonus.display}</strong>
-                                                </div>
-                                            `).join('') : 
-                                            '<div class="bonus-line">Нет активных бонусов</div>'
-                                        }
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">⚔️ Мощь</span>
+                                        <span class="overlay-stat-value">${stats.damage}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🛡️ Защита</span>
+                                        <span class="overlay-stat-value">${stats.armor}</span>
                                     </div>
                                 </div>
                                 
-                                <!-- Центральный блок - Полоски -->
-                                <div class="info-center">
-                                    <div class="compact-bars">
-                                        <div class="health-display-section">
-                                            <div class="health-bar-container">
-                                                <div class="health-bar" id="heroHealthBar" 
-                                                     style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                                                    <span class="bar-text">${stats.currentHealth}/${stats.maxHealth} ❤️</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                <div class="overlay-stat-group">
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">💰 Золото</span>
+                                        <span class="overlay-stat-value">${this.currentHero.gold.toFixed(2)}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🌟 Сила</span>
+                                        <span class="overlay-stat-value">${stats.power}</span>
+                                    </div>
+                                    <div class="overlay-stat-row">
+                                        <span class="overlay-stat-label">🧬 Раса</span>
+                                        <span class="overlay-stat-value">${this.getRaceName(this.currentHero.race)}</span>
+                                    </div>
+                                </div>
 
-                                        <div class="experience-display-section">
-                                            <div class="experience-bar-container">
-                                                <div class="experience-bar" id="heroExperienceBar" 
-                                                     style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
-                                                    <span class="bar-text">${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)} ⭐</span>
-                                                </div>
+                                <!-- ⭐ АКТИВНЫЕ БОНУСЫ ИЗ HERO SYSTEM -->
+                                <div class="overlay-stat-group">
+                                    ${stats.activeBonuses && stats.activeBonuses.length > 0 ? 
+                                        stats.activeBonuses.slice(0, 4).map(bonus => `
+                                            <div class="overlay-stat-row">
+                                                <span class="overlay-stat-label">${bonus.label}</span>
+                                                <span class="overlay-stat-value">${bonus.display}</span>
                                             </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="hero-quick-stats">
-                                        <div class="quick-stat">
-                                            <span>⚡ Ур. ${this.currentHero.level}</span>
-                                        </div>
-                                        <div class="quick-stat">
-                                            <span>💰 ${this.currentHero.gold.toFixed(0)}</span>
-                                        </div>
-                                        <div class="quick-stat">
-                                            <span>🌟 ${stats.power}</span>
-                                        </div>
-                                    </div>
+                                        `).join('') : 
+                                        `<div class="overlay-stat-row">
+                                            <span class="overlay-stat-label">🎯 Бонусы</span>
+                                            <span class="overlay-stat-value">Нет активных</span>
+                                        </div>`
+                                    }
+                                    ${stats.activeBonuses && stats.activeBonuses.length > 4 ? 
+                                        `<div class="overlay-stat-row">
+                                            <span class="overlay-stat-label">✨ Ещё</span>
+                                            <span class="overlay-stat-value">+${stats.activeBonuses.length - 4}</span>
+                                        </div>` : ''
+                                    }
                                 </div>
-                                
-                                <!-- Правый блок - Детальные статы -->
-                                <div class="info-right">
-                                    <div class="info-section">
-                                        <h4>📊 Характеристики</h4>
-                                        <div class="stat-line">
-                                            <span>❤️ Здоровье:</span>
-                                            <strong>${stats.currentHealth}/${stats.maxHealth}</strong>
-                                        </div>
-                                        <div class="stat-line">
-                                            <span>⚔️ Урон:</span>
-                                            <strong>${stats.damage}</strong>
-                                        </div>
-                                        <div class="stat-line">
-                                            <span>🛡️ Броня:</span>
-                                            <strong>${stats.armor}</strong>
-                                        </div>
-                                        <div class="stat-line">
-                                            <span>🎯 Крит:</span>
-                                            <strong>${this.getCritChance(stats)}%</strong>
-                                        </div>
-                                        <div class="stat-line">
-                                            <span>🩸 Вампир:</span>
-                                            <strong>${this.getVampirism(stats)}%</strong>
-                                        </div>
-                                        <div class="stat-line">
-                                            <span>💥 Пенетр.:</span>
-                                            <strong>${this.getArmorPenetration(stats)}%</strong>
-                                        </div>
-                                    </div>
+                            </div>
+                            
+                            <!-- Экипировка -->
+                            <div class="hero-overlay-equipment">
+                                <h4>🎒 Экипировка</h4>
+                                <div class="equipment-slots-mini">
+                                    ${['main_hand', 'off_hand', 'helmet', 'chest', 'gloves', 'legs', 'boots'].map(slot => {
+                                        const itemId = this.currentHero.equipment[slot];
+                                        const item = itemId && this.systems.equipment ? 
+                                            this.systems.equipment.getItemById(itemId) : null;
+                                        return `
+                                            <div class="equipment-slot-mini ${slot} ${item ? 'equipped' : 'empty'}"
+                                                 onclick="game.handleEquipmentSlotClick('${slot}')"
+                                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
+                                                <div class="slot-icon-mini">
+                                                    ${item ? 
+                                                        `<img src="${item.image}" alt="${item.name}" 
+                                                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                                         <div class="item-fallback" style="display: none;">
+                                                             <span>${this.getSlotIcon(slot)}</span>
+                                                         </div>` : 
+                                                        this.getSlotIcon(slot)
+                                                    }
+                                                </div>
+                                                <div class="slot-label-mini">${this.getSlotName(slot)}</div>
+                                            </div>
+                                        `;
+                                    }).join('')}
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Область для оверлеев (открывается поверх героя) -->
                 <div id="overlay-container" class="overlay-container"></div>
             </div>
         `;
-        
-        // Запускаем обновление полосок
-        setTimeout(() => {
-            if (this.systems.hero && this.systems.hero.startHealthBarUpdates) {
-                this.systems.hero.startHealthBarUpdates();
-            }
-        }, 100);
-        
-    } catch (error) {
-        console.error("❌ Ошибка при отображении экрана героя:", error);
-        this.showFallbackHeroScreen();
     }
-}
-
-// Новый метод для рендеринга слотов брони
-renderArmorSlot(slot, label, isRelic = false) {
-    const itemId = this.currentHero.equipment[slot];
-    const item = itemId && window.game.systems.equipment ? 
-        window.game.systems.equipment.getItemById(itemId) : null;
-    
-    if (isRelic && !itemId) {
-        // Пустой слот для реликвии
-        return `
-            <div class="armor-slot relic-slot empty" onclick="game.showEquipmentForSlot('${slot}')">
-                <div class="armor-icon">✨</div>
-                <div class="armor-label">${label}</div>
-            </div>
-        `;
-    }
-    
-    return `
-        <div class="armor-slot ${slot} ${item ? 'equipped' : 'empty'}"
-             onclick="game.handleEquipmentSlotClick('${slot}')"
-             ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
-            <div class="armor-icon">
-                ${item ? 
-                    `<img src="${item.image}" alt="${item.name}" 
-                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                     <div class="item-fallback" style="display: none;">
-                         <span>${this.getSlotIcon(slot)}</span>
-                     </div>` : 
-                    this.getSlotIcon(slot)
-                }
-            </div>
-            <div class="armor-label">${label}</div>
-            ${item ? `<div class="armor-rarity ${item.rarity || 'common'}"></div>` : ''}
-        </div>
-    `;
-}
-
-// Вспомогательные методы для бонусов
-getCritChance(stats) {
-    const critBonus = stats.activeBonuses?.find(b => b.type === 'crit_chance');
-    return critBonus ? (critBonus.value * 100).toFixed(1) : '0';
-}
-
-getVampirism(stats) {
-    const vampBonus = stats.activeBonuses?.find(b => b.type === 'vampirism');
-    return vampBonus ? (vampBonus.value * 100).toFixed(1) : '0';
-}
-
-getArmorPenetration(stats) {
-    const penBonus = stats.activeBonuses?.find(b => b.type === 'armor_penetration');
-    return penBonus ? (penBonus.value * 100).toFixed(1) : '0';
-}
 
     // ========== ОБРАБОТЧИК КЛИКА ПО СЛОТУ ЭКИПИРОВКИ ==========
     handleEquipmentSlotClick(slot) {
