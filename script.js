@@ -289,23 +289,29 @@ class SafeHeroGame {
         }
     }
 
-    async initializeSystems() {
-        console.log("⚙️ Инициализация игровых систем...");
-        
-        try {
-            this.systems.bonus = new BonusSystem();
-            this.systems.level = new LevelSystem();
-            this.systems.battle = new BattleSystem();
-            this.systems.equipment = new EquipmentSystem();
-            this.systems.hero = new HeroSystem();
-            this.systems.map = new MapSystem();
-            
-            console.log("✅ Все системы инициализированы");
-            
-        } catch (error) {
-            throw new Error(`Ошибка инициализации систем: ${error.message}`);
+  async initializeSystems() {
+    console.log("⚙️ Инициализация игровых систем...");
+    
+    try {
+        // ⭐ ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА HERO SYSTEM
+        if (window.HeroSystem) {
+            delete window.HeroSystem;
+            console.log("🔄 HeroSystem принудительно перезагружен");
         }
+        
+        this.systems.bonus = new BonusSystem();
+        this.systems.level = new LevelSystem();
+        this.systems.battle = new BattleSystem();
+        this.systems.equipment = new EquipmentSystem();
+        this.systems.hero = new HeroSystem(); // ⭐ ЭТОТ КОД ДОЛЖЕН БЫТЬ ИЗ ОБНОВЛЕННОГО ФАЙЛА
+        this.systems.map = new MapSystem();
+        
+        console.log("✅ Все системы инициализированы");
+        
+    } catch (error) {
+        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
+}
 
     async loadGameData() {
         console.log("📂 Загрузка игровых данных...");
