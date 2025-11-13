@@ -3744,7 +3744,7 @@ body {
     object-fit: contain !important;
     max-width: 100% !important;
     max-height: 100% !important;
-    padding: 8px !important; /* Минимальные отступы */
+    padding: 1px !important; /* Минимальные отступы */
     display: block !important;
 }
 
@@ -3943,7 +3943,7 @@ body {
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
-    padding: 5px !important;
+    padding: 1px !important;
 }
 
 .slot-label-mini {
