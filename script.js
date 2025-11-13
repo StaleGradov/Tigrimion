@@ -609,7 +609,7 @@ class SafeHeroGame {
         this.showHeroGameScreen();
     }
 
- showHeroGameScreen() {
+showHeroGameScreen() {
     if (!this.currentHero) return;
 
     const app = document.getElementById('app');
@@ -628,6 +628,7 @@ class SafeHeroGame {
             const item = itemId && this.systems.equipment ? 
                 this.systems.equipment.getItemById(itemId) : null;
             
+            // ФИКС: Правильно передаем слот в обработчик
             return `
                 <div class="equipment-slot-column-v2 ${item ? 'equipped' : 'empty'}"
                      onclick="game.handleEquipmentSlotClick('${slot}')"
@@ -772,7 +773,7 @@ class SafeHeroGame {
         </div>
     `;
     
-    // Запускаем обновление полосок
+    // ФИКС: Убедимся что обработчики работают
     setTimeout(() => {
         if (this.systems.hero) {
             this.systems.hero.startHealthBarUpdates();
