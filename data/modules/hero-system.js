@@ -271,13 +271,13 @@ class HeroSystem {
                     {
                         type: 'damage_mult',
                         value: totals.damage_mult,
-                        label: '⚔️ Урон', // ⭐ ИЗМЕНЕНО: "Мощь" → "Урон"
+                        label: '⚔️ Урон',
                         display: `+${(totals.damage_mult * 100).toFixed(1)}%`
                     },
                     {
                         type: 'armor_mult',
                         value: totals.armor_mult,
-                        label: '🛡️ Броня', // ⭐ ИЗМЕНЕНО: "Защита" → "Броня"
+                        label: '🛡️ Броня',
                         display: `+${(totals.armor_mult * 100).toFixed(1)}%`
                     },
                     {
@@ -310,7 +310,7 @@ class HeroSystem {
                         label: '💰 Золото',
                         display: `+${(totals.gold_mult * 100).toFixed(1)}%`
                     }
-                ].filter(bonus => bonus.value > 0); // ⭐ ФИЛЬТРУЕМ ТОЛЬКО АКТИВНЫЕ БОНУСЫ
+                ].filter(bonus => bonus.value > 0);
                 
                 console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ (после фильтрации):", activeBonuses);
                 
@@ -386,10 +386,14 @@ class HeroSystem {
         // Обновляем полоску опыта
         const expBar = document.getElementById('heroExperienceBar');
         if (expBar) {
-            const expPercent = this.getExperiencePercent(currentHero);
-            const neededExp = this.getExperienceForNextLevel(currentHero.level);
-            expBar.style.width = `${expPercent}%`;
-            expBar.textContent = `${currentHero.experience}/${neededExp}`;
+            const expProgress = this.getExperienceProgress(currentHero);
+            expBar.style.width = `${expProgress.percent}%`;
+            
+            if (expProgress.next === 'MAX') {
+                expBar.textContent = `MAX Уровень`;
+            } else {
+                expBar.textContent = `${expProgress.current}/${expProgress.next}`;
+            }
         }
         
         // Находим элементы DOM для обновления
@@ -464,12 +468,27 @@ class HeroSystem {
 
     // ========== МЕТОДЫ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ==========
     getExperiencePercent(hero) {
-        const neededExp = this.getExperienceForNextLevel(hero.level);
-        return neededExp > 0 ? Math.min(100, (hero.experience / neededExp) * 100) : 0;
+        if (!hero || !window.game?.systems?.level) {
+            console.warn("⚠️ LevelSystem не доступен для расчета опыта");
+            return 0;
+        }
+        return window.game.systems.level.getExperiencePercent(hero);
     }
 
     getExperienceForNextLevel(level) {
-        return Math.floor(100 * Math.pow(1.5, level - 1));
+        if (!window.game?.systems?.level) {
+            console.warn("⚠️ LevelSystem не доступен");
+            return 'MAX';
+        }
+        return window.game.systems.level.getExperienceForNextLevel(level);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Получение полной информации о прогрессе опыта
+    getExperienceProgress(hero) {
+        if (!hero || !window.game?.systems?.level) {
+            return { percent: 0, current: 0, next: 0, totalForNext: 0 };
+        }
+        return window.game.systems.level.getExperienceProgress(hero);
     }
 
     startHealthBarUpdates() {
@@ -502,13 +521,17 @@ class HeroSystem {
             }
         }
         
-        // Обновляем полоску опыта
+        // ⭐ ИСПРАВЛЕННЫЙ КОД: Используем LevelSystem для опыта
         const expBar = document.getElementById('heroExperienceBar');
         if (expBar) {
-            const expPercent = this.getExperiencePercent(currentHero);
-            const neededExp = this.getExperienceForNextLevel(currentHero.level);
-            expBar.style.width = `${expPercent}%`;
-            expBar.textContent = `${currentHero.experience}/${neededExp}`;
+            const expProgress = this.getExperienceProgress(currentHero);
+            expBar.style.width = `${expProgress.percent}%`;
+            
+            if (expProgress.next === 'MAX') {
+                expBar.textContent = `MAX Уровень`;
+            } else {
+                expBar.textContent = `${expProgress.current}/${expProgress.next}`;
+            }
         }
     }
 
@@ -541,7 +564,7 @@ class HeroSystem {
             'sorcerer': '+20% к урону',
             'archer': '20% шанс крита',
             'healer': '+30% к здоровью',
-            'gladiator': '+20% к урону', // ⭐ ГЛАДИАТОР
+            'gladiator': '+20% к урону',
             'blacksmith': '+15% к броне'
         };
         return bonuses[className] || 'Нет бонуса';
@@ -550,7 +573,7 @@ class HeroSystem {
     getSagaBonusDescription(saga) {
         const bonuses = {
             'golden_egg': '+30% к здоровью',
-            'vulkanor': '25% пенетрации брони', // ⭐ ВУЛКАНОР
+            'vulkanor': '25% пенетрации брони',
             'well': '+30% к золоту',
             'pets': '+20% к урону',
             'following_sun': '+30% к регенерации',
@@ -620,15 +643,21 @@ class HeroSystem {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
         if (!targetHero) return 0;
 
-        targetHero.experience += exp;
-        const neededExp = this.getExperienceForNextLevel(targetHero.level);
-        
-        if (targetHero.experience >= neededExp) {
-            this.levelUp(targetHero);
+        // ⭐ ИСПРАВЛЕНИЕ: Используем LevelSystem для добавления опыта
+        if (window.game?.systems?.level) {
+            window.game.systems.level.addExperience(targetHero, exp);
         } else {
-            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДАЖЕ ЕСЛИ УРОВЕНЬ НЕ ПОВЫСИЛСЯ
-            this.calculateHeroStats();
+            // Резервный код
+            targetHero.experience += exp;
+            const neededExp = this.getExperienceForNextLevel(targetHero.level);
+            
+            if (targetHero.experience >= neededExp) {
+                this.levelUp(targetHero);
+            }
         }
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДАЖЕ ЕСЛИ УРОВЕНЬ НЕ ПОВЫСИЛСЯ
+        this.calculateHeroStats();
         
         // СОХРАНЯЕМ ПРИ ПОЛУЧЕНИИ ОПЫТА
         if (window.game) window.game.saveGame();
@@ -640,17 +669,23 @@ class HeroSystem {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
         if (!targetHero) return 0;
 
-        targetHero.level++;
-        targetHero.experience = 0;
-        
-        // Улучшаем базовые характеристики
-        targetHero.baseHealth = Math.round(targetHero.baseHealth * 1.1);
-        targetHero.baseDamage = Math.round(targetHero.baseDamage * 1.1);
-        targetHero.baseArmor = Math.round(targetHero.baseArmor * 1.05);
-        
-        // Восстанавливаем здоровье при уровне
-        const stats = this.calculateHeroStats(targetHero);
-        targetHero.currentHealth = stats.maxHealth;
+        // ⭐ ИСПРАВЛЕНИЕ: Используем LevelSystem для повышения уровня
+        if (window.game?.systems?.level) {
+            window.game.systems.level.addExperience(targetHero, 0); // Принудительно проверяем повышение
+        } else {
+            // Резервный код если LevelSystem недоступен
+            targetHero.level++;
+            targetHero.experience = 0;
+            
+            // Улучшаем базовые характеристики
+            targetHero.baseHealth = Math.round(targetHero.baseHealth * 1.1);
+            targetHero.baseDamage = Math.round(targetHero.baseDamage * 1.1);
+            targetHero.baseArmor = Math.round(targetHero.baseArmor * 1.05);
+            
+            // Восстанавливаем здоровье при уровне
+            const stats = this.calculateHeroStats(targetHero);
+            targetHero.currentHealth = stats.maxHealth;
+        }
         
         this.showNotification(`🎉 ${targetHero.name} достиг ${targetHero.level} уровня!`);
         
@@ -898,13 +933,18 @@ class HeroSystem {
                                 </div>
                             </div>
 
-                            <!-- ⭐ ПОЛОСКА ОПЫТА -->
+                            <!-- ⭐ ИСПРАВЛЕННАЯ ПОЛОСКА ОПЫТА -->
                             <div class="experience-display-section">
                                 <h4>🌟 Опыт</h4>
                                 <div class="experience-bar-container">
                                     <div class="experience-bar" id="heroExperienceBar" 
                                          style="width: ${this.getExperiencePercent(currentHero)}%">
-                                        ${currentHero.experience}/${this.getExperienceForNextLevel(currentHero.level)}
+                                        ${(() => {
+                                            const expProgress = this.getExperienceProgress(currentHero);
+                                            return expProgress.next === 'MAX' ? 
+                                                'MAX Уровень' : 
+                                                `${expProgress.current}/${expProgress.next}`;
+                                        })()}
                                     </div>
                                 </div>
                             </div>
