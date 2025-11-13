@@ -3469,3 +3469,144 @@ body {
     font-style: italic;
     padding: 1rem;
 }
+/* ========== СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ========== */
+.health-display-section, .experience-display-section {
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.health-display-section h4, .experience-display-section h4 {
+    margin-bottom: 8px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.health-display-section h4 {
+    color: #ff6b6b;
+}
+
+.experience-display-section h4 {
+    color: #4cc9f0;
+}
+
+.health-bar-container, .experience-bar-container {
+    width: 100%;
+    background: #333;
+    border-radius: 10px;
+    margin: 8px 0;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid #444;
+    height: 35px;
+}
+
+.health-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #e74c3c, #f39c12);
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    min-width: 50px;
+    font-size: 14px;
+}
+
+.health-bar.regening {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    animation: pulseHealth 1s infinite;
+}
+
+.experience-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    min-width: 50px;
+    font-size: 14px;
+}
+
+@keyframes pulseHealth {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* ========== СТИЛИ ДЛЯ ИНФОРМАЦИИ О РАСЕ/КЛАССЕ/САГЕ ========== */
+.hero-origins-section {
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.hero-origins-section h4 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.origin-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.origin-item:last-child {
+    border-bottom: none;
+}
+
+.origin-type {
+    font-weight: bold;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.origin-bonus {
+    color: #4cc9f0;
+    font-size: 13px;
+    text-align: right;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .health-bar-container, .experience-bar-container {
+        height: 30px;
+    }
+    
+    .health-bar, .experience-bar {
+        font-size: 12px;
+    }
+    
+    .health-display-section h4, .experience-display-section h4 {
+        font-size: 14px;
+    }
+    
+    .origin-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    
+    .origin-bonus {
+        text-align: left;
+    }
+}
