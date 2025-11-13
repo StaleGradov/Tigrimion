@@ -20,7 +20,7 @@ class LevelSystem {
 
     loadLevelRequirements() {
         this.levelRequirements = {
-            1: 1,
+            1: 0,    // ⭐ ИСПРАВЛЕНИЕ: Уровень 1 начинается с 0 опыта
             2: 100,
             3: 250,
             4: 500,
@@ -46,6 +46,49 @@ class LevelSystem {
         return this.levelRequirements;
     }
 
+    // ⭐ ИСПРАВЛЕННЫЙ МЕТОД: Получение опыта для следующего уровня
+    getExperienceForNextLevel(currentLevel) {
+        return this.levelRequirements[currentLevel + 1] || 'MAX';
+    }
+
+    // ⭐ ИСПРАВЛЕННЫЙ МЕТОД: Получение текущего прогресса опыта
+    getExperienceProgress(hero) {
+        if (!hero) return { percent: 0, current: 0, next: 0, totalForNext: 0 };
+        
+        const currentExp = hero.experience;
+        const currentLevelReq = this.levelRequirements[hero.level] || 0;
+        const nextLevelReq = this.levelRequirements[hero.level + 1];
+        
+        // Если достигнут максимальный уровень
+        if (!nextLevelReq) {
+            return { 
+                percent: 100, 
+                current: currentExp - currentLevelReq, 
+                next: 'MAX',
+                totalForNext: 0
+            };
+        }
+        
+        // Опыт, необходимый для следующего уровня
+        const expForNextLevel = nextLevelReq - currentLevelReq;
+        // Текущий прогресс от текущего уровня
+        const expProgress = currentExp - currentLevelReq;
+        const percent = (expProgress / expForNextLevel) * 100;
+        
+        return { 
+            percent: Math.min(100, Math.max(0, percent)), 
+            current: expProgress, 
+            next: expForNextLevel,
+            totalForNext: nextLevelReq
+        };
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Получение процента опыта для отображения в полоске
+    getExperiencePercent(hero) {
+        const progress = this.getExperienceProgress(hero);
+        return progress.percent;
+    }
+
     addExperience(hero, amount) {
         if (!hero) return;
         
@@ -54,13 +97,17 @@ class LevelSystem {
         
         let newLevel = oldLevel;
         
-        while (hero.experience >= this.levelRequirements[newLevel + 1] && this.levelRequirements[newLevel + 1]) {
+        // Проверяем повышение уровня
+        while (this.levelRequirements[newLevel + 1] && hero.experience >= this.levelRequirements[newLevel + 1]) {
             newLevel++;
         }
         
         if (newLevel > oldLevel) {
             this.levelUp(hero, newLevel);
         }
+        
+        // ⭐ ВАЖНО: Возвращаем информацию для обновления интерфейса
+        return this.getExperienceProgress(hero);
     }
 
     levelUp(hero, newLevel) {
@@ -82,6 +129,11 @@ class LevelSystem {
         console.log(`🎉 ${hero.name} повышен до уровня ${newLevel}!`);
         
         this.checkHeroUnlocks(hero);
+        
+        // ⭐ ВАЖНО: Показываем уведомление через HeroSystem
+        if (window.game?.systems?.hero) {
+            window.game.systems.hero.showNotification(`🎉 ${hero.name} достиг ${newLevel} уровня!`);
+        }
     }
 
     checkHeroUnlocks(hero) {
@@ -101,28 +153,12 @@ class LevelSystem {
             const requiredLevel = heroUnlockLevels[heroId];
             if (hero.level >= requiredLevel) {
                 console.log(`🔓 Разблокирован герой ID: ${heroId} (требовался уровень ${requiredLevel})`);
+                // ⭐ ВАЖНО: Разблокируем через HeroSystem
+                if (window.game?.systems?.hero) {
+                    window.game.systems.hero.unlockHero(parseInt(heroId));
+                }
             }
         });
-    }
-
-    getExperienceProgress(hero) {
-        const currentExp = hero.experience;
-        const currentLevelReq = this.levelRequirements[hero.level] || 0;
-        const nextLevelReq = this.levelRequirements[hero.level + 1];
-        
-        if (!nextLevelReq) {
-            return { percent: 100, current: currentExp, next: 'MAX' };
-        }
-        
-        const expForNextLevel = nextLevelReq - currentLevelReq;
-        const expProgress = currentExp - currentLevelReq;
-        const percent = (expProgress / expForNextLevel) * 100;
-        
-        return { 
-            percent: Math.min(100, percent), 
-            current: expProgress, 
-            next: expForNextLevel 
-        };
     }
 
     // ⭐ УЛУЧШЕННЫЙ РАСЧЕТ ХАРАКТЕРИСТИК С УЧЕТОМ ВСЕХ БОНУСОВ
