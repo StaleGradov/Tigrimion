@@ -608,7 +608,24 @@ class SafeHeroGame {
         
         this.showHeroGameScreen();
     }
-
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ДЛЯ ОБРАБОТКИ КЛИКОВ ПО СЛОТАМ ЭКИПИРОВКИ
+handleEquipmentSlotClick(slot) {
+    console.log(`Клик по слоту: ${slot}`);
+    const itemId = this.currentHero.equipment[slot];
+    
+    if (itemId && this.systems.equipment) {
+        // Если есть предмет - снимаем его
+        this.systems.equipment.unequipItem(slot);
+        // Обновляем интерфейс
+        this.showHeroGameScreen();
+        // Сохраняем игру
+        this.saveGame();
+        this.showNotification(`✅ Предмет снят со слота ${this.getSlotName(slot)}`, 'success');
+    } else {
+        // Если нет предмета - показываем инвентарь для экипировки
+        this.showEquipmentForSlot(slot);
+    }
+}
 showHeroGameScreen() {
     if (!this.currentHero) return;
 
