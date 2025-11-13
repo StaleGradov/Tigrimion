@@ -767,86 +767,95 @@ body {
     margin: 0.5rem 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
-/* ========== ПОЛОСКИ ЗДОРОВЬЯ ГЕРОЯ (В ИНТЕРФЕЙСЕ ГЕРОЯ) ========== */
-.hero-overlay-stats-v2 .health-display-section, 
-.hero-overlay-stats-v2 .experience-display-section {
-    margin: 8px 0;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ========== */
+.health-display-section, .experience-display-section {
+    margin: 0 !important;
+    padding: 8px 0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    position: relative !important;
 }
 
-.hero-overlay-stats-v2 .health-bar-container, 
-.hero-overlay-stats-v2 .experience-bar-container {
-    width: 100%;
-    background: #333;
-    border-radius: 8px;
-    margin: 4px 0 0 0;
-    overflow: hidden;
-    position: relative;
-    border: 2px solid #444;
-    height: 24px;
+.health-bar-container, .experience-bar-container {
+    width: 100% !important;
+    background: #333 !important;
+    border-radius: 8px !important;
+    margin: 4px 0 0 0 !important;
+    overflow: hidden !important;
+    position: relative !important;
+    border: 2px solid #444 !important;
+    height: 24px !important;
+    box-sizing: border-box !important;
 }
 
-.hero-overlay-stats-v2 .health-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #e74c3c, #f39c12);
-    border-radius: 6px;
-    transition: width 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-    min-width: 50px;
-    font-size: 11px;
-}
-
-.hero-overlay-stats-v2 .health-bar.regening {
-    background: linear-gradient(90deg, #2ecc71, #27ae60);
-    animation: pulseHealth 1s infinite;
-}
-
-.hero-overlay-stats-v2 .experience-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4cc9f0, #4361ee);
-    border-radius: 6px;
-    transition: width 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-    min-width: 50px;
-    font-size: 11px;
-}
-
-
+/* ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ */
 .health-bar {
-    width: 100%;
-    height: 15px;
-    background: #4b5563;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0.5rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    height: 100% !important;
+    background: linear-gradient(90deg, #e74c3c, #f39c12) !important;
+    border-radius: 6px !important;
+    transition: width 0.5s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+    min-width: 50px !important;
+    font-size: 11px !important;
+    position: relative !important;
+    box-sizing: border-box !important;
 }
 
-.health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s ease;
+.health-bar.regening {
+    background: linear-gradient(90deg, #2ecc71, #27ae60) !important;
+    animation: pulseHealth 1s infinite !important;
 }
 
-.health-text {
-    font-size: 0.9rem;
-    color: #cbd5e1;
-    margin: 0.3rem 0;
+/* ИСПРАВЛЕННАЯ ПОЛОСКА ОПЫТА */
+.experience-bar {
+    height: 100% !important;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee) !important;
+    border-radius: 6px !important;
+    transition: width 0.5s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-weight: bold !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
+    min-width: 50px !important;
+    font-size: 11px !important;
+    position: relative !important;
+    box-sizing: border-box !important;
 }
 
+/* ОСОБЫЕ СТИЛИ ДЛЯ ИНТЕРФЕЙСА ГЕРОЯ */
+.hero-overlay-stats-v2 .health-display-section,
+.hero-overlay-stats-v2 .experience-display-section {
+    margin: 0 !important;
+    padding: 6px 0 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.hero-overlay-stats-v2 .health-bar-container,
+.hero-overlay-stats-v2 .experience-bar-container {
+    margin: 2px 0 0 0 !important;
+    height: 22px !important;
+}
+
+.hero-overlay-stats-v2 .health-bar,
+.hero-overlay-stats-v2 .experience-bar {
+    font-size: 10px !important;
+}
+
+@keyframes pulseHealth {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
 .combatant-stats {
     display: flex;
     justify-content: space-around;
