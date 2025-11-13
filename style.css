@@ -3610,9 +3610,8 @@ body {
         text-align: left;
     }
 }
-/* ========== ИСПРАВЛЕННЫЙ ИНТЕРФЕЙС ГЕРОЯ ========== */
+/* ========== ИСПРАВЛЕННЫЙ ИНТЕРФЕЙС ГЕРОЯ V3 ========== */
 
-/* Контейнер основного окна героя */
 .hero-main-window-v2 {
     flex: 1;
     display: flex;
@@ -3626,7 +3625,6 @@ body {
     min-height: 80vh;
 }
 
-/* Боковые столбцы экипировки */
 .equipment-column-v2 {
     display: flex;
     flex-direction: column;
@@ -3635,40 +3633,35 @@ body {
     flex-shrink: 0;
 }
 
-/* Центральная область с героем */
 .hero-center-area-v2 {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     flex: 1;
-    max-width: 600px;
+    max-width: 700px; /* Увеличили для большей картинки */
 }
 
-/* ИСПРАВЛЕНИЕ: Картинка занимает всю высоту */
+/* ФИКС: Картинка занимает ВСЮ высоту */
 .hero-image-container-v2 {
     width: 100%;
-    height: 600px; /* Увеличиваем высоту */
+    height: 700px; /* Еще больше увеличили высоту */
     position: relative;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     border-radius: 15px;
     overflow: hidden;
     border: 3px solid #334155;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .hero-image-container-v2 img {
-    width: auto;
+    width: 100%;
     height: 100%;
-    max-width: 100%;
-    object-fit: contain;
+    object-fit: cover; /* Изменили на cover чтобы заполнить весь контейнер */
     display: block;
 }
 
-/* ИСПРАВЛЕНИЕ: Слоты занимают всё пространство */
+/* ФИКС: Слоты занимают всё пространство */
 .equipment-slot-column-v2 {
     background: rgba(30, 41, 59, 0.95);
     border: 3px solid #475569;
@@ -3677,11 +3670,11 @@ body {
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    height: 120px; /* Фиксированная высота */
+    height: 120px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Распределяем пространство */
+    justify-content: space-between;
     gap: 0.3rem;
     position: relative;
     overflow: hidden;
@@ -3698,7 +3691,32 @@ body {
     border-style: solid;
 }
 
-/* ИСПРАВЛЕНИЕ: Иконки занимают больше места */
+/* ФИКС: Добавляем цвета редкостей */
+.equipment-slot-column-v2[data-rarity="common"] { 
+    border-color: #9ca3af !important; 
+    box-shadow: 0 4px 12px rgba(156, 163, 175, 0.3);
+}
+.equipment-slot-column-v2[data-rarity="uncommon"] { 
+    border-color: #4cc9f0 !important; 
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.4);
+}
+.equipment-slot-column-v2[data-rarity="rare"] { 
+    border-color: #a855f7 !important; 
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.5);
+}
+.equipment-slot-column-v2[data-rarity="epic"] { 
+    border-color: #f59e0b !important; 
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+}
+.equipment-slot-column-v2[data-rarity="legendary"] { 
+    border-color: #ffd700 !important; 
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.7);
+}
+.equipment-slot-column-v2[data-rarity="mythic"] { 
+    border-color: #ff6b6b !important; 
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.7);
+}
+
 .slot-icon-column-v2 {
     font-size: 2.5rem;
     display: flex;
@@ -3730,7 +3748,6 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Полоски поверх картинки */
 .hero-overlay-stats-v2 {
     position: absolute;
     bottom: 0;
@@ -3743,7 +3760,6 @@ body {
     border-radius: 0 0 12px 12px;
 }
 
-/* ДОБАВЛЯЕМ: Все старые параметры и бонусы */
 .hero-full-info-v2 {
     width: 100%;
     margin-top: 1rem;
@@ -3752,7 +3768,6 @@ body {
     gap: 1rem;
 }
 
-/* Секция происхождения (раса, класс, сага) */
 .hero-origins-section-v2 {
     background: rgba(255, 215, 0, 0.1);
     border: 1px solid rgba(255, 215, 0, 0.3);
@@ -3791,7 +3806,6 @@ body {
     text-align: right;
 }
 
-/* Секция активных бонусов */
 .hero-bonuses-section-v2 {
     background: rgba(76, 201, 240, 0.1);
     border: 1px solid rgba(76, 201, 240, 0.3);
@@ -3834,7 +3848,6 @@ body {
     color: white;
 }
 
-/* Компактные параметры (основные) */
 .compact-stats-v2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
