@@ -3744,7 +3744,7 @@ body {
     object-fit: contain !important;
     max-width: 100% !important;
     max-height: 100% !important;
-    padding: 1px !important; /* Минимальные отступы */
+    padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     display: block !important;
 }
 
@@ -3943,7 +3943,7 @@ body {
     max-width: 100% !important;
     max-height: 100% !important;
     object-fit: contain !important;
-    padding: 1px !important;
+    padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
 }
 
 .slot-label-mini {
@@ -4034,7 +4034,7 @@ body {
     }
     
     .slot-icon-column-v2 img {
-        padding: 2px !important; /* Уменьшено с 8px до 2px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
     
     .slot-label-column-v2 {
@@ -4063,7 +4063,7 @@ body {
     }
     
     .slot-icon-mini img {
-        padding: 2px !important; /* Уменьшено с 5px до 2px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
 }
 
@@ -4095,7 +4095,7 @@ body {
     }
     
     .slot-icon-column-v2 img {
-        padding: 2px !important; /* Уменьшено с 8px до 2px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
     
     .slot-label-column-v2 {
@@ -4128,7 +4128,7 @@ body {
     }
     
     .slot-icon-mini img {
-        padding: 1px !important; /* Уменьшено с 5px до 1px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
     
     .slot-label-mini {
@@ -4151,7 +4151,7 @@ body {
     }
     
     .slot-icon-column-v2 img {
-        padding: 1px !important; /* Уменьшено с 8px до 1px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
     
     .slot-label-column-v2 {
@@ -4174,7 +4174,7 @@ body {
     }
     
     .slot-icon-mini img {
-        padding: 1px !important; /* Уменьшено с 5px до 1px */
+        padding: 0 !important; /* УБРАНЫ ВСЕ ОТСТУПЫ */
     }
     
     .slot-label-mini {
