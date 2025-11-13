@@ -462,12 +462,11 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
 }
 
 .health-bar-container, .experience-bar-container {
     width: 100%;
-    background: #333;
+    background: #333; /* Это будет серым фоном */
     border-radius: 8px;
     margin: 4px 0 0 0;
     overflow: hidden;
@@ -482,7 +481,7 @@ body {
     background: linear-gradient(90deg, #e74c3c, #f39c12);
     border-radius: 6px;
     transition: width 0.5s ease;
-    position: relative;
+    position: absolute;
     top: 0;
     left: 0;
     display: flex;
@@ -507,7 +506,7 @@ body {
     background: linear-gradient(90deg, #4cc9f0, #4361ee);
     border-radius: 6px;
     transition: width 0.5s ease;
-    position: relative;
+    position: absolute;
     top: 0;
     left: 0;
     display: flex;
@@ -521,9 +520,9 @@ body {
     z-index: 2;
 }
 
-/* Убираем лишний псевдоэлемент который мог смещать */
+/* УБИРАЕМ конфликтующий псевдоэлемент */
 .health-bar-container::before, .experience-bar-container::before {
-    display: none;
+    content: none;
 }
 
 @keyframes pulseHealth {
