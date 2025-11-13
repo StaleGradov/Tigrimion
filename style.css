@@ -3610,3 +3610,190 @@ body {
         text-align: left;
     }
 }
+/* Компактный интерфейс внизу экрана */
+.hero-compact-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-top: 2px solid #3b82f6;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.compact-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    gap: 15px;
+}
+
+/* Левый блок */
+.compact-left-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 25%;
+}
+
+.compact-stats {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.compact-stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+
+.compact-stat-label {
+    color: #ccc;
+}
+
+.compact-stat-value {
+    color: white;
+    font-weight: bold;
+}
+
+.compact-origins {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.compact-origin-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.origin-type {
+    color: #ccc;
+}
+
+.origin-bonus {
+    color: #90cdf4;
+    font-size: 10px;
+}
+
+.compact-bonuses {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    border-radius: 5px;
+}
+
+.compact-bonuses h4 {
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #90cdf4;
+}
+
+.compact-bonus-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 3px;
+}
+
+.bonus-label {
+    color: #ccc;
+}
+
+.bonus-value {
+    color: #68d391;
+    font-weight: bold;
+}
+
+/* Центральный блок */
+.compact-center-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 50%;
+    align-items: center;
+}
+
+.compact-bars {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Правый блок */
+.compact-right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 25%;
+}
+
+.compact-details {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.compact-detail-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 6px;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.detail-label {
+    color: #ccc;
+}
+
+.detail-value {
+    color: white;
+    font-weight: bold;
+}
+
+/* Исправление полосок здоровья/опыта */
+.health-bar-container, .experience-bar-container {
+    position: relative;
+    height: 24px; /* Увеличиваем высоту для лучшей читаемости */
+}
+
+.health-bar, .experience-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+    transition: width 0.3s ease;
+}
+
+/* Адаптация существующей экипировки */
+.hero-overlay-equipment {
+    margin-top: 5px;
+}
+
+.hero-overlay-equipment h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.equipment-slots-mini {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
