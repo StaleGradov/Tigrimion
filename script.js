@@ -76,18 +76,16 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-  async loadModule(moduleName) {
-          // ⭐ ПРИНУДИТЕЛЬНО СБРАСЫВАЕМ КЕШ ДЛЯ HERO-SYSTEM
+ async loadModule(moduleName) {
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Принудительно перезагружаем hero-system при каждом вызове
     if (moduleName === 'hero-system') {
+        // Удаляем из загруженных модулей и из глобальной области
         this.loadedModules.delete('hero-system');
+        delete window.HeroSystem; // ⭐ УДАЛЯЕМ ИЗ ГЛОБАЛЬНОЙ ОБЛАСТИ
         console.log("🔄 Принудительная перезагрузка hero-system");
     }
     
-    if (this.loadedModules.has(moduleName)) {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-    if (this.loadedModules.has(moduleName)) {
+    if (this.loadedModules.has(moduleName) && moduleName !== 'hero-system') {
         console.log(`✅ Модуль ${moduleName} уже загружен`);
         return true;
     }
