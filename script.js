@@ -77,6 +77,16 @@ class ModuleLoader {
     }
 
   async loadModule(moduleName) {
+          // ⭐ ПРИНУДИТЕЛЬНО СБРАСЫВАЕМ КЕШ ДЛЯ HERO-SYSTEM
+    if (moduleName === 'hero-system') {
+        this.loadedModules.delete('hero-system');
+        console.log("🔄 Принудительная перезагрузка hero-system");
+    }
+    
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
+    }
     if (this.loadedModules.has(moduleName)) {
         console.log(`✅ Модуль ${moduleName} уже загружен`);
         return true;
