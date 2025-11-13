@@ -462,21 +462,6 @@ body {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-}
-
-.health-display-section h4, .experience-display-section h4 {
-    margin-bottom: 6px;
-    font-size: 12px;
-    text-align: center;
-}
-
-.health-display-section h4 {
-    color: #ff6b6b;
-}
-
-.experience-display-section h4 {
-    color: #4cc9f0;
 }
 
 .health-bar-container, .experience-bar-container {
@@ -492,13 +477,10 @@ body {
 
 /* ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ */
 .health-bar {
-    height: 100% !important;
+    height: 100%;
     background: linear-gradient(90deg, #e74c3c, #f39c12);
     border-radius: 6px;
     transition: width 0.5s ease;
-    position: absolute;
-    top: 0;
-    left: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -507,7 +489,33 @@ body {
     text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
     min-width: 50px;
     font-size: 11px;
-    z-index: 2;
+}
+
+.health-bar.regening {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    animation: pulseHealth 1s infinite;
+}
+
+/* ИСПРАВЛЕННАЯ ПОЛОСКА ОПЫТА */
+.experience-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4cc9f0, #4361ee);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    min-width: 50px;
+    font-size: 11px;
+}
+
+@keyframes pulseHealth {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
 }
 
 .health-bar.regening {
