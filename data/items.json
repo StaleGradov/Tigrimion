@@ -7390,7 +7390,7 @@
     "setName": "set_bron6"
   },
      {
-    "id": 343,
+    "id": 349,
     "name": "Латный шлем из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/blackmeteoritplatemail_helmet.jpg",
     "type": "helmet",
@@ -7412,7 +7412,7 @@
     "setName": "set_bron6"
   }, 
     {
-    "id": 344,
+    "id": 350,
     "name": "Латный доспех из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/blackmeteoritplatemail_armor.jpg",
     "type": "chest",
@@ -7434,7 +7434,7 @@
     "setName": "set_bron6"
   },
    {
-    "id": 345,
+    "id": 351,
     "name": "Латные рукавицы из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/blackmeteoritplatemail_gloves.jpg",
     "type": "gloves",
@@ -7456,7 +7456,7 @@
     "setName": "set_bron6"
   },
     {
-    "id": 346,
+    "id": 352,
     "name": "Ножные латы из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/blackmeteoritplatemail_leggings.jpg",
     "type": "legs",
@@ -7478,7 +7478,7 @@
     "setName": "set_bron6"
   },
     {
-    "id": 347,
+    "id": 353,
     "name": "Латные башмаки из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/blackmeteoritplatemail_boots.jpg",
     "type": "boots",
@@ -7500,7 +7500,7 @@
     "setName": "set_bron6"
   },
     {
-    "id": 348,
+    "id": 354,
     "name": "Двуручный меч из черного метеоритного железа",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_blackmeteorit_sword.jpg",
     "type": "weapon",
