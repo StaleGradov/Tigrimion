@@ -285,19 +285,22 @@ class MapSystem {
         });
     }
 
-    handleCanvasClick(e) {
-        if (!this.currentTacticalMap) return;
+  handleCanvasClick(e) {
+    if (!this.currentTacticalMap) return;
 
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        const hex = this.getHexAtCanvasPosition(x, y);
-        if (hex && hex.passable !== false) {
-            console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}]`);
+    const hex = this.getHexAtCanvasPosition(x, y);
+    if (hex) {
+        // ⭐ ИЗМЕНЕНИЕ: Разрешить клик на монстров, даже если passable: false
+        if (hex.passable !== false || hex.type === 'monster') {
+            console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
             this.moveOnTacticalMap(hex.col, hex.row);
         }
     }
+}
 
     getHexAtCanvasPosition(canvasX, canvasY) {
         if (!this.currentTacticalMap) return null;
@@ -624,56 +627,57 @@ class MapSystem {
     }
 
     // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
-    moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
+moveOnTacticalMap(x, y) {
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
         }
-
-        if (!this.currentTacticalMap) return;
-
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (cellData.passable === false) {
-            console.log("🚫 Нельзя пройти на эту клетку");
-            if (window.game) {
-                window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        this.hideOverlay();
-        
-        setTimeout(() => {
-            // ⭐ ИЗМЕНЕНИЕ: Передаем cellData для определения конкретного монстра
-            this.startTacticalBattleForMovement(x, y, cellData);
-        }, 50);
+        return;
     }
+
+    if (!this.currentTacticalMap) return;
+
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    // ⭐ ИЗМЕНЕНИЕ: Разрешить нажатие на клетки с монстрами, даже если passable: false
+    if (cellData.passable === false && cellData.type !== 'monster') {
+        console.log("🚫 Нельзя пройти на эту клетку");
+        if (window.game) {
+            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    this.hideOverlay();
+    
+    setTimeout(() => {
+        // ⭐ ИЗМЕНЕНИЕ: Передаем cellData для определения конкретного монстра
+        this.startTacticalBattleForMovement(x, y, cellData);
+    }, 50);
+}
 
     // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Запуск боя с учетом конкретного монстра
     startTacticalBattleForMovement(targetX, targetY, cellData) {
