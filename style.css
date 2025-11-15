@@ -3715,11 +3715,13 @@ body {
     }
 }
 
-/* ========== ЦЕНТРИРОВАНИЕ ТАКТИЧЕСКОЙ КАРТЫ ========== */
+/* ========== ИСПРАВЛЕНИЯ ДЛЯ ТАКТИЧЕСКОЙ КАРТЫ ========== */
 .tactical-map-overlay .overlay-content {
-    margin: 2vh auto;
-    max-width: 95vw;
-    max-height: 95vh;
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    width: 95vw !important;
+    height: 95vh !important;
+    margin: 2.5vh auto !important;
     display: flex;
     flex-direction: column;
 }
@@ -3729,6 +3731,7 @@ body {
     flex-direction: column;
     flex: 1;
     min-height: 0;
+    height: 100%;
 }
 
 .tactical-map-visual {
@@ -3738,44 +3741,42 @@ body {
     border: 2px solid #00ffff;
     border-radius: 15px;
     overflow: hidden;
-    margin: 1rem;
+    margin: 0;
     min-height: 500px;
+    height: 100%;
 }
 
-/* Убираем лишние элементы управления */
-.map-controls {
-    display: none; /* Скрываем кнопку сетки */
-}
-
-/* Упрощаем информацию о позиции */
-.position-info {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 1rem;
-    border-top: 1px solid #00ffff;
+.tactical-map-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 20, 40, 0.9);
+    border-bottom: 1px solid #00ffff;
+    flex-shrink: 0;
 }
 
-.player-position, .map-stats {
+.tactical-map-header h4 {
     color: #00ffff;
+    font-size: 1.2rem;
+    margin: 0;
 }
 
-.movement-info {
-    display: none; /* Скрываем информацию о доступных ходах */
-}
-
-/* Убираем анимации подсветки */
+/* Убираем всю подсветку клеток */
 .grid-cell-fullscreen.selectable {
     border-color: rgba(255, 255, 255, 0.2) !important;
     animation: none !important;
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
     cursor: default !important;
 }
 
 .grid-cell-fullscreen.selectable:hover {
     transform: none !important;
     box-shadow: none !important;
-    background: rgba(255, 255, 255, 0.1) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Убираем информацию о позиции */
+.position-info {
+    display: none;
 }
