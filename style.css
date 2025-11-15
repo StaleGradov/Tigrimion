@@ -3644,3 +3644,138 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+/* ========== СТИЛИ ДЛЯ ОКНА РЕЗУЛЬТАТОВ БОЯ ========== */
+.battle-result-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.battle-result-modal {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.battle-result-modal.victory {
+    border-color: #10b981;
+}
+
+.battle-result-modal.defeat {
+    border-color: #ef4444;
+}
+
+.battle-result-modal.flee {
+    border-color: #f59e0b;
+}
+
+.battle-result-modal h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.result-details {
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.result-details p {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+
+.result-details p:last-child {
+    border-bottom: none;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* ========== ЦЕНТРИРОВАНИЕ ТАКТИЧЕСКОЙ КАРТЫ ========== */
+.tactical-map-overlay .overlay-content {
+    margin: 2vh auto;
+    max-width: 95vw;
+    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.tactical-map-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.tactical-map-visual {
+    flex: 1;
+    position: relative;
+    background: #000000;
+    border: 2px solid #00ffff;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 1rem;
+    min-height: 500px;
+}
+
+/* Убираем лишние элементы управления */
+.map-controls {
+    display: none; /* Скрываем кнопку сетки */
+}
+
+/* Упрощаем информацию о позиции */
+.position-info {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 1rem;
+    border-top: 1px solid #00ffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.player-position, .map-stats {
+    color: #00ffff;
+}
+
+.movement-info {
+    display: none; /* Скрываем информацию о доступных ходах */
+}
+
+/* Убираем анимации подсветки */
+.grid-cell-fullscreen.selectable {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    animation: none !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    cursor: default !important;
+}
+
+.grid-cell-fullscreen.selectable:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
