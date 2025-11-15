@@ -5190,7 +5190,7 @@
           "type": "monster",
           "passable": false,
           "visible": true,
-          "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+          "monster_id": 1
         },
         {
           "id": "cell_18_13",
@@ -5791,7 +5791,7 @@
           "type": "monster",
           "passable": false,
           "visible": true,
-  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+  "monster_id": 1
         },
         {
           "id": "cell_20_17",
@@ -6252,7 +6252,7 @@
           "type": "monster",
           "passable": false,
           "visible": true,
-  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+  "monster_id": 1
         },
         {
           "id": "cell_22_7",
@@ -6433,7 +6433,7 @@
           "type": "monster",
           "passable": false,
           "visible": true,
-  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+  "monster_id": 1
         },
         {
           "id": "cell_22_25",
@@ -7054,7 +7054,7 @@
           "type": "monster",
           "passable": false,
           "visible": true,
-  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+  "monster_id": 1
         },
         {
           "id": "cell_25_3",
@@ -8215,7 +8215,7 @@
           "type": "monster",
           "passable": false,
           "visible": true, 
-  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
+  "monster_id": 1
         },
         {
           "id": "cell_29_7",
