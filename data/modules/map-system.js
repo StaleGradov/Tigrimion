@@ -671,57 +671,57 @@ moveOnTacticalMap(x, y) {
     }, 50);
 }
 
-    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Запуск боя с учетом конкретного монстра
-    startTacticalBattleForMovement(targetX, targetY, cellData) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
-
-        if (!this.currentHero) {
-            console.error("❌ Не могу начать бой: герой не выбран");
-            return;
-        }
-
-        this.pendingMovement = { x: targetX, y: targetY };
-        
-        // ⭐ ИЗМЕНЕНИЕ: Получаем конкретного монстра с карты
-        const specificMonster = this.getMonsterFromCell(cellData);
-        
-        if (specificMonster) {
-            // Используем конкретного монстра с карты
-            console.log(`🎯 Бой с запрограммированным монстром: ${specificMonster.name} (ID: ${specificMonster.id})`);
-            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-        } else {
-            // Используем случайного монстра (для обратной совместимости)
-            const randomMonster = this.getRandomMonster();
-            console.log(`🎲 Бой со случайным монстром: ${randomMonster.name}`);
-            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
-        }
-        
-        console.log(`⚔️ Запуск тактического боя при перемещении героя ${this.currentHero.name} на [${targetX}, ${targetY}]`);
+ startTacticalBattleForMovement(targetX, targetY, cellData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
     }
 
-    getRandomMonster() {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem || !battleSystem.monsters || battleSystem.monsters.length === 0) {
-            return {
-                id: 1,
-                name: "Случайный монстр",
-                health: 30,
-                maxHealth: 30,
-                damage: 5,
-                armor: 2,
-                reward: 10,
-                experience: 5,
-                attackType: "melee"
-            };
+    if (!this.currentHero) {
+        console.error("❌ Не могу начать бой: герой не выбран");
+        return;
+    }
+
+    this.pendingMovement = { x: targetX, y: targetY };
+    
+    const specificMonster = this.getMonsterFromCell(cellData);
+    
+    if (specificMonster && cellData.monster_id) {
+        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
+    } else {
+        // ⭐ ДОБАВЛЯЕМ ПРОВЕРКУ НА ОШИБКИ
+        const randomMonster = this.getRandomMonster();
+        if (!randomMonster) {
+            console.error("❌ Не удалось начать бой: нет случайных монстров");
+            if (window.game) {
+                window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
+            }
+            return;
         }
         
-        const randomIndex = Math.floor(Math.random() * battleSystem.monsters.length);
-        return battleSystem.monsters[randomIndex];
+        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
+        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
     }
+}
+  getRandomMonster() {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
+        console.error("❌ BattleSystem не доступна для получения случайного монстра");
+        return null;
+    }
+    
+    // ⭐ ИСПОЛЬЗУЕМ НОВЫЙ МЕТОД ДЛЯ СЛУЧАЙНЫХ МОНСТРОВ
+    const randomMonster = battleSystem.getRandomMonsterForMovement();
+    
+    if (!randomMonster) {
+        console.error("❌ Не удалось получить случайного монстра");
+        return null;
+    }
+    
+    return randomMonster;
+}
 
     completeMovementAfterBattle(victory) {
         if (!this.pendingMovement) return;
