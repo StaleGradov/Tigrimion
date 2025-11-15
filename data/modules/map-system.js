@@ -649,16 +649,9 @@ moveOnTacticalMap(x, y) {
         return;
     }
 
-    // ⭐ ИЗМЕНЕНИЕ: Разрешить нажатие на клетки с монстрами, даже если passable: false
-    if (cellData.passable === false && cellData.type !== 'monster') {
-        console.log("🚫 Нельзя пройти на эту клетку");
-        if (window.game) {
-            window.game.showNotification("Нельзя пройти на эту клетку!", 'error');
-        }
-        return;
-    }
-
     const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    // ⭐ ИЗМЕНЕНИЕ: Проверяем является ли клетка монстром-соседом
     const isReachable = neighbors.some(neighbor => 
         neighbor.row === y && neighbor.col === x
     );
@@ -674,7 +667,6 @@ moveOnTacticalMap(x, y) {
     this.hideOverlay();
     
     setTimeout(() => {
-        // ⭐ ИЗМЕНЕНИЕ: Передаем cellData для определения конкретного монстра
         this.startTacticalBattleForMovement(x, y, cellData);
     }, 50);
 }
@@ -800,52 +792,69 @@ moveOnTacticalMap(x, y) {
         };
     }
 
-    getHexNeighbors(currentRow, currentCol) {
-        if (!this.currentTacticalMap) return [];
-        
-        console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}]`);
-        
-        const neighbors = [];
-        const currentCell = this.currentTacticalMap.cells[`${currentCol},${currentRow}`];
-        
-        if (!currentCell) {
-            console.log("❌ Текущая клетка не найдена!");
-            return [];
+  getHexNeighbors(currentRow, currentCol) {
+    if (!this.currentTacticalMap) return [];
+    
+    console.log(`🔍 Поиск соседей для [${currentCol},${currentRow}]`);
+    
+    const neighbors = [];
+    const currentCell = this.currentTacticalMap.cells[`${currentCol},${currentRow}`];
+    
+    if (!currentCell) {
+        console.log("❌ Текущая клетка не найдена!");
+        return [];
+    }
+    
+    const hexSize = this.currentTacticalMap.cellSize || 40;
+    const geometry = this.getHexGeometry(hexSize);
+    
+    Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
+        if (potentialNeighbor.col === currentCol && potentialNeighbor.row === currentRow) {
+            return;
         }
         
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        const geometry = this.getHexGeometry(hexSize);
+        const dx = potentialNeighbor.x - currentCell.x;
+        const dy = potentialNeighbor.y - currentCell.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
         
-        Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
-            if (potentialNeighbor.col === currentCol && potentialNeighbor.row === currentRow) {
-                return;
-            }
+        const isAdjacent = this.areHexesAdjacent(currentCell, potentialNeighbor, hexSize);
+        
+        if (isAdjacent) {
+            const direction = this.getDirectionByAngle(dx, dy);
             
-            const dx = potentialNeighbor.x - currentCell.x;
-            const dy = potentialNeighbor.y - currentCell.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const isAdjacent = this.areHexesAdjacent(currentCell, potentialNeighbor, hexSize);
-            
-            if (isAdjacent) {
-                const direction = this.getDirectionByAngle(dx, dy);
-                
-                if (potentialNeighbor.visible && potentialNeighbor.passable !== false) {
+            // ⭐ ИЗМЕНЕНИЕ: Разрешить монстров как доступные цели
+            if (potentialNeighbor.visible) {
+                // Для монстров - они доступны как цели, даже если passable: false
+                if (potentialNeighbor.type === 'monster') {
                     neighbors.push({
                         row: potentialNeighbor.row,
                         col: potentialNeighbor.col,
                         cell: potentialNeighbor,
                         direction: direction,
-                        distance: distance
+                        distance: distance,
+                        isMonster: true  // Помечаем что это монстр
                     });
-                    console.log(`  ✅ Сосед: [${potentialNeighbor.col},${potentialNeighbor.row}] - ${direction} (${distance.toFixed(1)}px)`);
+                    console.log(`  ✅ Монстр-сосед: [${potentialNeighbor.col},${potentialNeighbor.row}] - ${direction}`);
+                }
+                // Для обычных клеток - только если passable
+                else if (potentialNeighbor.passable !== false) {
+                    neighbors.push({
+                        row: potentialNeighbor.row,
+                        col: potentialNeighbor.col,
+                        cell: potentialNeighbor,
+                        direction: direction,
+                        distance: distance,
+                        isMonster: false
+                    });
+                    console.log(`  ✅ Обычный сосед: [${potentialNeighbor.col},${potentialNeighbor.row}] - ${direction}`);
                 }
             }
-        });
-        
-        console.log(`🎯 Итог: найдено ${neighbors.length} доступных соседей`);
-        return neighbors;
-    }
+        }
+    });
+    
+    console.log(`🎯 Итог: найдено ${neighbors.length} доступных соседей`);
+    return neighbors;
+}
 
     areHexesAdjacent(cell1, cell2, hexSize) {
         if (!cell1 || !cell2) return false;
