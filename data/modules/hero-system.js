@@ -637,7 +637,94 @@ class HeroSystem {
         }
         return 0;
     }
+// ========== СИСТЕМА СМЕРТИ И ВОССТАНОВЛЕНИЯ ==========
+handleHeroDeath(hero = null) {
+    const targetHero = hero || this.currentHero || window.game?.currentHero;
+    if (!targetHero) return;
+    
+    console.log(`💀 Обработка смерти героя: ${targetHero.name}`);
+    
+    // ⭐ УБЕДИТЕЛЬНО УСТАНАВЛИВАЕМ ЗДОРОВЬЕ В 1
+    targetHero.currentHealth = 1;
+    
+    // ⭐ ОБНОВЛЯЕМ СТАТИСТИКУ СМЕРТЕЙ
+    targetHero.deaths = (targetHero.deaths || 0) + 1;
+    
+    // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+    this.calculateHeroStats(targetHero);
+    
+    // ⭐ СОХРАНЯЕМ СРАЗУ ПОСЛЕ СМЕРТИ
+    if (window.game) {
+        window.game.saveGame();
+    }
+    
+    console.log(`✅ Герой ${targetHero.name} повержен. Здоровье установлено в 1.`);
+    
+    // ⭐ ЗАПУСКАЕМ ВИЗУАЛЬНУЮ РЕГЕНЕРАЦИЮ
+    this.startPostDeathRegeneration(targetHero);
+}
 
+// ========== СПЕЦИАЛЬНАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ ==========
+startPostDeathRegeneration(hero = null) {
+    const targetHero = hero || this.currentHero || window.game?.currentHero;
+    if (!targetHero) return;
+    
+    console.log(`❤️ Запуск регенерации после смерти для ${targetHero.name}`);
+    
+    let regenerationInterval;
+    let regenerationAttempts = 0;
+    const maxRegenerationAttempts = 300; // 5 минут максимум
+    
+    const regenerate = () => {
+        regenerationAttempts++;
+        
+        if (regenerationAttempts > maxRegenerationAttempts) {
+            clearInterval(regenerationInterval);
+            console.log(`🛑 Прервана регенерация после ${maxRegenerationAttempts} попыток`);
+            return;
+        }
+        
+        const stats = this.calculateHeroStats(targetHero);
+        
+        // ⭐ ПРОВЕРЯЕМ ДОСТИГЛИ ЛИ МАКСИМАЛЬНОГО ЗДОРОВЬЯ
+        if (targetHero.currentHealth >= stats.maxHealth) {
+            clearInterval(regenerationInterval);
+            console.log(`✅ Регенерация завершена: ${targetHero.currentHealth}/${stats.maxHealth}`);
+            return;
+        }
+        
+        // ⭐ УСКОРЕННАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ
+        const baseRegen = 2; // 2 хита в секунду после смерти
+        const bonusRegen = (stats.healthRegen || 1) * baseRegen;
+        const totalRegen = baseRegen + bonusRegen;
+        
+        const newHealth = Math.min(
+            stats.maxHealth,
+            targetHero.currentHealth + totalRegen
+        );
+        
+        // ⭐ ОБНОВЛЯЕМ ЗДОРОВЬЕ ТОЛЬКО ЕСЛИ ОНО ИЗМЕНИЛОСЬ
+        if (newHealth !== targetHero.currentHealth) {
+            targetHero.currentHealth = newHealth;
+            
+            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+            this.updateHealthAndExperienceBars();
+            
+            // ⭐ СОХРАНЯЕМ КАЖДЫЕ 10 СЕКУНД
+            if (regenerationAttempts % 10 === 0 && window.game) {
+                window.game.saveGame();
+            }
+            
+            console.log(`❤️ Регенерация после смерти: +${totalRegen.toFixed(1)} HP (${targetHero.currentHealth}/${stats.maxHealth})`);
+        }
+    };
+    
+    // Запускаем регенерацию каждую секунду
+    regenerationInterval = setInterval(regenerate, 1000);
+    
+    // ⭐ СОХРАНЯЕМ ИНТЕРВАЛ ДЛЯ ВОЗМОЖНОСТИ ОСТАНОВКИ
+    this.postDeathRegenerationInterval = regenerationInterval;
+}
     // ========== СИСТЕМА УРОВНЕЙ ==========
     addExperience(hero, exp) {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
