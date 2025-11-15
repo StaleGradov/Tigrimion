@@ -378,7 +378,7 @@ getMonsterById(monsterId) {
                     </div>
                 `;
             } else {
-                const heroStats = window.game.systems.level.calculateHeroStats(unit.data, window.game.systems.bonus);
+                const heroStats = window.game.systems.hero.calculateHeroStats(this.currentHero);
                 stats = `
                     <div class="unit-stats">
                         <div class="stat-line">
