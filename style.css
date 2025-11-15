@@ -3715,68 +3715,149 @@ body {
     }
 }
 
-/* ========== ИСПРАВЛЕНИЯ ДЛЯ ТАКТИЧЕСКОЙ КАРТЫ ========== */
+/* ========== ПОЛНОЕ ИСПРАВЛЕНИЕ ТАКТИЧЕСКОЙ КАРТЫ ========== */
 .tactical-map-overlay .overlay-content {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
-    margin: 2.5vh auto !important;
-    display: flex;
-    flex-direction: column;
+    max-width: 98vw !important;
+    max-height: 98vh !important;
+    width: 98vw !important;
+    height: 98vh !important;
+    margin: 1vh auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #000000 !important;
+    border: 2px solid #00ffff !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+.tactical-map-overlay .overlay-header {
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 1rem 1.5rem !important;
+    background: rgba(0, 20, 40, 0.95) !important;
+    border-bottom: 1px solid #00ffff !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+.tactical-map-overlay .overlay-body {
+    flex: 1 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100% - 70px) !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
 }
 
 .tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-    height: 100%;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .tactical-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 15px;
-    overflow: hidden;
-    margin: 0;
-    min-height: 500px;
-    height: 100%;
-}
-
-.tactical-map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.9);
-    border-bottom: 1px solid #00ffff;
-    flex-shrink: 0;
-}
-
-.tactical-map-header h4 {
-    color: #00ffff;
-    font-size: 1.2rem;
-    margin: 0;
-}
-
-/* Убираем всю подсветку клеток */
-.grid-cell-fullscreen.selectable {
-    border-color: rgba(255, 255, 255, 0.2) !important;
-    animation: none !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    cursor: default !important;
-}
-
-.grid-cell-fullscreen.selectable:hover {
-    transform: none !important;
+    flex: 1 !important;
+    position: relative !important;
+    background: #000000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: auto !important;
     box-shadow: none !important;
-    background: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Убираем информацию о позиции */
-.position-info {
-    display: none;
+#tacticalMapCanvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+}
+
+/* Убираем все лишние элементы */
+.tactical-map-header .map-controls,
+.position-info,
+.zoom-controls,
+.zoom-info,
+.map-editor-info,
+.movement-info {
+    display: none !important;
+}
+
+/* Убираем прокрутку */
+.tactical-map-overlay {
+    overflow: hidden !important;
+}
+
+.tactical-map-overlay .overlay-content {
+    overflow: hidden !important;
+}
+
+/* Упрощаем заголовок */
+.tactical-map-header h4 {
+    color: #00ffff !important;
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+}
+
+/* Стили для кнопки закрытия */
+.tactical-map-overlay .btn-close {
+    background: rgba(248, 113, 113, 0.2) !important;
+    border: 2px solid #f87171 !important;
+    color: white !important;
+    font-size: 1.2rem !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+}
+
+.tactical-map-overlay .btn-close:hover {
+    background: rgba(248, 113, 113, 0.4) !important;
+    transform: scale(1.1) !important;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .tactical-map-overlay .overlay-content {
+        max-width: 99vw !important;
+        max-height: 99vh !important;
+        width: 99vw !important;
+        height: 99vh !important;
+        margin: 0.5vh auto !important;
+    }
+    
+    .tactical-map-overlay .overlay-body {
+        height: calc(100% - 60px) !important;
+    }
+    
+    .tactical-map-overlay .overlay-header {
+        padding: 0.8rem 1rem !important;
+    }
+    
+    .tactical-map-header h4 {
+        font-size: 1.1rem !important;
+    }
 }
