@@ -3,7 +3,7 @@
     "name": "Моя карта",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-15T08:03:43.933Z",
+    "created": "2025-11-15T17:14:05.569Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -22,973 +22,13 @@
       "cellSize": 20,
       "cells": [
         {
-          "id": "cell_0_0",
-          "row": 0,
-          "col": 0,
-          "x": 0,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_1",
-          "row": 0,
-          "col": 1,
-          "x": 35,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_2",
-          "row": 0,
-          "col": 2,
-          "x": 69,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_3",
-          "row": 0,
-          "col": 3,
-          "x": 104,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_4",
-          "row": 0,
-          "col": 4,
-          "x": 139,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_5",
-          "row": 0,
-          "col": 5,
-          "x": 173,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_6",
-          "row": 0,
-          "col": 6,
-          "x": 208,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_7",
-          "row": 0,
-          "col": 7,
-          "x": 242,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_8",
-          "row": 0,
-          "col": 8,
-          "x": 277,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_9",
-          "row": 0,
-          "col": 9,
-          "x": 312,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_10",
-          "row": 0,
-          "col": 10,
-          "x": 346,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_11",
-          "row": 0,
-          "col": 11,
-          "x": 381,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_12",
-          "row": 0,
-          "col": 12,
-          "x": 416,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_13",
-          "row": 0,
-          "col": 13,
-          "x": 450,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_14",
-          "row": 0,
-          "col": 14,
-          "x": 485,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_15",
-          "row": 0,
-          "col": 15,
-          "x": 520,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_16",
-          "row": 0,
-          "col": 16,
-          "x": 554,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_17",
-          "row": 0,
-          "col": 17,
-          "x": 589,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_18",
-          "row": 0,
-          "col": 18,
-          "x": 624,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_19",
-          "row": 0,
-          "col": 19,
-          "x": 658,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_20",
-          "row": 0,
-          "col": 20,
-          "x": 693,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_21",
-          "row": 0,
-          "col": 21,
-          "x": 727,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_22",
-          "row": 0,
-          "col": 22,
-          "x": 762,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_23",
-          "row": 0,
-          "col": 23,
-          "x": 797,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_24",
-          "row": 0,
-          "col": 24,
-          "x": 831,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_25",
-          "row": 0,
-          "col": 25,
-          "x": 866,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_26",
-          "row": 0,
-          "col": 26,
-          "x": 901,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_0_27",
-          "row": 0,
-          "col": 27,
-          "x": 935,
-          "y": 0,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_0",
-          "row": 1,
-          "col": 0,
-          "x": 17,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_1",
-          "row": 1,
-          "col": 1,
-          "x": 52,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_2",
-          "row": 1,
-          "col": 2,
-          "x": 87,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_3",
-          "row": 1,
-          "col": 3,
-          "x": 121,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_4",
-          "row": 1,
-          "col": 4,
-          "x": 156,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_5",
-          "row": 1,
-          "col": 5,
-          "x": 191,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_6",
-          "row": 1,
-          "col": 6,
-          "x": 225,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_7",
-          "row": 1,
-          "col": 7,
-          "x": 260,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_8",
-          "row": 1,
-          "col": 8,
-          "x": 294,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_9",
-          "row": 1,
-          "col": 9,
-          "x": 329,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_10",
-          "row": 1,
-          "col": 10,
-          "x": 364,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_11",
-          "row": 1,
-          "col": 11,
-          "x": 398,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_12",
-          "row": 1,
-          "col": 12,
-          "x": 433,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_13",
-          "row": 1,
-          "col": 13,
-          "x": 468,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_14",
-          "row": 1,
-          "col": 14,
-          "x": 502,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_15",
-          "row": 1,
-          "col": 15,
-          "x": 537,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_16",
-          "row": 1,
-          "col": 16,
-          "x": 572,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_17",
-          "row": 1,
-          "col": 17,
-          "x": 606,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_18",
-          "row": 1,
-          "col": 18,
-          "x": 641,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_19",
-          "row": 1,
-          "col": 19,
-          "x": 675,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_20",
-          "row": 1,
-          "col": 20,
-          "x": 710,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_21",
-          "row": 1,
-          "col": 21,
-          "x": 745,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_22",
-          "row": 1,
-          "col": 22,
-          "x": 779,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_23",
-          "row": 1,
-          "col": 23,
-          "x": 814,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_24",
-          "row": 1,
-          "col": 24,
-          "x": 849,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_25",
-          "row": 1,
-          "col": 25,
-          "x": 883,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_26",
-          "row": 1,
-          "col": 26,
-          "x": 918,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_1_27",
-          "row": 1,
-          "col": 27,
-          "x": 953,
-          "y": 30,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_0",
-          "row": 2,
-          "col": 0,
-          "x": 0,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_1",
-          "row": 2,
-          "col": 1,
-          "x": 35,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_2",
-          "row": 2,
-          "col": 2,
-          "x": 69,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_3",
-          "row": 2,
-          "col": 3,
-          "x": 104,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_4",
-          "row": 2,
-          "col": 4,
-          "x": 139,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_5",
-          "row": 2,
-          "col": 5,
-          "x": 173,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_6",
-          "row": 2,
-          "col": 6,
-          "x": 208,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_7",
-          "row": 2,
-          "col": 7,
-          "x": 242,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_8",
-          "row": 2,
-          "col": 8,
-          "x": 277,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_9",
-          "row": 2,
-          "col": 9,
-          "x": 312,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_10",
-          "row": 2,
-          "col": 10,
-          "x": 346,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_11",
-          "row": 2,
-          "col": 11,
-          "x": 381,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_12",
-          "row": 2,
-          "col": 12,
-          "x": 416,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_13",
-          "row": 2,
-          "col": 13,
-          "x": 450,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_2_14",
           "row": 2,
           "col": 14,
           "x": 485,
           "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_15",
-          "row": 2,
-          "col": 15,
-          "x": 520,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_16",
-          "row": 2,
-          "col": 16,
-          "x": 554,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_17",
-          "row": 2,
-          "col": 17,
-          "x": 589,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_18",
-          "row": 2,
-          "col": 18,
-          "x": 624,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_19",
-          "row": 2,
-          "col": 19,
-          "x": 658,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_20",
-          "row": 2,
-          "col": 20,
-          "x": 693,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_21",
-          "row": 2,
-          "col": 21,
-          "x": 727,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_22",
-          "row": 2,
-          "col": 22,
-          "x": 762,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_23",
-          "row": 2,
-          "col": 23,
-          "x": 797,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_24",
-          "row": 2,
-          "col": 24,
-          "x": 831,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_25",
-          "row": 2,
-          "col": 25,
-          "x": 866,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_26",
-          "row": 2,
-          "col": 26,
-          "x": 901,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_2_27",
-          "row": 2,
-          "col": 27,
-          "x": 935,
-          "y": 60,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_0",
-          "row": 3,
-          "col": 0,
-          "x": 17,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_1",
-          "row": 3,
-          "col": 1,
-          "x": 52,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_2",
-          "row": 3,
-          "col": 2,
-          "x": 87,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_3",
-          "row": 3,
-          "col": 3,
-          "x": 121,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_4",
-          "row": 3,
-          "col": 4,
-          "x": 156,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_5",
-          "row": 3,
-          "col": 5,
-          "x": 191,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_6",
-          "row": 3,
-          "col": 6,
-          "x": 225,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_7",
-          "row": 3,
-          "col": 7,
-          "x": 260,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_8",
-          "row": 3,
-          "col": 8,
-          "x": 294,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_9",
-          "row": 3,
-          "col": 9,
-          "x": 329,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_10",
-          "row": 3,
-          "col": 10,
-          "x": 364,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_11",
-          "row": 3,
-          "col": 11,
-          "x": 398,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_12",
-          "row": 3,
-          "col": 12,
-          "x": 433,
-          "y": 90,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -1012,273 +52,13 @@
           "visible": true
         },
         {
-          "id": "cell_3_15",
-          "row": 3,
-          "col": 15,
-          "x": 537,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_16",
-          "row": 3,
-          "col": 16,
-          "x": 572,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_17",
-          "row": 3,
-          "col": 17,
-          "x": 606,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_3_18",
           "row": 3,
           "col": 18,
           "x": 641,
           "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_19",
-          "row": 3,
-          "col": 19,
-          "x": 675,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_20",
-          "row": 3,
-          "col": 20,
-          "x": 710,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_21",
-          "row": 3,
-          "col": 21,
-          "x": 745,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_22",
-          "row": 3,
-          "col": 22,
-          "x": 779,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_23",
-          "row": 3,
-          "col": 23,
-          "x": 814,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_24",
-          "row": 3,
-          "col": 24,
-          "x": 849,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_25",
-          "row": 3,
-          "col": 25,
-          "x": 883,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_26",
-          "row": 3,
-          "col": 26,
-          "x": 918,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_3_27",
-          "row": 3,
-          "col": 27,
-          "x": 953,
-          "y": 90,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_0",
-          "row": 4,
-          "col": 0,
-          "x": 0,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_1",
-          "row": 4,
-          "col": 1,
-          "x": 35,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_2",
-          "row": 4,
-          "col": 2,
-          "x": 69,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_3",
-          "row": 4,
-          "col": 3,
-          "x": 104,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_4",
-          "row": 4,
-          "col": 4,
-          "x": 139,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_5",
-          "row": 4,
-          "col": 5,
-          "x": 173,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_6",
-          "row": 4,
-          "col": 6,
-          "x": 208,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_7",
-          "row": 4,
-          "col": 7,
-          "x": 242,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_8",
-          "row": 4,
-          "col": 8,
-          "x": 277,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_9",
-          "row": 4,
-          "col": 9,
-          "x": 312,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_10",
-          "row": 4,
-          "col": 10,
-          "x": 346,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_11",
-          "row": 4,
-          "col": 11,
-          "x": 381,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_12",
-          "row": 4,
-          "col": 12,
-          "x": 416,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_13",
-          "row": 4,
-          "col": 13,
-          "x": 450,
-          "y": 120,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -1286,36 +66,6 @@
           "row": 4,
           "col": 14,
           "x": 485,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_15",
-          "row": 4,
-          "col": 15,
-          "x": 520,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_16",
-          "row": 4,
-          "col": 16,
-          "x": 554,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_17",
-          "row": 4,
-          "col": 17,
-          "x": 589,
           "y": 120,
           "type": "active",
           "passable": true,
@@ -1342,216 +92,6 @@
           "visible": true
         },
         {
-          "id": "cell_4_20",
-          "row": 4,
-          "col": 20,
-          "x": 693,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_21",
-          "row": 4,
-          "col": 21,
-          "x": 727,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_22",
-          "row": 4,
-          "col": 22,
-          "x": 762,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_23",
-          "row": 4,
-          "col": 23,
-          "x": 797,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_24",
-          "row": 4,
-          "col": 24,
-          "x": 831,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_25",
-          "row": 4,
-          "col": 25,
-          "x": 866,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_26",
-          "row": 4,
-          "col": 26,
-          "x": 901,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_4_27",
-          "row": 4,
-          "col": 27,
-          "x": 935,
-          "y": 120,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_0",
-          "row": 5,
-          "col": 0,
-          "x": 17,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_1",
-          "row": 5,
-          "col": 1,
-          "x": 52,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_2",
-          "row": 5,
-          "col": 2,
-          "x": 87,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_3",
-          "row": 5,
-          "col": 3,
-          "x": 121,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_4",
-          "row": 5,
-          "col": 4,
-          "x": 156,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_5",
-          "row": 5,
-          "col": 5,
-          "x": 191,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_6",
-          "row": 5,
-          "col": 6,
-          "x": 225,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_7",
-          "row": 5,
-          "col": 7,
-          "x": 260,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_8",
-          "row": 5,
-          "col": 8,
-          "x": 294,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_9",
-          "row": 5,
-          "col": 9,
-          "x": 329,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_10",
-          "row": 5,
-          "col": 10,
-          "x": 364,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_11",
-          "row": 5,
-          "col": 11,
-          "x": 398,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_12",
-          "row": 5,
-          "col": 12,
-          "x": 433,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_5_13",
           "row": 5,
           "col": 13,
@@ -1572,261 +112,11 @@
           "visible": true
         },
         {
-          "id": "cell_5_15",
-          "row": 5,
-          "col": 15,
-          "x": 537,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_16",
-          "row": 5,
-          "col": 16,
-          "x": 572,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_17",
-          "row": 5,
-          "col": 17,
-          "x": 606,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_5_18",
           "row": 5,
           "col": 18,
           "x": 641,
           "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_19",
-          "row": 5,
-          "col": 19,
-          "x": 675,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_20",
-          "row": 5,
-          "col": 20,
-          "x": 710,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_21",
-          "row": 5,
-          "col": 21,
-          "x": 745,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_22",
-          "row": 5,
-          "col": 22,
-          "x": 779,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_23",
-          "row": 5,
-          "col": 23,
-          "x": 814,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_24",
-          "row": 5,
-          "col": 24,
-          "x": 849,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_25",
-          "row": 5,
-          "col": 25,
-          "x": 883,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_26",
-          "row": 5,
-          "col": 26,
-          "x": 918,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_5_27",
-          "row": 5,
-          "col": 27,
-          "x": 953,
-          "y": 150,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_0",
-          "row": 6,
-          "col": 0,
-          "x": 0,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_1",
-          "row": 6,
-          "col": 1,
-          "x": 35,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_2",
-          "row": 6,
-          "col": 2,
-          "x": 69,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_3",
-          "row": 6,
-          "col": 3,
-          "x": 104,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_4",
-          "row": 6,
-          "col": 4,
-          "x": 139,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_5",
-          "row": 6,
-          "col": 5,
-          "x": 173,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_6",
-          "row": 6,
-          "col": 6,
-          "x": 208,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_7",
-          "row": 6,
-          "col": 7,
-          "x": 242,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_8",
-          "row": 6,
-          "col": 8,
-          "x": 277,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_9",
-          "row": 6,
-          "col": 9,
-          "x": 312,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_10",
-          "row": 6,
-          "col": 10,
-          "x": 346,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_11",
-          "row": 6,
-          "col": 11,
-          "x": 381,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_12",
-          "row": 6,
-          "col": 12,
-          "x": 416,
-          "y": 180,
           "type": "active",
           "passable": true,
           "visible": true
@@ -1862,26 +152,6 @@
           "visible": true
         },
         {
-          "id": "cell_6_16",
-          "row": 6,
-          "col": 16,
-          "x": 554,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_17",
-          "row": 6,
-          "col": 17,
-          "x": 589,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_6_18",
           "row": 6,
           "col": 18,
@@ -1897,206 +167,6 @@
           "col": 19,
           "x": 658,
           "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_20",
-          "row": 6,
-          "col": 20,
-          "x": 693,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_21",
-          "row": 6,
-          "col": 21,
-          "x": 727,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_22",
-          "row": 6,
-          "col": 22,
-          "x": 762,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_23",
-          "row": 6,
-          "col": 23,
-          "x": 797,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_24",
-          "row": 6,
-          "col": 24,
-          "x": 831,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_25",
-          "row": 6,
-          "col": 25,
-          "x": 866,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_26",
-          "row": 6,
-          "col": 26,
-          "x": 901,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_6_27",
-          "row": 6,
-          "col": 27,
-          "x": 935,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_0",
-          "row": 7,
-          "col": 0,
-          "x": 17,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_1",
-          "row": 7,
-          "col": 1,
-          "x": 52,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_2",
-          "row": 7,
-          "col": 2,
-          "x": 87,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_3",
-          "row": 7,
-          "col": 3,
-          "x": 121,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_4",
-          "row": 7,
-          "col": 4,
-          "x": 156,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_5",
-          "row": 7,
-          "col": 5,
-          "x": 191,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_6",
-          "row": 7,
-          "col": 6,
-          "x": 225,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_7",
-          "row": 7,
-          "col": 7,
-          "x": 260,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_8",
-          "row": 7,
-          "col": 8,
-          "x": 294,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_9",
-          "row": 7,
-          "col": 9,
-          "x": 329,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_10",
-          "row": 7,
-          "col": 10,
-          "x": 364,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_11",
-          "row": 7,
-          "col": 11,
-          "x": 398,
-          "y": 210,
           "type": "active",
           "passable": true,
           "visible": true
@@ -2136,16 +206,6 @@
           "row": 7,
           "col": 15,
           "x": 537,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_16",
-          "row": 7,
-          "col": 16,
-          "x": 572,
           "y": 210,
           "type": "active",
           "passable": true,
@@ -2192,166 +252,6 @@
           "visible": true
         },
         {
-          "id": "cell_7_21",
-          "row": 7,
-          "col": 21,
-          "x": 745,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_22",
-          "row": 7,
-          "col": 22,
-          "x": 779,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_23",
-          "row": 7,
-          "col": 23,
-          "x": 814,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_24",
-          "row": 7,
-          "col": 24,
-          "x": 849,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_25",
-          "row": 7,
-          "col": 25,
-          "x": 883,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_26",
-          "row": 7,
-          "col": 26,
-          "x": 918,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_7_27",
-          "row": 7,
-          "col": 27,
-          "x": 953,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_0",
-          "row": 8,
-          "col": 0,
-          "x": 0,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_1",
-          "row": 8,
-          "col": 1,
-          "x": 35,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_2",
-          "row": 8,
-          "col": 2,
-          "x": 69,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_3",
-          "row": 8,
-          "col": 3,
-          "x": 104,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_4",
-          "row": 8,
-          "col": 4,
-          "x": 139,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_5",
-          "row": 8,
-          "col": 5,
-          "x": 173,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_6",
-          "row": 8,
-          "col": 6,
-          "x": 208,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_7",
-          "row": 8,
-          "col": 7,
-          "x": 242,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_8",
-          "row": 8,
-          "col": 8,
-          "x": 277,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_8_9",
           "row": 8,
           "col": 9,
@@ -2366,16 +266,6 @@
           "row": 8,
           "col": 10,
           "x": 346,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_11",
-          "row": 8,
-          "col": 11,
-          "x": 381,
           "y": 240,
           "type": "active",
           "passable": true,
@@ -2407,8 +297,8 @@
           "col": 14,
           "x": 485,
           "y": 240,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -2416,26 +306,6 @@
           "row": 8,
           "col": 15,
           "x": 520,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_16",
-          "row": 8,
-          "col": 16,
-          "x": 554,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_17",
-          "row": 8,
-          "col": 17,
-          "x": 589,
           "y": 240,
           "type": "active",
           "passable": true,
@@ -2492,120 +362,10 @@
           "visible": true
         },
         {
-          "id": "cell_8_23",
-          "row": 8,
-          "col": 23,
-          "x": 797,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_24",
-          "row": 8,
-          "col": 24,
-          "x": 831,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_25",
-          "row": 8,
-          "col": 25,
-          "x": 866,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_26",
-          "row": 8,
-          "col": 26,
-          "x": 901,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_8_27",
-          "row": 8,
-          "col": 27,
-          "x": 935,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_0",
-          "row": 9,
-          "col": 0,
-          "x": 17,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_1",
-          "row": 9,
-          "col": 1,
-          "x": 52,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_9_2",
           "row": 9,
           "col": 2,
           "x": 87,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_3",
-          "row": 9,
-          "col": 3,
-          "x": 121,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_4",
-          "row": 9,
-          "col": 4,
-          "x": 156,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_5",
-          "row": 9,
-          "col": 5,
-          "x": 191,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_6",
-          "row": 9,
-          "col": 6,
-          "x": 225,
           "y": 270,
           "type": "active",
           "passable": true,
@@ -2636,16 +396,6 @@
           "row": 9,
           "col": 9,
           "x": 329,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_10",
-          "row": 9,
-          "col": 10,
-          "x": 364,
           "y": 270,
           "type": "active",
           "passable": true,
@@ -2696,26 +446,6 @@
           "row": 9,
           "col": 15,
           "x": 537,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_16",
-          "row": 9,
-          "col": 16,
-          "x": 572,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_17",
-          "row": 9,
-          "col": 17,
-          "x": 606,
           "y": 270,
           "type": "active",
           "passable": true,
@@ -2777,8 +507,8 @@
           "col": 23,
           "x": 814,
           "y": 270,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -2807,26 +537,6 @@
           "col": 26,
           "x": 918,
           "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_9_27",
-          "row": 9,
-          "col": 27,
-          "x": 953,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_10_0",
-          "row": 10,
-          "col": 0,
-          "x": 0,
-          "y": 300,
           "type": "active",
           "passable": true,
           "visible": true
@@ -2922,16 +632,6 @@
           "visible": true
         },
         {
-          "id": "cell_10_10",
-          "row": 10,
-          "col": 10,
-          "x": 346,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_10_11",
           "row": 10,
           "col": 11,
@@ -2992,26 +692,6 @@
           "visible": true
         },
         {
-          "id": "cell_10_17",
-          "row": 10,
-          "col": 17,
-          "x": 589,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_10_18",
-          "row": 10,
-          "col": 18,
-          "x": 624,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_10_19",
           "row": 10,
           "col": 19,
@@ -3062,16 +742,6 @@
           "visible": true
         },
         {
-          "id": "cell_10_24",
-          "row": 10,
-          "col": 24,
-          "x": 831,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_10_25",
           "row": 10,
           "col": 25,
@@ -3087,26 +757,6 @@
           "col": 26,
           "x": 901,
           "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_10_27",
-          "row": 10,
-          "col": 27,
-          "x": 935,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_11_0",
-          "row": 11,
-          "col": 0,
-          "x": 17,
-          "y": 330,
           "type": "active",
           "passable": true,
           "visible": true
@@ -3192,26 +842,6 @@
           "visible": true
         },
         {
-          "id": "cell_11_9",
-          "row": 11,
-          "col": 9,
-          "x": 329,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_11_10",
-          "row": 11,
-          "col": 10,
-          "x": 364,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_11_11",
           "row": 11,
           "col": 11,
@@ -3272,36 +902,6 @@
           "visible": true
         },
         {
-          "id": "cell_11_17",
-          "row": 11,
-          "col": 17,
-          "x": 606,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_11_18",
-          "row": 11,
-          "col": 18,
-          "x": 641,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_11_19",
-          "row": 11,
-          "col": 19,
-          "x": 675,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_11_20",
           "row": 11,
           "col": 20,
@@ -3332,26 +932,6 @@
           "visible": true
         },
         {
-          "id": "cell_11_23",
-          "row": 11,
-          "col": 23,
-          "x": 814,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_11_24",
-          "row": 11,
-          "col": 24,
-          "x": 849,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_11_25",
           "row": 11,
           "col": 25,
@@ -3372,46 +952,6 @@
           "visible": true
         },
         {
-          "id": "cell_11_27",
-          "row": 11,
-          "col": 27,
-          "x": 953,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_0",
-          "row": 12,
-          "col": 0,
-          "x": 0,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_1",
-          "row": 12,
-          "col": 1,
-          "x": 35,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_2",
-          "row": 12,
-          "col": 2,
-          "x": 69,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_12_3",
           "row": 12,
           "col": 3,
@@ -3427,8 +967,8 @@
           "col": 4,
           "x": 139,
           "y": 360,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -3456,66 +996,6 @@
           "row": 12,
           "col": 7,
           "x": 242,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_8",
-          "row": 12,
-          "col": 8,
-          "x": 277,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_9",
-          "row": 12,
-          "col": 9,
-          "x": 312,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_10",
-          "row": 12,
-          "col": 10,
-          "x": 346,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_11",
-          "row": 12,
-          "col": 11,
-          "x": 381,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_12",
-          "row": 12,
-          "col": 12,
-          "x": 416,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_13",
-          "row": 12,
-          "col": 13,
-          "x": 450,
           "y": 360,
           "type": "active",
           "passable": true,
@@ -3552,46 +1032,6 @@
           "visible": true
         },
         {
-          "id": "cell_12_17",
-          "row": 12,
-          "col": 17,
-          "x": 589,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_18",
-          "row": 12,
-          "col": 18,
-          "x": 624,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_19",
-          "row": 12,
-          "col": 19,
-          "x": 658,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_12_20",
-          "row": 12,
-          "col": 20,
-          "x": 693,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_12_21",
           "row": 12,
           "col": 21,
@@ -3607,7 +1047,7 @@
           "col": 22,
           "x": 762,
           "y": 360,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -3632,16 +1072,6 @@
           "visible": true
         },
         {
-          "id": "cell_12_25",
-          "row": 12,
-          "col": 25,
-          "x": 866,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_12_26",
           "row": 12,
           "col": 26,
@@ -3657,36 +1087,6 @@
           "col": 27,
           "x": 935,
           "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_0",
-          "row": 13,
-          "col": 0,
-          "x": 17,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_1",
-          "row": 13,
-          "col": 1,
-          "x": 52,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_2",
-          "row": 13,
-          "col": 2,
-          "x": 87,
-          "y": 390,
           "type": "active",
           "passable": true,
           "visible": true
@@ -3732,73 +1132,13 @@
           "visible": true
         },
         {
-          "id": "cell_13_7",
-          "row": 13,
-          "col": 7,
-          "x": 260,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_8",
-          "row": 13,
-          "col": 8,
-          "x": 294,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_9",
-          "row": 13,
-          "col": 9,
-          "x": 329,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_10",
-          "row": 13,
-          "col": 10,
-          "x": 364,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_11",
-          "row": 13,
-          "col": 11,
-          "x": 398,
-          "y": 390,
-          "type": "chest",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_12",
-          "row": 13,
-          "col": 12,
-          "x": 433,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_13_13",
           "row": 13,
           "col": 13,
           "x": 468,
           "y": 390,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -3806,66 +1146,6 @@
           "row": 13,
           "col": 14,
           "x": 502,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_15",
-          "row": 13,
-          "col": 15,
-          "x": 537,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_16",
-          "row": 13,
-          "col": 16,
-          "x": 572,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_17",
-          "row": 13,
-          "col": 17,
-          "x": 606,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_18",
-          "row": 13,
-          "col": 18,
-          "x": 641,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_19",
-          "row": 13,
-          "col": 19,
-          "x": 675,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_20",
-          "row": 13,
-          "col": 20,
-          "x": 710,
           "y": 390,
           "type": "active",
           "passable": true,
@@ -3912,61 +1192,11 @@
           "visible": true
         },
         {
-          "id": "cell_13_25",
-          "row": 13,
-          "col": 25,
-          "x": 883,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_13_26",
           "row": 13,
           "col": 26,
           "x": 918,
           "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_13_27",
-          "row": 13,
-          "col": 27,
-          "x": 953,
-          "y": 390,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_0",
-          "row": 14,
-          "col": 0,
-          "x": 0,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_1",
-          "row": 14,
-          "col": 1,
-          "x": 35,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_2",
-          "row": 14,
-          "col": 2,
-          "x": 69,
-          "y": 420,
           "type": "active",
           "passable": true,
           "visible": true
@@ -4022,46 +1252,6 @@
           "visible": true
         },
         {
-          "id": "cell_14_8",
-          "row": 14,
-          "col": 8,
-          "x": 277,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_9",
-          "row": 14,
-          "col": 9,
-          "x": 312,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_10",
-          "row": 14,
-          "col": 10,
-          "x": 346,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_11",
-          "row": 14,
-          "col": 11,
-          "x": 381,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_14_12",
           "row": 14,
           "col": 12,
@@ -4076,76 +1266,6 @@
           "row": 14,
           "col": 13,
           "x": 450,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_14",
-          "row": 14,
-          "col": 14,
-          "x": 485,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_15",
-          "row": 14,
-          "col": 15,
-          "x": 520,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_16",
-          "row": 14,
-          "col": 16,
-          "x": 554,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_17",
-          "row": 14,
-          "col": 17,
-          "x": 589,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_18",
-          "row": 14,
-          "col": 18,
-          "x": 624,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_19",
-          "row": 14,
-          "col": 19,
-          "x": 658,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_20",
-          "row": 14,
-          "col": 20,
-          "x": 693,
           "y": 420,
           "type": "active",
           "passable": true,
@@ -4187,7 +1307,7 @@
           "col": 24,
           "x": 831,
           "y": 420,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -4202,52 +1322,12 @@
           "visible": true
         },
         {
-          "id": "cell_14_26",
-          "row": 14,
-          "col": 26,
-          "x": 901,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_14_27",
-          "row": 14,
-          "col": 27,
-          "x": 935,
-          "y": 420,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_0",
-          "row": 15,
-          "col": 0,
-          "x": 17,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_1",
-          "row": 15,
-          "col": 1,
-          "x": 52,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_15_2",
           "row": 15,
           "col": 2,
           "x": 87,
           "y": 450,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -4352,66 +1432,6 @@
           "visible": true
         },
         {
-          "id": "cell_15_13",
-          "row": 15,
-          "col": 13,
-          "x": 468,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_14",
-          "row": 15,
-          "col": 14,
-          "x": 502,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_15",
-          "row": 15,
-          "col": 15,
-          "x": 537,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_16",
-          "row": 15,
-          "col": 16,
-          "x": 572,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_17",
-          "row": 15,
-          "col": 17,
-          "x": 606,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_18",
-          "row": 15,
-          "col": 18,
-          "x": 641,
-          "y": 450,
-          "type": "chest",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_15_19",
           "row": 15,
           "col": 19,
@@ -4482,56 +1502,6 @@
           "visible": true
         },
         {
-          "id": "cell_15_26",
-          "row": 15,
-          "col": 26,
-          "x": 918,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_15_27",
-          "row": 15,
-          "col": 27,
-          "x": 953,
-          "y": 450,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_16_0",
-          "row": 16,
-          "col": 0,
-          "x": 0,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_16_1",
-          "row": 16,
-          "col": 1,
-          "x": 35,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_16_2",
-          "row": 16,
-          "col": 2,
-          "x": 69,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_16_3",
           "row": 16,
           "col": 3,
@@ -4567,8 +1537,8 @@
           "col": 6,
           "x": 208,
           "y": 480,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -4727,7 +1697,7 @@
           "col": 22,
           "x": 762,
           "y": 480,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true
         },
@@ -4757,56 +1727,6 @@
           "col": 25,
           "x": 866,
           "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_16_26",
-          "row": 16,
-          "col": 26,
-          "x": 901,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_16_27",
-          "row": 16,
-          "col": 27,
-          "x": 935,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_17_0",
-          "row": 17,
-          "col": 0,
-          "x": 17,
-          "y": 510,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_17_1",
-          "row": 17,
-          "col": 1,
-          "x": 52,
-          "y": 510,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_17_2",
-          "row": 17,
-          "col": 2,
-          "x": 87,
-          "y": 510,
           "type": "active",
           "passable": true,
           "visible": true
@@ -4847,7 +1767,7 @@
           "col": 6,
           "x": 225,
           "y": 510,
-          "type": "chest",
+          "type": "active",
           "passable": true,
           "visible": true
         },
@@ -5037,58 +1957,8 @@
           "col": 25,
           "x": 883,
           "y": 510,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_17_26",
-          "row": 17,
-          "col": 26,
-          "x": 918,
-          "y": 510,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_17_27",
-          "row": 17,
-          "col": 27,
-          "x": 953,
-          "y": 510,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_0",
-          "row": 18,
-          "col": 0,
-          "x": 0,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_1",
-          "row": 18,
-          "col": 1,
-          "x": 35,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_2",
-          "row": 18,
-          "col": 2,
-          "x": 69,
-          "y": 540,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -5187,10 +2057,9 @@
           "col": 12,
           "x": 416,
           "y": 540,
-          "type": "monster",
-          "passable": false,
-          "visible": true,
-          "monster_id": 1
+          "type": "active",
+          "passable": true,
+          "visible": true
         },
         {
           "id": "cell_18_13",
@@ -5293,91 +2162,11 @@
           "visible": true
         },
         {
-          "id": "cell_18_23",
-          "row": 18,
-          "col": 23,
-          "x": 797,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_24",
-          "row": 18,
-          "col": 24,
-          "x": 831,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_25",
-          "row": 18,
-          "col": 25,
-          "x": 866,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_18_26",
           "row": 18,
           "col": 26,
           "x": 901,
           "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_18_27",
-          "row": 18,
-          "col": 27,
-          "x": 935,
-          "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_0",
-          "row": 19,
-          "col": 0,
-          "x": 17,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_1",
-          "row": 19,
-          "col": 1,
-          "x": 52,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_2",
-          "row": 19,
-          "col": 2,
-          "x": 87,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_3",
-          "row": 19,
-          "col": 3,
-          "x": 121,
-          "y": 570,
           "type": "active",
           "passable": true,
           "visible": true
@@ -5417,26 +2206,6 @@
           "row": 19,
           "col": 7,
           "x": 260,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_8",
-          "row": 19,
-          "col": 8,
-          "x": 294,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_9",
-          "row": 19,
-          "col": 9,
-          "x": 329,
           "y": 570,
           "type": "active",
           "passable": true,
@@ -5553,26 +2322,6 @@
           "visible": true
         },
         {
-          "id": "cell_19_21",
-          "row": 19,
-          "col": 21,
-          "x": 745,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_22",
-          "row": 19,
-          "col": 22,
-          "x": 779,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_19_23",
           "row": 19,
           "col": 23,
@@ -5593,61 +2342,11 @@
           "visible": true
         },
         {
-          "id": "cell_19_25",
-          "row": 19,
-          "col": 25,
-          "x": 883,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_19_26",
           "row": 19,
           "col": 26,
           "x": 918,
           "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_19_27",
-          "row": 19,
-          "col": 27,
-          "x": 953,
-          "y": 570,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_0",
-          "row": 20,
-          "col": 0,
-          "x": 0,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_1",
-          "row": 20,
-          "col": 1,
-          "x": 35,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_2",
-          "row": 20,
-          "col": 2,
-          "x": 69,
-          "y": 600,
           "type": "active",
           "passable": true,
           "visible": true
@@ -5663,73 +2362,13 @@
           "visible": true
         },
         {
-          "id": "cell_20_4",
-          "row": 20,
-          "col": 4,
-          "x": 139,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_5",
-          "row": 20,
-          "col": 5,
-          "x": 173,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_6",
-          "row": 20,
-          "col": 6,
-          "x": 208,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_20_7",
           "row": 20,
           "col": 7,
           "x": 242,
           "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_8",
-          "row": 20,
-          "col": 8,
-          "x": 277,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_9",
-          "row": 20,
-          "col": 9,
-          "x": 312,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_10",
-          "row": 20,
-          "col": 10,
-          "x": 346,
-          "y": 600,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -5788,10 +2427,9 @@
           "col": 16,
           "x": 554,
           "y": 600,
-          "type": "monster",
-          "passable": false,
-          "visible": true,
-  "monster_id": 1
+          "type": "active",
+          "passable": true,
+          "visible": true
         },
         {
           "id": "cell_20_17",
@@ -5809,7 +2447,7 @@
           "col": 18,
           "x": 624,
           "y": 600,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -5844,16 +2482,6 @@
           "visible": true
         },
         {
-          "id": "cell_20_22",
-          "row": 20,
-          "col": 22,
-          "x": 762,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_20_23",
           "row": 20,
           "col": 23,
@@ -5869,8 +2497,8 @@
           "col": 24,
           "x": 831,
           "y": 600,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -5879,46 +2507,6 @@
           "col": 25,
           "x": 866,
           "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_26",
-          "row": 20,
-          "col": 26,
-          "x": 901,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_20_27",
-          "row": 20,
-          "col": 27,
-          "x": 935,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_0",
-          "row": 21,
-          "col": 0,
-          "x": 17,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_1",
-          "row": 21,
-          "col": 1,
-          "x": 52,
-          "y": 630,
           "type": "active",
           "passable": true,
           "visible": true
@@ -5939,7 +2527,7 @@
           "col": 3,
           "x": 121,
           "y": 630,
-          "type": "chest",
+          "type": "active",
           "passable": true,
           "visible": true
         },
@@ -5968,56 +2556,6 @@
           "row": 21,
           "col": 6,
           "x": 225,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_7",
-          "row": 21,
-          "col": 7,
-          "x": 260,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_8",
-          "row": 21,
-          "col": 8,
-          "x": 294,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_9",
-          "row": 21,
-          "col": 9,
-          "x": 329,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_10",
-          "row": 21,
-          "col": 10,
-          "x": 364,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_11",
-          "row": 21,
-          "col": 11,
-          "x": 398,
           "y": 630,
           "type": "active",
           "passable": true,
@@ -6164,46 +2702,6 @@
           "visible": true
         },
         {
-          "id": "cell_21_26",
-          "row": 21,
-          "col": 26,
-          "x": 918,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_21_27",
-          "row": 21,
-          "col": 27,
-          "x": 953,
-          "y": 630,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_0",
-          "row": 22,
-          "col": 0,
-          "x": 0,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_1",
-          "row": 22,
-          "col": 1,
-          "x": 35,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_22_2",
           "row": 22,
           "col": 2,
@@ -6229,7 +2727,7 @@
           "col": 4,
           "x": 139,
           "y": 660,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -6249,26 +2747,15 @@
           "col": 6,
           "x": 208,
           "y": 660,
-          "type": "monster",
-          "passable": false,
-          "visible": true,
-  "monster_id": 1
+          "type": "active",
+          "passable": true,
+          "visible": true
         },
         {
           "id": "cell_22_7",
           "row": 22,
           "col": 7,
           "x": 242,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_8",
-          "row": 22,
-          "col": 8,
-          "x": 277,
           "y": 660,
           "type": "active",
           "passable": true,
@@ -6289,26 +2776,6 @@
           "row": 22,
           "col": 10,
           "x": 346,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_11",
-          "row": 22,
-          "col": 11,
-          "x": 381,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_12",
-          "row": 22,
-          "col": 12,
-          "x": 416,
           "y": 660,
           "type": "active",
           "passable": true,
@@ -6350,7 +2817,7 @@
           "col": 16,
           "x": 554,
           "y": 660,
-          "type": "player_start",
+          "type": "active",
           "passable": true,
           "visible": true
         },
@@ -6430,10 +2897,9 @@
           "col": 24,
           "x": 831,
           "y": 660,
-          "type": "monster",
-          "passable": false,
-          "visible": true,
-  "monster_id": 1
+          "type": "active",
+          "passable": true,
+          "visible": true
         },
         {
           "id": "cell_22_25",
@@ -6441,46 +2907,6 @@
           "col": 25,
           "x": 866,
           "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_26",
-          "row": 22,
-          "col": 26,
-          "x": 901,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_22_27",
-          "row": 22,
-          "col": 27,
-          "x": 935,
-          "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_0",
-          "row": 23,
-          "col": 0,
-          "x": 17,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_1",
-          "row": 23,
-          "col": 1,
-          "x": 52,
-          "y": 690,
           "type": "active",
           "passable": true,
           "visible": true
@@ -6536,16 +2962,6 @@
           "visible": true
         },
         {
-          "id": "cell_23_7",
-          "row": 23,
-          "col": 7,
-          "x": 260,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_23_8",
           "row": 23,
           "col": 8,
@@ -6570,26 +2986,6 @@
           "row": 23,
           "col": 10,
           "x": 364,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_11",
-          "row": 23,
-          "col": 11,
-          "x": 398,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_12",
-          "row": 23,
-          "col": 12,
-          "x": 433,
           "y": 690,
           "type": "active",
           "passable": true,
@@ -6691,7 +3087,7 @@
           "col": 22,
           "x": 779,
           "y": 690,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -6721,66 +3117,6 @@
           "col": 25,
           "x": 883,
           "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_26",
-          "row": 23,
-          "col": 26,
-          "x": 918,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_23_27",
-          "row": 23,
-          "col": 27,
-          "x": 953,
-          "y": 690,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_0",
-          "row": 24,
-          "col": 0,
-          "x": 0,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_1",
-          "row": 24,
-          "col": 1,
-          "x": 35,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_2",
-          "row": 24,
-          "col": 2,
-          "x": 69,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_3",
-          "row": 24,
-          "col": 3,
-          "x": 104,
-          "y": 720,
           "type": "active",
           "passable": true,
           "visible": true
@@ -6826,113 +3162,13 @@
           "visible": true
         },
         {
-          "id": "cell_24_8",
-          "row": 24,
-          "col": 8,
-          "x": 277,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_9",
-          "row": 24,
-          "col": 9,
-          "x": 312,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_10",
-          "row": 24,
-          "col": 10,
-          "x": 346,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_24_11",
           "row": 24,
           "col": 11,
           "x": 381,
           "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_12",
-          "row": 24,
-          "col": 12,
-          "x": 416,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_13",
-          "row": 24,
-          "col": 13,
-          "x": 450,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_14",
-          "row": 24,
-          "col": 14,
-          "x": 485,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_15",
-          "row": 24,
-          "col": 15,
-          "x": 520,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_16",
-          "row": 24,
-          "col": 16,
-          "x": 554,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_17",
-          "row": 24,
-          "col": 17,
-          "x": 589,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_18",
-          "row": 24,
-          "col": 18,
-          "x": 624,
-          "y": 720,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -6991,77 +3227,6 @@
           "col": 24,
           "x": 831,
           "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_25",
-          "row": 24,
-          "col": 25,
-          "x": 866,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_26",
-          "row": 24,
-          "col": 26,
-          "x": 901,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_24_27",
-          "row": 24,
-          "col": 27,
-          "x": 935,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_0",
-          "row": 25,
-          "col": 0,
-          "x": 17,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_1",
-          "row": 25,
-          "col": 1,
-          "x": 52,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_2",
-          "row": 25,
-          "col": 2,
-          "x": 87,
-          "y": 750,
-          "type": "monster",
-          "passable": false,
-          "visible": true,
-  "monster_id": 1
-        },
-        {
-          "id": "cell_25_3",
-          "row": 25,
-          "col": 3,
-          "x": 121,
-          "y": 750,
           "type": "active",
           "passable": true,
           "visible": true
@@ -7137,106 +3302,6 @@
           "visible": true
         },
         {
-          "id": "cell_25_11",
-          "row": 25,
-          "col": 11,
-          "x": 398,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_12",
-          "row": 25,
-          "col": 12,
-          "x": 433,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_13",
-          "row": 25,
-          "col": 13,
-          "x": 468,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_14",
-          "row": 25,
-          "col": 14,
-          "x": 502,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_15",
-          "row": 25,
-          "col": 15,
-          "x": 537,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_16",
-          "row": 25,
-          "col": 16,
-          "x": 572,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_17",
-          "row": 25,
-          "col": 17,
-          "x": 606,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_18",
-          "row": 25,
-          "col": 18,
-          "x": 641,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_19",
-          "row": 25,
-          "col": 19,
-          "x": 675,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_20",
-          "row": 25,
-          "col": 20,
-          "x": 710,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_25_21",
           "row": 25,
           "col": 21,
@@ -7272,76 +3337,6 @@
           "col": 24,
           "x": 849,
           "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_25",
-          "row": 25,
-          "col": 25,
-          "x": 883,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_26",
-          "row": 25,
-          "col": 26,
-          "x": 918,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_25_27",
-          "row": 25,
-          "col": 27,
-          "x": 953,
-          "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_0",
-          "row": 26,
-          "col": 0,
-          "x": 0,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_1",
-          "row": 26,
-          "col": 1,
-          "x": 35,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_2",
-          "row": 26,
-          "col": 2,
-          "x": 69,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_3",
-          "row": 26,
-          "col": 3,
-          "x": 104,
-          "y": 780,
           "type": "active",
           "passable": true,
           "visible": true
@@ -7442,8 +3437,8 @@
           "col": 13,
           "x": 450,
           "y": 780,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -7482,8 +3477,8 @@
           "col": 17,
           "x": 589,
           "y": 780,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true
         },
         {
@@ -7491,46 +3486,6 @@
           "row": 26,
           "col": 18,
           "x": 624,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_19",
-          "row": 26,
-          "col": 19,
-          "x": 658,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_20",
-          "row": 26,
-          "col": 20,
-          "x": 693,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_21",
-          "row": 26,
-          "col": 21,
-          "x": 727,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_22",
-          "row": 26,
-          "col": 22,
-          "x": 762,
           "y": 780,
           "type": "active",
           "passable": true,
@@ -7562,66 +3517,6 @@
           "col": 25,
           "x": 866,
           "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_26",
-          "row": 26,
-          "col": 26,
-          "x": 901,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_26_27",
-          "row": 26,
-          "col": 27,
-          "x": 935,
-          "y": 780,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_0",
-          "row": 27,
-          "col": 0,
-          "x": 17,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_1",
-          "row": 27,
-          "col": 1,
-          "x": 52,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_2",
-          "row": 27,
-          "col": 2,
-          "x": 87,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_3",
-          "row": 27,
-          "col": 3,
-          "x": 121,
-          "y": 810,
           "type": "active",
           "passable": true,
           "visible": true
@@ -7687,46 +3582,6 @@
           "visible": true
         },
         {
-          "id": "cell_27_10",
-          "row": 27,
-          "col": 10,
-          "x": 364,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_11",
-          "row": 27,
-          "col": 11,
-          "x": 398,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_12",
-          "row": 27,
-          "col": 12,
-          "x": 433,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_13",
-          "row": 27,
-          "col": 13,
-          "x": 468,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_27_14",
           "row": 27,
           "col": 14,
@@ -7741,26 +3596,6 @@
           "row": 27,
           "col": 15,
           "x": 537,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_16",
-          "row": 27,
-          "col": 16,
-          "x": 572,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_17",
-          "row": 27,
-          "col": 17,
-          "x": 606,
           "y": 810,
           "type": "active",
           "passable": true,
@@ -7782,277 +3617,7 @@
           "col": 19,
           "x": 675,
           "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_20",
-          "row": 27,
-          "col": 20,
-          "x": 710,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_21",
-          "row": 27,
-          "col": 21,
-          "x": 745,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_22",
-          "row": 27,
-          "col": 22,
-          "x": 779,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_23",
-          "row": 27,
-          "col": 23,
-          "x": 814,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_24",
-          "row": 27,
-          "col": 24,
-          "x": 849,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_25",
-          "row": 27,
-          "col": 25,
-          "x": 883,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_26",
-          "row": 27,
-          "col": 26,
-          "x": 918,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_27_27",
-          "row": 27,
-          "col": 27,
-          "x": 953,
-          "y": 810,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_0",
-          "row": 28,
-          "col": 0,
-          "x": 0,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_1",
-          "row": 28,
-          "col": 1,
-          "x": 35,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_2",
-          "row": 28,
-          "col": 2,
-          "x": 69,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_3",
-          "row": 28,
-          "col": 3,
-          "x": 104,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_4",
-          "row": 28,
-          "col": 4,
-          "x": 139,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_5",
-          "row": 28,
-          "col": 5,
-          "x": 173,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_6",
-          "row": 28,
-          "col": 6,
-          "x": 208,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_7",
-          "row": 28,
-          "col": 7,
-          "x": 242,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_8",
-          "row": 28,
-          "col": 8,
-          "x": 277,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_9",
-          "row": 28,
-          "col": 9,
-          "x": 312,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_10",
-          "row": 28,
-          "col": 10,
-          "x": 346,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_11",
-          "row": 28,
-          "col": 11,
-          "x": 381,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_12",
-          "row": 28,
-          "col": 12,
-          "x": 416,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_13",
-          "row": 28,
-          "col": 13,
-          "x": 450,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_14",
-          "row": 28,
-          "col": 14,
-          "x": 485,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_15",
-          "row": 28,
-          "col": 15,
-          "x": 520,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_16",
-          "row": 28,
-          "col": 16,
-          "x": 554,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_17",
-          "row": 28,
-          "col": 17,
-          "x": 589,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_18",
-          "row": 28,
-          "col": 18,
-          "x": 624,
-          "y": 840,
-          "type": "active",
+          "type": "npc",
           "passable": true,
           "visible": true
         },
@@ -8072,7 +3637,7 @@
           "col": 20,
           "x": 693,
           "y": 840,
-          "type": "active",
+          "type": "player_start",
           "passable": true,
           "visible": true
         },
@@ -8087,257 +3652,6 @@
           "visible": true
         },
         {
-          "id": "cell_28_22",
-          "row": 28,
-          "col": 22,
-          "x": 762,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_23",
-          "row": 28,
-          "col": 23,
-          "x": 797,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_24",
-          "row": 28,
-          "col": 24,
-          "x": 831,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_25",
-          "row": 28,
-          "col": 25,
-          "x": 866,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_26",
-          "row": 28,
-          "col": 26,
-          "x": 901,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_28_27",
-          "row": 28,
-          "col": 27,
-          "x": 935,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_0",
-          "row": 29,
-          "col": 0,
-          "x": 17,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_1",
-          "row": 29,
-          "col": 1,
-          "x": 52,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_2",
-          "row": 29,
-          "col": 2,
-          "x": 87,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_3",
-          "row": 29,
-          "col": 3,
-          "x": 121,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_4",
-          "row": 29,
-          "col": 4,
-          "x": 156,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_5",
-          "row": 29,
-          "col": 5,
-          "x": 191,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_6",
-          "row": 29,
-          "col": 6,
-          "x": 225,
-          "y": 870,
-          "type": "monster",
-          "passable": false,
-          "visible": true, 
-  "monster_id": 1
-        },
-        {
-          "id": "cell_29_7",
-          "row": 29,
-          "col": 7,
-          "x": 260,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_8",
-          "row": 29,
-          "col": 8,
-          "x": 294,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_9",
-          "row": 29,
-          "col": 9,
-          "x": 329,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_10",
-          "row": 29,
-          "col": 10,
-          "x": 364,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_11",
-          "row": 29,
-          "col": 11,
-          "x": 398,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_12",
-          "row": 29,
-          "col": 12,
-          "x": 433,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_13",
-          "row": 29,
-          "col": 13,
-          "x": 468,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_14",
-          "row": 29,
-          "col": 14,
-          "x": 502,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_15",
-          "row": 29,
-          "col": 15,
-          "x": 537,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_16",
-          "row": 29,
-          "col": 16,
-          "x": 572,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_17",
-          "row": 29,
-          "col": 17,
-          "x": 606,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_18",
-          "row": 29,
-          "col": 18,
-          "x": 641,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
           "id": "cell_29_19",
           "row": 29,
           "col": 19,
@@ -8346,947 +3660,35 @@
           "type": "active",
           "passable": true,
           "visible": true
-        },
-        {
-          "id": "cell_29_20",
-          "row": 29,
-          "col": 20,
-          "x": 710,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_21",
-          "row": 29,
-          "col": 21,
-          "x": 745,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_22",
-          "row": 29,
-          "col": 22,
-          "x": 779,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_23",
-          "row": 29,
-          "col": 23,
-          "x": 814,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_24",
-          "row": 29,
-          "col": 24,
-          "x": 849,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_25",
-          "row": 29,
-          "col": 25,
-          "x": 883,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_26",
-          "row": 29,
-          "col": 26,
-          "x": 918,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_29_27",
-          "row": 29,
-          "col": 27,
-          "x": 953,
-          "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_0",
-          "row": 30,
-          "col": 0,
-          "x": 0,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_1",
-          "row": 30,
-          "col": 1,
-          "x": 35,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_2",
-          "row": 30,
-          "col": 2,
-          "x": 69,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_3",
-          "row": 30,
-          "col": 3,
-          "x": 104,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_4",
-          "row": 30,
-          "col": 4,
-          "x": 139,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_5",
-          "row": 30,
-          "col": 5,
-          "x": 173,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_6",
-          "row": 30,
-          "col": 6,
-          "x": 208,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_7",
-          "row": 30,
-          "col": 7,
-          "x": 242,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_8",
-          "row": 30,
-          "col": 8,
-          "x": 277,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_9",
-          "row": 30,
-          "col": 9,
-          "x": 312,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_10",
-          "row": 30,
-          "col": 10,
-          "x": 346,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_11",
-          "row": 30,
-          "col": 11,
-          "x": 381,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_12",
-          "row": 30,
-          "col": 12,
-          "x": 416,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_13",
-          "row": 30,
-          "col": 13,
-          "x": 450,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_14",
-          "row": 30,
-          "col": 14,
-          "x": 485,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_15",
-          "row": 30,
-          "col": 15,
-          "x": 520,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_16",
-          "row": 30,
-          "col": 16,
-          "x": 554,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_17",
-          "row": 30,
-          "col": 17,
-          "x": 589,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_18",
-          "row": 30,
-          "col": 18,
-          "x": 624,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_19",
-          "row": 30,
-          "col": 19,
-          "x": 658,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_20",
-          "row": 30,
-          "col": 20,
-          "x": 693,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_21",
-          "row": 30,
-          "col": 21,
-          "x": 727,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_22",
-          "row": 30,
-          "col": 22,
-          "x": 762,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_23",
-          "row": 30,
-          "col": 23,
-          "x": 797,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_24",
-          "row": 30,
-          "col": 24,
-          "x": 831,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_25",
-          "row": 30,
-          "col": 25,
-          "x": 866,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_26",
-          "row": 30,
-          "col": 26,
-          "x": 901,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_30_27",
-          "row": 30,
-          "col": 27,
-          "x": 935,
-          "y": 900,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_0",
-          "row": 31,
-          "col": 0,
-          "x": 17,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_1",
-          "row": 31,
-          "col": 1,
-          "x": 52,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_2",
-          "row": 31,
-          "col": 2,
-          "x": 87,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_3",
-          "row": 31,
-          "col": 3,
-          "x": 121,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_4",
-          "row": 31,
-          "col": 4,
-          "x": 156,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_5",
-          "row": 31,
-          "col": 5,
-          "x": 191,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_6",
-          "row": 31,
-          "col": 6,
-          "x": 225,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_7",
-          "row": 31,
-          "col": 7,
-          "x": 260,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_8",
-          "row": 31,
-          "col": 8,
-          "x": 294,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_9",
-          "row": 31,
-          "col": 9,
-          "x": 329,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_10",
-          "row": 31,
-          "col": 10,
-          "x": 364,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_11",
-          "row": 31,
-          "col": 11,
-          "x": 398,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_12",
-          "row": 31,
-          "col": 12,
-          "x": 433,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_13",
-          "row": 31,
-          "col": 13,
-          "x": 468,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_14",
-          "row": 31,
-          "col": 14,
-          "x": 502,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_15",
-          "row": 31,
-          "col": 15,
-          "x": 537,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_16",
-          "row": 31,
-          "col": 16,
-          "x": 572,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_17",
-          "row": 31,
-          "col": 17,
-          "x": 606,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_18",
-          "row": 31,
-          "col": 18,
-          "x": 641,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_19",
-          "row": 31,
-          "col": 19,
-          "x": 675,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_20",
-          "row": 31,
-          "col": 20,
-          "x": 710,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_21",
-          "row": 31,
-          "col": 21,
-          "x": 745,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_22",
-          "row": 31,
-          "col": 22,
-          "x": 779,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_23",
-          "row": 31,
-          "col": 23,
-          "x": 814,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_24",
-          "row": 31,
-          "col": 24,
-          "x": 849,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_25",
-          "row": 31,
-          "col": 25,
-          "x": 883,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_26",
-          "row": 31,
-          "col": 26,
-          "x": 918,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_31_27",
-          "row": 31,
-          "col": 27,
-          "x": 953,
-          "y": 930,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_0",
-          "row": 32,
-          "col": 0,
-          "x": 0,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_1",
-          "row": 32,
-          "col": 1,
-          "x": 35,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_2",
-          "row": 32,
-          "col": 2,
-          "x": 69,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_3",
-          "row": 32,
-          "col": 3,
-          "x": 104,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_4",
-          "row": 32,
-          "col": 4,
-          "x": 139,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_5",
-          "row": 32,
-          "col": 5,
-          "x": 173,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_6",
-          "row": 32,
-          "col": 6,
-          "x": 208,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_7",
-          "row": 32,
-          "col": 7,
-          "x": 242,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_8",
-          "row": 32,
-          "col": 8,
-          "x": 277,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_9",
-          "row": 32,
-          "col": 9,
-          "x": 312,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_10",
-          "row": 32,
-          "col": 10,
-          "x": 346,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_11",
-          "row": 32,
-          "col": 11,
-          "x": 381,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_12",
-          "row": 32,
-          "col": 12,
-          "x": 416,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_13",
-          "row": 32,
-          "col": 13,
-          "x": 450,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_14",
-          "row": 32,
-          "col": 14,
-          "x": 485,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_15",
-          "row": 32,
-          "col": 15,
-          "x": 520,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_16",
-          "row": 32,
-          "col": 16,
-          "x": 554,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_17",
-          "row": 32,
-          "col": 17,
-          "x": 589,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_18",
-          "row": 32,
-          "col": 18,
-          "x": 624,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_19",
-          "row": 32,
-          "col": 19,
-          "x": 658,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_20",
-          "row": 32,
-          "col": 20,
-          "x": 693,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_21",
-          "row": 32,
-          "col": 21,
-          "x": 727,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_22",
-          "row": 32,
-          "col": 22,
-          "x": 762,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_23",
-          "row": 32,
-          "col": 23,
-          "x": 797,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_24",
-          "row": 32,
-          "col": 24,
-          "x": 831,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_25",
-          "row": 32,
-          "col": 25,
-          "x": 866,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_26",
-          "row": 32,
-          "col": 26,
-          "x": 901,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
-        },
-        {
-          "id": "cell_32_27",
-          "row": 32,
-          "col": 27,
-          "x": 935,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true
         }
       ]
     },
-    "playerStart": "cell_22_16",
+    "playerStart": "cell_28_20",
     "objects": {
       "monsters": [
-        "cell_18_12",
-        "cell_20_16",
-        "cell_22_6",
-        "cell_22_24",
-        "cell_25_2",
-        "cell_29_6"
+        "cell_2_14",
+        "cell_3_18",
+        "cell_8_14",
+        "cell_9_23",
+        "cell_12_4",
+        "cell_13_13",
+        "cell_16_6",
+        "cell_17_25",
+        "cell_20_7",
+        "cell_20_24",
+        "cell_24_11",
+        "cell_26_13",
+        "cell_26_17"
       ],
-      "chests": [
-        "cell_13_11",
-        "cell_15_18",
-        "cell_17_6",
-        "cell_21_3"
-      ],
+      "chests": [],
       "npcs": [
-        "cell_16_22"
+        "cell_12_22",
+        "cell_14_24",
+        "cell_15_2",
+        "cell_20_18",
+        "cell_22_4",
+        "cell_23_22",
+        "cell_27_19"
       ],
       "exits": [],
       "obstacles": []
