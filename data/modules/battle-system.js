@@ -1,6 +1,5 @@
 "use strict";
 
-// ========== MODULE: BattleSystem ==========
 class BattleSystem {
     constructor() {
         this.monsters = [];
@@ -9,7 +8,6 @@ class BattleSystem {
         this.currentHero = null;
         this.battleLog = [];
         this.battleRound = 0;
-        this.battleType = 'normal';
         this.battleContext = 'normal';
         
         this.battleGrid = {
@@ -22,22 +20,18 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован");
     }
 
-    // ⭐ УПРОЩЕННЫЙ МЕТОД: Загрузка данных монстров
     async loadBattleData() {
         try {
             console.log("📥 Загружаем данные монстров...");
             
-            // Загружаем обоих монстров - и enemies.json и monsters.json
             const [enemiesResponse, monstersResponse] = await Promise.all([
                 fetch('data/enemies.json').catch(() => null),
                 fetch('data/monsters.json').catch(() => null)
             ]);
             
-            // ⭐ РАЗДЕЛЯЕМ МОНСТРОВ НА ДВА МАССИВА
-            this.randomMonsters = [];  // Для случайных встреч
-            this.programmedMonsters = new Map(); // Для запрограммированных монстров
+            this.randomMonsters = [];
+            this.programmedMonsters = new Map();
             
-            // Обрабатываем enemies.json (случайные монстры)
             if (enemiesResponse && enemiesResponse.ok) {
                 this.randomMonsters = await enemiesResponse.json();
                 console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
@@ -46,7 +40,6 @@ class BattleSystem {
                 this.randomMonsters = [];
             }
             
-            // Обрабатываем monsters.json (запрограммированные монстры)
             if (monstersResponse && monstersResponse.ok) {
                 const programmedMonsters = await monstersResponse.json();
                 programmedMonsters.forEach(monster => {
@@ -57,15 +50,12 @@ class BattleSystem {
                 console.error("❌ monsters.json не загружен!");
             }
             
-            // Для обратной совместимости оставляем общий массив
             this.monsters = [...this.randomMonsters, ...Array.from(this.programmedMonsters.values())];
-            
-            console.log(`🎯 Всего монстров: ${this.monsters.length} (случайных: ${this.randomMonsters.length}, запрограммированных: ${this.programmedMonsters.size})`);
+            console.log(`🎯 Всего монстров: ${this.monsters.length}`);
             return true;
             
         } catch (error) {
             console.error("❌ Ошибка загрузки данных монстров:", error);
-            // ⭐ НЕ СОЗДАЕМ ТЕСТОВЫХ МОНСТРОВ
             this.randomMonsters = [];
             this.programmedMonsters = new Map();
             this.monsters = [];
@@ -73,7 +63,6 @@ class BattleSystem {
         }
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Получить случайного монстра ТОЛЬКО из enemies.json
     getRandomMonsterForMovement() {
         if (this.randomMonsters.length === 0) {
             console.error("❌ Нет случайных монстров в enemies.json!");
@@ -82,18 +71,15 @@ class BattleSystem {
         
         const randomIndex = Math.floor(Math.random() * this.randomMonsters.length);
         const monster = this.randomMonsters[randomIndex];
-        console.log(`🎲 Выбран случайный монстр: ${monster.name} (из enemies.json)`);
+        console.log(`🎲 Выбран случайный монстр: ${monster.name}`);
         return monster;
     }
 
-    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Получить монстра по ID (из любого источника)
     getMonsterById(monsterId) {
-        // Сначала ищем в запрограммированных монстрах
         if (this.programmedMonsters.has(monsterId)) {
             return this.programmedMonsters.get(monsterId);
         }
         
-        // Затем в случайных монстрах
         const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
         if (randomMonster) {
             return randomMonster;
@@ -103,20 +89,32 @@ class BattleSystem {
         return null;
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Начать бой с конкретным монстром
+    // ⭐ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Получаем актуальные статы из HeroSystem
+    getHeroStatsForBattle() {
+        if (!this.currentHero || !window.game.systems.hero) {
+            console.error("❌ Герой или HeroSystem не доступен");
+            return { currentHealth: 0, maxHealth: 0, damage: 0, armor: 0 };
+        }
+        
+        return window.game.systems.hero.calculateHeroStats(this.currentHero);
+    }
+
     startBattleWithSpecificMonster(hero, specificMonster, context = 'normal') {
         if (!hero) {
             console.error("❌ Не могу начать бой: герой не передан");
             return;
         }
 
-        // Создаем группу из конкретного монстра (обычно 1 монстр для запрограммированных встреч)
         const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
         if (!monsterGroup) return;
 
         this.currentHero = hero;
         this.currentMonsters = monsterGroup;
-        this.setupBattleGrid(hero, monsterGroup);
+        
+        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы героя
+        const heroStats = this.getHeroStatsForBattle();
+        
+        this.setupBattleGrid(hero, monsterGroup, heroStats);
         
         this.battleActive = true;
         this.battleRound = 0;
@@ -127,26 +125,23 @@ class BattleSystem {
         this.showFullscreenBattle();
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Генерация группы из конкретного монстра
     generateSpecificMonsterGroup(specificMonster) {
         if (!specificMonster) return null;
 
-        // Для запрограммированных монстров обычно 1 монстр, но можно настроить
-        const monsterCount = 1; // Можно добавить поле groupSize в будущем
-        
+        const monsterCount = 1;
         const monsterGroup = [];
+        
         for (let i = 0; i < monsterCount; i++) {
             const monsterCopy = {
                 ...specificMonster,
                 battleId: i + 1,
                 currentHealth: specificMonster.health,
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
-                source: 'programmed' // Помечаем как запрограммированного монстра
+                source: 'programmed'
             };
             monsterGroup.push(monsterCopy);
         }
 
-        console.log(`🎯 Создана группа из ${monsterGroup.length} монстра(ов) для ${specificMonster.name}`);
         return monsterGroup;
     }
 
@@ -161,22 +156,24 @@ class BattleSystem {
 
         this.currentHero = hero;
         this.currentMonsters = monsterGroup;
-        this.setupBattleGrid(hero, monsterGroup);
+        
+        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы героя
+        const heroStats = this.getHeroStatsForBattle();
+        
+        this.setupBattleGrid(hero, monsterGroup, heroStats);
         
         this.battleActive = true;
         this.battleRound = 0;
         this.battleLog = [];
         this.battleContext = context;
         
-        const baseMonster = this.getMonsterById(monsterId);
-        console.log(`⚔️ Начинаем случайный бой с ${monsterGroup.length} монстрами на основе: ${baseMonster?.name || 'unknown'}`);
+        console.log(`⚔️ Начинаем бой с ${monsterGroup.length} монстрами`);
         this.showFullscreenBattle();
     }
 
     generateMonsterGroup(baseMonsterId) {
         let baseMonster = this.monsters.find(m => m.id === baseMonsterId);
         if (!baseMonster) {
-            // Если монстр не найден, используем случайного
             const randomIndex = Math.floor(Math.random() * this.monsters.length);
             baseMonster = this.monsters[randomIndex];
         }
@@ -205,17 +202,22 @@ class BattleSystem {
         return monsterGroup;
     }
 
-    setupBattleGrid(hero, monsters) {
+    // ⭐ ИСПРАВЛЕНИЕ: Принимаем heroStats для правильной инициализации
+    setupBattleGrid(hero, monsters, heroStats = null) {
         this.battleGrid.allies = [null, null, null, null, null, null];
         this.battleGrid.enemies = [null, null, null, null, null, null];
         
-        // Размещаем героя в левой части (позиции 0, 2, 4)
+        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы вместо базовых
+        if (!heroStats) {
+            heroStats = this.getHeroStatsForBattle();
+        }
+        
         this.battleGrid.allies[0] = {
             type: 'hero',
             data: hero,
             position: 0,
-            maxHealth: hero.baseHealth,
-            currentHealth: hero.currentHealth || hero.baseHealth
+            maxHealth: heroStats.maxHealth, // ⭐ ИСПРАВЛЕНО: Используем maxHealth из HeroSystem
+            currentHealth: heroStats.currentHealth // ⭐ ИСПРАВЛЕНО: Используем currentHealth из HeroSystem
         };
 
         this.placeMonstersOnGrid(monsters);
@@ -223,10 +225,8 @@ class BattleSystem {
     }
 
     placeMonstersOnGrid(monsters) {
-        // Левая колонка (0, 2, 4) - ближний бой
-        // Правая колонка (1, 3, 5) - дальний бой
-        const meleePositions = [0, 2, 4];  // Левая колонка
-        const rangedPositions = [1, 3, 5]; // Правая колонка
+        const meleePositions = [0, 2, 4];
+        const rangedPositions = [1, 3, 5];
         
         let meleeCount = 0;
         let rangedCount = 0;
@@ -240,7 +240,6 @@ class BattleSystem {
             } else if (attackType === 'ranged' && rangedCount < 3) {
                 position = rangedPositions[rangedCount++];
             } else {
-                // Если не хватает мест в нужном типе, размещаем в доступных
                 const availablePositions = [...meleePositions, ...rangedPositions]
                     .filter(pos => !this.battleGrid.enemies[pos]);
                 if (availablePositions.length > 0) {
@@ -262,13 +261,12 @@ class BattleSystem {
         });
     }
 
-    // ========== ПОЛНОЭКРАННЫЙ ИНТЕРФЕЙС БОЯ ==========
     showFullscreenBattle() {
         const app = document.getElementById('app');
         if (!app) return;
 
-        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
-        const heroStats = window.game.systems.hero.calculateHeroStats(this.currentHero);
+        // ⭐ ИСПРАВЛЕНИЕ: Получаем актуальные статы
+        const heroStats = this.getHeroStatsForBattle();
 
         app.innerHTML = `
             <div class="battle-screen-fullscreen">
@@ -330,7 +328,6 @@ class BattleSystem {
         const grid = this.battleGrid[side];
         let html = '';
         
-        // Создаем сетку 6x6 (2 колонки x 3 ряда)
         for (let row = 0; row < 3; row++) {
             for (let col = 0; col < 2; col++) {
                 const position = row * 2 + col;
@@ -368,8 +365,8 @@ class BattleSystem {
                     </div>
                 `;
             } else {
-                // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
-                const heroStats = window.game.systems.hero.calculateHeroStats(unit.data);
+                // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы
+                const heroStats = this.getHeroStatsForBattle();
                 stats = `
                     <div class="unit-stats">
                         <div class="stat-line">
@@ -405,7 +402,6 @@ class BattleSystem {
                 content += '<div class="dead-overlay">💀</div>';
             }
             
-            // Делаем врагов кликабельными, если они живы и доступны для атаки
             if (isEnemy && isAlive && this.availableTargets.includes(position)) {
                 cellClass += ' selectable';
                 onClick = `onclick="game.systems.battle.selectTarget(${position})"`;
@@ -432,7 +428,6 @@ class BattleSystem {
         }
     }
 
-    // ========== ОСНОВНАЯ ЛОГИКА БОЯ ==========
     selectTarget(position) {
         if (!this.availableTargets.includes(position)) {
             console.log("❌ Цель недоступна для атаки");
@@ -446,13 +441,11 @@ class BattleSystem {
         }
 
         this.selectedTarget = position;
-        console.log(`🎯 Выбрана цель: ${target.data.name} на позиции ${position}`);
-        
         this.executeAttack(position);
     }
 
     executeAttack(targetPosition) {
-        const hero = this.battleGrid.allies[0]; // Герой теперь на позиции 0
+        const hero = this.battleGrid.allies[0];
         const target = this.battleGrid.enemies[targetPosition];
         
         if (!hero || !target) {
@@ -462,20 +455,17 @@ class BattleSystem {
 
         this.battleRound++;
         
-        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
-        const heroStats = window.game.systems.hero.calculateHeroStats(hero.data);
+        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы
+        const heroStats = this.getHeroStatsForBattle();
         const baseDamage = heroStats.damage;
         const targetArmor = target.data.armor || 0;
         
-        // Критический удар
         const isCrit = Math.random() < (heroStats.critChance || 0.1);
         const critMultiplier = isCrit ? 2 : 1;
         const finalDamage = Math.max(1, Math.floor((baseDamage - targetArmor) * critMultiplier));
         
-        // Нанесение урона
         target.currentHealth -= finalDamage;
         
-        // Вампиризм
         if (heroStats.vampirism && heroStats.vampirism > 0) {
             const healAmount = Math.floor(finalDamage * heroStats.vampirism);
             hero.currentHealth = Math.min(hero.currentHealth + healAmount, hero.maxHealth);
@@ -484,29 +474,23 @@ class BattleSystem {
             }
         }
         
-        // Логирование
         if (isCrit) {
             this.addBattleLog(`💥 КРИТИЧЕСКИЙ УДАР! ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
         } else {
             this.addBattleLog(`🗡️ ${hero.data.name} атакует ${target.data.name} и наносит ${finalDamage} урона!`);
         }
         
-        // Проверка смерти цели
         if (target.currentHealth <= 0) {
             target.currentHealth = 0;
             this.addBattleLog(`💀 ${target.data.name} повержен!`);
             
-            // Проверка конца боя
             if (this.isBattleOver()) {
                 this.endTacticalBattle(true);
                 return;
             }
         }
         
-        // Обновление интерфейса
         this.updateBattleDisplay();
-        
-        // Ход монстров
         setTimeout(() => this.executeMonsterTurns(), 1500);
     }
 
@@ -520,7 +504,6 @@ class BattleSystem {
         let monsterIndex = 0;
         const executeNextMonster = () => {
             if (monsterIndex >= aliveMonsters.length) {
-                // Все монстры походили
                 this.updateAvailableTargets();
                 this.updateBattleDisplay();
                 return;
@@ -530,7 +513,6 @@ class BattleSystem {
             this.executeMonsterAttack(monster);
             monsterIndex++;
             
-            // Задержка между атаками монстров
             setTimeout(executeNextMonster, 1000);
         };
         
@@ -542,9 +524,9 @@ class BattleSystem {
         if (!hero) return;
         
         const monsterDamage = monster.data.damage || 5;
-        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
-        const heroArmor = window.game.systems.hero.calculateHeroStats(hero.data).armor;
-        const finalDamage = Math.max(1, monsterDamage - heroArmor);
+        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы
+        const heroStats = this.getHeroStatsForBattle();
+        const finalDamage = Math.max(1, monsterDamage - heroStats.armor);
         
         hero.currentHealth -= finalDamage;
         this.addBattleLog(`👹 ${monster.data.name} атакует героя и наносит ${finalDamage} урона!`);
@@ -563,19 +545,16 @@ class BattleSystem {
         const attackType = this.getHeroAttackType(hero.data);
         
         if (attackType === 'ranged') {
-            // Дальний бой - можно атаковать любых врагов
             this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => {
                 const unit = this.battleGrid.enemies[pos];
                 return unit && unit.currentHealth > 0;
             });
         } else {
-            // Ближний бой - только левая колонка (0, 2, 4)
             this.availableTargets = [0, 2, 4].filter(pos => {
                 const unit = this.battleGrid.enemies[pos];
                 return unit && unit.currentHealth > 0;
             });
             
-            // Если левая колонка пуста, можно атаковать любых врагов
             if (this.availableTargets.length === 0) {
                 this.availableTargets = [0, 1, 2, 3, 4, 5].filter(pos => {
                     const unit = this.battleGrid.enemies[pos];
@@ -600,9 +579,8 @@ class BattleSystem {
         return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
     }
 
-    // ========== СИСТЕМА ПОБЕГА ==========
     tryToFlee() {
-        const fleeChance = 0.4; // 40% шанс сбежать
+        const fleeChance = 0.4;
         
         if (Math.random() < fleeChance) {
             this.addBattleLog("🏃 Вам удалось сбежать с поля боя!");
@@ -615,18 +593,15 @@ class BattleSystem {
         this.updateBattleDisplay();
     }
 
-    // ========== ЗАВЕРШЕНИЕ БОЯ ==========
     endTacticalBattle(victory, fled = false) {
         if (fled) {
-            // При побеге - минимальные потери
             const hero = this.battleGrid.allies[0];
             if (hero) {
-                const damage = Math.floor(hero.maxHealth * 0.1); // 10% от макс здоровья
+                const damage = Math.floor(hero.maxHealth * 0.1);
                 hero.currentHealth = Math.max(1, hero.currentHealth - damage);
                 this.addBattleLog(`🏃 Вы сбежали, получив ${damage} урона`);
             }
         } else if (victory) {
-            // Победа - награда
             const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
             const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
             
@@ -635,22 +610,19 @@ class BattleSystem {
             this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
             
             this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
-            
-            // ⭐ ДОПОЛНИТЕЛЬНОЕ ЛОГИРОВАНИЕ ДЛЯ ЗАПРОГРАММИРОВАННЫХ МОНСТРОВ
-            if (this.currentMonsters[0]?.source === 'programmed') {
-                console.log(`🏆 Победа над запрограммированным монстром: ${this.currentMonsters[0].name}`);
-            }
         } else {
-            // Поражение
             this.currentHero.currentHealth = 1;
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
         }
         
-        // Сохранение игры
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Обновляем здоровье героя в основной системе
+        if (this.currentHero && window.game.systems.hero) {
+            this.currentHero.currentHealth = this.battleGrid.allies[0]?.currentHealth || this.currentHero.currentHealth;
+        }
+        
         if (window.game) window.game.saveGame();
         
-        // Завершение движения на карте
         if (this.battleContext === 'movement' && window.game.systems.map) {
             window.game.systems.map.completeMovementAfterBattle(victory && !fled);
         }
@@ -734,7 +706,6 @@ class BattleSystem {
         this.currentMonsters = [];
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     addBattleLog(message) {
         this.battleLog.push(`[Раунд ${this.battleRound}] ${message}`);
         if (this.battleLog.length > 8) this.battleLog.shift();
@@ -755,7 +726,6 @@ class BattleSystem {
             hintElement.textContent = this.getBattleHint();
         }
         
-        // Обновляем сетку
         const alliesGrid = document.querySelector('.allies-side .grid-container-6x6');
         const enemiesGrid = document.querySelector('.enemies-side .grid-container-6x6');
         
@@ -769,28 +739,6 @@ class BattleSystem {
         this.updateBattleLog();
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Отладочная информация о монстрах
-    debugMonsterInfo() {
-        console.group("🐛 BattleSystem Monster Debug");
-        console.log("Всего монстров:", this.monsters.length);
-        console.log("Текущие монстры в бою:", this.currentMonsters);
-        console.log("Тип боя:", this.battleContext);
-        
-        if (this.currentMonsters.length > 0) {
-            this.currentMonsters.forEach((monster, index) => {
-                console.log(`Монстр ${index + 1}:`, {
-                    id: monster.id,
-                    name: monster.name,
-                    health: monster.health,
-                    damage: monster.damage,
-                    source: monster.source || 'unknown'
-                });
-            });
-        }
-        console.groupEnd();
-    }
-
-    // Старый метод для совместимости
     showTacticalBattleScreen() {
         this.showFullscreenBattle();
     }
@@ -810,4 +758,4 @@ class BattleSystem {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с поддержкой конкретных монстров с карты");
+console.log("📦 BattleSystem модуль загружен с исправлениями здоровья");
