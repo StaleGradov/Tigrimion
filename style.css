@@ -3578,15 +3578,25 @@ body {
 }
 /* ========== ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ ========== */
 
-/* Сбрасываем все стили для полосок здоровья */
-.health-bar-fullscreen,
-.health-fill,
-.health-text {
-    all: unset;
+/* Стили для полосок здоровья в интерфейсе героя (оставляем как есть) */
+.hero-game-screen .health-bar-container,
+.hero-game-screen .experience-bar-container {
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    height: 24px !important;
 }
 
-/* Новые стили для полосок здоровья в бою */
-.health-bar-fullscreen {
+.hero-game-screen .health-bar,
+.hero-game-screen .experience-bar {
+    height: 100% !important;
+    font-size: 11px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Стили для полосок здоровья в бою - ВОССТАНАВЛИВАЕМ */
+.battle-screen-fullscreen .health-bar-fullscreen {
     width: 100% !important;
     height: 25px !important;
     background: #4b5563 !important;
@@ -3598,7 +3608,7 @@ body {
     box-sizing: border-box !important;
 }
 
-.health-fill {
+.battle-screen-fullscreen .health-fill {
     height: 100% !important;
     background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
     transition: width 0.5s ease !important;
@@ -3608,7 +3618,7 @@ body {
     left: 0 !important;
 }
 
-.health-text {
+.battle-screen-fullscreen .health-text {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
@@ -3622,14 +3632,14 @@ body {
     padding: 0 !important;
 }
 
-/* Убираем конфликтующие стили */
-.unit-info {
+/* Убираем конфликтующие стили только для боя */
+.battle-screen-fullscreen .unit-info {
     position: relative !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.unit-display-fullscreen {
+.battle-screen-fullscreen .unit-display-fullscreen {
     position: relative !important;
     width: 100% !important;
     height: 100% !important;
