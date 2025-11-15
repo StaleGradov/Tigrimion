@@ -3576,60 +3576,61 @@ body {
 .log-entry:last-child {
     border-bottom: none;
 }
-/* ========== РАЗДЕЛЬНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ ========== */
+/* ========== ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ ========== */
 
-/* Полоски в интерфейсе героя */
-.hero-screen .health-bar-container,
-.hero-screen .experience-bar-container {
-    margin: 4px 0 !important;
-    padding: 0 !important;
-    height: 24px !important;
+/* Сбрасываем все стили для полосок здоровья */
+.health-bar-fullscreen,
+.health-fill,
+.health-text {
+    all: unset;
 }
 
-.hero-screen .health-bar,
-.hero-screen .experience-bar {
-    height: 100% !important;
-    font-size: 11px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Полоски в бою */
-.battle-screen .health-bar-fullscreen {
+/* Новые стили для полосок здоровья в бою */
+.health-bar-fullscreen {
+    width: 100% !important;
     height: 25px !important;
+    background: #4b5563 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
     margin: 0.5rem 0 !important;
-}
-
-.battle-screen .health-fill {
-    height: 100% !important;
-}
-
-.battle-screen .health-text {
-    font-size: 0.9rem !important;
-}
-
-/* Принудительное исправление позиционирования */
-.health-display-section, .experience-display-section {
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
     position: relative !important;
-    margin: 0 !important;
-    padding: 8px 0 !important;
-    min-height: auto !important;
+    box-sizing: border-box !important;
 }
 
-.health-bar-container, .experience-bar-container {
+.health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    transition: width 0.5s ease !important;
+    border-radius: 10px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+}
+
+.health-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 0.9rem !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Убираем конфликтующие стили */
+.unit-info {
     position: relative !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-/* Специфичные стили для экрана героя */
-.hero-game-screen .health-bar-container,
-.hero-game-screen .experience-bar-container {
-    margin: 4px 0 !important;
-}
-
-/* Специфичные стили для экрана боя */
-.battle-screen-fullscreen .health-bar-fullscreen {
-    margin: 0.5rem 0 !important;
+.unit-display-fullscreen {
+    position: relative !important;
+    width: 100% !important;
+    height: 100% !important;
 }
