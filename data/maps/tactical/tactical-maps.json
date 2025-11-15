@@ -3,7 +3,7 @@
     "name": "Моя карта",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-15T05:12:47.595Z",
+    "created": "2025-11-15T08:03:43.933Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -5187,9 +5187,10 @@
           "col": 12,
           "x": 416,
           "y": 540,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true,
+          "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_18_13",
@@ -5787,9 +5788,10 @@
           "col": 16,
           "x": 554,
           "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true,
+  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_20_17",
@@ -6247,9 +6249,10 @@
           "col": 6,
           "x": 208,
           "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true,
+  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_22_7",
@@ -6427,9 +6430,10 @@
           "col": 24,
           "x": 831,
           "y": 660,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true,
+  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_22_25",
@@ -7047,9 +7051,10 @@
           "col": 2,
           "x": 87,
           "y": 750,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true,
+  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_25_3",
@@ -8207,9 +8212,10 @@
           "col": 6,
           "x": 225,
           "y": 870,
-          "type": "active",
-          "passable": true,
-          "visible": true
+          "type": "monster",
+          "passable": false,
+          "visible": true, 
+  "monster_id": 1  // ← ДОБАВИТЬ ЭТУ СТРОКУ
         },
         {
           "id": "cell_29_7",
@@ -9265,7 +9271,14 @@
     },
     "playerStart": "cell_22_16",
     "objects": {
-      "monsters": [],
+      "monsters": [
+        "cell_18_12",
+        "cell_20_16",
+        "cell_22_6",
+        "cell_22_24",
+        "cell_25_2",
+        "cell_29_6"
+      ],
       "chests": [
         "cell_13_11",
         "cell_15_18",
