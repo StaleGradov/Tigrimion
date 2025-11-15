@@ -967,25 +967,22 @@ class MapSystem {
         }
     }
 
-   renderTigrimionTacticalMap() {
+ renderTigrimionTacticalMap() {
     const map = this.currentTacticalMap;
     
     return `
-        <div class="map-container tactical-map tigrimion-tactical-map">
-            <div class="tactical-map-header">
-                <h4>${map.name}</h4>
-                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-            </div>
-            
-            <div class="tactical-map-content" id="tacticalMapContent">
-                <div class="tactical-map-visual" id="tacticalMapVisual">
-                    <!-- Canvas будет добавлен автоматически -->
-                </div>
+        <div class="tactical-map-header">
+            <h4>${map.name}</h4>
+            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+        </div>
+        
+        <div class="tactical-map-content">
+            <div class="tactical-map-visual">
+                <!-- Canvas будет добавлен автоматически -->
             </div>
         </div>
     `;
 }
-
     renderStandardTacticalMap() {
         if (!this.currentTacticalMap) return '<div class="map-error">Тактическая карта не загружена</div>';
 
@@ -1216,82 +1213,77 @@ class MapSystem {
         }
     }
 
-    showOverlay(overlayType) {
-        if (overlayType === 'tactical-map') {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
+ showOverlay(overlayType) {
+    if (overlayType === 'tactical-map') {
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
 
-            this.activeOverlay = overlayType;
-            
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="overlay-header">
-                        <h3>🎲 Тактическая карта</h3>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="overlay-body">
-                        ${this.renderTacticalMap()}
-                    </div>
-                </div>
-            `;
-            container.style.display = 'block';
-            
-            setTimeout(() => {
-                this.initCanvas();
-                this.updateMovementInfo();
-            }, 100);
-            
-        } else {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
+        this.activeOverlay = overlayType;
+        
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                ${this.renderTacticalMap()}
+            </div>
+        `;
+        container.style.display = 'block';
+        
+        // Уменьшаем задержку для лучшей производительности
+        setTimeout(() => {
+            this.initCanvas();
+            this.updateMovementInfo();
+        }, 50);
+        
+    } else {
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
 
-            this.activeOverlay = overlayType;
+        this.activeOverlay = overlayType;
 
-            switch(overlayType) {
-                case 'global-map':
-                    container.innerHTML = `
-                        <div class="overlay-content map-overlay">
-                            <div class="overlay-header">
-                                <h3>🗺️ Глобальная карта</h3>
-                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                            </div>
-                            <div class="overlay-body">
-                                ${this.renderGlobalMap()}
-                            </div>
+        switch(overlayType) {
+            case 'global-map':
+                container.innerHTML = `
+                    <div class="overlay-content map-overlay">
+                        <div class="overlay-header">
+                            <h3>🗺️ Глобальная карта</h3>
+                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                         </div>
-                    `;
-                    break;
-
-                case 'local-map':
-                    container.innerHTML = `
-                        <div class="overlay-content map-overlay">
-                            <div class="overlay-header">
-                                <h3>📍 Локальная карта</h3>
-                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                            </div>
-                            <div class="overlay-body">
-                                ${this.renderLocalMap()}
-                            </div>
+                        <div class="overlay-body">
+                            ${this.renderGlobalMap()}
                         </div>
-                    `;
-                    break;
+                    </div>
+                `;
+                break;
 
-                case 'inventory':
-                    if (window.game && window.game.systems.equipment) {
-                        container.innerHTML = window.game.systems.equipment.showInventory();
-                    }
-                    break;
+            case 'local-map':
+                container.innerHTML = `
+                    <div class="overlay-content map-overlay">
+                        <div class="overlay-header">
+                            <h3>📍 Локальная карта</h3>
+                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                        </div>
+                        <div class="overlay-body">
+                            ${this.renderLocalMap()}
+                        </div>
+                    </div>
+                `;
+                break;
 
-                case 'shop':
-                    if (window.game && window.game.systems.equipment) {
-                        container.innerHTML = window.game.systems.equipment.showShop();
-                    }
-                    break;
-            }
+            case 'inventory':
+                if (window.game && window.game.systems.equipment) {
+                    container.innerHTML = window.game.systems.equipment.showInventory();
+                }
+                break;
 
-            container.style.display = 'block';
+            case 'shop':
+                if (window.game && window.game.systems.equipment) {
+                    container.innerHTML = window.game.systems.equipment.showShop();
+                }
+                break;
         }
+
+        container.style.display = 'block';
     }
+}
 
     hideOverlay() {
         const container = document.getElementById('overlay-container');
