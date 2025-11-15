@@ -22,15 +22,52 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован");
     }
 
+    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Загрузка данных монстров
     async loadBattleData() {
         try {
             console.log("📥 Загружаем данные монстров...");
-            const response = await fetch('data/enemies.json');
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
-            this.monsters = await response.json();
-            console.log(`✅ Загружено монстров: ${this.monsters.length}`);
+            // Загружаем обоих монстров - и enemies.json и monsters.json
+            const [enemiesResponse, monstersResponse] = await Promise.all([
+                fetch('data/enemies.json').catch(() => null),
+                fetch('data/monsters.json').catch(() => null)
+            ]);
+            
+            this.monsters = [];
+            
+            // Обрабатываем enemies.json (случайные монстры)
+            if (enemiesResponse && enemiesResponse.ok) {
+                const enemies = await enemiesResponse.json();
+                this.monsters = this.monsters.concat(enemies);
+                console.log(`✅ Загружено случайных монстров: ${enemies.length}`);
+            } else {
+                console.warn("❌ enemies.json не загружен, создаем тестовых монстров");
+                this.createFallbackMonsters();
+            }
+            
+            // Обрабатываем monsters.json (запрограммированные монстры)
+            if (monstersResponse && monstersResponse.ok) {
+                const programmedMonsters = await monstersResponse.json();
+                // Объединяем массивы, избегая дубликатов по ID
+                programmedMonsters.forEach(monster => {
+                    const existingIndex = this.monsters.findIndex(m => m.id === monster.id);
+                    if (existingIndex >= 0) {
+                        // Заменяем существующего монстра (monsters.json имеет приоритет)
+                        this.monsters[existingIndex] = monster;
+                        console.log(`🔄 Заменен монстр ID ${monster.id}: ${monster.name}`);
+                    } else {
+                        this.monsters.push(monster);
+                        console.log(`➕ Добавлен монстр ID ${monster.id}: ${monster.name}`);
+                    }
+                });
+                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
+            } else {
+                console.warn("❌ monsters.json не загружен");
+            }
+            
+            console.log(`🎯 Всего монстров в системе: ${this.monsters.length}`);
             return true;
+            
         } catch (error) {
             console.error("❌ Ошибка загрузки данных монстров:", error);
             this.createFallbackMonsters();
@@ -88,6 +125,63 @@ class BattleSystem {
         console.log("🔄 Созданы тестовые монстры");
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Получить монстра по ID
+    getMonsterById(monsterId) {
+        const monster = this.monsters.find(m => m.id === monsterId);
+        if (!monster) {
+            console.warn(`❌ Монстр с ID ${monsterId} не найден!`);
+            return null;
+        }
+        return monster;
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Начать бой с конкретным монстром
+    startBattleWithSpecificMonster(hero, specificMonster, context = 'normal') {
+        if (!hero) {
+            console.error("❌ Не могу начать бой: герой не передан");
+            return;
+        }
+
+        // Создаем группу из конкретного монстра (обычно 1 монстр для запрограммированных встреч)
+        const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
+        if (!monsterGroup) return;
+
+        this.currentHero = hero;
+        this.currentMonsters = monsterGroup;
+        this.setupBattleGrid(hero, monsterGroup);
+        
+        this.battleActive = true;
+        this.battleRound = 0;
+        this.battleLog = [];
+        this.battleContext = context;
+        
+        console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
+        this.showFullscreenBattle();
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Генерация группы из конкретного монстра
+    generateSpecificMonsterGroup(specificMonster) {
+        if (!specificMonster) return null;
+
+        // Для запрограммированных монстров обычно 1 монстр, но можно настроить
+        const monsterCount = 1; // Можно добавить поле groupSize в будущем
+        
+        const monsterGroup = [];
+        for (let i = 0; i < monsterCount; i++) {
+            const monsterCopy = {
+                ...specificMonster,
+                battleId: i + 1,
+                currentHealth: specificMonster.health,
+                name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
+                source: 'programmed' // Помечаем как запрограммированного монстра
+            };
+            monsterGroup.push(monsterCopy);
+        }
+
+        console.log(`🎯 Создана группа из ${monsterGroup.length} монстра(ов) для ${specificMonster.name}`);
+        return monsterGroup;
+    }
+
     startBattleWithMonster(hero, monsterId, context = 'normal') {
         if (!hero) {
             console.error("❌ Не могу начать бой: герой не передан");
@@ -106,7 +200,8 @@ class BattleSystem {
         this.battleLog = [];
         this.battleContext = context;
         
-        console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
+        const baseMonster = this.getMonsterById(monsterId);
+        console.log(`⚔️ Начинаем случайный бой с ${monsterGroup.length} монстрами на основе: ${baseMonster?.name || 'unknown'}`);
         this.showFullscreenBattle();
     }
 
@@ -133,7 +228,8 @@ class BattleSystem {
                 ...baseMonster,
                 battleId: i + 1,
                 currentHealth: baseMonster.health,
-                name: `${baseMonster.name} ${i + 1}`
+                name: `${baseMonster.name} ${i + 1}`,
+                source: 'random'
             };
             monsterGroup.push(monsterCopy);
         }
@@ -568,6 +664,11 @@ class BattleSystem {
             this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
             
             this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+            
+            // ⭐ ДОПОЛНИТЕЛЬНОЕ ЛОГИРОВАНИЕ ДЛЯ ЗАПРОГРАММИРОВАННЫХ МОНСТРОВ
+            if (this.currentMonsters[0]?.source === 'programmed') {
+                console.log(`🏆 Победа над запрограммированным монстром: ${this.currentMonsters[0].name}`);
+            }
         } else {
             // Поражение
             this.currentHero.currentHealth = 1;
@@ -697,6 +798,27 @@ class BattleSystem {
         this.updateBattleLog();
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Отладочная информация о монстрах
+    debugMonsterInfo() {
+        console.group("🐛 BattleSystem Monster Debug");
+        console.log("Всего монстров:", this.monsters.length);
+        console.log("Текущие монстры в бою:", this.currentMonsters);
+        console.log("Тип боя:", this.battleContext);
+        
+        if (this.currentMonsters.length > 0) {
+            this.currentMonsters.forEach((monster, index) => {
+                console.log(`Монстр ${index + 1}:`, {
+                    id: monster.id,
+                    name: monster.name,
+                    health: monster.health,
+                    damage: monster.damage,
+                    source: monster.source || 'unknown'
+                });
+            });
+        }
+        console.groupEnd();
+    }
+
     // Старый метод для совместимости
     showTacticalBattleScreen() {
         this.showFullscreenBattle();
@@ -717,4 +839,4 @@ class BattleSystem {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с полноэкранным интерфейсом");
+console.log("📦 BattleSystem модуль загружен с поддержкой конкретных монстров с карты");
