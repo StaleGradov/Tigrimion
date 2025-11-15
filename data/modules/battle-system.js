@@ -631,68 +631,80 @@ class BattleSystem {
         this.showBattleResult(victory, fled);
     }
 
-    showBattleResult(victory, fled = false) {
-        const app = document.getElementById('app');
-        if (!app) return;
+   showBattleResult(victory, fled = false) {
+    const app = document.getElementById('app');
+    if (!app) return;
 
-        let resultHTML = '';
+    let resultHTML = '';
+    
+    if (fled) {
+        resultHTML = `
+            <div class="battle-result-overlay">
+                <div class="battle-result-modal">
+                    <h3>🏃 УСПЕШНОЕ ОТСТУПЛЕНИЕ</h3>
+                    <div class="result-details">
+                        <p>Вы успешно сбежали с поля боя</p>
+                        <p>Получены легкие ранения</p>
+                        <p>Раундов: ${this.battleRound}</p>
+                    </div>
+                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        Продолжить
+                    </button>
+                </div>
+            </div>
+        `;
+    } else if (victory) {
+        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
-        if (fled) {
-            resultHTML = `
-                <div class="battle-result-screen">
-                    <div class="result-content flee">
-                        <h2>🏃 УСПЕШНОЕ ОТСТУПЛЕНИЕ</h2>
-                        <div class="result-stats">
-                            <div class="stat">Вы успешно сбежали с поля боя</div>
-                            <div class="stat">Получены легкие ранения</div>
-                            <div class="stat">Раундов: ${this.battleRound}</div>
-                        </div>
-                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
-                            Продолжить
-                        </button>
+        resultHTML = `
+            <div class="battle-result-overlay">
+                <div class="battle-result-modal">
+                    <h3>🎉 ПОБЕДА!</h3>
+                    <div class="result-details">
+                        <p>Убито монстров: ${this.currentMonsters.length}</p>
+                        <p>💰 +${totalReward} золота</p>
+                        <p>🌟 +${totalExperience} опыта</p>
+                        <p>Раундов: ${this.battleRound}</p>
                     </div>
+                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        Продолжить
+                    </button>
                 </div>
-            `;
-        } else if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            resultHTML = `
-                <div class="battle-result-screen">
-                    <div class="result-content victory">
-                        <h2>🎉 ПОБЕДА!</h2>
-                        <div class="result-stats">
-                            <div class="stat">Убито монстров: ${this.currentMonsters.length}</div>
-                            <div class="stat">Получено золота: ${totalReward}</div>
-                            <div class="stat">Получено опыта: ${totalExperience}</div>
-                            <div class="stat">Потрачено раундов: ${this.battleRound}</div>
-                        </div>
-                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
-                            Продолжить
-                        </button>
+            </div>
+        `;
+    } else {
+        resultHTML = `
+            <div class="battle-result-overlay">
+                <div class="battle-result-modal">
+                    <h3>💀 ПОРАЖЕНИЕ</h3>
+                    <div class="result-details">
+                        <p>Герой повержен в бою</p>
+                        <p>Здоровье восстановлено до 1</p>
+                        <p>Раундов: ${this.battleRound}</p>
                     </div>
+                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        Продолжить
+                    </button>
                 </div>
-            `;
-        } else {
-            resultHTML = `
-                <div class="battle-result-screen">
-                    <div class="result-content defeat">
-                        <h2>💀 ПОРАЖЕНИЕ</h2>
-                        <div class="result-stats">
-                            <div class="stat">Герой повержен в бою</div>
-                            <div class="stat">Здоровье восстановлено до 1</div>
-                            <div class="stat">Потрачено раундов: ${this.battleRound}</div>
-                        </div>
-                        <button class="btn-primary" onclick="game.systems.battle.returnToGame()">
-                            Продолжить
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        app.innerHTML = resultHTML;
+            </div>
+        `;
     }
+    
+    // Добавляем поверх основного интерфейса боя
+    const existingOverlay = document.querySelector('.battle-result-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    
+    app.insertAdjacentHTML('beforeend', resultHTML);
+}
+
+// Новый метод для закрытия окна результатов
+closeBattleResult() {
+    const overlay = document.querySelector('.battle-result-overlay');
+    if (overlay) overlay.remove();
+    
+    this.returnToGame();
+}
 
     returnToGame() {
         if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
