@@ -586,21 +586,32 @@ class HeroSystem {
 
     // ========== УПРАВЛЕНИЕ ЗДОРОВЬЕМ ==========
     takeDamage(hero, damage) {
-        const targetHero = hero || this.currentHero || window.game?.currentHero;
-        if (!targetHero) return 0;
+    const targetHero = hero || this.currentHero || window.game?.currentHero;
+    if (!targetHero) return 0;
 
-        const stats = this.calculateHeroStats(targetHero);
-        const actualDamage = Math.max(1, damage - stats.armor);
-        targetHero.currentHealth = Math.max(0, stats.currentHealth - actualDamage);
-        
-        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+    const stats = this.calculateHeroStats(targetHero);
+    const actualDamage = Math.max(1, damage - stats.armor);
+    const newHealth = Math.max(0, stats.currentHealth - actualDamage);
+    
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Устанавливаем здоровье напрямую
+    targetHero.currentHealth = newHealth;
+    
+    console.log(`💥 Герой получил урон: ${actualDamage} (было: ${stats.currentHealth}, стало: ${newHealth})`);
+    
+    // ⭐ ЕСЛИ ГЕРОЙ УМЕР - ВЫЗЫВАЕМ ОБРАБОТЧИК СМЕРТИ
+    if (newHealth <= 0) {
+        console.log(`💀 Герой погиб от полученного урона!`);
+        this.handleHeroDeath(targetHero);
+    } else {
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДЛЯ ВЫЖИВШЕГО ГЕРОЯ
         this.calculateHeroStats();
-        
-        // СОХРАНЯЕМ ПРИ ИЗМЕНЕНИИ ЗДОРОВЬЯ
-        if (window.game) window.game.saveGame();
-        
-        return actualDamage;
     }
+    
+    // СОХРАНЯЕМ ПРИ ИЗМЕНЕНИИ ЗДОРОВЬЯ
+    if (window.game) window.game.saveGame();
+    
+    return actualDamage;
+}
 
     heal(hero, amount) {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
