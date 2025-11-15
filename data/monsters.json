@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "Бешеная Сорока",
+    "name": "Тест Бешеная Сорока",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Soroka.jpg",
     "health": 120,
     "armor": 0,
@@ -13,7 +13,7 @@
   },
   {
     "id": 2,
-    "name": "Лиса",
+    "name": "Тест Лиса",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Lisa.jpg", 
     "health": 160,
     "armor": 0,
@@ -25,7 +25,7 @@
   },
   {
     "id": 3,
-    "name": "Бродячий Пёс",
+    "name": "Тест Бродячий Пёс",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Dog.jpg", 
     "health": 200,
     "armor": 5,
@@ -37,7 +37,7 @@
   },
   {
     "id": 4,
-    "name": "Волк",
+    "name": "Тест Волк",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Wolf.jpg", 
     "health": 240,
     "armor": 5,
@@ -49,7 +49,7 @@
   },
   {
     "id": 5,
-    "name": "Кабан",
+    "name": "Тест Кабан",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Kaban.jpg", 
     "health": 320,
     "armor": 10,
@@ -61,7 +61,7 @@
   },
   {
     "id": 6,
-    "name": "Тигр",
+    "name": "Тест Тигр",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Tigr.jpg", 
     "health": 360,
     "armor": 10,
@@ -73,7 +73,7 @@
   },
   {
     "id": 7,
-    "name": "Медведь",
+    "name": "Тест Медведь",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Bear.jpg", 
     "health": 440,
     "armor": 15,
@@ -85,7 +85,7 @@
   },
   {
     "id": 8,
-    "name": "Мамонт",
+    "name": "Тест Мамонт",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Mamont.jpg", 
     "health": 800,
     "armor": 20,
@@ -97,7 +97,7 @@
   },
   {
     "id": 9,
-    "name": "Горный Лев",
+    "name": "Тест Горный Лев",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Leo.jpg", 
     "health": 320,
     "armor": 10,
@@ -109,7 +109,7 @@
   },
   {
     "id": 10,
-    "name": "Лютоволк",
+    "name": "Тест Лютоволк",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/Volk.jpg", 
     "health": 300,
     "armor": 5,
