@@ -3576,3 +3576,60 @@ body {
 .log-entry:last-child {
     border-bottom: none;
 }
+/* ========== РАЗДЕЛЬНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ ========== */
+
+/* Полоски в интерфейсе героя */
+.hero-screen .health-bar-container,
+.hero-screen .experience-bar-container {
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    height: 24px !important;
+}
+
+.hero-screen .health-bar,
+.hero-screen .experience-bar {
+    height: 100% !important;
+    font-size: 11px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Полоски в бою */
+.battle-screen .health-bar-fullscreen {
+    height: 25px !important;
+    margin: 0.5rem 0 !important;
+}
+
+.battle-screen .health-fill {
+    height: 100% !important;
+}
+
+.battle-screen .health-text {
+    font-size: 0.9rem !important;
+}
+
+/* Принудительное исправление позиционирования */
+.health-display-section, .experience-display-section {
+    position: relative !important;
+    margin: 0 !important;
+    padding: 8px 0 !important;
+    min-height: auto !important;
+}
+
+.health-bar-container, .experience-bar-container {
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Специфичные стили для экрана героя */
+.hero-game-screen .health-bar-container,
+.hero-game-screen .experience-bar-container {
+    margin: 4px 0 !important;
+}
+
+/* Специфичные стили для экрана боя */
+.battle-screen-fullscreen .health-bar-fullscreen {
+    margin: 0.5rem 0 !important;
+}
