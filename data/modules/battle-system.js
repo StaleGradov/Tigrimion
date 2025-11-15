@@ -22,108 +22,87 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован");
     }
 
-    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Загрузка данных монстров
-    async loadBattleData() {
-        try {
-            console.log("📥 Загружаем данные монстров...");
-            
-            // Загружаем обоих монстров - и enemies.json и monsters.json
-            const [enemiesResponse, monstersResponse] = await Promise.all([
-                fetch('data/enemies.json').catch(() => null),
-                fetch('data/monsters.json').catch(() => null)
-            ]);
-            
-            this.monsters = [];
-            
-            // Обрабатываем enemies.json (случайные монстры)
-            if (enemiesResponse && enemiesResponse.ok) {
-                const enemies = await enemiesResponse.json();
-                this.monsters = this.monsters.concat(enemies);
-                console.log(`✅ Загружено случайных монстров: ${enemies.length}`);
-            } else {
-                console.warn("❌ enemies.json не загружен, создаем тестовых монстров");
-                this.createFallbackMonsters();
-            }
-            
-            // Обрабатываем monsters.json (запрограммированные монстры)
-            if (monstersResponse && monstersResponse.ok) {
-                const programmedMonsters = await monstersResponse.json();
-                // Объединяем массивы, избегая дубликатов по ID
-                programmedMonsters.forEach(monster => {
-                    const existingIndex = this.monsters.findIndex(m => m.id === monster.id);
-                    if (existingIndex >= 0) {
-                        // Заменяем существующего монстра (monsters.json имеет приоритет)
-                        this.monsters[existingIndex] = monster;
-                        console.log(`🔄 Заменен монстр ID ${monster.id}: ${monster.name}`);
-                    } else {
-                        this.monsters.push(monster);
-                        console.log(`➕ Добавлен монстр ID ${monster.id}: ${monster.name}`);
-                    }
-                });
-                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
-            } else {
-                console.warn("❌ monsters.json не загружен");
-            }
-            
-            console.log(`🎯 Всего монстров в системе: ${this.monsters.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных монстров:", error);
-            this.createFallbackMonsters();
-            return true;
+  // ⭐ УПРОЩЕННЫЙ МЕТОД: Загрузка данных монстров
+async loadBattleData() {
+    try {
+        console.log("📥 Загружаем данные монстров...");
+        
+        // Загружаем обоих монстров - и enemies.json и monsters.json
+        const [enemiesResponse, monstersResponse] = await Promise.all([
+            fetch('data/enemies.json').catch(() => null),
+            fetch('data/monsters.json').catch(() => null)
+        ]);
+        
+        // ⭐ РАЗДЕЛЯЕМ МОНСТРОВ НА ДВА МАССИВА
+        this.randomMonsters = [];  // Для случайных встреч
+        this.programmedMonsters = new Map(); // Для запрограммированных монстров
+        
+        // Обрабатываем enemies.json (случайные монстры)
+        if (enemiesResponse && enemiesResponse.ok) {
+            this.randomMonsters = await enemiesResponse.json();
+            console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
+        } else {
+            console.error("❌ enemies.json не загружен!");
+            this.randomMonsters = [];
         }
+        
+        // Обрабатываем monsters.json (запрограммированные монстры)
+        if (monstersResponse && monstersResponse.ok) {
+            const programmedMonsters = await monstersResponse.json();
+            programmedMonsters.forEach(monster => {
+                this.programmedMonsters.set(monster.id, monster);
+            });
+            console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
+        } else {
+            console.error("❌ monsters.json не загружен!");
+        }
+        
+        // Для обратной совместимости оставляем общий массив
+        this.monsters = [...this.randomMonsters, ...Array.from(this.programmedMonsters.values())];
+        
+        console.log(`🎯 Всего монстров: ${this.monsters.length} (случайных: ${this.randomMonsters.length}, запрограммированных: ${this.programmedMonsters.size})`);
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных монстров:", error);
+        // ⭐ НЕ СОЗДАЕМ ТЕСТОВЫХ МОНСТРОВ
+        this.randomMonsters = [];
+        this.programmedMonsters = new Map();
+        this.monsters = [];
+        return false;
     }
+}
 
-    createFallbackMonsters() {
-        this.monsters = [
-            {
-                id: 1,
-                name: "Лютоволк",
-                health: 300,
-                damage: 25,
-                armor: 5,
-                experience: 50,
-                reward: 100,
-                attackType: "melee",
-                image: "images/monsters/wolf.jpg"
-            },
-            {
-                id: 2,
-                name: "Гоблин",
-                health: 150,
-                damage: 15,
-                armor: 2,
-                experience: 25,
-                reward: 50,
-                attackType: "melee",
-                image: "images/monsters/goblin.jpg"
-            },
-            {
-                id: 3,
-                name: "Орк",
-                health: 400,
-                damage: 35,
-                armor: 8,
-                experience: 75,
-                reward: 150,
-                attackType: "melee",
-                image: "images/monsters/orc.jpg"
-            },
-            {
-                id: 4,
-                name: "Тигр",
-                health: 360,
-                damage: 50,
-                armor: 10,
-                experience: 80,
-                reward: 180,
-                attackType: "melee",
-                image: "images/monsters/tiger.jpg"
-            }
-        ];
-        console.log("🔄 Созданы тестовые монстры");
+// ⭐ НОВЫЙ МЕТОД: Получить случайного монстра ТОЛЬКО из enemies.json
+getRandomMonsterForMovement() {
+    if (this.randomMonsters.length === 0) {
+        console.error("❌ Нет случайных монстров в enemies.json!");
+        return null;
     }
+    
+    const randomIndex = Math.floor(Math.random() * this.randomMonsters.length);
+    const monster = this.randomMonsters[randomIndex];
+    console.log(`🎲 Выбран случайный монстр: ${monster.name} (из enemies.json)`);
+    return monster;
+}
+
+// ⭐ ОБНОВЛЕННЫЙ МЕТОД: Получить монстра по ID (из любого источника)
+getMonsterById(monsterId) {
+    // Сначала ищем в запрограммированных монстрах
+    if (this.programmedMonsters.has(monsterId)) {
+        return this.programmedMonsters.get(monsterId);
+    }
+    
+    // Затем в случайных монстрах
+    const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
+    if (randomMonster) {
+        return randomMonster;
+    }
+    
+    console.warn(`❌ Монстр с ID ${monsterId} не найден!`);
+    return null;
+}
+
 
     // ⭐ НОВЫЙ МЕТОД: Получить монстра по ID
     getMonsterById(monsterId) {
