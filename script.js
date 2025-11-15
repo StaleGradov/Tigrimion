@@ -465,33 +465,63 @@ class SafeHeroGame {
     }
 
     // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
-    startHealthRegeneration() {
-        setInterval(() => {
-            if (this.currentHero && this.systems.hero) {
-                // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
-                const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+   // ========== УЛУЧШЕННАЯ СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
+startHealthRegeneration() {
+    setInterval(() => {
+        if (this.currentHero && this.systems.hero) {
+            const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+            
+            // ⭐ ИСПРАВЛЕНИЕ: Регенерируем только если здоровье меньше максимума И больше 0
+            // И если герой не находится в специальной пост-смертной регенерации
+            if (this.currentHero.currentHealth > 0 && 
+                this.currentHero.currentHealth < stats.maxHealth &&
+                !this.currentHero.isInPostDeathRegeneration) {
                 
-                if (this.currentHero.currentHealth < stats.maxHealth) {
-                    // Базовая регенерация + бонусы от предметов
-                    const baseRegen = 1; // 1 хит в секунду
-                    const bonusRegen = stats.healthRegen * baseRegen;
-                    const totalRegen = baseRegen + bonusRegen;
-                    
-                    this.currentHero.currentHealth = Math.min(
-                        stats.maxHealth, 
-                        this.currentHero.currentHealth + totalRegen
-                    );
-                    
-                    // Автосохранение при восстановлении здоровья
-                    if (Math.random() < 0.1) { // 10% шанс на автосохранение
-                        this.saveGame();
-                    }
-                    
-                    console.log(`❤️ Регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
+                // ОБЫЧНАЯ регенерация (медленнее чем после смерти)
+                const baseRegen = 0.5; // 0.5 хита в секунду в обычном режиме
+                const bonusRegen = (stats.healthRegen || 1) * baseRegen;
+                const totalRegen = baseRegen + bonusRegen;
+                
+                this.currentHero.currentHealth = Math.min(
+                    stats.maxHealth, 
+                    this.currentHero.currentHealth + totalRegen
+                );
+                
+                // РЕДКОЕ автосохранение при обычной регенерации
+                if (Math.random() < 0.02) { // 2% шанс
+                    this.saveGame();
                 }
+                
+                console.log(`❤️ Обычная регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
             }
-        }, 1000); // Каждую секунду
-    }
+        }
+    }, 1000);
+}
+
+// ========== ОБРАБОТКА СМЕРТИ ГЕРОЯ ==========
+handleHeroDeath() {
+    if (!this.currentHero) return;
+    
+    console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
+    
+    // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1
+    this.currentHero.currentHealth = 1;
+    
+    // ⭐ ПОМЕЧАЕМ ЧТО ГЕРОЙ В РЕЖИМЕ ПОСЛЕСМЕРТНОЙ РЕГЕНЕРАЦИИ
+    this.currentHero.isInPostDeathRegeneration = true;
+    
+    // ⭐ СОХРАНЯЕМ СРАЗУ
+    this.saveGame();
+    
+    this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
+    
+    // ⭐ ЧЕРЕЗ 10 СЕКУНД СНИМАЕМ ФЛАГ (на всякий случай)
+    setTimeout(() => {
+        if (this.currentHero) {
+            this.currentHero.isInPostDeathRegeneration = false;
+        }
+    }, 10000);
+}
 
     showLoadingScreen(message) {
         const app = document.getElementById('app');
