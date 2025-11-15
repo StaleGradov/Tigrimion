@@ -17,6 +17,10 @@ class BattleSystem {
         this.selectedTarget = null;
         this.availableTargets = [];
         
+        // ⭐ ДОБАВЛЯЕМ ЗАЩИТУ ОТ МНОЖЕСТВЕННЫХ СРАБАТЫВАНИЙ
+        this.resultShown = false;
+        this.battleEnding = false;
+        
         console.log("✅ BattleSystem инициализирован");
     }
 
@@ -105,6 +109,10 @@ class BattleSystem {
             return;
         }
 
+        // ⭐ СБРАСЫВАЕМ ФЛАГИ ПРИ НАЧАЛЕ НОВОГО БОЯ
+        this.resultShown = false;
+        this.battleEnding = false;
+
         const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
         if (!monsterGroup) return;
 
@@ -150,6 +158,10 @@ class BattleSystem {
             console.error("❌ Не могу начать бой: герой не передан");
             return;
         }
+
+        // ⭐ СБРАСЫВАЕМ ФЛАГИ ПРИ НАЧАЛЕ НОВОГО БОЯ
+        this.resultShown = false;
+        this.battleEnding = false;
 
         const monsterGroup = this.generateMonsterGroup(monsterId);
         if (!monsterGroup) return;
@@ -429,6 +441,12 @@ class BattleSystem {
     }
 
     selectTarget(position) {
+        // ⭐ ЗАЩИТА: Если бой уже заканчивается, игнорируем клики
+        if (this.battleEnding || this.resultShown) {
+            console.log("🛑 Бой уже завершается, игнорируем клик");
+            return;
+        }
+
         if (!this.availableTargets.includes(position)) {
             console.log("❌ Цель недоступна для атаки");
             return;
@@ -445,6 +463,12 @@ class BattleSystem {
     }
 
     executeAttack(targetPosition) {
+        // ⭐ ЗАЩИТА: Если бой уже заканчивается, игнорируем клики
+        if (this.battleEnding || this.resultShown) {
+            console.log("🛑 Бой уже завершается, игнорируем клик");
+            return;
+        }
+
         const hero = this.battleGrid.allies[0];
         const target = this.battleGrid.enemies[targetPosition];
         
@@ -453,9 +477,14 @@ class BattleSystem {
             return;
         }
 
+        // ⭐ ЗАЩИТА: Если цель уже мертва, игнорируем
+        if (target.currentHealth <= 0) {
+            console.log("🛑 Цель уже мертва, игнорируем атаку");
+            return;
+        }
+
         this.battleRound++;
         
-        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы
         const heroStats = this.getHeroStatsForBattle();
         const baseDamage = heroStats.damage;
         const targetArmor = target.data.armor || 0;
@@ -485,19 +514,35 @@ class BattleSystem {
             this.addBattleLog(`💀 ${target.data.name} повержен!`);
             
             if (this.isBattleOver()) {
-                this.endTacticalBattle(true);
+                // ⭐ ЗАЩИТА: Помечаем что бой завершается
+                this.battleEnding = true;
+                setTimeout(() => {
+                    this.endTacticalBattle(true);
+                    this.battleEnding = false;
+                }, 1000);
                 return;
             }
         }
         
         this.updateBattleDisplay();
-        setTimeout(() => this.executeMonsterTurns(), 1500);
+        
+        // ⭐ ЗАЩИТА: Добавляем задержку перед ходом монстров
+        setTimeout(() => {
+            if (!this.battleEnding && !this.resultShown) {
+                this.executeMonsterTurns();
+            }
+        }, 1500);
     }
 
     executeMonsterTurns() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
         if (aliveMonsters.length === 0) {
-            this.endTacticalBattle(true);
+            // ⭐ ЗАЩИТА: Помечаем что бой завершается
+            this.battleEnding = true;
+            setTimeout(() => {
+                this.endTacticalBattle(true);
+                this.battleEnding = false;
+            }, 1000);
             return;
         }
         
@@ -534,7 +579,12 @@ class BattleSystem {
         if (hero.currentHealth <= 0) {
             hero.currentHealth = 0;
             this.addBattleLog(`💀 ${hero.data.name} повержен!`);
-            this.endTacticalBattle(false);
+            // ⭐ ЗАЩИТА: Помечаем что бой завершается
+            this.battleEnding = true;
+            setTimeout(() => {
+                this.endTacticalBattle(false);
+                this.battleEnding = false;
+            }, 1000);
         }
     }
 
@@ -580,6 +630,12 @@ class BattleSystem {
     }
 
     tryToFlee() {
+        // ⭐ ЗАЩИТА: Если бой уже заканчивается, игнорируем клики
+        if (this.battleEnding || this.resultShown) {
+            console.log("🛑 Бой уже завершается, игнорируем попытку сбежать");
+            return;
+        }
+
         const fleeChance = 0.4;
         
         if (Math.random() < fleeChance) {
@@ -594,6 +650,14 @@ class BattleSystem {
     }
 
     endTacticalBattle(victory, fled = false) {
+        // ⭐ ЗАЩИТА: Если результат уже показан, выходим
+        if (this.resultShown) {
+            console.log("🛑 Результат боя уже показан, игнорируем");
+            return;
+        }
+        
+        this.resultShown = true;
+
         if (fled) {
             const hero = this.battleGrid.allies[0];
             if (hero) {
@@ -631,82 +695,86 @@ class BattleSystem {
         this.showBattleResult(victory, fled);
     }
 
-   showBattleResult(victory, fled = false) {
-    const app = document.getElementById('app');
-    if (!app) return;
+    showBattleResult(victory, fled = false) {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    let resultHTML = '';
-    
-    if (fled) {
-        resultHTML = `
-            <div class="battle-result-overlay">
-                <div class="battle-result-modal">
-                    <h3>🏃 УСПЕШНОЕ ОТСТУПЛЕНИЕ</h3>
-                    <div class="result-details">
-                        <p>Вы успешно сбежали с поля боя</p>
-                        <p>Получены легкие ранения</p>
-                        <p>Раундов: ${this.battleRound}</p>
-                    </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
-                        Продолжить
-                    </button>
-                </div>
-            </div>
-        `;
-    } else if (victory) {
-        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+        let resultHTML = '';
         
-        resultHTML = `
-            <div class="battle-result-overlay">
-                <div class="battle-result-modal">
-                    <h3>🎉 ПОБЕДА!</h3>
-                    <div class="result-details">
-                        <p>Убито монстров: ${this.currentMonsters.length}</p>
-                        <p>💰 +${totalReward} золота</p>
-                        <p>🌟 +${totalExperience} опыта</p>
-                        <p>Раундов: ${this.battleRound}</p>
+        if (fled) {
+            resultHTML = `
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal">
+                        <h3>🏃 УСПЕШНОЕ ОТСТУПЛЕНИЕ</h3>
+                        <div class="result-details">
+                            <p>Вы успешно сбежали с поля боя</p>
+                            <p>Получены легкие ранения</p>
+                            <p>Раундов: ${this.battleRound}</p>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Продолжить
+                        </button>
                     </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
-                        Продолжить
-                    </button>
                 </div>
-            </div>
-        `;
-    } else {
-        resultHTML = `
-            <div class="battle-result-overlay">
-                <div class="battle-result-modal">
-                    <h3>💀 ПОРАЖЕНИЕ</h3>
-                    <div class="result-details">
-                        <p>Герой повержен в бою</p>
-                        <p>Здоровье восстановлено до 1</p>
-                        <p>Раундов: ${this.battleRound}</p>
+            `;
+        } else if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            resultHTML = `
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal">
+                        <h3>🎉 ПОБЕДА!</h3>
+                        <div class="result-details">
+                            <p>Убито монстров: ${this.currentMonsters.length}</p>
+                            <p>💰 +${totalReward} золота</p>
+                            <p>🌟 +${totalExperience} опыта</p>
+                            <p>Раундов: ${this.battleRound}</p>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Продолжить
+                        </button>
                     </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
-                        Продолжить
-                    </button>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            resultHTML = `
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal">
+                        <h3>💀 ПОРАЖЕНИЕ</h3>
+                        <div class="result-details">
+                            <p>Герой повержен в бою</p>
+                            <p>Здоровье восстановлено до 1</p>
+                            <p>Раундов: ${this.battleRound}</p>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Добавляем поверх основного интерфейса боя
+        const existingOverlay = document.querySelector('.battle-result-overlay');
+        if (existingOverlay) existingOverlay.remove();
+        
+        app.insertAdjacentHTML('beforeend', resultHTML);
     }
-    
-    // Добавляем поверх основного интерфейса боя
-    const existingOverlay = document.querySelector('.battle-result-overlay');
-    if (existingOverlay) existingOverlay.remove();
-    
-    app.insertAdjacentHTML('beforeend', resultHTML);
-}
 
-// Новый метод для закрытия окна результатов
-closeBattleResult() {
-    const overlay = document.querySelector('.battle-result-overlay');
-    if (overlay) overlay.remove();
-    
-    this.returnToGame();
-}
+    // Новый метод для закрытия окна результатов
+    closeBattleResult() {
+        const overlay = document.querySelector('.battle-result-overlay');
+        if (overlay) overlay.remove();
+        
+        this.returnToGame();
+    }
 
     returnToGame() {
+        // ⭐ СБРАСЫВАЕМ ФЛАГИ ПРИ ВОЗВРАТЕ В ИГРУ
+        this.resultShown = false;
+        this.battleEnding = false;
+        
         if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
             window.game.showHeroGameScreen();
             setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
@@ -770,4 +838,4 @@ closeBattleResult() {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с исправлениями здоровья");
+console.log("📦 BattleSystem модуль загружен с исправлениями здоровья и защитой от мигания");
