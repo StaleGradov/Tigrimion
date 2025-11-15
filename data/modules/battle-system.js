@@ -650,50 +650,60 @@ class BattleSystem {
     }
 
     endTacticalBattle(victory, fled = false) {
-        // ⭐ ЗАЩИТА: Если результат уже показан, выходим
-        if (this.resultShown) {
-            console.log("🛑 Результат боя уже показан, игнорируем");
-            return;
-        }
-        
-        this.resultShown = true;
-
-        if (fled) {
-            const hero = this.battleGrid.allies[0];
-            if (hero) {
-                const damage = Math.floor(hero.maxHealth * 0.1);
-                hero.currentHealth = Math.max(1, hero.currentHealth - damage);
-                this.addBattleLog(`🏃 Вы сбежали, получив ${damage} урона`);
-            }
-        } else if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            this.currentHero.gold += totalReward;
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-            
-            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
-        } else {
-            this.currentHero.currentHealth = 1;
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен");
-        }
-        
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Обновляем здоровье героя в основной системе
-        if (this.currentHero && window.game.systems.hero) {
-            this.currentHero.currentHealth = this.battleGrid.allies[0]?.currentHealth || this.currentHero.currentHealth;
-        }
-        
-        if (window.game) window.game.saveGame();
-        
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory && !fled);
-        }
-        
-        this.battleActive = false;
-        this.showBattleResult(victory, fled);
+    // ⭐ ЗАЩИТА: Если результат уже показан, выходим
+    if (this.resultShown) {
+        console.log("🛑 Результат боя уже показан, игнорируем");
+        return;
     }
+    
+    this.resultShown = true;
+
+    if (fled) {
+        const hero = this.battleGrid.allies[0];
+        if (hero) {
+            const damage = Math.floor(hero.maxHealth * 0.1);
+            hero.currentHealth = Math.max(1, hero.currentHealth - damage);
+            this.addBattleLog(`🏃 Вы сбежали, получив ${damage} урона`);
+        }
+    } else if (victory) {
+        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+        
+        this.currentHero.gold += totalReward;
+        window.game.systems.level.addExperience(this.currentHero, totalExperience);
+        this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+        
+        this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+    } else {
+        // ⭐ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Устанавливаем здоровье в 1 и запускаем специальную регенерацию
+        this.currentHero.currentHealth = 1;
+        this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+        this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1 и начнет регенерировать.");
+        
+        // ⭐ ЗАПУСКАЕМ СПЕЦИАЛЬНУЮ РЕГЕНЕРАЦИЮ ПОСЛЕ СМЕРТИ
+        if (window.game && window.game.handleHeroDeath) {
+            window.game.handleHeroDeath();
+        }
+    }
+    
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Обновляем здоровье героя в основной системе
+    if (this.currentHero && window.game.systems.hero) {
+        // Синхронизируем здоровье из боевой системы в основную систему героя
+        this.currentHero.currentHealth = this.battleGrid.allies[0]?.currentHealth || this.currentHero.currentHealth;
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС СРАЗУ
+        window.game.systems.hero.calculateHeroStats(this.currentHero);
+    }
+    
+    if (window.game) window.game.saveGame();
+    
+    if (this.battleContext === 'movement' && window.game.systems.map) {
+        window.game.systems.map.completeMovementAfterBattle(victory && !fled);
+    }
+    
+    this.battleActive = false;
+    this.showBattleResult(victory, fled);
+}
 
     showBattleResult(victory, fled = false) {
         const app = document.getElementById('app');
