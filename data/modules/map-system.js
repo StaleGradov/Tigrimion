@@ -130,7 +130,7 @@ class MapSystem {
         }
     }
 
-  convertTigrimionJSONToMap(jsonMap) {
+ convertTigrimionJSONToMap(jsonMap) {
     if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
         console.warn("❌ Неверная структура карты Tigrimion");
         return null;
@@ -139,14 +139,17 @@ class MapSystem {
     const cells = jsonMap.game.grid.cells;
     const convertedCells = {};
     
+    console.log(`📥 Импортируем карту: ${jsonMap.meta?.name || 'Без названия'}`);
+    console.log(`📊 Клеток в импорте: ${cells.length}`);
+    
     cells.forEach(cell => {
         const key = `${cell.col},${cell.row}`;
         
-        // ПРОСТО ИСПОЛЬЗУЕМ КООРДИНАТЫ КАК ЕСТЬ
+        // Используем координаты как есть из редактора
         convertedCells[key] = {
             type: cell.type,
-            passable: cell.passable,
-            visible: cell.visible,
+            passable: cell.passable !== false, // гарантируем boolean
+            visible: cell.visible !== false,   // гарантируем boolean
             // Сохраняем оригинальные координаты без изменений
             originalX: cell.x,
             originalY: cell.y,
@@ -157,13 +160,22 @@ class MapSystem {
             monster_id: cell.monster_id,
             originalData: cell
         };
+        
+        console.log(`📍 Клетка [${cell.col},${cell.row}] -> (${cell.x},${cell.y}) видимая: ${cell.visible !== false}`);
     });
 
     let startPosition = {x: 0, y: 0};
     const startCell = cells.find(cell => cell.type === 'player_start');
     if (startCell) {
         startPosition = {x: startCell.col, y: startCell.row};
+        console.log(`🎯 Стартовая позиция: [${startCell.col},${startCell.row}]`);
     }
+
+    // Считаем статистику
+    const visibleCells = cells.filter(cell => cell.visible !== false).length;
+    const passableCells = cells.filter(cell => cell.passable !== false).length;
+    
+    console.log(`📈 Статистика: Видимых: ${visibleCells}/${cells.length}, Проходимых: ${passableCells}/${cells.length}`);
 
     return {
         id: this.tacticalMaps.length + 1,
@@ -237,38 +249,44 @@ calculateMapPositioning() {
 
     console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-    const cells = Object.values(this.currentTacticalMap.cells);
+    // Берем ТОЛЬКО видимые клетки для расчета границ
+    const visibleCells = Object.values(this.currentTacticalMap.cells).filter(cell => cell.visible);
     
-    if (cells.length > 0) {
-        // Находим границы ВСЕХ клеток (включая неактивные)
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        cells.forEach(cell => {
-            minX = Math.min(minX, cell.originalX);
-            minY = Math.min(minY, cell.originalY);
-            maxX = Math.max(maxX, cell.originalX);
-            maxY = Math.max(maxY, cell.originalY);
-        });
-
-        const mapWidth = maxX - minX;
-        const mapHeight = maxY - minY;
-
-        // Масштабируем чтобы вся карта поместилась
-        const scaleX = rect.width / mapWidth;
-        const scaleY = rect.height / mapHeight;
-        const scale = Math.min(scaleX, scaleY, 1.2);
-
-        // Центрируем
-        const offsetX = (rect.width - mapWidth * scale) / 2 - minX * scale;
-        const offsetY = (rect.height - mapHeight * scale) / 2 - minY * scale;
-
-        // Применяем трансформации
-        cells.forEach(cell => {
-            cell.displayX = cell.originalX * scale + offsetX;
-            cell.displayY = cell.originalY * scale + offsetY;
-        });
-        
-        console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(2)}`);
+    if (visibleCells.length === 0) {
+        console.log("❌ Нет видимых клеток для отображения");
+        return;
     }
+
+    // Находим границы ТОЛЬКО видимых клеток
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    visibleCells.forEach(cell => {
+        minX = Math.min(minX, cell.originalX);
+        minY = Math.min(minY, cell.originalY);
+        maxX = Math.max(maxX, cell.originalX);
+        maxY = Math.max(maxY, cell.originalY);
+    });
+
+    const mapWidth = maxX - minX;
+    const mapHeight = maxY - minY;
+
+    console.log(`🎯 Visible cells: ${visibleCells.length}, Bounds: [${minX},${minY}] to [${maxX},${maxY}]`);
+
+    // Масштабируем чтобы видимая область поместилась
+    const scaleX = rect.width / mapWidth;
+    const scaleY = rect.height / mapHeight;
+    const scale = Math.min(scaleX, scaleY, 1.5);
+
+    // Центрируем видимую область
+    const offsetX = (rect.width - mapWidth * scale) / 2 - minX * scale;
+    const offsetY = (rect.height - mapHeight * scale) / 2 - minY * scale;
+
+    // Применяем трансформации ко ВСЕМ клеткам
+    Object.values(this.currentTacticalMap.cells).forEach(cell => {
+        cell.displayX = cell.originalX * scale + offsetX;
+        cell.displayY = cell.originalY * scale + offsetY;
+    });
+    
+    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(2)}, Видимых: ${visibleCells.length}`);
 }
     
     setupCanvasEventListeners() {
@@ -424,16 +442,17 @@ calculateMapPositioning() {
         this.ctx.restore();
     }
 
-    drawHexes() {
-        const cells = Object.values(this.currentTacticalMap.cells);
-        
-        cells.forEach(cell => {
-            if (cell.visible) {
-                this.drawSingleHex(cell);
-                this.drawHexContent(cell);
-            }
-        });
-    }
+  drawHexes() {
+    const cells = Object.values(this.currentTacticalMap.cells);
+    
+    cells.forEach(cell => {
+        // Рисуем ТОЛЬКО видимые клетки
+        if (cell.visible) {
+            this.drawSingleHex(cell);
+            this.drawHexContent(cell);
+        }
+    });
+}
 
     drawSingleHex(cell) {
         const hexSize = this.currentTacticalMap.cellSize || 40;
