@@ -131,55 +131,70 @@ class MapSystem {
         }
     }
 
-    convertTigrimionJSONToMap(jsonMap) {
-        if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
-            console.warn("❌ Неверная структура карты Tigrimion");
-            return null;
-        }
-
-        const cells = jsonMap.game.grid.cells;
-        
-        const convertedCells = {};
-        
-        cells.forEach(cell => {
-            const key = `${cell.col},${cell.row}`;
-            
-            convertedCells[key] = {
-                type: cell.type,
-                passable: cell.passable,
-                visible: cell.visible,
-                x: cell.x,
-                y: cell.y,
-                row: cell.row,
-                col: cell.col,
-                // ⭐ ВАЖНОЕ ИЗМЕНЕНИЕ: Сохраняем monster_id если есть
-                monster_id: cell.monster_id,
-                originalData: cell
-            };
-        });
-
-        let startPosition = {x: 0, y: 0};
-        const startCell = cells.find(cell => cell.type === 'player_start');
-        if (startCell) {
-            startPosition = {x: startCell.col, y: startCell.row};
-        }
-
-        return {
-            id: this.tacticalMaps.length + 1,
-            name: jsonMap.meta?.name || "Карта Tigrimion",
-            image: jsonMap.visual?.backgroundImage || "",
-            width: 20,
-            height: 20,
-            startPosition: startPosition,
-            description: jsonMap.meta?.description || "Создана в редакторе карт Tigrimion",
-            localPosition: {x: 0, y: 0},
-            cells: convertedCells,
-            jsonData: jsonMap,
-            gameData: jsonMap.game,
-            renderType: 'hex',
-            cellSize: jsonMap.game.grid.cellSize || 40
-        };
+  convertTigrimionJSONToMap(jsonMap) {
+    if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
+        console.warn("❌ Неверная структура карты Tigrimion");
+        return null;
     }
+
+    const cells = jsonMap.game.grid.cells;
+    const canvasWidth = jsonMap.visual?.canvasWidth || 800;
+    const canvasHeight = jsonMap.visual?.canvasHeight || 600;
+    
+    const convertedCells = {};
+    
+    cells.forEach(cell => {
+        const key = `${cell.col},${cell.row}`;
+        
+        // ВОССТАНАВЛИВАЕМ ПРАВИЛЬНЫЕ КООРДИНАТЫ
+        const normalizedX = cell.x + canvasWidth / 2;
+        const normalizedY = cell.y + canvasHeight / 2;
+        
+        convertedCells[key] = {
+            type: cell.type,
+            passable: cell.passable,
+            visible: cell.visible,
+            x: normalizedX, // Используем нормализованные координаты
+            y: normalizedY,
+            row: cell.row,
+            col: cell.col,
+            monster_id: cell.monster_id,
+            originalData: cell,
+            // Сохраняем для отладки
+            debug: {
+                originalX: cell.originalX || cell.x,
+                originalY: cell.originalY || cell.y,
+                normalizedX: normalizedX,
+                normalizedY: normalizedY
+            }
+        };
+    });
+
+    let startPosition = {x: 0, y: 0};
+    const startCell = cells.find(cell => cell.type === 'player_start');
+    if (startCell) {
+        startPosition = {x: startCell.col, y: startCell.row};
+    }
+
+    return {
+        id: this.tacticalMaps.length + 1,
+        name: jsonMap.meta?.name || "Карта Tigrimion",
+        image: jsonMap.visual?.backgroundImage || "",
+        width: 20,
+        height: 20,
+        startPosition: startPosition,
+        description: jsonMap.meta?.description || "Создана в редакторе карт Tigrimion",
+        localPosition: {x: 0, y: 0},
+        cells: convertedCells,
+        jsonData: jsonMap,
+        gameData: jsonMap.game,
+        renderType: 'hex',
+        cellSize: jsonMap.game.grid.cellSize || 40,
+        // Сохраняем размеры для правильного позиционирования
+        originalCanvasWidth: canvasWidth,
+        originalCanvasHeight: canvasHeight
+    };
+}
 
     // ⭐ НОВЫЙ МЕТОД: Получить монстра с клетки
     getMonsterFromCell(cellData) {
