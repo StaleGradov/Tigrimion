@@ -39,6 +39,38 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
+        // Словарь символов для всех типов объектов
+        this.objectSymbols = {
+            'player_start': '⭐',
+            'monster': '👹',
+            'chest': '📦',
+            'npc': '🧙',
+            'exit': '🚪',
+            'obstacle': '🪨',
+            'active': '🟢',
+            'inactive': '🔴',
+            'tree': '🌲',
+            'elegant_tree': '🎄',
+            'cave': '🕳️',
+            'lava_crack': '🌋',
+            'graveyard_cross': '⚰️',
+            'bandit_camp': '⚔️',
+            'orc_camp': '👹',
+            'black_monolith': '⬛',
+            'weapon': '⚔️',
+            'armor': '🛡️',
+            'village': '🏘️',
+            'castle': '🏰',
+            'water': '💧',
+            'campfire': '🔥',
+            'merchant': '🛒',
+            'cart': '🛒',
+            'traveler': '🚶',
+            'portal': '🌀',
+            'ancient_rune': '🔰',
+            'magic_crystal': '💎'
+        };
+        
         console.log("✅ MapSystem инициализирован с системой подсказок");
     }
 
@@ -308,123 +340,121 @@ class MapSystem {
         }
     }
 
-handleCanvasHover(e) {
-    if (!this.currentTacticalMap) return;
+    handleCanvasHover(e) {
+        if (!this.currentTacticalMap) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
 
-    const hex = this.getHexAtCanvasPosition(x, y);
-    
-    if (this.tooltipTimeout) {
-        clearTimeout(this.tooltipTimeout);
-        this.tooltipTimeout = null;
-    }
-
-    // Определяем предыдущий подсвеченный гекс
-    const prevHex = this.currentTooltip;
-    
-    // Если ушли с гекса или перешли на другой
-    if (!hex || (prevHex && hex && (prevHex.col !== hex.col || prevHex.row !== hex.row))) {
-        this.hideTooltip();
-    }
-
-    // Если навели на новый гекс
-    if (hex && (!prevHex || prevHex.col !== hex.col || prevHex.row !== hex.row)) {
-        this.tooltipTimeout = setTimeout(() => {
-            this.showTooltipForHex(hex, e.clientX, e.clientY);
-        }, 200);
-    }
-}
-
-    
- getHexAtCanvasPosition(canvasX, canvasY) {
-    if (!this.currentTacticalMap) return null;
-
-    const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
-    
-    // Кэшируем результат поиска если координаты похожи
-    if (this.lastHoveredHex) {
-        const centerX = this.lastHoveredHex.displayX;
-        const centerY = this.lastHoveredHex.displayY;
+        const hex = this.getHexAtCanvasPosition(x, y);
         
-        if (centerX && centerY) {
+        if (this.tooltipTimeout) {
+            clearTimeout(this.tooltipTimeout);
+            this.tooltipTimeout = null;
+        }
+
+        // Определяем предыдущий подсвеченный гекс
+        const prevHex = this.currentTooltip;
+        
+        // Если ушли с гекса или перешли на другой
+        if (!hex || (prevHex && hex && (prevHex.col !== hex.col || prevHex.row !== hex.row))) {
+            this.hideTooltip();
+        }
+
+        // Если навели на новый гекс
+        if (hex && (!prevHex || prevHex.col !== hex.col || prevHex.row !== hex.row)) {
+            this.tooltipTimeout = setTimeout(() => {
+                this.showTooltipForHex(hex, e.clientX, e.clientY);
+            }, 200);
+        }
+    }
+    
+    getHexAtCanvasPosition(canvasX, canvasY) {
+        if (!this.currentTacticalMap) return null;
+
+        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+        
+        // Кэшируем результат поиска если координаты похожи
+        if (this.lastHoveredHex) {
+            const centerX = this.lastHoveredHex.displayX;
+            const centerY = this.lastHoveredHex.displayY;
+            
+            if (centerX && centerY) {
+                const distance = Math.sqrt(
+                    Math.pow(canvasX - centerX, 2) + 
+                    Math.pow(canvasY - centerY, 2)
+                );
+                
+                if (distance <= hexSize) {
+                    return this.lastHoveredHex;
+                }
+            }
+        }
+        
+        for (const cell of Object.values(this.currentTacticalMap.cells)) {
+            const centerX = cell.displayX;
+            const centerY = cell.displayY;
+            
+            if (!centerX || !centerY) continue;
+            
             const distance = Math.sqrt(
                 Math.pow(canvasX - centerX, 2) + 
                 Math.pow(canvasY - centerY, 2)
             );
             
             if (distance <= hexSize) {
-                return this.lastHoveredHex;
+                this.lastHoveredHex = cell; // Кэшируем найденный гекс
+                return cell;
             }
         }
+        
+        this.lastHoveredHex = null;
+        return null;
     }
-    
-    for (const cell of Object.values(this.currentTacticalMap.cells)) {
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
-        
-        if (!centerX || !centerY) continue;
-        
-        const distance = Math.sqrt(
-            Math.pow(canvasX - centerX, 2) + 
-            Math.pow(canvasY - centerY, 2)
-        );
-        
-        if (distance <= hexSize) {
-            this.lastHoveredHex = cell; // Кэшируем найденный гекс
-            return cell;
+
+    showTooltipForHex(hex, mouseX, mouseY) {
+        const tooltipText = this.getTooltipTextForHex(hex);
+        if (!tooltipText) {
+            this.hideTooltip();
+            return;
         }
+
+        if (!this.tooltipElement) {
+            this.createTooltipElement();
+        }
+
+        // Сначала снимаем подсветку со старого гекса
+        this.removeHighlight();
+        
+        // Затем подсвечиваем новый
+        this.currentTooltip = hex;
+        hex.isHighlighted = true;
+        
+        this.tooltipElement.textContent = tooltipText;
+        this.tooltipElement.style.display = 'block';
+
+        const tooltipRect = this.tooltipElement.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = mouseX + 15;
+        let top = mouseY + 15;
+
+        if (left + tooltipRect.width > viewportWidth - 10) {
+            left = mouseX - tooltipRect.width - 15;
+        }
+        if (top + tooltipRect.height > viewportHeight - 10) {
+            top = mouseY - tooltipRect.height - 15;
+        }
+
+        this.tooltipElement.style.left = left + 'px';
+        this.tooltipElement.style.top = top + 'px';
+
+        // ПЕРЕРИСОВЫВАЕМ ВСЮ КАРТУ ОДИН РАЗ
+        this.drawTacticalMap();
     }
     
-    this.lastHoveredHex = null;
-    return null;
-}
-
- showTooltipForHex(hex, mouseX, mouseY) {
-    const tooltipText = this.getTooltipTextForHex(hex);
-    if (!tooltipText) {
-        this.hideTooltip();
-        return;
-    }
-
-    if (!this.tooltipElement) {
-        this.createTooltipElement();
-    }
-
-    // Сначала снимаем подсветку со старого гекса
-    this.removeHighlight();
-    
-    // Затем подсвечиваем новый
-    this.currentTooltip = hex;
-    hex.isHighlighted = true;
-    
-    this.tooltipElement.textContent = tooltipText;
-    this.tooltipElement.style.display = 'block';
-
-    const tooltipRect = this.tooltipElement.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let left = mouseX + 15;
-    let top = mouseY + 15;
-
-    if (left + tooltipRect.width > viewportWidth - 10) {
-        left = mouseX - tooltipRect.width - 15;
-    }
-    if (top + tooltipRect.height > viewportHeight - 10) {
-        top = mouseY - tooltipRect.height - 15;
-    }
-
-    this.tooltipElement.style.left = left + 'px';
-    this.tooltipElement.style.top = top + 'px';
-
-    // ПЕРЕРИСОВЫВАЕМ ВСЮ КАРТУ ОДИН РАЗ
-    this.drawTacticalMap();
-}
-    
-
     getTooltipTextForHex(hex) {
         if (!hex.visible) return null;
 
@@ -442,7 +472,27 @@ handleCanvasHover(e) {
             'exit': '🚪 Выход с карты',
             'obstacle': '🪨 Препятствие',
             'active': '🟢 Проходимая местность',
-            'inactive': '🔴 Непроходимая местность'
+            'inactive': '🔴 Непроходимая местность',
+            'tree': '🌲 Дерево',
+            'elegant_tree': '🎄 Изящное дерево',
+            'cave': '🕳️ Пещера',
+            'lava_crack': '🌋 Лавовый разлом',
+            'graveyard_cross': '⚰️ Кладбищенский крест',
+            'bandit_camp': '⚔️ Лагерь разбойников',
+            'orc_camp': '👹 Лагерь орков',
+            'black_monolith': '⬛ Черный монолит',
+            'weapon': '⚔️ Оружие',
+            'armor': '🛡️ Доспех',
+            'village': '🏘️ Деревня',
+            'castle': '🏰 Замок',
+            'water': '💧 Водная поверхность',
+            'campfire': '🔥 Костер',
+            'merchant': '🛒 Торговец',
+            'cart': '🛒 Телега',
+            'traveler': '🚶 Путник',
+            'portal': '🌀 Магический портал',
+            'ancient_rune': '🔰 Древняя руна',
+            'magic_crystal': '💎 Магический кристалл'
         };
 
         return defaultTooltips[hex.type] || null;
@@ -472,50 +522,47 @@ handleCanvasHover(e) {
         document.body.appendChild(this.tooltipElement);
     }
 
-hideTooltip() {
-    if (this.tooltipElement) {
-        this.tooltipElement.style.display = 'none';
+    hideTooltip() {
+        if (this.tooltipElement) {
+            this.tooltipElement.style.display = 'none';
+        }
+        
+        this.removeHighlight();
+        
+        if (this.tooltipTimeout) {
+            clearTimeout(this.tooltipTimeout);
+            this.tooltipTimeout = null;
+        }
     }
     
-    this.removeHighlight();
-    
-    if (this.tooltipTimeout) {
-        clearTimeout(this.tooltipTimeout);
-        this.tooltipTimeout = null;
-    }
-}
-    
-
-highlightHex(hex) {
-    if (!hex || hex.isHighlighted) return;
-    
-    hex.isHighlighted = true;
-    
-    // Перерисовываем только этот гекс для производительности
-    this.drawSingleHexWithHighlight(hex);
-}
-    
-removeHighlight() {
-    let needsRedraw = false;
-    
-    if (this.currentTacticalMap) {
-        Object.values(this.currentTacticalMap.cells).forEach(cell => {
-            if (cell.isHighlighted) {
-                cell.isHighlighted = false;
-                needsRedraw = true;
-            }
-        });
+    highlightHex(hex) {
+        if (!hex || hex.isHighlighted) return;
+        
+        hex.isHighlighted = true;
+        
+        // Перерисовываем только этот гекс для производительности
+        this.drawSingleHexWithHighlight(hex);
     }
     
-    this.currentTooltip = null;
-    
-    // Перерисовываем только если были изменения
-    if (needsRedraw && this.canvasInitialized) {
-        this.drawTacticalMap();
+    removeHighlight() {
+        let needsRedraw = false;
+        
+        if (this.currentTacticalMap) {
+            Object.values(this.currentTacticalMap.cells).forEach(cell => {
+                if (cell.isHighlighted) {
+                    cell.isHighlighted = false;
+                    needsRedraw = true;
+                }
+            });
+        }
+        
+        this.currentTooltip = null;
+        
+        // Перерисовываем только если были изменения
+        if (needsRedraw && this.canvasInitialized) {
+            this.drawTacticalMap();
+        }
     }
-}
-
-
     
     drawTacticalMap() {
         if (!this.ctx || !this.currentTacticalMap) {
@@ -654,69 +701,121 @@ removeHighlight() {
         this.ctx.restore();
     }
 
-drawHexContent(cell) {
-    const centerX = cell.displayX;
-    const centerY = cell.displayY;
-    
-    if (!centerX || !centerY) return;
+    drawHexContent(cell) {
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+        
+        if (!centerX || !centerY) return;
 
-    this.ctx.save();
-    
-    // Рисуем подсветку если гекс выделен
-    if (cell.isHighlighted) {
-        this.ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = centerX + this.hexSize * Math.cos(angle);
-            const y = centerY + this.hexSize * Math.sin(angle);
+        this.ctx.save();
+        
+        // Рисуем подсветку если гекс выделен
+        if (cell.isHighlighted) {
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i + Math.PI / 6;
+                const x = centerX + this.hexSize * Math.cos(angle);
+                const y = centerY + this.hexSize * Math.sin(angle);
+                
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+            this.ctx.fill();
+        }
+
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        let symbol = '·';
+        let color = '#ffffff';
+        let fontSize = 16;
+
+        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+            symbol = '🎯';
+            fontSize = 20;
+        } else {
+            // Используем словарь символов для всех типов объектов
+            symbol = this.objectSymbols[cell.type] || '·';
             
-            if (i === 0) this.ctx.moveTo(x, y);
-            else this.ctx.lineTo(x, y);
+            // Настраиваем цвет для разных типов объектов
+            switch(cell.type) {
+                case 'monster':
+                case 'orc_camp':
+                    color = '#ef4444';
+                    break;
+                case 'chest':
+                    color = '#f59e0b';
+                    break;
+                case 'npc':
+                case 'merchant':
+                case 'traveler':
+                    color = '#3b82f6';
+                    break;
+                case 'exit':
+                case 'portal':
+                    color = '#8b5cf6';
+                    break;
+                case 'obstacle':
+                case 'tree':
+                case 'elegant_tree':
+                case 'cave':
+                case 'black_monolith':
+                    color = '#6b7280';
+                    break;
+                case 'lava_crack':
+                    color = '#dc2626';
+                    break;
+                case 'graveyard_cross':
+                    color = '#d6d3d1';
+                    break;
+                case 'bandit_camp':
+                    color = '#ca8a04';
+                    break;
+                case 'weapon':
+                    color = '#94a3b8';
+                    break;
+                case 'armor':
+                    color = '#60a5fa';
+                    break;
+                case 'village':
+                    color = '#fbbf24';
+                    break;
+                case 'castle':
+                    color = '#c084fc';
+                    break;
+                case 'water':
+                    color = '#0ea5e9';
+                    break;
+                case 'campfire':
+                    color = '#ea580c';
+                    break;
+                case 'cart':
+                    color = '#78350f';
+                    break;
+                case 'ancient_rune':
+                    color = '#fde047';
+                    break;
+                case 'magic_crystal':
+                    color = '#c4b5fd';
+                    break;
+                case 'inactive':
+                    color = '#ef4444';
+                    break;
+                case 'active':
+                    color = '#22c55e';
+                    break;
+                default:
+                    color = '#ffffff';
+            }
         }
-        this.ctx.closePath();
-        this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-        this.ctx.fill();
+
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(symbol, centerX, centerY);
+        this.ctx.restore();
     }
-
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-
-    let symbol = '·';
-    let color = '#ffffff';
-    let fontSize = 16;
-
-    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-        symbol = '🎯';
-        fontSize = 20;
-    } else {
-        switch(cell.type) {
-            case 'player_start':
-                symbol = '⭐';
-                break;
-            case 'monster':
-                symbol = '👹';
-                break;
-            case 'chest':
-                symbol = '📦';
-                break;
-            case 'npc':
-                symbol = '🧙';
-                break;
-            case 'exit':
-                symbol = '🚪';
-                break;
-            case 'obstacle':
-                symbol = '🪨';
-                color = '#6b7280';
-                break;
-        }
-    }
-
-    this.ctx.font = `bold ${fontSize}px Arial`;
-    this.ctx.fillStyle = color;
-    this.ctx.fillText(symbol, centerX, centerY);
-    this.ctx.restore();
-}
 
     // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
     moveOnTacticalMap(x, y) {
@@ -1275,28 +1374,8 @@ drawHexContent(cell) {
                     cellClass += ` ${cellData.type}-cell`;
                     title += ` - ${this.getCellDescription(cellData)}`;
                     
-                    switch(cellData.type) {
-                        case 'monster':
-                            cellContent = '👹';
-                            break;
-                        case 'chest':
-                            cellContent = '📦';
-                            break;
-                        case 'npc':
-                            cellContent = '🧙';
-                            break;
-                        case 'exit':
-                            cellContent = '🚪';
-                            break;
-                        case 'player_start':
-                            cellContent = '⭐';
-                            break;
-                        case 'obstacle':
-                            cellContent = '🪨';
-                            break;
-                        default:
-                            cellContent = '·';
-                    }
+                    // Используем словарь символов для всех типов объектов
+                    cellContent = this.objectSymbols[cellData.type] || '·';
                 } else {
                     cellClass += ' empty-cell';
                     cellContent = '·';
@@ -1325,7 +1404,27 @@ drawHexContent(cell) {
             'npc': 'NPC',
             'obstacle': 'Препятствие',
             'active': 'Активная клетка',
-            'empty': 'Пустая клетка'
+            'empty': 'Пустая клетка',
+            'tree': 'Дерево',
+            'elegant_tree': 'Изящное дерево',
+            'cave': 'Пещера',
+            'lava_crack': 'Лавовый разлом',
+            'graveyard_cross': 'Кладбищенский крест',
+            'bandit_camp': 'Лагерь разбойников',
+            'orc_camp': 'Лагерь орков',
+            'black_monolith': 'Черный монолит',
+            'weapon': 'Оружие',
+            'armor': 'Доспех',
+            'village': 'Деревня',
+            'castle': 'Замок',
+            'water': 'Вода',
+            'campfire': 'Костер',
+            'merchant': 'Торговец',
+            'cart': 'Телега',
+            'traveler': 'Путник',
+            'portal': 'Портал',
+            'ancient_rune': 'Древняя руна',
+            'magic_crystal': 'Магический кристалл'
         };
         return descriptions[cellData.type] || cellData.type;
     }
