@@ -397,53 +397,69 @@ calculateMapPositioning() {
         }
     }
 
-    drawBackground() {
-        const map = this.currentTacticalMap;
-        if (!map.image) {
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            return;
-        }
-
-        const cells = Object.values(map.cells);
-        if (cells.length === 0) return;
-
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        
-        cells.forEach(cell => {
-            const hexSize = map.cellSize || 40;
-            const centerX = cell.displayX || cell.x;
-            const centerY = cell.displayY || cell.y;
-            minX = Math.min(minX, centerX - hexSize);
-            minY = Math.min(minY, centerY - hexSize);
-            maxX = Math.max(maxX, centerX + hexSize);
-            maxY = Math.max(maxY, centerY + hexSize);
-        });
-
-        const width = maxX - minX;
-        const height = maxY - minY;
-
-        const img = new Image();
-        img.onload = () => {
-            this.ctx.drawImage(img, minX, minY, width, height);
-            this.drawHexes();
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-        };
-        img.onerror = () => {
-            console.log("❌ Ошибка загрузки изображения карты");
-            const gradient = this.ctx.createLinearGradient(minX, minY, maxX, maxY);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(minX, minY, width, height);
-        };
-        img.src = map.image;
+ drawBackground() {
+    const map = this.currentTacticalMap;
+    if (!map.image) {
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        return;
     }
+
+    const cells = Object.values(map.cells);
+    if (cells.length === 0) return;
+
+    // ИСПОЛЬЗУЕМ ТЕ ЖЕ ГРАНИЦЫ, ЧТО И ДЛЯ КЛЕТОК
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    cells.forEach(cell => {
+        const cellX = cell.originalX || cell.x;
+        const cellY = cell.originalY || cell.y;
+        minX = Math.min(minX, cellX);
+        minY = Math.min(minY, cellY);
+        maxX = Math.max(maxX, cellX);
+        maxY = Math.max(maxY, cellY);
+    });
+
+    const mapWidth = maxX - minX;
+    const mapHeight = maxY - minY;
+
+    // Масштабируем как и клетки
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = (rect.width - 80) / mapWidth;
+    const scaleY = (rect.height - 80) / mapHeight;
+    const scale = Math.min(scaleX, scaleY, 1.2);
+
+    const offsetX = (rect.width - mapWidth * scale) / 2;
+    const offsetY = (rect.height - mapHeight * scale) / 2;
+
+    const img = new Image();
+    img.onload = () => {
+        // Рисуем фон с теми же параметрами масштабирования
+        this.ctx.drawImage(
+            img, 
+            offsetX, 
+            offsetY, 
+            mapWidth * scale, 
+            mapHeight * scale
+        );
+        this.drawHexes();
+        if (this.showGrid) {
+            this.drawHexGrid();
+        }
+    };
+    img.onerror = () => {
+        console.log("❌ Ошибка загрузки изображения карты");
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    };
+    img.src = map.image;
+}
 
     drawHexGrid() {
         const cells = Object.values(this.currentTacticalMap.cells);
