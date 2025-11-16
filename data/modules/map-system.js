@@ -298,14 +298,12 @@ calculateMapPositioning() {
     // Получаем данные из редактора
     const editorCanvasWidth = this.currentTacticalMap.jsonData?.visual?.canvasWidth || 954;
     const editorCanvasHeight = this.currentTacticalMap.jsonData?.visual?.canvasHeight || 960;
-    const editorImagePosition = this.currentTacticalMap.jsonData?.visual?.imagePosition || { x: 0, y: 0 };
 
     console.log('🎯 Данные из редактора:', {
-        canvas: `${editorCanvasWidth}x${editorCanvasHeight}`,
-        imagePos: editorImagePosition
+        canvas: `${editorCanvasWidth}x${editorCanvasHeight}`
     });
 
-    // ПРОСТОЕ МАСШТАБИРОВАНИЕ: подгоняем под текущий размер
+    // ПРОСТОЕ МАСШТАБИРОВАНИЕ
     const scaleX = rect.width / editorCanvasWidth;
     const scaleY = rect.height / editorCanvasHeight;
     const scale = Math.min(scaleX, scaleY, 1.0);
@@ -316,9 +314,8 @@ calculateMapPositioning() {
 
     console.log(`⚖️ Масштаб: ${scale}, Смещение: ${offsetX}, ${offsetY}`);
 
-    // ПРИМЕНЯЕМ ТОЧНО ТАКОЕ ЖЕ ПРЕОБРАЗОВАНИЕ К КООРДИНАТАМ
+    // ПРИМЕНЯЕМ МАСШТАБИРОВАНИЕ
     cells.forEach(cell => {
-        // Клетки имеют абсолютные координаты из редактора - применяем такое же масштабирование
         cell.displayX = cell.x * scale + offsetX;
         cell.displayY = cell.y * scale + offsetY;
         
