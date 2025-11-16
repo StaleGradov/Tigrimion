@@ -40,36 +40,37 @@ class MapSystem {
         this.tooltipTimeout = null;
         
         // Словарь символов для всех типов объектов
-        this.objectSymbols = {
-            'player_start': '⭐',
-            'monster': '👹',
-            'chest': '📦',
-            'npc': '🧙',
-            'exit': '🚪',
-            'obstacle': '🪨',
-            'active': '🟢',
-            'inactive': '🔴',
-            'tree': '🌲',
-            'elegant_tree': '🎄',
-            'cave': '🕳️',
-            'lava_crack': '🌋',
-            'graveyard_cross': '⚰️',
-            'bandit_camp': '⚔️',
-            'orc_camp': '👹',
-            'black_monolith': '⬛',
-            'weapon': '⚔️',
-            'armor': '🛡️',
-            'village': '🏘️',
-            'castle': '🏰',
-            'water': '💧',
-            'campfire': '🔥',
-            'merchant': '🛒',
-            'cart': '🛒',
-            'traveler': '🚶',
-            'portal': '🌀',
-            'ancient_rune': '🔰',
-            'magic_crystal': '💎'
-        };
+// В конструкторе MapSystem обновите objectSymbols:
+this.objectSymbols = {
+    'player_start': '⭐',
+    'monster': '👹',
+    'chest': '📦',
+    'npc': '🧙',
+    'exit': '🚪',
+    'obstacle': '🪨',
+    // 'active': '🟢', // Убираем эмодзи для обычных клеток
+    'inactive': '🔴',
+    'tree': '🌲',
+    'elegant_tree': '🎄',
+    'cave': '🕳️',
+    'lava_crack': '🌋',
+    'graveyard_cross': '⚰️',
+    'bandit_camp': '⚔️',
+    'orc_camp': '👹',
+    'black_monolith': '⬛',
+    'weapon': '⚔️',
+    'armor': '🛡️',
+    'village': '🏘️',
+    'castle': '🏰',
+    'water': '💧',
+    'campfire': '🔥',
+    'merchant': '🛒',
+    'cart': '🛒',
+    'traveler': '🚶',
+    'portal': '🌀',
+    'ancient_rune': '🔰',
+    'magic_crystal': '💎'
+};
         
         console.log("✅ MapSystem инициализирован с системой подсказок");
     }
@@ -701,42 +702,48 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    drawHexContent(cell) {
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
-        
-        if (!centerX || !centerY) return;
+   drawHexContent(cell) {
+    const centerX = cell.displayX;
+    const centerY = cell.displayY;
+    
+    if (!centerX || !centerY) return;
 
-        this.ctx.save();
-        
-        // Рисуем подсветку если гекс выделен
-        if (cell.isHighlighted) {
-            this.ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = centerX + this.hexSize * Math.cos(angle);
-                const y = centerY + this.hexSize * Math.sin(angle);
-                
-                if (i === 0) this.ctx.moveTo(x, y);
-                else this.ctx.lineTo(x, y);
-            }
-            this.ctx.closePath();
-            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-            this.ctx.fill();
+    this.ctx.save();
+    
+    // Рисуем подсветку если гекс выделен
+    if (cell.isHighlighted) {
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + this.hexSize * Math.cos(angle);
+            const y = centerY + this.hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
         }
+        this.ctx.closePath();
+        this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        this.ctx.fill();
+    }
 
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
 
-        let symbol = '·';
-        let color = '#ffffff';
-        let fontSize = 16;
+    let symbol = '·';
+    let color = '#ffffff';
+    let fontSize = 16;
 
-        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-            symbol = '🎯';
-            fontSize = 20;
+    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        symbol = '🎯';
+        fontSize = 20;
+    } else {
+        // Для обычных проходимых клеток оставляем точку
+        if (cell.type === 'active' && !cell.objectType) {
+            symbol = '·';
+            color = '#ffffff';
+            fontSize = 24;
         } else {
-            // Используем словарь символов для всех типов объектов
+            // Используем словарь символов для специальных объектов
             symbol = this.objectSymbols[cell.type] || '·';
             
             // Настраиваем цвет для разных типов объектов
@@ -803,19 +810,17 @@ class MapSystem {
                 case 'inactive':
                     color = '#ef4444';
                     break;
-                case 'active':
-                    color = '#22c55e';
-                    break;
                 default:
                     color = '#ffffff';
             }
         }
-
-        this.ctx.font = `bold ${fontSize}px Arial`;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(symbol, centerX, centerY);
-        this.ctx.restore();
     }
+
+    this.ctx.font = `bold ${fontSize}px Arial`;
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(symbol, centerX, centerY);
+    this.ctx.restore();
+}
 
     // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
     moveOnTacticalMap(x, y) {
@@ -1353,46 +1358,50 @@ class MapSystem {
         return gridHTML;
     }
 
-    generateTacticalMapGrid() {
-        let gridHTML = '';
-        const { width, height } = this.currentTacticalMap;
+  generateTacticalMapGrid() {
+    let gridHTML = '';
+    const { width, height } = this.currentTacticalMap;
 
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const cellKey = `${x},${y}`;
-                const cellData = this.currentTacticalMap.cells[cellKey];
-                const isPlayerHere = x === this.playerTacticalPosition.x && y === this.playerTacticalPosition.y;
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const cellKey = `${x},${y}`;
+            const cellData = this.currentTacticalMap.cells[cellKey];
+            const isPlayerHere = x === this.playerTacticalPosition.x && y === this.playerTacticalPosition.y;
+            
+            let cellClass = 'map-cell tactical-cell';
+            let cellContent = '';
+            let title = `Тактическая позиция: [${x}, ${y}]`;
+
+            if (isPlayerHere) {
+                cellClass += ' player-cell';
+                cellContent = '🎯';
+            } else if (cellData) {
+                cellClass += ` ${cellData.type}-cell`;
+                title += ` - ${this.getCellDescription(cellData)}`;
                 
-                let cellClass = 'map-cell tactical-cell';
-                let cellContent = '';
-                let title = `Тактическая позиция: [${x}, ${y}]`;
-
-                if (isPlayerHere) {
-                    cellClass += ' player-cell';
-                    cellContent = '🎯';
-                } else if (cellData) {
-                    cellClass += ` ${cellData.type}-cell`;
-                    title += ` - ${this.getCellDescription(cellData)}`;
-                    
-                    // Используем словарь символов для всех типов объектов
-                    cellContent = this.objectSymbols[cellData.type] || '·';
-                } else {
-                    cellClass += ' empty-cell';
+                // Для обычных клеток используем точку, для специальных - эмодзи
+                if (cellData.type === 'active' && !cellData.objectType) {
                     cellContent = '·';
+                } else {
+                    cellContent = this.objectSymbols[cellData.type] || '·';
                 }
-
-                gridHTML += `
-                    <div class="${cellClass}" 
-                         onclick="game.systems.map.moveOnTacticalMap(${x}, ${y})"
-                         title="${title}">
-                        ${cellContent}
-                    </div>
-                `;
+            } else {
+                cellClass += ' empty-cell';
+                cellContent = '·';
             }
+
+            gridHTML += `
+                <div class="${cellClass}" 
+                     onclick="game.systems.map.moveOnTacticalMap(${x}, ${y})"
+                     title="${title}">
+                    ${cellContent}
+                </div>
+            `;
         }
-        
-        return gridHTML;
     }
+    
+    return gridHTML;
+}
 
     getCellDescription(cellData) {
         const descriptions = {
