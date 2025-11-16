@@ -243,50 +243,56 @@ calculateMapPositioning() {
 
     const rect = container.getBoundingClientRect();
     
-    // ОГРАНИЧИМ РАЗМЕР КАНВАСА чтобы избежать проблем с огромными размерами
-    const maxWidth = 1200;
-    const maxHeight = 800;
-    this.canvas.width = Math.min(rect.width, maxWidth);
-    this.canvas.height = Math.min(rect.height, maxHeight);
+    // Используем реальные размеры контейнера
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
 
-    console.log(`📐 Container: ${rect.width}x${rect.height} -> Canvas: ${this.canvas.width}x${this.canvas.height}`);
+    console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
     const cells = Object.values(this.currentTacticalMap.cells);
     if (cells.length === 0) return;
 
-    // Используем реальные размеры карты из координат клеток
+    // НАХОДИМ РЕАЛЬНЫЕ ГРАНИЦЫ КАРТЫ ИЗ КООРДИНАТ КЛЕТОК
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
     cells.forEach(cell => {
-        minX = Math.min(minX, cell.originalX || cell.x);
-        minY = Math.min(minY, cell.originalY || cell.y);
-        maxX = Math.max(maxX, cell.originalX || cell.x);
-        maxY = Math.max(maxY, cell.originalY || cell.y);
+        const x = cell.originalX || cell.x;
+        const y = cell.originalY || cell.y;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
     });
 
-    const mapWidth = maxX - minX + 100; // +100 для отступов
-    const mapHeight = maxY - minY + 100;
+    const mapWidth = maxX - minX;
+    const mapHeight = maxY - minY;
 
-    console.log(`🗺️ Real map bounds: [${minX}, ${minY}] to [${maxX}, ${maxY}] (${mapWidth}x${mapHeight})`);
+    console.log(`🗺️ Real map area: ${mapWidth}x${mapHeight} (from [${minX},${minY}] to [${maxX},${maxY}])`);
 
-    // Масштабируем карту чтобы она вписалась в канвас
-    const scaleX = (this.canvas.width - 40) / mapWidth;
-    const scaleY = (this.canvas.height - 40) / mapHeight;
-    const scale = Math.min(scaleX, scaleY, 1.0);
+    // Масштабируем карту чтобы она ВПИСАЛАСЬ в контейнер
+    const scaleX = (rect.width - 100) / mapWidth;  // -100 для отступов
+    const scaleY = (rect.height - 100) / mapHeight;
+    const scale = Math.min(scaleX, scaleY, 1.5);   // Ограничиваем масштаб
 
-    // Центрируем с минимальными отступами
-    const offsetX = (this.canvas.width - mapWidth * scale) / 2;
-    const offsetY = (this.canvas.height - mapHeight * scale) / 2;
+    // Центрируем карту по РЕАЛЬНЫМ границам
+    const offsetX = (rect.width - mapWidth * scale) / 2;
+    const offsetY = (rect.height - mapHeight * scale) / 2;
 
     console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
 
-    // Применяем масштабирование относительно реальных границ карты
+    // ПРИМЕНЯЕМ МАСШТАБИРОВАНИЕ ОТНОСИТЕЛЬНО РЕАЛЬНЫХ ГРАНИЦ
     cells.forEach(cell => {
-        cell.displayX = ((cell.originalX || cell.x) - minX + 50) * scale + offsetX;
-        cell.displayY = ((cell.originalY || cell.y) - minY + 50) * scale + offsetY;
+        // Вычитаем minX/minY чтобы начать от левого верхнего угла карты
+        cell.displayX = ((cell.originalX || cell.x) - minX) * scale + offsetX;
+        cell.displayY = ((cell.originalY || cell.y) - minY) * scale + offsetY;
+        
+        // Логируем для отладки
+        if (cell.type === 'monster') {
+            console.log(`👹 [${cell.col},${cell.row}]: (${cell.originalX || cell.x},${cell.originalY || cell.y}) -> (${cell.displayX.toFixed(1)},${cell.displayY.toFixed(1)})`);
+        }
     });
     
-    console.log(`✅ Correct scaling applied to ${cells.length} cells`);
+    console.log(`✅ Corrected positioning for ${cells.length} cells`);
     this.debugCellPositions();
 }
     
@@ -391,10 +397,8 @@ setupCanvasEventListeners() {
  drawBackground() {
     const map = this.currentTacticalMap;
     if (!map.image) {
-        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(1, '#16213e');
-        this.ctx.fillStyle = gradient;
+        // Простой фон если нет изображения
+        this.ctx.fillStyle = '#1a1a2e';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         return;
     }
@@ -402,33 +406,32 @@ setupCanvasEventListeners() {
     const cells = Object.values(map.cells);
     if (cells.length === 0) return;
 
-    // ИСПОЛЬЗУЕМ ТЕ ЖЕ ГРАНИЦЫ, ЧТО И ДЛЯ КЛЕТОК
+    // ИСПОЛЬЗУЕМ ТЕ ЖЕ ГРАНИЦЫ ЧТО И ДЛЯ КЛЕТОК
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
     cells.forEach(cell => {
-        const cellX = cell.originalX || cell.x;
-        const cellY = cell.originalY || cell.y;
-        minX = Math.min(minX, cellX);
-        minY = Math.min(minY, cellY);
-        maxX = Math.max(maxX, cellX);
-        maxY = Math.max(maxY, cellY);
+        const x = cell.originalX || cell.x;
+        const y = cell.originalY || cell.y;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
     });
 
     const mapWidth = maxX - minX;
     const mapHeight = maxY - minY;
 
-    // Масштабируем как и клетки
     const rect = this.canvas.getBoundingClientRect();
-    const scaleX = (rect.width - 80) / mapWidth;
-    const scaleY = (rect.height - 80) / mapHeight;
-    const scale = Math.min(scaleX, scaleY, 1.2);
+    const scaleX = (rect.width - 100) / mapWidth;
+    const scaleY = (rect.height - 100) / mapHeight;
+    const scale = Math.min(scaleX, scaleY, 1.5);
 
     const offsetX = (rect.width - mapWidth * scale) / 2;
     const offsetY = (rect.height - mapHeight * scale) / 2;
 
     const img = new Image();
     img.onload = () => {
-        // Рисуем фон с теми же параметрами масштабирования
+        // Рисуем фон с ТЕМИ ЖЕ параметрами что и клетки
         this.ctx.drawImage(
             img, 
             offsetX, 
@@ -443,10 +446,7 @@ setupCanvasEventListeners() {
     };
     img.onerror = () => {
         console.log("❌ Ошибка загрузки изображения карты");
-        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(1, '#16213e');
-        this.ctx.fillStyle = gradient;
+        this.ctx.fillStyle = '#1a1a2e';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     img.src = map.image;
@@ -492,9 +492,13 @@ drawHexes() {
     
     console.log(`🎨 Drawing ${cells.length} cells...`);
     
-    // ВРЕМЕННО: рисуем ВСЕ клетки без проверки visible
+    // ВРЕМЕННО: рисуем границу канваса
+    this.ctx.strokeStyle = 'red';
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // ВРЕМЕННО: рисуем ВСЕ клетки
     cells.forEach((cell, index) => {
-        // Проверяем что координаты есть
         if (!cell.displayX || !cell.displayY) {
             console.warn(`❌ Cell [${cell.col},${cell.row}] missing display coordinates`);
             return;
@@ -521,18 +525,6 @@ drawHexes() {
         } else if (cell.type === 'player_start') {
             symbol = '⭐';
             color = 'yellow';
-        } else if (cell.type === 'chest') {
-            symbol = '📦';
-            color = 'orange';
-        } else if (cell.type === 'npc') {
-            symbol = '🧙';
-            color = 'blue';
-        } else if (cell.type === 'exit') {
-            symbol = '🚪';
-            color = 'purple';
-        } else if (cell.type === 'obstacle') {
-            symbol = '🪨';
-            color = 'gray';
         }
 
         this.ctx.font = `bold ${fontSize}px Arial`;
@@ -540,7 +532,7 @@ drawHexes() {
         this.ctx.fillText(symbol, cell.displayX, cell.displayY);
         this.ctx.restore();
         
-        // 3. ОТЛАДКА: рисуем координаты для ВСЕХ клеток
+        // 3. ОТЛАДКА: рисуем координаты
         this.ctx.save();
         this.ctx.fillStyle = 'yellow';
         this.ctx.font = '10px Arial';
@@ -558,11 +550,6 @@ drawHexes() {
         this.ctx.fill();
         
         this.ctx.restore();
-        
-        // Логируем каждые 10 клеток чтобы не засорять консоль
-        if (index % 10 === 0) {
-            console.log(`📍 Cell [${cell.col},${cell.row}] at (${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)})`);
-        }
     });
     
     console.log(`✅ Finished drawing ${cells.length} cells`);
