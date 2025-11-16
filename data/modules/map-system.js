@@ -322,26 +322,23 @@ handleCanvasHover(e) {
         this.tooltipTimeout = null;
     }
 
-    // Всегда убираем подсветку при уходе с гекса
-    if (!hex) {
-        this.removeHighlight();
+    // Определяем предыдущий подсвеченный гекс
+    const prevHex = this.currentTooltip;
+    
+    // Если ушли с гекса или перешли на другой
+    if (!hex || (prevHex && hex && (prevHex.col !== hex.col || prevHex.row !== hex.row))) {
         this.hideTooltip();
-        return;
     }
 
     // Если навели на новый гекс
-    if (!this.currentTooltip || 
-        this.currentTooltip.col !== hex.col || 
-        this.currentTooltip.row !== hex.row) {
-        
-        this.removeHighlight(); // Снимаем подсветку со старого
-        this.highlightHex(hex); // Подсвечиваем новый
+    if (hex && (!prevHex || prevHex.col !== hex.col || prevHex.row !== hex.row)) {
+        this.tooltipTimeout = setTimeout(() => {
+            this.showTooltipForHex(hex, e.clientX, e.clientY);
+        }, 200);
     }
-
-    this.tooltipTimeout = setTimeout(() => {
-        this.showTooltipForHex(hex, e.clientX, e.clientY);
-    }, 200);
 }
+
+    
  getHexAtCanvasPosition(canvasX, canvasY) {
     if (!this.currentTacticalMap) return null;
 
@@ -385,40 +382,48 @@ handleCanvasHover(e) {
     return null;
 }
 
-    showTooltipForHex(hex, mouseX, mouseY) {
-        const tooltipText = this.getTooltipTextForHex(hex);
-        if (!tooltipText) {
-            this.hideTooltip();
-            return;
-        }
-
-        if (!this.tooltipElement) {
-            this.createTooltipElement();
-        }
-
-        this.currentTooltip = hex;
-        this.tooltipElement.textContent = tooltipText;
-        this.tooltipElement.style.display = 'block';
-
-        const tooltipRect = this.tooltipElement.getBoundingClientRect();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let left = mouseX + 15;
-        let top = mouseY + 15;
-
-        if (left + tooltipRect.width > viewportWidth - 10) {
-            left = mouseX - tooltipRect.width - 15;
-        }
-        if (top + tooltipRect.height > viewportHeight - 10) {
-            top = mouseY - tooltipRect.height - 15;
-        }
-
-        this.tooltipElement.style.left = left + 'px';
-        this.tooltipElement.style.top = top + 'px';
-
-        this.highlightHex(hex);
+ showTooltipForHex(hex, mouseX, mouseY) {
+    const tooltipText = this.getTooltipTextForHex(hex);
+    if (!tooltipText) {
+        this.hideTooltip();
+        return;
     }
+
+    if (!this.tooltipElement) {
+        this.createTooltipElement();
+    }
+
+    // Сначала снимаем подсветку со старого гекса
+    this.removeHighlight();
+    
+    // Затем подсвечиваем новый
+    this.currentTooltip = hex;
+    hex.isHighlighted = true;
+    
+    this.tooltipElement.textContent = tooltipText;
+    this.tooltipElement.style.display = 'block';
+
+    const tooltipRect = this.tooltipElement.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let left = mouseX + 15;
+    let top = mouseY + 15;
+
+    if (left + tooltipRect.width > viewportWidth - 10) {
+        left = mouseX - tooltipRect.width - 15;
+    }
+    if (top + tooltipRect.height > viewportHeight - 10) {
+        top = mouseY - tooltipRect.height - 15;
+    }
+
+    this.tooltipElement.style.left = left + 'px';
+    this.tooltipElement.style.top = top + 'px';
+
+    // ПЕРЕРИСОВЫВАЕМ ВСЮ КАРТУ ОДИН РАЗ
+    this.drawTacticalMap();
+}
+    
 
     getTooltipTextForHex(hex) {
         if (!hex.visible) return null;
@@ -467,12 +472,12 @@ handleCanvasHover(e) {
         document.body.appendChild(this.tooltipElement);
     }
 
- hideTooltip() {
+hideTooltip() {
     if (this.tooltipElement) {
         this.tooltipElement.style.display = 'none';
     }
     
-    this.removeHighlight(); // Всегда снимаем подсветку
+    this.removeHighlight();
     
     if (this.tooltipTimeout) {
         clearTimeout(this.tooltipTimeout);
@@ -491,54 +496,26 @@ highlightHex(hex) {
 }
     
 removeHighlight() {
-    // Снимаем подсветку со ВСЕХ гексов
+    let needsRedraw = false;
+    
     if (this.currentTacticalMap) {
-        let needsRedraw = false;
-        
         Object.values(this.currentTacticalMap.cells).forEach(cell => {
             if (cell.isHighlighted) {
                 cell.isHighlighted = false;
                 needsRedraw = true;
             }
         });
-        
-        // Перерисовываем всю карту если были изменения
-        if (needsRedraw) {
-            this.drawTacticalMap();
-        }
     }
     
     this.currentTooltip = null;
-}
-
-// Новый метод для перерисовки одного гекса с подсветкой
-drawSingleHexWithHighlight(hex) {
-    const centerX = hex.displayX;
-    const centerY = hex.displayY;
     
-    if (!centerX || !centerY) return;
-
-    this.ctx.save();
-    
-    // Рисуем подсветку
-    this.ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-        const angle = Math.PI / 3 * i + Math.PI / 6;
-        const x = centerX + this.hexSize * Math.cos(angle);
-        const y = centerY + this.hexSize * Math.sin(angle);
-        
-        if (i === 0) this.ctx.moveTo(x, y);
-        else this.ctx.lineTo(x, y);
+    // Перерисовываем только если были изменения
+    if (needsRedraw && this.canvasInitialized) {
+        this.drawTacticalMap();
     }
-    this.ctx.closePath();
-    this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-    this.ctx.fill();
-    
-    // Рисуем контент поверх
-    this.drawHexContent(hex);
-    
-    this.ctx.restore();
 }
+
+
     
     drawTacticalMap() {
         if (!this.ctx || !this.currentTacticalMap) {
@@ -677,13 +654,30 @@ drawSingleHexWithHighlight(hex) {
         this.ctx.restore();
     }
 
- drawHexContent(cell) {
+drawHexContent(cell) {
     const centerX = cell.displayX;
     const centerY = cell.displayY;
     
     if (!centerX || !centerY) return;
 
     this.ctx.save();
+    
+    // Рисуем подсветку если гекс выделен
+    if (cell.isHighlighted) {
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + this.hexSize * Math.cos(angle);
+            const y = centerY + this.hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+        this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        this.ctx.fill();
+    }
+
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
 
