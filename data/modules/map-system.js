@@ -142,18 +142,6 @@ convertTigrimionJSONToMap(jsonMap) {
     console.log(`📥 Импортируем карту: ${jsonMap.meta?.name || 'Без названия'}`);
     console.log(`📊 Клеток в импорте: ${cells.length}`);
     
-    // Собираем информацию о границах
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
-    cells.forEach(cell => {
-        minX = Math.min(minX, cell.x);
-        minY = Math.min(minY, cell.y);
-        maxX = Math.max(maxX, cell.x);
-        maxY = Math.max(maxY, cell.y);
-    });
-    
-    console.log(`🗺️ Original map bounds: [${minX}, ${minY}] to [${maxX}, ${maxY}]`);
-
     cells.forEach(cell => {
         const key = `${cell.col},${cell.row}`;
         
@@ -161,7 +149,7 @@ convertTigrimionJSONToMap(jsonMap) {
             type: cell.type,
             passable: cell.passable !== false,
             visible: cell.visible !== false,
-            originalX: cell.x,  // Сохраняем оригинальные координаты из редактора
+            originalX: cell.x,  // Координаты из редактора
             originalY: cell.y,
             x: cell.x,          // Для обратной совместимости
             y: cell.y,
@@ -170,19 +158,19 @@ convertTigrimionJSONToMap(jsonMap) {
             monster_id: cell.monster_id,
             originalData: cell
         };
-        
-        // Логируем монстров
-        if (cell.type === 'monster') {
-            console.log(`👹 Monster at [${cell.col},${cell.row}]: (${cell.x}, ${cell.y})`);
-        }
     });
 
     let startPosition = {x: 0, y: 0};
     const startCell = cells.find(cell => cell.type === 'player_start');
     if (startCell) {
         startPosition = {x: startCell.col, y: startCell.row};
-        console.log(`🎯 Стартовая позиция: [${startCell.col},${startCell.row}] at (${startCell.x}, ${startCell.y})`);
     }
+
+    // ВАЖНО: Сохраняем размеры канваса из редактора
+    const originalCanvasWidth = jsonMap.visual?.canvasWidth || 954;
+    const originalCanvasHeight = jsonMap.visual?.canvasHeight || 960;
+
+    console.log(`🎯 Editor canvas size: ${originalCanvasWidth}x${originalCanvasHeight}`);
 
     return {
         id: this.tacticalMaps.length + 1,
@@ -198,14 +186,12 @@ convertTigrimionJSONToMap(jsonMap) {
         gameData: jsonMap.game,
         renderType: 'hex',
         cellSize: jsonMap.game.grid.cellSize || 40,
-        // Сохраняем информацию о границах для правильного масштабирования
-        originalBounds: {
-            minX, minY, maxX, maxY,
-            width: maxX - minX,
-            height: maxY - minY
-        }
+        // Сохраняем размеры канваса редактора для правильного масштабирования
+        originalCanvasWidth: originalCanvasWidth,
+        originalCanvasHeight: originalCanvasHeight
     };
 }
+    
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
             return null;
@@ -263,47 +249,33 @@ calculateMapPositioning() {
     const cells = Object.values(this.currentTacticalMap.cells);
     if (cells.length === 0) return;
 
-    // НАЙДЕМ РЕАЛЬНЫЕ ГРАНИЦЫ КАРТЫ ИЗ КЛЕТОК
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    
-    cells.forEach(cell => {
-        const cellX = cell.originalX || cell.x;
-        const cellY = cell.originalY || cell.y;
-        minX = Math.min(minX, cellX);
-        minY = Math.min(minY, cellY);
-        maxX = Math.max(maxX, cellX);
-        maxY = Math.max(maxY, cellY);
-    });
+    // ВАЖНО: Используем ФИКСИРОВАННЫЕ координаты из редактора
+    const originalWidth = this.currentTacticalMap.originalCanvasWidth || 954;
+    const originalHeight = this.currentTacticalMap.originalCanvasHeight || 960;
 
-    const mapWidth = maxX - minX;
-    const mapHeight = maxY - minY;
+    console.log(`🎯 Original canvas from editor: ${originalWidth}x${originalHeight}`);
 
-    console.log(`🗺️ Map bounds: [${minX}, ${minY}] to [${maxX}, ${maxY}] (${mapWidth}x${mapHeight})`);
-    console.log(`📍 Player position: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+    // ПРОСТОЕ МАСШТАБИРОВАНИЕ
+    const scaleX = rect.width / originalWidth;
+    const scaleY = rect.height / originalHeight;
+    const scale = Math.min(scaleX, scaleY, 1.0);
 
-    // Масштабируем чтобы карта вписалась в контейнер с отступами
-    const scaleX = (rect.width - 80) / mapWidth; // -80 для отступов
-    const scaleY = (rect.height - 80) / mapHeight;
-    const scale = Math.min(scaleX, scaleY, 1.2); // Ограничиваем максимальный масштаб
-
-    // Центрируем карту
-    const offsetX = (rect.width - mapWidth * scale) / 2;
-    const offsetY = (rect.height - mapHeight * scale) / 2;
+    // Центрируем
+    const offsetX = (rect.width - originalWidth * scale) / 2;
+    const offsetY = (rect.height - originalHeight * scale) / 2;
 
     console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
 
-    // ПРИМЕНЯЕМ ЕДИНОЕ МАСШТАБИРОВАНИЕ КО ВСЕМ КЛЕТКАМ
+    // ПРИМЕНЯЕМ ПРОСТОЕ МАСШТАБИРОВАНИЕ
     cells.forEach(cell => {
-        cell.displayX = ((cell.originalX || cell.x) - minX) * scale + offsetX;
-        cell.displayY = ((cell.originalY || cell.y) - minY) * scale + offsetY;
-        
-        // Логируем только монстров для отладки
-        if (cell.type === 'monster') {
-            console.log(`👹 Monster [${cell.col},${cell.row}]: original (${cell.originalX || cell.x}, ${cell.originalY || cell.y}) -> display (${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)})`);
-        }
+        cell.displayX = (cell.originalX || cell.x) * scale + offsetX;
+        cell.displayY = (cell.originalY || cell.y) * scale + offsetY;
     });
     
-    console.log(`✅ Map positioning calculated for ${cells.length} cells`);
+    console.log(`✅ Simple scaling applied to ${cells.length} cells`);
+    
+    // ВЫЗЫВАЕМ ОТЛАДКУ
+    this.debugCellPositions();
 }
     
 setupCanvasEventListeners() {
@@ -355,12 +327,11 @@ setupCanvasEventListeners() {
         }
     }
 
-  getHexAtCanvasPosition(canvasX, canvasY) {
+ getHexAtCanvasPosition(canvasX, canvasY) {
     if (!this.currentTacticalMap) return null;
 
     const cells = Object.values(this.currentTacticalMap.cells);
-    const baseHexSize = this.currentTacticalMap.cellSize || 40;
-    const hexSize = baseHexSize * 0.5; // Уменьшаем радиус для более точного определения
+    const baseHexSize = (this.currentTacticalMap.cellSize || 40) * 0.8; // Увеличиваем радиус для удобства
     
     let closestCell = null;
     let minDistance = Infinity;
@@ -368,35 +339,25 @@ setupCanvasEventListeners() {
     for (const cell of cells) {
         if (!cell.visible) continue;
         
-        // ИСПОЛЬЗУЕМ ТОЛЬКО display координаты
         const centerX = cell.displayX;
         const centerY = cell.displayY;
         
-        if (!centerX || !centerY) {
-            console.warn(`❌ Cell [${cell.col},${cell.row}] missing display coordinates`);
-            continue;
-        }
+        if (!centerX || !centerY) continue;
         
         const distance = Math.sqrt(
             Math.pow(canvasX - centerX, 2) + 
             Math.pow(canvasY - centerY, 2)
         );
         
-        // Находим ближайшую клетку
-        if (distance <= hexSize && distance < minDistance) {
+        if (distance <= baseHexSize && distance < minDistance) {
             minDistance = distance;
             closestCell = cell;
         }
     }
     
-    if (closestCell) {
-        console.log(`✅ Hit cell [${closestCell.col},${closestCell.row}] at (${closestCell.displayX.toFixed(1)},${closestCell.displayY.toFixed(1)}) - distance: ${minDistance.toFixed(1)}`);
-    } else {
-        console.log(`❌ No cell found at (${canvasX}, ${canvasY})`);
-    }
-    
     return closestCell;
 }
+    
 
     drawTacticalMap() {
         if (!this.ctx || !this.currentTacticalMap) {
@@ -508,44 +469,7 @@ setupCanvasEventListeners() {
         this.ctx.restore();
     }
 
-drawHexes() {
-    const cells = Object.values(this.currentTacticalMap.cells);
-    
-    // Сначала рисуем все клетки
-    cells.forEach(cell => {
-        if (cell.visible) {
-            this.drawSingleHex(cell);
-        }
-    });
-    
-    // Затем рисуем содержимое
-    cells.forEach(cell => {
-        if (cell.visible) {
-            this.drawHexContent(cell);
-            
-            // ОТЛАДОЧНАЯ ИНФОРМАЦИЯ - координаты для монстров
-            if (cell.type === 'monster' || (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y)) {
-                this.ctx.save();
-                this.ctx.fillStyle = cell.type === 'monster' ? 'red' : 'green';
-                this.ctx.font = '12px Arial';
-                this.ctx.textAlign = 'center';
-                this.ctx.fillText(
-                    `${cell.col},${cell.row}`, 
-                    cell.displayX, 
-                    cell.displayY + 25
-                );
-                
-                // Точка в центре для проверки позиции
-                this.ctx.fillStyle = 'yellow';
-                this.ctx.beginPath();
-                this.ctx.arc(cell.displayX, cell.displayY, 3, 0, Math.PI * 2);
-                this.ctx.fill();
-                
-                this.ctx.restore();
-            }
-        }
-    });
-}
+
 
    drawSingleHex(cell) {
     const hexSize = this.currentTacticalMap.cellSize || 40;
@@ -1490,7 +1414,50 @@ drawHexes() {
             return false;
         }
     }
-
+debugCellPositions() {
+    if (!this.currentTacticalMap || !this.canvas) return;
+    
+    const cells = Object.values(this.currentTacticalMap.cells);
+    console.group('🔍 Debug Cell Positions - SIMPLE SCALING');
+    
+    console.log(`📐 Container: ${this.canvas.width}x${this.canvas.height}`);
+    console.log(`🎯 Editor canvas: ${this.currentTacticalMap.originalCanvasWidth}x${this.currentTacticalMap.originalCanvasHeight}`);
+    
+    // Считаем границы для проверки
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minDisplayX = Infinity, minDisplayY = Infinity, maxDisplayX = -Infinity, maxDisplayY = -Infinity;
+    
+    cells.forEach(cell => {
+        minX = Math.min(minX, cell.originalX || cell.x);
+        minY = Math.min(minY, cell.originalY || cell.y);
+        maxX = Math.max(maxX, cell.originalX || cell.x);
+        maxY = Math.max(maxY, cell.originalY || cell.y);
+        
+        if (cell.displayX && cell.displayY) {
+            minDisplayX = Math.min(minDisplayX, cell.displayX);
+            minDisplayY = Math.min(minDisplayY, cell.displayY);
+            maxDisplayX = Math.max(maxDisplayX, cell.displayX);
+            maxDisplayY = Math.max(maxDisplayY, cell.displayY);
+        }
+    });
+    
+    console.log(`🗺️ Editor bounds: [${minX}, ${minY}] to [${maxX}, ${maxY}]`);
+    console.log(`🖥️ Display bounds: [${minDisplayX.toFixed(1)}, ${minDisplayY.toFixed(1)}] to [${maxDisplayX.toFixed(1)}, ${maxDisplayY.toFixed(1)}]`);
+    
+    // Логируем только важные клетки
+    cells.forEach(cell => {
+        if (cell.type === 'monster' || cell.type === 'player_start' || 
+            (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y)) {
+            console.log(
+                `${cell.type === 'monster' ? '👹' : cell.type === 'player_start' ? '⭐' : '🎯'} [${cell.col},${cell.row}]: ` +
+                `editor=(${cell.originalX || cell.x}, ${cell.originalY || cell.y}) ` +
+                `game=(${cell.displayX?.toFixed(1)}, ${cell.displayY?.toFixed(1)})`
+            );
+        }
+    });
+    
+    console.groupEnd();
+}
     debugInfo() {
         console.group("🗺️ MapSystem Debug Info");
         console.log("Глобальная позиция:", this.playerGlobalPosition);
