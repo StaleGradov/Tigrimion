@@ -242,8 +242,6 @@ calculateMapPositioning() {
     if (!container) return;
 
     const rect = container.getBoundingClientRect();
-    
-    // Используем реальные размеры контейнера
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
@@ -252,7 +250,7 @@ calculateMapPositioning() {
     const cells = Object.values(this.currentTacticalMap.cells);
     if (cells.length === 0) return;
 
-    // НАХОДИМ РЕАЛЬНЫЕ ГРАНИЦЫ КАРТЫ ИЗ КООРДИНАТ КЛЕТОК
+    // НАХОДИМ РЕАЛЬНЫЕ ГРАНИЦЫ КАРТЫ
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
     cells.forEach(cell => {
@@ -269,30 +267,26 @@ calculateMapPositioning() {
 
     console.log(`🗺️ Real map area: ${mapWidth}x${mapHeight} (from [${minX},${minY}] to [${maxX},${maxY}])`);
 
-    // Масштабируем карту чтобы она ВПИСАЛАСЬ в контейнер
-    const scaleX = (rect.width - 100) / mapWidth;  // -100 для отступов
+    // ВАЖНО: используем ЕДИНЫЙ масштаб для обеих осей чтобы избежать искажения
+    const scaleX = (rect.width - 100) / mapWidth;
     const scaleY = (rect.height - 100) / mapHeight;
-    const scale = Math.min(scaleX, scaleY, 1.5);   // Ограничиваем масштаб
+    const scale = Math.min(scaleX, scaleY); // Берем меньший масштаб для обеих осей
 
-    // Центрируем карту по РЕАЛЬНЫМ границам
+    console.log(`📏 UNIFORM Scale: ${scale.toFixed(3)} (was X:${scaleX.toFixed(3)}, Y:${scaleY.toFixed(3)})`);
+
+    // Центрируем с ЕДИНЫМ масштабом
     const offsetX = (rect.width - mapWidth * scale) / 2;
     const offsetY = (rect.height - mapHeight * scale) / 2;
 
-    console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+    console.log(`📍 Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
 
-    // ПРИМЕНЯЕМ МАСШТАБИРОВАНИЕ ОТНОСИТЕЛЬНО РЕАЛЬНЫХ ГРАНИЦ
+    // ПРИМЕНЯЕМ ЕДИНЫЙ МАСШТАБ
     cells.forEach(cell => {
-        // Вычитаем minX/minY чтобы начать от левого верхнего угла карты
         cell.displayX = ((cell.originalX || cell.x) - minX) * scale + offsetX;
         cell.displayY = ((cell.originalY || cell.y) - minY) * scale + offsetY;
-        
-        // Логируем для отладки
-        if (cell.type === 'monster') {
-            console.log(`👹 [${cell.col},${cell.row}]: (${cell.originalX || cell.x},${cell.originalY || cell.y}) -> (${cell.displayX.toFixed(1)},${cell.displayY.toFixed(1)})`);
-        }
     });
     
-    console.log(`✅ Corrected positioning for ${cells.length} cells`);
+    console.log(`✅ Uniform scaling applied to ${cells.length} cells`);
     this.debugCellPositions();
 }
     
@@ -394,10 +388,9 @@ setupCanvasEventListeners() {
         }
     }
 
- drawBackground() {
+drawBackground() {
     const map = this.currentTacticalMap;
     if (!map.image) {
-        // Простой фон если нет изображения
         this.ctx.fillStyle = '#1a1a2e';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         return;
@@ -406,7 +399,7 @@ setupCanvasEventListeners() {
     const cells = Object.values(map.cells);
     if (cells.length === 0) return;
 
-    // ИСПОЛЬЗУЕМ ТЕ ЖЕ ГРАНИЦЫ ЧТО И ДЛЯ КЛЕТОК
+    // ТЕ ЖЕ ГРАНИЦЫ ЧТО И ДЛЯ КЛЕТОК
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
     
     cells.forEach(cell => {
@@ -422,16 +415,18 @@ setupCanvasEventListeners() {
     const mapHeight = maxY - minY;
 
     const rect = this.canvas.getBoundingClientRect();
+    
+    // ЕДИНЫЙ МАСШТАБ как в calculateMapPositioning()
     const scaleX = (rect.width - 100) / mapWidth;
     const scaleY = (rect.height - 100) / mapHeight;
-    const scale = Math.min(scaleX, scaleY, 1.5);
+    const scale = Math.min(scaleX, scaleY);
 
     const offsetX = (rect.width - mapWidth * scale) / 2;
     const offsetY = (rect.height - mapHeight * scale) / 2;
 
     const img = new Image();
     img.onload = () => {
-        // Рисуем фон с ТЕМИ ЖЕ параметрами что и клетки
+        // Фон с ЕДИНЫМ масштабом
         this.ctx.drawImage(
             img, 
             offsetX, 
@@ -451,7 +446,6 @@ setupCanvasEventListeners() {
     };
     img.src = map.image;
 }
-
  drawHexGrid() {
     const cells = Object.values(this.currentTacticalMap.cells);
     const hexSize = this.currentTacticalMap.cellSize || 40;
@@ -483,38 +477,39 @@ setupCanvasEventListeners() {
 }
 
 drawHexes() {
-    if (!this.currentTacticalMap || !this.ctx) {
-        console.log("❌ Cannot draw: no map or context");
-        return;
-    }
+    if (!this.currentTacticalMap || !this.ctx) return;
 
     const cells = Object.values(this.currentTacticalMap.cells);
     
-    console.log(`🎨 Drawing ${cells.length} cells...`);
+    // ВРЕМЕННО: рисуем оси для проверки
+    this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.5)';
+    this.ctx.lineWidth = 1;
     
-    // ВРЕМЕННО: рисуем границу канваса
-    this.ctx.strokeStyle = 'red';
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeRect(0, 0, this.canvas.width, this.canvas.height);
+    // Вертикальная линия по центру
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.canvas.width / 2, 0);
+    this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+    this.ctx.stroke();
     
-    // ВРЕМЕННО: рисуем ВСЕ клетки
-    cells.forEach((cell, index) => {
-        if (!cell.displayX || !cell.displayY) {
-            console.warn(`❌ Cell [${cell.col},${cell.row}] missing display coordinates`);
-            return;
-        }
+    // Горизонтальная линия по центру
+    this.ctx.beginPath();
+    this.ctx.moveTo(0, this.canvas.height / 2);
+    this.ctx.lineTo(this.canvas.width, this.canvas.height / 2);
+    this.ctx.stroke();
+    
+    // Рисуем клетки
+    cells.forEach(cell => {
+        if (!cell.displayX || !cell.displayY) return;
 
-        // 1. Рисуем шестиугольник
         this.drawSingleHex(cell);
         
-        // 2. Рисуем содержимое (символ)
+        // Содержимое клетки
         this.ctx.save();
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
         let symbol = '·';
         let color = 'white';
-        let fontSize = 20;
 
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
@@ -527,32 +522,23 @@ drawHexes() {
             color = 'yellow';
         }
 
-        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.font = 'bold 20px Arial';
         this.ctx.fillStyle = color;
         this.ctx.fillText(symbol, cell.displayX, cell.displayY);
         this.ctx.restore();
         
-        // 3. ОТЛАДКА: рисуем координаты
+        // Координаты для отладки
         this.ctx.save();
-        this.ctx.fillStyle = 'yellow';
+        this.ctx.fillStyle = 'cyan';
         this.ctx.font = '10px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(
             `${cell.col},${cell.row}`, 
             cell.displayX, 
-            cell.displayY - 20
+            cell.displayY - 25
         );
-        
-        // Точка в центре клетки
-        this.ctx.fillStyle = 'red';
-        this.ctx.beginPath();
-        this.ctx.arc(cell.displayX, cell.displayY, 3, 0, Math.PI * 2);
-        this.ctx.fill();
-        
         this.ctx.restore();
     });
-    
-    console.log(`✅ Finished drawing ${cells.length} cells`);
 }
 
    drawSingleHex(cell) {
