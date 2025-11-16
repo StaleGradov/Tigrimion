@@ -308,52 +308,80 @@ class MapSystem {
         }
     }
 
-    handleCanvasHover(e) {
-        if (!this.currentTacticalMap) return;
+ handleCanvasHover(e) {
+    if (!this.currentTacticalMap) return;
 
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        const hex = this.getHexAtCanvasPosition(x, y);
-        
-        if (this.tooltipTimeout) {
-            clearTimeout(this.tooltipTimeout);
-            this.tooltipTimeout = null;
-        }
-
-        if (hex) {
-            this.tooltipTimeout = setTimeout(() => {
-                this.showTooltipForHex(hex, e.clientX, e.clientY);
-            }, 300);
-        } else {
-            this.hideTooltip();
-        }
+    const hex = this.getHexAtCanvasPosition(x, y);
+    
+    if (this.tooltipTimeout) {
+        clearTimeout(this.tooltipTimeout);
+        this.tooltipTimeout = null;
     }
 
-    getHexAtCanvasPosition(canvasX, canvasY) {
-        if (!this.currentTacticalMap) return null;
+    // Если навели на тот же гекс - ничего не делаем
+    if (this.currentTooltip && hex && 
+        this.currentTooltip.col === hex.col && 
+        this.currentTooltip.row === hex.row) {
+        return;
+    }
 
-        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+    // Если ушли с гекса - сразу скрываем подсказку
+    if (!hex) {
+        this.hideTooltip();
+        return;
+    }
+
+    this.tooltipTimeout = setTimeout(() => {
+        this.showTooltipForHex(hex, e.clientX, e.clientY);
+    }, 200); // Увеличиваем задержку до 200ms
+}
+
+ getHexAtCanvasPosition(canvasX, canvasY) {
+    if (!this.currentTacticalMap) return null;
+
+    const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+    
+    // Кэшируем результат поиска если координаты похожи
+    if (this.lastHoveredHex) {
+        const centerX = this.lastHoveredHex.displayX;
+        const centerY = this.lastHoveredHex.displayY;
         
-        for (const cell of Object.values(this.currentTacticalMap.cells)) {
-            const centerX = cell.displayX;
-            const centerY = cell.displayY;
-            
-            if (!centerX || !centerY) continue;
-            
+        if (centerX && centerY) {
             const distance = Math.sqrt(
                 Math.pow(canvasX - centerX, 2) + 
                 Math.pow(canvasY - centerY, 2)
             );
             
             if (distance <= hexSize) {
-                return cell;
+                return this.lastHoveredHex;
             }
         }
-        
-        return null;
     }
+    
+    for (const cell of Object.values(this.currentTacticalMap.cells)) {
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+        
+        if (!centerX || !centerY) continue;
+        
+        const distance = Math.sqrt(
+            Math.pow(canvasX - centerX, 2) + 
+            Math.pow(canvasY - centerY, 2)
+        );
+        
+        if (distance <= hexSize) {
+            this.lastHoveredHex = cell; // Кэшируем найденный гекс
+            return cell;
+        }
+    }
+    
+    this.lastHoveredHex = null;
+    return null;
+}
 
     showTooltipForHex(hex, mouseX, mouseY) {
         const tooltipText = this.getTooltipTextForHex(hex);
@@ -450,21 +478,65 @@ class MapSystem {
         }
     }
 
-    highlightHex(hex) {
-        this.removeHighlight();
-        hex.isHighlighted = true;
-        this.drawTacticalMap();
+  highlightHex(hex) {
+    // Если уже подсвечен этот гекс - не перерисовываем
+    if (this.currentTooltip && 
+        this.currentTooltip.col === hex.col && 
+        this.currentTooltip.row === hex.row &&
+        hex.isHighlighted) {
+        return;
     }
+    
+    this.removeHighlight();
+    hex.isHighlighted = true;
+    
+    // Перерисовываем ТОЛЬКО этот гекс, а не всю карту
+    this.drawSingleHexWithHighlight(hex);
+}
 
-    removeHighlight() {
-        if (this.currentTacticalMap) {
-            Object.values(this.currentTacticalMap.cells).forEach(cell => {
-                cell.isHighlighted = false;
-            });
-            this.drawTacticalMap();
+removeHighlight() {
+    if (this.currentTacticalMap && this.currentTooltip) {
+        const prevHex = this.currentTacticalMap.cells[
+            `${this.currentTooltip.col},${this.currentTooltip.row}`
+        ];
+        if (prevHex) {
+            prevHex.isHighlighted = false;
+            // Перерисовываем только предыдущий гекс
+            this.drawSingleHex(prevHex);
+            this.drawHexContent(prevHex);
         }
     }
+}
 
+// Новый метод для перерисовки одного гекса с подсветкой
+drawSingleHexWithHighlight(hex) {
+    const centerX = hex.displayX;
+    const centerY = hex.displayY;
+    
+    if (!centerX || !centerY) return;
+
+    this.ctx.save();
+    
+    // Рисуем подсветку
+    this.ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i + Math.PI / 6;
+        const x = centerX + this.hexSize * Math.cos(angle);
+        const y = centerY + this.hexSize * Math.sin(angle);
+        
+        if (i === 0) this.ctx.moveTo(x, y);
+        else this.ctx.lineTo(x, y);
+    }
+    this.ctx.closePath();
+    this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+    this.ctx.fill();
+    
+    // Рисуем контент поверх
+    this.drawHexContent(hex);
+    
+    this.ctx.restore();
+}
+    
     drawTacticalMap() {
         if (!this.ctx || !this.currentTacticalMap) {
             console.log("❌ Canvas context или карта не доступна");
@@ -602,68 +674,52 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    drawHexContent(cell) {
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
-        
-        if (!centerX || !centerY) return;
+ drawHexContent(cell) {
+    const centerX = cell.displayX;
+    const centerY = cell.displayY;
+    
+    if (!centerX || !centerY) return;
 
-        this.ctx.save();
-        
-        if (cell.isHighlighted) {
-            this.ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = centerX + this.hexSize * Math.cos(angle);
-                const y = centerY + this.hexSize * Math.sin(angle);
-                
-                if (i === 0) this.ctx.moveTo(x, y);
-                else this.ctx.lineTo(x, y);
-            }
-            this.ctx.closePath();
-            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-            this.ctx.fill();
+    this.ctx.save();
+    this.ctx.textAlign = 'center';
+    this.ctx.textBaseline = 'middle';
+
+    let symbol = '·';
+    let color = '#ffffff';
+    let fontSize = 16;
+
+    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        symbol = '🎯';
+        fontSize = 20;
+    } else {
+        switch(cell.type) {
+            case 'player_start':
+                symbol = '⭐';
+                break;
+            case 'monster':
+                symbol = '👹';
+                break;
+            case 'chest':
+                symbol = '📦';
+                break;
+            case 'npc':
+                symbol = '🧙';
+                break;
+            case 'exit':
+                symbol = '🚪';
+                break;
+            case 'obstacle':
+                symbol = '🪨';
+                color = '#6b7280';
+                break;
         }
-
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-
-        let symbol = '·';
-        let color = '#ffffff';
-        let fontSize = 16;
-
-        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-            symbol = '🎯';
-            fontSize = 20;
-        } else {
-            switch(cell.type) {
-                case 'player_start':
-                    symbol = '⭐';
-                    break;
-                case 'monster':
-                    symbol = '👹';
-                    break;
-                case 'chest':
-                    symbol = '📦';
-                    break;
-                case 'npc':
-                    symbol = '🧙';
-                    break;
-                case 'exit':
-                    symbol = '🚪';
-                    break;
-                case 'obstacle':
-                    symbol = '🪨';
-                    color = '#6b7280';
-                    break;
-            }
-        }
-
-        this.ctx.font = `bold ${fontSize}px Arial`;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(symbol, centerX, centerY);
-        this.ctx.restore();
     }
+
+    this.ctx.font = `bold ${fontSize}px Arial`;
+    this.ctx.fillStyle = color;
+    this.ctx.fillText(symbol, centerX, centerY);
+    this.ctx.restore();
+}
 
     // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
     moveOnTacticalMap(x, y) {
