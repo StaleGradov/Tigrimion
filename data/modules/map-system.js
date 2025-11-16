@@ -306,20 +306,38 @@ calculateMapPositioning() {
     console.log(`✅ Map positioning calculated for ${cells.length} cells`);
 }
     
-    setupCanvasEventListeners() {
-        if (!this.canvas) return;
+setupCanvasEventListeners() {
+    if (!this.canvas) return;
 
-        this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+    this.canvas.addEventListener('click', (e) => this.handleCanvasClick(e));
+    
+    // ДОБАВЬТЕ ОБРАБОТЧИКИ НАВЕДЕНИЯ
+    this.canvas.addEventListener('mousemove', (e) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const hex = this.getHexAtCanvasPosition(x, y);
+        if (hex !== this.hoveredHex) {
+            this.hoveredHex = hex;
+            this.drawTacticalMap(); // Перерисовываем при изменении наведения
+        }
+    });
+    
+    this.canvas.addEventListener('mouseleave', () => {
+        this.hoveredHex = null;
+        this.drawTacticalMap();
+    });
 
-        window.addEventListener('resize', () => {
-            setTimeout(() => {
-                if (this.canvasInitialized) {
-                    this.calculateMapPositioning();
-                    this.forceRedraw();
-                }
-            }, 100);
-        });
-    }
+    window.addEventListener('resize', () => {
+        setTimeout(() => {
+            if (this.canvasInitialized) {
+                this.calculateMapPositioning();
+                this.forceRedraw();
+            }
+        }, 100);
+    });
+}
 
     handleCanvasClick(e) {
         if (!this.currentTacticalMap) return;
