@@ -240,7 +240,7 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
-   calculateMapPositioning() {
+ calculateMapPositioning() {
     if (!this.currentTacticalMap || !this.canvas) return;
 
     const container = document.querySelector('.tactical-map-visual');
@@ -250,49 +250,33 @@ class MapSystem {
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
-    console.log(`📐 Container: ${rect.width}x${rect.height}`);
+    console.log(`📐 Container: ${rect.width}x${rect.height}, Original: ${this.currentTacticalMap.originalCanvasWidth}x${this.currentTacticalMap.originalCanvasHeight}`);
 
     const cells = Object.values(this.currentTacticalMap.cells);
     
     if (cells.length > 0) {
-        // Находим границы всех клеток
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        // Используем оригинальные размеры из редактора для правильного масштабирования
+        const originalWidth = this.currentTacticalMap.originalCanvasWidth || 800;
+        const originalHeight = this.currentTacticalMap.originalCanvasHeight || 600;
         
-        cells.forEach(cell => {
-            minX = Math.min(minX, cell.x);
-            minY = Math.min(minY, cell.y);
-            maxX = Math.max(maxX, cell.x);
-            maxY = Math.max(maxY, cell.y);
-        });
+        const scaleX = rect.width / originalWidth;
+        const scaleY = rect.height / originalHeight;
+        const scale = Math.min(scaleX, scaleY, 1.2);
         
-        // Добавляем отступы
-        const padding = this.currentTacticalMap.cellSize || 40;
-        minX -= padding;
-        minY -= padding;
-        maxX += padding;
-        maxY += padding;
+        // Центрируем с учетом оригинальных размеров
+        const offsetX = (rect.width - originalWidth * scale) / 2;
+        const offsetY = (rect.height - originalHeight * scale) / 2;
         
-        const mapWidth = maxX - minX;
-        const mapHeight = maxY - minY;
-        
-        // Масштабируем чтобы карта поместилась в контейнер
-        const scaleX = rect.width / mapWidth;
-        const scaleY = rect.height / mapHeight;
-        const scale = Math.min(scaleX, scaleY, 1.2); // Немного увеличиваем максимальный масштаб
-        
-        // Центрируем
-        const offsetX = (rect.width - mapWidth * scale) / 2 - minX * scale;
-        const offsetY = (rect.height - mapHeight * scale) / 2 - minY * scale;
-        
-        // Применяем трансформации ко всем клеткам
+        // Применяем масштабирование ко всем клеткам
         cells.forEach(cell => {
             cell.originalX = cell.x;
             cell.originalY = cell.y;
+            // Масштабируем координаты относительно оригинальных размеров
             cell.x = cell.x * scale + offsetX;
             cell.y = cell.y * scale + offsetY;
         });
         
-        console.log("✅ Карта отцентрирована и масштабирована");
+        console.log("✅ Карта отцентрирована и масштабирована с учетом оригинальных размеров");
     }
 }
     
