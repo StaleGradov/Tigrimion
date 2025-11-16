@@ -243,15 +243,40 @@ calculateMapPositioning() {
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
+    console.log(`📐 Container: ${rect.width}x${rect.height}`);
+
     const cells = Object.values(this.currentTacticalMap.cells);
+    if (cells.length === 0) return;
+
+    // ВАЖНО: Получаем РЕАЛЬНЫЕ размеры карты из редактора
+    const editorCanvasWidth = this.currentTacticalMap.jsonData?.visual?.canvasWidth || 954;
+    const editorCanvasHeight = this.currentTacticalMap.jsonData?.visual?.canvasHeight || 960;
     
-    // ПРОСТОЕ РЕШЕНИЕ: используем координаты как есть из редактора
+    console.log(`🎯 Editor canvas: ${editorCanvasWidth}x${editorCanvasHeight}`);
+
+    // Масштабируем под текущий контейнер
+    const scaleX = rect.width / editorCanvasWidth;
+    const scaleY = rect.height / editorCanvasHeight;
+    const scale = Math.min(scaleX, scaleY, 1.0);
+
+    // Центрируем
+    const offsetX = (rect.width - editorCanvasWidth * scale) / 2;
+    const offsetY = (rect.height - editorCanvasHeight * scale) / 2;
+
+    console.log(`⚖️ Scale: ${scale}, Offset: ${offsetX}, ${offsetY}`);
+
+    // Применяем одинаковое преобразование ко всем клеткам
     cells.forEach(cell => {
-        cell.displayX = cell.originalX || cell.x;
-        cell.displayY = cell.originalY || cell.y;
+        // Берем координаты ИЗ РЕДАКТОРА (оригинальные)
+        const originalX = cell.originalX || cell.x;
+        const originalY = cell.originalY || cell.y;
+        
+        // Применяем масштабирование и центрирование
+        cell.displayX = originalX * scale + offsetX;
+        cell.displayY = originalY * scale + offsetY;
+        
+        console.log(`🔧 Cell [${cell.col},${cell.row}]: editor(${originalX},${originalY}) -> game(${cell.displayX},${cell.displayY})`);
     });
-    
-    console.log('✅ Используются абсолютные координаты из редактора');
 }
     
     setupCanvasEventListeners() {
