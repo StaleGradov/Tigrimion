@@ -547,34 +547,39 @@ drawHexes() {
     });
 }
 
-    drawSingleHex(cell) {
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        
-        // Используем display координаты для отрисовки
-        const centerX = cell.displayX || cell.x;
-        const centerY = cell.displayY || cell.y;
+   drawSingleHex(cell) {
+    const hexSize = this.currentTacticalMap.cellSize || 40;
+    
+    const centerX = cell.displayX;
+    const centerY = cell.displayY;
 
-        this.ctx.save();
-        this.ctx.beginPath();
+    this.ctx.save();
+    this.ctx.beginPath();
+    
+    for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 3 * i + Math.PI / 6;
+        const x = centerX + hexSize * Math.cos(angle);
+        const y = centerY + hexSize * Math.sin(angle);
         
-        for (let i = 0; i < 6; i++) {
-            const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = centerX + hexSize * Math.cos(angle);
-            const y = centerY + hexSize * Math.sin(angle);
-            
-            if (i === 0) this.ctx.moveTo(x, y);
-            else this.ctx.lineTo(x, y);
-        }
-        this.ctx.closePath();
-
-        if (this.showGrid) {
-            this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-        }
-        
-        this.ctx.restore();
+        if (i === 0) this.ctx.moveTo(x, y);
+        else this.ctx.lineTo(x, y);
     }
+    this.ctx.closePath();
+
+    // ПОДСВЕТКА ПРИ НАВЕДЕНИИ
+    if (this.hoveredHex && this.hoveredHex.col === cell.col && this.hoveredHex.row === cell.row) {
+        this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+        this.ctx.fill();
+    }
+
+    if (this.showGrid) {
+        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+    }
+    
+    this.ctx.restore();
+}
 
  drawHexContent(cell) {
     this.ctx.save();
