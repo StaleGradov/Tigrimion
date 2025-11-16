@@ -3,7 +3,7 @@
     "name": "Моя карта",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-16T13:52:24.352Z",
+    "created": "2025-11-16T14:01:26.845Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -26,7 +26,7 @@
           "col": 19,
           "x": 675,
           "y": 90,
-          "type": "active",
+          "type": "magic_crystal",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -122,46 +122,14 @@
           "col": 18,
           "x": 641,
           "y": 150,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 640.8587988004845,
             "editorY": 150,
             "editorRow": 5,
             "editorCol": 18
-          }
-        },
-        {
-          "id": "cell_6_12",
-          "row": 6,
-          "col": 12,
-          "x": 416,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 415.6921938165305,
-            "editorY": 180,
-            "editorRow": 6,
-            "editorCol": 12
-          }
-        },
-        {
-          "id": "cell_6_13",
-          "row": 6,
-          "col": 13,
-          "x": 450,
-          "y": 180,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 450.33320996790803,
-            "editorY": 180,
-            "editorRow": 6,
-            "editorCol": 13
           }
         },
         {
@@ -186,8 +154,8 @@
           "col": 17,
           "x": 589,
           "y": 180,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 588.8972745734183,
@@ -202,7 +170,7 @@
           "col": 10,
           "x": 364,
           "y": 210,
-          "type": "active",
+          "type": "chest",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -210,38 +178,6 @@
             "editorY": 210,
             "editorRow": 7,
             "editorCol": 10
-          }
-        },
-        {
-          "id": "cell_7_11",
-          "row": 7,
-          "col": 11,
-          "x": 398,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 398.37168574084177,
-            "editorY": 210,
-            "editorRow": 7,
-            "editorCol": 11
-          }
-        },
-        {
-          "id": "cell_7_12",
-          "row": 7,
-          "col": 12,
-          "x": 433,
-          "y": 210,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 433.0127018922193,
-            "editorY": 210,
-            "editorRow": 7,
-            "editorCol": 12
           }
         },
         {
@@ -346,46 +282,14 @@
           "col": 10,
           "x": 346,
           "y": 240,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 346.4101615137754,
             "editorY": 240,
             "editorRow": 8,
             "editorCol": 10
-          }
-        },
-        {
-          "id": "cell_8_11",
-          "row": 8,
-          "col": 11,
-          "x": 381,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 381.051177665153,
-            "editorY": 240,
-            "editorRow": 8,
-            "editorCol": 11
-          }
-        },
-        {
-          "id": "cell_8_12",
-          "row": 8,
-          "col": 12,
-          "x": 416,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 415.6921938165305,
-            "editorY": 240,
-            "editorRow": 8,
-            "editorCol": 12
           }
         },
         {
@@ -450,38 +354,6 @@
             "editorY": 240,
             "editorRow": 8,
             "editorCol": 16
-          }
-        },
-        {
-          "id": "cell_8_17",
-          "row": 8,
-          "col": 17,
-          "x": 589,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 588.8972745734183,
-            "editorY": 240,
-            "editorRow": 8,
-            "editorCol": 17
-          }
-        },
-        {
-          "id": "cell_8_18",
-          "row": 8,
-          "col": 18,
-          "x": 624,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 623.5382907247957,
-            "editorY": 240,
-            "editorRow": 8,
-            "editorCol": 18
           }
         },
         {
@@ -613,38 +485,6 @@
           }
         },
         {
-          "id": "cell_9_10",
-          "row": 9,
-          "col": 10,
-          "x": 364,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 363.7306695894642,
-            "editorY": 270,
-            "editorRow": 9,
-            "editorCol": 10
-          }
-        },
-        {
-          "id": "cell_9_11",
-          "row": 9,
-          "col": 11,
-          "x": 398,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 398.37168574084177,
-            "editorY": 270,
-            "editorRow": 9,
-            "editorCol": 11
-          }
-        },
-        {
           "id": "cell_9_12",
           "row": 9,
           "col": 12,
@@ -725,38 +565,6 @@
           }
         },
         {
-          "id": "cell_9_17",
-          "row": 9,
-          "col": 17,
-          "x": 606,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 606.217782649107,
-            "editorY": 270,
-            "editorRow": 9,
-            "editorCol": 17
-          }
-        },
-        {
-          "id": "cell_9_18",
-          "row": 9,
-          "col": 18,
-          "x": 641,
-          "y": 270,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 640.8587988004845,
-            "editorY": 270,
-            "editorRow": 9,
-            "editorCol": 18
-          }
-        },
-        {
           "id": "cell_9_19",
           "row": 9,
           "col": 19,
@@ -778,7 +586,7 @@
           "col": 20,
           "x": 710,
           "y": 270,
-          "type": "active",
+          "type": "black_monolith",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -922,8 +730,8 @@
           "col": 4,
           "x": 139,
           "y": 300,
-          "type": "active",
-          "passable": true,
+          "type": "lava_crack",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 138.56406460551017,
@@ -954,7 +762,7 @@
           "col": 6,
           "x": 208,
           "y": 300,
-          "type": "active",
+          "type": "exit",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -1010,38 +818,6 @@
             "editorY": 300,
             "editorRow": 10,
             "editorCol": 9
-          }
-        },
-        {
-          "id": "cell_10_10",
-          "row": 10,
-          "col": 10,
-          "x": 346,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 346.4101615137754,
-            "editorY": 300,
-            "editorRow": 10,
-            "editorCol": 10
-          }
-        },
-        {
-          "id": "cell_10_11",
-          "row": 10,
-          "col": 11,
-          "x": 381,
-          "y": 300,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 381.051177665153,
-            "editorY": 300,
-            "editorRow": 10,
-            "editorCol": 11
           }
         },
         {
@@ -1226,8 +1002,8 @@
           "col": 25,
           "x": 866,
           "y": 300,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 866.0254037844386,
@@ -1306,7 +1082,7 @@
           "col": 2,
           "x": 87,
           "y": 330,
-          "type": "active",
+          "type": "cave",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -1426,22 +1202,6 @@
             "editorY": 330,
             "editorRow": 11,
             "editorCol": 9
-          }
-        },
-        {
-          "id": "cell_11_11",
-          "row": 11,
-          "col": 11,
-          "x": 398,
-          "y": 330,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 398.37168574084177,
-            "editorY": 330,
-            "editorRow": 11,
-            "editorCol": 11
           }
         },
         {
@@ -1898,7 +1658,7 @@
           "col": 23,
           "x": 797,
           "y": 360,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -1962,8 +1722,8 @@
           "col": 28,
           "x": 970,
           "y": 360,
-          "type": "active",
-          "passable": true,
+          "type": "elegant_tree",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 969.9484522385712,
@@ -2122,7 +1882,7 @@
           "col": 23,
           "x": 814,
           "y": 390,
-          "type": "active",
+          "type": "graveyard_cross",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2218,7 +1978,7 @@
           "col": 4,
           "x": 139,
           "y": 420,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2282,8 +2042,8 @@
           "col": 14,
           "x": 485,
           "y": 420,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 484.9742261192856,
@@ -2378,7 +2138,7 @@
           "col": 28,
           "x": 970,
           "y": 420,
-          "type": "active",
+          "type": "magic_crystal",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2426,7 +2186,7 @@
           "col": 4,
           "x": 156,
           "y": 450,
-          "type": "active",
+          "type": "chest",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2458,8 +2218,8 @@
           "col": 6,
           "x": 225,
           "y": 450,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 225.16660498395402,
@@ -2474,8 +2234,8 @@
           "col": 12,
           "x": 433,
           "y": 450,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 433.0127018922193,
@@ -2618,8 +2378,8 @@
           "col": 5,
           "x": 173,
           "y": 480,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 173.2050807568877,
@@ -2634,8 +2394,8 @@
           "col": 6,
           "x": 208,
           "y": 480,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 207.84609690826525,
@@ -2698,8 +2458,8 @@
           "col": 11,
           "x": 381,
           "y": 480,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 381.051177665153,
@@ -2714,7 +2474,7 @@
           "col": 12,
           "x": 416,
           "y": 480,
-          "type": "active",
+          "type": "chest",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2746,7 +2506,7 @@
           "col": 21,
           "x": 727,
           "y": 480,
-          "type": "active",
+          "type": "traveler",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2858,8 +2618,8 @@
           "col": 3,
           "x": 121,
           "y": 510,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 121.2435565298214,
@@ -2874,8 +2634,8 @@
           "col": 4,
           "x": 156,
           "y": 510,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 155.88457268119893,
@@ -3034,8 +2794,8 @@
           "col": 18,
           "x": 641,
           "y": 510,
-          "type": "active",
-          "passable": true,
+          "type": "tree",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 640.8587988004845,
@@ -3226,8 +2986,8 @@
           "col": 6,
           "x": 208,
           "y": 540,
-          "type": "active",
-          "passable": true,
+          "type": "bandit_camp",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 207.84609690826525,
@@ -3274,7 +3034,7 @@
           "col": 9,
           "x": 312,
           "y": 540,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -3306,8 +3066,8 @@
           "col": 11,
           "x": 381,
           "y": 540,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 381.051177665153,
@@ -3514,7 +3274,7 @@
           "col": 24,
           "x": 831,
           "y": 540,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -3898,8 +3658,8 @@
           "col": 26,
           "x": 918,
           "y": 570,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 917.9869280115048,
@@ -3962,7 +3722,7 @@
           "col": 7,
           "x": 242,
           "y": 600,
-          "type": "active",
+          "type": "traveler",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4058,7 +3818,7 @@
           "col": 14,
           "x": 485,
           "y": 600,
-          "type": "active",
+          "type": "campfire",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4378,7 +4138,7 @@
           "col": 18,
           "x": 641,
           "y": 630,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4458,7 +4218,7 @@
           "col": 28,
           "x": 987,
           "y": 630,
-          "type": "active",
+          "type": "magic_crystal",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4506,8 +4266,8 @@
           "col": 7,
           "x": 242,
           "y": 660,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 242.4871130596428,
@@ -4682,8 +4442,8 @@
           "col": 22,
           "x": 762,
           "y": 660,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 762.102355330306,
@@ -4714,7 +4474,7 @@
           "col": 25,
           "x": 866,
           "y": 660,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4778,7 +4538,7 @@
           "col": 4,
           "x": 156,
           "y": 690,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4986,8 +4746,8 @@
           "col": 21,
           "x": 745,
           "y": 690,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 744.7818472546171,
@@ -5098,7 +4858,7 @@
           "col": 4,
           "x": 139,
           "y": 720,
-          "type": "active",
+          "type": "chest",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -5226,7 +4986,7 @@
           "col": 16,
           "x": 554,
           "y": 720,
-          "type": "active",
+          "type": "traveler",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -5290,8 +5050,8 @@
           "col": 20,
           "x": 693,
           "y": 720,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 692.8203230275508,
@@ -5306,8 +5066,8 @@
           "col": 21,
           "x": 727,
           "y": 720,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 727.4613391789284,
@@ -5354,8 +5114,8 @@
           "col": 24,
           "x": 831,
           "y": 720,
-          "type": "active",
-          "passable": true,
+          "type": "bandit_camp",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 831.384387633061,
@@ -5514,8 +5274,8 @@
           "col": 8,
           "x": 294,
           "y": 750,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 294.44863728670913,
@@ -5882,8 +5642,8 @@
           "col": 7,
           "x": 260,
           "y": 810,
-          "type": "active",
-          "passable": true,
+          "type": "orc_camp",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 259.8076211353316,
@@ -6154,8 +5914,8 @@
           "col": 14,
           "x": 485,
           "y": 840,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 484.9742261192856,
@@ -6218,8 +5978,8 @@
           "col": 18,
           "x": 624,
           "y": 840,
-          "type": "active",
-          "passable": true,
+          "type": "monster",
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 623.5382907247957,
@@ -6314,7 +6074,7 @@
           "col": 27,
           "x": 935,
           "y": 840,
-          "type": "active",
+          "type": "armor",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -6394,7 +6154,7 @@
           "col": 9,
           "x": 329,
           "y": 870,
-          "type": "active",
+          "type": "traveler",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -6522,7 +6282,7 @@
           "col": 20,
           "x": 710,
           "y": 870,
-          "type": "active",
+          "type": "village",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -6570,7 +6330,7 @@
           "col": 20,
           "x": 693,
           "y": 900,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -6633,38 +6393,104 @@
     "playerStart": "cell_30_22",
     "objects": {
       "monsters": [
-        "cell_6_15"
+        "cell_5_18",
+        "cell_6_15",
+        "cell_6_17",
+        "cell_8_10",
+        "cell_10_25",
+        "cell_14_14",
+        "cell_15_6",
+        "cell_15_12",
+        "cell_16_5",
+        "cell_16_6",
+        "cell_16_11",
+        "cell_17_3",
+        "cell_17_4",
+        "cell_18_11",
+        "cell_19_26",
+        "cell_22_7",
+        "cell_22_22",
+        "cell_23_21",
+        "cell_24_20",
+        "cell_24_21",
+        "cell_25_8",
+        "cell_28_14",
+        "cell_28_18"
       ],
-      "chests": [],
-      "npcs": [
-        "cell_30_20"
+      "chests": [
+        "cell_7_10",
+        "cell_15_4",
+        "cell_16_12",
+        "cell_24_4"
       ],
-      "exits": [],
+      "npcs": [],
+      "exits": [
+        "cell_10_6"
+      ],
       "obstacles": [],
-      "trees": [],
-      "elegant_trees": [],
-      "caves": [],
-      "lava_cracks": [],
-      "graveyard_crosses": [],
-      "bandit_camps": [],
-      "orc_camps": [],
-      "black_monoliths": [],
+      "trees": [
+        "cell_17_18"
+      ],
+      "elegant_trees": [
+        "cell_12_28"
+      ],
+      "caves": [
+        "cell_11_2"
+      ],
+      "lava_cracks": [
+        "cell_10_4"
+      ],
+      "graveyard_crosses": [
+        "cell_13_23"
+      ],
+      "bandit_camps": [
+        "cell_18_6",
+        "cell_24_24"
+      ],
+      "orc_camps": [
+        "cell_27_7"
+      ],
+      "black_monoliths": [
+        "cell_9_20"
+      ],
       "weapons": [
         "cell_4_15"
       ],
-      "armors": [],
-      "villages": [],
+      "armors": [
+        "cell_28_27"
+      ],
+      "villages": [
+        "cell_12_23",
+        "cell_14_4",
+        "cell_18_9",
+        "cell_18_24",
+        "cell_21_18",
+        "cell_22_25",
+        "cell_23_4",
+        "cell_29_20"
+      ],
       "castles": [
         "cell_9_14"
       ],
       "waters": [],
-      "campfires": [],
+      "campfires": [
+        "cell_20_14"
+      ],
       "merchants": [],
       "carts": [],
-      "travelers": [],
+      "travelers": [
+        "cell_16_21",
+        "cell_20_7",
+        "cell_24_16",
+        "cell_29_9"
+      ],
       "portals": [],
       "ancient_runes": [],
-      "magic_crystals": []
+      "magic_crystals": [
+        "cell_3_19",
+        "cell_14_28",
+        "cell_21_28"
+      ]
     }
   }
 }
