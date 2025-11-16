@@ -247,15 +247,24 @@ calculateMapPositioning() {
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
+    console.log("=== 🎯 DEBUG POSITIONING ===");
     console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-    // Берем ТОЛЬКО видимые клетки для расчета границ
-    const visibleCells = Object.values(this.currentTacticalMap.cells).filter(cell => cell.visible);
+    const allCells = Object.values(this.currentTacticalMap.cells);
+    const visibleCells = allCells.filter(cell => cell.visible);
     
+    console.log(`📊 Всего клеток: ${allCells.length}, Видимых: ${visibleCells.length}`);
+
     if (visibleCells.length === 0) {
         console.log("❌ Нет видимых клеток для отображения");
         return;
     }
+
+    // Логируем первые 5 клеток для проверки координат
+    console.log("📍 Координаты первых 5 клеток:");
+    visibleCells.slice(0, 5).forEach((cell, i) => {
+        console.log(`  ${i+1}. [${cell.col},${cell.row}] -> (${cell.originalX}, ${cell.originalY})`);
+    });
 
     // Находим границы ТОЛЬКО видимых клеток
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -269,24 +278,43 @@ calculateMapPositioning() {
     const mapWidth = maxX - minX;
     const mapHeight = maxY - minY;
 
-    console.log(`🎯 Visible cells: ${visibleCells.length}, Bounds: [${minX},${minY}] to [${maxX},${maxY}]`);
+    console.log(`📏 Границы видимой области:`);
+    console.log(`   Min: (${minX}, ${minY})`);
+    console.log(`   Max: (${maxX}, ${maxY})`);
+    console.log(`   Size: ${mapWidth}x${mapHeight}`);
 
     // Масштабируем чтобы видимая область поместилась
     const scaleX = rect.width / mapWidth;
     const scaleY = rect.height / mapHeight;
     const scale = Math.min(scaleX, scaleY, 1.5);
 
+    console.log(`⚖️ Масштабирование:`);
+    console.log(`   ScaleX: ${scaleX.toFixed(3)} (${rect.width} / ${mapWidth})`);
+    console.log(`   ScaleY: ${scaleY.toFixed(3)} (${rect.height} / ${mapHeight})`);
+    console.log(`   Final Scale: ${scale.toFixed(3)}`);
+
     // Центрируем видимую область
     const offsetX = (rect.width - mapWidth * scale) / 2 - minX * scale;
     const offsetY = (rect.height - mapHeight * scale) / 2 - minY * scale;
 
+    console.log(`🎯 Смещение:`);
+    console.log(`   OffsetX: ${offsetX.toFixed(1)} = (${rect.width} - ${mapWidth}*${scale.toFixed(3)})/2 - ${minX}*${scale.toFixed(3)}`);
+    console.log(`   OffsetY: ${offsetY.toFixed(1)} = (${rect.height} - ${mapHeight}*${scale.toFixed(3)})/2 - ${minY}*${scale.toFixed(3)}`);
+
     // Применяем трансформации ко ВСЕМ клеткам
-    Object.values(this.currentTacticalMap.cells).forEach(cell => {
+    allCells.forEach(cell => {
         cell.displayX = cell.originalX * scale + offsetX;
         cell.displayY = cell.originalY * scale + offsetY;
     });
+
+    // Логируем результат для первых 5 клеток
+    console.log("🔄 Результат трансформации первых 5 клеток:");
+    visibleCells.slice(0, 5).forEach((cell, i) => {
+        console.log(`  ${i+1}. (${cell.originalX}, ${cell.originalY}) -> (${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)})`);
+    });
     
-    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(2)}, Видимых: ${visibleCells.length}`);
+    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(3)}, Видимых: ${visibleCells.length}`);
+    console.log("=== 🎯 END DEBUG ===");
 }
     
     setupCanvasEventListeners() {
