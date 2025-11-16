@@ -130,7 +130,7 @@ class MapSystem {
         }
     }
 
- convertTigrimionJSONToMap(jsonMap) {
+convertTigrimionJSONToMap(jsonMap) {
     if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
         console.warn("❌ Неверная структура карты Tigrimion");
         return null;
@@ -145,12 +145,10 @@ class MapSystem {
     cells.forEach(cell => {
         const key = `${cell.col},${cell.row}`;
         
-        // Используем координаты как есть из редактора
         convertedCells[key] = {
             type: cell.type,
-            passable: cell.passable !== false, // гарантируем boolean
-            visible: cell.visible !== false,   // гарантируем boolean
-            // Сохраняем оригинальные координаты без изменений
+            passable: cell.passable !== false,
+            visible: cell.visible !== false,
             originalX: cell.x,
             originalY: cell.y,
             x: cell.x,
@@ -160,8 +158,6 @@ class MapSystem {
             monster_id: cell.monster_id,
             originalData: cell
         };
-        
-        console.log(`📍 Клетка [${cell.col},${cell.row}] -> (${cell.x},${cell.y}) видимая: ${cell.visible !== false}`);
     });
 
     let startPosition = {x: 0, y: 0};
@@ -171,11 +167,11 @@ class MapSystem {
         console.log(`🎯 Стартовая позиция: [${startCell.col},${startCell.row}]`);
     }
 
-    // Считаем статистику
-    const visibleCells = cells.filter(cell => cell.visible !== false).length;
-    const passableCells = cells.filter(cell => cell.passable !== false).length;
-    
-    console.log(`📈 Статистика: Видимых: ${visibleCells}/${cells.length}, Проходимых: ${passableCells}/${cells.length}`);
+    // ВАЖНО: Используем бОльшие значения по умолчанию для больших карт
+    const originalCanvasWidth = jsonMap.visual?.canvasWidth || 1200;
+    const originalCanvasHeight = jsonMap.visual?.canvasHeight || 1000;
+
+    console.log(`📐 Original canvas: ${originalCanvasWidth}x${originalCanvasHeight}`);
 
     return {
         id: this.tacticalMaps.length + 1,
@@ -191,8 +187,8 @@ class MapSystem {
         gameData: jsonMap.game,
         renderType: 'hex',
         cellSize: jsonMap.game.grid.cellSize || 40,
-        originalCanvasWidth: jsonMap.visual?.canvasWidth || 800,
-        originalCanvasHeight: jsonMap.visual?.canvasHeight || 600
+        originalCanvasWidth: originalCanvasWidth,  // ← Используем вычисленные значения
+        originalCanvasHeight: originalCanvasHeight
     };
 }
     getMonsterFromCell(cellData) {
@@ -249,42 +245,32 @@ calculateMapPositioning() {
 
     console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-    const allCells = Object.values(this.currentTacticalMap.cells);
-    const visibleCells = allCells.filter(cell => cell.visible);
+    const cells = Object.values(this.currentTacticalMap.cells);
     
-    if (visibleCells.length === 0) {
-        console.log("❌ Нет видимых клеток для отображения");
-        return;
-    }
+    if (cells.length === 0) return;
 
-    // ВАРИАНТ 1: Используем ФИКСИРОВАННЫЕ границы из редактора (рекомендуется)
+    // ФИКСИРОВАННЫЕ ГРАНИЦЫ из редактора
     const originalWidth = this.currentTacticalMap.originalCanvasWidth || 954;
     const originalHeight = this.currentTacticalMap.originalCanvasHeight || 960;
 
-    // ВАРИАНТ 2: Или используем границы ВСЕХ клеток (не только видимых)
-    let minX = 0, minY = 0, maxX = originalWidth, maxY = originalHeight;
+    console.log(`🎯 Original canvas: ${originalWidth}x${originalHeight}`);
 
-    const mapWidth = maxX - minX;
-    const mapHeight = maxY - minY;
-
-    console.log(`📏 Using fixed bounds: ${mapWidth}x${mapHeight}`);
-
-    // Масштабируем чтобы фиксированная область поместилась
-    const scaleX = rect.width / mapWidth;
-    const scaleY = rect.height / mapHeight;
+    // Масштабируем оригинальный холст
+    const scaleX = rect.width / originalWidth;
+    const scaleY = rect.height / originalHeight;
     const scale = Math.min(scaleX, scaleY, 1.5);
 
-    // Центрируем фиксированную область
-    const offsetX = (rect.width - mapWidth * scale) / 2 - minX * scale;
-    const offsetY = (rect.height - mapHeight * scale) / 2 - minY * scale;
+    // Центрируем
+    const offsetX = (rect.width - originalWidth * scale) / 2;
+    const offsetY = (rect.height - originalHeight * scale) / 2;
 
-    // Применяем трансформации ко всем клеткам
-    allCells.forEach(cell => {
+    // Применяем к клеткам
+    cells.forEach(cell => {
         cell.displayX = cell.originalX * scale + offsetX;
         cell.displayY = cell.originalY * scale + offsetY;
     });
     
-    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(3)}, Видимых: ${visibleCells.length}/${allCells.length}`);
+    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(3)}`);
 }
     
     setupCanvasEventListeners() {
