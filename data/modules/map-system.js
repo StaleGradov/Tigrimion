@@ -243,34 +243,15 @@ calculateMapPositioning() {
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
-    console.log(`📐 Container: ${rect.width}x${rect.height}`);
-
     const cells = Object.values(this.currentTacticalMap.cells);
     
-    if (cells.length === 0) return;
-
-    // ФИКСИРОВАННЫЕ ГРАНИЦЫ из редактора
-    const originalWidth = this.currentTacticalMap.originalCanvasWidth || 954;
-    const originalHeight = this.currentTacticalMap.originalCanvasHeight || 960;
-
-    console.log(`🎯 Original canvas: ${originalWidth}x${originalHeight}`);
-
-    // Масштабируем оригинальный холст
-    const scaleX = rect.width / originalWidth;
-    const scaleY = rect.height / originalHeight;
-    const scale = Math.min(scaleX, scaleY, 1.5);
-
-    // Центрируем
-    const offsetX = (rect.width - originalWidth * scale) / 2;
-    const offsetY = (rect.height - originalHeight * scale) / 2;
-
-    // Применяем к клеткам
+    // ПРОСТОЕ РЕШЕНИЕ: используем координаты как есть из редактора
     cells.forEach(cell => {
-        cell.displayX = cell.originalX * scale + offsetX;
-        cell.displayY = cell.originalY * scale + offsetY;
+        cell.displayX = cell.originalX || cell.x;
+        cell.displayY = cell.originalY || cell.y;
     });
     
-    console.log(`✅ Карта отцентрирована. Масштаб: ${scale.toFixed(3)}`);
+    console.log('✅ Используются абсолютные координаты из редактора');
 }
     
     setupCanvasEventListeners() {
