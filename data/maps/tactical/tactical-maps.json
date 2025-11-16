@@ -3,7 +3,7 @@
     "name": "Моя карта",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-16T11:08:43.891Z",
+    "created": "2025-11-16T13:44:10.136Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -21,15 +21,542 @@
       "cellSize": 20,
       "cells": [
         {
+          "id": "cell_2_6",
+          "row": 2,
+          "col": 6,
+          "x": 208,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 207.84609690826525,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_2_8",
+          "row": 2,
+          "col": 8,
+          "x": 277,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_2_9",
+          "row": 2,
+          "col": 9,
+          "x": 312,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_2_10",
+          "row": 2,
+          "col": 10,
+          "x": 346,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_2_11",
+          "row": 2,
+          "col": 11,
+          "x": 381,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_2_12",
+          "row": 2,
+          "col": 12,
+          "x": 416,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_2_13",
+          "row": 2,
+          "col": 13,
+          "x": 450,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_2_14",
+          "row": 2,
+          "col": 14,
+          "x": 485,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_2_15",
+          "row": 2,
+          "col": 15,
+          "x": 520,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 519.6152422706631,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_2_16",
+          "row": 2,
+          "col": 16,
+          "x": 554,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_2_18",
+          "row": 2,
+          "col": 18,
+          "x": 624,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_2_20",
+          "row": 2,
+          "col": 20,
+          "x": 693,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_2_21",
+          "row": 2,
+          "col": 21,
+          "x": 727,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_2_22",
+          "row": 2,
+          "col": 22,
+          "x": 762,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 762.102355330306,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_2_23",
+          "row": 2,
+          "col": 23,
+          "x": 797,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_2_24",
+          "row": 2,
+          "col": 24,
+          "x": 831,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_2_25",
+          "row": 2,
+          "col": 25,
+          "x": 866,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_2_26",
+          "row": 2,
+          "col": 26,
+          "x": 901,
+          "y": 60,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 60,
+            "editorRow": 2,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_3_4",
+          "row": 3,
+          "col": 4,
+          "x": 156,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 155.88457268119893,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_3_5",
+          "row": 3,
+          "col": 5,
+          "x": 191,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 190.52558883257646,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_3_6",
+          "row": 3,
+          "col": 6,
+          "x": 225,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_3_7",
+          "row": 3,
+          "col": 7,
+          "x": 260,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 259.8076211353316,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_3_8",
+          "row": 3,
+          "col": 8,
+          "x": 294,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_3_9",
+          "row": 3,
+          "col": 9,
+          "x": 329,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_3_10",
+          "row": 3,
+          "col": 10,
+          "x": 364,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_3_11",
+          "row": 3,
+          "col": 11,
+          "x": 398,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_3_12",
+          "row": 3,
+          "col": 12,
+          "x": 433,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_3_13",
+          "row": 3,
+          "col": 13,
+          "x": 468,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_3_14",
+          "row": 3,
+          "col": 14,
+          "x": 502,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_3_15",
+          "row": 3,
+          "col": 15,
+          "x": 537,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 536.9357503463518,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_3_16",
+          "row": 3,
+          "col": 16,
+          "x": 572,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_3_17",
+          "row": 3,
+          "col": 17,
+          "x": 606,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_3_18",
+          "row": 3,
+          "col": 18,
+          "x": 641,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 18
+          }
+        },
+        {
           "id": "cell_3_19",
           "row": 3,
           "col": 19,
           "x": 675,
           "y": 90,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
-         "tooltip": "📦 Тайный сундук гномов. Внутри блестит что-то металлическое...",
           "originalData": {
             "editorX": 675.499814951862,
             "editorY": 90,
@@ -38,12 +565,300 @@
           }
         },
         {
+          "id": "cell_3_20",
+          "row": 3,
+          "col": 20,
+          "x": 710,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_3_21",
+          "row": 3,
+          "col": 21,
+          "x": 745,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 744.7818472546171,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_3_22",
+          "row": 3,
+          "col": 22,
+          "x": 779,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_3_23",
+          "row": 3,
+          "col": 23,
+          "x": 814,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 814.0638795573722,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_3_24",
+          "row": 3,
+          "col": 24,
+          "x": 849,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 848.7048957087497,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_3_25",
+          "row": 3,
+          "col": 25,
+          "x": 883,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 883.3459118601273,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_3_29",
+          "row": 3,
+          "col": 29,
+          "x": 1022,
+          "y": 90,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 1021.9099764656374,
+            "editorY": 90,
+            "editorRow": 3,
+            "editorCol": 29
+          }
+        },
+        {
+          "id": "cell_4_4",
+          "row": 4,
+          "col": 4,
+          "x": 139,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 138.56406460551017,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_4_5",
+          "row": 4,
+          "col": 5,
+          "x": 173,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 173.2050807568877,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_4_6",
+          "row": 4,
+          "col": 6,
+          "x": 208,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 207.84609690826525,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_4_7",
+          "row": 4,
+          "col": 7,
+          "x": 242,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 242.4871130596428,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_4_8",
+          "row": 4,
+          "col": 8,
+          "x": 277,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_4_9",
+          "row": 4,
+          "col": 9,
+          "x": 312,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_4_10",
+          "row": 4,
+          "col": 10,
+          "x": 346,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_4_11",
+          "row": 4,
+          "col": 11,
+          "x": 381,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_4_12",
+          "row": 4,
+          "col": 12,
+          "x": 416,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_4_13",
+          "row": 4,
+          "col": 13,
+          "x": 450,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_4_14",
+          "row": 4,
+          "col": 14,
+          "x": 485,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 14
+          }
+        },
+        {
           "id": "cell_4_15",
           "row": 4,
           "col": 15,
           "x": 520,
           "y": 120,
-          "type": "chest",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -51,6 +866,38 @@
             "editorY": 120,
             "editorRow": 4,
             "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_4_16",
+          "row": 4,
+          "col": 16,
+          "x": 554,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_4_17",
+          "row": 4,
+          "col": 17,
+          "x": 589,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 588.8972745734183,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 17
           }
         },
         {
@@ -75,14 +922,334 @@
           "col": 19,
           "x": 658,
           "y": 120,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 658.1793068761733,
             "editorY": 120,
             "editorRow": 4,
             "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_4_20",
+          "row": 4,
+          "col": 20,
+          "x": 693,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_4_21",
+          "row": 4,
+          "col": 21,
+          "x": 727,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_4_22",
+          "row": 4,
+          "col": 22,
+          "x": 762,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 762.102355330306,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_4_23",
+          "row": 4,
+          "col": 23,
+          "x": 797,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_4_24",
+          "row": 4,
+          "col": 24,
+          "x": 831,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_4_25",
+          "row": 4,
+          "col": 25,
+          "x": 866,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_4_26",
+          "row": 4,
+          "col": 26,
+          "x": 901,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_4_27",
+          "row": 4,
+          "col": 27,
+          "x": 935,
+          "y": 120,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 120,
+            "editorRow": 4,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_5_2",
+          "row": 5,
+          "col": 2,
+          "x": 87,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_5_3",
+          "row": 5,
+          "col": 3,
+          "x": 121,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_5_4",
+          "row": 5,
+          "col": 4,
+          "x": 156,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 155.88457268119893,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_5_5",
+          "row": 5,
+          "col": 5,
+          "x": 191,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 190.52558883257646,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_5_6",
+          "row": 5,
+          "col": 6,
+          "x": 225,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_5_7",
+          "row": 5,
+          "col": 7,
+          "x": 260,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 259.8076211353316,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_5_8",
+          "row": 5,
+          "col": 8,
+          "x": 294,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_5_9",
+          "row": 5,
+          "col": 9,
+          "x": 329,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_5_10",
+          "row": 5,
+          "col": 10,
+          "x": 364,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_5_11",
+          "row": 5,
+          "col": 11,
+          "x": 398,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_5_12",
+          "row": 5,
+          "col": 12,
+          "x": 433,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_5_13",
+          "row": 5,
+          "col": 13,
+          "x": 468,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 13
           }
         },
         {
@@ -118,13 +1285,29 @@
           }
         },
         {
+          "id": "cell_5_16",
+          "row": 5,
+          "col": 16,
+          "x": 572,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 16
+          }
+        },
+        {
           "id": "cell_5_17",
           "row": 5,
           "col": 17,
           "x": 606,
           "y": 150,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 606.217782649107,
@@ -134,19 +1317,387 @@
           }
         },
         {
+          "id": "cell_5_18",
+          "row": 5,
+          "col": 18,
+          "x": 641,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_5_19",
+          "row": 5,
+          "col": 19,
+          "x": 675,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_5_20",
+          "row": 5,
+          "col": 20,
+          "x": 710,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_5_21",
+          "row": 5,
+          "col": 21,
+          "x": 745,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 744.7818472546171,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_5_22",
+          "row": 5,
+          "col": 22,
+          "x": 779,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_5_23",
+          "row": 5,
+          "col": 23,
+          "x": 814,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 814.0638795573722,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_5_24",
+          "row": 5,
+          "col": 24,
+          "x": 849,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 848.7048957087497,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_5_25",
+          "row": 5,
+          "col": 25,
+          "x": 883,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 883.3459118601273,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_5_26",
+          "row": 5,
+          "col": 26,
+          "x": 918,
+          "y": 150,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 150,
+            "editorRow": 5,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_6_2",
+          "row": 6,
+          "col": 2,
+          "x": 69,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_6_3",
+          "row": 6,
+          "col": 3,
+          "x": 104,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 103.92304845413263,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_6_4",
+          "row": 6,
+          "col": 4,
+          "x": 139,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 138.56406460551017,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_6_5",
+          "row": 6,
+          "col": 5,
+          "x": 173,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 173.2050807568877,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_6_6",
+          "row": 6,
+          "col": 6,
+          "x": 208,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 207.84609690826525,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_6_7",
+          "row": 6,
+          "col": 7,
+          "x": 242,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 242.4871130596428,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_6_8",
+          "row": 6,
+          "col": 8,
+          "x": 277,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_6_9",
+          "row": 6,
+          "col": 9,
+          "x": 312,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_6_10",
+          "row": 6,
+          "col": 10,
+          "x": 346,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_6_11",
+          "row": 6,
+          "col": 11,
+          "x": 381,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_6_12",
+          "row": 6,
+          "col": 12,
+          "x": 416,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_6_13",
+          "row": 6,
+          "col": 13,
+          "x": 450,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_6_14",
+          "row": 6,
+          "col": 14,
+          "x": 485,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 14
+          }
+        },
+        {
           "id": "cell_6_15",
           "row": 6,
           "col": 15,
           "x": 520,
           "y": 180,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 519.6152422706631,
             "editorY": 180,
             "editorRow": 6,
             "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_6_16",
+          "row": 6,
+          "col": 16,
+          "x": 554,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 16
           }
         },
         {
@@ -163,6 +1714,358 @@
             "editorY": 180,
             "editorRow": 6,
             "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_6_18",
+          "row": 6,
+          "col": 18,
+          "x": 624,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_6_19",
+          "row": 6,
+          "col": 19,
+          "x": 658,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_6_20",
+          "row": 6,
+          "col": 20,
+          "x": 693,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_6_21",
+          "row": 6,
+          "col": 21,
+          "x": 727,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_6_22",
+          "row": 6,
+          "col": 22,
+          "x": 762,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 762.102355330306,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_6_23",
+          "row": 6,
+          "col": 23,
+          "x": 797,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_6_24",
+          "row": 6,
+          "col": 24,
+          "x": 831,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_6_25",
+          "row": 6,
+          "col": 25,
+          "x": 866,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_6_26",
+          "row": 6,
+          "col": 26,
+          "x": 901,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_6_27",
+          "row": 6,
+          "col": 27,
+          "x": 935,
+          "y": 180,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 180,
+            "editorRow": 6,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_7_1",
+          "row": 7,
+          "col": 1,
+          "x": 52,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_7_2",
+          "row": 7,
+          "col": 2,
+          "x": 87,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_7_3",
+          "row": 7,
+          "col": 3,
+          "x": 121,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_7_4",
+          "row": 7,
+          "col": 4,
+          "x": 156,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 155.88457268119893,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_7_5",
+          "row": 7,
+          "col": 5,
+          "x": 191,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 190.52558883257646,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_7_6",
+          "row": 7,
+          "col": 6,
+          "x": 225,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_7_7",
+          "row": 7,
+          "col": 7,
+          "x": 260,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 259.8076211353316,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_7_8",
+          "row": 7,
+          "col": 8,
+          "x": 294,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_7_9",
+          "row": 7,
+          "col": 9,
+          "x": 329,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_7_10",
+          "row": 7,
+          "col": 10,
+          "x": 364,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_7_11",
+          "row": 7,
+          "col": 11,
+          "x": 398,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_7_12",
+          "row": 7,
+          "col": 12,
+          "x": 433,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 12
           }
         },
         {
@@ -230,6 +2133,374 @@
           }
         },
         {
+          "id": "cell_7_17",
+          "row": 7,
+          "col": 17,
+          "x": 606,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_7_18",
+          "row": 7,
+          "col": 18,
+          "x": 641,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_7_19",
+          "row": 7,
+          "col": 19,
+          "x": 675,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_7_20",
+          "row": 7,
+          "col": 20,
+          "x": 710,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_7_21",
+          "row": 7,
+          "col": 21,
+          "x": 745,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 744.7818472546171,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_7_22",
+          "row": 7,
+          "col": 22,
+          "x": 779,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_7_23",
+          "row": 7,
+          "col": 23,
+          "x": 814,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 814.0638795573722,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_7_24",
+          "row": 7,
+          "col": 24,
+          "x": 849,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 848.7048957087497,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_7_25",
+          "row": 7,
+          "col": 25,
+          "x": 883,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 883.3459118601273,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_7_26",
+          "row": 7,
+          "col": 26,
+          "x": 918,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_7_27",
+          "row": 7,
+          "col": 27,
+          "x": 953,
+          "y": 210,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 210,
+            "editorRow": 7,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_8_1",
+          "row": 8,
+          "col": 1,
+          "x": 35,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_8_2",
+          "row": 8,
+          "col": 2,
+          "x": 69,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_8_3",
+          "row": 8,
+          "col": 3,
+          "x": 104,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 103.92304845413263,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_8_4",
+          "row": 8,
+          "col": 4,
+          "x": 139,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 138.56406460551017,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_8_5",
+          "row": 8,
+          "col": 5,
+          "x": 173,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 173.2050807568877,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_8_6",
+          "row": 8,
+          "col": 6,
+          "x": 208,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 207.84609690826525,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_8_7",
+          "row": 8,
+          "col": 7,
+          "x": 242,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 242.4871130596428,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_8_8",
+          "row": 8,
+          "col": 8,
+          "x": 277,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_8_9",
+          "row": 8,
+          "col": 9,
+          "x": 312,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_8_10",
+          "row": 8,
+          "col": 10,
+          "x": 346,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_8_11",
+          "row": 8,
+          "col": 11,
+          "x": 381,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_8_12",
+          "row": 8,
+          "col": 12,
+          "x": 416,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 12
+          }
+        },
+        {
           "id": "cell_8_13",
           "row": 8,
           "col": 13,
@@ -291,6 +2562,294 @@
             "editorY": 240,
             "editorRow": 8,
             "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_8_17",
+          "row": 8,
+          "col": 17,
+          "x": 589,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 588.8972745734183,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_8_18",
+          "row": 8,
+          "col": 18,
+          "x": 624,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_8_19",
+          "row": 8,
+          "col": 19,
+          "x": 658,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_8_20",
+          "row": 8,
+          "col": 20,
+          "x": 693,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_8_21",
+          "row": 8,
+          "col": 21,
+          "x": 727,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_8_22",
+          "row": 8,
+          "col": 22,
+          "x": 762,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 762.102355330306,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_8_23",
+          "row": 8,
+          "col": 23,
+          "x": 797,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_8_24",
+          "row": 8,
+          "col": 24,
+          "x": 831,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_8_25",
+          "row": 8,
+          "col": 25,
+          "x": 866,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_8_26",
+          "row": 8,
+          "col": 26,
+          "x": 901,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_8_27",
+          "row": 8,
+          "col": 27,
+          "x": 935,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_8_28",
+          "row": 8,
+          "col": 28,
+          "x": 970,
+          "y": 240,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 240,
+            "editorRow": 8,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_9_1",
+          "row": 9,
+          "col": 1,
+          "x": 52,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_9_2",
+          "row": 9,
+          "col": 2,
+          "x": 87,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_9_3",
+          "row": 9,
+          "col": 3,
+          "x": 121,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_9_4",
+          "row": 9,
+          "col": 4,
+          "x": 156,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 155.88457268119893,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_9_5",
+          "row": 9,
+          "col": 5,
+          "x": 191,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 190.52558883257646,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_9_6",
+          "row": 9,
+          "col": 6,
+          "x": 225,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 6
           }
         },
         {
@@ -358,6 +2917,22 @@
           }
         },
         {
+          "id": "cell_9_11",
+          "row": 9,
+          "col": 11,
+          "x": 398,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 11
+          }
+        },
+        {
           "id": "cell_9_12",
           "row": 9,
           "col": 12,
@@ -395,8 +2970,8 @@
           "col": 14,
           "x": 502,
           "y": 270,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 502.2947341949744,
@@ -438,12 +3013,44 @@
           }
         },
         {
+          "id": "cell_9_17",
+          "row": 9,
+          "col": 17,
+          "x": 606,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_9_18",
+          "row": 9,
+          "col": 18,
+          "x": 641,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 18
+          }
+        },
+        {
           "id": "cell_9_19",
           "row": 9,
           "col": 19,
           "x": 675,
           "y": 270,
-          "type": "exit",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -451,6 +3058,54 @@
             "editorY": 270,
             "editorRow": 9,
             "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_9_20",
+          "row": 9,
+          "col": 20,
+          "x": 710,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_9_21",
+          "row": 9,
+          "col": 21,
+          "x": 745,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 744.7818472546171,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_9_22",
+          "row": 9,
+          "col": 22,
+          "x": 779,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 22
           }
         },
         {
@@ -499,6 +3154,86 @@
             "editorY": 270,
             "editorRow": 9,
             "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_9_26",
+          "row": 9,
+          "col": 26,
+          "x": 918,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_9_27",
+          "row": 9,
+          "col": 27,
+          "x": 953,
+          "y": 270,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 270,
+            "editorRow": 9,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_10_1",
+          "row": 10,
+          "col": 1,
+          "x": 35,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_10_2",
+          "row": 10,
+          "col": 2,
+          "x": 69,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_10_3",
+          "row": 10,
+          "col": 3,
+          "x": 104,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 103.92304845413263,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 3
           }
         },
         {
@@ -614,6 +3349,22 @@
           }
         },
         {
+          "id": "cell_10_11",
+          "row": 10,
+          "col": 11,
+          "x": 381,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 11
+          }
+        },
+        {
           "id": "cell_10_12",
           "row": 10,
           "col": 12,
@@ -710,13 +3461,45 @@
           }
         },
         {
+          "id": "cell_10_18",
+          "row": 10,
+          "col": 18,
+          "x": 624,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_10_19",
+          "row": 10,
+          "col": 19,
+          "x": 658,
+          "y": 300,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 300,
+            "editorRow": 10,
+            "editorCol": 19
+          }
+        },
+        {
           "id": "cell_10_20",
           "row": 10,
           "col": 20,
           "x": 693,
           "y": 300,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 692.8203230275508,
@@ -811,8 +3594,8 @@
           "col": 26,
           "x": 901,
           "y": 300,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 900.6664199358161,
@@ -851,6 +3634,38 @@
             "editorY": 300,
             "editorRow": 10,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_11_1",
+          "row": 11,
+          "col": 1,
+          "x": 52,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_11_2",
+          "row": 11,
+          "col": 2,
+          "x": 87,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 2
           }
         },
         {
@@ -966,6 +3781,38 @@
           }
         },
         {
+          "id": "cell_11_10",
+          "row": 11,
+          "col": 10,
+          "x": 364,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_11_11",
+          "row": 11,
+          "col": 11,
+          "x": 398,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 11
+          }
+        },
+        {
           "id": "cell_11_12",
           "row": 11,
           "col": 12,
@@ -1062,6 +3909,38 @@
           }
         },
         {
+          "id": "cell_11_18",
+          "row": 11,
+          "col": 18,
+          "x": 641,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_11_19",
+          "row": 11,
+          "col": 19,
+          "x": 675,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 19
+          }
+        },
+        {
           "id": "cell_11_20",
           "row": 11,
           "col": 20,
@@ -1142,6 +4021,22 @@
           }
         },
         {
+          "id": "cell_11_25",
+          "row": 11,
+          "col": 25,
+          "x": 883,
+          "y": 330,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 883.3459118601273,
+            "editorY": 330,
+            "editorRow": 11,
+            "editorCol": 25
+          }
+        },
+        {
           "id": "cell_11_26",
           "row": 11,
           "col": 26,
@@ -1174,19 +4069,35 @@
           }
         },
         {
-          "id": "cell_11_28",
-          "row": 11,
-          "col": 28,
-          "x": 987,
-          "y": 330,
+          "id": "cell_12_1",
+          "row": 12,
+          "col": 1,
+          "x": 35,
+          "y": 360,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 987.26896031426,
-            "editorY": 330,
-            "editorRow": 11,
-            "editorCol": 28
+            "editorX": 34.64101615137754,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_12_2",
+          "row": 12,
+          "col": 2,
+          "x": 69,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 2
           }
         },
         {
@@ -1302,6 +4213,86 @@
           }
         },
         {
+          "id": "cell_12_10",
+          "row": 12,
+          "col": 10,
+          "x": 346,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_12_11",
+          "row": 12,
+          "col": 11,
+          "x": 381,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_12_12",
+          "row": 12,
+          "col": 12,
+          "x": 416,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_12_13",
+          "row": 12,
+          "col": 13,
+          "x": 450,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_12_14",
+          "row": 12,
+          "col": 14,
+          "x": 485,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 14
+          }
+        },
+        {
           "id": "cell_12_15",
           "row": 12,
           "col": 15,
@@ -1347,6 +4338,54 @@
             "editorY": 360,
             "editorRow": 12,
             "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_12_18",
+          "row": 12,
+          "col": 18,
+          "x": 624,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_12_19",
+          "row": 12,
+          "col": 19,
+          "x": 658,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_12_20",
+          "row": 12,
+          "col": 20,
+          "x": 693,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 20
           }
         },
         {
@@ -1403,8 +4442,8 @@
           "col": 24,
           "x": 831,
           "y": 360,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 831.384387633061,
@@ -1427,6 +4466,22 @@
             "editorY": 360,
             "editorRow": 12,
             "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_12_26",
+          "row": 12,
+          "col": 26,
+          "x": 901,
+          "y": 360,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 360,
+            "editorRow": 12,
+            "editorCol": 26
           }
         },
         {
@@ -1459,6 +4514,22 @@
             "editorY": 360,
             "editorRow": 12,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_13_1",
+          "row": 13,
+          "col": 1,
+          "x": 52,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 1
           }
         },
         {
@@ -1558,13 +4629,125 @@
           }
         },
         {
+          "id": "cell_13_8",
+          "row": 13,
+          "col": 8,
+          "x": 294,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_13_9",
+          "row": 13,
+          "col": 9,
+          "x": 329,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_13_10",
+          "row": 13,
+          "col": 10,
+          "x": 364,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_13_11",
+          "row": 13,
+          "col": 11,
+          "x": 398,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_13_12",
+          "row": 13,
+          "col": 12,
+          "x": 433,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_13_13",
+          "row": 13,
+          "col": 13,
+          "x": 468,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_13_14",
+          "row": 13,
+          "col": 14,
+          "x": 502,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 14
+          }
+        },
+        {
           "id": "cell_13_15",
           "row": 13,
           "col": 15,
           "x": 537,
           "y": 390,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 536.9357503463518,
@@ -1587,6 +4770,70 @@
             "editorY": 390,
             "editorRow": 13,
             "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_13_17",
+          "row": 13,
+          "col": 17,
+          "x": 606,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_13_18",
+          "row": 13,
+          "col": 18,
+          "x": 641,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_13_19",
+          "row": 13,
+          "col": 19,
+          "x": 675,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_13_20",
+          "row": 13,
+          "col": 20,
+          "x": 710,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 20
           }
         },
         {
@@ -1670,6 +4917,22 @@
           }
         },
         {
+          "id": "cell_13_26",
+          "row": 13,
+          "col": 26,
+          "x": 918,
+          "y": 390,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 390,
+            "editorRow": 13,
+            "editorCol": 26
+          }
+        },
+        {
           "id": "cell_13_27",
           "row": 13,
           "col": 27,
@@ -1699,6 +4962,22 @@
             "editorY": 390,
             "editorRow": 13,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_14_1",
+          "row": 14,
+          "col": 1,
+          "x": 35,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 1
           }
         },
         {
@@ -1739,8 +5018,8 @@
           "col": 4,
           "x": 139,
           "y": 420,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 138.56406460551017,
@@ -1782,13 +5061,125 @@
           }
         },
         {
+          "id": "cell_14_7",
+          "row": 14,
+          "col": 7,
+          "x": 242,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 242.4871130596428,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_14_8",
+          "row": 14,
+          "col": 8,
+          "x": 277,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_14_9",
+          "row": 14,
+          "col": 9,
+          "x": 312,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_14_10",
+          "row": 14,
+          "col": 10,
+          "x": 346,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_14_11",
+          "row": 14,
+          "col": 11,
+          "x": 381,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_14_12",
+          "row": 14,
+          "col": 12,
+          "x": 416,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_14_13",
+          "row": 14,
+          "col": 13,
+          "x": 450,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 13
+          }
+        },
+        {
           "id": "cell_14_14",
           "row": 14,
           "col": 14,
           "x": 485,
           "y": 420,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 484.9742261192856,
@@ -1811,6 +5202,102 @@
             "editorY": 420,
             "editorRow": 14,
             "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_14_16",
+          "row": 14,
+          "col": 16,
+          "x": 554,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_14_17",
+          "row": 14,
+          "col": 17,
+          "x": 589,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 588.8972745734183,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_14_18",
+          "row": 14,
+          "col": 18,
+          "x": 624,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_14_19",
+          "row": 14,
+          "col": 19,
+          "x": 658,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_14_20",
+          "row": 14,
+          "col": 20,
+          "x": 693,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_14_21",
+          "row": 14,
+          "col": 21,
+          "x": 727,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 21
           }
         },
         {
@@ -1894,6 +5381,22 @@
           }
         },
         {
+          "id": "cell_14_27",
+          "row": 14,
+          "col": 27,
+          "x": 935,
+          "y": 420,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 420,
+            "editorRow": 14,
+            "editorCol": 27
+          }
+        },
+        {
           "id": "cell_14_28",
           "row": 14,
           "col": 28,
@@ -1907,6 +5410,22 @@
             "editorY": 420,
             "editorRow": 14,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_15_1",
+          "row": 15,
+          "col": 1,
+          "x": 52,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 1
           }
         },
         {
@@ -1974,13 +5493,109 @@
           }
         },
         {
+          "id": "cell_15_6",
+          "row": 15,
+          "col": 6,
+          "x": 225,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_15_7",
+          "row": 15,
+          "col": 7,
+          "x": 260,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 259.8076211353316,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_15_8",
+          "row": 15,
+          "col": 8,
+          "x": 294,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_15_9",
+          "row": 15,
+          "col": 9,
+          "x": 329,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_15_10",
+          "row": 15,
+          "col": 10,
+          "x": 364,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_15_11",
+          "row": 15,
+          "col": 11,
+          "x": 398,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 11
+          }
+        },
+        {
           "id": "cell_15_12",
           "row": 15,
           "col": 12,
           "x": 433,
           "y": 450,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 433.0127018922193,
@@ -2003,6 +5618,118 @@
             "editorY": 450,
             "editorRow": 15,
             "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_15_14",
+          "row": 15,
+          "col": 14,
+          "x": 502,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_15_15",
+          "row": 15,
+          "col": 15,
+          "x": 537,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 536.9357503463518,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_15_16",
+          "row": 15,
+          "col": 16,
+          "x": 572,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_15_17",
+          "row": 15,
+          "col": 17,
+          "x": 606,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_15_18",
+          "row": 15,
+          "col": 18,
+          "x": 641,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_15_19",
+          "row": 15,
+          "col": 19,
+          "x": 675,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_15_20",
+          "row": 15,
+          "col": 20,
+          "x": 710,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 20
           }
         },
         {
@@ -2102,6 +5829,38 @@
           }
         },
         {
+          "id": "cell_15_27",
+          "row": 15,
+          "col": 27,
+          "x": 953,
+          "y": 450,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 450,
+            "editorRow": 15,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_16_1",
+          "row": 16,
+          "col": 1,
+          "x": 35,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 1
+          }
+        },
+        {
           "id": "cell_16_2",
           "row": 16,
           "col": 2,
@@ -2123,7 +5882,7 @@
           "col": 3,
           "x": 104,
           "y": 480,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2182,13 +5941,77 @@
           }
         },
         {
+          "id": "cell_16_7",
+          "row": 16,
+          "col": 7,
+          "x": 242,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 242.4871130596428,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_16_8",
+          "row": 16,
+          "col": 8,
+          "x": 277,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_16_9",
+          "row": 16,
+          "col": 9,
+          "x": 312,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_16_10",
+          "row": 16,
+          "col": 10,
+          "x": 346,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 10
+          }
+        },
+        {
           "id": "cell_16_11",
           "row": 16,
           "col": 11,
           "x": 381,
           "y": 480,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 381.051177665153,
@@ -2211,6 +6034,134 @@
             "editorY": 480,
             "editorRow": 16,
             "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_16_13",
+          "row": 16,
+          "col": 13,
+          "x": 450,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_16_14",
+          "row": 16,
+          "col": 14,
+          "x": 485,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_16_15",
+          "row": 16,
+          "col": 15,
+          "x": 520,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 519.6152422706631,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_16_16",
+          "row": 16,
+          "col": 16,
+          "x": 554,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_16_17",
+          "row": 16,
+          "col": 17,
+          "x": 589,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 588.8972745734183,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_16_18",
+          "row": 16,
+          "col": 18,
+          "x": 624,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_16_19",
+          "row": 16,
+          "col": 19,
+          "x": 658,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_16_20",
+          "row": 16,
+          "col": 20,
+          "x": 693,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 20
           }
         },
         {
@@ -2299,7 +6250,7 @@
           "col": 26,
           "x": 901,
           "y": 480,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -2323,6 +6274,54 @@
             "editorY": 480,
             "editorRow": 16,
             "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_16_28",
+          "row": 16,
+          "col": 28,
+          "x": 970,
+          "y": 480,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 480,
+            "editorRow": 16,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_17_1",
+          "row": 17,
+          "col": 1,
+          "x": 52,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_17_2",
+          "row": 17,
+          "col": 2,
+          "x": 87,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 2
           }
         },
         {
@@ -2470,6 +6469,118 @@
           }
         },
         {
+          "id": "cell_17_12",
+          "row": 17,
+          "col": 12,
+          "x": 433,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_17_13",
+          "row": 17,
+          "col": 13,
+          "x": 468,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_17_14",
+          "row": 17,
+          "col": 14,
+          "x": 502,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_17_15",
+          "row": 17,
+          "col": 15,
+          "x": 537,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 536.9357503463518,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_17_16",
+          "row": 17,
+          "col": 16,
+          "x": 572,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_17_17",
+          "row": 17,
+          "col": 17,
+          "x": 606,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_17_18",
+          "row": 17,
+          "col": 18,
+          "x": 641,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 18
+          }
+        },
+        {
           "id": "cell_17_19",
           "row": 17,
           "col": 19,
@@ -2598,6 +6709,70 @@
           }
         },
         {
+          "id": "cell_17_27",
+          "row": 17,
+          "col": 27,
+          "x": 953,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_17_28",
+          "row": 17,
+          "col": 28,
+          "x": 987,
+          "y": 510,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 987.26896031426,
+            "editorY": 510,
+            "editorRow": 17,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_18_1",
+          "row": 18,
+          "col": 1,
+          "x": 35,
+          "y": 540,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 540,
+            "editorRow": 18,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_18_2",
+          "row": 18,
+          "col": 2,
+          "x": 69,
+          "y": 540,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 540,
+            "editorRow": 18,
+            "editorCol": 2
+          }
+        },
+        {
           "id": "cell_18_3",
           "row": 18,
           "col": 3,
@@ -2651,8 +6826,8 @@
           "col": 6,
           "x": 208,
           "y": 540,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 207.84609690826525,
@@ -2982,6 +7157,70 @@
           }
         },
         {
+          "id": "cell_18_27",
+          "row": 18,
+          "col": 27,
+          "x": 935,
+          "y": 540,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 540,
+            "editorRow": 18,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_18_28",
+          "row": 18,
+          "col": 28,
+          "x": 970,
+          "y": 540,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 540,
+            "editorRow": 18,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_19_1",
+          "row": 19,
+          "col": 1,
+          "x": 52,
+          "y": 570,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 570,
+            "editorRow": 19,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_19_2",
+          "row": 19,
+          "col": 2,
+          "x": 87,
+          "y": 570,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 570,
+            "editorRow": 19,
+            "editorCol": 2
+          }
+        },
+        {
           "id": "cell_19_3",
           "row": 19,
           "col": 3,
@@ -3091,6 +7330,22 @@
             "editorY": 570,
             "editorRow": 19,
             "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_19_10",
+          "row": 19,
+          "col": 10,
+          "x": 364,
+          "y": 570,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 570,
+            "editorRow": 19,
+            "editorCol": 10
           }
         },
         {
@@ -3302,13 +7557,45 @@
           }
         },
         {
+          "id": "cell_19_24",
+          "row": 19,
+          "col": 24,
+          "x": 849,
+          "y": 570,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 848.7048957087497,
+            "editorY": 570,
+            "editorRow": 19,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_19_25",
+          "row": 19,
+          "col": 25,
+          "x": 883,
+          "y": 570,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 883.3459118601273,
+            "editorY": 570,
+            "editorRow": 19,
+            "editorCol": 25
+          }
+        },
+        {
           "id": "cell_19_26",
           "row": 19,
           "col": 26,
           "x": 918,
           "y": 570,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 917.9869280115048,
@@ -3331,6 +7618,54 @@
             "editorY": 570,
             "editorRow": 19,
             "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_20_1",
+          "row": 20,
+          "col": 1,
+          "x": 35,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_20_2",
+          "row": 20,
+          "col": 2,
+          "x": 69,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_20_3",
+          "row": 20,
+          "col": 3,
+          "x": 104,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 103.92304845413263,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 3
           }
         },
         {
@@ -3427,6 +7762,22 @@
             "editorY": 600,
             "editorRow": 20,
             "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_20_10",
+          "row": 20,
+          "col": 10,
+          "x": 346,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 10
           }
         },
         {
@@ -3622,6 +7973,86 @@
           }
         },
         {
+          "id": "cell_20_23",
+          "row": 20,
+          "col": 23,
+          "x": 797,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_20_24",
+          "row": 20,
+          "col": 24,
+          "x": 831,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_20_25",
+          "row": 20,
+          "col": 25,
+          "x": 866,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_20_26",
+          "row": 20,
+          "col": 26,
+          "x": 901,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_20_27",
+          "row": 20,
+          "col": 27,
+          "x": 935,
+          "y": 600,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 600,
+            "editorRow": 20,
+            "editorCol": 27
+          }
+        },
+        {
           "id": "cell_20_28",
           "row": 20,
           "col": 28,
@@ -3635,6 +8066,102 @@
             "editorY": 600,
             "editorRow": 20,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_21_1",
+          "row": 21,
+          "col": 1,
+          "x": 52,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_21_2",
+          "row": 21,
+          "col": 2,
+          "x": 87,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_21_3",
+          "row": 21,
+          "col": 3,
+          "x": 121,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_21_4",
+          "row": 21,
+          "col": 4,
+          "x": 156,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 155.88457268119893,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_21_5",
+          "row": 21,
+          "col": 5,
+          "x": 191,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 190.52558883257646,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_21_6",
+          "row": 21,
+          "col": 6,
+          "x": 225,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 225.16660498395402,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 6
           }
         },
         {
@@ -3667,6 +8194,54 @@
             "editorY": 630,
             "editorRow": 21,
             "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_21_9",
+          "row": 21,
+          "col": 9,
+          "x": 329,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_21_10",
+          "row": 21,
+          "col": 10,
+          "x": 364,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_21_11",
+          "row": 21,
+          "col": 11,
+          "x": 398,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 11
           }
         },
         {
@@ -3707,7 +8282,7 @@
           "col": 14,
           "x": 502,
           "y": 630,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -3830,6 +8405,38 @@
           }
         },
         {
+          "id": "cell_21_22",
+          "row": 21,
+          "col": 22,
+          "x": 779,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_21_23",
+          "row": 21,
+          "col": 23,
+          "x": 814,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 814.0638795573722,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 23
+          }
+        },
+        {
           "id": "cell_21_24",
           "row": 21,
           "col": 24,
@@ -3862,6 +8469,38 @@
           }
         },
         {
+          "id": "cell_21_26",
+          "row": 21,
+          "col": 26,
+          "x": 918,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_21_27",
+          "row": 21,
+          "col": 27,
+          "x": 953,
+          "y": 630,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 630,
+            "editorRow": 21,
+            "editorCol": 27
+          }
+        },
+        {
           "id": "cell_21_28",
           "row": 21,
           "col": 28,
@@ -3875,6 +8514,38 @@
             "editorY": 630,
             "editorRow": 21,
             "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_22_1",
+          "row": 22,
+          "col": 1,
+          "x": 35,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_22_2",
+          "row": 22,
+          "col": 2,
+          "x": 69,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 2
           }
         },
         {
@@ -3894,19 +8565,147 @@
           }
         },
         {
+          "id": "cell_22_4",
+          "row": 22,
+          "col": 4,
+          "x": 139,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 138.56406460551017,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_22_5",
+          "row": 22,
+          "col": 5,
+          "x": 173,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 173.2050807568877,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_22_6",
+          "row": 22,
+          "col": 6,
+          "x": 208,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 207.84609690826525,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 6
+          }
+        },
+        {
           "id": "cell_22_7",
           "row": 22,
           "col": 7,
           "x": 242,
           "y": 660,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 242.4871130596428,
             "editorY": 660,
             "editorRow": 22,
             "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_22_8",
+          "row": 22,
+          "col": 8,
+          "x": 277,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 277.12812921102034,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_22_9",
+          "row": 22,
+          "col": 9,
+          "x": 312,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 311.76914536239786,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_22_10",
+          "row": 22,
+          "col": 10,
+          "x": 346,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_22_11",
+          "row": 22,
+          "col": 11,
+          "x": 381,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_22_12",
+          "row": 22,
+          "col": 12,
+          "x": 416,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 12
           }
         },
         {
@@ -4011,7 +8810,7 @@
           "col": 19,
           "x": 658,
           "y": 660,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4107,8 +8906,8 @@
           "col": 25,
           "x": 866,
           "y": 660,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 866.0254037844386,
@@ -4150,6 +8949,38 @@
           }
         },
         {
+          "id": "cell_22_28",
+          "row": 22,
+          "col": 28,
+          "x": 970,
+          "y": 660,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 660,
+            "editorRow": 22,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_23_1",
+          "row": 23,
+          "col": 1,
+          "x": 52,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 1
+          }
+        },
+        {
           "id": "cell_23_2",
           "row": 23,
           "col": 2,
@@ -4187,7 +9018,7 @@
           "col": 4,
           "x": 156,
           "y": 690,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -4230,6 +9061,38 @@
           }
         },
         {
+          "id": "cell_23_7",
+          "row": 23,
+          "col": 7,
+          "x": 260,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 259.8076211353316,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 7
+          }
+        },
+        {
+          "id": "cell_23_8",
+          "row": 23,
+          "col": 8,
+          "x": 294,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 8
+          }
+        },
+        {
           "id": "cell_23_9",
           "row": 23,
           "col": 9,
@@ -4259,6 +9122,54 @@
             "editorY": 690,
             "editorRow": 23,
             "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_23_11",
+          "row": 23,
+          "col": 11,
+          "x": 398,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_23_12",
+          "row": 23,
+          "col": 12,
+          "x": 433,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_23_13",
+          "row": 23,
+          "col": 13,
+          "x": 468,
+          "y": 690,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 690,
+            "editorRow": 23,
+            "editorCol": 13
           }
         },
         {
@@ -4486,6 +9397,38 @@
           }
         },
         {
+          "id": "cell_24_1",
+          "row": 24,
+          "col": 1,
+          "x": 35,
+          "y": 720,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 34.64101615137754,
+            "editorY": 720,
+            "editorRow": 24,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_24_2",
+          "row": 24,
+          "col": 2,
+          "x": 69,
+          "y": 720,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 69.28203230275508,
+            "editorY": 720,
+            "editorRow": 24,
+            "editorCol": 2
+          }
+        },
+        {
           "id": "cell_24_3",
           "row": 24,
           "col": 3,
@@ -4571,8 +9514,8 @@
           "col": 8,
           "x": 277,
           "y": 720,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 277.12812921102034,
@@ -4627,6 +9570,38 @@
             "editorY": 720,
             "editorRow": 24,
             "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_24_12",
+          "row": 24,
+          "col": 12,
+          "x": 416,
+          "y": 720,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 720,
+            "editorRow": 24,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_24_13",
+          "row": 24,
+          "col": 13,
+          "x": 450,
+          "y": 720,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 720,
+            "editorRow": 24,
+            "editorCol": 13
           }
         },
         {
@@ -4854,6 +9829,70 @@
           }
         },
         {
+          "id": "cell_24_28",
+          "row": 24,
+          "col": 28,
+          "x": 970,
+          "y": 720,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 720,
+            "editorRow": 24,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_25_1",
+          "row": 25,
+          "col": 1,
+          "x": 52,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 51.96152422706631,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 1
+          }
+        },
+        {
+          "id": "cell_25_2",
+          "row": 25,
+          "col": 2,
+          "x": 87,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 86.60254037844385,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 2
+          }
+        },
+        {
+          "id": "cell_25_3",
+          "row": 25,
+          "col": 3,
+          "x": 121,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 3
+          }
+        },
+        {
           "id": "cell_25_4",
           "row": 25,
           "col": 4,
@@ -4918,6 +9957,198 @@
           }
         },
         {
+          "id": "cell_25_8",
+          "row": 25,
+          "col": 8,
+          "x": 294,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 294.44863728670913,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 8
+          }
+        },
+        {
+          "id": "cell_25_9",
+          "row": 25,
+          "col": 9,
+          "x": 329,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 329.08965343808666,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 9
+          }
+        },
+        {
+          "id": "cell_25_10",
+          "row": 25,
+          "col": 10,
+          "x": 364,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 363.7306695894642,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_25_11",
+          "row": 25,
+          "col": 11,
+          "x": 398,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_25_12",
+          "row": 25,
+          "col": 12,
+          "x": 433,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_25_13",
+          "row": 25,
+          "col": 13,
+          "x": 468,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_25_14",
+          "row": 25,
+          "col": 14,
+          "x": 502,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_25_15",
+          "row": 25,
+          "col": 15,
+          "x": 537,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 536.9357503463518,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_25_16",
+          "row": 25,
+          "col": 16,
+          "x": 572,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_25_17",
+          "row": 25,
+          "col": 17,
+          "x": 606,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_25_18",
+          "row": 25,
+          "col": 18,
+          "x": 641,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_25_19",
+          "row": 25,
+          "col": 19,
+          "x": 675,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 19
+          }
+        },
+        {
           "id": "cell_25_20",
           "row": 25,
           "col": 20,
@@ -4971,7 +10202,7 @@
           "col": 23,
           "x": 814,
           "y": 750,
-          "type": "npc",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -5011,6 +10242,70 @@
             "editorY": 750,
             "editorRow": 25,
             "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_25_26",
+          "row": 25,
+          "col": 26,
+          "x": 918,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 917.9869280115048,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_25_27",
+          "row": 25,
+          "col": 27,
+          "x": 953,
+          "y": 750,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 750,
+            "editorRow": 25,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_26_3",
+          "row": 26,
+          "col": 3,
+          "x": 104,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 103.92304845413263,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 3
+          }
+        },
+        {
+          "id": "cell_26_4",
+          "row": 26,
+          "col": 4,
+          "x": 139,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 138.56406460551017,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 4
           }
         },
         {
@@ -5094,6 +10389,182 @@
           }
         },
         {
+          "id": "cell_26_10",
+          "row": 26,
+          "col": 10,
+          "x": 346,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 346.4101615137754,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 10
+          }
+        },
+        {
+          "id": "cell_26_11",
+          "row": 26,
+          "col": 11,
+          "x": 381,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 381.051177665153,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_26_12",
+          "row": 26,
+          "col": 12,
+          "x": 416,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 415.6921938165305,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_26_13",
+          "row": 26,
+          "col": 13,
+          "x": 450,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 450.33320996790803,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_26_14",
+          "row": 26,
+          "col": 14,
+          "x": 485,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 484.9742261192856,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_26_15",
+          "row": 26,
+          "col": 15,
+          "x": 520,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 519.6152422706631,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_26_16",
+          "row": 26,
+          "col": 16,
+          "x": 554,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 554.2562584220407,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_26_17",
+          "row": 26,
+          "col": 17,
+          "x": 589,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 588.8972745734183,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_26_18",
+          "row": 26,
+          "col": 18,
+          "x": 624,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_26_19",
+          "row": 26,
+          "col": 19,
+          "x": 658,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_26_20",
+          "row": 26,
+          "col": 20,
+          "x": 693,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 692.8203230275508,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 20
+          }
+        },
+        {
           "id": "cell_26_21",
           "row": 26,
           "col": 21,
@@ -5171,6 +10642,70 @@
             "editorY": 780,
             "editorRow": 26,
             "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_26_26",
+          "row": 26,
+          "col": 26,
+          "x": 901,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_26_27",
+          "row": 26,
+          "col": 27,
+          "x": 935,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 27
+          }
+        },
+        {
+          "id": "cell_26_28",
+          "row": 26,
+          "col": 28,
+          "x": 970,
+          "y": 780,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 969.9484522385712,
+            "editorY": 780,
+            "editorRow": 26,
+            "editorCol": 28
+          }
+        },
+        {
+          "id": "cell_27_3",
+          "row": 27,
+          "col": 3,
+          "x": 121,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 121.2435565298214,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 3
           }
         },
         {
@@ -5286,6 +10821,198 @@
           }
         },
         {
+          "id": "cell_27_11",
+          "row": 27,
+          "col": 11,
+          "x": 398,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_27_12",
+          "row": 27,
+          "col": 12,
+          "x": 433,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_27_13",
+          "row": 27,
+          "col": 13,
+          "x": 468,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_27_14",
+          "row": 27,
+          "col": 14,
+          "x": 502,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 14
+          }
+        },
+        {
+          "id": "cell_27_15",
+          "row": 27,
+          "col": 15,
+          "x": 537,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 536.9357503463518,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 15
+          }
+        },
+        {
+          "id": "cell_27_16",
+          "row": 27,
+          "col": 16,
+          "x": 572,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 571.5767664977294,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_27_17",
+          "row": 27,
+          "col": 17,
+          "x": 606,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_27_18",
+          "row": 27,
+          "col": 18,
+          "x": 641,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_27_19",
+          "row": 27,
+          "col": 19,
+          "x": 675,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 675.499814951862,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 19
+          }
+        },
+        {
+          "id": "cell_27_20",
+          "row": 27,
+          "col": 20,
+          "x": 710,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 710.1408311032395,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_27_21",
+          "row": 27,
+          "col": 21,
+          "x": 745,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 744.7818472546171,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_27_22",
+          "row": 27,
+          "col": 22,
+          "x": 779,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 22
+          }
+        },
+        {
           "id": "cell_27_23",
           "row": 27,
           "col": 23,
@@ -5347,6 +11074,22 @@
             "editorY": 810,
             "editorRow": 27,
             "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_27_27",
+          "row": 27,
+          "col": 27,
+          "x": 953,
+          "y": 810,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 952.6279441628824,
+            "editorY": 810,
+            "editorRow": 27,
+            "editorCol": 27
           }
         },
         {
@@ -5499,8 +11242,8 @@
           "col": 14,
           "x": 485,
           "y": 840,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 484.9742261192856,
@@ -5579,8 +11322,8 @@
           "col": 19,
           "x": 658,
           "y": 840,
-          "type": "monster",
-          "passable": false,
+          "type": "active",
+          "passable": true,
           "visible": true,
           "originalData": {
             "editorX": 658.1793068761733,
@@ -5603,6 +11346,118 @@
             "editorY": 840,
             "editorRow": 28,
             "editorCol": 20
+          }
+        },
+        {
+          "id": "cell_28_21",
+          "row": 28,
+          "col": 21,
+          "x": 727,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 727.4613391789284,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 21
+          }
+        },
+        {
+          "id": "cell_28_22",
+          "row": 28,
+          "col": 22,
+          "x": 762,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 762.102355330306,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_28_23",
+          "row": 28,
+          "col": 23,
+          "x": 797,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 796.7433714816834,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_28_24",
+          "row": 28,
+          "col": 24,
+          "x": 831,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 831.384387633061,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 24
+          }
+        },
+        {
+          "id": "cell_28_25",
+          "row": 28,
+          "col": 25,
+          "x": 866,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 866.0254037844386,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 25
+          }
+        },
+        {
+          "id": "cell_28_26",
+          "row": 28,
+          "col": 26,
+          "x": 901,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 900.6664199358161,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 26
+          }
+        },
+        {
+          "id": "cell_28_27",
+          "row": 28,
+          "col": 27,
+          "x": 935,
+          "y": 840,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 935.3074360871937,
+            "editorY": 840,
+            "editorRow": 28,
+            "editorCol": 27
           }
         },
         {
@@ -5702,6 +11557,70 @@
           }
         },
         {
+          "id": "cell_29_11",
+          "row": 29,
+          "col": 11,
+          "x": 398,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 398.37168574084177,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 11
+          }
+        },
+        {
+          "id": "cell_29_12",
+          "row": 29,
+          "col": 12,
+          "x": 433,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 433.0127018922193,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 12
+          }
+        },
+        {
+          "id": "cell_29_13",
+          "row": 29,
+          "col": 13,
+          "x": 468,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 467.6537180435968,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 13
+          }
+        },
+        {
+          "id": "cell_29_14",
+          "row": 29,
+          "col": 14,
+          "x": 502,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 502.2947341949744,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 14
+          }
+        },
+        {
           "id": "cell_29_15",
           "row": 29,
           "col": 15,
@@ -5731,6 +11650,38 @@
             "editorY": 870,
             "editorRow": 29,
             "editorCol": 16
+          }
+        },
+        {
+          "id": "cell_29_17",
+          "row": 29,
+          "col": 17,
+          "x": 606,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 606.217782649107,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 17
+          }
+        },
+        {
+          "id": "cell_29_18",
+          "row": 29,
+          "col": 18,
+          "x": 641,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 640.8587988004845,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 18
           }
         },
         {
@@ -5782,6 +11733,70 @@
           }
         },
         {
+          "id": "cell_29_22",
+          "row": 29,
+          "col": 22,
+          "x": 779,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 779.4228634059947,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 22
+          }
+        },
+        {
+          "id": "cell_29_23",
+          "row": 29,
+          "col": 23,
+          "x": 814,
+          "y": 870,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 814.0638795573722,
+            "editorY": 870,
+            "editorRow": 29,
+            "editorCol": 23
+          }
+        },
+        {
+          "id": "cell_30_18",
+          "row": 30,
+          "col": 18,
+          "x": 624,
+          "y": 900,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 623.5382907247957,
+            "editorY": 900,
+            "editorRow": 30,
+            "editorCol": 18
+          }
+        },
+        {
+          "id": "cell_30_19",
+          "row": 30,
+          "col": 19,
+          "x": 658,
+          "y": 900,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 658.1793068761733,
+            "editorY": 900,
+            "editorRow": 30,
+            "editorCol": 19
+          }
+        },
+        {
           "id": "cell_30_20",
           "row": 30,
           "col": 20,
@@ -5830,63 +11845,52 @@
           }
         },
         {
-          "id": "cell_32_4",
-          "row": 32,
-          "col": 4,
-          "x": 139,
-          "y": 960,
+          "id": "cell_30_23",
+          "row": 30,
+          "col": 23,
+          "x": 797,
+          "y": 900,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 138.56406460551017,
-            "editorY": 960,
-            "editorRow": 32,
-            "editorCol": 4
+            "editorX": 796.7433714816834,
+            "editorY": 900,
+            "editorRow": 30,
+            "editorCol": 23
           }
         }
       ]
     },
     "playerStart": "cell_30_22",
     "objects": {
-      "monsters": [
-        "cell_4_19",
-        "cell_5_17",
-        "cell_6_15",
-        "cell_9_14",
-        "cell_10_20",
-        "cell_10_26",
-        "cell_12_24",
-        "cell_13_15",
-        "cell_14_4",
-        "cell_14_14",
-        "cell_15_12",
-        "cell_16_11",
-        "cell_18_6",
-        "cell_19_26",
-        "cell_22_7",
-        "cell_22_25",
-        "cell_24_8",
-        "cell_28_14",
-        "cell_28_19"
-      ],
-      "chests": [
-        "cell_4_15"
-      ],
+      "monsters": [],
+      "chests": [],
       "npcs": [
-        "cell_3_19",
-        "cell_16_3",
-        "cell_16_26",
-        "cell_21_14",
-        "cell_22_19",
-        "cell_23_4",
-        "cell_25_23",
         "cell_30_20"
       ],
-      "exits": [
-        "cell_9_19"
-      ],
-      "obstacles": []
+      "exits": [],
+      "obstacles": [],
+      "trees": [],
+      "elegant_trees": [],
+      "caves": [],
+      "lava_cracks": [],
+      "graveyard_crosses": [],
+      "bandit_camps": [],
+      "orc_camps": [],
+      "black_monoliths": [],
+      "weapons": [],
+      "armors": [],
+      "villages": [],
+      "castles": [],
+      "waters": [],
+      "campfires": [],
+      "merchants": [],
+      "carts": [],
+      "travelers": [],
+      "portals": [],
+      "ancient_runes": [],
+      "magic_crystals": []
     }
   }
 }
