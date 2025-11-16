@@ -3,7 +3,7 @@
     "name": "Моя карта",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-16T03:42:54.284Z",
+    "created": "2025-11-16T05:06:51.301Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -3099,7 +3099,7 @@
           "col": 4,
           "x": -326,
           "y": -211,
-          "type": "active",
+          "type": "exit",
           "passable": true,
           "visible": true,
           "originalX": 156,
@@ -11127,7 +11127,9 @@
         "cell_17_3",
         "cell_18_21"
       ],
-      "exits": [],
+      "exits": [
+        "cell_9_4"
+      ],
       "obstacles": []
     }
   }
