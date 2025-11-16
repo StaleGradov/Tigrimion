@@ -131,62 +131,32 @@ class MapSystem {
     }
 
 convertTigrimionJSONToMap(jsonMap) {
-    if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
-        console.warn("❌ Неверная структура карты Tigrimion");
+    if (!jsonMap.game?.grid?.cells) {
+        console.warn("❌ Неверная структура карты");
         return null;
     }
 
     const cells = jsonMap.game.grid.cells;
     const convertedCells = {};
     
-    console.log(`📥 Импортируем карту: ${jsonMap.meta?.name || 'Без названия'}`);
-    console.log(`📊 Клеток в импорте: ${cells.length}`);
-    console.log(`🖼️ Размер фона: ${jsonMap.visual?.backgroundWidth || 'не указан'} x ${jsonMap.visual?.backgroundHeight || 'не указан'}`);
-    
-    // Собираем информацию о специальных объектах
-    let playerStartCount = 0;
-    let monsterCount = 0;
-    
+    console.log('📥 Импорт карты с абсолютными координатами');
+
     cells.forEach(cell => {
         const key = `${cell.col},${cell.row}`;
-        
-        // Статистика
-        if (cell.type === 'player_start') playerStartCount++;
-        if (cell.type === 'monster') monsterCount++;
-        
-        // ВАЖНО: Используем относительные координаты из нового формата
-        // Приоритет: x,y (относительные) -> editorX,editorY -> originalX,originalY
-        const displayX = cell.x !== undefined ? cell.x : 
-                        cell.editorX !== undefined ? cell.editorX : 
-                        cell.originalX;
-        const displayY = cell.y !== undefined ? cell.y : 
-                        cell.editorY !== undefined ? cell.editorY : 
-                        cell.originalY;
         
         convertedCells[key] = {
             type: cell.type,
             passable: cell.passable !== false,
             visible: cell.visible !== false,
-            // Основные координаты для отображения
-            x: displayX,
-            y: displayY,
-            // Сохраняем все версии координат для отладки
-            editorX: cell.editorX,
-            editorY: cell.editorY,
-            originalX: cell.originalX,
-            originalY: cell.originalY,
+            // Сохраняем абсолютные координаты из редактора
+            x: cell.x,
+            y: cell.y,
             row: cell.row,
             col: cell.col,
             monster_id: cell.monster_id,
-            originalData: cell,
-            
-            // Отладочная информация
-            _debug: {
-                coordSource: cell.x !== undefined ? 'relative' : 
-                           cell.editorX !== undefined ? 'editor' : 'legacy',
-                hasAllCoords: !!(cell.x && cell.editorX && cell.originalX)
-            }
+            originalData: cell
         };
+    });
         
         // Отладочный вывод для первых 3 клеток
         if (Object.keys(convertedCells).length <= 3) {
@@ -322,51 +292,38 @@ calculateMapPositioning() {
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
 
-    console.log(`📐 Container: ${rect.width}x${rect.height}`);
-
     const cells = Object.values(this.currentTacticalMap.cells);
     if (cells.length === 0) return;
 
-    // ВАЖНО: Используем размеры фона из нового формата
-    const backgroundWidth = this.currentTacticalMap.backgroundWidth || this.currentTacticalMap.originalCanvasWidth || 954;
-    const backgroundHeight = this.currentTacticalMap.backgroundHeight || this.currentTacticalMap.originalCanvasHeight || 960;
+    // Получаем данные из редактора
+    const editorCanvasWidth = this.currentTacticalMap.jsonData?.visual?.canvasWidth || 954;
+    const editorCanvasHeight = this.currentTacticalMap.jsonData?.visual?.canvasHeight || 960;
+    const editorImagePosition = this.currentTacticalMap.jsonData?.visual?.imagePosition || { x: 0, y: 0 };
 
-    console.log(`🎯 Background: ${backgroundWidth}x${backgroundHeight}`);
-    console.log(`📐 Display area: ${rect.width}x${rect.height}`);
+    console.log('🎯 Данные из редактора:', {
+        canvas: `${editorCanvasWidth}x${editorCanvasHeight}`,
+        imagePos: editorImagePosition
+    });
 
-    // Масштабируем под текущий контейнер
-    const scaleX = rect.width / backgroundWidth;
-    const scaleY = rect.height / backgroundHeight;
+    // ПРОСТОЕ МАСШТАБИРОВАНИЕ: подгоняем под текущий размер
+    const scaleX = rect.width / editorCanvasWidth;
+    const scaleY = rect.height / editorCanvasHeight;
     const scale = Math.min(scaleX, scaleY, 1.0);
 
     // Центрируем
-    const offsetX = (rect.width - backgroundWidth * scale) / 2;
-    const offsetY = (rect.height - backgroundHeight * scale) / 2;
+    const offsetX = (rect.width - editorCanvasWidth * scale) / 2;
+    const offsetY = (rect.height - editorCanvasHeight * scale) / 2;
 
-    console.log(`⚖️ Scale: ${scale.toFixed(3)}, Offset: ${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}`);
+    console.log(`⚖️ Масштаб: ${scale}, Смещение: ${offsetX}, ${offsetY}`);
 
-    // Применяем преобразование ко всем клеткам
+    // ПРИМЕНЯЕМ ТОЧНО ТАКОЕ ЖЕ ПРЕОБРАЗОВАНИЕ К КООРДИНАТАМ
     cells.forEach(cell => {
-        // ВАЖНО: Координаты уже относительные (из нового формата редактора)
-        // Или абсолютные (из старого формата) - масштабируем соответственно
-        const relativeX = cell.x;
-        const relativeY = cell.y;
+        // Клетки имеют абсолютные координаты из редактора - применяем такое же масштабирование
+        cell.displayX = cell.x * scale + offsetX;
+        cell.displayY = cell.y * scale + offsetY;
         
-        // Преобразуем в координаты отображения
-        cell.displayX = relativeX * scale + offsetX;
-        cell.displayY = relativeY * scale + offsetY;
-        
-        // Отладочный вывод для первых 3 клеток
-        if (cells.indexOf(cell) < 3) {
-            console.log(`   🔧 Cell [${cell.col},${cell.row}]:`, {
-                original: `(${relativeX},${relativeY})`,
-                display: `(${cell.displayX.toFixed(1)},${cell.displayY.toFixed(1)})`,
-                source: cell._debug?.coordSource || 'unknown'
-            });
-        }
+        console.log(`🔧 Cell [${cell.col},${cell.row}]: editor(${cell.x},${cell.y}) -> game(${cell.displayX.toFixed(1)},${cell.displayY.toFixed(1)})`);
     });
-    
-    console.log(`✅ Позиционирование завершено. Формат: ${this.currentTacticalMap._stats?.format || 'UNKNOWN'}`);
 }
     
     setupCanvasEventListeners() {
