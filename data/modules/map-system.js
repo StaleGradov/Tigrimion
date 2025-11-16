@@ -308,7 +308,7 @@ class MapSystem {
         }
     }
 
- handleCanvasHover(e) {
+handleCanvasHover(e) {
     if (!this.currentTacticalMap) return;
 
     const rect = this.canvas.getBoundingClientRect();
@@ -322,24 +322,26 @@ class MapSystem {
         this.tooltipTimeout = null;
     }
 
-    // Если навели на тот же гекс - ничего не делаем
-    if (this.currentTooltip && hex && 
-        this.currentTooltip.col === hex.col && 
-        this.currentTooltip.row === hex.row) {
-        return;
-    }
-
-    // Если ушли с гекса - сразу скрываем подсказку
+    // Всегда убираем подсветку при уходе с гекса
     if (!hex) {
+        this.removeHighlight();
         this.hideTooltip();
         return;
     }
 
+    // Если навели на новый гекс
+    if (!this.currentTooltip || 
+        this.currentTooltip.col !== hex.col || 
+        this.currentTooltip.row !== hex.row) {
+        
+        this.removeHighlight(); // Снимаем подсветку со старого
+        this.highlightHex(hex); // Подсвечиваем новый
+    }
+
     this.tooltipTimeout = setTimeout(() => {
         this.showTooltipForHex(hex, e.clientX, e.clientY);
-    }, 200); // Увеличиваем задержку до 200ms
+    }, 200);
 }
-
  getHexAtCanvasPosition(canvasX, canvasY) {
     if (!this.currentTacticalMap) return null;
 
@@ -465,47 +467,48 @@ class MapSystem {
         document.body.appendChild(this.tooltipElement);
     }
 
-    hideTooltip() {
-        if (this.tooltipElement) {
-            this.tooltipElement.style.display = 'none';
-        }
-        this.currentTooltip = null;
-        this.removeHighlight();
-        
-        if (this.tooltipTimeout) {
-            clearTimeout(this.tooltipTimeout);
-            this.tooltipTimeout = null;
-        }
-    }
-
-  highlightHex(hex) {
-    // Если уже подсвечен этот гекс - не перерисовываем
-    if (this.currentTooltip && 
-        this.currentTooltip.col === hex.col && 
-        this.currentTooltip.row === hex.row &&
-        hex.isHighlighted) {
-        return;
+ hideTooltip() {
+    if (this.tooltipElement) {
+        this.tooltipElement.style.display = 'none';
     }
     
-    this.removeHighlight();
+    this.removeHighlight(); // Всегда снимаем подсветку
+    
+    if (this.tooltipTimeout) {
+        clearTimeout(this.tooltipTimeout);
+        this.tooltipTimeout = null;
+    }
+}
+    
+
+highlightHex(hex) {
+    if (!hex || hex.isHighlighted) return;
+    
     hex.isHighlighted = true;
     
-    // Перерисовываем ТОЛЬКО этот гекс, а не всю карту
+    // Перерисовываем только этот гекс для производительности
     this.drawSingleHexWithHighlight(hex);
 }
-
+    
 removeHighlight() {
-    if (this.currentTacticalMap && this.currentTooltip) {
-        const prevHex = this.currentTacticalMap.cells[
-            `${this.currentTooltip.col},${this.currentTooltip.row}`
-        ];
-        if (prevHex) {
-            prevHex.isHighlighted = false;
-            // Перерисовываем только предыдущий гекс
-            this.drawSingleHex(prevHex);
-            this.drawHexContent(prevHex);
+    // Снимаем подсветку со ВСЕХ гексов
+    if (this.currentTacticalMap) {
+        let needsRedraw = false;
+        
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            if (cell.isHighlighted) {
+                cell.isHighlighted = false;
+                needsRedraw = true;
+            }
+        });
+        
+        // Перерисовываем всю карту если были изменения
+        if (needsRedraw) {
+            this.drawTacticalMap();
         }
     }
+    
+    this.currentTooltip = null;
 }
 
 // Новый метод для перерисовки одного гекса с подсветкой
