@@ -141,8 +141,16 @@ convertTigrimionJSONToMap(jsonMap) {
     
     console.log('📥 Импорт карты с абсолютными координатами');
 
+    // ДОБАВЬТЕ ЭТИ ПЕРЕМЕННЫЕ:
+    let playerStartCount = 0;
+    let monsterCount = 0;
+
     cells.forEach(cell => {
         const key = `${cell.col},${cell.row}`;
+        
+        // СТАТИСТИКА
+        if (cell.type === 'player_start') playerStartCount++;
+        if (cell.type === 'monster') monsterCount++;
         
         convertedCells[key] = {
             type: cell.type,
@@ -156,19 +164,16 @@ convertTigrimionJSONToMap(jsonMap) {
             monster_id: cell.monster_id,
             originalData: cell
         };
-    });
         
+        // УБЕРИТЕ ЛИШНИЕ СКОБКИ И ПЕРЕМЕННУЮ displayX:
         // Отладочный вывод для первых 3 клеток
         if (Object.keys(convertedCells).length <= 3) {
             console.log(`   📍 Cell [${cell.col},${cell.row}]:`, {
                 type: cell.type,
-                relative: `(${cell.x},${cell.y})`,
-                editor: `(${cell.editorX},${cell.editorY})`,
-                original: `(${cell.originalX},${cell.originalY})`,
-                final: `(${displayX},${displayY})`
+                coordinates: `(${cell.x},${cell.y})`
             });
         }
-    });
+    }); // ← ЭТА скобка ЗАКРЫВАЕТ forEach
 
     // Стартовая позиция
     let startPosition = {x: 0, y: 0};
@@ -200,11 +205,11 @@ convertTigrimionJSONToMap(jsonMap) {
         backgroundWidth: jsonMap.visual?.backgroundWidth || jsonMap.visual?.canvasWidth || 954,
         backgroundHeight: jsonMap.visual?.backgroundHeight || jsonMap.visual?.canvasHeight || 960,
         
-        // Статистика
+        // Статистика - ИСПРАВЛЕННЫЕ ПЕРЕМЕННЫЕ
         _stats: {
             totalCells: cells.length,
-            playerStarts: playerStartCount,
-            monsters: monsterCount,
+            playerStarts: playerStartCount, // ← было playerStartCount
+            monsters: monsterCount, // ← было monsterCount
             format: jsonMap.visual?.backgroundWidth ? 'NEW_FORMAT' : 'LEGACY_FORMAT'
         }
     };
