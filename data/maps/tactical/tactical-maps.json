@@ -29,6 +29,7 @@
           "type": "npc",
           "passable": true,
           "visible": true,
+         "tooltip": "📦 Тайный сундук гномов. Внутри блестит что-то металлическое...",
           "originalData": {
             "editorX": 675.499814951862,
             "editorY": 90,
