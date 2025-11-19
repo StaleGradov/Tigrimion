@@ -417,33 +417,48 @@ class MapSystem {
         `;
     }
 
-    initGlobalMapCanvas() {
-        const container = document.querySelector('.global-map-visual');
-        if (!container) {
-            console.log("❌ Контейнер для глобальной карты не найден");
-            return;
-        }
-
-        container.innerHTML = '';
-
-        this.canvas = document.createElement('canvas');
-        this.canvas.id = 'globalMapCanvas';
-        
-        this.canvas.style.width = '100%';
-        this.canvas.style.height = '100%';
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-        this.canvas.style.cursor = 'pointer';
-        container.appendChild(this.canvas);
-
-        this.ctx = this.canvas.getContext('2d');
-        
-        this.calculateGlobalMapPositioning();
-        this.setupGlobalCanvasEventListeners();
-        
-        this.drawGlobalMap();
+   initGlobalMapCanvas() {
+    console.group("🔍 DEBUG initGlobalMapCanvas");
+    const container = document.querySelector('.global-map-visual');
+    console.log("Контейнер .global-map-visual:", container);
+    
+    if (!container) {
+        console.log("❌ Контейнер для глобальной карты не найден");
+        console.groupEnd();
+        return;
     }
+
+    console.log("Очищаем контейнер...");
+    container.innerHTML = '';
+
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'globalMapCanvas';
+    
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = '0';
+    this.canvas.style.left = '0';
+    this.canvas.style.cursor = 'pointer';
+    container.appendChild(this.canvas);
+
+    console.log("Canvas создан:", this.canvas);
+
+    this.ctx = this.canvas.getContext('2d');
+    console.log("Контекст создан:", this.ctx);
+    
+    console.log("Вызываем calculateGlobalMapPositioning...");
+    this.calculateGlobalMapPositioning();
+    
+    console.log("Вызываем setupGlobalCanvasEventListeners...");
+    this.setupGlobalCanvasEventListeners();
+    
+    console.log("Вызываем drawGlobalMap...");
+    this.drawGlobalMap();
+    
+    console.log("✅ initGlobalMapCanvas завершен");
+    console.groupEnd();
+}
 
     calculateGlobalMapPositioning() {
         if (!this.currentGlobalMap || !this.canvas) return;
@@ -2374,8 +2389,13 @@ class MapSystem {
     }
 
     // ОТОБРАЖЕНИЕ КАРТ
-   showMapOverlay(overlayType, container) {
-    console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
+ showMapOverlay(overlayType, container) {
+    console.group(`🔍 DEBUG showMapOverlay для ${overlayType}`);
+    console.log("overlayType:", overlayType);
+    console.log("container:", container);
+    console.log("currentGlobalMap:", this.currentGlobalMap);
+    console.log("currentLocalMap:", this.currentLocalMap);
+    console.log("currentTacticalMap:", this.currentTacticalMap);
     
     let targetMap = null;
     let displayName = '';
@@ -2392,10 +2412,13 @@ class MapSystem {
     } else if (overlayType === 'global-map') {
         targetMap = this.currentGlobalMap;
         displayName = '🗺️ Глобальная карта';
+        console.log("🌍 Глобальная карта выбрана, targetMap:", targetMap);
     } else {
         targetMap = this.currentTacticalMap;
         displayName = '🎲 Тактическая карта';
     }
+    
+    console.log("targetMap после выбора:", targetMap);
     
     if (!targetMap) {
         console.error(`❌ ${overlayType} карта не загружена`);
@@ -2411,6 +2434,7 @@ class MapSystem {
             </div>
         `;
         container.style.display = 'block';
+        console.groupEnd();
         return;
     }
     
@@ -2423,13 +2447,16 @@ class MapSystem {
         this.currentLocalMap = targetMap;
     } else if (overlayType === 'global-map') {
         this.currentMapType = 'global';
+        console.log("🌍 Установлен currentMapType: global");
     } else {
         this.currentMapType = 'tactical';
     }
     
     // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
     if (overlayType === 'global-map') {
+        console.log("🌍 Рендерим глобальную карту...");
         container.innerHTML = this.renderGlobalMap();
+        console.log("✅ HTML глобальной карты установлен");
     } else {
         container.innerHTML = `
             <div class="overlay-content tactical-map-overlay">
@@ -2472,21 +2499,26 @@ class MapSystem {
     }
     
     container.style.display = 'block';
+    console.log("✅ Контейнер отображен");
     
     // ИНИЦИАЛИЗИРУЕМ CANVAS
     setTimeout(() => {
         console.log("🎨 Инициализируем Canvas для карты...");
+        console.log("overlayType в setTimeout:", overlayType);
+        console.log("targetMap в setTimeout:", targetMap);
         
         if (!targetMap) {
             console.error("❌ Карта не установлена для Canvas");
+            console.groupEnd();
             return;
         }
         
         try {
             if (overlayType === 'global-map') {
-                // ВАЖНОЕ ИСПРАВЛЕНИЕ: Вызываем initGlobalMapCanvas для глобальной карты
+                console.log("🌍 Вызываем initGlobalMapCanvas()");
                 this.initGlobalMapCanvas();
             } else {
+                console.log("📍 Вызываем initCanvas()");
                 this.initCanvas();
                 this.updateMovementInfo();
             }
@@ -2504,6 +2536,7 @@ class MapSystem {
                 </div>
             `;
         }
+        console.groupEnd();
     }, 50);
 }
 
