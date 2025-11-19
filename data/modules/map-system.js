@@ -413,7 +413,7 @@ renderGlobalMap() {
     `;
 }
 
- initGlobalMapCanvas() {
+initGlobalMapCanvas() {
     console.log("🎨 Инициализация canvas для глобальной карты...");
     
     const container = document.querySelector('.global-map-visual');
@@ -431,6 +431,7 @@ renderGlobalMap() {
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
     this.canvas.style.display = 'block';
+    this.canvas.style.background = '#1a1a2e';
     
     container.appendChild(this.canvas);
 
@@ -444,16 +445,35 @@ renderGlobalMap() {
     
     console.log(`📐 Canvas размер: ${this.canvas.width}x${this.canvas.height}`);
     
-    // Рассчитываем позиционирование и рисуем
-    this.calculateGlobalMapPositioning();
-    this.drawGlobalMap();
-    
-    // Добавляем обработчики событий
-    this.setupGlobalCanvasEventListeners();
+    // Простая отрисовка для тестирования
+    this.drawTestGlobalMap();
     
     console.log("✅ Глобальная карта инициализирована");
 }
 
+drawTestGlobalMap() {
+    if (!this.ctx || !this.canvas) return;
+    
+    // Очищаем canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Рисуем тестовый фон
+    const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#16213e');
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Рисуем тестовый текст
+    this.ctx.fillStyle = '#00ffff';
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('🗺️ Глобальная карта', this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText('Canvas успешно инициализирован!', this.canvas.width / 2, this.canvas.height / 2 + 30);
+    
+    console.log("✅ Тестовая отрисовка выполнена");
+}
 calculateGlobalMapPositioning() {
     console.group("🔍 DEBUG calculateGlobalMapPositioning");
     
@@ -1283,6 +1303,15 @@ calculateGlobalMapPositioning() {
         }
     }
 
+forceLoadLocalMap() {
+    if (this.localMaps.length > 0 && !this.currentLocalMap) {
+        const localMap = this.localMaps[0];
+        this.setCurrentLocalMap(localMap);
+        console.log("🔄 Локальная карта принудительно загружена:", localMap.name);
+    }
+}
+
+    
     setPlayerToStartPosition() {
         if (!this.currentTacticalMap) return;
         
@@ -2492,7 +2521,15 @@ calculateGlobalMapPositioning() {
         console.log("🌍 Рендерим глобальную карту...");
         container.innerHTML = this.renderGlobalMap();
         console.log("✅ HTML глобальной карты установлен");
+        
+        // Ждем обновления DOM и инициализируем canvas
+        setTimeout(() => {
+            console.log("🎨 Инициализируем canvas для глобальной карты...");
+            this.initGlobalMapCanvas();
+        }, 50);
+        
     } else {
+        // Для локальных и тактических карт
         container.innerHTML = `
             <div class="overlay-content tactical-map-overlay">
                 <div class="tactical-map-header">
@@ -2531,73 +2568,127 @@ calculateGlobalMapPositioning() {
                 </div>
             </div>
         `;
+        
+        // Ждем обновления DOM и инициализируем canvas
+        setTimeout(() => {
+            console.log("🎨 Инициализируем Canvas для карты...");
+            if (!targetMap) {
+                console.error("❌ Карта не установлена для Canvas");
+                console.groupEnd();
+                return;
+            }
+            
+            try {
+                console.log("📍 Вызываем initCanvas()");
+                this.initCanvas();
+                this.updateMovementInfo();
+                
+                console.log("✅ Canvas успешно инициализирован", {
+                    map: targetMap.name,
+                    type: overlayType
+                });
+                
+            } catch (error) {
+                console.error("❌ Ошибка инициализации Canvas:", error);
+                container.innerHTML += `
+                    <div class="map-error" style="color: red; padding: 10px;">
+                        Ошибка загрузки карты: ${error.message}
+                    </div>
+                `;
+            }
+        }, 50);
     }
     
     container.style.display = 'block';
     console.log("✅ Контейнер отображен");
-    
-    // ИНИЦИАЛИЗИРУЕМ CANVAS
-    setTimeout(() => {
-        console.log("🎨 Инициализируем Canvas для карты...");
-        console.log("overlayType в setTimeout:", overlayType);
-        console.log("targetMap в setTimeout:", targetMap);
-        
-        if (!targetMap) {
-            console.error("❌ Карта не установлена для Canvas");
-            console.groupEnd();
-            return;
-        }
-        
-        try {
-            if (overlayType === 'global-map') {
-                console.log("🌍 Вызываем initGlobalMapCanvas()");
-                this.initGlobalMapCanvas();
-            } else {
-                console.log("📍 Вызываем initCanvas()");
-                this.initCanvas();
-                this.updateMovementInfo();
-            }
-            
-            console.log("✅ Canvas успешно инициализирован", {
-                map: targetMap.name,
-                type: overlayType
-            });
-            
-        } catch (error) {
-            console.error("❌ Ошибка инициализации Canvas:", error);
-            container.innerHTML += `
-                <div class="map-error" style="color: red; padding: 10px;">
-                    Ошибка загрузки карты: ${error.message}
-                </div>
-            `;
-        }
-        console.groupEnd();
-    }, 50);
+    console.groupEnd();
 }
 
-    showOverlay(overlayType) {
-        const container = document.getElementById('overlay-container');
-        if (!container) {
-            console.error("❌ Контейнер оверлея не найден");
-            return;
-        }
-
-        this.activeOverlay = overlayType;
-
-        this.hideTooltip();
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-            this.animationFrame = null;
-        }
-
-        if (overlayType === 'global-map') {
-            this.showMapOverlay('global-map', container);
-        } else if (overlayType === 'local-map' || overlayType === 'tactical-map') {
-            this.showMapOverlay(overlayType, container);
-        } else {
-            console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
-        }
+   showOverlay(overlayType) {
+    const container = document.getElementById('overlay-container');
+    if (!container) {
+        console.error("❌ Контейнер оверлея не найден");
+        return;
     }
+
+    this.activeOverlay = overlayType;
+
+    this.hideTooltip();
+    if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
+    }
+
+    if (overlayType === 'global-map') {
+        console.log("🌍 Показываем глобальную карту...");
+        
+        // Очищаем контейнер
+        container.innerHTML = '';
+        container.style.display = 'block';
+        
+        // Используем метод MapSystem для показа глобальной карты
+        if (this.systems.map) {
+            this.systems.map.showMapOverlay('global-map', container);
+        } else {
+            container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+        }
+        
+    } else if (overlayType === 'local-map') {
+        console.log("📍 Показываем локальную карту...");
+        
+        // Очищаем контейнер
+        container.innerHTML = '';
+        container.style.display = 'block';
+        
+        // Используем метод MapSystem для показа локальной карты
+        if (this.systems.map) {
+            // ПРИНУДИТЕЛЬНО ЗАГРУЖАЕМ ЛОКАЛЬНУЮ КАРТУ
+            this.systems.map.forceLoadLocalMap();
+            // УСТАНАВЛИВАЕМ ТЕКУЩЕГО ГЕРОЯ
+            this.systems.map.setCurrentHero(this.currentHero);
+            // ПОКАЗЫВАЕМ КАРТУ
+            this.systems.map.showMapOverlay('local-map', container);
+        } else {
+            container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+        }
+        
+    } else if (overlayType === 'tactical-map') {
+        console.log("🎲 Показываем тактическую карту...");
+        
+        // Очищаем контейнер
+        container.innerHTML = '';
+        container.style.display = 'block';
+        
+        if (this.systems.map) {
+            // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
+            this.systems.map.setCurrentHero(this.currentHero);
+            this.systems.map.showMapOverlay('tactical-map', container);
+        } else {
+            container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+        }
+        
+    } else if (overlayType === 'inventory') {
+        console.log("🎒 Показываем инвентарь...");
+        container.innerHTML = this.systems.equipment.showInventory();
+        container.style.display = 'block';
+        
+    } else if (overlayType === 'shop') {
+        console.log("🏪 Показываем магазин...");
+        // Показываем магазин через систему экипировки с сохранением текущей категории
+        const currentCategory = this.systems.equipment.currentCategory || 'all';
+        const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+        container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+        container.style.display = 'block';
+        
+        // Добавляем обработчики для предметов магазина
+        setTimeout(() => this.attachShopItemHandlers(), 100);
+        
+    } else {
+        console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
+        container.innerHTML = `<div class="map-error">Неизвестный тип оверлея: ${overlayType}</div>`;
+        container.style.display = 'block';
+    }
+}
 
     hideOverlay() {
         console.log("👋 MapSystem: Скрываем оверлей");
