@@ -6288,7 +6288,6 @@
           "tacticalMap": "data/maps/tactical/tavern1.json",
            "returnX": 29,
            "returnY": 21,
-          "tooltip": "🚪 Вход в таверну\n(Кликните для входа)"
           "originalData": {
             "editorX": 710.1408311032395,
             "editorY": 870,
