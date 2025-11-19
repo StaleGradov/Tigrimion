@@ -6,13 +6,10 @@ class EquipmentSystem {
         this.currentHero = null;
         this.currentCategory = 'all';
         this.currentSubcategory = 'all';
-        console.log("✅ EquipmentSystem инициализирован");
     }
 
     async loadItemData() {
         try {
-            console.log("📥 Загружаем данные предметов...");
-            
             const response = await fetch('data/items.json');
             if (!response.ok) {
                 throw new Error(`Ошибка загрузки items.json: ${response.status}`);
@@ -20,11 +17,6 @@ class EquipmentSystem {
             
             this.items = await response.json();
             this.loadItemSetConfig();
-            
-            console.log(`✅ Загружено предметов: ${this.items.length}`);
-            
-            // Отладка
-            this.debugItems();
             
             return true;
             
@@ -35,7 +27,7 @@ class EquipmentSystem {
         }
     }
 
-    // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
+  // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
    loadItemSetConfig() {
         this.itemSets = {
             "set_beginner": {
@@ -340,6 +332,7 @@ class EquipmentSystem {
             }
         };
     }
+
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     isItemOwned(itemId) {
         return this.currentHero && this.currentHero.inventory.includes(itemId);
@@ -354,22 +347,12 @@ class EquipmentSystem {
     }
 
     debugItems() {
-        console.log('=== ДЕБАГ ПРЕДМЕТОВ ===');
-        console.log(`Всего предметов: ${this.items.length}`);
-        
+        // Отладочный метод - можно оставить для разработки, но убрать вызовы
         const categories = {};
         this.items.forEach(item => {
             if (!categories[item.type]) categories[item.type] = 0;
             categories[item.type]++;
-            
-            if (item.type === 'weapon') {
-                console.log(`Оружие: ${item.name} (${item.weaponType})`);
-            } else if (item.material) {
-                console.log(`${item.type}: ${item.name} (${item.material})`);
-            }
         });
-        
-        console.log('Распределение по категориям:', categories);
     }
 
     // ========== МАГАЗИН И ФИЛЬТРАЦИЯ ==========
@@ -379,8 +362,6 @@ class EquipmentSystem {
         // Сохраняем текущее состояние
         this.currentCategory = category;
         this.currentSubcategory = subcategory;
-
-        console.log('🔍 Открываем магазин:', { category, subcategory });
 
         const html = `
             <div class="overlay-content shop-overlay" style="max-width: 1200px; width: 95%;">
@@ -549,15 +530,11 @@ class EquipmentSystem {
         
         html += `</div></div>`;
         container.innerHTML = html;
-
-        console.log('✅ Подкатегории инициализированы для:', category);
     }
 
     handleCategoryClick(category) {
-        console.log('🎯 Нажата категория:', category);
-        // Сохраняем состояние перед переходом
         this.currentCategory = category;
-        this.currentSubcategory = 'all'; // Сбрасываем подкатегорию при смене категории
+        this.currentSubcategory = 'all';
         
         const container = document.getElementById('overlay-container');
         if (container) {
@@ -571,9 +548,6 @@ class EquipmentSystem {
     }
 
     handleSubcategoryClick(category, subcategory) {
-        console.log('🎯 Нажата подкатегория:', { category, subcategory });
-        
-        // Сохраняем состояние
         this.currentCategory = category;
         this.currentSubcategory = subcategory;
         
@@ -606,7 +580,6 @@ class EquipmentSystem {
 
     renderShopItems(category, subcategory = 'all') {
         const filteredItems = this.filterItemsByCategory(category, subcategory);
-        console.log(`📦 Отображаем ${filteredItems.length} предметов для:`, { category, subcategory });
 
         if (filteredItems.length === 0) {
             return '<div class="empty-category">📭 Нет предметов в этой категории</div>';
@@ -617,8 +590,6 @@ class EquipmentSystem {
 
     // Улучшенная фильтрация
     filterItemsByCategory(category, subcategory = 'all') {
-        console.log(`🔍 Фильтрация: категория=${category}, подкатегория=${subcategory}`);
-        
         // Показываем ВСЕ предметы (без фильтра по уровню)
         let filteredItems = this.items;
         
@@ -641,8 +612,6 @@ class EquipmentSystem {
             filteredItems = this.filterItemsBySubcategory(filteredItems, category, subcategory);
         }
 
-        console.log(`📊 Результат фильтрации: ${filteredItems.length} предметов`);
-        
         // Сортируем по цене для удобства
         return filteredItems.sort((a, b) => a.price - b.price);
     }
@@ -1509,7 +1478,6 @@ class EquipmentSystem {
     }
 
     showNotification(message) {
-        console.log("🔔 EquipmentSystem:", message);
         if (window.game && window.game.showNotification) {
             window.game.showNotification(message);
         } else {
@@ -1573,7 +1541,6 @@ class EquipmentSystem {
         ];
         
         this.loadItemSetConfig();
-        console.log("🔄 Созданы тестовые предметы");
     }
 
     // Метод для установки текущего героя
@@ -1584,4 +1551,3 @@ class EquipmentSystem {
 
 // Регистрируем систему в глобальной области
 window.EquipmentSystem = EquipmentSystem;
-console.log("📦 EquipmentSystem модуль загружен");
