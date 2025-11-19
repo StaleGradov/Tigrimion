@@ -2374,137 +2374,138 @@ class MapSystem {
     }
 
     // ОТОБРАЖЕНИЕ КАРТ
-    showMapOverlay(overlayType, container) {
-        console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
+   showMapOverlay(overlayType, container) {
+    console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
+    
+    let targetMap = null;
+    let displayName = '';
+    
+    if (overlayType === 'local-map') {
+        targetMap = this.currentLocalMap;
+        displayName = '📍 Локальная карта';
         
-        let targetMap = null;
-        let displayName = '';
-        
-        if (overlayType === 'local-map') {
-            targetMap = this.currentLocalMap;
-            displayName = '📍 Локальная карта';
-            
-            if (!targetMap && this.localMaps.length > 0) {
-                targetMap = this.localMaps[0];
-                this.currentLocalMap = targetMap;
-                console.log(`🔄 Автоматически установлена локальная карта: ${targetMap.name}`);
-            }
-        } else if (overlayType === 'global-map') {
-            targetMap = this.currentGlobalMap;
-            displayName = '🗺️ Глобальная карта';
-        } else {
-            targetMap = this.currentTacticalMap;
-            displayName = '🎲 Тактическая карта';
+        if (!targetMap && this.localMaps.length > 0) {
+            targetMap = this.localMaps[0];
+            this.currentLocalMap = targetMap;
+            console.log(`🔄 Автоматически установлена локальная карта: ${targetMap.name}`);
         }
-        
-        if (!targetMap) {
-            console.error(`❌ ${overlayType} карта не загружена`);
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="tactical-map-header">
-                        <h4>${displayName}</h4>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="map-error" style="padding: 20px; text-align: center;">
-                        Карта не загружена.
+    } else if (overlayType === 'global-map') {
+        targetMap = this.currentGlobalMap;
+        displayName = '🗺️ Глобальная карта';
+    } else {
+        targetMap = this.currentTacticalMap;
+        displayName = '🎲 Тактическая карта';
+    }
+    
+    if (!targetMap) {
+        console.error(`❌ ${overlayType} карта не загружена`);
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="tactical-map-header">
+                    <h4>${displayName}</h4>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                <div class="map-error" style="padding: 20px; text-align: center;">
+                    Карта не загружена.
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+        return;
+    }
+    
+    console.log(`✅ Показываем карту: ${targetMap.name} (тип: ${overlayType})`);
+    
+    if (overlayType === 'local-map') {
+        this.currentTacticalMap = targetMap;
+        this.currentMapType = 'local';
+        this.playerTacticalPosition = {...this.playerLocalPosition};
+        this.currentLocalMap = targetMap;
+    } else if (overlayType === 'global-map') {
+        this.currentMapType = 'global';
+    } else {
+        this.currentMapType = 'tactical';
+    }
+    
+    // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
+    if (overlayType === 'global-map') {
+        container.innerHTML = this.renderGlobalMap();
+    } else {
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="tactical-map-header">
+                    <h4>${targetMap.name}</h4>
+                    <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                
+                <div class="tactical-map-controls">
+                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.debugInfo()">
+                        🐛 Отладка
+                    </button>
+                    <div class="position-info">
+                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
                     </div>
                 </div>
-            `;
-            container.style.display = 'block';
+                
+                <div class="tactical-map-content">
+                    <div class="tactical-map-visual">
+                        <!-- Canvas будет добавлен автоматически -->
+                    </div>
+                    
+                    <div class="tactical-map-info">
+                        <div class="map-description">
+                            ${targetMap.description || 'Описание отсутствует'}
+                        </div>
+                        <div class="map-stats">
+                            <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
+                            <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                            <span id="availableMoves">Доступных ходов: 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    container.style.display = 'block';
+    
+    // ИНИЦИАЛИЗИРУЕМ CANVAS
+    setTimeout(() => {
+        console.log("🎨 Инициализируем Canvas для карты...");
+        
+        if (!targetMap) {
+            console.error("❌ Карта не установлена для Canvas");
             return;
         }
         
-        console.log(`✅ Показываем карту: ${targetMap.name} (тип: ${overlayType})`);
-        
-        if (overlayType === 'local-map') {
-            this.currentTacticalMap = targetMap;
-            this.currentMapType = 'local';
-            this.playerTacticalPosition = {...this.playerLocalPosition};
-            this.currentLocalMap = targetMap;
-        } else if (overlayType === 'global-map') {
-            this.currentMapType = 'global';
-        } else {
-            this.currentMapType = 'tactical';
-        }
-        
-        // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
-        if (overlayType === 'global-map') {
-            container.innerHTML = this.renderGlobalMap();
-        } else {
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="tactical-map-header">
-                        <h4>${targetMap.name}</h4>
-                        <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    
-                    <div class="tactical-map-controls">
-                        <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                            ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                        </button>
-                        <button class="btn-control" onclick="game.systems.map.debugInfo()">
-                            🐛 Отладка
-                        </button>
-                        <div class="position-info">
-                            Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                        </div>
-                    </div>
-                    
-                    <div class="tactical-map-content">
-                        <div class="tactical-map-visual">
-                            <!-- Canvas будет добавлен автоматически -->
-                        </div>
-                        
-                        <div class="tactical-map-info">
-                            <div class="map-description">
-                                ${targetMap.description || 'Описание отсутствует'}
-                            </div>
-                            <div class="map-stats">
-                                <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
-                                <span>Размер: ${targetMap.width}x${targetMap.height}</span>
-                                <span id="availableMoves">Доступных ходов: 0</span>
-                            </div>
-                        </div>
-                    </div>
+        try {
+            if (overlayType === 'global-map') {
+                // ВАЖНОЕ ИСПРАВЛЕНИЕ: Вызываем initGlobalMapCanvas для глобальной карты
+                this.initGlobalMapCanvas();
+            } else {
+                this.initCanvas();
+                this.updateMovementInfo();
+            }
+            
+            console.log("✅ Canvas успешно инициализирован", {
+                map: targetMap.name,
+                type: overlayType
+            });
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации Canvas:", error);
+            container.innerHTML += `
+                <div class="map-error" style="color: red; padding: 10px;">
+                    Ошибка загрузки карты: ${error.message}
                 </div>
             `;
         }
-        
-        container.style.display = 'block';
-        
-        // ИНИЦИАЛИЗИРУЕМ CANVAS
-        setTimeout(() => {
-            console.log("🎨 Инициализируем Canvas для карты...");
-            
-            if (!targetMap) {
-                console.error("❌ Карта не установлена для Canvas");
-                return;
-            }
-            
-            try {
-                if (overlayType === 'global-map') {
-                    this.initGlobalMapCanvas();
-                } else {
-                    this.initCanvas();
-                    this.updateMovementInfo();
-                }
-                
-                console.log("✅ Canvas успешно инициализирован", {
-                    map: targetMap.name,
-                    type: overlayType
-                });
-                
-            } catch (error) {
-                console.error("❌ Ошибка инициализации Canvas:", error);
-                container.innerHTML += `
-                    <div class="map-error" style="color: red; padding: 10px;">
-                        Ошибка загрузки карты: ${error.message}
-                    </div>
-                `;
-            }
-        }, 50);
-    }
+    }, 50);
+}
 
     showOverlay(overlayType) {
         const container = document.getElementById('overlay-container');
