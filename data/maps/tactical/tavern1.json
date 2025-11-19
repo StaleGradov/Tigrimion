@@ -52,22 +52,23 @@
             "editorCol": 1
           }
         },
-        {
-          "id": "cell_2_2",
-          "row": 2,
-          "col": 2,
-          "x": 277,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 277.12812921102034,
-            "editorY": 240,
-            "editorRow": 2,
-            "editorCol": 2
-          }
-        },
+{
+  "id": "cell_exit",
+  "row": 6,
+  "col": 7,
+  "x": 970,
+  "y": 720,
+  "type": "exit",
+  "passable": true,
+  "visible": true,
+  "tooltip": "🚪 Выход из таверны",
+  "originalData": {
+    "editorX": 969.9484522385712,
+    "editorY": 720,
+    "editorRow": 6,
+    "editorCol": 7
+  }
+},
         {
           "id": "cell_2_3",
           "row": 2,
