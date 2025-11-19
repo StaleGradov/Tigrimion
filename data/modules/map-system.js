@@ -34,9 +34,20 @@ class MapSystem {
         
         this.canvasInitialized = false;
         
-        // НОВЫЕ СВОЙСТВА ДЛЯ СИСТЕМЫ ПЕРЕХОДОВ
-        this.mapStack = []; // Стек для хранения состояний карт
-        this.currentMapType = 'local'; // 'local', 'tactical', 'global'
+        // СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ
+        this.mapStack = [];
+        this.currentMapType = 'local';
+        
+        // СИСТЕМА ГЛОБАЛЬНОЙ КАРТЫ
+        this.globalProgress = {
+            visitedCells: new Set(),
+            currentGlobalX: 0,
+            currentGlobalY: 0,
+            unlockedCells: new Set(),
+            discoveredCells: new Set()
+        };
+        
+        this.globalMapConnections = new Map();
         
         // Словарь символов для всех типов объектов
         this.objectSymbols = {
@@ -66,7 +77,16 @@ class MapSystem {
             'traveler': '🚶',
             'portal': '🌀',
             'ancient_rune': '🔰',
-            'magic_crystal': '💎'
+            'magic_crystal': '💎',
+            
+            // Символы для глобальной карты
+            'global_visited': '🟢',
+            'global_current': '🎯',
+            'global_next': '🟡',
+            'global_locked': '🔴',
+            'global_exit': '🚪',
+            'local_exit': '🌍',
+            'tactical_entrance': '🚪'
         };
         
         // Подсказки
@@ -74,7 +94,7 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с системой переходов между картами");
+        console.log("✅ MapSystem инициализирован с системой глобальных карт");
     }
 
     setCurrentHero(hero) {
@@ -101,11 +121,10 @@ class MapSystem {
             console.log("📥 Загружаем данные карт...");
             
             await this.loadJSONMaps();
+            await this.loadGlobalMapData();
             
-            // ОТЛАДКА: покажем что загрузилось
             this.debugLoadedMaps();
             
-            // ПРИНУДИТЕЛЬНО УСТАНАВЛИВАЕМ ЛОКАЛЬНУЮ КАРТУ ЕСЛИ ОНА ЕСТЬ
             if (this.localMaps.length > 0) {
                 this.forceSetLocalMap();
             }
@@ -118,6 +137,7 @@ class MapSystem {
             }
             
             this.setStartPositions();
+            this.loadGlobalProgress();
             
             console.log(`✅ Карты загружены: Глобальных=${this.globalMaps.length}, Локальных=${this.localMaps.length}, Тактических=${this.tacticalMaps.length}`);
             return true;
@@ -132,26 +152,718 @@ class MapSystem {
         }
     }
 
-    // НОВЫЙ МЕТОД: Принудительная установка локальной карты
-    forceSetLocalMap() {
-        if (this.localMaps.length > 0) {
-            const localMap = this.localMaps[0];
-            this.currentLocalMap = localMap;
-            this.currentTacticalMap = localMap;
-            this.playerLocalPosition = {...localMap.startPosition};
-            this.playerTacticalPosition = {...localMap.startPosition};
-            this.currentMapType = 'local';
+    // ========== СИСТЕМА ГЛОБАЛЬНОЙ КАРТЫ ==========
+
+    async loadGlobalMapData() {
+        try {
+            console.log("🌍 Загружаем глобальную карту...");
             
-            console.log("✅ Локальная карта принудительно установлена:", {
-                name: localMap.name,
-                cells: Object.keys(localMap.cells).length,
-                startPosition: localMap.startPosition
-            });
+            const globalMapPaths = [
+                'data/maps/global/global-map.json',
+                'data/maps/global-map.json',
+                'maps/global-map.json',
+                'data/global-map.json',
+                'global-map.json'
+            ];
+            
+            for (const path of globalMapPaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        const mapData = await response.json();
+                        await this.processGlobalJSONMap(mapData);
+                        console.log(`✅ Глобальная карта загружена из: ${path}`);
+                        return true;
+                    }
+                } catch (e) {
+                    console.log(`❌ Не удалось загрузить глобальную карту из ${path}:`, e.message);
+                }
+            }
+            
+            console.log("⚠️ Глобальная карта не найдена, создаем тестовую...");
+            this.createTestGlobalMap();
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки глобальной карты:", error);
+            this.createTestGlobalMap();
             return true;
         }
-        console.log("❌ Нет локальных карт для установки");
-        return false;
     }
+
+    processGlobalJSONMap(mapData) {
+        const globalMap = this.convertTigrimionJSONToMap(mapData, 'global');
+        if (globalMap) {
+            this.globalMaps = [globalMap];
+            this.currentGlobalMap = globalMap;
+            
+            // Инициализируем прогресс
+            this.initializeGlobalProgress();
+            
+            console.log(`✅ Глобальная карта обработана: ${globalMap.name}`);
+            return globalMap;
+        }
+        return null;
+    }
+
+    initializeGlobalProgress() {
+        if (!this.currentGlobalMap) return;
+        
+        // Находим стартовую позицию на глобальной карте
+        const startCell = Object.values(this.currentGlobalMap.cells)
+            .find(cell => cell.type === 'player_start' || cell.type === 'global_current');
+        
+        if (startCell) {
+            this.globalProgress.currentGlobalX = startCell.col;
+            this.globalProgress.currentGlobalY = startCell.row;
+            
+            const cellKey = `${startCell.col},${startCell.row}`;
+            this.globalProgress.visitedCells.add(cellKey);
+            this.globalProgress.unlockedCells.add(cellKey);
+            this.globalProgress.discoveredCells.add(cellKey);
+            
+            console.log(`🎯 Стартовая позиция на глобальной карте: [${startCell.col}, ${startCell.row}]`);
+        }
+        
+        // Разблокируем соседние клетки от стартовой позиции
+        this.unlockAdjacentGlobalCells(this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY);
+    }
+
+    unlockAdjacentGlobalCells(x, y) {
+        if (!this.currentGlobalMap) return;
+        
+        const directions = [
+            [0, 1], [1, 0], [0, -1], [-1, 0],
+            [1, 1], [1, -1], [-1, 1], [-1, -1]
+        ];
+        
+        directions.forEach(([dx, dy]) => {
+            const newX = x + dx;
+            const newY = y + dy;
+            const cellKey = `${newX},${newY}`;
+            
+            if (this.currentGlobalMap.cells[cellKey]) {
+                this.globalProgress.unlockedCells.add(cellKey);
+                this.globalProgress.discoveredCells.add(cellKey);
+            }
+        });
+    }
+
+    saveGlobalProgress() {
+        const progress = {
+            visitedCells: Array.from(this.globalProgress.visitedCells),
+            currentGlobalX: this.globalProgress.currentGlobalX,
+            currentGlobalY: this.globalProgress.currentGlobalY,
+            unlockedCells: Array.from(this.globalProgress.unlockedCells),
+            discoveredCells: Array.from(this.globalProgress.discoveredCells)
+        };
+        localStorage.setItem('globalMapProgress', JSON.stringify(progress));
+        console.log("💾 Прогресс глобальной карты сохранен");
+    }
+
+    loadGlobalProgress() {
+        try {
+            const saved = localStorage.getItem('globalMapProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                this.globalProgress.visitedCells = new Set(progress.visitedCells);
+                this.globalProgress.currentGlobalX = progress.currentGlobalX;
+                this.globalProgress.currentGlobalY = progress.currentGlobalY;
+                this.globalProgress.unlockedCells = new Set(progress.unlockedCells);
+                this.globalProgress.discoveredCells = new Set(progress.discoveredCells || []);
+                
+                console.log("📂 Прогресс глобальной карты загружен", {
+                    currentPosition: [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY],
+                    visited: this.globalProgress.visitedCells.size,
+                    unlocked: this.globalProgress.unlockedCells.size
+                });
+            }
+        } catch (error) {
+            console.error("❌ Ошибка загрузки прогресса глобальной карты:", error);
+        }
+    }
+
+    // ПЕРЕХОД МЕЖДУ ЛОКАЛЬНЫМИ КАРТАМИ ЧЕРЕЗ ГЛОБАЛЬНУЮ
+    handleLocalToLocalTransition(exitCell) {
+        if (!exitCell.localMap) {
+            console.error("❌ Нет указанной локальной карты для перехода");
+            return;
+        }
+
+        console.log(`🌍 Переход на новую локальную карту: ${exitCell.localMap}`);
+        
+        // Обновляем позицию на глобальной карте
+        if (exitCell.globalTargetX !== undefined && exitCell.globalTargetY !== undefined) {
+            const oldX = this.globalProgress.currentGlobalX;
+            const oldY = this.globalProgress.currentGlobalY;
+            
+            this.globalProgress.currentGlobalX = exitCell.globalTargetX;
+            this.globalProgress.currentGlobalY = exitCell.globalTargetY;
+            
+            // Помечаем новый гекс как посещённый
+            const newCellKey = `${exitCell.globalTargetX},${exitCell.globalTargetY}`;
+            this.globalProgress.visitedCells.add(newCellKey);
+            
+            // Разблокируем соседние гексы
+            this.unlockAdjacentGlobalCells(exitCell.globalTargetX, exitCell.globalTargetY);
+            
+            this.saveGlobalProgress();
+            
+            console.log(`📍 Перемещение на глобальной карте: [${oldX},${oldY}] → [${exitCell.globalTargetX},${exitCell.globalTargetY}]`);
+        }
+        
+        // Загружаем новую локальную карту
+        this.loadLocalMapFile(exitCell.localMap).then(success => {
+            if (success && window.game) {
+                window.game.showNotification(`🌍 Переход в новую зону!`, 'success');
+            }
+        });
+    }
+
+    // ========== ОТОБРАЖЕНИЕ ГЛОБАЛЬНОЙ КАРТЫ ==========
+
+    renderGlobalMap() {
+        if (!this.currentGlobalMap) {
+            return '<div class="map-error">Глобальная карта не загружена</div>';
+        }
+
+        return `
+            <div class="overlay-content global-map-overlay">
+                <div class="overlay-header">
+                    <h3>🗺️ Глобальная карта</h3>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                
+                <div class="global-map-info">
+                    <div class="progress-stats">
+                        <span>📍 Текущая позиция: [${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]</span>
+                        <span>📊 Посещено: ${this.globalProgress.visitedCells.size} гексов</span>
+                        <span>🔓 Доступно: ${this.globalProgress.unlockedCells.size} гексов</span>
+                    </div>
+                </div>
+                
+                <div class="global-map-visual">
+                    <!-- Canvas будет добавлен автоматически -->
+                </div>
+                
+                <div class="global-map-legend">
+                    <h4>📋 Легенда карты:</h4>
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <span class="legend-symbol">🎯</span>
+                            <span>Текущая позиция</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🟢</span>
+                            <span>Посещённые</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🟡</span>
+                            <span>Доступные</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🔴</span>
+                            <span>Заблокированные</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🌍</span>
+                            <span>Переходы</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🚪</span>
+                            <span>Входы</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="global-map-actions">
+                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.debugGlobalInfo()">
+                        🐛 Отладка
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    initGlobalMapCanvas() {
+        const container = document.querySelector('.global-map-visual');
+        if (!container) {
+            console.log("❌ Контейнер для глобальной карты не найден");
+            return;
+        }
+
+        container.innerHTML = '';
+
+        this.canvas = document.createElement('canvas');
+        this.canvas.id = 'globalMapCanvas';
+        
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.position = 'absolute';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+        this.canvas.style.cursor = 'pointer';
+        container.appendChild(this.canvas);
+
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.calculateGlobalMapPositioning();
+        this.setupGlobalCanvasEventListeners();
+        
+        this.drawGlobalMap();
+    }
+
+    calculateGlobalMapPositioning() {
+        if (!this.currentGlobalMap || !this.canvas) return;
+
+        const container = document.querySelector('.global-map-visual');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        
+        console.log(`📐 Размер контейнера глобальной карты: ${rect.width}x${rect.height}`);
+        
+        const editorWidth = this.currentGlobalMap.originalCanvasWidth || 1024;
+        const editorHeight = this.currentGlobalMap.originalCanvasHeight || 1024;
+
+        const scaleX = rect.width / editorWidth;
+        const scaleY = rect.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
+
+        const offsetX = (rect.width - editorWidth * scale) / 2;
+        const offsetY = (rect.height - editorHeight * scale) / 2;
+
+        // Обрабатываем все клетки глобальной карты
+        Object.values(this.currentGlobalMap.cells).forEach(cell => {
+            const originalX = cell.originalX || cell.x;
+            const originalY = cell.originalY || cell.y;
+            
+            cell.displayX = originalX * scale + offsetX;
+            cell.displayY = originalY * scale + offsetY;
+        });
+
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+        
+        console.log(`✅ Позиционирование глобальной карты завершено`);
+    }
+
+    drawGlobalMap() {
+        if (!this.ctx || !this.currentGlobalMap) {
+            console.log("❌ Canvas context или глобальная карта не доступна");
+            return;
+        }
+
+        const canvas = this.canvas;
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        this.drawGlobalBackground();
+        this.drawGlobalHexes();
+
+        if (this.showGrid) {
+            this.drawGlobalHexGrid();
+        }
+    }
+
+    drawGlobalBackground() {
+        const map = this.currentGlobalMap;
+        if (!map.image) {
+            // Градиентный фон для глобальной карты
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#0f172a');
+            gradient.addColorStop(0.5, '#1e293b');
+            gradient.addColorStop(1, '#334155');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            return;
+        }
+
+        const editorWidth = map.originalCanvasWidth || 1024;
+        const editorHeight = map.originalCanvasHeight || 1024;
+
+        const scaleX = this.canvas.width / editorWidth;
+        const scaleY = this.canvas.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
+
+        const offsetX = (this.canvas.width - editorWidth * scale) / 2;
+        const offsetY = (this.canvas.height - editorHeight * scale) / 2;
+
+        const img = new Image();
+        img.onload = () => {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.drawImage(
+                img, 
+                offsetX, 
+                offsetY, 
+                editorWidth * scale, 
+                editorHeight * scale
+            );
+            
+            this.drawGlobalHexes();
+            if (this.showGrid) {
+                this.drawGlobalHexGrid();
+            }
+        };
+        img.onerror = () => {
+            console.error("❌ Ошибка загрузки фона глобальной карты");
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#0f172a');
+            gradient.addColorStop(1, '#334155');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        };
+        img.src = map.image;
+    }
+
+    drawGlobalHexes() {
+        const cells = Object.values(this.currentGlobalMap.cells);
+        
+        cells.forEach(cell => {
+            if (cell.visible) {
+                this.drawSingleGlobalHex(cell);
+                this.drawGlobalHexContent(cell);
+            }
+        });
+    }
+
+    drawSingleGlobalHex(cell) {
+        const hexSize = this.currentGlobalMap.cellSize || 30; // Меньше размер для глобальной карты
+        
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+
+        if (!centerX || !centerY) return;
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + hexSize * Math.cos(angle);
+            const y = centerY + hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+
+        // Определяем цвет заливки в зависимости от статуса гекса
+        const cellKey = `${cell.col},${cell.row}`;
+        let fillColor = 'rgba(100, 100, 100, 0.3)'; // По умолчанию - заблокированный
+        
+        if (this.globalProgress.currentGlobalX === cell.col && this.globalProgress.currentGlobalY === cell.row) {
+            fillColor = 'rgba(255, 215, 0, 0.4)'; // Текущая позиция - золотой
+        } else if (this.globalProgress.visitedCells.has(cellKey)) {
+            fillColor = 'rgba(34, 197, 94, 0.4)'; // Посещённый - зелёный
+        } else if (this.globalProgress.unlockedCells.has(cellKey)) {
+            fillColor = 'rgba(234, 179, 8, 0.4)'; // Доступный - жёлтый
+        } else if (this.globalProgress.discoveredCells.has(cellKey)) {
+            fillColor = 'rgba(59, 130, 246, 0.3)'; // Обнаруженный - синий
+        }
+
+        this.ctx.fillStyle = fillColor;
+        this.ctx.fill();
+
+        if (this.showGrid) {
+            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+        }
+        
+        this.ctx.restore();
+    }
+
+    drawGlobalHexContent(cell) {
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+        
+        if (!centerX || !centerY) return;
+
+        this.ctx.save();
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        let symbol = '·';
+        let color = '#ffffff';
+        let fontSize = 14;
+
+        const cellKey = `${cell.col},${cell.row}`;
+        
+        // Определяем символ для гекса
+        if (this.globalProgress.currentGlobalX === cell.col && this.globalProgress.currentGlobalY === cell.row) {
+            symbol = '🎯';
+            fontSize = 18;
+            color = '#fbbf24';
+        } else if (cell.type === 'local_exit' || cell.type === 'tactical_entrance') {
+            symbol = this.objectSymbols[cell.type] || '🚪';
+            color = '#8b5cf6';
+            fontSize = 16;
+        } else if (this.globalProgress.visitedCells.has(cellKey)) {
+            symbol = '🟢';
+            color = '#22c55e';
+        } else if (this.globalProgress.unlockedCells.has(cellKey)) {
+            symbol = '🟡';
+            color = '#eab308';
+        } else if (this.globalProgress.discoveredCells.has(cellKey)) {
+            symbol = '🔵';
+            color = '#3b82f6';
+        } else {
+            symbol = '🔴';
+            color = '#ef4444';
+        }
+
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(symbol, centerX, centerY);
+        this.ctx.restore();
+    }
+
+    drawGlobalHexGrid() {
+        const cells = Object.values(this.currentGlobalMap.cells);
+        const hexSize = this.currentGlobalMap.cellSize || 30;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        this.ctx.lineWidth = 1;
+        
+        cells.forEach(cell => {
+            if (cell.visible) {
+                const centerX = cell.displayX;
+                const centerY = cell.displayY;
+                
+                if (!centerX || !centerY) return;
+                
+                this.ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = Math.PI / 3 * i + Math.PI / 6;
+                    const x = centerX + hexSize * Math.cos(angle);
+                    const y = centerY + hexSize * Math.sin(angle);
+                    
+                    if (i === 0) this.ctx.moveTo(x, y);
+                    else this.ctx.lineTo(x, y);
+                }
+                this.ctx.closePath();
+                this.ctx.stroke();
+            }
+        });
+        this.ctx.restore();
+    }
+
+    setupGlobalCanvasEventListeners() {
+        if (!this.canvas) return;
+
+        this.canvas.addEventListener('click', (e) => this.handleGlobalCanvasClick(e));
+        this.canvas.addEventListener('mousemove', (e) => this.handleGlobalCanvasHover(e));
+        this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
+
+        window.addEventListener('resize', () => {
+            setTimeout(() => {
+                if (this.canvas) {
+                    this.calculateGlobalMapPositioning();
+                    this.drawGlobalMap();
+                }
+            }, 100);
+        });
+    }
+
+    handleGlobalCanvasClick(e) {
+        if (!this.currentGlobalMap) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const hex = this.getHexAtCanvasPosition(x, y);
+        
+        if (!hex) return;
+        
+        console.log(`🌍 Клик по глобальному гексу:`, {
+            type: hex.type,
+            col: hex.col,
+            row: hex.row,
+            position: [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY]
+        });
+
+        // Глобальная карта только для просмотра - никаких действий по клику
+        if (window.game) {
+            window.game.showNotification("🗺️ Глобальная карта только для просмотра. Используйте локальную карту для перемещения.", 'info');
+        }
+    }
+
+    handleGlobalCanvasHover(e) {
+        if (!this.currentGlobalMap) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const hex = this.getHexAtCanvasPosition(x, y);
+        
+        if (this.tooltipTimeout) {
+            clearTimeout(this.tooltipTimeout);
+            this.tooltipTimeout = null;
+        }
+
+        if (!hex || (this.currentTooltip && hex && (this.currentTooltip.col !== hex.col || this.currentTooltip.row !== hex.row))) {
+            this.hideTooltip();
+        }
+
+        if (hex && (!this.currentTooltip || this.currentTooltip.col !== hex.col || this.currentTooltip.row !== hex.row)) {
+            this.tooltipTimeout = setTimeout(() => {
+                this.showTooltipForGlobalHex(hex, e.clientX, e.clientY);
+            }, 200);
+        }
+    }
+
+    showTooltipForGlobalHex(hex, mouseX, mouseY) {
+        const tooltipText = this.getGlobalTooltipTextForHex(hex);
+        if (!tooltipText) {
+            this.hideTooltip();
+            return;
+        }
+
+        if (!this.tooltipElement) {
+            this.createTooltipElement();
+        }
+
+        this.removeHighlight();
+        this.currentTooltip = hex;
+        hex.isHighlighted = true;
+        
+        this.tooltipElement.textContent = tooltipText;
+        this.tooltipElement.style.display = 'block';
+
+        const tooltipRect = this.tooltipElement.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = mouseX + 15;
+        let top = mouseY + 15;
+
+        if (left + tooltipRect.width > viewportWidth - 10) {
+            left = mouseX - tooltipRect.width - 15;
+        }
+        if (top + tooltipRect.height > viewportHeight - 10) {
+            top = mouseY - tooltipRect.height - 15;
+        }
+
+        this.tooltipElement.style.left = left + 'px';
+        this.tooltipElement.style.top = top + 'px';
+
+        this.drawGlobalMap();
+    }
+
+    getGlobalTooltipTextForHex(hex) {
+        const cellKey = `${hex.col},${hex.row}`;
+        
+        let status = '';
+        if (this.globalProgress.currentGlobalX === hex.col && this.globalProgress.currentGlobalY === hex.row) {
+            status = '🎯 ТЕКУЩАЯ ПОЗИЦИЯ';
+        } else if (this.globalProgress.visitedCells.has(cellKey)) {
+            status = '🟢 Посещён';
+        } else if (this.globalProgress.unlockedCells.has(cellKey)) {
+            status = '🟡 Доступен';
+        } else if (this.globalProgress.discoveredCells.has(cellKey)) {
+            status = '🔵 Обнаружен';
+        } else {
+            status = '🔴 Заблокирован';
+        }
+
+        // Кастомная подсказка из JSON
+        if (hex.tooltip) {
+            return `${hex.tooltip}\nСтатус: ${status}`;
+        }
+
+        // Стандартные подсказки по типу
+        const defaultTooltips = {
+            'player_start': '⭐ Стартовая позиция',
+            'local_exit': '🌍 Выход в другую зону',
+            'tactical_entrance': '🚪 Вход в помещение',
+            'village': '🏘️ Деревня',
+            'castle': '🏰 Замок',
+            'cave': '🕳️ Пещера',
+            'forest': '🌲 Лес',
+            'mountain': '⛰️ Горы',
+            'water': '💧 Водоём'
+        };
+
+        const baseTooltip = defaultTooltips[hex.type] || `Глобальная позиция: [${hex.col}, ${hex.row}]`;
+        return `${baseTooltip}\nСтатус: ${status}`;
+    }
+
+    // ========== ОБНОВЛЕННЫЕ МЕТОДЫ ДЛЯ ЛОКАЛЬНЫХ КАРТ ==========
+
+    handleCanvasClick(e) {
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не установлена!");
+            return;
+        }
+
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const hex = this.getHexAtCanvasPosition(x, y);
+        
+        if (!hex) {
+            console.log("❌ Гекс не найден по этим координатам");
+            return;
+        }
+        
+        console.log(`🎲 Клик по клетке:`, {
+            type: hex.type,
+            col: hex.col,
+            row: hex.row,
+            localMap: hex.localMap,
+            tacticalMap: hex.tacticalMap,
+            passable: hex.passable
+        });
+
+        const isAdjacentToPlayer = this.isHexAdjacentToPlayer(hex);
+        
+        // ПРИОРИТЕТ 1: Переход на другую локальную карту
+        if (hex.type === 'local_exit' && isAdjacentToPlayer) {
+            console.log(`🌍 ОБНАРУЖЕН ПЕРЕХОД НА ЛОКАЛЬНУЮ КАРТУ: ${hex.localMap}`);
+            this.handleLocalToLocalTransition(hex);
+            return;
+        }
+        
+        // ПРИОРИТЕТ 2: Переход на тактическую карту
+        if (hex.tacticalMap && isAdjacentToPlayer) {
+            console.log(`🚪 Вход в тактическую карту: ${hex.tacticalMap}`);
+            this.handleMapTransition(hex);
+            return;
+        }
+        
+        // ПРИОРИТЕТ 3: Выход с тактической карты
+        if (hex.type === 'exit') {
+            console.log("🎲 Клик по выходу");
+            this.exitToPreviousMap();
+            return;
+        }
+        
+        // Если это переход, но герой не рядом
+        if ((hex.localMap || hex.tacticalMap) && !isAdjacentToPlayer) {
+            console.log(`🚫 ПЕРЕХОД ЗАБЛОКИРОВАН: герой не на соседней клетке`);
+            if (window.game) {
+                window.game.showNotification("Подойдите ближе к входу!", 'warning');
+            }
+            return;
+        }
+        
+        // Обычная логика перемещения
+        if (hex.passable !== false || hex.type === 'monster') {
+            console.log(`🎲 Клик по проходимой клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+            this.moveOnTacticalMap(hex.col, hex.row);
+        } else {
+            console.log(`🚫 Клетка непроходимая: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+        }
+    }
+
+    // ========== СУЩЕСТВУЮЩИЕ МЕТОДЫ (остаются без изменений) ==========
 
     async loadJSONMaps() {
         try {
@@ -311,8 +1023,27 @@ class MapSystem {
         };
     }
 
-    // ========== СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ ==========
+    forceSetLocalMap() {
+        if (this.localMaps.length > 0) {
+            const localMap = this.localMaps[0];
+            this.currentLocalMap = localMap;
+            this.currentTacticalMap = localMap;
+            this.playerLocalPosition = {...localMap.startPosition};
+            this.playerTacticalPosition = {...localMap.startPosition};
+            this.currentMapType = 'local';
+            
+            console.log("✅ Локальная карта принудительно установлена:", {
+                name: localMap.name,
+                cells: Object.keys(localMap.cells).length,
+                startPosition: localMap.startPosition
+            });
+            return true;
+        }
+        console.log("❌ Нет локальных карт для установки");
+        return false;
+    }
 
+    // СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ
     async handleMapTransition(transitionCell) {
         if (!transitionCell) return;
 
@@ -489,130 +1220,64 @@ class MapSystem {
         }
     }
 
-    // ========== ОБРАБОТЧИКИ КЛИКОВ С ПЕРЕХОДАМИ ==========
-
- handleCanvasClick(e) {
-    if (!this.currentTacticalMap) {
-        console.error("❌ currentTacticalMap не установлена!");
-        return;
-    }
-
-    const rect = this.canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    console.log(`🎯 Координаты клика: [${x}, ${y}]`);
-
-    const hex = this.getHexAtCanvasPosition(x, y);
-    
-    if (!hex) {
-        console.log("❌ Гекс не найден по этим координатам");
-        return;
-    }
-    
-    console.log(`🎲 Клик по клетке:`, {
-        type: hex.type,
-        col: hex.col,
-        row: hex.row,
-        tacticalMap: hex.tacticalMap,
-        passable: hex.passable
-    });
-
-    // ПРОВЕРКА: герой должен быть на соседней клетке для перехода
-    const isAdjacentToPlayer = this.isHexAdjacentToPlayer(hex);
-    
-    // ПРОВЕРКА НА ЛЮБОЙ ТИП ПЕРЕХОДА (только если герой рядом)
-    if ((hex.tacticalMap || hex.localMap || hex.globalMap) && isAdjacentToPlayer) {
-        console.log(`🚪 ОБНАРУЖЕН ПЕРЕХОД: ${hex.type} -> ${hex.tacticalMap || hex.localMap || hex.globalMap}`);
-        console.log(`📍 Герой рядом, переход разрешен`);
-        this.handleMapTransition(hex);
-        return;
-    }
-    
-    // Если это переход, но герой не рядом - сообщи об ошибке
-    if ((hex.tacticalMap || hex.localMap || hex.globalMap) && !isAdjacentToPlayer) {
-        console.log(`🚫 ПЕРЕХОД ЗАБЛОКИРОВАН: герой не на соседней клетке`);
-        if (window.game) {
-            window.game.showNotification("Подойдите ближе к входу!", 'warning');
-        }
-        return;
-    }
-    
-    // ПРОВЕРКА НА ВЫХОД (всегда доступен)
-    if (hex.type === 'exit') {
-        console.log("🎲 Клик по выходу");
-        this.exitToPreviousMap();
-        return;
-    }
-    
-    // Обычная логика перемещения
-    if (hex.passable !== false || hex.type === 'monster') {
-        console.log(`🎲 Клик по проходимой клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-        this.moveOnTacticalMap(hex.col, hex.row);
-    } else {
-        console.log(`🚫 Клетка непроходимая: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-    }
-}
-
-    // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
-
-   moveOnTacticalMap(x, y) {
-    if (!this.currentHero) {
-        console.error("❌ Герой не выбран!");
-        if (window.game) {
-            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-        }
-        return;
-    }
-
-    if (!this.currentTacticalMap) return;
-
-    const cellKey = `${x},${y}`;
-    const cellData = this.currentTacticalMap.cells[cellKey];
-    
-    if (!cellData) {
-        console.log("🚫 Клетка не существует");
-        if (window.game) {
-            window.game.showNotification("Эта клетка не существует!", 'error');
-        }
-        return;
-    }
-
-    // ПРОВЕРКА: если это переход - обрабатываем отдельно
-    if (cellData.tacticalMap || cellData.localMap || cellData.globalMap) {
-        console.log(`🎯 Попытка перехода через moveOnTacticalMap`);
-        // Проверяем соседство и обрабатываем переход
-        if (this.isHexAdjacentToPlayer(cellData)) {
-            this.handleMapTransition(cellData);
-        } else {
-            console.log(`🚫 Переход заблокирован: герой не рядом`);
+    // СИСТЕМА ПЕРЕМЕЩЕНИЯ И БОЯ
+    moveOnTacticalMap(x, y) {
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран!");
             if (window.game) {
-                window.game.showNotification("Подойдите ближе к входу!", 'warning');
+                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
             }
+            return;
         }
-        return;
-    }
 
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === y && neighbor.col === x
-    );
+        if (!this.currentTacticalMap) return;
 
-    if (!isReachable) {
-        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-        if (window.game) {
-            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        const cellKey = `${x},${y}`;
+        const cellData = this.currentTacticalMap.cells[cellKey];
+        
+        if (!cellData) {
+            console.log("🚫 Клетка не существует");
+            if (window.game) {
+                window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
         }
-        return;
-    }
 
-    this.hideOverlay();
-    
-    setTimeout(() => {
-        this.startTacticalBattleForMovement(x, y, cellData);
-    }, 50);
-}
+        // ПРОВЕРКА: если это переход - обрабатываем отдельно
+        if (cellData.tacticalMap || cellData.localMap || cellData.globalMap) {
+            console.log(`🎯 Попытка перехода через moveOnTacticalMap`);
+            // Проверяем соседство и обрабатываем переход
+            if (this.isHexAdjacentToPlayer(cellData)) {
+                this.handleMapTransition(cellData);
+            } else {
+                console.log(`🚫 Переход заблокирован: герой не рядом`);
+                if (window.game) {
+                    window.game.showNotification("Подойдите ближе к входу!", 'warning');
+                }
+            }
+            return;
+        }
+
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        this.hideOverlay();
+        
+        setTimeout(() => {
+            this.startTacticalBattleForMovement(x, y, cellData);
+        }, 50);
+    }
 
     startTacticalBattleForMovement(targetX, targetY, cellData) {
         const battleSystem = window.game?.systems?.battle;
@@ -646,23 +1311,6 @@ class MapSystem {
             console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
             battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
         }
-    }
-
-    getRandomMonster() {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
-            console.error("❌ BattleSystem не доступна для получения случайного монстра");
-            return null;
-        }
-        
-        const randomMonster = battleSystem.getRandomMonsterForMovement();
-        
-        if (!randomMonster) {
-            console.error("❌ Не удалось получить случайного монстра");
-            return null;
-        }
-        
-        return randomMonster;
     }
 
     completeMovementAfterBattle(victory) {
@@ -704,6 +1352,23 @@ class MapSystem {
         this.pendingMovement = null;
     }
 
+    getRandomMonster() {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
+            console.error("❌ BattleSystem не доступна для получения случайного монстра");
+            return null;
+        }
+        
+        const randomMonster = battleSystem.getRandomMonsterForMovement();
+        
+        if (!randomMonster) {
+            console.error("❌ Не удалось получить случайного монстра");
+            return null;
+        }
+        
+        return randomMonster;
+    }
+
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
             return null;
@@ -715,8 +1380,7 @@ class MapSystem {
         return battleSystem.getMonsterById(cellData.monster_id);
     }
 
-    // ========== CANVIS И ОТОБРАЖЕНИЕ ==========
-
+    // CANVAS И ОТОБРАЖЕНИЕ
     initCanvas() {
         const container = document.querySelector('.tactical-map-visual');
         if (!container) {
@@ -748,63 +1412,63 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
-   calculateMapPositioning() {
-    if (!this.currentTacticalMap || !this.canvas) return;
+    calculateMapPositioning() {
+        if (!this.currentTacticalMap || !this.canvas) return;
 
-    const container = document.querySelector('.tactical-map-visual');
-    if (!container) return;
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) return;
 
-    const rect = container.getBoundingClientRect();
-    
-    console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
-    
-    const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
-    const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
-
-    console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
-
-    const scaleX = rect.width / editorWidth;
-    const scaleY = rect.height / editorHeight;
-    const scale = Math.min(scaleX, scaleY, 1.0);
-
-    const offsetX = (rect.width - editorWidth * scale) / 2;
-    const offsetY = (rect.height - editorHeight * scale) / 2;
-
-    console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
-
-    // Проверим конкретно клетку перехода
-    const transitionCell = Object.values(this.currentTacticalMap.cells).find(
-        cell => cell.type === 'tactical_entrance'
-    );
-    
-    if (transitionCell) {
-        const originalX = transitionCell.originalX || transitionCell.x;
-        const originalY = transitionCell.originalY || transitionCell.y;
+        const rect = container.getBoundingClientRect();
         
-        transitionCell.displayX = originalX * scale + offsetX;
-        transitionCell.displayY = originalY * scale + offsetY;
+        console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
         
-        console.log(`🎯 Клетка перехода:`, {
-            оригинал: `[${originalX}, ${originalY}]`,
-            отображение: `[${transitionCell.displayX}, ${transitionCell.displayY}]`,
-            тип: transitionCell.type
+        const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
+        const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
+
+        console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
+
+        const scaleX = rect.width / editorWidth;
+        const scaleY = rect.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
+
+        const offsetX = (rect.width - editorWidth * scale) / 2;
+        const offsetY = (rect.height - editorHeight * scale) / 2;
+
+        console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+
+        // Проверим конкретно клетку перехода
+        const transitionCell = Object.values(this.currentTacticalMap.cells).find(
+            cell => cell.type === 'tactical_entrance'
+        );
+        
+        if (transitionCell) {
+            const originalX = transitionCell.originalX || transitionCell.x;
+            const originalY = transitionCell.originalY || transitionCell.y;
+            
+            transitionCell.displayX = originalX * scale + offsetX;
+            transitionCell.displayY = originalY * scale + offsetY;
+            
+            console.log(`🎯 Клетка перехода:`, {
+                оригинал: `[${originalX}, ${originalY}]`,
+                отображение: `[${transitionCell.displayX}, ${transitionCell.displayY}]`,
+                тип: transitionCell.type
+            });
+        }
+
+        // Обрабатываем все клетки
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            const originalX = cell.originalX || cell.x;
+            const originalY = cell.originalY || cell.y;
+            
+            cell.displayX = originalX * scale + offsetX;
+            cell.displayY = originalY * scale + offsetY;
         });
-    }
 
-    // Обрабатываем все клетки
-    Object.values(this.currentTacticalMap.cells).forEach(cell => {
-        const originalX = cell.originalX || cell.x;
-        const originalY = cell.originalY || cell.y;
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
         
-        cell.displayX = originalX * scale + offsetX;
-        cell.displayY = originalY * scale + offsetY;
-    });
-
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    
-    console.log(`✅ Позиционирование завершено`);
-}
+        console.log(`✅ Позиционирование завершено`);
+    }
     
     setupCanvasEventListeners() {
         if (!this.canvas) return;
@@ -853,76 +1517,76 @@ class MapSystem {
         }
     }
     
- getHexAtCanvasPosition(canvasX, canvasY) {
-    if (!this.currentTacticalMap) {
-        console.error("❌ currentTacticalMap не доступна для поиска гекса");
-        return null;
-    }
+    getHexAtCanvasPosition(canvasX, canvasY) {
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не доступна для поиска гекса");
+            return null;
+        }
 
-    const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
-    
-    console.log(`🔍 Поиск гекса по координатам: [${canvasX}, ${canvasY}], размер гекса: ${hexSize}`);
-    
-    // Проверяем кэшированный гекс
-    if (this.lastHoveredHex) {
-        const centerX = this.lastHoveredHex.displayX;
-        const centerY = this.lastHoveredHex.displayY;
+        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
         
-        if (centerX && centerY) {
+        console.log(`🔍 Поиск гекса по координатам: [${canvasX}, ${canvasY}], размер гекса: ${hexSize}`);
+        
+        // Проверяем кэшированный гекс
+        if (this.lastHoveredHex) {
+            const centerX = this.lastHoveredHex.displayX;
+            const centerY = this.lastHoveredHex.displayY;
+            
+            if (centerX && centerY) {
+                const distance = Math.sqrt(
+                    Math.pow(canvasX - centerX, 2) + 
+                    Math.pow(canvasY - centerY, 2)
+                );
+                
+                console.log(`📏 Расстояние до кэшированного гекса: ${distance}`);
+                
+                if (distance <= hexSize) {
+                    console.log(`✅ Используем кэшированный гекс:`, this.lastHoveredHex);
+                    return this.lastHoveredHex;
+                }
+            }
+        }
+        
+        // Ищем среди всех клеток
+        let closestHex = null;
+        let minDistance = Infinity;
+        
+        for (const cell of Object.values(this.currentTacticalMap.cells)) {
+            const centerX = cell.displayX;
+            const centerY = cell.displayY;
+            
+            if (!centerX || !centerY) {
+                console.log(`⚠️ У клетки [${cell.col},${cell.row}] нет display координат`);
+                continue;
+            }
+            
             const distance = Math.sqrt(
                 Math.pow(canvasX - centerX, 2) + 
                 Math.pow(canvasY - centerY, 2)
             );
             
-            console.log(`📏 Расстояние до кэшированного гекса: ${distance}`);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestHex = cell;
+            }
             
             if (distance <= hexSize) {
-                console.log(`✅ Используем кэшированный гекс:`, this.lastHoveredHex);
-                return this.lastHoveredHex;
+                console.log(`✅ Найден гекс [${cell.col},${cell.row}] на расстоянии ${distance}`);
+                this.lastHoveredHex = cell;
+                return cell;
             }
         }
-    }
-    
-    // Ищем среди всех клеток
-    let closestHex = null;
-    let minDistance = Infinity;
-    
-    for (const cell of Object.values(this.currentTacticalMap.cells)) {
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
         
-        if (!centerX || !centerY) {
-            console.log(`⚠️ У клетки [${cell.col},${cell.row}] нет display координат`);
-            continue;
+        // Если не нашли точного совпадения, покажем ближайший
+        if (closestHex && minDistance < hexSize * 2) {
+            console.log(`⚠️ Ближайший гекс [${closestHex.col},${closestHex.row}] на расстоянии ${minDistance}`);
+        } else {
+            console.log(`❌ Гекс не найден. Ближайший на расстоянии ${minDistance}`);
         }
         
-        const distance = Math.sqrt(
-            Math.pow(canvasX - centerX, 2) + 
-            Math.pow(canvasY - centerY, 2)
-        );
-        
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestHex = cell;
-        }
-        
-        if (distance <= hexSize) {
-            console.log(`✅ Найден гекс [${cell.col},${cell.row}] на расстоянии ${distance}`);
-            this.lastHoveredHex = cell;
-            return cell;
-        }
+        this.lastHoveredHex = null;
+        return null;
     }
-    
-    // Если не нашли точного совпадения, покажем ближайший
-    if (closestHex && minDistance < hexSize * 2) {
-        console.log(`⚠️ Ближайший гекс [${closestHex.col},${closestHex.row}] на расстоянии ${minDistance}`);
-    } else {
-        console.log(`❌ Гекс не найден. Ближайший на расстоянии ${minDistance}`);
-    }
-    
-    this.lastHoveredHex = null;
-    return null;
-}
 
     showTooltipForHex(hex, mouseX, mouseY) {
         const tooltipText = this.getTooltipTextForHex(hex);
@@ -1346,8 +2010,7 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    // ========== СИСТЕМА НАВИГАЦИИ И СОСЕДЕЙ ==========
-
+    // СИСТЕМА НАВИГАЦИИ И СОСЕДЕЙ
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
         
@@ -1440,34 +2103,33 @@ class MapSystem {
         return neighbors;
     }
 
-isHexAdjacentToPlayer(targetHex) {
-    if (!this.currentTacticalMap) return false;
-    
-    const playerX = this.playerTacticalPosition.x;
-    const playerY = this.playerTacticalPosition.y;
-    
-    console.log(`📍 Проверка соседства: игрок [${playerX},${playerY}] -> цель [${targetHex.col},${targetHex.row}]`);
-    
-    // Получаем всех соседей игрока
-    const playerNeighbors = this.getHexNeighbors(playerY, playerX);
-    
-    // Проверяем, является ли целевая клетка соседом игрока
-    const isAdjacent = playerNeighbors.some(neighbor => 
-        neighbor.col === targetHex.col && neighbor.row === targetHex.row
-    );
-    
-    console.log(`📏 Результат проверки соседства: ${isAdjacent}`);
-    
-    if (isAdjacent) {
-        console.log(`✅ Клетка [${targetHex.col},${targetHex.row}] соседняя с игроком`);
-    } else {
-        console.log(`❌ Клетка [${targetHex.col},${targetHex.row}] НЕ соседняя с игроком`);
-        console.log(`🎯 Соседи игрока:`, playerNeighbors.map(n => `[${n.col},${n.row}]`));
+    isHexAdjacentToPlayer(targetHex) {
+        if (!this.currentTacticalMap) return false;
+        
+        const playerX = this.playerTacticalPosition.x;
+        const playerY = this.playerTacticalPosition.y;
+        
+        console.log(`📍 Проверка соседства: игрок [${playerX},${playerY}] -> цель [${targetHex.col},${targetHex.row}]`);
+        
+        // Получаем всех соседей игрока
+        const playerNeighbors = this.getHexNeighbors(playerY, playerX);
+        
+        // Проверяем, является ли целевая клетка соседом игрока
+        const isAdjacent = playerNeighbors.some(neighbor => 
+            neighbor.col === targetHex.col && neighbor.row === targetHex.row
+        );
+        
+        console.log(`📏 Результат проверки соседства: ${isAdjacent}`);
+        
+        if (isAdjacent) {
+            console.log(`✅ Клетка [${targetHex.col},${targetHex.row}] соседняя с игроком`);
+        } else {
+            console.log(`❌ Клетка [${targetHex.col},${targetHex.row}] НЕ соседняя с игроком`);
+            console.log(`🎯 Соседи игрока:`, playerNeighbors.map(n => `[${n.col},${n.row}]`));
+        }
+        
+        return isAdjacent;
     }
-    
-    return isAdjacent;
-}
-
     
     areHexesAdjacent(cell1, cell2, hexSize) {
         if (!cell1 || !cell2) return false;
@@ -1506,631 +2168,117 @@ isHexAdjacentToPlayer(targetHex) {
         return 'неизвестно';
     }
 
-    // ========== СИСТЕМА КАРТ И ОТОБРАЖЕНИЯ ==========
-
+    // СИСТЕМА КАРТ И ОТОБРАЖЕНИЯ
     setStartPositions() {
         console.log("🎯 Устанавливаем стартовые позиции...");
         
-        // ПРИОРИТЕТ 1: Локальные карты
+        // Глобальная карта
+        if (this.globalMaps.length > 0) {
+            this.currentGlobalMap = this.globalMaps[0];
+            console.log(`🗺️ Установлена глобальная карта: ${this.currentGlobalMap.name}`);
+        }
+        
+        // Локальная карта
         if (this.localMaps.length > 0 && this.currentLocalMap) {
             console.log(`📍 Используем установленную локальную карту: ${this.currentLocalMap.name}`);
-        }
-        // ПРИОРИТЕТ 2: Тактические карты (если нет локальных)
-        else if (this.tacticalMaps.length > 0) {
+        } else if (this.tacticalMaps.length > 0) {
             this.currentTacticalMap = this.tacticalMaps[0];
             this.playerTacticalPosition = {...this.currentTacticalMap.startPosition};
             this.currentMapType = 'tactical';
             console.log(`🎯 Установлена стартовая тактическая карта: ${this.currentTacticalMap.name}`);
         }
         
-        // Устанавливаем глобальную позицию
-        if (this.globalMaps.length > 0) {
-            this.currentGlobalMap = this.globalMaps[0];
-            this.playerGlobalPosition = {...this.currentGlobalMap.startPosition};
-            console.log(`🗺️ Установлена глобальная карта: ${this.currentGlobalMap.name}`);
-        }
-        
         console.log("✅ Стартовые позиции установлены:", {
-            global: this.playerGlobalPosition,
+            global: [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY],
             local: this.playerLocalPosition, 
             tactical: this.playerTacticalPosition,
             mapType: this.currentMapType
         });
     }
 
-    // НОВЫЙ МЕТОД: Отладка загруженных карт
     debugLoadedMaps() {
         console.group("📊 Отладка загруженных карт");
+        console.log("Глобальные карты:", this.globalMaps.length);
+        this.globalMaps.forEach((map, index) => {
+            console.log(`  ${index + 1}. ${map.name} (клеток: ${Object.keys(map.cells).length})`);
+        });
         console.log("Локальные карты:", this.localMaps.length);
         this.localMaps.forEach((map, index) => {
             console.log(`  ${index + 1}. ${map.name} (клеток: ${Object.keys(map.cells).length})`);
         });
         console.log("Тактические карты:", this.tacticalMaps.length);
-        this.tacticalMaps.forEach((map, index) => {
-            console.log(`  ${index + 1}. ${map.name} (клеток: ${Object.keys(map.cells).length})`);
-        });
+        console.log("Текущая глобальная карта:", this.currentGlobalMap?.name || 'нет');
         console.log("Текущая локальная карта:", this.currentLocalMap?.name || 'нет');
         console.log("Текущая тактическая карта:", this.currentTacticalMap?.name || 'нет');
         console.log("Текущий тип карты:", this.currentMapType);
+        console.log("Прогресс глобальной карты:", {
+            current: [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY],
+            visited: this.globalProgress.visitedCells.size,
+            unlocked: this.globalProgress.unlockedCells.size
+        });
         console.groupEnd();
     }
 
+    // ТЕСТОВЫЕ КАРТЫ
     createTestMaps() {
+        this.createTestGlobalMap();
+        this.createTestLocalMaps();
+    }
+
+    createTestGlobalMap() {
         this.globalMaps = [{
             id: 1,
             name: "Континент Арканиум",
-            image: "images/maps/global/arcanium.jpg",
-            width: 10,
+            image: "",
+            width: 15,
             height: 10,
-            startPosition: {x: 5, y: 5},
+            startPosition: {x: 7, y: 5},
             description: "Древний континент, полный загадок и опасностей",
-            localMaps: [
-                {globalX: 5, globalY: 5, localMapId: 1}
-            ]
+            cells: {
+                "7,5": {
+                    type: "player_start", 
+                    passable: true, 
+                    row: 5, 
+                    col: 7, 
+                    visible: true, 
+                    x: 350, 
+                    y: 250,
+                    displayX: 350,
+                    displayY: 250
+                },
+                "8,5": {
+                    type: "local_exit", 
+                    passable: true, 
+                    row: 5, 
+                    col: 8, 
+                    visible: true, 
+                    x: 385, 
+                    y: 250,
+                    localMap: "data/maps/local/forest.json",
+                    globalTargetX: 8,
+                    globalTargetY: 5,
+                    tooltip: "🌍 Вход в Лесную Долину",
+                    displayX: 385,
+                    displayY: 250
+                }
+            },
+            cellSize: 30,
+            originalCanvasWidth: 800,
+            originalCanvasHeight: 600,
+            mapType: 'global'
         }];
+        console.log("✅ Тестовая глобальная карта создана");
+    }
 
+    createTestLocalMaps() {
         this.localMaps = [{
             id: 1,
             name: "Долина Начала",
-            image: "images/maps/local/valley.jpg",
+            image: "",
             width: 8,
             height: 8,
             startPosition: {x: 4, y: 4},
-            globalPosition: {x: 5, y: 5},
             description: "Мирная долина, где начинаются приключения",
-            globalConnections: {
-                north: {globalX: 5, globalY: 4},
-                south: {globalX: 5, globalY: 6},
-                east: {globalX: 6, globalY: 5},
-                west: {globalX: 4, globalY: 5}
-            },
-            tacticalMaps: [
-                {localX: 4, localY: 4, tacticalMapId: 1}
-            ]
-        }];
-
-        this.tacticalMaps = [{
-            id: 1,
-            name: "Лесная Тропа",
-            image: "images/maps/tactical/forest_path.jpg",
-            width: 6,
-            height: 6,
-            startPosition: {x: 3, y: 3},
-            localPosition: {x: 4, y: 4},
-            description: "Извилистая тропа через древний лес",
-            cells: {
-                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300},
-                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250},
-                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300},
-                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300},
-                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350}
-            }
-        }];
-    }
-
-    createFallbackMaps() {
-        this.globalMaps = [{
-            id: 1,
-            name: "Тестовый Мир",
-            image: "",
-            width: 5,
-            height: 5,
-            startPosition: {x: 2, y: 2},
-            description: "Тестовый мир для разработки"
-        }];
-
-        this.localMaps = [{
-            id: 1,
-            name: "Тестовая Зона",
-            image: "",
-            width: 4,
-            height: 4,
-            startPosition: {x: 2, y: 2},
-            globalPosition: {x: 2, y: 2}
-        }];
-
-        this.tacticalMaps = [{
-            id: 1,
-            name: "Тестовая Комната",
-            image: "",
-            width: 3,
-            height: 3,
-            startPosition: {x: 1, y: 1},
-            localPosition: {x: 2, y: 2},
-            cells: {
-                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100}
-            }
-        }];
-    }
-
-    renderGlobalMap() {
-        if (!this.currentGlobalMap) return '<div class="map-error">Глобальная карта не загружена</div>';
-
-        return `
-            <div class="map-container global-map">
-                <h4>${this.currentGlobalMap.name}</h4>
-                <div class="map-grid" style="grid-template-columns: repeat(${this.currentGlobalMap.width}, 1fr);">
-                    ${this.generateGlobalMapGrid()}
-                </div>
-                <div class="map-info">
-                    Позиция: [${this.playerGlobalPosition.x}, ${this.playerGlobalPosition.y}]
-                </div>
-            </div>
-        `;
-    }
-
-    renderLocalMap() {
-        if (!this.currentLocalMap) {
-            return '<div class="map-error">Локальная карта не загружена</div>';
-        }
-
-        const map = this.currentLocalMap;
-        
-        return `
-            <div class="tactical-map-header">
-                <h4>📍 ${map.name} (Локальная карта)</h4>
-                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-            </div>
-            
-            <div class="tactical-map-content">
-                <div class="tactical-map-visual">
-                    <!-- Canvas будет добавлен автоматически -->
-                </div>
-            </div>
-        `;
-    }
-
-    renderTacticalMap() {
-        if (!this.currentTacticalMap) {
-            return '<div class="map-error">Тактическая карта не загружена</div>';
-        }
-
-        const isTigrimionMap = this.currentTacticalMap.jsonData;
-        
-        if (isTigrimionMap) {
-            return this.renderTigrimionTacticalMap();
-        } else {
-            return this.renderStandardTacticalMap();
-        }
-    }
-
-    renderTigrimionTacticalMap() {
-        const map = this.currentTacticalMap;
-        
-        return `
-            <div class="tactical-map-header">
-                <h4>${map.name}</h4>
-                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-            </div>
-            
-            <div class="tactical-map-content">
-                <div class="tactical-map-visual">
-                    <!-- Canvas будет добавлен автоматически -->
-                </div>
-            </div>
-        `;
-    }
-
-    renderStandardTacticalMap() {
-        if (!this.currentTacticalMap) return '<div class="map-error">Тактическая карта не загружена</div>';
-
-        return `
-            <div class="map-container tactical-map">
-                <h4>${this.currentTacticalMap.name}</h4>
-                <div class="map-grid" style="grid-template-columns: repeat(${this.currentTacticalMap.width}, 1fr);">
-                    ${this.generateTacticalMapGrid()}
-                </div>
-                <div class="map-info">
-                    Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                    <br>
-                    <small>${this.currentTacticalMap.description}</small>
-                </div>
-            </div>
-        `;
-    }
-
-    generateGlobalMapGrid() {
-        let gridHTML = '';
-        const { width, height } = this.currentGlobalMap;
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const isPlayerHere = x === this.playerGlobalPosition.x && y === this.playerGlobalPosition.y;
-                let cellClass = 'map-cell global-cell';
-                let cellContent = '·';
-
-                if (isPlayerHere) {
-                    cellClass += ' player-cell';
-                    cellContent = '🎯';
-                }
-
-                gridHTML += `
-                    <div class="${cellClass}" 
-                         onclick="game.systems.map.moveOnGlobalMap(${x}, ${y})"
-                         title="Глобальная позиция: [${x}, ${y}]">
-                        ${cellContent}
-                    </div>
-                `;
-            }
-        }
-        
-        return gridHTML;
-    }
-
-    generateLocalMapGrid() {
-        let gridHTML = '';
-        const { width, height } = this.currentLocalMap;
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const isPlayerHere = x === this.playerLocalPosition.x && y === this.playerLocalPosition.y;
-                let cellClass = 'map-cell local-cell';
-                let cellContent = '·';
-
-                if (isPlayerHere) {
-                    cellClass += ' player-cell';
-                    cellContent = '🎯';
-                }
-
-                gridHTML += `
-                    <div class="${cellClass}" 
-                         onclick="game.systems.map.moveOnLocalMap(${x}, ${y})"
-                         title="Локальная позиция: [${x}, ${y}]">
-                        ${cellContent}
-                    </div>
-                `;
-            }
-        }
-        
-        return gridHTML;
-    }
-
-    generateTacticalMapGrid() {
-        let gridHTML = '';
-        const { width, height } = this.currentTacticalMap;
-
-        for (let y = 0; y < height; y++) {
-            for (let x = 0; x < width; x++) {
-                const cellKey = `${x},${y}`;
-                const cellData = this.currentTacticalMap.cells[cellKey];
-                const isPlayerHere = x === this.playerTacticalPosition.x && y === this.playerTacticalPosition.y;
-                
-                let cellClass = 'map-cell tactical-cell';
-                let cellContent = '';
-                let title = `Тактическая позиция: [${x}, ${y}]`;
-
-                if (isPlayerHere) {
-                    cellClass += ' player-cell';
-                    cellContent = '🎯';
-                } else if (cellData) {
-                    cellClass += ` ${cellData.type}-cell`;
-                    title += ` - ${this.getCellDescription(cellData)}`;
-                    
-                    // Для обычных клеток используем точку, для специальных - эмодзи
-                    if (cellData.type === 'active' && !cellData.objectType) {
-                        cellContent = '·';
-                    } else {
-                        cellContent = this.objectSymbols[cellData.type] || '·';
-                    }
-                } else {
-                    cellClass += ' empty-cell';
-                    cellContent = '·';
-                }
-
-                gridHTML += `
-                    <div class="${cellClass}" 
-                         onclick="game.systems.map.moveOnTacticalMap(${x}, ${y})"
-                         title="${title}">
-                        ${cellContent}
-                </div>
-                `;
-            }
-        }
-        
-        return gridHTML;
-    }
-
-    getCellDescription(cellData) {
-        const descriptions = {
-            'start': 'Точка старта',
-            'player_start': 'Старт игрока',
-            'exit': 'Выход',
-            'monster': 'Монстр',
-            'chest': 'Сундук',
-            'npc': 'NPC',
-            'obstacle': 'Препятствие',
-            'active': 'Активная клетка',
-            'empty': 'Пустая клетка',
-            'tree': 'Дерево',
-            'elegant_tree': 'Изящное дерево',
-            'cave': 'Пещера',
-            'lava_crack': 'Лавовый разлом',
-            'graveyard_cross': 'Кладбищенский крест',
-            'bandit_camp': 'Лагерь разбойников',
-            'orc_camp': 'Лагерь орков',
-            'black_monolith': 'Черный монолит',
-            'weapon': 'Оружие',
-            'armor': 'Доспех',
-            'village': 'Деревня',
-            'castle': 'Замок',
-            'water': 'Вода',
-            'campfire': 'Костер',
-            'merchant': 'Торговец',
-            'cart': 'Телега',
-            'traveler': 'Путник',
-            'portal': 'Портал',
-            'ancient_rune': 'Древняя руна',
-            'magic_crystal': 'Магический кристалл'
-        };
-        return descriptions[cellData.type] || cellData.type;
-    }
-
-    moveOnGlobalMap(x, y) {
-        const localMap = this.findLocalMapAtPosition(x, y);
-        if (!localMap) {
-            console.log("🚫 На этой позиции нет локальной карты");
-            if (window.game) {
-                window.game.showNotification("На этой позиции нет локации!", 'warning');
-            }
-            return;
-        }
-
-        this.playerGlobalPosition = {x, y};
-        this.currentLocalMap = localMap;
-        this.playerLocalPosition = {...localMap.startPosition};
-        
-        const tacticalMap = this.findTacticalMapAtPosition(
-            this.playerLocalPosition.x,
-            this.playerLocalPosition.y
-        );
-        
-        if (tacticalMap) {
-            this.currentTacticalMap = tacticalMap;
-            this.playerTacticalPosition = {...tacticalMap.startPosition};
-        }
-
-        console.log(`🌍 Перемещение на глобальную позицию: [${x}, ${y}]`);
-        this.updateGameDisplay();
-        
-        if (window.game) {
-            window.game.showNotification(`Перемещение в ${localMap.name}`, 'success');
-        }
-    }
-
-    moveOnLocalMap(x, y) {
-        const tacticalMap = this.findTacticalMapAtPosition(x, y);
-        if (!tacticalMap) {
-            console.log("🚫 На этой позиции нет тактической карты");
-            if (window.game) {
-                window.game.showNotification("Здесь нет тактической зоны!", 'warning');
-            }
-            return;
-        }
-
-        this.playerLocalPosition = {x, y};
-        this.currentTacticalMap = tacticalMap;
-        this.playerTacticalPosition = {...tacticalMap.startPosition};
-
-        console.log(`📍 Перемещение на локальную позицию: [${x}, ${y}]`);
-        this.updateGameDisplay();
-        
-        if (window.game) {
-            window.game.showNotification(`Вход в ${tacticalMap.name}`, 'info');
-        }
-    }
-
-    findLocalMapAtPosition(globalX, globalY) {
-        return this.localMaps.find(map => 
-            map.globalPosition && 
-            map.globalPosition.x === globalX && 
-            map.globalPosition.y === globalY
-        );
-    }
-
-    findTacticalMapAtPosition(localX, localY) {
-        return this.tacticalMaps.find(map => 
-            map.localPosition && 
-            map.localPosition.x === localX && 
-            map.localPosition.y === localY
-        );
-    }
-
-    updateGameDisplay() {
-        if (window.game && window.game.systems.hero && window.game.systems.hero.currentHero) {
-            window.game.systems.hero.showHeroGameScreen();
-        }
-    }
-
-    updateTacticalMapDisplay() {
-        const container = document.getElementById('overlay-container');
-        if (container && this.activeOverlay === 'tactical-map') {
-            this.showOverlay('tactical-map');
-        }
-        
-        if (this.canvasInitialized) {
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-        }
-    }
-
-    updateMovementInfo() {
-        const availableMoves = this.getAvailableMoves();
-        
-        const movesElement = document.getElementById('availableMoves');
-        if (movesElement) {
-            movesElement.textContent = availableMoves.length;
-        }
-    }
-
-    // ========== УЛУЧШЕННАЯ СИСТЕМА ОТОБРАЖЕНИЯ КАРТ ==========
-
-    showMapOverlay(overlayType, container) {
-        console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
-        
-        // Определяем какую карту показывать
-        let targetMap = null;
-        let displayName = '';
-        
-        if (overlayType === 'local-map') {
-            // ДЛЯ ЛОКАЛЬНОЙ КАРТЫ - используем текущую локальную карту
-            targetMap = this.currentLocalMap;
-            displayName = '📍 Локальная карта';
-            
-            // ЕСЛИ ЛОКАЛЬНОЙ КАРТЫ НЕТ, ПЫТАЕМСЯ НАЙТИ ПОДХОДЯЩУЮ
-            if (!targetMap && this.localMaps.length > 0) {
-                targetMap = this.localMaps[0];
-                this.currentLocalMap = targetMap;
-                console.log(`🔄 Автоматически установлена локальная карта: ${targetMap.name}`);
-            }
-        } else {
-            // ДЛЯ ТАКТИЧЕСКОЙ КАРТЫ - используем текущую тактическую
-            targetMap = this.currentTacticalMap;
-            displayName = '🎲 Тактическая карта';
-        }
-        
-        if (!targetMap) {
-            console.error(`❌ ${overlayType} карта не загружена`);
-            container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    <div class="tactical-map-header">
-                        <h4>${displayName}</h4>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="map-error" style="padding: 20px; text-align: center;">
-                        Карта не загружена. Возможно, нужно создать тестовые карты.
-                    </div>
-                </div>
-            `;
-            container.style.display = 'block';
-            return;
-        }
-        
-        console.log(`✅ Показываем карту: ${targetMap.name} (тип: ${overlayType}, клеток: ${Object.keys(targetMap.cells).length})`);
-        
-        // УСТАНАВЛИВАЕМ ЦЕЛЕВУЮ КАРТУ ДЛЯ ОТОБРАЖЕНИЯ
-        this.currentTacticalMap = targetMap;
-        
-        if (overlayType === 'local-map') {
-            this.currentMapType = 'local';
-            // Для локальной карты используем позицию из локальной карты
-            this.playerTacticalPosition = {...this.playerLocalPosition};
-            
-            // ОБНОВЛЯЕМ ТЕКУЩУЮ ЛОКАЛЬНУЮ КАРТУ
-            this.currentLocalMap = targetMap;
-        } else {
-            this.currentMapType = 'tactical';
-        }
-        
-        // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
-        container.innerHTML = `
-            <div class="overlay-content tactical-map-overlay">
-                <div class="tactical-map-header">
-                    <h4>${targetMap.name}</h4>
-                    <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                
-                <div class="tactical-map-controls">
-                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                    </button>
-                    <button class="btn-control" onclick="game.systems.map.debugInfo()">
-                        🐛 Отладка
-                    </button>
-                    <div class="position-info">
-                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                        ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
-                    </div>
-                </div>
-                
-                <div class="tactical-map-content">
-                    <div class="tactical-map-visual">
-                        <!-- Canvas будет добавлен автоматически -->
-                    </div>
-                    
-                    <div class="tactical-map-info">
-                        <div class="map-description">
-                            ${targetMap.description || 'Описание отсутствует'}
-                        </div>
-                        <div class="map-stats">
-                            <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
-                            <span>Размер: ${targetMap.width}x${targetMap.height}</span>
-                            <span id="availableMoves">Доступных ходов: 0</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        container.style.display = 'block';
-        
-        // ИНИЦИАЛИЗИРУЕМ CANVAS
-        setTimeout(() => {
-            console.log("🎨 Инициализируем Canvas для карты...");
-            
-            if (!this.currentTacticalMap) {
-                console.error("❌ currentTacticalMap не установлена для Canvas");
-                return;
-            }
-            
-            try {
-                this.initCanvas();
-                this.updateMovementInfo();
-                
-                console.log("✅ Canvas успешно инициализирован", {
-                    map: this.currentTacticalMap.name,
-                    type: overlayType,
-                    cells: Object.keys(this.currentTacticalMap.cells).length,
-                    playerPosition: this.playerTacticalPosition
-                });
-                
-            } catch (error) {
-                console.error("❌ Ошибка инициализации Canvas:", error);
-                container.innerHTML += `
-                    <div class="map-error" style="color: red; padding: 10px;">
-                        Ошибка загрузки карты: ${error.message}
-                    </div>
-                `;
-            }
-        }, 50);
-    }
-
-    // ========== МЕТОДЫ ДЛЯ ПРИНУДИТЕЛЬНОЙ ЗАГРУЗКИ КАРТ ==========
-
-    forceLoadLocalMap() {
-        console.log("🔄 Принудительная загрузка локальной карты...");
-        
-        if (this.localMaps.length === 0) {
-            console.error("❌ Нет доступных локальных карт");
-            
-            // Попробуем создать тестовую локальную карту
-            this.createFallbackLocalMap();
-            
-            if (this.localMaps.length === 0) {
-                console.error("❌ Не удалось создать тестовую локальную карту");
-                return false;
-            }
-        }
-        
-        const localMap = this.localMaps[0];
-        this.setCurrentLocalMap(localMap);
-        
-        console.log(`✅ Локальная карта установлена: ${localMap.name}`);
-        return true;
-    }
-
-    createFallbackLocalMap() {
-        console.log("🔄 Создаем тестовую локальную карту...");
-        
-        const testLocalMap = {
-            id: 1,
-            name: "Тестовая Локальная Зона",
-            image: "",
-            width: 8,
-            height: 8,
-            startPosition: {x: 4, y: 4},
-            globalPosition: {x: 2, y: 2},
-            description: "Тестовая локальная зона для разработки",
             cells: {
                 "4,4": {
                     type: "player_start", 
@@ -2144,13 +2292,17 @@ isHexAdjacentToPlayer(targetHex) {
                     displayY: 200
                 },
                 "4,3": {
-                    type: "exit", 
+                    type: "local_exit", 
                     passable: true, 
                     row: 3, 
                     col: 4, 
                     visible: true, 
                     x: 200, 
                     y: 150,
+                    localMap: "data/maps/local/forest.json",
+                    globalTargetX: 8,
+                    globalTargetY: 5,
+                    tooltip: "🌍 Выход в Лесную Долину",
                     displayX: 200,
                     displayY: 150
                 },
@@ -2164,21 +2316,168 @@ isHexAdjacentToPlayer(targetHex) {
                     y: 200,
                     displayX: 150,
                     displayY: 200
+                },
+                "4,5": {
+                    type: "tactical_entrance", 
+                    passable: true, 
+                    row: 5, 
+                    col: 4, 
+                    visible: true, 
+                    x: 200, 
+                    y: 250,
+                    tacticalMap: "data/maps/tactical/cave.json",
+                    tooltip: "🚪 Вход в пещеру",
+                    displayX: 200,
+                    displayY: 250
                 }
             },
             cellSize: 40,
             originalCanvasWidth: 400,
             originalCanvasHeight: 400,
             mapType: 'local'
-        };
+        }];
+        console.log("✅ Тестовые локальные карты созданы");
+    }
+
+    createFallbackMaps() {
+        this.createTestGlobalMap();
+        this.createTestLocalMaps();
+    }
+
+    // ОТОБРАЖЕНИЕ КАРТ
+    showMapOverlay(overlayType, container) {
+        console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
         
-        this.localMaps.push(testLocalMap);
-        console.log("✅ Тестовая локальная карта создана");
+        let targetMap = null;
+        let displayName = '';
+        
+        if (overlayType === 'local-map') {
+            targetMap = this.currentLocalMap;
+            displayName = '📍 Локальная карта';
+            
+            if (!targetMap && this.localMaps.length > 0) {
+                targetMap = this.localMaps[0];
+                this.currentLocalMap = targetMap;
+                console.log(`🔄 Автоматически установлена локальная карта: ${targetMap.name}`);
+            }
+        } else if (overlayType === 'global-map') {
+            targetMap = this.currentGlobalMap;
+            displayName = '🗺️ Глобальная карта';
+        } else {
+            targetMap = this.currentTacticalMap;
+            displayName = '🎲 Тактическая карта';
+        }
+        
+        if (!targetMap) {
+            console.error(`❌ ${overlayType} карта не загружена`);
+            container.innerHTML = `
+                <div class="overlay-content tactical-map-overlay">
+                    <div class="tactical-map-header">
+                        <h4>${displayName}</h4>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                    </div>
+                    <div class="map-error" style="padding: 20px; text-align: center;">
+                        Карта не загружена.
+                    </div>
+                </div>
+            `;
+            container.style.display = 'block';
+            return;
+        }
+        
+        console.log(`✅ Показываем карту: ${targetMap.name} (тип: ${overlayType})`);
+        
+        if (overlayType === 'local-map') {
+            this.currentTacticalMap = targetMap;
+            this.currentMapType = 'local';
+            this.playerTacticalPosition = {...this.playerLocalPosition};
+            this.currentLocalMap = targetMap;
+        } else if (overlayType === 'global-map') {
+            this.currentMapType = 'global';
+        } else {
+            this.currentMapType = 'tactical';
+        }
+        
+        // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
+        if (overlayType === 'global-map') {
+            container.innerHTML = this.renderGlobalMap();
+        } else {
+            container.innerHTML = `
+                <div class="overlay-content tactical-map-overlay">
+                    <div class="tactical-map-header">
+                        <h4>${targetMap.name}</h4>
+                        <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                    </div>
+                    
+                    <div class="tactical-map-controls">
+                        <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                            ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                        </button>
+                        <button class="btn-control" onclick="game.systems.map.debugInfo()">
+                            🐛 Отладка
+                        </button>
+                        <div class="position-info">
+                            Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                        </div>
+                    </div>
+                    
+                    <div class="tactical-map-content">
+                        <div class="tactical-map-visual">
+                            <!-- Canvas будет добавлен автоматически -->
+                        </div>
+                        
+                        <div class="tactical-map-info">
+                            <div class="map-description">
+                                ${targetMap.description || 'Описание отсутствует'}
+                            </div>
+                            <div class="map-stats">
+                                <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
+                                <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                                <span id="availableMoves">Доступных ходов: 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.style.display = 'block';
+        
+        // ИНИЦИАЛИЗИРУЕМ CANVAS
+        setTimeout(() => {
+            console.log("🎨 Инициализируем Canvas для карты...");
+            
+            if (!targetMap) {
+                console.error("❌ Карта не установлена для Canvas");
+                return;
+            }
+            
+            try {
+                if (overlayType === 'global-map') {
+                    this.initGlobalMapCanvas();
+                } else {
+                    this.initCanvas();
+                    this.updateMovementInfo();
+                }
+                
+                console.log("✅ Canvas успешно инициализирован", {
+                    map: targetMap.name,
+                    type: overlayType
+                });
+                
+            } catch (error) {
+                console.error("❌ Ошибка инициализации Canvas:", error);
+                container.innerHTML += `
+                    <div class="map-error" style="color: red; padding: 10px;">
+                        Ошибка загрузки карты: ${error.message}
+                    </div>
+                `;
+            }
+        }, 50);
     }
 
     showOverlay(overlayType) {
-        console.log(`🎯 MapSystem: Показываем оверлей: ${overlayType}`);
-        
         const container = document.getElementById('overlay-container');
         if (!container) {
             console.error("❌ Контейнер оверлея не найден");
@@ -2187,38 +2486,18 @@ isHexAdjacentToPlayer(targetHex) {
 
         this.activeOverlay = overlayType;
 
-        // ОЧИСТКА ПРЕДЫДУЩЕГО СОСТОЯНИЯ
         this.hideTooltip();
         if (this.animationFrame) {
             cancelAnimationFrame(this.animationFrame);
             this.animationFrame = null;
         }
 
-        switch(overlayType) {
-            case 'tactical-map':
-            case 'local-map':
-                this.showMapOverlay(overlayType, container);
-                break;
-
-            case 'global-map':
-                container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>🗺️ Глобальная карта</h3>
-                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                        </div>
-                        <div class="overlay-body">
-                            ${this.renderGlobalMap()}
-                        </div>
-                    </div>
-                `;
-                container.style.display = 'block';
-                break;
-
-            default:
-                console.warn(`⚠️ Неизвестный тип оверлея в MapSystem: ${overlayType}`);
-                container.innerHTML = `<div class="map-error">Неизвестный тип окна: ${overlayType}</div>`;
-                container.style.display = 'block';
+        if (overlayType === 'global-map') {
+            this.showMapOverlay('global-map', container);
+        } else if (overlayType === 'local-map' || overlayType === 'tactical-map') {
+            this.showMapOverlay(overlayType, container);
+        } else {
+            console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
         }
     }
 
@@ -2238,14 +2517,16 @@ isHexAdjacentToPlayer(targetHex) {
                 cancelAnimationFrame(this.animationFrame);
                 this.animationFrame = null;
             }
-            
-            console.log("✅ Оверлей скрыт");
         }
     }
 
     toggleGrid() {
         this.showGrid = !this.showGrid;
-        this.drawTacticalMap();
+        if (this.currentMapType === 'global') {
+            this.drawGlobalMap();
+        } else {
+            this.drawTacticalMap();
+        }
     }
 
     showTacticalMapEditor() {
@@ -2265,8 +2546,13 @@ isHexAdjacentToPlayer(targetHex) {
 
     forceRedraw() {
         if (this.canvasInitialized) {
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
+            if (this.currentMapType === 'global') {
+                this.calculateGlobalMapPositioning();
+                this.drawGlobalMap();
+            } else {
+                this.calculateMapPositioning();
+                this.drawTacticalMap();
+            }
         }
     }
 
@@ -2283,56 +2569,55 @@ isHexAdjacentToPlayer(targetHex) {
         };
         
         localStorage.setItem('mapSystemState', JSON.stringify(state));
+        this.saveGlobalProgress();
         console.log("💾 Состояние карт сохранено");
     }
 
     loadMapState() {
         try {
             const saved = localStorage.getItem('mapSystemState');
-            if (!saved) return false;
-
-            const state = JSON.parse(saved);
-            
-            if (state.playerGlobalPosition) {
-                this.playerGlobalPosition = state.playerGlobalPosition;
+            if (saved) {
+                const state = JSON.parse(saved);
+                
+                if (state.playerGlobalPosition) {
+                    this.playerGlobalPosition = state.playerGlobalPosition;
+                }
+                if (state.playerLocalPosition) {
+                    this.playerLocalPosition = state.playerLocalPosition;
+                }
+                if (state.playerTacticalPosition) {
+                    this.playerTacticalPosition = state.playerTacticalPosition;
+                }
+                
+                if (state.currentGlobalMapId) {
+                    this.currentGlobalMap = this.globalMaps.find(map => map.id === state.currentGlobalMapId);
+                }
+                if (state.currentLocalMapId) {
+                    this.currentLocalMap = this.localMaps.find(map => map.id === state.currentLocalMapId);
+                }
+                if (state.currentTacticalMapId) {
+                    this.currentTacticalMap = this.tacticalMaps.find(map => map.id === state.currentTacticalMapId);
+                }
+                
+                if (state.mapStack) {
+                    this.mapStack = state.mapStack;
+                }
+                if (state.currentMapType) {
+                    this.currentMapType = state.currentMapType;
+                }
+                
+                console.log("💾 Состояние карт загружено");
+                return true;
             }
-            if (state.playerLocalPosition) {
-                this.playerLocalPosition = state.playerLocalPosition;
-            }
-            if (state.playerTacticalPosition) {
-                this.playerTacticalPosition = state.playerTacticalPosition;
-            }
-            
-            if (state.currentGlobalMapId) {
-                this.currentGlobalMap = this.globalMaps.find(map => map.id === state.currentGlobalMapId);
-            }
-            if (state.currentLocalMapId) {
-                this.currentLocalMap = this.localMaps.find(map => map.id === state.currentLocalMapId);
-            }
-            if (state.currentTacticalMapId) {
-                this.currentTacticalMap = this.tacticalMaps.find(map => map.id === state.currentTacticalMapId);
-            }
-            
-            // Восстанавливаем стек карт
-            if (state.mapStack) {
-                this.mapStack = state.mapStack;
-            }
-            if (state.currentMapType) {
-                this.currentMapType = state.currentMapType;
-            }
-            
-            console.log("💾 Состояние карт загружено");
-            return true;
-            
         } catch (error) {
             console.error("❌ Ошибка загрузки состояния карт:", error);
-            return false;
         }
+        return false;
     }
 
     debugInfo() {
         console.group("🗺️ MapSystem Debug Info");
-        console.log("Глобальная позиция:", this.playerGlobalPosition);
+        console.log("Глобальная позиция:", [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY]);
         console.log("Локальная позиция:", this.playerLocalPosition);
         console.log("Тактическая позиция:", this.playerTacticalPosition);
         console.log("Текущая глобальная карта:", this.currentGlobalMap?.name);
@@ -2340,14 +2625,40 @@ isHexAdjacentToPlayer(targetHex) {
         console.log("Текущая тактическая карта:", this.currentTacticalMap?.name);
         console.log("Тип текущей карты:", this.currentMapType);
         console.log("Глубина стека карт:", this.mapStack.length);
-        console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
+        console.log("Прогресс глобальной карты:", {
+            visited: this.globalProgress.visitedCells.size,
+            unlocked: this.globalProgress.unlockedCells.size,
+            discovered: this.globalProgress.discoveredCells.size
+        });
         console.log("Canvas инициализирован:", this.canvasInitialized);
         console.log("Текущий герой:", this.currentHero?.name || 'нет');
         console.groupEnd();
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОТРИСОВКИ ==========
+    debugGlobalInfo() {
+        console.group("🌍 Global Map Debug Info");
+        console.log("Текущая позиция:", [this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY]);
+        console.log("Посещённые клетки:", Array.from(this.globalProgress.visitedCells));
+        console.log("Разблокированные клетки:", Array.from(this.globalProgress.unlockedCells));
+        console.log("Обнаруженные клетки:", Array.from(this.globalProgress.discoveredCells));
+        console.log("Глобальная карта:", this.currentGlobalMap);
+        console.groupEnd();
+        
+        if (window.game) {
+            window.game.showNotification("Информация о глобальной карте выведена в консоль", 'info');
+        }
+    }
 
+    updateMovementInfo() {
+        const availableMoves = this.getAvailableMoves();
+        
+        const movesElement = document.getElementById('availableMoves');
+        if (movesElement) {
+            movesElement.textContent = `Доступных ходов: ${availableMoves.length}`;
+        }
+    }
+
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОТРИСОВКИ
     drawSingleHexWithHighlight(hex) {
         if (!this.ctx || !hex) return;
         
@@ -2370,16 +2681,14 @@ isHexAdjacentToPlayer(targetHex) {
         }
         this.ctx.closePath();
         
-        // Рисуем подсветку
         this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
         this.ctx.fill();
         
         this.ctx.restore();
         
-        // Перерисовываем содержимое гекса
         this.drawHexContent(hex);
     }
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой переходов между картами");
+console.log("📦 MapSystem модуль загружен с полной системой глобальных карт");
