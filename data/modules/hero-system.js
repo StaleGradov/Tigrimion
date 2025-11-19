@@ -92,13 +92,11 @@ class HeroSystem {
 
         const isUnlocked = hero.unlocked;
         if (!isUnlocked) {
-            console.log('Герой заблокирован:', hero.name);
             this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
             return;
         }
 
         this.currentHero = hero;
-        console.log(`🎯 Выбран герой: ${hero.name}`);
         
         // Сохраняем в основной игре
         if (window.game) {
@@ -142,18 +140,12 @@ class HeroSystem {
         let targetHero = hero || this.currentHero || window.game?.currentHero;
         
         if (!targetHero) {
-            console.error("❌ calculateHeroStats: Герой не найден!", {
-                providedHero: hero,
-                systemHero: this.currentHero,
-                gameHero: window.game?.currentHero
-            });
+            console.error("❌ calculateHeroStats: Герой не найден!");
             return { 
                 currentHealth: 0, maxHealth: 0, damage: 0, armor: 0, power: 0,
                 activeBonuses: []
             };
         }
-        
-        console.log("🔍 calculateHeroStats вызван для героя:", targetHero.name);
         
         // Базовые характеристики с учетом уровня
         const levelMultiplier = 1 + (targetHero.level - 1) * 0.1;
@@ -161,8 +153,6 @@ class HeroSystem {
         let baseMaxHealth = Math.round(targetHero.baseHealth * levelMultiplier);
         let baseDamage = Math.round(targetHero.baseDamage * levelMultiplier);
         let baseArmor = Math.round(targetHero.baseArmor * levelMultiplier);
-        
-        console.log("📊 Базовые статы:", { baseMaxHealth, baseDamage, baseArmor });
         
         // Бонусы от экипировки - ФИКСИРОВАННЫЕ значения
         let equipmentHealth = 0;
@@ -177,8 +167,6 @@ class HeroSystem {
             if (itemId && window.game && window.game.systems.equipment) {
                 const item = window.game.systems.equipment.getItemById(itemId);
                 if (item) {
-                    console.log("🎒 Предмет экипировки:", item.name, item.bonus);
-                    
                     // ФИКСИРОВАННЫЕ бонусы
                     equipmentDamage += item.fixed_damage || 0;
                     equipmentArmor += item.fixed_armor || 0;
@@ -196,23 +184,10 @@ class HeroSystem {
             }
         });
         
-        console.log("🎯 Бонусы от экипировки:", { 
-            equipmentHealth, 
-            equipmentDamage, 
-            equipmentArmor,
-            percentBonuses: equipmentPercentBonuses 
-        });
-        
         // Промежуточные значения с фиксированными бонусами
         let intermediateHealth = baseMaxHealth + equipmentHealth;
         let intermediateDamage = baseDamage + equipmentDamage;
         let intermediateArmor = baseArmor + equipmentArmor;
-        
-        console.log("📈 Промежуточные статы (после фикс. бонусов):", {
-            health: intermediateHealth,
-            damage: intermediateDamage, 
-            armor: intermediateArmor
-        });
         
         // Активные бонусы для отображения
         let activeBonuses = [];
@@ -222,8 +197,6 @@ class HeroSystem {
         
         if (window.game && window.game.systems.bonus) {
             try {
-                console.log("🎲 Проверяем систему бонусов...");
-                
                 // Создаем временного героя с промежуточными статами для расчета процентных бонусов
                 const tempHeroForBonusCalc = {
                     ...targetHero,
@@ -232,33 +205,13 @@ class HeroSystem {
                     baseArmor: intermediateArmor
                 };
                 
-                // Проверяем бонусы расы/класса/саги
-                const raceBonus = window.game.systems.bonus.bonuses.races[targetHero.race];
-                const classBonus = window.game.systems.bonus.bonuses.classes[targetHero.class];
-                const sagaBonus = window.game.systems.bonus.bonuses.sagas[targetHero.saga];
-                
-                console.log("🧬 Бонус расы:", raceBonus);
-                console.log("⚔️ Бонус класса:", classBonus);
-                console.log("📖 Бонус саги:", sagaBonus);
-                
-                // Получаем все предметы для расчета сетов
-                const items = window.game.systems.equipment ? window.game.systems.equipment.items : [];
-                
                 // ⭐ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: передаем промежуточные статы для процентных бонусов
-                const totals = window.game.systems.bonus.calculateTotalBonuses(tempHeroForBonusCalc, items);
-                
-                console.log("📊 РАССЧИТАННЫЕ БОНУСЫ:", totals);
+                const totals = window.game.systems.bonus.calculateTotalBonuses(tempHeroForBonusCalc, []);
                 
                 // Применяем процентные бонусы к ПРОМЕЖУТОЧНЫМ характеристикам
                 finalHealth = Math.round(intermediateHealth * (1 + totals.health_mult));
                 finalDamage = Math.round(intermediateDamage * (1 + totals.damage_mult));
                 finalArmor = Math.round(intermediateArmor * (1 + totals.armor_mult));
-                
-                console.log("📊 Статы после процентных бонусов:", {
-                    health: finalHealth,
-                    damage: finalDamage,
-                    armor: finalArmor
-                });
                 
                 // ⭐ ФИЛЬТРАЦИЯ БОНУСОВ: показываем только активные (value > 0)
                 activeBonuses = [
@@ -312,8 +265,6 @@ class HeroSystem {
                     }
                 ].filter(bonus => bonus.value > 0);
                 
-                console.log("🎯 АКТИВНЫЕ БОНУСЫ ДЛЯ ОТОБРАЖЕНИЯ (после фильтрации):", activeBonuses);
-                
             } catch (error) {
                 console.error("💥 Ошибка расчета бонусов:", error);
                 // В случае ошибки используем промежуточные значения
@@ -322,7 +273,6 @@ class HeroSystem {
                 finalArmor = intermediateArmor;
             }
         } else {
-            console.warn("⚠️ Система бонусов не доступна!");
             // Если система бонусов недоступна, используем промежуточные значения
             finalHealth = intermediateHealth;
             finalDamage = intermediateDamage;
@@ -334,14 +284,6 @@ class HeroSystem {
         
         // Мощность героя для сравнения
         const power = Math.round((finalHealth / 10) + (finalDamage * 1.5) + (finalArmor * 2));
-        
-        console.log("✅ ФИНАЛЬНЫЕ СТАТЫ:", {
-            currentHealth, 
-            maxHealth: finalHealth, 
-            damage: finalDamage, 
-            armor: finalArmor, 
-            power
-        });
         
         const result = {
             currentHealth: Math.floor(currentHealth),
@@ -366,8 +308,6 @@ class HeroSystem {
     updateHeroDisplay(stats) {
         const currentHero = this.currentHero || window.game?.currentHero;
         if (!currentHero) return;
-        
-        console.log("🔄 Обновление интерфейса героя...");
         
         // Обновляем полоску здоровья
         const healthBar = document.getElementById('heroHealthBar');
@@ -405,25 +345,19 @@ class HeroSystem {
         // Обновляем значения в первой группе статов
         if (healthElements[0]) {
             healthElements[0].textContent = `${stats.currentHealth}/${stats.maxHealth}`;
-            console.log("❤️ Здоровье обновлено:", `${stats.currentHealth}/${stats.maxHealth}`);
         }
         if (damageElements[0]) {
             damageElements[0].textContent = `${stats.damage}`;
-            console.log("⚔️ Урон обновлен:", stats.damage);
         }
         if (armorElements[0]) {
             armorElements[0].textContent = `${stats.armor}`;
-            console.log("🛡️ Броня обновлена:", stats.armor);
         }
         if (powerElements[0]) {
             powerElements[0].textContent = `${stats.power}`;
-            console.log("🌟 Сила обновлена:", stats.power);
         }
         
         // Также обновляем бонусы если они есть
         this.updateBonusDisplay(stats.activeBonuses);
-        
-        console.log("✅ Интерфейс героя обновлен с новыми статами");
     }
 
     // ⭐ ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновление отображения бонусов
@@ -433,8 +367,6 @@ class HeroSystem {
         // Находим контейнер для бонусов
         const bonusContainer = document.querySelector('.overlay-stat-group:nth-child(3)');
         if (!bonusContainer) return;
-        
-        console.log("🎯 Обновление отображения бонусов...");
         
         // Очищаем текущие бонусы
         bonusContainer.innerHTML = '';
@@ -462,14 +394,11 @@ class HeroSystem {
             `;
             bonusContainer.appendChild(moreRow);
         }
-        
-        console.log("✅ Бонусы обновлены, показано:", bonusesToShow.length);
     }
 
     // ========== МЕТОДЫ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ==========
     getExperiencePercent(hero) {
         if (!hero || !window.game?.systems?.level) {
-            console.warn("⚠️ LevelSystem не доступен для расчета опыта");
             return 0;
         }
         return window.game.systems.level.getExperiencePercent(hero);
@@ -477,7 +406,6 @@ class HeroSystem {
 
     getExperienceForNextLevel(level) {
         if (!window.game?.systems?.level) {
-            console.warn("⚠️ LevelSystem не доступен");
             return 'MAX';
         }
         return window.game.systems.level.getExperienceForNextLevel(level);
@@ -586,32 +514,29 @@ class HeroSystem {
 
     // ========== УПРАВЛЕНИЕ ЗДОРОВЬЕМ ==========
     takeDamage(hero, damage) {
-    const targetHero = hero || this.currentHero || window.game?.currentHero;
-    if (!targetHero) return 0;
+        const targetHero = hero || this.currentHero || window.game?.currentHero;
+        if (!targetHero) return 0;
 
-    const stats = this.calculateHeroStats(targetHero);
-    const actualDamage = Math.max(1, damage - stats.armor);
-    const newHealth = Math.max(0, stats.currentHealth - actualDamage);
-    
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Устанавливаем здоровье напрямую
-    targetHero.currentHealth = newHealth;
-    
-    console.log(`💥 Герой получил урон: ${actualDamage} (было: ${stats.currentHealth}, стало: ${newHealth})`);
-    
-    // ⭐ ЕСЛИ ГЕРОЙ УМЕР - ВЫЗЫВАЕМ ОБРАБОТЧИК СМЕРТИ
-    if (newHealth <= 0) {
-        console.log(`💀 Герой погиб от полученного урона!`);
-        this.handleHeroDeath(targetHero);
-    } else {
-        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДЛЯ ВЫЖИВШЕГО ГЕРОЯ
-        this.calculateHeroStats();
+        const stats = this.calculateHeroStats(targetHero);
+        const actualDamage = Math.max(1, damage - stats.armor);
+        const newHealth = Math.max(0, stats.currentHealth - actualDamage);
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Устанавливаем здоровье напрямую
+        targetHero.currentHealth = newHealth;
+        
+        // ⭐ ЕСЛИ ГЕРОЙ УМЕР - ВЫЗЫВАЕМ ОБРАБОТЧИК СМЕРТИ
+        if (newHealth <= 0) {
+            this.handleHeroDeath(targetHero);
+        } else {
+            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС ДЛЯ ВЫЖИВШЕГО ГЕРОЯ
+            this.calculateHeroStats();
+        }
+        
+        // СОХРАНЯЕМ ПРИ ИЗМЕНЕНИИ ЗДОРОВЬЯ
+        if (window.game) window.game.saveGame();
+        
+        return actualDamage;
     }
-    
-    // СОХРАНЯЕМ ПРИ ИЗМЕНЕНИИ ЗДОРОВЬЯ
-    if (window.game) window.game.saveGame();
-    
-    return actualDamage;
-}
 
     heal(hero, amount) {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
@@ -648,94 +573,86 @@ class HeroSystem {
         }
         return 0;
     }
-// ========== СИСТЕМА СМЕРТИ И ВОССТАНОВЛЕНИЯ ==========
-handleHeroDeath(hero = null) {
-    const targetHero = hero || this.currentHero || window.game?.currentHero;
-    if (!targetHero) return;
-    
-    console.log(`💀 Обработка смерти героя: ${targetHero.name}`);
-    
-    // ⭐ УБЕДИТЕЛЬНО УСТАНАВЛИВАЕМ ЗДОРОВЬЕ В 1
-    targetHero.currentHealth = 1;
-    
-    // ⭐ ОБНОВЛЯЕМ СТАТИСТИКУ СМЕРТЕЙ
-    targetHero.deaths = (targetHero.deaths || 0) + 1;
-    
-    // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
-    this.calculateHeroStats(targetHero);
-    
-    // ⭐ СОХРАНЯЕМ СРАЗУ ПОСЛЕ СМЕРТИ
-    if (window.game) {
-        window.game.saveGame();
-    }
-    
-    console.log(`✅ Герой ${targetHero.name} повержен. Здоровье установлено в 1.`);
-    
-    // ⭐ ЗАПУСКАЕМ ВИЗУАЛЬНУЮ РЕГЕНЕРАЦИЮ
-    this.startPostDeathRegeneration(targetHero);
-}
 
-// ========== СПЕЦИАЛЬНАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ ==========
-startPostDeathRegeneration(hero = null) {
-    const targetHero = hero || this.currentHero || window.game?.currentHero;
-    if (!targetHero) return;
-    
-    console.log(`❤️ Запуск регенерации после смерти для ${targetHero.name}`);
-    
-    let regenerationInterval;
-    let regenerationAttempts = 0;
-    const maxRegenerationAttempts = 300; // 5 минут максимум
-    
-    const regenerate = () => {
-        regenerationAttempts++;
+    // ========== СИСТЕМА СМЕРТИ И ВОССТАНОВЛЕНИЯ ==========
+    handleHeroDeath(hero = null) {
+        const targetHero = hero || this.currentHero || window.game?.currentHero;
+        if (!targetHero) return;
         
-        if (regenerationAttempts > maxRegenerationAttempts) {
-            clearInterval(regenerationInterval);
-            console.log(`🛑 Прервана регенерация после ${maxRegenerationAttempts} попыток`);
-            return;
+        // ⭐ УБЕДИТЕЛЬНО УСТАНАВЛИВАЕМ ЗДОРОВЬЕ В 1
+        targetHero.currentHealth = 1;
+        
+        // ⭐ ОБНОВЛЯЕМ СТАТИСТИКУ СМЕРТЕЙ
+        targetHero.deaths = (targetHero.deaths || 0) + 1;
+        
+        // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+        this.calculateHeroStats(targetHero);
+        
+        // ⭐ СОХРАНЯЕМ СРАЗУ ПОСЛЕ СМЕРТИ
+        if (window.game) {
+            window.game.saveGame();
         }
         
-        const stats = this.calculateHeroStats(targetHero);
+        // ⭐ ЗАПУСКАЕМ ВИЗУАЛЬНУЮ РЕГЕНЕРАЦИЮ
+        this.startPostDeathRegeneration(targetHero);
+    }
+
+    // ========== СПЕЦИАЛЬНАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ ==========
+    startPostDeathRegeneration(hero = null) {
+        const targetHero = hero || this.currentHero || window.game?.currentHero;
+        if (!targetHero) return;
         
-        // ⭐ ПРОВЕРЯЕМ ДОСТИГЛИ ЛИ МАКСИМАЛЬНОГО ЗДОРОВЬЯ
-        if (targetHero.currentHealth >= stats.maxHealth) {
-            clearInterval(regenerationInterval);
-            console.log(`✅ Регенерация завершена: ${targetHero.currentHealth}/${stats.maxHealth}`);
-            return;
-        }
+        let regenerationInterval;
+        let regenerationAttempts = 0;
+        const maxRegenerationAttempts = 300; // 5 минут максимум
         
-        // ⭐ УСКОРЕННАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ
-        const baseRegen = 2; // 2 хита в секунду после смерти
-        const bonusRegen = (stats.healthRegen || 1) * baseRegen;
-        const totalRegen = baseRegen + bonusRegen;
-        
-        const newHealth = Math.min(
-            stats.maxHealth,
-            targetHero.currentHealth + totalRegen
-        );
-        
-        // ⭐ ОБНОВЛЯЕМ ЗДОРОВЬЕ ТОЛЬКО ЕСЛИ ОНО ИЗМЕНИЛОСЬ
-        if (newHealth !== targetHero.currentHealth) {
-            targetHero.currentHealth = newHealth;
+        const regenerate = () => {
+            regenerationAttempts++;
             
-            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
-            this.updateHealthAndExperienceBars();
-            
-            // ⭐ СОХРАНЯЕМ КАЖДЫЕ 10 СЕКУНД
-            if (regenerationAttempts % 10 === 0 && window.game) {
-                window.game.saveGame();
+            if (regenerationAttempts > maxRegenerationAttempts) {
+                clearInterval(regenerationInterval);
+                return;
             }
             
-            console.log(`❤️ Регенерация после смерти: +${totalRegen.toFixed(1)} HP (${targetHero.currentHealth}/${stats.maxHealth})`);
-        }
-    };
-    
-    // Запускаем регенерацию каждую секунду
-    regenerationInterval = setInterval(regenerate, 1000);
-    
-    // ⭐ СОХРАНЯЕМ ИНТЕРВАЛ ДЛЯ ВОЗМОЖНОСТИ ОСТАНОВКИ
-    this.postDeathRegenerationInterval = regenerationInterval;
-}
+            const stats = this.calculateHeroStats(targetHero);
+            
+            // ⭐ ПРОВЕРЯЕМ ДОСТИГЛИ ЛИ МАКСИМАЛЬНОГО ЗДОРОВЬЯ
+            if (targetHero.currentHealth >= stats.maxHealth) {
+                clearInterval(regenerationInterval);
+                return;
+            }
+            
+            // ⭐ УСКОРЕННАЯ РЕГЕНЕРАЦИЯ ПОСЛЕ СМЕРТИ
+            const baseRegen = 2; // 2 хита в секунду после смерти
+            const bonusRegen = (stats.healthRegen || 1) * baseRegen;
+            const totalRegen = baseRegen + bonusRegen;
+            
+            const newHealth = Math.min(
+                stats.maxHealth,
+                targetHero.currentHealth + totalRegen
+            );
+            
+            // ⭐ ОБНОВЛЯЕМ ЗДОРОВЬЕ ТОЛЬКО ЕСЛИ ОНО ИЗМЕНИЛОСЬ
+            if (newHealth !== targetHero.currentHealth) {
+                targetHero.currentHealth = newHealth;
+                
+                // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС
+                this.updateHealthAndExperienceBars();
+                
+                // ⭐ СОХРАНЯЕМ КАЖДЫЕ 10 СЕКУНД
+                if (regenerationAttempts % 10 === 0 && window.game) {
+                    window.game.saveGame();
+                }
+            }
+        };
+        
+        // Запускаем регенерацию каждую секунду
+        regenerationInterval = setInterval(regenerate, 1000);
+        
+        // ⭐ СОХРАНЯЕМ ИНТЕРВАЛ ДЛЯ ВОЗМОЖНОСТИ ОСТАНОВКИ
+        this.postDeathRegenerationInterval = regenerationInterval;
+    }
+
     // ========== СИСТЕМА УРОВНЕЙ ==========
     addExperience(hero, exp) {
         const targetHero = hero || this.currentHero || window.game?.currentHero;
@@ -958,7 +875,6 @@ startPostDeathRegeneration(hero = null) {
         // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Синхронизируем currentHero если он undefined
         if (!this.currentHero && window.game?.currentHero) {
             this.currentHero = window.game.currentHero;
-            console.log("🔄 Синхронизирован currentHero из window.game");
         }
         
         const currentHero = this.currentHero || window.game?.currentHero;
@@ -972,12 +888,6 @@ startPostDeathRegeneration(hero = null) {
         
         // ⭐ ВАЖНО: Сначала рассчитываем статы, ПОТОМ рендерим
         const stats = this.calculateHeroStats(currentHero);
-        
-        console.log("🎯 Рендерим интерфейс с актуальными статами:", {
-            health: `${stats.currentHealth}/${stats.maxHealth}`,
-            damage: stats.damage,
-            armor: stats.armor
-        });
         
         app.innerHTML = `
             <div class="hero-game-screen">
@@ -1158,8 +1068,6 @@ startPostDeathRegeneration(hero = null) {
         
         // Запускаем обновление полосок в реальном времени
         this.startHealthBarUpdates();
-        
-        console.log("✅ Интерфейс героя отрендерен с актуальными статами");
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
@@ -1238,7 +1146,6 @@ startPostDeathRegeneration(hero = null) {
     }
 
     showNotification(message) {
-        console.log("🔔 HeroSystem:", message);
         if (window.game && window.game.showNotification) {
             window.game.showNotification(message);
         }
