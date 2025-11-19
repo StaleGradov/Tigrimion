@@ -1835,106 +1835,235 @@ class MapSystem {
         }
     }
 
-    showOverlay(overlayType) {
-        if (overlayType === 'tactical-map' || overlayType === 'local-map') {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
+ showOverlay(overlayType) {
+    console.log(`🎯 Показываем оверлей: ${overlayType}`);
+    
+    const container = document.getElementById('overlay-container');
+    if (!container) {
+        console.error("❌ Контейнер оверлея не найден");
+        return;
+    }
 
-            this.activeOverlay = overlayType;
-            
-            // Сохраняем оригинальную тактическую карту
-            const originalTacticalMap = this.currentTacticalMap;
-            
-            // Для локальной карты временно устанавливаем её как текущую тактическую
-            if (overlayType === 'local-map' && this.currentLocalMap) {
-                this.currentTacticalMap = this.currentLocalMap;
-            }
-            
+    this.activeOverlay = overlayType;
+
+    // ОЧИСТКА ПРЕДЫДУЩЕГО СОСТОЯНИЯ
+    this.hideTooltip();
+    if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
+    }
+
+    switch(overlayType) {
+        case 'tactical-map':
+        case 'local-map':
+            this.showMapOverlay(overlayType, container);
+            break;
+
+        case 'global-map':
             container.innerHTML = `
-                <div class="overlay-content tactical-map-overlay">
-                    ${overlayType === 'tactical-map' ? this.renderTacticalMap() : this.renderLocalMap()}
+                <div class="overlay-content map-overlay">
+                    <div class="overlay-header">
+                        <h3>🗺️ Глобальная карта</h3>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                    </div>
+                    <div class="overlay-body">
+                        ${this.renderGlobalMap()}
+                    </div>
                 </div>
             `;
             container.style.display = 'block';
-            
-            setTimeout(() => {
-                this.initCanvas();
-                this.updateMovementInfo();
+            break;
+
+        case 'inventory':
+            if (window.game && window.game.systems.equipment) {
+                container.innerHTML = window.game.systems.equipment.showInventory();
+                container.style.display = 'block';
+            }
+            break;
+
+        case 'shop':
+            if (window.game && window.game.systems.equipment) {
+                container.innerHTML = window.game.systems.equipment.showShop();
+                container.style.display = 'block';
                 
-                // Восстанавливаем оригинальную тактическую карту
-                if (overlayType === 'local-map') {
-                    this.currentTacticalMap = originalTacticalMap;
-                }
-            }, 50);
-            
-        } else {
-            const container = document.getElementById('overlay-container');
-            if (!container) return;
-
-            this.activeOverlay = overlayType;
-
-            switch(overlayType) {
-                case 'global-map':
-                    container.innerHTML = `
-                        <div class="overlay-content map-overlay">
-                            <div class="overlay-header">
-                                <h3>🗺️ Глобальная карта</h3>
-                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                            </div>
-                            <div class="overlay-body">
-                                ${this.renderGlobalMap()}
-                            </div>
-                        </div>
-                    `;
-                    break;
-
-                case 'local-map':
-                    container.innerHTML = `
-                        <div class="overlay-content map-overlay">
-                            <div class="overlay-header">
-                                <h3>📍 Локальная карта</h3>
-                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                            </div>
-                            <div class="overlay-body">
-                                ${this.renderLocalMap()}
-                            </div>
-                        </div>
-                    `;
-                    break;
-
-                case 'inventory':
-                    if (window.game && window.game.systems.equipment) {
-                        container.innerHTML = window.game.systems.equipment.showInventory();
+                // Добавляем обработчики для предметов магазина
+                setTimeout(() => {
+                    if (window.game.attachShopItemHandlers) {
+                        window.game.attachShopItemHandlers();
                     }
-                    break;
-
-                case 'shop':
-                    if (window.game && window.game.systems.equipment) {
-                        container.innerHTML = window.game.systems.equipment.showShop();
-                    }
-                    break;
+                }, 100);
             }
+            break;
 
+        default:
+            console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
+            container.innerHTML = `<div class="map-error">Неизвестный тип окна: ${overlayType}</div>`;
             container.style.display = 'block';
-        }
     }
+}
 
-    hideOverlay() {
-        const container = document.getElementById('overlay-container');
-        if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
-            this.activeOverlay = null;
-            this.hoveredHex = null;
-            this.lastHoveredHex = null;
-            this.hideTooltip();
-            
-            if (this.animationFrame) {
-                cancelAnimationFrame(this.animationFrame);
-                this.animationFrame = null;
-            }
-        }
+// НОВЫЙ МЕТОД ДЛЯ ОТОБРАЖЕНИЯ КАРТ
+showMapOverlay(overlayType, container) {
+    console.log(`🗺️ Показываем карту: ${overlayType}`);
+    
+    // ОПРЕДЕЛЯЕМ КАКУЮ КАРТУ ПОКАЗЫВАТЬ
+    let targetMap = null;
+    let displayName = '';
+    
+    if (overlayType === 'local-map') {
+        targetMap = this.currentLocalMap;
+        displayName = '📍 Локальная карта';
+    } else {
+        targetMap = this.currentTacticalMap;
+        displayName = '🎲 Тактическая карта';
     }
+    
+    if (!targetMap) {
+        console.error(`❌ ${overlayType} карта не загружена`);
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="tactical-map-header">
+                    <h4>${displayName}</h4>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                <div class="map-error" style="padding: 20px; text-align: center;">
+                    Карта не загружена
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+        return;
+    }
+    
+    console.log(`✅ Показываем карту: ${targetMap.name} (клеток: ${Object.keys(targetMap.cells).length})`);
+    
+    // СОХРАНЯЕМ ОРИГИНАЛЬНЫЕ ЗНАЧЕНИЯ
+    this._originalTacticalMap = this.currentTacticalMap;
+    this._originalMapType = this.currentMapType;
+    this._originalPlayerPosition = {...this.playerTacticalPosition};
+    
+    // ВРЕМЕННО УСТАНАВЛИВАЕМ ЦЕЛЕВУЮ КАРТУ ДЛЯ ОТОБРАЖЕНИЯ
+    this.currentTacticalMap = targetMap;
+    if (overlayType === 'local-map') {
+        this.currentMapType = 'local';
+        // Для локальной карты используем позицию из локальной карты
+        this.playerTacticalPosition = {...this.playerLocalPosition};
+    } else {
+        this.currentMapType = 'tactical';
+    }
+    
+    // РЕНДЕРИМ ИНТЕРФЕЙС КАРТЫ
+    container.innerHTML = `
+        <div class="overlay-content tactical-map-overlay">
+            <div class="tactical-map-header">
+                <h4>${targetMap.name}</h4>
+                <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            
+            <div class="tactical-map-controls">
+                <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                    ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                </button>
+                <button class="btn-control" onclick="game.systems.map.debugInfo()">
+                    🐛 Отладка
+                </button>
+                <div class="position-info">
+                    Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                </div>
+            </div>
+            
+            <div class="tactical-map-content">
+                <div class="tactical-map-visual">
+                    <!-- Canvas будет добавлен автоматически -->
+                </div>
+                
+                <div class="tactical-map-info">
+                    <div class="map-description">
+                        ${targetMap.description || 'Описание отсутствует'}
+                    </div>
+                    <div class="map-stats">
+                        <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
+                        <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                        <span id="availableMoves">Доступных ходов: 0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.style.display = 'block';
+    
+    // ИНИЦИАЛИЗИРУЕМ CANVAS ЧЕРЕЗ 50ms (после рендера DOM)
+    setTimeout(() => {
+        console.log("🎨 Инициализируем Canvas для карты...");
+        
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не установлена для Canvas");
+            return;
+        }
+        
+        try {
+            this.initCanvas();
+            this.updateMovementInfo();
+            
+            console.log("✅ Canvas успешно инициализирован", {
+                map: this.currentTacticalMap.name,
+                cells: Object.keys(this.currentTacticalMap.cells).length,
+                playerPosition: this.playerTacticalPosition
+            });
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации Canvas:", error);
+            container.innerHTML += `
+                <div class="map-error" style="color: red; padding: 10px;">
+                    Ошибка загрузки карты: ${error.message}
+                </div>
+            `;
+        }
+    }, 50);
+}
+
+  hideOverlay() {
+    console.log("👋 Скрываем оверлей");
+    
+    const container = document.getElementById('overlay-container');
+    if (container) {
+        // ВОССТАНАВЛИВАЕМ ОРИГИНАЛЬНЫЕ ЗНАЧЕНИЯ ПРИ ЗАКРЫТИИ КАРТЫ
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            if (this._originalTacticalMap) {
+                this.currentTacticalMap = this._originalTacticalMap;
+            }
+            if (this._originalMapType) {
+                this.currentMapType = this._originalMapType;
+            }
+            if (this._originalPlayerPosition) {
+                this.playerTacticalPosition = this._originalPlayerPosition;
+            }
+            
+            // Очищаем временные значения
+            this._originalTacticalMap = null;
+            this._originalMapType = null;
+            this._originalPlayerPosition = null;
+            
+            console.log("✅ Восстановлены оригинальные значения карты");
+        }
+        
+        container.style.display = 'none';
+        container.innerHTML = '';
+        this.activeOverlay = null;
+        this.hoveredHex = null;
+        this.lastHoveredHex = null;
+        this.hideTooltip();
+        
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+        
+        console.log("✅ Оверлей скрыт");
+    }
+}
 
     toggleGrid() {
         this.showGrid = !this.showGrid;
