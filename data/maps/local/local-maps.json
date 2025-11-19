@@ -6282,10 +6282,11 @@
           "col": 20,
           "x": 710,
           "y": 870,
-          "type": "village",
+         "type": "tactical_entrance",
           "passable": true,
           "visible": true,
           "tacticalMap": "data/maps/tactical/tavern1.json",
+          "tooltip": "🚪 Вход в таверну\n(Кликните для входа)"
            "returnX": 29,
            "returnY": 21,
           "originalData": {
