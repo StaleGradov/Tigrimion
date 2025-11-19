@@ -350,72 +350,77 @@ class MapSystem {
     }
 
     // ========== ОТОБРАЖЕНИЕ ГЛОБАЛЬНОЙ КАРТЫ ==========
+renderGlobalMap() {
+    if (!this.currentGlobalMap) {
+        return '<div class="map-error">Глобальная карта не загружена</div>';
+    }
 
-    renderGlobalMap() {
-        if (!this.currentGlobalMap) {
-            return '<div class="map-error">Глобальная карта не загружена</div>';
-        }
-
-        return `
-            <div class="overlay-content global-map-overlay">
-                <div class="overlay-header">
-                    <h3>🗺️ Глобальная карта</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                
-                <div class="global-map-info">
-                    <div class="progress-stats">
-                        <span>📍 Текущая позиция: [${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]</span>
-                        <span>📊 Посещено: ${this.globalProgress.visitedCells.size} гексов</span>
-                        <span>🔓 Доступно: ${this.globalProgress.unlockedCells.size} гексов</span>
-                    </div>
-                </div>
-                
-                <div class="global-map-visual">
-                    <!-- Canvas будет добавлен автоматически -->
-                </div>
-                
-                <div class="global-map-legend">
-                    <h4>📋 Легенда карты:</h4>
-                    <div class="legend-grid">
-                        <div class="legend-item">
-                            <span class="legend-symbol">🎯</span>
-                            <span>Текущая позиция</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-symbol">🟢</span>
-                            <span>Посещённые</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-symbol">🟡</span>
-                            <span>Доступные</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-symbol">🔴</span>
-                            <span>Заблокированные</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-symbol">🌍</span>
-                            <span>Переходы</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-symbol">🚪</span>
-                            <span>Входы</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="global-map-actions">
-                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                    </button>
-                    <button class="btn-control" onclick="game.systems.map.debugGlobalInfo()">
-                        🐛 Отладка
-                    </button>
+    return `
+        <div class="overlay-content global-map-overlay" style="max-width: 1200px; max-height: 90vh; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: 2px solid #00ffff; border-radius: 12px; box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);">
+            <div class="overlay-header">
+                <h3>🗺️ Глобальная карта</h3>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            
+            <div class="global-map-info" style="background: rgba(0, 0, 0, 0.5); padding: 12px; border-radius: 8px; margin: 10px 0;">
+                <div class="progress-stats" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <span style="background: rgba(0, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; border: 1px solid #00ffff; font-size: 12px;">
+                        📍 Текущая позиция: [${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]
+                    </span>
+                    <span style="background: rgba(0, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; border: 1px solid #00ffff; font-size: 12px;">
+                        📊 Посещено: ${this.globalProgress.visitedCells.size} гексов
+                    </span>
+                    <span style="background: rgba(0, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; border: 1px solid #00ffff; font-size: 12px;">
+                        🔓 Доступно: ${this.globalProgress.unlockedCells.size} гексов
+                    </span>
                 </div>
             </div>
-        `;
-    }
+            
+            <div class="global-map-visual" style="height: 500px !important; min-height: 500px !important; background: rgba(0, 0, 0, 0.3); border: 1px solid #00ffff; border-radius: 8px; margin: 15px 0; position: relative; overflow: hidden;">
+                <!-- Canvas будет добавлен автоматически -->
+            </div>
+            
+            <div class="global-map-legend" style="background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 8px; margin: 10px 0;">
+                <h4>📋 Легенда карты:</h4>
+                <div class="legend-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px;">
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🎯</span>
+                        <span>Текущая позиция</span>
+                    </div>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🟢</span>
+                        <span>Посещённые</span>
+                    </div>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🟡</span>
+                        <span>Доступные</span>
+                    </div>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🔴</span>
+                        <span>Заблокированные</span>
+                    </div>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🌍</span>
+                        <span>Переходы</span>
+                    </div>
+                    <div class="legend-item" style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                        <span class="legend-symbol" style="font-size: 16px;">🚪</span>
+                        <span>Входы</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="global-map-actions" style="display: flex; gap: 10px; justify-content: center; padding: 10px; border-top: 1px solid #00ffff;">
+                <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                    ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                </button>
+                <button class="btn-control" onclick="game.systems.map.debugGlobalInfo()">
+                    🐛 Отладка
+                </button>
+            </div>
+        </div>
+    `;
+}
 
    initGlobalMapCanvas() {
     console.group("🔍 DEBUG initGlobalMapCanvas");
