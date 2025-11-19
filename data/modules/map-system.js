@@ -206,28 +206,57 @@ class MapSystem {
         return null;
     }
 
-    initializeGlobalProgress() {
-        if (!this.currentGlobalMap) return;
-        
-        // Находим стартовую позицию на глобальной карте
-        const startCell = Object.values(this.currentGlobalMap.cells)
-            .find(cell => cell.type === 'player_start' || cell.type === 'global_current');
-        
-        if (startCell) {
-            this.globalProgress.currentGlobalX = startCell.col;
-            this.globalProgress.currentGlobalY = startCell.row;
-            
-            const cellKey = `${startCell.col},${startCell.row}`;
-            this.globalProgress.visitedCells.add(cellKey);
-            this.globalProgress.unlockedCells.add(cellKey);
-            this.globalProgress.discoveredCells.add(cellKey);
-            
-            console.log(`🎯 Стартовая позиция на глобальной карте: [${startCell.col}, ${startCell.row}]`);
-        }
-        
-        // Разблокируем соседние клетки от стартовой позиции
-        this.unlockAdjacentGlobalCells(this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY);
+ initializeGlobalProgress() {
+    if (!this.currentGlobalMap) {
+        console.error("❌ currentGlobalMap не установлена!");
+        return;
     }
+    
+    console.group("🔍 DEBUG initializeGlobalProgress");
+    console.log("Все клетки глобальной карты:", Object.values(this.currentGlobalMap.cells));
+    console.log("Количество клеток:", Object.keys(this.currentGlobalMap.cells).length);
+    
+    // Ищем стартовую клетку
+    let startCell = Object.values(this.currentGlobalMap.cells)
+        .find(cell => cell.type === 'player_start' || cell.type === 'global_current');
+    
+    console.log("Найдена стартовая клетка:", startCell);
+    
+    // Если нет специальной стартовой клетки, берем первую активную клетку
+    if (!startCell) {
+        startCell = Object.values(this.currentGlobalMap.cells)
+            .find(cell => cell.type === 'active' && cell.passable !== false);
+        console.log("Найдена активная клетка как стартовая:", startCell);
+    }
+    
+    // Если всё еще нет, берем просто первую клетку
+    if (!startCell) {
+        startCell = Object.values(this.currentGlobalMap.cells)[0];
+        console.log("Берем первую клетку как стартовую:", startCell);
+    }
+    
+    if (startCell) {
+        this.globalProgress.currentGlobalX = startCell.col;
+        this.globalProgress.currentGlobalY = startCell.row;
+        
+        const cellKey = `${startCell.col},${startCell.row}`;
+        this.globalProgress.visitedCells.add(cellKey);
+        this.globalProgress.unlockedCells.add(cellKey);
+        this.globalProgress.discoveredCells.add(cellKey);
+        
+        console.log(`🎯 Стартовая позиция на глобальной карте: [${startCell.col}, ${startCell.row}]`);
+    } else {
+        console.error("❌ Нет подходящих клеток для стартовой позиции на глобальной карте!");
+        console.groupEnd();
+        return;
+    }
+    
+    // Разблокируем соседние клетки от стартовой позиции
+    this.unlockAdjacentGlobalCells(this.globalProgress.currentGlobalX, this.globalProgress.currentGlobalY);
+    
+    console.log("Итоговый прогресс:", this.globalProgress);
+    console.groupEnd();
+}
 
     unlockAdjacentGlobalCells(x, y) {
         if (!this.currentGlobalMap) return;
