@@ -460,57 +460,91 @@ class MapSystem {
     console.groupEnd();
 }
 
-    calculateGlobalMapPositioning() {
-        if (!this.currentGlobalMap || !this.canvas) return;
-
-        const container = document.querySelector('.global-map-visual');
-        if (!container) return;
-
-        const rect = container.getBoundingClientRect();
-        
-        console.log(`📐 Размер контейнера глобальной карты: ${rect.width}x${rect.height}`);
-        
-        const editorWidth = this.currentGlobalMap.originalCanvasWidth || 1024;
-        const editorHeight = this.currentGlobalMap.originalCanvasHeight || 1024;
-
-        const scaleX = rect.width / editorWidth;
-        const scaleY = rect.height / editorHeight;
-        const scale = Math.min(scaleX, scaleY, 1.0);
-
-        const offsetX = (rect.width - editorWidth * scale) / 2;
-        const offsetY = (rect.height - editorHeight * scale) / 2;
-
-        // Обрабатываем все клетки глобальной карты
-        Object.values(this.currentGlobalMap.cells).forEach(cell => {
-            const originalX = cell.originalX || cell.x;
-            const originalY = cell.originalY || cell.y;
-            
-            cell.displayX = originalX * scale + offsetX;
-            cell.displayY = originalY * scale + offsetY;
-        });
-
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
-        
-        console.log(`✅ Позиционирование глобальной карты завершено`);
+  calculateGlobalMapPositioning() {
+    console.group("🔍 DEBUG calculateGlobalMapPositioning");
+    console.log("this.currentGlobalMap:", this.currentGlobalMap);
+    console.log("this.canvas:", this.canvas);
+    
+    if (!this.currentGlobalMap || !this.canvas) {
+        console.log("❌ currentGlobalMap или canvas не доступны");
+        console.groupEnd();
+        return;
     }
 
-    drawGlobalMap() {
-        if (!this.ctx || !this.currentGlobalMap) {
-            console.log("❌ Canvas context или глобальная карта не доступна");
-            return;
-        }
-
-        const canvas = this.canvas;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        this.drawGlobalBackground();
-        this.drawGlobalHexes();
-
-        if (this.showGrid) {
-            this.drawGlobalHexGrid();
-        }
+    const container = document.querySelector('.global-map-visual');
+    console.log("container:", container);
+    
+    if (!container) {
+        console.log("❌ Контейнер не найден");
+        console.groupEnd();
+        return;
     }
+
+    const rect = container.getBoundingClientRect();
+    console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
+    
+    const editorWidth = this.currentGlobalMap.originalCanvasWidth || 1024;
+    const editorHeight = this.currentGlobalMap.originalCanvasHeight || 1024;
+
+    console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
+
+    const scaleX = rect.width / editorWidth;
+    const scaleY = rect.height / editorHeight;
+    const scale = Math.min(scaleX, scaleY, 1.0);
+
+    const offsetX = (rect.width - editorWidth * scale) / 2;
+    const offsetY = (rect.height - editorHeight * scale) / 2;
+
+    console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+
+    // Обрабатываем все клетки глобальной карты
+    const cells = Object.values(this.currentGlobalMap.cells);
+    console.log("Обрабатываем клеток:", cells.length);
+    
+    let processedCount = 0;
+    cells.forEach(cell => {
+        const originalX = cell.originalX || cell.x;
+        const originalY = cell.originalY || cell.y;
+        
+        cell.displayX = originalX * scale + offsetX;
+        cell.displayY = originalY * scale + offsetY;
+        processedCount++;
+    });
+
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+    
+    console.log(`✅ Позиционирование завершено. Обработано клеток: ${processedCount}`);
+    console.groupEnd();
+}
+
+ drawGlobalMap() {
+    console.group("🔍 DEBUG drawGlobalMap");
+    console.log("this.ctx:", this.ctx);
+    console.log("this.currentGlobalMap:", this.currentGlobalMap);
+    console.log("this.canvas:", this.canvas);
+    
+    if (!this.ctx || !this.currentGlobalMap || !this.canvas) {
+        console.log("❌ Canvas context, глобальная карта или canvas не доступна");
+        console.groupEnd();
+        return;
+    }
+
+    const canvas = this.canvas;
+    console.log("Canvas размеры:", canvas.width, "x", canvas.height);
+    
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    this.drawGlobalBackground();
+    this.drawGlobalHexes();
+
+    if (this.showGrid) {
+        this.drawGlobalHexGrid();
+    }
+    
+    console.log("✅ drawGlobalMap завершен");
+    console.groupEnd();
+}
 
     drawGlobalBackground() {
         const map = this.currentGlobalMap;
