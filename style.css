@@ -3861,3 +3861,123 @@ body {
         font-size: 1.1rem !important;
     }
 }
+/* ========== ИСПРАВЛЕНИЯ ДЛЯ ГЛОБАЛЬНОЙ КАРТЫ ========== */
+
+/* Специальные стили для глобальной карты */
+.overlay-content.global-map-overlay {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    width: 95vw !important;
+    height: 95vh !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    margin: 2vh auto !important;
+    border-radius: 12px;
+    border: 2px solid #00ffff !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Контейнер для визуализации глобальной карты */
+.global-map-visual {
+    flex: 1;
+    position: relative;
+    background: #000000;
+    border: 2px solid #00ffff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 15px;
+    min-height: 500px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Canvas глобальной карты */
+#globalMapCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Информационная панель глобальной карты */
+.global-map-info {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 15px;
+    border-bottom: 1px solid #00ffff;
+    margin: 0;
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Легенда глобальной карты */
+.global-map-legend {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 15px;
+    border-top: 1px solid #00ffff;
+    margin: 0;
+}
+
+.legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    padding: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.legend-symbol {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+/* Действия глобальной карты */
+.global-map-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 15px;
+    border-top: 1px solid #00ffff;
+    background: rgba(0, 20, 40, 0.9);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .overlay-content.global-map-overlay {
+        max-width: 98vw !important;
+        max-height: 98vh !important;
+        width: 98vw !important;
+        height: 98vh !important;
+        margin: 1vh auto !important;
+    }
+    
+    .global-map-visual {
+        margin: 10px;
+        min-height: 400px;
+    }
+    
+    .progress-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .legend-grid {
+        grid-template-columns: 1fr;
+    }
+}
