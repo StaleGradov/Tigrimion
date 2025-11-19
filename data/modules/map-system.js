@@ -515,36 +515,30 @@ class MapSystem {
         col: hex.col,
         row: hex.row,
         tacticalMap: hex.tacticalMap,
-        passable: hex.passable,
-        displayX: hex.displayX,
-        displayY: hex.displayY
+        passable: hex.passable
     });
+
+    // ПРОВЕРКА: герой должен быть на соседней клетке для перехода
+    const isAdjacentToPlayer = this.isHexAdjacentToPlayer(hex);
     
-    // ДЕТАЛЬНАЯ ПРОВЕРКА ПЕРЕХОДА
-    if (hex.tacticalMap) {
-        console.log(`🚪 ОБНАРУЖЕН ПЕРЕХОД НА ТАКТИЧЕСКУЮ КАРТУ: ${hex.tacticalMap}`);
-        console.log(`📍 Параметры перехода:`, {
-            returnX: hex.returnX,
-            returnY: hex.returnY,
-            tooltip: hex.tooltip
-        });
+    // ПРОВЕРКА НА ЛЮБОЙ ТИП ПЕРЕХОДА (только если герой рядом)
+    if ((hex.tacticalMap || hex.localMap || hex.globalMap) && isAdjacentToPlayer) {
+        console.log(`🚪 ОБНАРУЖЕН ПЕРЕХОД: ${hex.type} -> ${hex.tacticalMap || hex.localMap || hex.globalMap}`);
+        console.log(`📍 Герой рядом, переход разрешен`);
         this.handleMapTransition(hex);
         return;
     }
     
-    if (hex.localMap) {
-        console.log(`🌍 ОБНАРУЖЕН ПЕРЕХОД НА ЛОКАЛЬНУЮ КАРТУ: ${hex.localMap}`);
-        this.handleMapTransition(hex);
+    // Если это переход, но герой не рядом - сообщи об ошибке
+    if ((hex.tacticalMap || hex.localMap || hex.globalMap) && !isAdjacentToPlayer) {
+        console.log(`🚫 ПЕРЕХОД ЗАБЛОКИРОВАН: герой не на соседней клетке`);
+        if (window.game) {
+            window.game.showNotification("Подойдите ближе к входу!", 'warning');
+        }
         return;
     }
     
-    if (hex.globalMap) {
-        console.log(`🗺️ ОБНАРУЖЕН ПЕРЕХОД НА ГЛОБАЛЬНУЮ КАРТУ: ${hex.globalMap}`);
-        this.handleMapTransition(hex);
-        return;
-    }
-    
-    // ПРОВЕРКА НА ВЫХОД
+    // ПРОВЕРКА НА ВЫХОД (всегда доступен)
     if (hex.type === 'exit') {
         console.log("🎲 Клик по выходу");
         this.exitToPreviousMap();
@@ -562,48 +556,63 @@ class MapSystem {
 
     // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
 
-    moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
+   moveOnTacticalMap(x, y) {
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
         }
-
-        if (!this.currentTacticalMap) return;
-
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        this.hideOverlay();
-        
-        setTimeout(() => {
-            this.startTacticalBattleForMovement(x, y, cellData);
-        }, 50);
+        return;
     }
+
+    if (!this.currentTacticalMap) return;
+
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    // ПРОВЕРКА: если это переход - обрабатываем отдельно
+    if (cellData.tacticalMap || cellData.localMap || cellData.globalMap) {
+        console.log(`🎯 Попытка перехода через moveOnTacticalMap`);
+        // Проверяем соседство и обрабатываем переход
+        if (this.isHexAdjacentToPlayer(cellData)) {
+            this.handleMapTransition(cellData);
+        } else {
+            console.log(`🚫 Переход заблокирован: герой не рядом`);
+            if (window.game) {
+                window.game.showNotification("Подойдите ближе к входу!", 'warning');
+            }
+        }
+        return;
+    }
+
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    this.hideOverlay();
+    
+    setTimeout(() => {
+        this.startTacticalBattleForMovement(x, y, cellData);
+    }, 50);
+}
 
     startTacticalBattleForMovement(targetX, targetY, cellData) {
         const battleSystem = window.game?.systems?.battle;
@@ -1431,6 +1440,35 @@ class MapSystem {
         return neighbors;
     }
 
+isHexAdjacentToPlayer(targetHex) {
+    if (!this.currentTacticalMap) return false;
+    
+    const playerX = this.playerTacticalPosition.x;
+    const playerY = this.playerTacticalPosition.y;
+    
+    console.log(`📍 Проверка соседства: игрок [${playerX},${playerY}] -> цель [${targetHex.col},${targetHex.row}]`);
+    
+    // Получаем всех соседей игрока
+    const playerNeighbors = this.getHexNeighbors(playerY, playerX);
+    
+    // Проверяем, является ли целевая клетка соседом игрока
+    const isAdjacent = playerNeighbors.some(neighbor => 
+        neighbor.col === targetHex.col && neighbor.row === targetHex.row
+    );
+    
+    console.log(`📏 Результат проверки соседства: ${isAdjacent}`);
+    
+    if (isAdjacent) {
+        console.log(`✅ Клетка [${targetHex.col},${targetHex.row}] соседняя с игроком`);
+    } else {
+        console.log(`❌ Клетка [${targetHex.col},${targetHex.row}] НЕ соседняя с игроком`);
+        console.log(`🎯 Соседи игрока:`, playerNeighbors.map(n => `[${n.col},${n.row}]`));
+    }
+    
+    return isAdjacent;
+}
+
+    
     areHexesAdjacent(cell1, cell2, hexSize) {
         if (!cell1 || !cell2) return false;
         
