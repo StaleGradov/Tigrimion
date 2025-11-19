@@ -1329,19 +1329,29 @@ class MapSystem {
 
     // ========== СИСТЕМА КАРТ И ОТОБРАЖЕНИЯ ==========
 
-    setStartPositions() {
-        // ПРИОРИТЕТ 1: Локальные карты
-        if (this.localMaps.length > 0) {
-            const localMap = this.localMaps[0];
-            this.setCurrentLocalMap(localMap);
-            console.log(`📍 Установлена стартовая локальная карта: ${localMap.name}`);
+   setStartPositions() {
+    console.log("🎯 Устанавливаем стартовые позиции...");
+    
+    // ПРИОРИТЕТ 1: Локальные карты
+    if (this.localMaps.length > 0) {
+        const localMap = this.localMaps[0];
+        this.setCurrentLocalMap(localMap);
+        console.log(`📍 Установлена стартовая локальная карта: ${localMap.name}`);
+        
+        // Устанавливаем глобальную позицию если есть глобальная карта
+        if (this.globalMaps.length > 0) {
+            this.currentGlobalMap = this.globalMaps[0];
+            this.playerGlobalPosition = {...this.currentGlobalMap.startPosition};
+            console.log(`🗺️ Установлена глобальная карта: ${this.currentGlobalMap.name}`);
         }
-        // ПРИОРИТЕТ 2: Тактические карты (если нет локальных)
-        else if (this.tacticalMaps.length > 0) {
-            this.currentTacticalMap = this.tacticalMaps[0];
-            this.playerTacticalPosition = {...this.currentTacticalMap.startPosition};
-            console.log(`🎯 Установлена стартовая тактическая карта: ${this.currentTacticalMap.name}`);
-        }
+        
+    } 
+    // ПРИОРИТЕТ 2: Тактические карты (если нет локальных)
+    else if (this.tacticalMaps.length > 0) {
+        this.currentTacticalMap = this.tacticalMaps[0];
+        this.playerTacticalPosition = {...this.currentTacticalMap.startPosition};
+        this.currentMapType = 'tactical';
+        console.log(`🎯 Установлена стартовая тактическая карта: ${this.currentTacticalMap.name}`);
         
         // Устанавливаем глобальную позицию
         if (this.globalMaps.length > 0) {
@@ -1349,6 +1359,24 @@ class MapSystem {
             this.playerGlobalPosition = {...this.currentGlobalMap.startPosition};
         }
     }
+    // ПРИОРИТЕТ 3: Fallback - создаем тестовые карты
+    else {
+        console.log("⚠️ Нет загруженных карт, создаем тестовые...");
+        this.createTestMaps();
+        
+        if (this.localMaps.length > 0) {
+            const localMap = this.localMaps[0];
+            this.setCurrentLocalMap(localMap);
+        }
+    }
+    
+    console.log("✅ Стартовые позиции установлены:", {
+        global: this.playerGlobalPosition,
+        local: this.playerLocalPosition, 
+        tactical: this.playerTacticalPosition,
+        mapType: this.currentMapType
+    });
+}
 
     createTestMaps() {
         this.globalMaps = [{
