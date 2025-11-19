@@ -460,10 +460,8 @@ class MapSystem {
     console.groupEnd();
 }
 
-  calculateGlobalMapPositioning() {
+calculateGlobalMapPositioning() {
     console.group("🔍 DEBUG calculateGlobalMapPositioning");
-    console.log("this.currentGlobalMap:", this.currentGlobalMap);
-    console.log("this.canvas:", this.canvas);
     
     if (!this.currentGlobalMap || !this.canvas) {
         console.log("❌ currentGlobalMap или canvas не доступны");
@@ -472,8 +470,6 @@ class MapSystem {
     }
 
     const container = document.querySelector('.global-map-visual');
-    console.log("container:", container);
-    
     if (!container) {
         console.log("❌ Контейнер не найден");
         console.groupEnd();
@@ -488,10 +484,12 @@ class MapSystem {
 
     console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
 
+    // Исправляем расчет масштаба - учитываем оба измерения
     const scaleX = rect.width / editorWidth;
     const scaleY = rect.height / editorHeight;
-    const scale = Math.min(scaleX, scaleY, 1.0);
+    const scale = Math.min(scaleX, scaleY, 1.0); // Берем меньший масштаб для пропорциональности
 
+    // Центрируем по обоим осям
     const offsetX = (rect.width - editorWidth * scale) / 2;
     const offsetY = (rect.height - editorHeight * scale) / 2;
 
@@ -506,9 +504,18 @@ class MapSystem {
         const originalX = cell.originalX || cell.x;
         const originalY = cell.originalY || cell.y;
         
+        // Применяем масштаб и смещение
         cell.displayX = originalX * scale + offsetX;
         cell.displayY = originalY * scale + offsetY;
         processedCount++;
+        
+        // Логируем первую клетку для проверки
+        if (processedCount === 1) {
+            console.log("Первая клетка:", {
+                оригинал: `[${originalX}, ${originalY}]`,
+                отображение: `[${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)}]`
+            });
+        }
     });
 
     this.canvas.width = rect.width;
