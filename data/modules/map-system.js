@@ -491,36 +491,74 @@ class MapSystem {
 
     // ========== ОБРАБОТЧИКИ КЛИКОВ С ПЕРЕХОДАМИ ==========
 
-    handleCanvasClick(e) {
-        if (!this.currentTacticalMap) return;
-
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const hex = this.getHexAtCanvasPosition(x, y);
-        if (!hex) return;
-        
-        // ПРОВЕРКА НА ЛЮБОЙ ТИП ПЕРЕХОДА
-        if (hex.tacticalMap || hex.localMap || hex.globalMap) {
-            console.log(`🎲 Клик по переходу: ${hex.type} -> ${hex.tacticalMap || hex.localMap || hex.globalMap}`);
-            this.handleMapTransition(hex);
-            return;
-        }
-        
-        // ПРОВЕРКА НА ВЫХОД
-        if (hex.type === 'exit') {
-            console.log("🎲 Клик по выходу");
-            this.exitToPreviousMap();
-            return;
-        }
-        
-        // Обычная логика перемещения
-        if (hex.passable !== false || hex.type === 'monster') {
-            console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-            this.moveOnTacticalMap(hex.col, hex.row);
-        }
+ handleCanvasClick(e) {
+    if (!this.currentTacticalMap) {
+        console.error("❌ currentTacticalMap не установлена!");
+        return;
     }
+
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    console.log(`🎯 Координаты клика: [${x}, ${y}]`);
+
+    const hex = this.getHexAtCanvasPosition(x, y);
+    
+    if (!hex) {
+        console.log("❌ Гекс не найден по этим координатам");
+        return;
+    }
+    
+    console.log(`🎲 Клик по клетке:`, {
+        type: hex.type,
+        col: hex.col,
+        row: hex.row,
+        tacticalMap: hex.tacticalMap,
+        passable: hex.passable,
+        displayX: hex.displayX,
+        displayY: hex.displayY
+    });
+    
+    // ДЕТАЛЬНАЯ ПРОВЕРКА ПЕРЕХОДА
+    if (hex.tacticalMap) {
+        console.log(`🚪 ОБНАРУЖЕН ПЕРЕХОД НА ТАКТИЧЕСКУЮ КАРТУ: ${hex.tacticalMap}`);
+        console.log(`📍 Параметры перехода:`, {
+            returnX: hex.returnX,
+            returnY: hex.returnY,
+            tooltip: hex.tooltip
+        });
+        this.handleMapTransition(hex);
+        return;
+    }
+    
+    if (hex.localMap) {
+        console.log(`🌍 ОБНАРУЖЕН ПЕРЕХОД НА ЛОКАЛЬНУЮ КАРТУ: ${hex.localMap}`);
+        this.handleMapTransition(hex);
+        return;
+    }
+    
+    if (hex.globalMap) {
+        console.log(`🗺️ ОБНАРУЖЕН ПЕРЕХОД НА ГЛОБАЛЬНУЮ КАРТУ: ${hex.globalMap}`);
+        this.handleMapTransition(hex);
+        return;
+    }
+    
+    // ПРОВЕРКА НА ВЫХОД
+    if (hex.type === 'exit') {
+        console.log("🎲 Клик по выходу");
+        this.exitToPreviousMap();
+        return;
+    }
+    
+    // Обычная логика перемещения
+    if (hex.passable !== false || hex.type === 'monster') {
+        console.log(`🎲 Клик по проходимой клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+        this.moveOnTacticalMap(hex.col, hex.row);
+    } else {
+        console.log(`🚫 Клетка непроходимая: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+    }
+}
 
     // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ С ТАКТИЧЕСКИМ БОЕМ ==========
 
@@ -701,40 +739,63 @@ class MapSystem {
         this.drawTacticalMap();
     }
 
-    calculateMapPositioning() {
-        if (!this.currentTacticalMap || !this.canvas) return;
+   calculateMapPositioning() {
+    if (!this.currentTacticalMap || !this.canvas) return;
 
-        const container = document.querySelector('.tactical-map-visual');
-        if (!container) return;
+    const container = document.querySelector('.tactical-map-visual');
+    if (!container) return;
 
-        const rect = container.getBoundingClientRect();
+    const rect = container.getBoundingClientRect();
+    
+    console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
+    
+    const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
+    const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
+
+    console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
+
+    const scaleX = rect.width / editorWidth;
+    const scaleY = rect.height / editorHeight;
+    const scale = Math.min(scaleX, scaleY, 1.0);
+
+    const offsetX = (rect.width - editorWidth * scale) / 2;
+    const offsetY = (rect.height - editorHeight * scale) / 2;
+
+    console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+
+    // Проверим конкретно клетку перехода
+    const transitionCell = Object.values(this.currentTacticalMap.cells).find(
+        cell => cell.type === 'tactical_entrance'
+    );
+    
+    if (transitionCell) {
+        const originalX = transitionCell.originalX || transitionCell.x;
+        const originalY = transitionCell.originalY || transitionCell.y;
         
-        const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
-        const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
-
-        console.log(`🎯 Editor canvas: ${editorWidth}x${editorHeight}`);
-        console.log(`📐 Container: ${rect.width}x${rect.height}`);
-
-        const scaleX = rect.width / editorWidth;
-        const scaleY = rect.height / editorHeight;
-        const scale = Math.min(scaleX, scaleY, 1.0);
-
-        const offsetX = (rect.width - editorWidth * scale) / 2;
-        const offsetY = (rect.height - editorHeight * scale) / 2;
-
-        console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
-
-        Object.values(this.currentTacticalMap.cells).forEach(cell => {
-            const originalX = cell.originalX || cell.x;
-            const originalY = cell.originalY || cell.y;
-            
-            cell.displayX = originalX * scale + offsetX;
-            cell.displayY = originalY * scale + offsetY;
+        transitionCell.displayX = originalX * scale + offsetX;
+        transitionCell.displayY = originalY * scale + offsetY;
+        
+        console.log(`🎯 Клетка перехода:`, {
+            оригинал: `[${originalX}, ${originalY}]`,
+            отображение: `[${transitionCell.displayX}, ${transitionCell.displayY}]`,
+            тип: transitionCell.type
         });
-
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
     }
+
+    // Обрабатываем все клетки
+    Object.values(this.currentTacticalMap.cells).forEach(cell => {
+        const originalX = cell.originalX || cell.x;
+        const originalY = cell.originalY || cell.y;
+        
+        cell.displayX = originalX * scale + offsetX;
+        cell.displayY = originalY * scale + offsetY;
+    });
+
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+    
+    console.log(`✅ Позиционирование завершено`);
+}
     
     setupCanvasEventListeners() {
         if (!this.canvas) return;
@@ -783,48 +844,76 @@ class MapSystem {
         }
     }
     
-    getHexAtCanvasPosition(canvasX, canvasY) {
-        if (!this.currentTacticalMap) return null;
+ getHexAtCanvasPosition(canvasX, canvasY) {
+    if (!this.currentTacticalMap) {
+        console.error("❌ currentTacticalMap не доступна для поиска гекса");
+        return null;
+    }
 
-        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+    const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+    
+    console.log(`🔍 Поиск гекса по координатам: [${canvasX}, ${canvasY}], размер гекса: ${hexSize}`);
+    
+    // Проверяем кэшированный гекс
+    if (this.lastHoveredHex) {
+        const centerX = this.lastHoveredHex.displayX;
+        const centerY = this.lastHoveredHex.displayY;
         
-        // Кэшируем результат поиска если координаты похожи
-        if (this.lastHoveredHex) {
-            const centerX = this.lastHoveredHex.displayX;
-            const centerY = this.lastHoveredHex.displayY;
-            
-            if (centerX && centerY) {
-                const distance = Math.sqrt(
-                    Math.pow(canvasX - centerX, 2) + 
-                    Math.pow(canvasY - centerY, 2)
-                );
-                
-                if (distance <= hexSize) {
-                    return this.lastHoveredHex;
-                }
-            }
-        }
-        
-        for (const cell of Object.values(this.currentTacticalMap.cells)) {
-            const centerX = cell.displayX;
-            const centerY = cell.displayY;
-            
-            if (!centerX || !centerY) continue;
-            
+        if (centerX && centerY) {
             const distance = Math.sqrt(
                 Math.pow(canvasX - centerX, 2) + 
                 Math.pow(canvasY - centerY, 2)
             );
             
+            console.log(`📏 Расстояние до кэшированного гекса: ${distance}`);
+            
             if (distance <= hexSize) {
-                this.lastHoveredHex = cell; // Кэшируем найденный гекс
-                return cell;
+                console.log(`✅ Используем кэшированный гекс:`, this.lastHoveredHex);
+                return this.lastHoveredHex;
             }
         }
-        
-        this.lastHoveredHex = null;
-        return null;
     }
+    
+    // Ищем среди всех клеток
+    let closestHex = null;
+    let minDistance = Infinity;
+    
+    for (const cell of Object.values(this.currentTacticalMap.cells)) {
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+        
+        if (!centerX || !centerY) {
+            console.log(`⚠️ У клетки [${cell.col},${cell.row}] нет display координат`);
+            continue;
+        }
+        
+        const distance = Math.sqrt(
+            Math.pow(canvasX - centerX, 2) + 
+            Math.pow(canvasY - centerY, 2)
+        );
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestHex = cell;
+        }
+        
+        if (distance <= hexSize) {
+            console.log(`✅ Найден гекс [${cell.col},${cell.row}] на расстоянии ${distance}`);
+            this.lastHoveredHex = cell;
+            return cell;
+        }
+    }
+    
+    // Если не нашли точного совпадения, покажем ближайший
+    if (closestHex && minDistance < hexSize * 2) {
+        console.log(`⚠️ Ближайший гекс [${closestHex.col},${closestHex.row}] на расстоянии ${minDistance}`);
+    } else {
+        console.log(`❌ Гекс не найден. Ближайший на расстоянии ${minDistance}`);
+    }
+    
+    this.lastHoveredHex = null;
+    return null;
+}
 
     showTooltipForHex(hex, mouseX, mouseY) {
         const tooltipText = this.getTooltipTextForHex(hex);
