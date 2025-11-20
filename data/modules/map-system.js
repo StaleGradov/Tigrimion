@@ -916,28 +916,44 @@ class MapSystem {
         }
     }
 
-    drawMapBackgroundImage(map, overlayType) {
-        const params = map.displayParams;
-        if (!params) return;
+  drawMapBackgroundImage(map, overlayType) {
+    const params = map.displayParams;
+    if (!params) return;
 
-        const img = new Image();
-        img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(
-                img, 
-                params.offsetX, 
-                params.offsetY, 
-                (map.originalCanvasWidth || 800) * params.scale, 
-                (map.originalCanvasHeight || 600) * params.scale
-            );
-            this.forceRedraw(this.activeOverlay);
-        };
-        img.onerror = () => {
-            console.error("❌ Ошибка загрузки фона карты");
-            this.drawDefaultBackground(overlayType.replace('-map', ''));
-        };
-        img.src = map.image;
+    // Если изображение уже загружено, рисуем его
+    if (map._backgroundImage && map._backgroundImage.complete) {
+        this.ctx.drawImage(
+            map._backgroundImage, 
+            params.offsetX, 
+            params.offsetY, 
+            (map.originalCanvasWidth || 800) * params.scale, 
+            (map.originalCanvasHeight || 600) * params.scale
+        );
+        return;
     }
+
+    // Загружаем изображение
+    const img = new Image();
+    img.onload = () => {
+        map._backgroundImage = img; // Сохраняем для повторного использования
+        this.ctx.drawImage(
+            img, 
+            params.offsetX, 
+            params.offsetY, 
+            (map.originalCanvasWidth || 800) * params.scale, 
+            (map.originalCanvasHeight || 600) * params.scale
+        );
+        // Перерисовываем поверх фона
+        this.forceRedraw(this.activeOverlay);
+    };
+    img.onerror = () => {
+        console.error("❌ Ошибка загрузки фона карты:", map.image);
+        this.drawDefaultBackground(overlayType.replace('-map', ''));
+    };
+    
+    // Устанавливаем источник после назначения обработчиков
+    img.src = map.image;
+}
 
     drawDefaultBackground(overlayType) {
         const gradients = {
