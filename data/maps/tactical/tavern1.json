@@ -111,7 +111,7 @@
           "visible": true,
           "tacticalMap": "data/maps/tactical/tactical-maps.json",
           "tooltip": "🚪 Выход на улицу",
-          "targetPosition": {"x": 29, "y": 21},
+          "targetPosition": {"x": 21, "y": 29},
           "originalData": {
             "editorX": 415.6921938165305,
             "editorY": 240,
