@@ -205,6 +205,9 @@
           "type": "exit",
           "passable": true,
           "visible": true,
+          "tacticalMap": "data/maps/tactical/house2.json",
+          "tooltip": "🚪 Вход в Дом охотника",
+          "targetPosition": {"x": 4, "y": 8},
           "originalData": {
             "editorX": 695.4183992389042,
             "editorY": 547.5,
