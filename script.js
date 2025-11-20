@@ -890,19 +890,19 @@ class SafeHeroGame {
                 `;
                 break;
 
-            case 'local-map':
-                // ⭐ ИСПРАВЛЕНИЕ: Используем тот же подход что и для тактической карты
-                if (this.systems.map) {
-                    // ПРИНУДИТЕЛЬНО ЗАГРУЖАЕМ ЛОКАЛЬНУЮ КАРТУ
-                    this.systems.map.forceLoadLocalMap();
-                    // УСТАНАВЛИВАЕМ ТЕКУЩЕГО ГЕРОЯ
-                    this.systems.map.setCurrentHero(this.currentHero);
-                    // ПОКАЗЫВАЕМ КАРТУ ЧЕРЕЗ ТОТ ЖЕ МЕТОД ЧТО И ТАКТИЧЕСКУЮ
-                    this.systems.map.showMapOverlay('local-map', container);
-                } else {
-                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-                }
-                break;
+          // В классе SafeHeroGame, в методе showOverlay заменить case 'local-map':
+case 'local-map':
+    if (this.systems.map) {
+        // ПРИНУДИТЕЛЬНО ЗАГРУЖАЕМ ЛОКАЛЬНУЮ КАРТУ
+        this.systems.map.forceLoadLocalMap();
+        // УСТАНАВЛИВАЕМ ТЕКУЩЕГО ГЕРОЯ
+        this.systems.map.setCurrentHero(this.currentHero);
+        // ПОКАЗЫВАЕМ КАРТУ ЧЕРЕЗ ТОТ ЖЕ МЕТОД ЧТО И ТАКТИЧЕСКУЮ
+        this.systems.map.showMapOverlay('local-map', container);
+    } else {
+        container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+    }
+    break;
 
             case 'tactical-map':
                 if (this.systems.map) {
