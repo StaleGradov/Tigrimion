@@ -1,9 +1,9 @@
 {
   "meta": {
-    "name": "Моя карта",
+    "name": "Деревня охотников",
     "description": "Создано в редакторе",
     "version": "1.0",
-    "created": "2025-11-20T15:28:08.517Z",
+    "created": "2025-11-20T15:49:33.729Z",
     "author": "Tigrimion Map Editor"
   },
   "visual": {
@@ -11,107 +11,43 @@
     "canvasWidth": 1024,
     "canvasHeight": 1024,
     "imageTransform": {
-      "x": 0,
-      "y": -256,
-      "scale": 1.391304347826087
+      "x": 170.66666666666669,
+      "y": 0,
+      "scale": 0.927536231884058
     }
   },
   "game": {
     "grid": {
-      "cellSize": 80,
+      "cellSize": 73,
       "cells": [
-        {
-          "id": "cell_2_3",
-          "row": 2,
-          "col": 3,
-          "x": 416,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 415.6921938165305,
-            "editorY": 240,
-            "editorRow": 2,
-            "editorCol": 3
-          }
-        },
         {
           "id": "cell_2_4",
           "row": 2,
           "col": 4,
-          "x": 554,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 554.2562584220407,
-            "editorY": 240,
-            "editorRow": 2,
-            "editorCol": 4
-          }
-        },
-        {
-          "id": "cell_2_5",
-          "row": 2,
-          "col": 5,
-          "x": 693,
-          "y": 240,
+          "x": 506,
+          "y": 219,
           "type": "exit",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 692.8203230275508,
-            "editorY": 240,
+            "editorX": 505.75883581011215,
+            "editorY": 219,
             "editorRow": 2,
-            "editorCol": 5
-          }
-        },
-        {
-          "id": "cell_2_6",
-          "row": 2,
-          "col": 6,
-          "x": 831,
-          "y": 240,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 831.384387633061,
-            "editorY": 240,
-            "editorRow": 2,
-            "editorCol": 6
-          }
-        },
-        {
-          "id": "cell_3_2",
-          "row": 3,
-          "col": 2,
-          "x": 346,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 346.4101615137754,
-            "editorY": 360,
-            "editorRow": 3,
-            "editorCol": 2
+            "editorCol": 4
           }
         },
         {
           "id": "cell_3_3",
           "row": 3,
           "col": 3,
-          "x": 485,
-          "y": 360,
-          "type": "exit",
+          "x": 443,
+          "y": 329,
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 484.9742261192856,
-            "editorY": 360,
+            "editorX": 442.53898133384814,
+            "editorY": 328.5,
             "editorRow": 3,
             "editorCol": 3
           }
@@ -120,14 +56,14 @@
           "id": "cell_3_4",
           "row": 3,
           "col": 4,
-          "x": 624,
-          "y": 360,
+          "x": 569,
+          "y": 329,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 623.5382907247957,
-            "editorY": 360,
+            "editorX": 568.9786902863761,
+            "editorY": 328.5,
             "editorRow": 3,
             "editorCol": 4
           }
@@ -136,62 +72,30 @@
           "id": "cell_3_5",
           "row": 3,
           "col": 5,
-          "x": 762,
-          "y": 360,
+          "x": 695,
+          "y": 329,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 762.1023553303058,
-            "editorY": 360,
+            "editorX": 695.4183992389042,
+            "editorY": 328.5,
             "editorRow": 3,
             "editorCol": 5
-          }
-        },
-        {
-          "id": "cell_3_6",
-          "row": 3,
-          "col": 6,
-          "x": 901,
-          "y": 360,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 900.6664199358161,
-            "editorY": 360,
-            "editorRow": 3,
-            "editorCol": 6
-          }
-        },
-        {
-          "id": "cell_4_2",
-          "row": 4,
-          "col": 2,
-          "x": 277,
-          "y": 480,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 277.12812921102034,
-            "editorY": 480,
-            "editorRow": 4,
-            "editorCol": 2
           }
         },
         {
           "id": "cell_4_3",
           "row": 4,
           "col": 3,
-          "x": 416,
-          "y": 480,
+          "x": 379,
+          "y": 438,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 415.6921938165305,
-            "editorY": 480,
+            "editorX": 379.31912685758414,
+            "editorY": 438,
             "editorRow": 4,
             "editorCol": 3
           }
@@ -200,14 +104,14 @@
           "id": "cell_4_4",
           "row": 4,
           "col": 4,
-          "x": 554,
-          "y": 480,
-          "type": "active",
+          "x": 506,
+          "y": 438,
+          "type": "exit",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 554.2562584220407,
-            "editorY": 480,
+            "editorX": 505.75883581011215,
+            "editorY": 438,
             "editorRow": 4,
             "editorCol": 4
           }
@@ -216,14 +120,14 @@
           "id": "cell_4_5",
           "row": 4,
           "col": 5,
-          "x": 693,
-          "y": 480,
+          "x": 632,
+          "y": 438,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 692.8203230275508,
-            "editorY": 480,
+            "editorX": 632.1985447626402,
+            "editorY": 438,
             "editorRow": 4,
             "editorCol": 5
           }
@@ -232,46 +136,30 @@
           "id": "cell_4_6",
           "row": 4,
           "col": 6,
-          "x": 831,
-          "y": 480,
+          "x": 759,
+          "y": 438,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 831.384387633061,
-            "editorY": 480,
+            "editorX": 758.6382537151683,
+            "editorY": 438,
             "editorRow": 4,
             "editorCol": 6
-          }
-        },
-        {
-          "id": "cell_5_1",
-          "row": 5,
-          "col": 1,
-          "x": 208,
-          "y": 600,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 207.84609690826525,
-            "editorY": 600,
-            "editorRow": 5,
-            "editorCol": 1
           }
         },
         {
           "id": "cell_5_2",
           "row": 5,
           "col": 2,
-          "x": 346,
-          "y": 600,
+          "x": 316,
+          "y": 548,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 346.4101615137754,
-            "editorY": 600,
+            "editorX": 316.0992723813201,
+            "editorY": 547.5,
             "editorRow": 5,
             "editorCol": 2
           }
@@ -280,14 +168,14 @@
           "id": "cell_5_3",
           "row": 5,
           "col": 3,
-          "x": 485,
-          "y": 600,
+          "x": 443,
+          "y": 548,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 484.9742261192856,
-            "editorY": 600,
+            "editorX": 442.53898133384814,
+            "editorY": 547.5,
             "editorRow": 5,
             "editorCol": 3
           }
@@ -296,14 +184,14 @@
           "id": "cell_5_4",
           "row": 5,
           "col": 4,
-          "x": 624,
-          "y": 600,
+          "x": 569,
+          "y": 548,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 623.5382907247957,
-            "editorY": 600,
+            "editorX": 568.9786902863761,
+            "editorY": 547.5,
             "editorRow": 5,
             "editorCol": 4
           }
@@ -312,81 +200,33 @@
           "id": "cell_5_5",
           "row": 5,
           "col": 5,
-          "x": 762,
-          "y": 600,
-          "type": "active",
+          "x": 695,
+          "y": 548,
+          "type": "exit",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 762.1023553303058,
-            "editorY": 600,
+            "editorX": 695.4183992389042,
+            "editorY": 547.5,
             "editorRow": 5,
             "editorCol": 5
-          }
-        },
-        {
-          "id": "cell_5_6",
-          "row": 5,
-          "col": 6,
-          "x": 901,
-          "y": 600,
-          "type": "exit",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 900.6664199358161,
-            "editorY": 600,
-            "editorRow": 5,
-            "editorCol": 6
-          }
-        },
-        {
-          "id": "cell_6_1",
-          "row": 6,
-          "col": 1,
-          "x": 139,
-          "y": 720,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 138.56406460551017,
-            "editorY": 720,
-            "editorRow": 6,
-            "editorCol": 1
-          }
-        },
-        {
-          "id": "cell_6_2",
-          "row": 6,
-          "col": 2,
-          "x": 277,
-          "y": 720,
-          "type": "exit",
-          "tacticalMap": "data/maps/tactical/tactical-maps.json",
-          "tooltip": "🚪 Выход на дорогу",
-          "targetPosition": {"x": 21, "y": 29},
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 277.12812921102034,
-            "editorY": 720,
-            "editorRow": 6,
-            "editorCol": 2
           }
         },
         {
           "id": "cell_6_3",
           "row": 6,
           "col": 3,
-          "x": 416,
-          "y": 720,
-          "type": "active",
+          "x": 379,
+          "y": 657,
+          "type": "exit",
           "passable": true,
           "visible": true,
+            "tacticalMap": "data/maps/tactical/house1.json",
+          "tooltip": "🚪 Вход в Дом кузнеца",
+          "targetPosition": {"x": 4, "y": 8},
           "originalData": {
-            "editorX": 415.6921938165305,
-            "editorY": 720,
+            "editorX": 379.31912685758414,
+            "editorY": 657,
             "editorRow": 6,
             "editorCol": 3
           }
@@ -395,14 +235,14 @@
           "id": "cell_6_4",
           "row": 6,
           "col": 4,
-          "x": 554,
-          "y": 720,
+          "x": 506,
+          "y": 657,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 554.2562584220407,
-            "editorY": 720,
+            "editorX": 505.75883581011215,
+            "editorY": 657,
             "editorRow": 6,
             "editorCol": 4
           }
@@ -411,14 +251,14 @@
           "id": "cell_6_5",
           "row": 6,
           "col": 5,
-          "x": 693,
-          "y": 720,
+          "x": 632,
+          "y": 657,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 692.8203230275508,
-            "editorY": 720,
+            "editorX": 632.1985447626402,
+            "editorY": 657,
             "editorRow": 6,
             "editorCol": 5
           }
@@ -427,62 +267,30 @@
           "id": "cell_6_6",
           "row": 6,
           "col": 6,
-          "x": 831,
-          "y": 720,
-          "type": "active",
+          "x": 759,
+          "y": 657,
+          "type": "traveler",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 831.384387633061,
-            "editorY": 720,
+            "editorX": 758.6382537151683,
+            "editorY": 657,
             "editorRow": 6,
             "editorCol": 6
-          }
-        },
-        {
-          "id": "cell_7_2",
-          "row": 7,
-          "col": 2,
-          "x": 346,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 346.4101615137754,
-            "editorY": 840,
-            "editorRow": 7,
-            "editorCol": 2
-          }
-        },
-        {
-          "id": "cell_7_3",
-          "row": 7,
-          "col": 3,
-          "x": 485,
-          "y": 840,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 484.9742261192856,
-            "editorY": 840,
-            "editorRow": 7,
-            "editorCol": 3
           }
         },
         {
           "id": "cell_7_4",
           "row": 7,
           "col": 4,
-          "x": 624,
-          "y": 840,
+          "x": 569,
+          "y": 767,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 623.5382907247957,
-            "editorY": 840,
+            "editorX": 568.9786902863761,
+            "editorY": 766.5,
             "editorRow": 7,
             "editorCol": 4
           }
@@ -491,62 +299,94 @@
           "id": "cell_7_5",
           "row": 7,
           "col": 5,
-          "x": 762,
-          "y": 840,
+          "x": 695,
+          "y": 767,
           "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 762.1023553303058,
-            "editorY": 840,
+            "editorX": 695.4183992389042,
+            "editorY": 766.5,
             "editorRow": 7,
             "editorCol": 5
-          }
-        },
-        {
-          "id": "cell_8_4",
-          "row": 8,
-          "col": 4,
-          "x": 554,
-          "y": 960,
-          "type": "active",
-          "passable": true,
-          "visible": true,
-          "originalData": {
-            "editorX": 554.2562584220407,
-            "editorY": 960,
-            "editorRow": 8,
-            "editorCol": 4
           }
         },
         {
           "id": "cell_8_5",
           "row": 8,
           "col": 5,
-          "x": 693,
-          "y": 960,
+          "x": 632,
+          "y": 876,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 632.1985447626402,
+            "editorY": 876,
+            "editorRow": 8,
+            "editorCol": 5
+          }
+        },
+        {
+          "id": "cell_8_6",
+          "row": 8,
+          "col": 6,
+          "x": 759,
+          "y": 876,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 758.6382537151683,
+            "editorY": 876,
+            "editorRow": 8,
+            "editorCol": 6
+          }
+        },
+        {
+          "id": "cell_9_4",
+          "row": 9,
+          "col": 4,
+          "x": 569,
+          "y": 986,
+          "type": "active",
+          "passable": true,
+          "visible": true,
+          "originalData": {
+            "editorX": 568.9786902863761,
+            "editorY": 985.5,
+            "editorRow": 9,
+            "editorCol": 4
+          }
+        },
+        {
+          "id": "cell_9_5",
+          "row": 9,
+          "col": 5,
+          "x": 695,
+          "y": 986,
           "type": "player_start",
           "passable": true,
           "visible": true,
           "originalData": {
-            "editorX": 692.8203230275508,
-            "editorY": 960,
-            "editorRow": 8,
+            "editorX": 695.4183992389042,
+            "editorY": 985.5,
+            "editorRow": 9,
             "editorCol": 5
           }
         }
       ]
     },
-    "playerStart": "cell_8_5",
+    "playerStart": "cell_9_5",
     "objects": {
       "monsters": [],
       "chests": [],
       "npcs": [],
       "exits": [
-        "cell_2_5",
-        "cell_3_3",
-        "cell_5_6",
-        "cell_6_2"
+        "cell_2_4",
+        "cell_4_4",
+        "cell_5_5",
+        "cell_6_3"
       ],
       "obstacles": [],
       "trees": [],
@@ -565,7 +405,9 @@
       "campfires": [],
       "merchants": [],
       "carts": [],
-      "travelers": [],
+      "travelers": [
+        "cell_6_6"
+      ],
       "portals": [],
       "ancient_runes": [],
       "magic_crystals": []
