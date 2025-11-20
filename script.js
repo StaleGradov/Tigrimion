@@ -746,9 +746,7 @@ fixHealthBarLayout() {
                 <!-- Верхняя панель кнопок -->
                 <div class="top-action-bar">
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
-                    <button class="btn-top" onclick="game.showOverlay('local-map')">📍 Локальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
-                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">🎨 Создать карту</button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">🎒 Инвентарь</button>
                     <button class="btn-top" onclick="game.showOverlay('shop')">🏪 Магазин</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
