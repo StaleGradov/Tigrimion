@@ -465,62 +465,63 @@ class SafeHeroGame {
     }
 
     // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
-    startHealthRegeneration() {
-        setInterval(() => {
-            if (this.currentHero && this.systems.hero) {
-                const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+   // ========== УЛУЧШЕННАЯ СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
+startHealthRegeneration() {
+    setInterval(() => {
+        if (this.currentHero && this.systems.hero) {
+            const stats = this.systems.hero.calculateHeroStats(this.currentHero);
+            
+            // ⭐ ИСПРАВЛЕНИЕ: Регенерируем только если здоровье меньше максимума И больше 0
+            // И если герой не находится в специальной пост-смертной регенерации
+            if (this.currentHero.currentHealth > 0 && 
+                this.currentHero.currentHealth < stats.maxHealth &&
+                !this.currentHero.isInPostDeathRegeneration) {
                 
-                // ⭐ ИСПРАВЛЕНИЕ: Регенерируем только если здоровье меньше максимума И больше 0
-                // И если герой не находится в специальной пост-смертной регенерации
-                if (this.currentHero.currentHealth > 0 && 
-                    this.currentHero.currentHealth < stats.maxHealth &&
-                    !this.currentHero.isInPostDeathRegeneration) {
-                    
-                    // ОБЫЧНАЯ регенерация (медленнее чем после смерти)
-                    const baseRegen = 0.5; // 0.5 хита в секунду в обычном режиме
-                    const bonusRegen = (stats.healthRegen || 1) * baseRegen;
-                    const totalRegen = baseRegen + bonusRegen;
-                    
-                    this.currentHero.currentHealth = Math.min(
-                        stats.maxHealth, 
-                        this.currentHero.currentHealth + totalRegen
-                    );
-                    
-                    // РЕДКОЕ автосохранение при обычной регенерации
-                    if (Math.random() < 0.02) { // 2% шанс
-                        this.saveGame();
-                    }
-                    
-                    console.log(`❤️ Обычная регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
+                // ОБЫЧНАЯ регенерация (медленнее чем после смерти)
+                const baseRegen = 0.5; // 0.5 хита в секунду в обычном режиме
+                const bonusRegen = (stats.healthRegen || 1) * baseRegen;
+                const totalRegen = baseRegen + bonusRegen;
+                
+                this.currentHero.currentHealth = Math.min(
+                    stats.maxHealth, 
+                    this.currentHero.currentHealth + totalRegen
+                );
+                
+                // РЕДКОЕ автосохранение при обычной регенерации
+                if (Math.random() < 0.02) { // 2% шанс
+                    this.saveGame();
                 }
+                
+                console.log(`❤️ Обычная регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
             }
-        }, 1000);
-    }
+        }
+    }, 1000);
+}
 
-    // ========== ОБРАБОТКА СМЕРТИ ГЕРОЯ ==========
-    handleHeroDeath() {
-        if (!this.currentHero) return;
-        
-        console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
-        
-        // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1
-        this.currentHero.currentHealth = 1;
-        
-        // ⭐ ПОМЕЧАЕМ ЧТО ГЕРОЙ В РЕЖИМЕ ПОСЛЕСМЕРТНОЙ РЕГЕНЕРАЦИИ
-        this.currentHero.isInPostDeathRegeneration = true;
-        
-        // ⭐ СОХРАНЯЕМ СРАЗУ
-        this.saveGame();
-        
-        this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
-        
-        // ⭐ ЧЕРЕЗ 10 СЕКУНД СНИМАЕМ ФЛАГ (на всякий случай)
-        setTimeout(() => {
-            if (this.currentHero) {
-                this.currentHero.isInPostDeathRegeneration = false;
-            }
-        }, 10000);
-    }
+// ========== ОБРАБОТКА СМЕРТИ ГЕРОЯ ==========
+handleHeroDeath() {
+    if (!this.currentHero) return;
+    
+    console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
+    
+    // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1
+    this.currentHero.currentHealth = 1;
+    
+    // ⭐ ПОМЕЧАЕМ ЧТО ГЕРОЙ В РЕЖИМЕ ПОСЛЕСМЕРТНОЙ РЕГЕНЕРАЦИИ
+    this.currentHero.isInPostDeathRegeneration = true;
+    
+    // ⭐ СОХРАНЯЕМ СРАЗУ
+    this.saveGame();
+    
+    this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
+    
+    // ⭐ ЧЕРЕЗ 10 СЕКУНД СНИМАЕМ ФЛАГ (на всякий случай)
+    setTimeout(() => {
+        if (this.currentHero) {
+            this.currentHero.isInPostDeathRegeneration = false;
+        }
+    }, 10000);
+}
 
     showLoadingScreen(message) {
         const app = document.getElementById('app');
@@ -657,34 +658,34 @@ class SafeHeroGame {
         }
     }
 
-    // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ИСПРАВЛЕНИЯ LAYOUT ПОЛОСОК ЗДОРОВЬЯ
-    fixHealthBarLayout() {
-        setTimeout(() => {
-            // Принудительно исправляем все полоски здоровья
-            const healthBars = document.querySelectorAll('.health-bar, .experience-bar');
-            healthBars.forEach(bar => {
-                bar.style.margin = '0';
-                bar.style.padding = '0';
-                bar.style.position = 'relative';
-            });
-            
-            const containers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
-            containers.forEach(container => {
-                container.style.margin = '4px 0 0 0';
-                container.style.padding = '0';
-                container.style.position = 'relative';
-            });
-            
-            const sections = document.querySelectorAll('.health-display-section, .experience-display-section');
-            sections.forEach(section => {
-                section.style.margin = '0';
-                section.style.padding = '8px 0';
-                section.style.position = 'relative';
-            });
-            
-            console.log("✅ Layout полосок здоровья исправлен");
-        }, 300);
-    }
+  // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ИСПРАВЛЕНИЯ LAYOUT ПОЛОСОК ЗДОРОВЬЯ
+fixHealthBarLayout() {
+    setTimeout(() => {
+        // Принудительно исправляем все полоски здоровья
+        const healthBars = document.querySelectorAll('.health-bar, .experience-bar');
+        healthBars.forEach(bar => {
+            bar.style.margin = '0';
+            bar.style.padding = '0';
+            bar.style.position = 'relative';
+        });
+        
+        const containers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
+        containers.forEach(container => {
+            container.style.margin = '4px 0 0 0';
+            container.style.padding = '0';
+            container.style.position = 'relative';
+        });
+        
+        const sections = document.querySelectorAll('.health-display-section, .experience-display-section');
+        sections.forEach(section => {
+            section.style.margin = '0';
+            section.style.padding = '8px 0';
+            section.style.position = 'relative';
+        });
+        
+        console.log("✅ Layout полосок здоровья исправлен");
+    }, 300);
+}
 
     showHeroGameScreen() {
         if (!this.currentHero) return;
@@ -746,6 +747,8 @@ class SafeHeroGame {
                 <div class="top-action-bar">
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('local-map')">📍 Локальная карта</button>
+                    <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
+                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">🎨 Создать карту</button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">🎒 Инвентарь</button>
                     <button class="btn-top" onclick="game.showOverlay('shop')">🏪 Магазин</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
@@ -890,25 +893,25 @@ class SafeHeroGame {
                 `;
                 break;
 
-          // В классе SafeHeroGame, в методе showOverlay заменить case 'local-map':
-case 'local-map':
-    if (this.systems.map) {
-        // ПРИНУДИТЕЛЬНО ЗАГРУЖАЕМ ЛОКАЛЬНУЮ КАРТУ
-        this.systems.map.forceLoadLocalMap();
-        // УСТАНАВЛИВАЕМ ТЕКУЩЕГО ГЕРОЯ
-        this.systems.map.setCurrentHero(this.currentHero);
-        // ПОКАЗЫВАЕМ КАРТУ ЧЕРЕЗ ТОТ ЖЕ МЕТОД ЧТО И ТАКТИЧЕСКУЮ
-        this.systems.map.showMapOverlay('local-map', container);
-    } else {
-        container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-    }
-    break;
+            case 'local-map':
+                container.innerHTML = `
+                    <div class="overlay-content map-overlay">
+                        <div class="overlay-header">
+                            <h3>📍 Локальная карта</h3>
+                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                        </div>
+                        <div class="overlay-body">
+                            ${this.systems.map ? this.systems.map.renderLocalMap() : 'Карта загружается...'}
+                        </div>
+                    </div>
+                `;
+                break;
 
             case 'tactical-map':
                 if (this.systems.map) {
                     // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
                     this.systems.map.setCurrentHero(this.currentHero);
-                    this.systems.map.showMapOverlay('tactical-map', container);
+                    this.systems.map.showTacticalMapEditor();
                 } else {
                     container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
                 }
