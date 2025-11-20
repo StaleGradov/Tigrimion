@@ -752,52 +752,31 @@ class MapSystem {
 
         const rect = container.getBoundingClientRect();
         
-        console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
-        
-        // Используем простой подход как в старом рабочем коде
-        const cells = Object.values(this.currentTacticalMap.cells);
-        if (cells.length === 0) {
-            console.error("❌ Нет клеток для позиционирования!");
-            return;
-        }
+        const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
+        const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
 
-        // Находим границы карты
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        cells.forEach(cell => {
-            const x = cell.x || cell.originalX || 0;
-            const y = cell.y || cell.originalY || 0;
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
-        });
+        console.log(`🎯 Editor canvas: ${editorWidth}x${editorHeight}`);
+        console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-        const mapWidth = maxX - minX + 200; // + отступы
-        const mapHeight = maxY - minY + 200;
+        const scaleX = rect.width / editorWidth;
+        const scaleY = rect.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
 
-        // Простой расчет масштаба
-        const scaleX = rect.width / mapWidth;
-        const scaleY = rect.height / mapHeight;
-        const scale = Math.min(scaleX, scaleY) * 0.9;
+        const offsetX = (rect.width - editorWidth * scale) / 2;
+        const offsetY = (rect.height - editorHeight * scale) / 2;
 
-        const offsetX = (rect.width - mapWidth * scale) / 2;
-        const offsetY = (rect.height - mapHeight * scale) / 2;
+        console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
 
-        console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
-
-        // Применяем позиционирование к клеткам
-        cells.forEach(cell => {
-            const x = cell.x || cell.originalX || 0;
-            const y = cell.y || cell.originalY || 0;
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            const originalX = cell.originalX || cell.x;
+            const originalY = cell.originalY || cell.y;
             
-            cell.displayX = (x - minX) * scale + offsetX;
-            cell.displayY = (y - minY) * scale + offsetY;
+            cell.displayX = originalX * scale + offsetX;
+            cell.displayY = originalY * scale + offsetY;
         });
 
         this.canvas.width = rect.width;
         this.canvas.height = rect.height;
-        
-        console.log(`✅ Позиционирование завершено`);
     }
     
     setupCanvasEventListeners() {
@@ -907,43 +886,42 @@ class MapSystem {
     }
     
     getHexAtCanvasPosition(canvasX, canvasY) {
-        if (!this.currentTacticalMap) {
-            console.error("❌ currentTacticalMap не доступна для поиска гекса");
-            return null;
-        }
+        if (!this.currentTacticalMap) return null;
 
         const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
         
-        let closestHex = null;
-        let minDistance = Infinity;
+        // Кэшируем результат поиска если координаты похожи
+        if (this.lastHoveredHex) {
+            const centerX = this.lastHoveredHex.displayX;
+            const centerY = this.lastHoveredHex.displayY;
+            
+            if (centerX && centerY) {
+                const distance = Math.sqrt(
+                    Math.pow(canvasX - centerX, 2) + 
+                    Math.pow(canvasY - centerY, 2)
+                );
+                
+                if (distance <= hexSize) {
+                    return this.lastHoveredHex;
+                }
+            }
+        }
         
         for (const cell of Object.values(this.currentTacticalMap.cells)) {
             const centerX = cell.displayX;
             const centerY = cell.displayY;
             
-            if (!centerX || !centerY) {
-                continue;
-            }
+            if (!centerX || !centerY) continue;
             
             const distance = Math.sqrt(
                 Math.pow(canvasX - centerX, 2) + 
                 Math.pow(canvasY - centerY, 2)
             );
             
-            if (distance < minDistance) {
-                minDistance = distance;
-                closestHex = cell;
-            }
-            
             if (distance <= hexSize) {
-                this.lastHoveredHex = cell;
+                this.lastHoveredHex = cell; // Кэшируем найденный гекс
                 return cell;
             }
-        }
-        
-        if (closestHex && minDistance < hexSize * 2) {
-            this.lastHoveredHex = closestHex;
-            return closestHex;
         }
         
         this.lastHoveredHex = null;
@@ -961,8 +939,10 @@ class MapSystem {
             this.createTooltipElement();
         }
 
+        // Сначала снимаем подсветку со старого гекса
         this.removeHighlight();
         
+        // Затем подсвечиваем новый
         this.currentTooltip = hex;
         hex.isHighlighted = true;
         
@@ -986,29 +966,19 @@ class MapSystem {
         this.tooltipElement.style.left = left + 'px';
         this.tooltipElement.style.top = top + 'px';
 
+        // ПЕРЕРИСОВЫВАЕМ ВСЮ КАРТУ ОДИН РАЗ
         this.drawTacticalMap();
     }
     
     getTooltipTextForHex(hex) {
         if (!hex.visible) return null;
 
+        // ПРИОРИТЕТ 1: Кастомная подсказка из JSON
         if (hex.tooltip) {
             return hex.tooltip;
         }
 
-        if (hex.tacticalMap) {
-            return "🚪 Вход в помещение\n(Кликните для входа)";
-        }
-        if (hex.localMap) {
-            return "🌍 Переход в другой регион\n(Кликните для перехода)";
-        }
-        if (hex.globalMap) {
-            return "🗺️ Переход на глобальную карту\n(Кликните для перехода)";
-        }
-        if (hex.type === 'exit') {
-            return "🚪 Выход\n(Кликните для возврата)";
-        }
-
+        // ПРИОРИТЕТ 2: Стандартные подсказки по типу
         const defaultTooltips = {
             'player_start': '⭐ Стартовая позиция',
             'monster': '👹 Враждебная территория',
@@ -1084,6 +1054,8 @@ class MapSystem {
         if (!hex || hex.isHighlighted) return;
         
         hex.isHighlighted = true;
+        
+        // Перерисовываем только этот гекс для производительности
         this.drawSingleHexWithHighlight(hex);
     }
     
@@ -1101,6 +1073,7 @@ class MapSystem {
         
         this.currentTooltip = null;
         
+        // Перерисовываем только если были изменения
         if (needsRedraw && this.canvasInitialized) {
             this.drawTacticalMap();
         }
@@ -1125,32 +1098,50 @@ class MapSystem {
 
     drawBackground() {
         const map = this.currentTacticalMap;
-        
-        // Всегда рисуем градиентный фон
-        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(1, '#16213e');
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Если есть изображение, рисуем его поверх фона
-        if (map.image && map.image !== 'data:image/jpeg;base64,') {
-            const img = new Image();
-            img.onload = () => {
-                // Простое масштабирование изображения под размер canvas
-                this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-                
-                // Перерисовываем гексы поверх изображения
-                this.drawHexes();
-                if (this.showGrid) {
-                    this.drawHexGrid();
-                }
-            };
-            img.onerror = () => {
-                console.error("❌ Ошибка загрузки фона карты");
-            };
-            img.src = map.image;
+        if (!map.image) {
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            return;
         }
+
+        const editorWidth = map.originalCanvasWidth || 1024;
+        const editorHeight = map.originalCanvasHeight || 1024;
+
+        const scaleX = this.canvas.width / editorWidth;
+        const scaleY = this.canvas.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
+
+        const offsetX = (this.canvas.width - editorWidth * scale) / 2;
+        const offsetY = (this.canvas.height - editorHeight * scale) / 2;
+
+        const img = new Image();
+        img.onload = () => {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.drawImage(
+                img, 
+                offsetX, 
+                offsetY, 
+                editorWidth * scale, 
+                editorHeight * scale
+            );
+            
+            this.drawHexes();
+            if (this.showGrid) {
+                this.drawHexGrid();
+            }
+        };
+        img.onerror = () => {
+            console.error("❌ Ошибка загрузки фона карты");
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        };
+        img.src = map.image;
     }
 
     drawHexGrid() {
@@ -1233,6 +1224,7 @@ class MapSystem {
 
         this.ctx.save();
         
+        // Рисуем подсветку если гекс выделен
         if (cell.isHighlighted) {
             this.ctx.beginPath();
             for (let i = 0; i < 6; i++) {
@@ -1259,13 +1251,16 @@ class MapSystem {
             symbol = '🎯';
             fontSize = 20;
         } else {
+            // Для обычных проходимых клеток оставляем точку
             if (cell.type === 'active' && !cell.objectType) {
                 symbol = '·';
                 color = '#ffffff';
                 fontSize = 24;
             } else {
+                // Используем словарь символов для специальных объектов
                 symbol = this.objectSymbols[cell.type] || '·';
                 
+                // Настраиваем цвет для разных типов объектов
                 switch(cell.type) {
                     case 'monster':
                     case 'orc_camp':
