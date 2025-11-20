@@ -221,6 +221,9 @@
           "type": "exit",
           "passable": true,
           "visible": true,
+          "tacticalMap": "data/maps/tactical/tavern1.json",
+          "tooltip": "🚪 Выход на улицу",
+          "targetPosition": {"x": 4, "y": 6},
           "originalData": {
             "editorX": 692.8203230275508,
             "editorY": 960,
