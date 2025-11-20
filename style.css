@@ -3981,3 +3981,24 @@ body {
         grid-template-columns: 1fr;
     }
 }
+/* Добавьте в конец CSS файла */
+.global-map-overlay {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    width: 95vw !important;
+    height: 95vh !important;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    margin: 2vh auto !important;
+    border: 2px solid #00ffff !important;
+}
+
+.global-map-visual {
+    flex: 1;
+    min-height: 500px;
+    background: #000000;
+    border: 1px solid #00ffff;
+    border-radius: 8px;
+    margin: 15px;
+    position: relative;
+    overflow: hidden;
+}
