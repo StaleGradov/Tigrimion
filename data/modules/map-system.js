@@ -459,7 +459,7 @@ class MapSystem {
     }
 
     initGlobalMapCanvas() {
-        console.group("🔍 DEBUG initGlobalMapCanvas");
+        console.group("🔍 DEBUG initGlobalMapCanvas - ИСПРАВЛЕННЫЙ");
         
         const container = document.getElementById('globalMapVisual');
         if (!container) {
@@ -474,29 +474,32 @@ class MapSystem {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'globalMapCanvas';
         this.canvas.className = 'map-canvas';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
+        this.canvas.style.display = 'block';
         
+        container.appendChild(this.canvas);
+
         // Устанавливаем размеры canvas
         const containerRect = container.getBoundingClientRect();
         this.canvas.width = containerRect.width;
         this.canvas.height = containerRect.height;
         
-        container.appendChild(this.canvas);
-
         console.log("Canvas создан:", this.canvas);
         console.log("Canvas размеры:", this.canvas.width, "x", this.canvas.height);
 
         this.ctx = this.canvas.getContext('2d');
         console.log("Контекст создан:", this.ctx);
         
-        // Рассчитываем позиционирование
+        // Рассчитываем позиционирование для ГЛОБАЛЬНОЙ карты
         this.calculateGlobalMapPositioning();
         
-        // Настраиваем обработчики событий
+        // Настраиваем обработчики событий для ГЛОБАЛЬНОЙ карты
         this.setupGlobalCanvasEventListeners();
         
-        // Рисуем карту
+        // Рисуем ГЛОБАЛЬНУЮ карту
         setTimeout(() => {
-            console.log("🔍 Проверка перед отрисовкой:", {
+            console.log("🔍 Проверка перед отрисовкой ГЛОБАЛЬНОЙ карты:", {
                 ctx: !!this.ctx,
                 currentGlobalMap: !!this.currentGlobalMap,
                 canvas: !!this.canvas
@@ -506,7 +509,7 @@ class MapSystem {
                 console.log("✅ Все условия выполнены, вызываем drawGlobalMap");
                 this.drawGlobalMap();
             } else {
-                console.error("❌ Условия не выполнены для отрисовки");
+                console.error("❌ Условия не выполнены для отрисовки глобальной карты");
                 this.drawTestFallback();
             }
         }, 100);
@@ -715,10 +718,8 @@ class MapSystem {
                 editorHeight * scale
             );
             
-            this.drawGlobalHexes();
-            if (this.showGrid) {
-                this.drawGlobalHexGrid();
-            }
+            // ИСПРАВЛЕНИЕ: вызываем drawGlobalMap вместо несуществующего drawGlobalHexes
+            this.drawGlobalMap();
         };
         img.onerror = () => {
             console.error("❌ Ошибка загрузки фона глобальной карты");
@@ -2527,6 +2528,9 @@ class MapSystem {
             targetMap = this.currentGlobalMap;
             displayName = '🗺️ Глобальная карта';
             console.log("🌍 Глобальная карта выбрана, targetMap:", targetMap);
+            
+            // Убедимся, что используем глобальную карту
+            this.currentMapType = 'global';
         } else {
             targetMap = this.currentTacticalMap;
             displayName = '🎲 Тактическая карта';
@@ -2573,7 +2577,7 @@ class MapSystem {
             
             setTimeout(() => {
                 console.log("🎨 Инициализируем canvas для глобальной карты...");
-                this.initGlobalMapCanvas();
+                this.initGlobalMapCanvas(); // Используем специальный метод для глобальной карты
             }, 50);
             
         } else {
@@ -2619,7 +2623,7 @@ class MapSystem {
             `;
             
             setTimeout(() => {
-                console.log("🎨 Инициализируем Canvas для карты...");
+                console.log("🎨 Инициализируем Canvas для локальной/тактической карты...");
                 if (!targetMap) {
                     console.error("❌ Карта не установлена для Canvas");
                     console.groupEnd();
@@ -2627,8 +2631,8 @@ class MapSystem {
                 }
                 
                 try {
-                    console.log("📍 Вызываем initCanvas()");
-                    this.initCanvas();
+                    console.log("📍 Вызываем initCanvas() для локальной карты");
+                    this.initCanvas(); // Используем обычный метод для локальных карт
                     this.updateMovementInfo();
                     
                     console.log("✅ Canvas успешно инициализирован", {
@@ -2947,6 +2951,13 @@ class MapSystem {
     createFallbackMaps() {
         this.createTestGlobalMap();
         this.createTestLocalMaps();
+    }
+
+    // ========== ДОБАВЛЕННЫЙ МЕТОД ДЛЯ ОБРАТНОЙ СОВМЕСТИМОСТИ ==========
+
+    drawGlobalHexes() {
+        // Просто вызываем основной метод отрисовки
+        this.drawGlobalMap();
     }
 }
 
