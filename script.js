@@ -872,68 +872,69 @@ fixHealthBarLayout() {
     }
 
     // ========== СИСТЕМА УПРАВЛЕНИЯ ОКНАМИ ==========
-    showOverlay(overlayType) {
-        const container = document.getElementById('overlay-container');
-        if (!container) return;
+ showOverlay(overlayType) {
+    const container = document.getElementById('overlay-container');
+    if (!container) return;
 
-        this.activeOverlay = overlayType;
+    this.activeOverlay = overlayType;
 
-        switch(overlayType) {
-            case 'global-map':
+    switch(overlayType) {
+        case 'global-map':
+        case 'local-map':
+        case 'tactical-map':
+            // Используем встроенную систему карт
+            if (this.systems.map) {
                 container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>🗺️ Глобальная карта</h3>
+                    <div class="overlay-content ${overlayType}-overlay">
+                        <div class="tactical-map-header">
+                            <h4>${this.getMapTitle(overlayType)}</h4>
                             <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                         </div>
-                        <div class="overlay-body">
-                            ${this.systems.map ? this.systems.map.renderGlobalMap() : 'Карта загружается...'}
+                        <div class="tactical-map-content">
+                            <div class="tactical-map-visual" id="${overlayType}-visual">
+                                <!-- Canvas будет добавлен автоматически -->
+                            </div>
+                            <div class="tactical-map-info">
+                                ${this.systems.map.renderMapInfo(overlayType)}
+                            </div>
                         </div>
                     </div>
                 `;
-                break;
-
-            case 'local-map':
-                container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>📍 Локальная карта</h3>
-                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                        </div>
-                        <div class="overlay-body">
-                            ${this.systems.map ? this.systems.map.renderLocalMap() : 'Карта загружается...'}
-                        </div>
-                    </div>
-                `;
-                break;
-
-            case 'tactical-map':
-                if (this.systems.map) {
-                    // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
-                    this.systems.map.setCurrentHero(this.currentHero);
-                    this.systems.map.showTacticalMapEditor();
-                } else {
-                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-                }
-                break;
-
-            case 'inventory':
-                container.innerHTML = this.systems.equipment.showInventory();
-                break;
-
-            case 'shop':
-                // Показываем магазин через систему экипировки с сохранением текущей категории
-                const currentCategory = this.systems.equipment.currentCategory || 'all';
-                const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
-                container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+                container.style.display = 'block';
                 
-                // Добавляем обработчики для предметов магазина
-                setTimeout(() => this.attachShopItemHandlers(), 100);
-                break;
-        }
+                setTimeout(() => {
+                    this.systems.map.showOverlay(overlayType);
+                }, 50);
+            }
+            break;
 
-        container.style.display = 'block';
+        case 'inventory':
+            container.innerHTML = this.systems.equipment.showInventory();
+            break;
+
+        case 'shop':
+            // Показываем магазин через систему экипировки с сохранением текущей категории
+            const currentCategory = this.systems.equipment.currentCategory || 'all';
+            const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+            container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+            
+            // Добавляем обработчики для предметов магазина
+            setTimeout(() => this.attachShopItemHandlers(), 100);
+            break;
     }
+
+    container.style.display = 'block';
+}
+
+// Добавьте этот метод в класс SafeHeroGame
+getMapTitle(overlayType) {
+    const titles = {
+        'global-map': '🗺️ Глобальная карта',
+        'local-map': '📍 Локальная карта', 
+        'tactical-map': '🎲 Тактическая карта'
+    };
+    return titles[overlayType] || 'Карта';
+}
 
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
     attachShopItemHandlers() {
