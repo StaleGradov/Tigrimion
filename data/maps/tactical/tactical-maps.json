@@ -6287,7 +6287,7 @@
           "visible": true,
           "tacticalMap": "data/maps/tactical/tavern1.json",
           "tooltip": "🚪 Вход в таверну\n(Кликните для входа)",
-         "targetPosition": {"x": 3, "y": 2},
+         "targetPosition": {"x": 2, "y": 8},
           "originalData": {
             "editorX": 710.1408311032395,
             "editorY": 870,
