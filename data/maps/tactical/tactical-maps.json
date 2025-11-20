@@ -6286,7 +6286,7 @@
           "passable": true,
           "visible": true,
           "tacticalMap": "data/maps/tactical/tavern1.json",
-          "tooltip": "🚪 Вход в таверну\n(Кликните для входа)",
+          "tooltip": "🚪 Вход в поселение охотников\n(Кликните для входа)",
          "targetPosition": {"x": 8, "y": 5},
           "originalData": {
             "editorX": 710.1408311032395,
