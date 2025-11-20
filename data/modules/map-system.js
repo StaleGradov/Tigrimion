@@ -381,36 +381,46 @@ class MapSystem {
         console.log(`💾 Сохранено состояние карты в стек (глубина: ${this.mapStack.length})`);
     }
 
-    async loadTacticalMapFile(mapPath) {
-        try {
-            console.log(`📥 Загружаем тактическую карту: ${mapPath}`);
-            
-            const response = await fetch(mapPath);
-            if (!response.ok) {
-                throw new Error(`Не удалось загрузить карту: ${mapPath}`);
-            }
-            
-            const mapData = await response.json();
-            const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
-            
-            if (tacticalMap) {
-                this.currentTacticalMap = tacticalMap;
-                this.setPlayerToStartPosition();
-                
-                console.log(`✅ Тактическая карта загружена: ${tacticalMap.name}`);
-                return tacticalMap;
-            }
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки тактической карты:`, error);
-            
-            console.log("🔄 Создаем тестовую таверну...");
-            const tavernMap = this.createTestTavernMap();
-            this.currentTacticalMap = tavernMap;
-            this.setPlayerToStartPosition();
-            return tavernMap;
+async loadTacticalMapFile(mapPath) {
+    console.log(`🔍 ЗАГРУЗКА КАРТЫ: ${mapPath}`);
+    
+    try {
+        const response = await fetch(mapPath);
+        if (!response.ok) {
+            throw new Error(`Не удалось загрузить карту: ${mapPath}`);
         }
-        return null;
+        
+        const mapData = await response.json();
+        console.log(`✅ Карта "${mapData.meta?.name}" загружена`);
+        
+        const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
+        
+        if (tacticalMap) {
+            this.currentTacticalMap = tacticalMap;
+            
+            // ЕСЛИ targetPosition уже установлен в activateTransition - НЕ МЕНЯЕМ!
+            if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
+                this.setPlayerToStartPosition();
+            }
+            
+            console.log(`📍 Текущая позиция игрока:`, this.playerTacticalPosition);
+            return tacticalMap;
+        }
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки тактической карты:`, error);
+        
+        console.log("🔄 Создаем тестовую таверну...");
+        const tavernMap = this.createTestTavernMap();
+        this.currentTacticalMap = tavernMap;
+        
+        if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
+            this.setPlayerToStartPosition();
+        }
+        
+        return tavernMap;
     }
+    return null;
+}
 
     async loadLocalMapFile(mapPath) {
         try {
@@ -707,51 +717,75 @@ class MapSystem {
         }, 1000);
     }
 
-    async activateTransition(transitionCell) {
-        console.log(`🚪 Активация перехода: ${transitionCell.type} -> ${transitionCell.tacticalMap || transitionCell.localMap || transitionCell.globalMap}`);
-        
-        this.saveCurrentMapToStack();
-        
-        try {
-            let newMap = null;
-            
-            if (transitionCell.tacticalMap) {
-                newMap = await this.loadTacticalMapFile(transitionCell.tacticalMap);
-                this.currentMapType = 'tactical';
-                console.log(`🎲 Вход в тактическую карту: ${transitionCell.tacticalMap}`);
-                
-            } else if (transitionCell.localMap) {
-                newMap = await this.loadLocalMapFile(transitionCell.localMap);
-                this.currentMapType = 'local';
-                
-                if (transitionCell.targetPosition) {
-                    this.playerTacticalPosition = {...transitionCell.targetPosition};
-                } else {
-                    this.setPlayerToStartPosition();
-                }
-                
-                console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
-                
-            } else if (transitionCell.globalMap) {
-                newMap = await this.loadGlobalMapFile(transitionCell.globalMap);
-                this.currentMapType = 'global';
-                console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
-                
-            } else if (transitionCell.type === 'exit') {
-                console.log("🚪 Выход с текущей карты");
-                this.exitToPreviousMap();
-                return;
-            }
-            
-            if (newMap) {
-                await this.forceMapUpdate(newMap);
-            }
-            
-        } catch (error) {
-            console.error("❌ Ошибка перехода между картами:", error);
-            this.exitToPreviousMap();
-        }
+
+    
+   async activateTransition(transitionCell) {
+    console.log(`🚪 АКТИВАЦИЯ ПЕРЕХОДА:`, {
+        type: transitionCell.type,
+        tacticalMap: transitionCell.tacticalMap,
+        localMap: transitionCell.localMap, 
+        globalMap: transitionCell.globalMap,
+        targetPosition: transitionCell.targetPosition,
+        returnX: transitionCell.returnX,
+        returnY: transitionCell.returnY
+    });
+
+    // Для простых exit-гексов без указания карты
+    if (transitionCell.type === 'exit' && !transitionCell.tacticalMap && !transitionCell.localMap && !transitionCell.globalMap) {
+        console.log("🚪 Простой выход с карты через exit-гекс");
+        this.exitToPreviousMap();
+        return;
     }
+
+    // СОХРАНЯЕМ transitionCell для использования в loadTacticalMapFile
+    this._lastTransitionCell = transitionCell;
+    this.saveCurrentMapToStack();
+    
+    try {
+        let newMap = null;
+        
+        if (transitionCell.tacticalMap) {
+            console.log(`🎲 Переход на тактическую карту: ${transitionCell.tacticalMap}`);
+            newMap = await this.loadTacticalMapFile(transitionCell.tacticalMap);
+            this.currentMapType = 'tactical';
+            
+            // ПРИНУДИТЕЛЬНО устанавливаем позицию из targetPosition
+            if (transitionCell.targetPosition) {
+                this.playerTacticalPosition = {...transitionCell.targetPosition};
+                console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
+            }
+            
+        } else if (transitionCell.localMap) {
+            console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
+            newMap = await this.loadLocalMapFile(transitionCell.localMap);
+            this.currentMapType = 'local';
+            
+            if (transitionCell.targetPosition) {
+                this.playerTacticalPosition = {...transitionCell.targetPosition};
+                console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
+            } else {
+                this.setPlayerToStartPosition();
+            }
+            
+        } else if (transitionCell.globalMap) {
+            console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
+            newMap = await this.loadGlobalMapFile(transitionCell.globalMap);
+            this.currentMapType = 'global';
+        }
+        
+        if (newMap) {
+            await this.forceMapUpdate(newMap);
+        }
+        
+        // Очищаем временные данные
+        this._lastTransitionCell = null;
+        
+    } catch (error) {
+        console.error("❌ Ошибка перехода между картами:", error);
+        this._lastTransitionCell = null;
+        this.exitToPreviousMap();
+    }
+}
 
     async forceMapUpdate(newMap) {
         console.log("🔄 Принудительное обновление карты...");
