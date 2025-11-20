@@ -356,58 +356,75 @@ renderGlobalMap() {
     }
 
     return `
-        <div class="overlay-content global-map-overlay">
-            <div class="overlay-header">
-                <h3>🗺️ Глобальная карта - ${this.currentGlobalMap.name}</h3>
-                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-            </div>
-            
-            <div class="global-map-info">
-                <div class="progress-stats">
-                    <span>📍 Текущая позиция: [${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]</span>
-                    <span>📊 Посещено: ${this.globalProgress.visitedCells.size} гексов</span>
-                    <span>🔓 Доступно: ${this.globalProgress.unlockedCells.size} гексов</span>
-                    <span>🔄 Обнаружено: ${this.globalProgress.discoveredCells.size} гексов</span>
-                </div>
-            </div>
-            
-            <div class="global-map-visual" style="min-height: 500px; background: #1a1a2e;">
-                <!-- Canvas будет создан здесь -->
-                <div style="color: #00ffff; text-align: center; padding: 20px;">
-                    Загрузка глобальной карты...<br>
-                    ${this.currentGlobalMap.name} (${Object.keys(this.currentGlobalMap.cells).length} клеток)
-                </div>
-            </div>
-            
-            <div class="global-map-legend">
-                <h4>📋 Легенда карты:</h4>
-                <div class="legend-grid">
-                    <div class="legend-item">
-                        <span class="legend-symbol">🎯</span>
-                        <span>Текущая позиция</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-symbol">🟢</span>
-                        <span>Посещённые</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-symbol">🟡</span>
-                        <span>Доступные</span>
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-symbol">🔴</span>
-                        <span>Заблокированные</span>
+        <div class="map-overlay-container">
+            <div class="map-content-container global-map-container">
+                <div class="map-header">
+                    <h3>🗺️ ${this.currentGlobalMap.name}</h3>
+                    <div class="map-controls">
+                        <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                            ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                        </button>
+                        <button class="btn-control" onclick="game.systems.map.debugGlobalInfo()">
+                            🐛 Отладка
+                        </button>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕ Закрыть</button>
                     </div>
                 </div>
-            </div>
-            
-            <div class="global-map-actions">
-                <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                    ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                </button>
-                <button class="btn-control" onclick="game.systems.map.debugGlobalInfo()">
-                    🐛 Отладка
-                </button>
+                
+                <div class="map-main-area">
+                    <div class="map-visual-area" id="globalMapVisual">
+                        <div class="map-loading">
+                            Загрузка глобальной карты...
+                        </div>
+                    </div>
+                    
+                    <div class="map-info-panel">
+                        <div class="progress-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">📍 Текущая позиция:</span>
+                                <span class="stat-value">[${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">📊 Посещено:</span>
+                                <span class="stat-value">${this.globalProgress.visitedCells.size} гексов</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔓 Доступно:</span>
+                                <span class="stat-value">${this.globalProgress.unlockedCells.size} гексов</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">🔄 Обнаружено:</span>
+                                <span class="stat-value">${this.globalProgress.discoveredCells.size} гексов</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="map-legend">
+                    <div class="legend-title">📋 Легенда карты:</div>
+                    <div class="legend-grid">
+                        <div class="legend-item">
+                            <span class="legend-symbol">🎯</span>
+                            <span>Текущая позиция</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🟢</span>
+                            <span>Посещённые</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🟡</span>
+                            <span>Доступные</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🔴</span>
+                            <span>Заблокированные</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-symbol">🚪</span>
+                            <span>Переходы</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -415,8 +432,8 @@ renderGlobalMap() {
 
 initGlobalMapCanvas() {
     console.group("🔍 DEBUG initGlobalMapCanvas");
-    const container = document.querySelector('.global-map-visual');
-    console.log("Контейнер .global-map-visual:", container);
+    const container = document.getElementById('globalMapVisual');
+    console.log("Контейнер globalMapVisual:", container);
     
     if (!container) {
         console.log("❌ Контейнер для глобальной карты не найден");
@@ -429,34 +446,28 @@ initGlobalMapCanvas() {
 
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'globalMapCanvas';
+    this.canvas.className = 'map-canvas';
     
-    this.canvas.style.width = '100%';
-    this.canvas.style.height = '100%';
-    this.canvas.style.position = 'absolute';
-    this.canvas.style.top = '0';
-    this.canvas.style.left = '0';
-    this.canvas.style.cursor = 'pointer';
-    this.canvas.style.background = '#1a1a2e'; // Добавляем фон на всякий случай
+    // Устанавливаем размеры canvas
+    const containerRect = container.getBoundingClientRect();
+    this.canvas.width = containerRect.width;
+    this.canvas.height = containerRect.height;
+    
     container.appendChild(this.canvas);
 
     console.log("Canvas создан:", this.canvas);
+    console.log("Canvas размеры:", this.canvas.width, "x", this.canvas.height);
 
     this.ctx = this.canvas.getContext('2d');
     console.log("Контекст создан:", this.ctx);
     
-    // Устанавливаем размеры canvas СРАЗУ
-    const rect = container.getBoundingClientRect();
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    console.log(`📐 Canvas размеры: ${this.canvas.width}x${this.canvas.height}`);
-    
-    console.log("Вызываем calculateGlobalMapPositioning...");
+    // Рассчитываем позиционирование
     this.calculateGlobalMapPositioning();
     
-    console.log("Вызываем setupGlobalCanvasEventListeners...");
+    // Настраиваем обработчики событий
     this.setupGlobalCanvasEventListeners();
     
-    // ⭐ ВАЖНО: Добавляем проверку перед отрисовкой
+    // Рисуем карту
     setTimeout(() => {
         console.log("🔍 Проверка перед отрисовкой:", {
             ctx: !!this.ctx,
@@ -469,7 +480,6 @@ initGlobalMapCanvas() {
             this.drawGlobalMap();
         } else {
             console.error("❌ Условия не выполнены для отрисовки");
-            // Рисуем тестовую картинку
             this.drawTestFallback();
         }
     }, 100);
@@ -531,6 +541,10 @@ drawTestGlobalMap() {
     
     console.log("✅ Тестовая отрисовка выполнена");
 }
+
+
+
+    
 calculateGlobalMapPositioning() {
     console.group("🔍 DEBUG calculateGlobalMapPositioning");
     
@@ -540,7 +554,7 @@ calculateGlobalMapPositioning() {
         return;
     }
 
-    const container = document.querySelector('.global-map-visual');
+    const container = document.getElementById('globalMapVisual');
     if (!container) {
         console.log("❌ Контейнер не найден");
         console.groupEnd();
@@ -555,12 +569,12 @@ calculateGlobalMapPositioning() {
 
     console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
 
-    // Исправляем расчет масштаба - учитываем оба измерения
+    // Используем всю доступную область
     const scaleX = rect.width / editorWidth;
     const scaleY = rect.height / editorHeight;
-    const scale = Math.min(scaleX, scaleY, 1.0); // Берем меньший масштаб для пропорциональности
+    const scale = Math.min(scaleX, scaleY);
 
-    // Центрируем по обоим осям
+    // Центрируем
     const offsetX = (rect.width - editorWidth * scale) / 2;
     const offsetY = (rect.height - editorHeight * scale) / 2;
 
@@ -579,23 +593,15 @@ calculateGlobalMapPositioning() {
         cell.displayX = originalX * scale + offsetX;
         cell.displayY = originalY * scale + offsetY;
         processedCount++;
-        
-        // Логируем первую клетку для проверки
-        if (processedCount === 1) {
-            console.log("Первая клетка:", {
-                оригинал: `[${originalX}, ${originalY}]`,
-                отображение: `[${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)}]`
-            });
-        }
     });
 
-    this.canvas.width = rect.width;
-    this.canvas.height = rect.height;
-    
     console.log(`✅ Позиционирование завершено. Обработано клеток: ${processedCount}`);
     console.groupEnd();
 }
 
+
+
+    
  drawGlobalMap() {
     console.group("🔍 DEBUG drawGlobalMap");
     console.log("this.ctx:", this.ctx);
