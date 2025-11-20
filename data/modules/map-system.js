@@ -1026,265 +1026,6 @@ class MapSystem {
         return `${baseTooltip}\nСтатус: ${status}`;
     }
 
-    // ========== СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ ==========
-
-    handleLocalToLocalTransition(exitCell) {
-        if (!exitCell.localMap) {
-            console.error("❌ Нет указанной локальной карты для перехода");
-            return;
-        }
-
-        console.log(`🌍 Переход на новую локальную карту: ${exitCell.localMap}`);
-        
-        if (exitCell.globalTargetX !== undefined && exitCell.globalTargetY !== undefined) {
-            const oldX = this.globalProgress.currentGlobalX;
-            const oldY = this.globalProgress.currentGlobalY;
-            
-            this.globalProgress.currentGlobalX = exitCell.globalTargetX;
-            this.globalProgress.currentGlobalY = exitCell.globalTargetY;
-            
-            const newCellKey = `${exitCell.globalTargetX},${exitCell.globalTargetY}`;
-            this.globalProgress.visitedCells.add(newCellKey);
-            
-            this.unlockAdjacentGlobalCells(exitCell.globalTargetX, exitCell.globalTargetY);
-            
-            this.saveGlobalProgress();
-            
-            console.log(`📍 Перемещение на глобальной карте: [${oldX},${oldY}] → [${exitCell.globalTargetX},${exitCell.globalTargetY}]`);
-        }
-        
-        this.loadLocalMapFile(exitCell.localMap).then(success => {
-            if (success && window.game) {
-                window.game.showNotification(`🌍 Переход в новую зону!`, 'success');
-            }
-        });
-    }
-
-    async handleMapTransition(transitionCell) {
-        if (!transitionCell) return;
-
-        this.saveCurrentMapToStack();
-        
-        try {
-            if (transitionCell.tacticalMap) {
-                await this.loadTacticalMapFile(transitionCell.tacticalMap);
-                this.currentMapType = 'tactical';
-                console.log(`🚪 Вход в тактическую карту: ${transitionCell.tacticalMap}`);
-                
-            } else if (transitionCell.localMap) {
-                await this.loadLocalMapFile(transitionCell.localMap);
-                this.currentMapType = 'local';
-                
-                if (transitionCell.targetPosition) {
-                    this.playerTacticalPosition = {...transitionCell.targetPosition};
-                }
-                
-                console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
-                
-            } else if (transitionCell.globalMap) {
-                await this.loadGlobalMapFile(transitionCell.globalMap);
-                this.currentMapType = 'global';
-                console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
-            }
-            
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-            
-        } catch (error) {
-            console.error("❌ Ошибка перехода между картами:", error);
-            this.exitToPreviousMap();
-        }
-    }
-
-    exitToPreviousMap() {
-        if (this.mapStack.length === 0) {
-            console.log("🚫 Нет предыдущей карты для возврата");
-            return;
-        }
-        
-        const savedState = this.mapStack.pop();
-        if (savedState) {
-            this.currentTacticalMap = savedState.map;
-            this.playerTacticalPosition = savedState.playerPosition;
-            this.currentMapType = savedState.mapType;
-            
-            if (savedState.mapType === 'local') {
-                this.currentLocalMap = savedState.map;
-            }
-            
-            console.log(`🚪 Возврат на ${savedState.mapType} карту: ${savedState.map.name}`);
-            
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-        }
-    }
-
-    saveCurrentMapToStack() {
-        const mapState = {
-            map: this.currentTacticalMap,
-            playerPosition: {...this.playerTacticalPosition},
-            mapType: this.currentMapType,
-            localMap: this.currentLocalMap
-        };
-        this.mapStack.push(mapState);
-        console.log(`💾 Сохранено состояние карты в стек (глубина: ${this.mapStack.length})`);
-    }
-
-    // ========== ЗАГРУЗКА КАРТ ИЗ JSON ==========
-
-    async loadJSONMaps() {
-        try {
-            console.log("🔄 Загружаем JSON карты...");
-            
-            const tacticalMapPaths = [
-                'data/maps/tactical/tactical-maps.json',
-                'data/maps/tactical-maps.json',
-                'maps/tactical-maps.json', 
-                'data/tactical-maps.json',
-                'tactical-maps.json',
-                'data/modules/maps/tactical-maps.json'
-            ];
-            
-            const localMapPaths = [
-                'data/maps/local/local-maps.json',
-                'data/maps/local-maps.json', 
-                'maps/local-maps.json',
-                'data/local-maps.json',
-                'local-maps.json',
-                'data/modules/maps/local-maps.json'
-            ];
-            
-            let tacticalLoaded = false;
-            for (const path of tacticalMapPaths) {
-                try {
-                    const response = await fetch(path);
-                    if (response.ok) {
-                        const mapData = await response.json();
-                        await this.processTigrimionJSONMaps(mapData, 'tactical');
-                        console.log(`✅ Тактические карты загружены из: ${path}`);
-                        tacticalLoaded = true;
-                        break;
-                    }
-                } catch (e) {
-                    console.log(`❌ Не удалось загрузить тактические карты из ${path}:`, e.message);
-                }
-            }
-            
-            let localLoaded = false;
-            for (const path of localMapPaths) {
-                try {
-                    const response = await fetch(path);
-                    if (response.ok) {
-                        const mapData = await response.json();
-                        await this.processTigrimionJSONMaps(mapData, 'local');
-                        console.log(`✅ Локальные карты загружены из: ${path}`);
-                        localLoaded = true;
-                        break;
-                    }
-                } catch (e) {
-                    console.log(`❌ Не удалось загрузить локальные карты из ${path}:`, e.message);
-                }
-            }
-            
-            console.log(`ℹ️ Итог загрузки: Тактические: ${tacticalLoaded}, Локальные: ${localLoaded}`);
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки JSON карт:", error);
-        }
-    }
-
-    async processTigrimionJSONMaps(mapData, mapType = 'tactical') {
-        if (!mapData || !mapData.meta) {
-            console.warn("❌ Неверный формат JSON карты Tigrimion");
-            return;
-        }
-
-        try {
-            const convertedMap = this.convertTigrimionJSONToMap(mapData, mapType);
-            if (convertedMap) {
-                if (mapType === 'tactical') {
-                    this.tacticalMaps.push(convertedMap);
-                } else if (mapType === 'local') {
-                    this.localMaps.push(convertedMap);
-                }
-                
-                this.loadedJSONMaps.set(convertedMap.id, convertedMap);
-                console.log(`✅ Обработана ${mapType} карта: ${convertedMap.name}`);
-            }
-        } catch (error) {
-            console.error(`❌ Ошибка обработки ${mapType} карты:`, error);
-        }
-    }
-
-    convertTigrimionJSONToMap(jsonMap, mapType = 'tactical') {
-        if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
-            console.warn("❌ Неверная структура карты Tigrimion");
-            return null;
-        }
-
-        const cells = jsonMap.game.grid.cells;
-        const convertedCells = {};
-        
-        console.log(`📥 Импортируем ${mapType} карту: ${jsonMap.meta?.name || 'Без названия'}`);
-        console.log(`📊 Клеток в импорте: ${cells.length}`);
-        
-        cells.forEach(cell => {
-            const key = `${cell.col},${cell.row}`;
-            
-            convertedCells[key] = {
-                type: cell.type,
-                passable: cell.passable !== false,
-                visible: cell.visible !== false,
-                originalX: cell.x,
-                originalY: cell.y,
-                x: cell.x,
-                y: cell.y,
-                row: cell.row,
-                col: cell.col,
-                monster_id: cell.monster_id,
-                tacticalMap: cell.tacticalMap,
-                localMap: cell.localMap,
-                globalMap: cell.globalMap,
-                targetPosition: cell.targetPosition,
-                returnX: cell.returnX,
-                returnY: cell.returnY,
-                tooltip: cell.tooltip,
-                originalData: cell
-            };
-        });
-
-        let startPosition = {x: 0, y: 0};
-        const startCell = cells.find(cell => cell.type === 'player_start');
-        if (startCell) {
-            startPosition = {x: startCell.col, y: startCell.row};
-            console.log(`🎯 Стартовая позиция: [${startCell.col},${startCell.row}]`);
-        }
-
-        const originalCanvasWidth = jsonMap.visual?.canvasWidth || 1024;
-        const originalCanvasHeight = jsonMap.visual?.canvasHeight || 1024;
-
-        console.log(`📐 Original canvas: ${originalCanvasWidth}x${originalCanvasHeight}`);
-
-        return {
-            id: mapType === 'tactical' ? this.tacticalMaps.length + 1 : this.localMaps.length + 1,
-            name: jsonMap.meta?.name || `${mapType === 'tactical' ? 'Тактическая' : 'Локальная'} карта`,
-            image: jsonMap.visual?.backgroundImage || "",
-            width: 20,
-            height: 20,
-            startPosition: startPosition,
-            description: jsonMap.meta?.description || `Создана в редакторе карт Tigrimion`,
-            localPosition: {x: 0, y: 0},
-            cells: convertedCells,
-            jsonData: jsonMap,
-            gameData: jsonMap.game,
-            renderType: 'hex',
-            cellSize: jsonMap.game.grid.cellSize || 40,
-            originalCanvasWidth: originalCanvasWidth,
-            originalCanvasHeight: originalCanvasHeight,
-            mapType: mapType
-        };
-    }
-
     // ========== УПРАВЛЕНИЕ ЛОКАЛЬНЫМИ КАРТАМИ ==========
 
     forceSetLocalMap() {
@@ -1336,297 +1077,6 @@ class MapSystem {
             this.calculateMapPositioning();
             this.drawTacticalMap();
         }
-    }
-
-    // ========== ЗАГРУЗКА ФАЙЛОВ КАРТ ==========
-
-    async loadTacticalMapFile(mapPath) {
-        try {
-            console.log(`📥 Загружаем тактическую карту: ${mapPath}`);
-            
-            const response = await fetch(mapPath);
-            if (!response.ok) {
-                throw new Error(`Не удалось загрузить карту: ${mapPath}`);
-            }
-            
-            const mapData = await response.json();
-            const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
-            
-            if (tacticalMap) {
-                this.currentTacticalMap = tacticalMap;
-                this.setPlayerToStartPosition();
-                
-                console.log(`✅ Тактическая карта загружена: ${tacticalMap.name}`);
-                return tacticalMap;
-            }
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки тактической карты:`, error);
-            throw error;
-        }
-        return null;
-    }
-
-    async loadLocalMapFile(mapPath) {
-        try {
-            console.log(`📥 Загружаем локальную карту: ${mapPath}`);
-            
-            const response = await fetch(mapPath);
-            if (!response.ok) {
-                throw new Error(`Не удалось загрузить локальную карту: ${mapPath}`);
-            }
-            
-            const mapData = await response.json();
-            const localMap = this.convertTigrimionJSONToMap(mapData, 'local');
-            
-            if (localMap) {
-                this.setCurrentLocalMap(localMap);
-                console.log(`✅ Локальная карта загружена: ${localMap.name}`);
-                return localMap;
-            }
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки локальной карты:`, error);
-            throw error;
-        }
-        return null;
-    }
-
-    async loadGlobalMapFile(mapPath) {
-        console.log(`🌍 Загрузка глобальной карта: ${mapPath}`);
-        return null;
-    }
-
-    setPlayerToStartPosition() {
-        if (!this.currentTacticalMap) return;
-        
-        const startCell = Object.values(this.currentTacticalMap.cells)
-            .find(cell => cell.type === 'player_start');
-        
-        if (startCell) {
-            this.playerTacticalPosition = {x: startCell.col, y: startCell.row};
-            console.log(`🎯 Герой установлен на стартовую позицию: [${startCell.col}, ${startCell.row}]`);
-        } else {
-            this.playerTacticalPosition = {...this.currentTacticalMap.startPosition};
-        }
-    }
-
-    // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ И БОЯ ==========
-
-    handleCanvasClick(e) {
-        if (!this.currentTacticalMap) {
-            console.error("❌ currentTacticalMap не установлена!");
-            return;
-        }
-
-        const rect = this.canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const hex = this.getHexAtCanvasPosition(x, y);
-        
-        if (!hex) {
-            console.log("❌ Гекс не найден по этим координатам");
-            return;
-        }
-        
-        console.log(`🎲 Клик по клетке:`, {
-            type: hex.type,
-            col: hex.col,
-            row: hex.row,
-            localMap: hex.localMap,
-            tacticalMap: hex.tacticalMap,
-            passable: hex.passable
-        });
-
-        const isAdjacentToPlayer = this.isHexAdjacentToPlayer(hex);
-        
-        if (hex.type === 'local_exit' && isAdjacentToPlayer) {
-            console.log(`🌍 ОБНАРУЖЕН ПЕРЕХОД НА ЛОКАЛЬНУЮ КАРТУ: ${hex.localMap}`);
-            this.handleLocalToLocalTransition(hex);
-            return;
-        }
-        
-        if (hex.tacticalMap && isAdjacentToPlayer) {
-            console.log(`🚪 Вход в тактическую карту: ${hex.tacticalMap}`);
-            this.handleMapTransition(hex);
-            return;
-        }
-        
-        if (hex.type === 'exit') {
-            console.log("🎲 Клик по выходу");
-            this.exitToPreviousMap();
-            return;
-        }
-        
-        if ((hex.localMap || hex.tacticalMap) && !isAdjacentToPlayer) {
-            console.log(`🚫 ПЕРЕХОД ЗАБЛОКИРОВАН: герой не на соседней клетке`);
-            if (window.game) {
-                window.game.showNotification("Подойдите ближе к входу!", 'warning');
-            }
-            return;
-        }
-        
-        if (hex.passable !== false || hex.type === 'monster') {
-            console.log(`🎲 Клик по проходимой клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-            this.moveOnTacticalMap(hex.col, hex.row);
-        } else {
-            console.log(`🚫 Клетка непроходимая: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-        }
-    }
-
-    moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
-        }
-
-        if (!this.currentTacticalMap) return;
-
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (cellData.tacticalMap || cellData.localMap || cellData.globalMap) {
-            console.log(`🎯 Попытка перехода через moveOnTacticalMap`);
-            if (this.isHexAdjacentToPlayer(cellData)) {
-                this.handleMapTransition(cellData);
-            } else {
-                console.log(`🚫 Переход заблокирован: герой не рядом`);
-                if (window.game) {
-                    window.game.showNotification("Подойдите ближе к входу!", 'warning');
-                }
-            }
-            return;
-        }
-
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        this.hideOverlay();
-        
-        setTimeout(() => {
-            this.startTacticalBattleForMovement(x, y, cellData);
-        }, 50);
-    }
-
-    startTacticalBattleForMovement(targetX, targetY, cellData) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
-
-        if (!this.currentHero) {
-            console.error("❌ Не могу начать бой: герой не выбран");
-            return;
-        }
-
-        this.pendingMovement = { x: targetX, y: targetY };
-        
-        const specificMonster = this.getMonsterFromCell(cellData);
-        
-        if (specificMonster && cellData.monster_id) {
-            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
-            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-        } else {
-            const randomMonster = this.getRandomMonster();
-            if (!randomMonster) {
-                console.error("❌ Не удалось начать бой: нет случайных монстров");
-                if (window.game) {
-                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
-                }
-                return;
-            }
-            
-            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
-            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
-        }
-    }
-
-    completeMovementAfterBattle(victory) {
-        if (!this.pendingMovement) return;
-
-        const targetX = this.pendingMovement.x;
-        const targetY = this.pendingMovement.y;
-        
-        if (!this.currentHero) {
-            console.error("❌ Не могу завершить перемещение: герой не выбран");
-            return;
-        }
-        
-        if (victory) {
-            const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {x: targetX, y: targetY};
-            
-            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-            
-        } else {
-            const startPosition = this.currentTacticalMap.startPosition;
-            this.playerTacticalPosition = {...startPosition};
-            
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
-            
-            if (window.game) {
-                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
-            }
-        }
-        
-        this.saveMapState();
-        
-        if (this.activeOverlay === 'tactical-map') {
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-        }
-        
-        this.pendingMovement = null;
-    }
-
-    getRandomMonster() {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
-            console.error("❌ BattleSystem не доступна для получения случайного монстра");
-            return null;
-        }
-        
-        const randomMonster = battleSystem.getRandomMonsterForMovement();
-        
-        if (!randomMonster) {
-            console.error("❌ Не удалось получить случайного монстра");
-            return null;
-        }
-        
-        return randomMonster;
-    }
-
-    getMonsterFromCell(cellData) {
-        if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
-            return null;
-        }
-        
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) return null;
-        
-        return battleSystem.getMonsterById(cellData.monster_id);
     }
 
     // ========== CANVAS И ОТОБРАЖЕНИЕ ЛОКАЛЬНЫХ/ТАКТИЧЕСКИХ КАРТ ==========
@@ -1715,6 +1165,68 @@ class MapSystem {
                 }
             }, 100);
         });
+    }
+
+    handleCanvasClick(e) {
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не установлена!");
+            return;
+        }
+
+        const rect = this.canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const hex = this.getHexAtCanvasPosition(x, y);
+        
+        if (!hex) {
+            console.log("❌ Гекс не найден по этим координатам");
+            return;
+        }
+        
+        console.log(`🎲 Клик по клетке:`, {
+            type: hex.type,
+            col: hex.col,
+            row: hex.row,
+            localMap: hex.localMap,
+            tacticalMap: hex.tacticalMap,
+            passable: hex.passable
+        });
+
+        const isAdjacentToPlayer = this.isHexAdjacentToPlayer(hex);
+        
+        if (hex.type === 'local_exit' && isAdjacentToPlayer) {
+            console.log(`🌍 ОБНАРУЖЕН ПЕРЕХОД НА ЛОКАЛЬНУЮ КАРТУ: ${hex.localMap}`);
+            this.handleLocalToLocalTransition(hex);
+            return;
+        }
+        
+        if (hex.tacticalMap && isAdjacentToPlayer) {
+            console.log(`🚪 Вход в тактическую карту: ${hex.tacticalMap}`);
+            this.handleMapTransition(hex);
+            return;
+        }
+        
+        if (hex.type === 'exit') {
+            console.log("🎲 Клик по выходу");
+            this.exitToPreviousMap();
+            return;
+        }
+        
+        if ((hex.localMap || hex.tacticalMap) && !isAdjacentToPlayer) {
+            console.log(`🚫 ПЕРЕХОД ЗАБЛОКИРОВАН: герой не на соседней клетке`);
+            if (window.game) {
+                window.game.showNotification("Подойдите ближе к входу!", 'warning');
+            }
+            return;
+        }
+        
+        if (hex.passable !== false || hex.type === 'monster') {
+            console.log(`🎲 Клик по проходимой клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+            this.moveOnTacticalMap(hex.col, hex.row);
+        } else {
+            console.log(`🚫 Клетка непроходимая: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+        }
     }
 
     handleCanvasHover(e) {
@@ -2222,6 +1734,152 @@ class MapSystem {
         this.ctx.restore();
         
         this.drawHexContent(hex);
+    }
+
+    // ========== СИСТЕМА ПЕРЕМЕЩЕНИЯ И БОЯ ==========
+
+    moveOnTacticalMap(x, y) {
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран!");
+            if (window.game) {
+                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+            }
+            return;
+        }
+
+        if (!this.currentTacticalMap) return;
+
+        const cellKey = `${x},${y}`;
+        const cellData = this.currentTacticalMap.cells[cellKey];
+        
+        if (!cellData) {
+            console.log("🚫 Клетка не существует");
+            if (window.game) {
+                window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
+        }
+
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        this.hideOverlay();
+        
+        setTimeout(() => {
+            this.startTacticalBattleForMovement(x, y, cellData);
+        }, 50);
+    }
+
+    startTacticalBattleForMovement(targetX, targetY, cellData) {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) {
+            console.error("❌ BattleSystem не доступна");
+            return;
+        }
+
+        if (!this.currentHero) {
+            console.error("❌ Не могу начать бой: герой не выбран");
+            return;
+        }
+
+        this.pendingMovement = { x: targetX, y: targetY };
+        
+        const specificMonster = this.getMonsterFromCell(cellData);
+        
+        if (specificMonster && cellData.monster_id) {
+            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
+            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
+        } else {
+            const randomMonster = this.getRandomMonster();
+            if (!randomMonster) {
+                console.error("❌ Не удалось начать бой: нет случайных монстров");
+                if (window.game) {
+                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
+                }
+                return;
+            }
+            
+            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
+            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
+        }
+    }
+
+    getRandomMonster() {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
+            console.error("❌ BattleSystem не доступна для получения случайного монстра");
+            return null;
+        }
+        
+        const randomMonster = battleSystem.getRandomMonsterForMovement();
+        
+        if (!randomMonster) {
+            console.error("❌ Не удалось получить случайного монстра");
+            return null;
+        }
+        
+        return randomMonster;
+    }
+
+    getMonsterFromCell(cellData) {
+        if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
+            return null;
+        }
+        
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) return null;
+        
+        return battleSystem.getMonsterById(cellData.monster_id);
+    }
+
+    completeMovementAfterBattle(victory) {
+        if (!this.pendingMovement) return;
+
+        const targetX = this.pendingMovement.x;
+        const targetY = this.pendingMovement.y;
+        
+        if (!this.currentHero) {
+            console.error("❌ Не могу завершить перемещение: герой не выбран");
+            return;
+        }
+        
+        if (victory) {
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+            
+        } else {
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+            
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
+            
+            if (window.game) {
+                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
+            }
+        }
+        
+        this.saveMapState();
+        
+        // ВАЖНО: Принудительно пересчитываем отображение
+        if (this.activeOverlay === 'tactical-map') {
+            this.calculateMapPositioning();
+            this.drawTacticalMap();
+        }
+        
+        this.pendingMovement = null;
     }
 
     // ========== СИСТЕМА НАВИГАЦИИ И СОСЕДЕЙ ==========
@@ -2880,6 +2538,336 @@ class MapSystem {
     createFallbackMaps() {
         this.createTestGlobalMap();
         this.createTestLocalMaps();
+    }
+
+    // ========== ЗАГРУЗКА JSON КАРТ ==========
+
+    async loadJSONMaps() {
+        try {
+            console.log("🔄 Загружаем JSON карты...");
+            
+            const tacticalMapPaths = [
+                'data/maps/tactical/tactical-maps.json',
+                'data/maps/tactical-maps.json',
+                'maps/tactical-maps.json', 
+                'data/tactical-maps.json',
+                'tactical-maps.json',
+                'data/modules/maps/tactical-maps.json'
+            ];
+            
+            const localMapPaths = [
+                'data/maps/local/local-maps.json',
+                'data/maps/local-maps.json', 
+                'maps/local-maps.json',
+                'data/local-maps.json',
+                'local-maps.json',
+                'data/modules/maps/local-maps.json'
+            ];
+            
+            let tacticalLoaded = false;
+            for (const path of tacticalMapPaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        const mapData = await response.json();
+                        await this.processTigrimionJSONMaps(mapData, 'tactical');
+                        console.log(`✅ Тактические карты загружены из: ${path}`);
+                        tacticalLoaded = true;
+                        break;
+                    }
+                } catch (e) {
+                    console.log(`❌ Не удалось загрузить тактические карты из ${path}:`, e.message);
+                }
+            }
+            
+            let localLoaded = false;
+            for (const path of localMapPaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        const mapData = await response.json();
+                        await this.processTigrimionJSONMaps(mapData, 'local');
+                        console.log(`✅ Локальные карты загружены из: ${path}`);
+                        localLoaded = true;
+                        break;
+                    }
+                } catch (e) {
+                    console.log(`❌ Не удалось загрузить локальные карты из ${path}:`, e.message);
+                }
+            }
+            
+            console.log(`ℹ️ Итог загрузки: Тактические: ${tacticalLoaded}, Локальные: ${localLoaded}`);
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки JSON карт:", error);
+        }
+    }
+
+    async processTigrimionJSONMaps(mapData, mapType = 'tactical') {
+        if (!mapData || !mapData.meta) {
+            console.warn("❌ Неверный формат JSON карты Tigrimion");
+            return;
+        }
+
+        try {
+            const convertedMap = this.convertTigrimionJSONToMap(mapData, mapType);
+            if (convertedMap) {
+                if (mapType === 'tactical') {
+                    this.tacticalMaps.push(convertedMap);
+                } else if (mapType === 'local') {
+                    this.localMaps.push(convertedMap);
+                }
+                
+                this.loadedJSONMaps.set(convertedMap.id, convertedMap);
+                console.log(`✅ Обработана ${mapType} карта: ${convertedMap.name}`);
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка обработки ${mapType} карты:`, error);
+        }
+    }
+
+    convertTigrimionJSONToMap(jsonMap, mapType = 'tactical') {
+        if (!jsonMap.game || !jsonMap.game.grid || !jsonMap.game.grid.cells) {
+            console.warn("❌ Неверная структура карты Tigrimion");
+            return null;
+        }
+
+        const cells = jsonMap.game.grid.cells;
+        const convertedCells = {};
+        
+        console.log(`📥 Импортируем ${mapType} карту: ${jsonMap.meta?.name || 'Без названия'}`);
+        console.log(`📊 Клеток в импорте: ${cells.length}`);
+        
+        cells.forEach(cell => {
+            const key = `${cell.col},${cell.row}`;
+            
+            convertedCells[key] = {
+                type: cell.type,
+                passable: cell.passable !== false,
+                visible: cell.visible !== false,
+                originalX: cell.x,
+                originalY: cell.y,
+                x: cell.x,
+                y: cell.y,
+                row: cell.row,
+                col: cell.col,
+                monster_id: cell.monster_id,
+                tacticalMap: cell.tacticalMap,
+                localMap: cell.localMap,
+                globalMap: cell.globalMap,
+                targetPosition: cell.targetPosition,
+                returnX: cell.returnX,
+                returnY: cell.returnY,
+                tooltip: cell.tooltip,
+                originalData: cell
+            };
+        });
+
+        let startPosition = {x: 0, y: 0};
+        const startCell = cells.find(cell => cell.type === 'player_start');
+        if (startCell) {
+            startPosition = {x: startCell.col, y: startCell.row};
+            console.log(`🎯 Стартовая позиция: [${startCell.col},${startCell.row}]`);
+        }
+
+        const originalCanvasWidth = jsonMap.visual?.canvasWidth || 1024;
+        const originalCanvasHeight = jsonMap.visual?.canvasHeight || 1024;
+
+        console.log(`📐 Original canvas: ${originalCanvasWidth}x${originalCanvasHeight}`);
+
+        return {
+            id: mapType === 'tactical' ? this.tacticalMaps.length + 1 : this.localMaps.length + 1,
+            name: jsonMap.meta?.name || `${mapType === 'tactical' ? 'Тактическая' : 'Локальная'} карта`,
+            image: jsonMap.visual?.backgroundImage || "",
+            width: 20,
+            height: 20,
+            startPosition: startPosition,
+            description: jsonMap.meta?.description || `Создана в редакторе карт Tigrimion`,
+            localPosition: {x: 0, y: 0},
+            cells: convertedCells,
+            jsonData: jsonMap,
+            gameData: jsonMap.game,
+            renderType: 'hex',
+            cellSize: jsonMap.game.grid.cellSize || 40,
+            originalCanvasWidth: originalCanvasWidth,
+            originalCanvasHeight: originalCanvasHeight,
+            mapType: mapType
+        };
+    }
+
+    // ========== СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ ==========
+
+    handleLocalToLocalTransition(exitCell) {
+        if (!exitCell.localMap) {
+            console.error("❌ Нет указанной локальной карты для перехода");
+            return;
+        }
+
+        console.log(`🌍 Переход на новую локальную карту: ${exitCell.localMap}`);
+        
+        if (exitCell.globalTargetX !== undefined && exitCell.globalTargetY !== undefined) {
+            const oldX = this.globalProgress.currentGlobalX;
+            const oldY = this.globalProgress.currentGlobalY;
+            
+            this.globalProgress.currentGlobalX = exitCell.globalTargetX;
+            this.globalProgress.currentGlobalY = exitCell.globalTargetY;
+            
+            const newCellKey = `${exitCell.globalTargetX},${exitCell.globalTargetY}`;
+            this.globalProgress.visitedCells.add(newCellKey);
+            
+            this.unlockAdjacentGlobalCells(exitCell.globalTargetX, exitCell.globalTargetY);
+            
+            this.saveGlobalProgress();
+            
+            console.log(`📍 Перемещение на глобальной карте: [${oldX},${oldY}] → [${exitCell.globalTargetX},${exitCell.globalTargetY}]`);
+        }
+        
+        this.loadLocalMapFile(exitCell.localMap).then(success => {
+            if (success && window.game) {
+                window.game.showNotification(`🌍 Переход в новую зону!`, 'success');
+            }
+        });
+    }
+
+    async handleMapTransition(transitionCell) {
+        if (!transitionCell) return;
+
+        this.saveCurrentMapToStack();
+        
+        try {
+            if (transitionCell.tacticalMap) {
+                await this.loadTacticalMapFile(transitionCell.tacticalMap);
+                this.currentMapType = 'tactical';
+                console.log(`🚪 Вход в тактическую карту: ${transitionCell.tacticalMap}`);
+                
+            } else if (transitionCell.localMap) {
+                await this.loadLocalMapFile(transitionCell.localMap);
+                this.currentMapType = 'local';
+                
+                if (transitionCell.targetPosition) {
+                    this.playerTacticalPosition = {...transitionCell.targetPosition};
+                }
+                
+                console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
+                
+            } else if (transitionCell.globalMap) {
+                await this.loadGlobalMapFile(transitionCell.globalMap);
+                this.currentMapType = 'global';
+                console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
+            }
+            
+            this.calculateMapPositioning();
+            this.drawTacticalMap();
+            
+        } catch (error) {
+            console.error("❌ Ошибка перехода между картами:", error);
+            this.exitToPreviousMap();
+        }
+    }
+
+    exitToPreviousMap() {
+        if (this.mapStack.length === 0) {
+            console.log("🚫 Нет предыдущей карты для возврата");
+            return;
+        }
+        
+        const savedState = this.mapStack.pop();
+        if (savedState) {
+            this.currentTacticalMap = savedState.map;
+            this.playerTacticalPosition = savedState.playerPosition;
+            this.currentMapType = savedState.mapType;
+            
+            if (savedState.mapType === 'local') {
+                this.currentLocalMap = savedState.map;
+            }
+            
+            console.log(`🚪 Возврат на ${savedState.mapType} карту: ${savedState.map.name}`);
+            
+            this.calculateMapPositioning();
+            this.drawTacticalMap();
+        }
+    }
+
+    saveCurrentMapToStack() {
+        const mapState = {
+            map: this.currentTacticalMap,
+            playerPosition: {...this.playerTacticalPosition},
+            mapType: this.currentMapType,
+            localMap: this.currentLocalMap
+        };
+        this.mapStack.push(mapState);
+        console.log(`💾 Сохранено состояние карты в стек (глубина: ${this.mapStack.length})`);
+    }
+
+    // ========== ЗАГРУЗКА ФАЙЛОВ КАРТ ==========
+
+    async loadTacticalMapFile(mapPath) {
+        try {
+            console.log(`📥 Загружаем тактическую карту: ${mapPath}`);
+            
+            const response = await fetch(mapPath);
+            if (!response.ok) {
+                throw new Error(`Не удалось загрузить карту: ${mapPath}`);
+            }
+            
+            const mapData = await response.json();
+            const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
+            
+            if (tacticalMap) {
+                this.currentTacticalMap = tacticalMap;
+                this.setPlayerToStartPosition();
+                
+                console.log(`✅ Тактическая карта загружена: ${tacticalMap.name}`);
+                return tacticalMap;
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки тактической карты:`, error);
+            throw error;
+        }
+        return null;
+    }
+
+    async loadLocalMapFile(mapPath) {
+        try {
+            console.log(`📥 Загружаем локальную карту: ${mapPath}`);
+            
+            const response = await fetch(mapPath);
+            if (!response.ok) {
+                throw new Error(`Не удалось загрузить локальную карту: ${mapPath}`);
+            }
+            
+            const mapData = await response.json();
+            const localMap = this.convertTigrimionJSONToMap(mapData, 'local');
+            
+            if (localMap) {
+                this.setCurrentLocalMap(localMap);
+                console.log(`✅ Локальная карта загружена: ${localMap.name}`);
+                return localMap;
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки локальной карты:`, error);
+            throw error;
+        }
+        return null;
+    }
+
+    async loadGlobalMapFile(mapPath) {
+        console.log(`🌍 Загрузка глобальной карта: ${mapPath}`);
+        return null;
+    }
+
+    setPlayerToStartPosition() {
+        if (!this.currentTacticalMap) return;
+        
+        const startCell = Object.values(this.currentTacticalMap.cells)
+            .find(cell => cell.type === 'player_start');
+        
+        if (startCell) {
+            this.playerTacticalPosition = {x: startCell.col, y: startCell.row};
+            console.log(`🎯 Герой установлен на стартовую позицию: [${startCell.col}, ${startCell.row}]`);
+        } else {
+            this.playerTacticalPosition = {...this.currentTacticalMap.startPosition};
+        }
     }
 }
 
