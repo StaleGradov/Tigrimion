@@ -708,6 +708,12 @@ body {
     }
 }
 
+@keyframes pulseHealth {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
 /* ========== СИСТЕМА БОЯ С КАРТОЙ ========== */
 .battle-screen-with-map {
     display: grid;
@@ -767,95 +773,7 @@ body {
     margin: 0.5rem 0;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
-/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ========== */
-.health-display-section, .experience-display-section {
-    margin: 0 !important;
-    padding: 8px 0 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    position: relative !important;
-}
 
-.health-bar-container, .experience-bar-container {
-    width: 100% !important;
-    background: #333 !important;
-    border-radius: 8px !important;
-    margin: 4px 0 0 0 !important;
-    overflow: hidden !important;
-    position: relative !important;
-    border: 2px solid #444 !important;
-    height: 24px !important;
-    box-sizing: border-box !important;
-}
-
-/* ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ */
-.health-bar {
-    height: 100% !important;
-    background: linear-gradient(90deg, #e74c3c, #f39c12) !important;
-    border-radius: 6px !important;
-    transition: width 0.5s ease !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: white !important;
-    font-weight: bold !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
-    min-width: 50px !important;
-    font-size: 11px !important;
-    position: relative !important;
-    box-sizing: border-box !important;
-}
-
-.health-bar.regening {
-    background: linear-gradient(90deg, #2ecc71, #27ae60) !important;
-    animation: pulseHealth 1s infinite !important;
-}
-
-/* ИСПРАВЛЕННАЯ ПОЛОСКА ОПЫТА */
-.experience-bar {
-    height: 100% !important;
-    background: linear-gradient(90deg, #4cc9f0, #4361ee) !important;
-    border-radius: 6px !important;
-    transition: width 0.5s ease !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: white !important;
-    font-weight: bold !important;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7) !important;
-    min-width: 50px !important;
-    font-size: 11px !important;
-    position: relative !important;
-    box-sizing: border-box !important;
-}
-
-/* ОСОБЫЕ СТИЛИ ДЛЯ ИНТЕРФЕЙСА ГЕРОЯ */
-.hero-overlay-stats-v2 .health-display-section,
-.hero-overlay-stats-v2 .experience-display-section {
-    margin: 0 !important;
-    padding: 6px 0 !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.hero-overlay-stats-v2 .health-bar-container,
-.hero-overlay-stats-v2 .experience-bar-container {
-    margin: 2px 0 0 0 !important;
-    height: 22px !important;
-}
-
-.hero-overlay-stats-v2 .health-bar,
-.hero-overlay-stats-v2 .experience-bar {
-    font-size: 10px !important;
-}
-
-@keyframes pulseHealth {
-    0% { opacity: 1; }
-    50% { opacity: 0.8; }
-    100% { opacity: 1; }
-}
 .combatant-stats {
     display: flex;
     justify-content: space-around;
@@ -1003,39 +921,6 @@ body {
     backdrop-filter: blur(5px);
     display: none;
     z-index: 1000;
-    padding: 2rem;
-}
-
-.overlay-content:not(.tactical-map-overlay) {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border-radius: 12px;
-    border: 1px solid #475569;
-    max-width: 900px;
-    max-height: 80vh;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-}
-
-.overlay-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem 2rem;
-    border-bottom: 1px solid #475569;
-    background: rgba(15, 23, 42, 0.8);
-}
-
-.overlay-header h3 {
-    color: #3b82f6;
-    font-size: 1.3rem;
-}
-
-.overlay-body {
-    flex: 1;
-    padding: 2rem;
-    overflow-y: auto;
 }
 
 .btn-close {
@@ -1051,190 +936,6 @@ body {
 .btn-close:hover {
     background: #374151;
     color: white;
-}
-
-/* ========== СТИЛИ ДЛЯ КАРТ ========== */
-.map-container {
-    background: rgba(30, 41, 59, 0.9);
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid #475569;
-}
-
-.map-grid {
-    display: grid;
-    gap: 4px;
-    margin-bottom: 1rem;
-}
-
-.map-cell {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1.2em;
-}
-
-.map-cell:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.map-cell.player-cell {
-    background: rgba(74, 222, 128, 0.3);
-    border-color: #4ade80;
-    animation: pulse 2s infinite;
-}
-
-.map-cell.global-cell {
-    background: rgba(59, 130, 246, 0.2);
-}
-
-.map-cell.local-cell {
-    background: rgba(139, 92, 246, 0.2);
-}
-
-.map-cell.tactical-cell {
-    background: rgba(76, 201, 240, 0.2);
-}
-
-.map-info {
-    text-align: center;
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.map-error {
-    text-align: center;
-    color: #f87171;
-    padding: 2rem;
-    background: rgba(248, 113, 113, 0.1);
-    border-radius: 8px;
-    border: 1px solid #f87171;
-}
-
-/* ========== СТИЛИ ДЛЯ ТАКТИЧЕСКИХ КАРТ РЕДАКТОРА ========== */
-.tigrimion-tactical-map {
-    max-width: 1200px !important;
-    width: 95vw !important;
-    max-height: 90vh !important;
-}
-
-.tactical-map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.9);
-    border-bottom: 1px solid #00ffff;
-}
-
-.tactical-map-header h4 {
-    color: #00ffff;
-    font-size: 1.4rem;
-    margin: 0;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: calc(90vh - 80px);
-}
-
-.tactical-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 15px;
-    overflow: hidden;
-    margin: 1rem;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
-}
-
-.tactical-map-info {
-    padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.9);
-    border-top: 1px solid #00ffff;
-}
-
-.map-description {
-    color: #cbd5e1;
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
-}
-
-.player-position, .map-stats {
-    color: #00ffff;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.movement-info {
-    background: rgba(255, 255, 0, 0.1);
-    padding: 0.8rem;
-    border-radius: 8px;
-    border: 1px solid #ffff00;
-    margin: 0.8rem 0;
-    text-align: center;
-}
-
-.movement-info span {
-    color: #ffff00;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Информация о редакторе */
-.map-editor-info {
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-
-.map-editor-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    font-size: 0.85rem;
-}
-
-.map-editor-stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-}
-
-.map-editor-stat:last-child {
-    border-bottom: none;
-}
-
-.map-editor-stat span:first-child {
-    color: #cbd5e1;
-}
-
-.map-editor-stat span:last-child {
-    color: #00ffff;
-    font-weight: bold;
-}
-
-/* Контролы карты */
-.map-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
 }
 
 /* ========== ИНВЕНТАРЬ ========== */
@@ -1967,7 +1668,7 @@ body {
     100% { transform: scale(1); }
 }
 
-.hero-card, .overlay-content, .btn-primary, .btn-secondary {
+.hero-card, .modal-content, .btn-primary, .btn-secondary {
     animation: fadeIn 0.5s ease-out;
 }
 
@@ -2227,87 +1928,6 @@ body {
     font-family: monospace;
     z-index: 10;
     border: 1px solid #00ff00;
-}
-
-/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ КАРТ БЕЗ МАСШТАБИРОВАНИЯ ========== */
-.tactical-map-visual {
-    position: relative !important;
-    width: 100% !important;
-    height: 70vh !important;
-    min-height: 500px !important;
-    background: #000000 !important;
-    border: 2px solid #00ffff !important;
-    border-radius: 15px !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-}
-
-#tacticalMapCanvas {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    cursor: default !important;
-    background: transparent !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-}
-
-/* Убираем любые трансформации и переходы */
-.tactical-map-visual * {
-    transform: none !important;
-    transition: none !important;
-}
-
-/* Убираем контролы масштабирования */
-.zoom-controls {
-    display: none !important;
-}
-
-.zoom-info {
-    display: none !important;
-}
-
-/* Упрощаем header карты */
-.tactical-map-header .map-controls {
-    gap: 0.5rem;
-}
-
-/* Улучшаем информацию о позиции */
-.position-info {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 1rem;
-    border-top: 1px solid #00ffff;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.player-position, .map-stats, .movement-info {
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(0, 255, 255, 0.1);
-    border-radius: 5px;
-    border: 1px solid rgba(0, 255, 255, 0.3);
-}
-
-.movement-info span {
-    color: #00ff00;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .position-info {
-        grid-template-columns: 1fr;
-    }
 }
 
 /* ========== АДАПТИВНОСТЬ ДЛЯ ИНТЕРФЕЙСА ГЕРОЯ V4 ========== */
@@ -2845,6 +2465,7 @@ body {
     font-style: italic;
     padding: 1rem;
 }
+
 /* ========== РАСТЯНУТОЕ ОКНО БОЯ С КАРТОЙ ========== */
 .battle-screen-with-map {
     display: grid;
@@ -3363,6 +2984,7 @@ body {
     margin-bottom: 0.8rem;
     color: #f59e0b;
 }
+
 /* ========== ПОЛОСКИ ЗДОРОВЬЯ ГЕРОЯ (В ИНТЕРФЕЙСЕ ГЕРОЯ) ========== */
 .hero-overlay-stats-v2 .health-display-section, 
 .hero-overlay-stats-v2 .experience-display-section {
@@ -3576,6 +3198,7 @@ body {
 .log-entry:last-child {
     border-bottom: none;
 }
+
 /* ========== ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ ========== */
 
 /* Стили для полосок здоровья в интерфейсе героя (оставляем как есть) */
@@ -3644,6 +3267,7 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+
 /* ========== СТИЛИ ДЛЯ ОКНА РЕЗУЛЬТАТОВ БОЯ ========== */
 .battle-result-overlay {
     position: fixed;
@@ -3713,292 +3337,4 @@ body {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
-}
-
-/* ========== ПОЛНОЕ ИСПРАВЛЕНИЕ ТАКТИЧЕСКОЙ КАРТЫ ========== */
-.tactical-map-overlay .overlay-content {
-    max-width: 98vw !important;
-    max-height: 98vh !important;
-    width: 98vw !important;
-    height: 98vh !important;
-    margin: 1vh auto !important;
-    padding: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: #000000 !important;
-    border: 2px solid #00ffff !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-}
-
-.tactical-map-overlay .overlay-header {
-    flex-shrink: 0 !important;
-    margin: 0 !important;
-    padding: 1rem 1.5rem !important;
-    background: rgba(0, 20, 40, 0.95) !important;
-    border-bottom: 1px solid #00ffff !important;
-    height: auto !important;
-    min-height: auto !important;
-}
-
-.tactical-map-overlay .overlay-body {
-    flex: 1 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: calc(100% - 70px) !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-}
-
-.tactical-map-content {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-.tactical-map-visual {
-    flex: 1 !important;
-    position: relative !important;
-    background: #000000 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: auto !important;
-    box-shadow: none !important;
-}
-
-#tacticalMapCanvas {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    cursor: pointer !important;
-}
-
-/* Убираем все лишние элементы */
-.tactical-map-header .map-controls,
-.position-info,
-.zoom-controls,
-.zoom-info,
-.map-editor-info,
-.movement-info {
-    display: none !important;
-}
-
-/* Убираем прокрутку */
-.tactical-map-overlay {
-    overflow: hidden !important;
-}
-
-.tactical-map-overlay .overlay-content {
-    overflow: hidden !important;
-}
-
-/* Упрощаем заголовок */
-.tactical-map-header h4 {
-    color: #00ffff !important;
-    font-size: 1.3rem !important;
-    margin: 0 !important;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
-}
-
-/* Стили для кнопки закрытия */
-.tactical-map-overlay .btn-close {
-    background: rgba(248, 113, 113, 0.2) !important;
-    border: 2px solid #f87171 !important;
-    color: white !important;
-    font-size: 1.2rem !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.tactical-map-overlay .btn-close:hover {
-    background: rgba(248, 113, 113, 0.4) !important;
-    transform: scale(1.1) !important;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .tactical-map-overlay .overlay-content {
-        max-width: 99vw !important;
-        max-height: 99vh !important;
-        width: 99vw !important;
-        height: 99vh !important;
-        margin: 0.5vh auto !important;
-    }
-    
-    .tactical-map-overlay .overlay-body {
-        height: calc(100% - 60px) !important;
-    }
-    
-    .tactical-map-overlay .overlay-header {
-        padding: 0.8rem 1rem !important;
-    }
-    
-    .tactical-map-header h4 {
-        font-size: 1.1rem !important;
-    }
-}
-/* ========== ИСПРАВЛЕНИЯ ДЛЯ ГЛОБАЛЬНОЙ КАРТЫ ========== */
-
-/* Специальные стили для глобальной карты */
-.overlay-content.global-map-overlay {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-    margin: 2vh auto !important;
-    border-radius: 12px;
-    border: 2px solid #00ffff !important;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* Контейнер для визуализации глобальной карты */
-.global-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 15px;
-    min-height: 500px;
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-}
-
-/* Canvas глобальной карты */
-#globalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-    background: transparent;
-    cursor: pointer;
-}
-
-/* Информационная панель глобальной карты */
-.global-map-info {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 15px;
-    border-bottom: 1px solid #00ffff;
-    margin: 0;
-}
-
-.progress-stats {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-/* Легенда глобальной карты */
-.global-map-legend {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 15px;
-    border-top: 1px solid #00ffff;
-    margin: 0;
-}
-
-.legend-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    padding: 5px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-}
-
-.legend-symbol {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
-}
-
-/* Действия глобальной карты */
-.global-map-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    padding: 15px;
-    border-top: 1px solid #00ffff;
-    background: rgba(0, 20, 40, 0.9);
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .overlay-content.global-map-overlay {
-        max-width: 98vw !important;
-        max-height: 98vh !important;
-        width: 98vw !important;
-        height: 98vh !important;
-        margin: 1vh auto !important;
-    }
-    
-    .global-map-visual {
-        margin: 10px;
-        min-height: 400px;
-    }
-    
-    .progress-stats {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .legend-grid {
-        grid-template-columns: 1fr;
-    }
-}
-/* Добавьте в конец CSS файла */
-.global-map-overlay {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
-    margin: 2vh auto !important;
-    border: 2px solid #00ffff !important;
-}
-
-.global-map-visual {
-    flex: 1;
-    min-height: 500px;
-    background: #000000;
-    border: 1px solid #00ffff;
-    border-radius: 8px;
-    margin: 15px;
-    position: relative;
-    overflow: hidden;
 }
