@@ -118,41 +118,51 @@ class MapSystem {
         console.log(`📍 Позиции обновлены для героя: ${hero.name}`);
     }
 
-    async loadMapData() {
-        try {
-            console.log("📥 Загружаем данные карт...");
-            
-            await this.loadJSONMaps();
-            await this.loadGlobalMapData();
-            
-            this.debugLoadedMaps();
-            
-            if (this.localMaps.length > 0) {
-                this.forceSetLocalMap();
-            }
-            else if (this.tacticalMaps.length === 0 && this.localMaps.length === 0) {
-                console.log("⚠️ Нет загруженных карт, создаем тестовые...");
-                this.createTestMaps();
-                if (this.localMaps.length > 0) {
-                    this.forceSetLocalMap();
-                }
-            }
-            
-            this.setStartPositions();
-            this.loadGlobalProgress();
-            
-            console.log(`✅ Карты загружены: Глобальных=${this.globalMaps.length}, Локальных=${this.localMaps.length}, Тактических=${this.tacticalMaps.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных карт:", error);
-            this.createFallbackMaps();
-            if (this.localMaps.length > 0) {
-                this.forceSetLocalMap();
-            }
-            return true;
+  async loadMapData() {
+    try {
+        console.log("📥 Загружаем данные карт...");
+        
+        await this.loadJSONMaps();
+        await this.loadGlobalMapData();
+        
+        this.debugLoadedMaps();
+        
+        // ДОБАВЬТЕ ЭТИ СТРОКИ:
+        console.log("🔧 Применяем исправления...");
+        this.fixCellCoordinates(); // Исправляем координаты
+        
+        if (this.localMaps.length > 0) {
+            this.forceSetLocalMap();
         }
+        
+        this.setStartPositions();
+        this.loadGlobalProgress();
+        
+        // ПРИНУДИТЕЛЬНАЯ ОТРИСОВКА ПОСЛЕ ЗАГРУЗКИ
+        setTimeout(() => {
+            console.log("🔄 Принудительная инициализация после загрузки...");
+            if (this.currentGlobalMap) {
+                this.calculateGlobalMapPositioning();
+                this.drawGlobalMap();
+            }
+            if (this.currentLocalMap) {
+                this.calculateMapPositioning();
+                this.drawTacticalMap();
+            }
+        }, 500);
+        
+        console.log(`✅ Карты загружены: Глобальных=${this.globalMaps.length}, Локальных=${this.localMaps.length}, Тактических=${this.tacticalMaps.length}`);
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных карт:", error);
+        this.createFallbackMaps();
+        if (this.localMaps.length > 0) {
+            this.forceSetLocalMap();
+        }
+        return true;
     }
+}
 
     // ========== СИСТЕМА ГЛОБАЛЬНОЙ КАРТЫ ==========
 
@@ -313,7 +323,50 @@ class MapSystem {
             console.error("❌ Ошибка загрузки прогресса глобальной карты:", error);
         }
     }
-
+    
+// ДОБАВЬТЕ В КЛАСС MapSystem
+    
+fixCellCoordinates() {
+    console.group("🔧 ИСПРАВЛЕНИЕ КООРДИНАТ КЛЕТОК");
+    
+    // Исправляем глобальную карту
+    if (this.currentGlobalMap) {
+        const cells = Object.values(this.currentGlobalMap.cells);
+        console.log(`🌍 Исправляем ${cells.length} клеток глобальной карты`);
+        
+        cells.forEach(cell => {
+            // Используем координаты из редактора как основные
+            if (cell.originalData) {
+                cell.x = cell.originalData.editorX || cell.x;
+                cell.y = cell.originalData.editorY || cell.y;
+            }
+            // Убеждаемся, что координаты есть
+            cell.x = cell.x || 0;
+            cell.y = cell.y || 0;
+            cell.originalX = cell.x;
+            cell.originalY = cell.y;
+        });
+    }
+    
+    // Исправляем локальную карту
+    if (this.currentLocalMap) {
+        const cells = Object.values(this.currentLocalMap.cells);
+        console.log(`📍 Исправляем ${cells.length} клеток локальной карты`);
+        
+        cells.forEach(cell => {
+            if (cell.originalData) {
+                cell.x = cell.originalData.editorX || cell.x;
+                cell.y = cell.originalData.editorY || cell.y;
+            }
+            cell.x = cell.x || 0;
+            cell.y = cell.y || 0;
+            cell.originalX = cell.x;
+            cell.originalY = cell.y;
+        });
+    }
+    
+    console.groupEnd();
+}
     // ========== ОТОБРАЖЕНИЕ ГЛОБАЛЬНОЙ КАРТЫ ==========
 
     renderGlobalMap() {
@@ -334,6 +387,9 @@ class MapSystem {
                                 🐛 Отладка
                             </button>
                             <button class="btn-close" onclick="game.hideOverlay()">✕ Закрыть</button>
+                            <button class="btn-control" onclick="game.systems.map.debugForceRedraw()">
+                           🔄 Принудительная перерисовка
+                            </button>
                         </div>
                     </div>
                     
@@ -453,115 +509,170 @@ class MapSystem {
         console.groupEnd();
     }
 
-    calculateGlobalMapPositioning() {
-        console.group("🔍 DEBUG calculateGlobalMapPositioning");
+   calculateGlobalMapPositioning() {
+    console.group("🔍 DEBUG calculateGlobalMapPositioning - ИСПРАВЛЕННЫЙ");
+    
+    if (!this.currentGlobalMap) {
+        console.error("❌ currentGlobalMap не установлена!");
+        console.groupEnd();
+        return;
+    }
+
+    const container = document.getElementById('globalMapVisual');
+    if (!container) {
+        console.error("❌ Контейнер globalMapVisual не найден!");
+        console.groupEnd();
+        return;
+    }
+
+    // ОЧИЩАЕМ КОНТЕЙНЕР
+    container.innerHTML = '';
+    
+    // СОЗДАЕМ CANVAS
+    this.canvas = document.createElement('canvas');
+    this.canvas.id = 'globalMapCanvas';
+    this.canvas.className = 'map-canvas';
+    this.canvas.style.width = '100%';
+    this.canvas.style.height = '100%';
+    this.canvas.style.display = 'block';
+    
+    container.appendChild(this.canvas);
+
+    // УСТАНАВЛИВАЕМ РАЗМЕРЫ CANVAS
+    const rect = container.getBoundingClientRect();
+    this.canvas.width = rect.width;
+    this.canvas.height = rect.height;
+    
+    console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
+    console.log(`📐 Размер canvas: ${this.canvas.width}x${this.canvas.height}`);
+
+    this.ctx = this.canvas.getContext('2d');
+    
+    // ПОЛУЧАЕМ РАЗМЕРЫ КАРТЫ ИЗ ДАННЫХ
+    const cells = Object.values(this.currentGlobalMap.cells);
+    if (cells.length === 0) {
+        console.error("❌ Нет клеток для отображения!");
+        console.groupEnd();
+        return;
+    }
+
+    // НАХОДИМ ГРАНИЦЫ КАРТЫ
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    cells.forEach(cell => {
+        if (cell.x < minX) minX = cell.x;
+        if (cell.y < minY) minY = cell.y;
+        if (cell.x > maxX) maxX = cell.x;
+        if (cell.y > maxY) maxY = cell.y;
+    });
+    
+    const mapWidth = maxX - minX + 100; // + отступы
+    const mapHeight = maxY - minY + 100;
+    
+    console.log(`🗺️ Границы карты: X[${minX}-${maxX}], Y[${minY}-${maxY}]`);
+    console.log(`📏 Размер карты: ${mapWidth}x${mapHeight}`);
+
+    // РАСЧЕТ МАСШТАБА ДЛЯ ВМЕЩЕНИЯ ВСЕЙ КАРТЫ
+    const scaleX = rect.width / mapWidth;
+    const scaleY = rect.height / mapHeight;
+    const scale = Math.min(scaleX, scaleY) * 0.9; // 90% чтобы были отступы
+    
+    // ЦЕНТРИРОВАНИЕ
+    const offsetX = (rect.width - mapWidth * scale) / 2;
+    const offsetY = (rect.height - mapHeight * scale) / 2;
+
+    console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+
+    // ОБРАБАТЫВАЕМ КЛЕТКИ
+    let processedCount = 0;
+    let visibleCount = 0;
+    
+    cells.forEach(cell => {
+        // ПРИМЕНЯЕМ МАСШТАБ И СМЕЩЕНИЕ ОТНОСИТЕЛЬНО ГРАНИЦ
+        cell.displayX = (cell.x - minX) * scale + offsetX;
+        cell.displayY = (cell.y - minY) * scale + offsetY;
+        processedCount++;
         
-        if (!this.currentGlobalMap || !this.canvas) {
-            console.log("❌ currentGlobalMap или canvas не доступны");
-            console.groupEnd();
-            return;
-        }
-
-        const container = document.getElementById('globalMapVisual');
-        if (!container) {
-            console.log("❌ Контейнер не найден");
-            console.groupEnd();
-            return;
-        }
-
-        const rect = container.getBoundingClientRect();
-        console.log(`📐 Размер контейнера: ${rect.width}x${rect.height}`);
+        if (cell.visible) visibleCount++;
         
-        const editorWidth = this.currentGlobalMap.originalCanvasWidth || 1024;
-        const editorHeight = this.currentGlobalMap.originalCanvasHeight || 1024;
+        // ДЕБАГ ПЕРВЫХ 3 КЛЕТОК
+        if (processedCount <= 3) {
+            console.log(`Клетка ${processedCount}:`, {
+                оригинал: `[${cell.x}, ${cell.y}]`,
+                отображение: `[${cell.displayX.toFixed(1)}, ${cell.displayY.toFixed(1)}]`,
+                тип: cell.type,
+                col: cell.col,
+                row: cell.row,
+                видима: cell.visible
+            });
+        }
+    });
 
-        console.log(`🎯 Размер редактора: ${editorWidth}x${editorHeight}`);
+    console.log(`✅ Позиционирование завершено. Обработано: ${processedCount}, Видимых: ${visibleCount}`);
+    console.groupEnd();
+}
 
-        // Используем всю доступную область
-        const scaleX = rect.width / editorWidth;
-        const scaleY = rect.height / editorHeight;
-        const scale = Math.min(scaleX, scaleY);
+   drawGlobalMap() {
+    console.group("🔍 DEBUG drawGlobalMap - ИСПРАВЛЕННЫЙ");
+    
+    if (!this.ctx) {
+        console.error("❌ Canvas context не доступен");
+        console.groupEnd();
+        return;
+    }
+    
+    if (!this.currentGlobalMap) {
+        console.error("❌ Глобальная карта не доступна");
+        console.groupEnd();
+        return;
+    }
+    
+    if (!this.canvas) {
+        console.error("❌ Canvas не доступен");
+        console.groupEnd();
+        return;
+    }
 
-        // Центрируем
-        const offsetX = (rect.width - editorWidth * scale) / 2;
-        const offsetY = (rect.height - editorHeight * scale) / 2;
-
-        console.log(`📏 Масштаб: ${scale.toFixed(3)}, Смещение: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
-
-        // Обрабатываем все клетки глобальной карты
+    const canvas = this.canvas;
+    console.log("🎨 Начинаем отрисовку глобальной карты...");
+    console.log("Canvas размеры:", canvas.width, "x", canvas.height);
+    
+    // Очищаем canvas
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    try {
+        // Рисуем фон
+        this.drawGlobalBackground();
+        console.log("✅ Фон нарисован");
+        
+        // Рисуем гексы
         const cells = Object.values(this.currentGlobalMap.cells);
-        console.log("Обрабатываем клеток:", cells.length);
-        
-        let processedCount = 0;
-        let skippedCount = 0;
+        let drawnCount = 0;
         
         cells.forEach(cell => {
-            const originalX = cell.originalX || cell.x;
-            const originalY = cell.originalY || cell.y;
-            
-            // Проверяем, что координаты существуют
-            if (originalX !== undefined && originalY !== undefined) {
-                // Применяем масштаб и смещение
-                cell.displayX = originalX * scale + offsetX;
-                cell.displayY = originalY * scale + offsetY;
-                processedCount++;
-            } else {
-                console.warn(`⚠️ Клетка [${cell.col},${cell.row}] пропущена - нет координат`);
-                skippedCount++;
+            if (cell.visible && cell.displayX !== undefined && cell.displayY !== undefined) {
+                this.drawSingleGlobalHex(cell);
+                this.drawGlobalHexContent(cell);
+                drawnCount++;
             }
         });
+        
+        console.log(`✅ Отрисовано гексов: ${drawnCount}`);
 
-        console.log(`✅ Позиционирование завершено. Обработано: ${processedCount}, Пропущено: ${skippedCount}`);
-        console.groupEnd();
+        if (this.showGrid) {
+            this.drawGlobalHexGrid();
+            console.log("✅ Сетка нарисована");
+        }
+        
+    } catch (error) {
+        console.error("❌ Ошибка при отрисовке:", error);
+        this.drawTestFallback();
     }
+    
+    console.log("✅ drawGlobalMap завершен");
+    console.groupEnd();
+}
 
-    drawGlobalMap() {
-        console.group("🔍 DEBUG drawGlobalMap");
-        
-        if (!this.ctx) {
-            console.error("❌ Canvas context не доступен");
-            console.groupEnd();
-            return;
-        }
-        
-        if (!this.currentGlobalMap) {
-            console.error("❌ Глобальная карта не доступна");
-            console.groupEnd();
-            return;
-        }
-        
-        if (!this.canvas) {
-            console.error("❌ Canvas не доступен");
-            console.groupEnd();
-            return;
-        }
-
-        const canvas = this.canvas;
-        console.log("Canvas размеры:", canvas.width, "x", canvas.height);
-        
-        // Очищаем canvas
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        try {
-            this.drawGlobalBackground();
-            console.log("✅ Фон нарисован");
-            
-            this.drawGlobalHexes();
-            console.log("✅ Гексы нарисованы");
-
-            if (this.showGrid) {
-                this.drawGlobalHexGrid();
-                console.log("✅ Сетка нарисована");
-            }
-            
-        } catch (error) {
-            console.error("❌ Ошибка при отрисовке:", error);
-            this.drawTestFallback();
-        }
-        
-        console.log("✅ drawGlobalMap завершен");
-        console.groupEnd();
-    }
+    
 
     drawGlobalBackground() {
         const map = this.currentGlobalMap;
@@ -2653,6 +2764,20 @@ class MapSystem {
         }
     }
 
+debugForceRedraw() {
+    console.log("🔄 ПРИНУДИТЕЛЬНАЯ ПЕРЕРИСОВКА ВСЕХ КАРТ");
+    this.fixCellCoordinates();
+    
+    if (this.currentGlobalMap) {
+        this.calculateGlobalMapPositioning();
+        this.drawGlobalMap();
+    }
+    if (this.currentLocalMap) {
+        this.calculateMapPositioning();
+        this.drawTacticalMap();
+    }
+}
+    
     updateMovementInfo() {
         const availableMoves = this.getAvailableMoves();
         
