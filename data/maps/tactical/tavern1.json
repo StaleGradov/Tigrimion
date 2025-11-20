@@ -109,6 +109,7 @@
           "type": "exit",
           "passable": true,
           "visible": true,
+            "tooltip": "🚪 Выход из таверны\n(Вернуться на улицу)",
           "originalData": {
             "editorX": 415.6921938165305,
             "editorY": 240,
@@ -141,6 +142,7 @@
           "type": "exit",
           "passable": true,
           "visible": true,
+            "tooltip": "🚪 Выход из таверны\n(Вернуться на улицу)",
           "originalData": {
             "editorX": 692.8203230275508,
             "editorY": 240,
@@ -397,6 +399,7 @@
           "type": "exit",
           "passable": true,
           "visible": true,
+            "tooltip": "🚪 Выход из таверны\n(Вернуться на улицу)",
           "originalData": {
             "editorX": 692.8203230275508,
             "editorY": 720,
