@@ -144,7 +144,9 @@
           "type": "exit",
           "passable": true,
           "visible": true,
-            "tooltip": "🚪 Выход из таверны\n(Вернуться на улицу)",
+          "tacticalMap": "data/maps/tactical/tactical-maps.json",
+          "tooltip": "🚪 Выход на улицу",
+          "targetPosition": {"x": 20, "y": 29},
           "originalData": {
             "editorX": 692.8203230275508,
             "editorY": 240,
@@ -401,7 +403,9 @@
           "type": "exit",
           "passable": true,
           "visible": true,
-            "tooltip": "🚪 Выход из таверны\n(Вернуться на улицу)",
+          "tacticalMap": "data/maps/tactical/tactical-maps.json",
+          "tooltip": "🚪 Выход на улицу",
+          "targetPosition": {"x": 20, "y": 29},
           "originalData": {
             "editorX": 692.8203230275508,
             "editorY": 720,
