@@ -358,7 +358,7 @@ renderGlobalMap() {
     return `
         <div class="overlay-content global-map-overlay">
             <div class="overlay-header">
-                <h3>🗺️ Глобальная карта</h3>
+                <h3>🗺️ Глобальная карта - ${this.currentGlobalMap.name}</h3>
                 <button class="btn-close" onclick="game.hideOverlay()">✕</button>
             </div>
             
@@ -367,12 +367,16 @@ renderGlobalMap() {
                     <span>📍 Текущая позиция: [${this.globalProgress.currentGlobalX}, ${this.globalProgress.currentGlobalY}]</span>
                     <span>📊 Посещено: ${this.globalProgress.visitedCells.size} гексов</span>
                     <span>🔓 Доступно: ${this.globalProgress.unlockedCells.size} гексов</span>
+                    <span>🔄 Обнаружено: ${this.globalProgress.discoveredCells.size} гексов</span>
                 </div>
             </div>
             
-            <div class="global-map-visual" id="globalMapContainer">
+            <div class="global-map-visual" style="min-height: 500px; background: #1a1a2e;">
                 <!-- Canvas будет создан здесь -->
-                <div class="map-loading">Загрузка глобальной карты...</div>
+                <div style="color: #00ffff; text-align: center; padding: 20px;">
+                    Загрузка глобальной карты...<br>
+                    ${this.currentGlobalMap.name} (${Object.keys(this.currentGlobalMap.cells).length} клеток)
+                </div>
             </div>
             
             <div class="global-map-legend">
@@ -394,10 +398,6 @@ renderGlobalMap() {
                         <span class="legend-symbol">🔴</span>
                         <span>Заблокированные</span>
                     </div>
-                    <div class="legend-item">
-                        <span class="legend-symbol">🌍</span>
-                        <span>Переходы</span>
-                    </div>
                 </div>
             </div>
             
@@ -414,41 +414,98 @@ renderGlobalMap() {
 }
 
 initGlobalMapCanvas() {
-    console.log("🎨 Инициализация canvas для глобальной карты...");
-    
+    console.group("🔍 DEBUG initGlobalMapCanvas");
     const container = document.querySelector('.global-map-visual');
+    console.log("Контейнер .global-map-visual:", container);
+    
     if (!container) {
-        console.error("❌ Контейнер .global-map-visual не найден!");
+        console.log("❌ Контейнер для глобальной карты не найден");
+        console.groupEnd();
         return;
     }
 
-    // Очищаем контейнер
+    console.log("Очищаем контейнер...");
     container.innerHTML = '';
 
-    // Создаем canvas
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'globalMapCanvas';
+    
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
-    this.canvas.style.display = 'block';
-    this.canvas.style.background = '#1a1a2e';
-    
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = '0';
+    this.canvas.style.left = '0';
+    this.canvas.style.cursor = 'pointer';
+    this.canvas.style.background = '#1a1a2e'; // Добавляем фон на всякий случай
     container.appendChild(this.canvas);
 
-    // Получаем контекст
+    console.log("Canvas создан:", this.canvas);
+
     this.ctx = this.canvas.getContext('2d');
+    console.log("Контекст создан:", this.ctx);
     
-    // Устанавливаем размеры canvas
+    // Устанавливаем размеры canvas СРАЗУ
     const rect = container.getBoundingClientRect();
     this.canvas.width = rect.width;
     this.canvas.height = rect.height;
+    console.log(`📐 Canvas размеры: ${this.canvas.width}x${this.canvas.height}`);
     
-    console.log(`📐 Canvas размер: ${this.canvas.width}x${this.canvas.height}`);
+    console.log("Вызываем calculateGlobalMapPositioning...");
+    this.calculateGlobalMapPositioning();
     
-    // Простая отрисовка для тестирования
-    this.drawTestGlobalMap();
+    console.log("Вызываем setupGlobalCanvasEventListeners...");
+    this.setupGlobalCanvasEventListeners();
     
-    console.log("✅ Глобальная карта инициализирована");
+    // ⭐ ВАЖНО: Добавляем проверку перед отрисовкой
+    setTimeout(() => {
+        console.log("🔍 Проверка перед отрисовкой:", {
+            ctx: !!this.ctx,
+            currentGlobalMap: !!this.currentGlobalMap,
+            canvas: !!this.canvas
+        });
+        
+        if (this.ctx && this.currentGlobalMap && this.canvas) {
+            console.log("✅ Все условия выполнены, вызываем drawGlobalMap");
+            this.drawGlobalMap();
+        } else {
+            console.error("❌ Условия не выполнены для отрисовки");
+            // Рисуем тестовую картинку
+            this.drawTestFallback();
+        }
+    }, 100);
+    
+    console.log("✅ initGlobalMapCanvas завершен");
+    console.groupEnd();
+}
+
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ДЛЯ ТЕСТИРОВАНИЯ
+drawTestFallback() {
+    if (!this.ctx || !this.canvas) return;
+    
+    console.log("🎨 Рисуем тестовый fallback...");
+    
+    // Очищаем canvas
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Рисуем тестовый фон
+    const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(1, '#16213e');
+    this.ctx.fillStyle = gradient;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Рисуем тестовый текст
+    this.ctx.fillStyle = '#00ffff';
+    this.ctx.font = 'bold 24px Arial';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('🗺️ Глобальная карта', this.canvas.width / 2, this.canvas.height / 2 - 30);
+    
+    this.ctx.font = '16px Arial';
+    this.ctx.fillText('Загружена: ' + (this.currentGlobalMap?.name || 'неизвестно'), this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText('Клеток: ' + (this.currentGlobalMap ? Object.keys(this.currentGlobalMap.cells).length : 0), this.canvas.width / 2, this.canvas.height / 2 + 30);
+    this.ctx.fillText('Canvas: ' + this.canvas.width + 'x' + this.canvas.height, this.canvas.width / 2, this.canvas.height / 2 + 60);
+    
+    console.log("✅ Тестовый fallback нарисован");
 }
 
 drawTestGlobalMap() {
@@ -545,8 +602,21 @@ calculateGlobalMapPositioning() {
     console.log("this.currentGlobalMap:", this.currentGlobalMap);
     console.log("this.canvas:", this.canvas);
     
-    if (!this.ctx || !this.currentGlobalMap || !this.canvas) {
-        console.log("❌ Canvas context, глобальная карта или canvas не доступна");
+    // ⭐ ДОБАВЛЯЕМ ПРОВЕРКИ
+    if (!this.ctx) {
+        console.error("❌ Canvas context не доступен");
+        console.groupEnd();
+        return;
+    }
+    
+    if (!this.currentGlobalMap) {
+        console.error("❌ Глобальная карта не доступна");
+        console.groupEnd();
+        return;
+    }
+    
+    if (!this.canvas) {
+        console.error("❌ Canvas не доступен");
         console.groupEnd();
         return;
     }
@@ -554,13 +624,26 @@ calculateGlobalMapPositioning() {
     const canvas = this.canvas;
     console.log("Canvas размеры:", canvas.width, "x", canvas.height);
     
+    // Очищаем canvas
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // ⭐ ПРОСТАЯ ОТРИСОВКА ДЛЯ НАЧАЛА
+    try {
+        this.drawGlobalBackground();
+        console.log("✅ Фон нарисован");
+        
+        this.drawGlobalHexes();
+        console.log("✅ Гексы нарисованы");
 
-    this.drawGlobalBackground();
-    this.drawGlobalHexes();
-
-    if (this.showGrid) {
-        this.drawGlobalHexGrid();
+        if (this.showGrid) {
+            this.drawGlobalHexGrid();
+            console.log("✅ Сетка нарисована");
+        }
+        
+    } catch (error) {
+        console.error("❌ Ошибка при отрисовке:", error);
+        // Рисуем fallback
+        this.drawTestFallback();
     }
     
     console.log("✅ drawGlobalMap завершен");
