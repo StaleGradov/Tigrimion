@@ -1,0 +1,242 @@
+{
+  "consumables": {
+    "health_potion": {
+      "id": "health_potion",
+      "name": "Зелье здоровья",
+      "type": "consumable",
+      "description": "Восстанавливает 25 здоровья",
+      "value": 50,
+      "effect": "heal",
+      "power": 25,
+      "icon": "🧪"
+    },
+    "mana_potion": {
+      "id": "mana_potion",
+      "name": "Зелье маны",
+      "type": "consumable",
+      "description": "Восстанавливает 20 маны",
+      "value": 45,
+      "effect": "restore_mana",
+      "power": 20,
+      "icon": "🔮"
+    },
+    "bread": {
+      "id": "bread",
+      "name": "Свежий хлеб",
+      "type": "consumable",
+      "description": "Восстанавливает 15 здоровья",
+      "value": 10,
+      "effect": "heal",
+      "power": 15,
+      "icon": "🍞"
+    },
+    "antidote": {
+      "id": "antidote",
+      "name": "Противоядие",
+      "type": "consumable",
+      "description": "Лечит отравление",
+      "value": 75,
+      "effect": "cure_poison",
+      "power": 0,
+      "icon": "💊"
+    },
+    "greater_health_potion": {
+      "id": "greater_health_potion",
+      "name": "Большое зелье здоровья",
+      "type": "consumable",
+      "description": "Восстанавливает 50 здоровья",
+      "value": 120,
+      "effect": "heal",
+      "power": 50,
+      "icon": "🧪"
+    },
+    "greater_mana_potion": {
+      "id": "greater_mana_potion",
+      "name": "Большое зелье маны",
+      "type": "consumable",
+      "description": "Восстанавливает 40 маны",
+      "value": 100,
+      "effect": "restore_mana",
+      "power": 40,
+      "icon": "🔮"
+    }
+  },
+  
+  "resources": {
+    "torch": {
+      "id": "torch",
+      "name": "Факел",
+      "type": "resource",
+      "description": "Освещает темные области",
+      "value": 15,
+      "icon": "🔥"
+    },
+    "herbs": {
+      "id": "herbs",
+      "name": "Лечебные травы",
+      "type": "resource",
+      "description": "Можно использовать для создания зелий",
+      "value": 25,
+      "icon": "🌿"
+    },
+    "gold_ore": {
+      "id": "gold_ore",
+      "name": "Золотая руда",
+      "type": "resource",
+      "description": "Ценный материал для крафта",
+      "value": 100,
+      "icon": "💎"
+    }
+  },
+  
+  "weapons": {
+    "iron_sword": {
+      "id": "iron_sword",
+      "name": "Железный меч",
+      "type": "weapon",
+      "description": "Надежный железный меч",
+      "value": 150,
+      "attack": 8,
+      "icon": "⚔️"
+    },
+    "steel_sword": {
+      "id": "steel_sword",
+      "name": "Стальной меч",
+      "type": "weapon",
+      "description": "Острый стальной меч",
+      "value": 300,
+      "attack": 12,
+      "icon": "⚔️"
+    },
+    "magic_sword": {
+      "id": "magic_sword",
+      "name": "Магический меч",
+      "type": "weapon",
+      "description": "Меч, усиленный магией",
+      "value": 600,
+      "attack": 18,
+      "icon": "🔮"
+    },
+    "vampire_blade": {
+      "id": "vampire_blade",
+      "name": "Клинок вампира",
+      "type": "weapon",
+      "description": "Поглощает здоровье врагов",
+      "value": 900,
+      "attack": 22,
+      "icon": "🩸"
+    }
+  },
+  
+  "armor": {
+    "leather_armor": {
+      "id": "leather_armor",
+      "name": "Кожаный доспех",
+      "type": "armor",
+      "description": "Легкий кожаный доспех",
+      "value": 120,
+      "defense": 5,
+      "icon": "🛡️"
+    },
+    "chain_armor": {
+      "id": "chain_armor",
+      "name": "Кольчужный доспех",
+      "type": "armor",
+      "description": "Прочная кольчуга",
+      "value": 280,
+      "defense": 9,
+      "icon": "🛡️"
+    },
+    "plate_armor": {
+      "id": "plate_armor",
+      "name": "Латный доспех",
+      "type": "armor",
+      "description": "Тяжелые латы",
+      "value": 550,
+      "defense": 14,
+      "icon": "🛡️"
+    },
+    "shadow_armor": {
+      "id": "shadow_armor",
+      "name": "Теневой доспех",
+      "type": "armor",
+      "description": "Доспех из теней",
+      "value": 800,
+      "defense": 18,
+      "icon": "🌑"
+    }
+  },
+  
+  "artifacts": {
+    "magic_ring": {
+      "id": "magic_ring",
+      "name": "Магическое кольцо",
+      "type": "artifact",
+      "description": "Увеличивает магическую силу",
+      "value": 400,
+      "bonus": "magic_power",
+      "power": 5,
+      "icon": "💍"
+    },
+    "amulet_protection": {
+      "id": "amulet_protection",
+      "name": "Амулет защиты",
+      "type": "artifact",
+      "description": "Увеличивает защиту",
+      "value": 450,
+      "bonus": "defense",
+      "power": 3,
+      "icon": "📿"
+    },
+    "crystal_amulet": {
+      "id": "crystal_amulet",
+      "name": "Хрустальный амулет",
+      "type": "artifact",
+      "description": "Увеличивает все характеристики",
+      "value": 700,
+      "bonus": "all_stats",
+      "power": 2,
+      "icon": "💠"
+    },
+    "ancient_artifact": {
+      "id": "ancient_artifact",
+      "name": "Древний артефакт",
+      "type": "artifact",
+      "description": "Загадочный древний предмет",
+      "value": 1000,
+      "icon": "🏺"
+    },
+    "dragon_scale": {
+      "id": "dragon_scale",
+      "name": "Чешуя дракона",
+      "type": "artifact",
+      "description": "Невероятно прочная чешуя",
+      "value": 1200,
+      "icon": "🐲"
+    },
+    "phoenix_feather": {
+      "id": "phoenix_feather",
+      "name": "Перо феникса",
+      "type": "artifact",
+      "description": "Исполняет одно желание",
+      "value": 1500,
+      "icon": "🔥"
+    },
+    "vampire_heart": {
+      "id": "vampire_heart",
+      "name": "Сердце вампира",
+      "type": "artifact",
+      "description": "Источник темной силы",
+      "value": 2000,
+      "icon": "🖤"
+    },
+    "eternal_crown": {
+      "id": "eternal_crown",
+      "name": "Вечная корона",
+      "type": "artifact",
+      "description": "Корона древних королей",
+      "value": 2500,
+      "icon": "👑"
+    }
+  }
+}
