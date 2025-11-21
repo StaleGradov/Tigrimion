@@ -38,6 +38,62 @@ class MapSystem {
         this.mapStack = [];
         this.currentMapType = 'local';
         
+        // СИСТЕМА ИССЛЕДОВАНИЯ И ЛУТА
+        this.exploredCells = new Map(); // mapId -> Set("col,row")
+        this.collectedLoot = new Map(); // mapId -> Set("col,row")
+        
+        // СИСТЕМА УРОВНЕЙ ЛУТА
+        this.lootTables = {
+            1: { // Деревня - базовые награды
+                gold: { weight: 60, min: 5, max: 20 },
+                common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'bread'] },
+                information: { weight: 10, messages: [
+                    "Местный житель рассказал о подозрительной активности в лесу...",
+                    "Вы нашли старую карту с отметкой тайника",
+                    "Надпись на стене: 'Остерегайтесь теней ночью'"
+                ]}
+            },
+            2: { // Лес - немного лучше
+                gold: { weight: 50, min: 10, max: 35 },
+                common_items: { weight: 35, items: ['health_potion', 'mana_potion', 'antidote', 'torch'] },
+                rare_items: { weight: 5, items: ['iron_sword', 'leather_armor'] },
+                information: { weight: 10, messages: [
+                    "Записка: 'Сокровище спрятано под старым дубом'",
+                    "Вы нашли дневник путешественника с полезными заметками"
+                ]}
+            },
+            3: { // Руины - хорошие награды
+                gold: { weight: 40, min: 25, max: 60 },
+                common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'antidote'] },
+                rare_items: { weight: 15, items: ['steel_sword', 'chain_armor', 'magic_ring'] },
+                information: { weight: 15, messages: [
+                    "Древние письмена рассказывают о затерянном артефакте",
+                    "Карта с отметками скрытых проходов"
+                ]}
+            },
+            4: { // Подземелье - отличные награды
+                gold: { weight: 30, min: 40, max: 100 },
+                common_items: { weight: 25, items: ['greater_health_potion', 'greater_mana_potion'] },
+                rare_items: { weight: 25, items: ['magic_sword', 'plate_armor', 'amulet_protection'] },
+                epic_items: { weight: 10, items: ['ancient_artifact', 'dragon_scale'] },
+                information: { weight: 10, messages: [
+                    "Тайные знания о магических ритуалах",
+                    "Координаты легендарного сокровища"
+                ]}
+            },
+            5: { // Замок вампиров - лучшие награды
+                gold: { weight: 20, min: 75, max: 200 },
+                common_items: { weight: 20, items: ['greater_health_potion', 'greater_mana_potion'] },
+                rare_items: { weight: 30, items: ['vampire_blade', 'shadow_armor', 'crystal_amulet'] },
+                epic_items: { weight: 25, items: ['ancient_artifact', 'dragon_scale', 'phoenix_feather'] },
+                legendary_items: { weight: 5, items: ['vampire_heart', 'eternal_crown'] },
+                information: { weight: 5, messages: [
+                    "Древние секреты бессмертия",
+                    "Местоположение сердца вампирского лорда"
+                ]}
+            }
+        };
+        
         // Словарь символов для всех типов объектов
         this.objectSymbols = {
             'player_start': '⭐',
@@ -80,7 +136,7 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с системой переходов между картами");
+        console.log("✅ MapSystem инициализирован с системой переходов и уровней лута");
     }
 
     setCurrentHero(hero) {
@@ -273,6 +329,7 @@ class MapSystem {
                 returnX: cell.returnX,
                 returnY: cell.returnY,
                 tooltip: cell.tooltip,
+                hasLoot: cell.hasLoot || false,
                 originalData: cell
             };
         });
@@ -381,46 +438,45 @@ class MapSystem {
         console.log(`💾 Сохранено состояние карты в стек (глубина: ${this.mapStack.length})`);
     }
 
-async loadTacticalMapFile(mapPath) {
-    console.log(`🔍 ЗАГРУЗКА КАРТЫ: ${mapPath}`);
-    
-    try {
-        const response = await fetch(mapPath);
-        if (!response.ok) {
-            throw new Error(`Не удалось загрузить карту: ${mapPath}`);
-        }
+    async loadTacticalMapFile(mapPath) {
+        console.log(`🔍 ЗАГРУЗКА КАРТЫ: ${mapPath}`);
         
-        const mapData = await response.json();
-        console.log(`✅ Карта "${mapData.meta?.name}" загружена`);
-        
-        const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
-        
-        if (tacticalMap) {
-            this.currentTacticalMap = tacticalMap;
+        try {
+            const response = await fetch(mapPath);
+            if (!response.ok) {
+                throw new Error(`Не удалось загрузить карту: ${mapPath}`);
+            }
             
-            // ЕСЛИ targetPosition уже установлен в activateTransition - НЕ МЕНЯЕМ!
+            const mapData = await response.json();
+            console.log(`✅ Карта "${mapData.meta?.name}" загружена`);
+            
+            const tacticalMap = this.convertTigrimionJSONToMap(mapData, 'tactical');
+            
+            if (tacticalMap) {
+                this.currentTacticalMap = tacticalMap;
+                
+                if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
+                    this.setPlayerToStartPosition();
+                }
+                
+                console.log(`📍 Текущая позиция игрока:`, this.playerTacticalPosition);
+                return tacticalMap;
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки тактической карты:`, error);
+            
+            console.log("🔄 Создаем тестовую таверну...");
+            const tavernMap = this.createTestTavernMap();
+            this.currentTacticalMap = tavernMap;
+            
             if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
                 this.setPlayerToStartPosition();
             }
             
-            console.log(`📍 Текущая позиция игрока:`, this.playerTacticalPosition);
-            return tacticalMap;
+            return tavernMap;
         }
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки тактической карты:`, error);
-        
-        console.log("🔄 Создаем тестовую таверну...");
-        const tavernMap = this.createTestTavernMap();
-        this.currentTacticalMap = tavernMap;
-        
-        if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
-            this.setPlayerToStartPosition();
-        }
-        
-        return tavernMap;
+        return null;
     }
-    return null;
-}
 
     async loadLocalMapFile(mapPath) {
         try {
@@ -717,75 +773,69 @@ async loadTacticalMapFile(mapPath) {
         }, 1000);
     }
 
+    async activateTransition(transitionCell) {
+        console.log(`🚪 АКТИВАЦИЯ ПЕРЕХОДА:`, {
+            type: transitionCell.type,
+            tacticalMap: transitionCell.tacticalMap,
+            localMap: transitionCell.localMap, 
+            globalMap: transitionCell.globalMap,
+            targetPosition: transitionCell.targetPosition,
+            returnX: transitionCell.returnX,
+            returnY: transitionCell.returnY
+        });
 
-    
-   async activateTransition(transitionCell) {
-    console.log(`🚪 АКТИВАЦИЯ ПЕРЕХОДА:`, {
-        type: transitionCell.type,
-        tacticalMap: transitionCell.tacticalMap,
-        localMap: transitionCell.localMap, 
-        globalMap: transitionCell.globalMap,
-        targetPosition: transitionCell.targetPosition,
-        returnX: transitionCell.returnX,
-        returnY: transitionCell.returnY
-    });
+        if (transitionCell.type === 'exit' && !transitionCell.tacticalMap && !transitionCell.localMap && !transitionCell.globalMap) {
+            console.log("🚪 Простой выход с карты через exit-гекс");
+            this.exitToPreviousMap();
+            return;
+        }
 
-    // Для простых exit-гексов без указания карты
-    if (transitionCell.type === 'exit' && !transitionCell.tacticalMap && !transitionCell.localMap && !transitionCell.globalMap) {
-        console.log("🚪 Простой выход с карты через exit-гекс");
-        this.exitToPreviousMap();
-        return;
-    }
-
-    // СОХРАНЯЕМ transitionCell для использования в loadTacticalMapFile
-    this._lastTransitionCell = transitionCell;
-    this.saveCurrentMapToStack();
-    
-    try {
-        let newMap = null;
+        this._lastTransitionCell = transitionCell;
+        this.saveCurrentMapToStack();
         
-        if (transitionCell.tacticalMap) {
-            console.log(`🎲 Переход на тактическую карту: ${transitionCell.tacticalMap}`);
-            newMap = await this.loadTacticalMapFile(transitionCell.tacticalMap);
-            this.currentMapType = 'tactical';
+        try {
+            let newMap = null;
             
-            // ПРИНУДИТЕЛЬНО устанавливаем позицию из targetPosition
-            if (transitionCell.targetPosition) {
-                this.playerTacticalPosition = {...transitionCell.targetPosition};
-                console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
+            if (transitionCell.tacticalMap) {
+                console.log(`🎲 Переход на тактическую карту: ${transitionCell.tacticalMap}`);
+                newMap = await this.loadTacticalMapFile(transitionCell.tacticalMap);
+                this.currentMapType = 'tactical';
+                
+                if (transitionCell.targetPosition) {
+                    this.playerTacticalPosition = {...transitionCell.targetPosition};
+                    console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
+                }
+                
+            } else if (transitionCell.localMap) {
+                console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
+                newMap = await this.loadLocalMapFile(transitionCell.localMap);
+                this.currentMapType = 'local';
+                
+                if (transitionCell.targetPosition) {
+                    this.playerTacticalPosition = {...transitionCell.targetPosition};
+                    console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
+                } else {
+                    this.setPlayerToStartPosition();
+                }
+                
+            } else if (transitionCell.globalMap) {
+                console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
+                newMap = await this.loadGlobalMapFile(transitionCell.globalMap);
+                this.currentMapType = 'global';
             }
             
-        } else if (transitionCell.localMap) {
-            console.log(`🌍 Переход на локальную карту: ${transitionCell.localMap}`);
-            newMap = await this.loadLocalMapFile(transitionCell.localMap);
-            this.currentMapType = 'local';
-            
-            if (transitionCell.targetPosition) {
-                this.playerTacticalPosition = {...transitionCell.targetPosition};
-                console.log(`📍 Игрок установлен на targetPosition:`, this.playerTacticalPosition);
-            } else {
-                this.setPlayerToStartPosition();
+            if (newMap) {
+                await this.forceMapUpdate(newMap);
             }
             
-        } else if (transitionCell.globalMap) {
-            console.log(`🗺️ Переход на глобальную карту: ${transitionCell.globalMap}`);
-            newMap = await this.loadGlobalMapFile(transitionCell.globalMap);
-            this.currentMapType = 'global';
+            this._lastTransitionCell = null;
+            
+        } catch (error) {
+            console.error("❌ Ошибка перехода между картами:", error);
+            this._lastTransitionCell = null;
+            this.exitToPreviousMap();
         }
-        
-        if (newMap) {
-            await this.forceMapUpdate(newMap);
-        }
-        
-        // Очищаем временные данные
-        this._lastTransitionCell = null;
-        
-    } catch (error) {
-        console.error("❌ Ошибка перехода между картами:", error);
-        this._lastTransitionCell = null;
-        this.exitToPreviousMap();
     }
-}
 
     async forceMapUpdate(newMap) {
         console.log("🔄 Принудительное обновление карты...");
@@ -817,7 +867,9 @@ async loadTacticalMapFile(mapPath) {
         const stats = document.querySelector('.map-stats');
         
         if (header && this.currentTacticalMap) {
-            header.textContent = this.currentTacticalMap.name;
+            const lootLevel = this.currentTacticalMap.jsonData?.meta?.lootLevel;
+            const lootLevelText = lootLevel ? ` [Уровень лута: ${lootLevel}]` : '';
+            header.textContent = this.currentTacticalMap.name + lootLevelText;
         }
         
         if (mapTypeBadge) {
@@ -844,7 +896,7 @@ async loadTacticalMapFile(mapPath) {
         this.updateMovementInfo();
     }
 
-    // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С УЧЕТОМ ПЕРЕХОДОВ ==========
+    // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С УЧЕТОМ ПЕРЕХОДОВ И ЛУТА ==========
 
     moveOnTacticalMap(x, y) {
         if (!this.currentHero) {
@@ -889,9 +941,247 @@ async loadTacticalMapFile(mapPath) {
 
         this.hideOverlay();
         
-        setTimeout(() => {
-            this.startTacticalBattleForMovement(x, y, cellData);
-        }, 50);
+        // НОВАЯ ЛОГИКА: проверяем тип карты
+        const mapType = this.currentTacticalMap.jsonData?.meta?.mapType || 'combat';
+        
+        if (mapType === 'peaceful') {
+            this.handlePeacefulMovement(x, y, cellData);
+        } else {
+            // Старая логика боя
+            setTimeout(() => {
+                this.startTacticalBattleForMovement(x, y, cellData);
+            }, 50);
+        }
+    }
+
+    // НОВЫЙ МЕТОД для обработки движения на мирных картах
+    handlePeacefulMovement(targetX, targetY, cellData) {
+        console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
+        
+        const mapId = this.getCurrentMapId();
+        
+        // Помечаем клетку как исследованную
+        this.markCellExplored(mapId, targetX, targetY);
+        
+        // Проверяем и собираем лут (теперь проверяем hasLoot вместо loot)
+        if (cellData.hasLoot && !this.isLootCollected(mapId, targetX, targetY)) {
+            this.collectLoot(cellData, targetX, targetY);
+        }
+        
+        // Выполняем перемещение
+        this.completePeacefulMovement(targetX, targetY);
+    }
+
+    // ========== СИСТЕМА ИССЛЕДОВАНИЯ И ЛУТА ==========
+
+    markCellExplored(mapId, col, row) {
+        const cellKey = `${col},${row}`;
+        
+        if (!this.exploredCells.has(mapId)) {
+            this.exploredCells.set(mapId, new Set());
+        }
+        this.exploredCells.get(mapId).add(cellKey);
+        
+        console.log(`📍 Клетка исследована: ${mapId} -> [${col},${row}]`);
+    }
+
+    isCellExplored(mapId, col, row) {
+        const cellKey = `${col},${row}`;
+        return this.exploredCells.has(mapId) && 
+               this.exploredCells.get(mapId).has(cellKey);
+    }
+
+    markLootCollected(mapId, col, row) {
+        const cellKey = `${col},${row}`;
+        
+        if (!this.collectedLoot.has(mapId)) {
+            this.collectedLoot.set(mapId, new Set());
+        }
+        this.collectedLoot.get(mapId).add(cellKey);
+        
+        console.log(`🎁 Лут собран: ${mapId} -> [${col},${row}]`);
+    }
+
+    isLootCollected(mapId, col, row) {
+        const cellKey = `${col},${row}`;
+        return this.collectedLoot.has(mapId) && 
+               this.collectedLoot.get(mapId).has(cellKey);
+    }
+
+    getCurrentMapId() {
+        return this.currentTacticalMap?.id || 'unknown';
+    }
+
+    // Метод сбора лута с рандомной наградой
+    collectLoot(cellData, col, row) {
+        const mapId = this.getCurrentMapId();
+        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+        
+        console.log(`🎲 Генерация лута уровня ${lootLevel} для клетки [${col},${row}]`);
+        
+        // Генерируем случайную награду
+        const reward = this.generateRandomReward(lootLevel);
+        
+        // Обрабатываем награду
+        this.processReward(reward, col, row);
+        
+        // Помечаем лут как собранный
+        this.markLootCollected(mapId, col, row);
+    }
+
+    // Генерация случайной награды по уровню
+    generateRandomReward(lootLevel) {
+        const lootTable = this.lootTables[lootLevel] || this.lootTables[1];
+        
+        // Выбираем тип награды по весам
+        const rewardType = this.selectRewardType(lootTable);
+        const rewardData = lootTable[rewardType];
+        
+        console.log(`🎯 Выбран тип награды: ${rewardType} для уровня ${lootLevel}`);
+        
+        switch(rewardType) {
+            case 'gold':
+                const amount = Math.floor(Math.random() * (rewardData.max - rewardData.min + 1)) + rewardData.min;
+                return {
+                    type: 'gold',
+                    amount: amount,
+                    message: `Вы нашли ${amount} золотых монет!`
+                };
+                
+            case 'common_items':
+            case 'rare_items':
+            case 'epic_items':
+            case 'legendary_items':
+                const items = rewardData.items;
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                return {
+                    type: 'item',
+                    itemId: randomItem,
+                    message: `Вы нашли: ${this.getItemName(randomItem)}!`
+                };
+                
+            case 'information':
+                const messages = rewardData.messages;
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                return {
+                    type: 'information',
+                    message: randomMessage
+                };
+                
+            default:
+                return {
+                    type: 'gold',
+                    amount: 10,
+                    message: 'Вы нашли 10 золотых монет!'
+                };
+        }
+    }
+
+    // Выбор типа награды по весам
+    selectRewardType(lootTable) {
+        const types = Object.keys(lootTable);
+        const weights = types.map(type => lootTable[type].weight);
+        
+        // Сумма всех весов
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+        
+        // Случайное число от 0 до totalWeight
+        let random = Math.random() * totalWeight;
+        
+        // Выбираем тип на основе весов
+        for (let i = 0; i < types.length; i++) {
+            random -= weights[i];
+            if (random <= 0) {
+                return types[i];
+            }
+        }
+        
+        return types[0]; // fallback
+    }
+
+    // Обработка награды
+    processReward(reward, col, row) {
+        let showNotification = true;
+        
+        switch(reward.type) {
+            case 'gold':
+                this.currentHero.gold += reward.amount;
+                break;
+                
+            case 'item':
+                const itemSystem = window.game?.systems?.items;
+                if (itemSystem) {
+                    const itemAdded = itemSystem.addItemToHero(this.currentHero, reward.itemId);
+                    if (!itemAdded) {
+                        reward.message = "Инвентарь полон! Награда потеряна.";
+                    }
+                }
+                break;
+                
+            case 'information':
+                // Для важной информации можно показать диалог
+                if (this.isImportantInformation(reward.message)) {
+                    this.showInformationDialog(reward.message);
+                    showNotification = false;
+                }
+                break;
+        }
+        
+        // Показываем уведомление
+        if (showNotification && window.game) {
+            window.game.showNotification(reward.message, 'success');
+        }
+        
+        // Обновляем интерфейс героя
+        this.updateHeroInterface();
+        
+        console.log(`🎁 Выдана награда:`, reward);
+    }
+
+    // Получение имени предмета
+    getItemName(itemId) {
+        const itemSystem = window.game?.systems?.items;
+        if (itemSystem && itemSystem.getItemName) {
+            return itemSystem.getItemName(itemId);
+        }
+        return itemId; // fallback
+    }
+
+    // Проверка важности информации
+    isImportantInformation(message) {
+        const importantKeywords = ['артефакт', 'сокровищ', 'координат', 'секрет', 'тайн', 'легендарн'];
+        return importantKeywords.some(keyword => message.toLowerCase().includes(keyword));
+    }
+
+    // Показ диалога с информацией
+    showInformationDialog(message) {
+        if (window.game && window.game.showDialog) {
+            window.game.showDialog({
+                title: "Важная информация",
+                message: message,
+                type: "information"
+            });
+        } else {
+            // Fallback - показываем как обычное уведомление
+            window.game.showNotification("💡 " + message, 'info');
+        }
+    }
+
+    // Завершение мирного перемещения
+    completePeacefulMovement(targetX, targetY) {
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x: targetX, y: targetY};
+        
+        console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        
+        this.saveMapState();
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateMapPositioning();
+            this.drawTacticalMap();
+        }
+        
+        this.updateMovementInfo();
     }
 
     startTacticalBattleForMovement(targetX, targetY, cellData) {
@@ -992,6 +1282,13 @@ async loadTacticalMapFile(mapPath) {
         if (!battleSystem) return null;
         
         return battleSystem.getMonsterById(cellData.monster_id);
+    }
+
+    // Обновляем интерфейс героя
+    updateHeroInterface() {
+        if (window.game?.systems?.hero) {
+            window.game.systems.hero.updateHeroDisplay();
+        }
     }
 
     // ========== CANVAS И ОТОБРАЖЕНИЕ ==========
@@ -1212,6 +1509,18 @@ async loadTacticalMapFile(mapPath) {
             }
             if (hex.type === 'exit') {
                 return `🚪 Выход\n(Кликните для возврата)${accessibilityInfo}`;
+            }
+        }
+
+        // Новые подсказки для системы лута
+        const mapId = this.getCurrentMapId();
+        if (hex.hasLoot) {
+            if (this.isLootCollected(mapId, hex.col, hex.row)) {
+                return "✅ Награда уже собрана";
+            } else {
+                const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+                const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
+                return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}`;
             }
         }
 
@@ -1490,10 +1799,29 @@ async loadTacticalMapFile(mapPath) {
         let color = '#ffffff';
         let fontSize = 16;
 
+        // Игрок
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
             fontSize = 20;
-        } else {
+        } 
+        // Исследованная клетка с собранным лутом
+        else if (this.isCellExplored(this.getCurrentMapId(), cell.col, cell.row) && 
+                 cell.hasLoot && 
+                 this.isLootCollected(this.getCurrentMapId(), cell.col, cell.row)) {
+            symbol = '✅';
+            color = '#22c55e';
+            fontSize = 14;
+        }
+        // Клетка с доступным лутом
+        else if (cell.hasLoot && !this.isLootCollected(this.getCurrentMapId(), cell.col, cell.row)) {
+            // Разные символы в зависимости от уровня лута карты
+            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+            symbol = this.getLootSymbol(lootLevel);
+            color = this.getLootColor(lootLevel);
+            fontSize = 18;
+        }
+        // Обычная логика
+        else {
             if (cell.type === 'active' && !cell.objectType) {
                 symbol = '·';
                 color = '#ffffff';
@@ -1566,6 +1894,18 @@ async loadTacticalMapFile(mapPath) {
         this.ctx.fillStyle = color;
         this.ctx.fillText(symbol, centerX, centerY);
         this.ctx.restore();
+    }
+
+    // Символы для разных уровней лута
+    getLootSymbol(lootLevel) {
+        const symbols = ['💎', '⭐', '🔮', '👑', '🏆'];
+        return symbols[lootLevel - 1] || symbols[0];
+    }
+
+    // Цвета для разных уровней лута
+    getLootColor(lootLevel) {
+        const colors = ['#f59e0b', '#eab308', '#a855f7', '#ec4899', '#ef4444'];
+        return colors[lootLevel - 1] || colors[0];
     }
 
     // ========== СИСТЕМА НАВИГАЦИИ И СОСЕДЕЙ ==========
@@ -2052,6 +2392,8 @@ async loadTacticalMapFile(mapPath) {
         }
     }
 
+    // ========== СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
+
     saveMapState() {
         const state = {
             playerGlobalPosition: this.playerGlobalPosition,
@@ -2061,11 +2403,19 @@ async loadTacticalMapFile(mapPath) {
             currentLocalMapId: this.currentLocalMap?.id,
             currentTacticalMapId: this.currentTacticalMap?.id,
             mapStack: this.mapStack,
-            currentMapType: this.currentMapType
+            currentMapType: this.currentMapType,
+            exploredCells: Array.from(this.exploredCells.entries()).map(([mapId, cells]) => ({
+                mapId,
+                cells: Array.from(cells)
+            })),
+            collectedLoot: Array.from(this.collectedLoot.entries()).map(([mapId, cells]) => ({
+                mapId, 
+                cells: Array.from(cells)
+            }))
         };
         
         localStorage.setItem('mapSystemState', JSON.stringify(state));
-        console.log("💾 Состояние карт сохранено");
+        console.log("💾 Состояние карт и исследования сохранено");
     }
 
     loadMapState() {
@@ -2102,7 +2452,22 @@ async loadTacticalMapFile(mapPath) {
                 this.currentMapType = state.currentMapType;
             }
             
-            console.log("💾 Состояние карт загружено");
+            // Загружаем данные исследования
+            if (state.exploredCells) {
+                this.exploredCells = new Map();
+                state.exploredCells.forEach(({mapId, cells}) => {
+                    this.exploredCells.set(mapId, new Set(cells));
+                });
+            }
+            
+            if (state.collectedLoot) {
+                this.collectedLoot = new Map();
+                state.collectedLoot.forEach(({mapId, cells}) => {
+                    this.collectedLoot.set(mapId, new Set(cells));
+                });
+            }
+            
+            console.log("💾 Состояние карт и исследования загружено");
             return true;
             
         } catch (error) {
@@ -2124,6 +2489,8 @@ async loadTacticalMapFile(mapPath) {
         console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
         console.log("Canvas инициализирован:", this.canvasInitialized);
         console.log("Текущий герой:", this.currentHero?.name || 'нет');
+        console.log("Исследованные клетки:", this.exploredCells.size);
+        console.log("Собранный лут:", this.collectedLoot.size);
         console.groupEnd();
     }
 
@@ -2346,4 +2713,4 @@ async loadTacticalMapFile(mapPath) {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой переходов между картами");
+console.log("📦 MapSystem модуль загружен с полной системой переходов и уровней лута");
