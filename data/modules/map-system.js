@@ -1228,8 +1228,9 @@ syncHeroWithOtherSystems() {
         }
     }
 
-    // Завершение мирного перемещения
- completePeacefulMovement(targetX, targetY) {
+// В MapSystem найдите метод completePeacefulMovement и ИЗМЕНИТЕ его:
+
+completePeacefulMovement(targetX, targetY) {
     const oldPosition = {...this.playerTacticalPosition};
     this.playerTacticalPosition = {x: targetX, y: targetY};
     
@@ -1240,12 +1241,20 @@ syncHeroWithOtherSystems() {
     
     this.saveMapState();
     
+    // ⭐ ИЗМЕНЕНИЕ: НЕ закрываем карту автоматически, только перерисовываем
     if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
         this.calculateMapPositioning();
         this.drawTacticalMap();
+        
+        // ⭐ ДОБАВЛЯЕМ: Показываем уведомление НА КАРТЕ вместо закрытия
+        if (window.game) {
+            window.game.showNotification("✅ Перемещение завершено", 'success');
+        }
     }
     
     this.updateMovementInfo();
+    
+    // ⭐ УБИРАЕМ: this.hideOverlay(); - НЕ закрываем карту!
 }
 
     startTacticalBattleForMovement(targetX, targetY, cellData) {
