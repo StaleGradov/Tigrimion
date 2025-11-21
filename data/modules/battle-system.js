@@ -252,11 +252,11 @@ class BattleSystem {
             heroStats = this.getHeroStatsForBattle();
         }
         
-        // Герой на позиции 4 (центр справа)
-        this.battleGrid.allies[4] = {
+        // Герой на позиции 5 (самая правая центральная ячейка)
+        this.battleGrid.allies[5] = {
             type: 'hero',
             data: hero,
-            position: 4,
+            position: 5,
             maxHealth: heroStats.maxHealth,
             currentHealth: heroStats.currentHealth
         };
@@ -266,32 +266,18 @@ class BattleSystem {
     }
 
     placeMonstersOnGrid(monsters) {
-        const meleePositions = [0, 2, 4];  // Ближний бой
-        const rangedPositions = [1, 3, 5]; // Дальний бой
+        // Монстры на левой стороне, главный монстр на позиции 2 (левая центральная)
+        const positions = [0, 1, 2, 3, 4, 5];
         
-        let meleeCount = 0;
-        let rangedCount = 0;
-
-        monsters.forEach(monster => {
-            const attackType = monster.attackType || 'melee';
+        monsters.forEach((monster, index) => {
             let position;
-            
-            if (attackType === 'melee' && meleeCount < 3) {
-                position = meleePositions[meleeCount++];
-            } else if (attackType === 'ranged' && rangedCount < 3) {
-                position = rangedPositions[rangedCount++];
+            if (monsters.length === 1) {
+                position = 2; // Центральная левая позиция для одного монстра
             } else {
-                // Если нет мест в своей категории, ищем любые свободные
-                const availablePositions = [...meleePositions, ...rangedPositions]
-                    .filter(pos => !this.battleGrid.enemies[pos]);
-                if (availablePositions.length > 0) {
-                    position = availablePositions[0];
-                    if (meleePositions.includes(position)) meleeCount++;
-                    else rangedCount++;
-                }
+                position = positions[index] || index;
             }
-
-            if (position !== undefined) {
+            
+            if (position < 6) {
                 this.battleGrid.enemies[position] = {
                     type: 'monster',
                     data: monster,
@@ -301,18 +287,6 @@ class BattleSystem {
                 };
             }
         });
-
-        // Если монстр один - ставим на позицию 3
-        if (monsters.length === 1 && !this.battleGrid.enemies[3]) {
-            const monster = monsters[0];
-            this.battleGrid.enemies[3] = {
-                type: 'monster',
-                data: monster,
-                position: 3,
-                maxHealth: monster.health,
-                currentHealth: monster.currentHealth
-            };
-        }
     }
 
     // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
@@ -334,9 +308,9 @@ class BattleSystem {
                     </button>
                 </header>
                 
-                <div class="battle-main-area" style="display: flex; gap: 20px; align-items: flex-start; justify-content: center;">
+                <div class="battle-main-area" style="display: flex; gap: 10px; align-items: stretch; justify-content: center; height: 70vh;">
                     <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                    <div class="tactical-panel player-panel">
+                    <div class="tactical-panel player-panel" style="align-self: center;">
                         <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
                         
                         <div class="panel-stats">
@@ -397,10 +371,10 @@ class BattleSystem {
                     </div>
                     
                     <!-- ЦЕНТР - СЕТКА 6x6 -->
-                    <div class="battle-grid-fullscreen" style="flex: 1; max-width: 600px;">
-                        <div class="grid-side allies-side">
+                    <div class="battle-grid-fullscreen" style="flex: 1; display: flex; align-items: stretch; max-width: 800px;">
+                        <div class="grid-side allies-side" style="flex: 1;">
                             <h3 class="side-title">ВАШ ОТРЯД</h3>
-                            <div class="grid-container-6x6">
+                            <div class="grid-container-6x6" style="min-height: 500px; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);">
                                 ${this.renderTacticalGrid('allies')}
                             </div>
                         </div>
@@ -409,16 +383,16 @@ class BattleSystem {
                             <div class="vs-text">VS</div>
                         </div>
                         
-                        <div class="grid-side enemies-side">
+                        <div class="grid-side enemies-side" style="flex: 1;">
                             <h3 class="side-title">ПРОТИВНИКИ</h3>
-                            <div class="grid-container-6x6">
+                            <div class="grid-container-6x6" style="min-height: 500px; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);">
                                 ${this.renderTacticalGrid('enemies')}
                             </div>
                         </div>
                     </div>
                     
                     <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК -->
-                    <div class="tactical-panel enemy-panel">
+                    <div class="tactical-panel enemy-panel" style="align-self: center; margin-right: 20px;">
                         <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
                         
                         <div class="panel-stats">
@@ -433,18 +407,9 @@ class BattleSystem {
                         </div>
                         
                         <div class="action-history">
-                            <div class="history-title">Последние действия:</div>
+                            <div class="history-title">Последнее действие:</div>
                             <div class="history-entries" id="enemyHistory">
                                 <div class="history-empty">Еще нет действий</div>
-                            </div>
-                        </div>
-                        
-                        <div class="enemy-actions-preview">
-                            <div class="preview-title">Возможные действия:</div>
-                            <div class="enemy-actions-list">
-                                <div class="enemy-action">⚔️ Атака</div>
-                                <div class="enemy-action">🛡️ Блок</div>
-                                <div class="enemy-action">🌀 Отдых</div>
                             </div>
                         </div>
                     </div>
@@ -551,6 +516,13 @@ class BattleSystem {
         return efficiencies[Math.min(comboCount - 1, 3)];
     }
 
+    // ⭐ РАСЧЕТ БОНУСНЫХ ОД ДЛЯ БЛОКА
+    getBlockAPBonus(comboCount) {
+        // +1 → +2 → +3 → +4 ОД за блок
+        const apBonuses = [1, 2, 3, 4];
+        return apBonuses[Math.min(comboCount - 1, 3)];
+    }
+
     // ⭐ РАСЧЕТ ЭФФЕКТИВНОСТИ ОТДЫХА
     getRestEfficiency(comboCount) {
         // +1 ОД+5%HP → +2 ОД+10%HP → +3 ОД+15%HP → +4 ОД+20%HP
@@ -566,7 +538,7 @@ class BattleSystem {
     // ⭐ ХОД ПРОТИВНИКА (ИИ)
     executeEnemyTurn() {
         const enemy = this.players[2];
-        const availableActions = Object.keys(this.actionsCost).filter(a => 
+        const availableActions = ['attack', 'block', 'rest'].filter(a => 
             this.actionsCost[a] <= enemy.ap
         );
         
@@ -589,11 +561,8 @@ class BattleSystem {
             }
         }
 
-        // Сохранение в историю
-        enemy.previousActions.unshift(this.getActionName(enemy.currentAction));
-        if (enemy.previousActions.length > 3) {
-            enemy.previousActions.pop();
-        }
+        // Сохранение в историю (только последнее действие)
+        enemy.previousActions = [this.getActionName(enemy.currentAction)];
 
         this.addBattleLog(`👹 Противник использует: ${this.getActionName(enemy.currentAction)}`);
         
@@ -633,7 +602,7 @@ class BattleSystem {
     // ⭐ ВЫПОЛНЕНИЕ УРОНА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ КОМБО
     executeTacticalDamage(playerAction, enemyAction) {
         const heroStats = this.getHeroStatsForBattle();
-        const hero = this.battleGrid.allies[4];
+        const hero = this.battleGrid.allies[5];
         
         // Базовый урон героя из вашей системы
         const baseHeroDamage = heroStats.damage;
@@ -674,12 +643,18 @@ class BattleSystem {
         // Обработка блока игрока
         if (playerAction === 'block') {
             const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
-            this.addBattleLog(`🛡️ Блок активирован (эффективность: ${blockEfficiency * 100}%)`);
+            const apBonus = this.getBlockAPBonus(this.players[1].combo.count);
+            
+            this.players[1].ap += apBonus; // Бонусные ОД за блок
+            
+            this.addBattleLog(`🛡️ Блок активирован (эффективность: ${blockEfficiency * 100}%) +${apBonus} ОД`);
             
             // Отражение урона на 4-м стаке
             if (this.players[1].combo.count >= 4) {
                 this.addBattleLog(`✨ Блок отражает урон обратно врагу!`);
-                // Здесь можно добавить логику отражения урона
+                // Отражение 50% урона обратно врагу
+                const reflectedDamage = Math.floor(this.calculateMonsterDamage() * 0.5);
+                this.applyDamageToMonsters(reflectedDamage, 'block', false, false);
             }
         }
         
@@ -696,7 +671,7 @@ class BattleSystem {
         }
         
         // Расчет урона противника с учетом блока игрока
-        if (enemyAction === 'attack' || enemyAction === 'strongAttack') {
+        if (enemyAction === 'attack') {
             const monsterDamage = this.calculateMonsterDamage();
             let finalDamage = Math.max(1, monsterDamage - heroStats.armor);
             
@@ -755,7 +730,7 @@ class BattleSystem {
                 const heroStats = this.getHeroStatsForBattle();
                 if (heroStats.vampirism > 0) {
                     const healAmount = Math.floor(finalDamage * heroStats.vampirism);
-                    const hero = this.battleGrid.allies[4];
+                    const hero = this.battleGrid.allies[5];
                     if (hero) {
                         hero.currentHealth = Math.min(hero.maxHealth, hero.currentHealth + healAmount);
                         this.addBattleLog(`🩸 Поглощено ${healAmount} здоровья!`);
@@ -771,7 +746,7 @@ class BattleSystem {
     }
 
     findAvailableTarget() {
-        const hero = this.battleGrid.allies[4];
+        const hero = this.battleGrid.allies[5];
         if (!hero) return null;
         
         const attackType = this.getHeroAttackType(hero.data);
@@ -887,7 +862,7 @@ class BattleSystem {
                 else if (action === 'strongAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
                 else if (action === 'crushingAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
                 else if (action === 'breakBlock') multiplierText = ` (x${this.getBreakBlockMultiplier(count, false)})`;
-                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}%)`;
+                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}% +${this.getBlockAPBonus(count)}ОД)`;
                 else if (action === 'rest') multiplierText = ` (+${this.getRestEfficiency(count).ap}ОД)`;
                 
                 playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
@@ -1040,12 +1015,12 @@ class BattleSystem {
 
     checkBattleEnd() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        const hero = this.battleGrid.allies[4];
+        const hero = this.battleGrid.allies[5];
         return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
     }
 
     isPlayerVictory() {
-        const hero = this.battleGrid.allies[4];
+        const hero = this.battleGrid.allies[5];
         return hero && hero.currentHealth > 0;
     }
 
@@ -1073,7 +1048,7 @@ class BattleSystem {
         }
         
         if (this.currentHero && window.game.systems.hero) {
-            this.currentHero.currentHealth = this.battleGrid.allies[4]?.currentHealth || this.currentHero.currentHealth;
+            this.currentHero.currentHealth = this.battleGrid.allies[5]?.currentHealth || this.currentHero.currentHealth;
             window.game.systems.hero.calculateHeroStats(this.currentHero);
         }
         
