@@ -304,7 +304,8 @@ class HeroSystem {
         return result;
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Обновление отображения героя
+// В HeroSystem.js ЗАМЕНИТЕ метод updateHeroDisplay:
+
 updateHeroDisplay(stats) {
     // ⭐ ЗАЩИТНАЯ ПРОВЕРКА: Проверяем все возможные источники героя
     const currentHero = this.currentHero || window.game?.currentHero;
@@ -315,61 +316,72 @@ updateHeroDisplay(stats) {
     
     // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убедимся что currentHealth существует
     if (typeof currentHero.currentHealth === 'undefined') {
-        console.warn("⚠️ updateHeroDisplay: currentHealth не определен", currentHero);
+        console.warn("⚠️ updateHeroDisplay: currentHealth не определен, восстанавливаем...", currentHero);
         // Восстанавливаем здоровье если его нет
-        currentHero.currentHealth = currentHero.baseHealth || 100;
+        const heroStats = this.calculateHeroStats(currentHero);
+        currentHero.currentHealth = heroStats.maxHealth || currentHero.baseHealth || 100;
+    }
+
+    // ⭐ ПРОВЕРКА: Убедимся что stats существует
+    if (!stats) {
+        console.warn("⚠️ updateHeroDisplay: stats не переданы, вычисляем заново");
+        stats = this.calculateHeroStats(currentHero);
     }
 
     // Обновляем полоску здоровья
     const healthBar = document.getElementById('heroHealthBar');
     if (healthBar) {
-        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-        healthBar.style.width = `${healthPercent}%`;
-        healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
+        // ⭐ БЕЗОПАСНОЕ ВЫЧИСЛЕНИЕ: Проверяем деление на ноль
+        const maxHealth = stats.maxHealth || 1;
+        const currentHealth = stats.currentHealth || currentHero.currentHealth || 0;
+        const healthPercent = Math.max(0, Math.min(100, (currentHealth / maxHealth) * 100));
         
-        if (currentHero.currentHealth < stats.maxHealth) {
+        healthBar.style.width = `${healthPercent}%`;
+        healthBar.textContent = `${Math.floor(currentHealth)}/${Math.floor(maxHealth)}`;
+        
+        if (currentHealth < maxHealth) {
             healthBar.classList.add('regening');
         } else {
             healthBar.classList.remove('regening');
         }
     }
+    
+    // Обновляем полоску опыта
+    const expBar = document.getElementById('heroExperienceBar');
+    if (expBar) {
+        const expProgress = this.getExperienceProgress(currentHero);
+        expBar.style.width = `${expProgress.percent}%`;
         
-        // Обновляем полоску опыта
-        const expBar = document.getElementById('heroExperienceBar');
-        if (expBar) {
-            const expProgress = this.getExperienceProgress(currentHero);
-            expBar.style.width = `${expProgress.percent}%`;
-            
-            if (expProgress.next === 'MAX') {
-                expBar.textContent = `MAX Уровень`;
-            } else {
-                expBar.textContent = `${expProgress.current}/${expProgress.next}`;
-            }
+        if (expProgress.next === 'MAX') {
+            expBar.textContent = `MAX Уровень`;
+        } else {
+            expBar.textContent = `${expProgress.current}/${expProgress.next}`;
         }
-        
-        // Находим элементы DOM для обновления
-        const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
-        const damageElements = document.querySelectorAll('.overlay-stat-row:nth-child(2) .overlay-stat-value');
-        const armorElements = document.querySelectorAll('.overlay-stat-row:nth-child(3) .overlay-stat-value');
-        const powerElements = document.querySelectorAll('.overlay-stat-row:nth-child(5) .overlay-stat-value');
-        
-        // Обновляем значения в первой группе статов
-        if (healthElements[0]) {
-            healthElements[0].textContent = `${stats.currentHealth}/${stats.maxHealth}`;
-        }
-        if (damageElements[0]) {
-            damageElements[0].textContent = `${stats.damage}`;
-        }
-        if (armorElements[0]) {
-            armorElements[0].textContent = `${stats.armor}`;
-        }
-        if (powerElements[0]) {
-            powerElements[0].textContent = `${stats.power}`;
-        }
-        
-        // Также обновляем бонусы если они есть
-        this.updateBonusDisplay(stats.activeBonuses);
     }
+
+    // Находим элементы DOM для обновления
+    const healthElements = document.querySelectorAll('.overlay-stat-row:nth-child(1) .overlay-stat-value');
+    const damageElements = document.querySelectorAll('.overlay-stat-row:nth-child(2) .overlay-stat-value');
+    const armorElements = document.querySelectorAll('.overlay-stat-row:nth-child(3) .overlay-stat-value');
+    const powerElements = document.querySelectorAll('.overlay-stat-row:nth-child(5) .overlay-stat-value');
+    
+    // Обновляем значения в первой группе статов
+    if (healthElements[0]) {
+        healthElements[0].textContent = `${Math.floor(stats.currentHealth)}/${Math.floor(stats.maxHealth)}`;
+    }
+    if (damageElements[0]) {
+        damageElements[0].textContent = `${stats.damage}`;
+    }
+    if (armorElements[0]) {
+        armorElements[0].textContent = `${stats.armor}`;
+    }
+    if (powerElements[0]) {
+        powerElements[0].textContent = `${stats.power}`;
+    }
+    
+    // Также обновляем бонусы если они есть
+    this.updateBonusDisplay(stats.activeBonuses);
+}
 
     // ⭐ ДОПОЛНИТЕЛЬНЫЙ МЕТОД: Обновление отображения бонусов
     updateBonusDisplay(activeBonuses) {
