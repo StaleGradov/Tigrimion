@@ -940,60 +940,60 @@ syncHeroWithOtherSystems() {
     // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С УЧЕТОМ ПЕРЕХОДОВ И ЛУТА ==========
 
     moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
         }
-
-        if (!this.currentTacticalMap) return;
-
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (this.isTransitionCell(cellData)) {
-            this.showTransitionWarning(cellData);
-            return;
-        }
-
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        this.hideOverlay();
-        
-        // НОВАЯ ЛОГИКА: проверяем тип карты
-        const mapType = this.currentTacticalMap.jsonData?.meta?.mapType || 'combat';
-        
-        if (mapType === 'peaceful') {
-            this.handlePeacefulMovement(x, y, cellData);
-        } else {
-            // Старая логика боя
-            setTimeout(() => {
-                this.startTacticalBattleForMovement(x, y, cellData);
-            }, 50);
-        }
+        return;
     }
+
+    if (!this.currentTacticalMap) return;
+
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    if (this.isTransitionCell(cellData)) {
+        this.showTransitionWarning(cellData);
+        return;
+    }
+
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // ⭐ УБИРАЕМ: this.hideOverlay(); - НЕ закрываем карту при перемещении!
+    
+    // НОВАЯ ЛОГИКА: проверяем тип карты
+    const mapType = this.currentTacticalMap.jsonData?.meta?.mapType || 'combat';
+    
+    if (mapType === 'peaceful') {
+        this.handlePeacefulMovement(x, y, cellData);
+    } else {
+        // Старая логика боя
+        setTimeout(() => {
+            this.startTacticalBattleForMovement(x, y, cellData);
+        }, 50);
+    }
+}
 
     // НОВЫЙ МЕТОД для обработки движения на мирных картах
     handlePeacefulMovement(targetX, targetY, cellData) {
