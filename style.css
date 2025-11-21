@@ -4048,3 +4048,214 @@ body {
         font-size: 0.9rem;
     }
 }
+/* ========== УВЕЛИЧЕННАЯ СЕТКА БОЯ 6x6 И ПРАВИЛЬНОЕ РАСПОЛОЖЕНИЕ ПАНЕЛЕЙ ========== */
+
+/* Основной контейнер боя */
+.battle-main-area {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+    justify-content: center;
+    height: 75vh;
+    padding: 0 20px;
+}
+
+/* ЛЕВАЯ ПАНЕЛЬ - ИГРОК */
+.tactical-panel.player-panel {
+    align-self: center;
+    width: 280px;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+/* ЦЕНТР - УВЕЛИЧЕННАЯ СЕТКА 6x6 */
+.battle-grid-fullscreen {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 1200px;
+    min-width: 800px;
+}
+
+/* УВЕЛИЧИВАЕМ СЕТКУ В 3 РАЗА */
+.grid-container-6x6 {
+    min-height: 700px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 15px !important;
+}
+
+/* УВЕЛИЧИВАЕМ ЯЧЕЙКИ СЕТКИ */
+.grid-cell-fullscreen {
+    min-height: 220px !important;
+    padding: 1.5rem !important;
+    border-width: 4px !important;
+}
+
+/* УВЕЛИЧИВАЕМ ИЗОБРАЖЕНИЯ ЮНИТОВ */
+.unit-image {
+    width: 150px !important;
+    height: 150px !important;
+    margin: 0 auto 1.5rem !important;
+}
+
+.image-fallback {
+    font-size: 5rem !important;
+}
+
+/* УВЕЛИЧИВАЕМ ТЕКСТ В ЯЧЕЙКАХ */
+.unit-name {
+    font-size: 1.4rem !important;
+    margin-bottom: 1rem !important;
+}
+
+.health-bar-fullscreen {
+    height: 30px !important;
+    margin: 1rem 0 !important;
+}
+
+.health-text {
+    font-size: 1.1rem !important;
+}
+
+.unit-stats {
+    margin-top: 1.2rem !important;
+}
+
+.stat-line span {
+    padding: 0.6rem 1rem !important;
+    font-size: 1.1rem !important;
+}
+
+/* ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) */
+.tactical-panel.enemy-panel {
+    align-self: center;
+    width: 280px;
+    flex-shrink: 0;
+    margin-right: 30px;
+}
+
+/* РАЗДЕЛИТЕЛЬ VS */
+.vs-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 2rem;
+    min-width: 120px;
+}
+
+.vs-text {
+    font-size: 3.5rem !important;
+    padding: 1.5rem 2.5rem !important;
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ */
+@media (min-width: 1600px) {
+    .battle-grid-fullscreen {
+        max-width: 1400px;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 800px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 250px !important;
+    }
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ */
+@media (max-width: 1400px) {
+    .battle-main-area {
+        height: 70vh;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 600px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 180px !important;
+    }
+    
+    .tactical-panel {
+        width: 250px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .battle-main-area {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 15px;
+    }
+    
+    .battle-grid-fullscreen {
+        order: 1;
+        width: 100%;
+        margin: 15px 0;
+    }
+    
+    .tactical-panel.player-panel {
+        order: 2;
+        margin-left: 0;
+    }
+    
+    .tactical-panel.enemy-panel {
+        order: 3;
+        margin-right: 0;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 500px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 150px !important;
+    }
+}
+
+/* УВЕЛИЧИВАЕМ ПАНЕЛИ УПРАВЛЕНИЯ И ЛОГА */
+.battle-controls-fullscreen {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+}
+
+.battle-hint-fullscreen {
+    font-size: 1.2rem;
+    padding: 1.2rem;
+}
+
+.battle-log-fullscreen {
+    max-height: 250px;
+}
+
+.battle-log-entries {
+    max-height: 180px;
+}
+
+.log-entry {
+    padding: 0.8rem 0;
+    font-size: 1.05rem;
+}
+
+/* УВЕЛИЧИВАЕМ КНОПКИ */
+.btn-battle-flee {
+    padding: 20px 35px;
+    font-size: 1.4rem;
+}
+
+/* ЗАГОЛОВОК БОЯ */
+.battle-header h2 {
+    font-size: 2.8rem;
+}
+
+.battle-round {
+    font-size: 1.3rem;
+    padding: 0.8rem 1.5rem;
+}
+
+.btn-battle-back {
+    padding: 15px 30px;
+    font-size: 1.2rem;
+}
