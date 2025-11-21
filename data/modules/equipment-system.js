@@ -1,4 +1,5 @@
-// ========== MODULE: EquipmentSystem ==========
+"use strict";
+
 class EquipmentSystem {
     constructor() {
         this.items = [];
@@ -10,6 +11,9 @@ class EquipmentSystem {
 
     async loadItemData() {
         try {
+            console.log("📦 Загружаем данные предметов...");
+            
+            // Загружаем основные предметы
             const response = await fetch('data/items.json');
             if (!response.ok) {
                 throw new Error(`Ошибка загрузки items.json: ${response.status}`);
@@ -18,17 +22,114 @@ class EquipmentSystem {
             this.items = await response.json();
             this.loadItemSetConfig();
             
+            console.log(`✅ Основные предметы загружены: ${this.items.length}`);
+            
+            // ЗАГРУЖАЕМ ПРЕДМЕТЫ ДЛЯ ЛУТА
+            await this.loadLootItems();
+            
             return true;
             
         } catch (error) {
             console.error("❌ Ошибка загрузки данных предметов:", error);
             this.createFallbackItems();
+            this.createFallbackLootItems();
             return true;
         }
     }
 
-  // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
-   loadItemSetConfig() {
+    async loadLootItems() {
+        try {
+            console.log("📦 Загружаем предметы для системы лута...");
+            
+            const response = await fetch('data/loot_items.json');
+            if (!response.ok) {
+                throw new Error(`Ошибка загрузки loot_items.json: ${response.status}`);
+            }
+            
+            const lootData = await response.json();
+            
+            // Объединяем все категории лута в основной массив items
+            const allLootItems = [
+                ...Object.values(lootData.consumables || {}),
+                ...Object.values(lootData.resources || {}),
+                ...Object.values(lootData.weapons || {}),
+                ...Object.values(lootData.armor || {}),
+                ...Object.values(lootData.artifacts || {})
+            ];
+            
+            // Добавляем лут-предметы в основную систему
+            this.items = [...this.items, ...allLootItems];
+            
+            console.log(`✅ Загружено предметов для лута: ${allLootItems.length}`);
+            console.log(`📊 Всего предметов в системе: ${this.items.length}`);
+            
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки loot_items.json:", error);
+            
+            // Создаем базовые предметы для лута на случай ошибки
+            this.createFallbackLootItems();
+            return true;
+        }
+    }
+
+    createFallbackLootItems() {
+        console.log("🔄 Создаем резервные предметы для лута...");
+        
+        const fallbackLoot = [
+            {
+                id: 1001,
+                name: "Зелье здоровья",
+                type: "consumable",
+                description: "Восстанавливает 25 здоровья",
+                value: 50,
+                price: 50,
+                effect: "heal",
+                power: 25,
+                icon: "🧪",
+                rarity: "common"
+            },
+            {
+                id: 1002,
+                name: "Зелье маны", 
+                type: "consumable",
+                description: "Восстанавливает 20 маны",
+                value: 45,
+                price: 45,
+                effect: "restore_mana", 
+                power: 20,
+                icon: "🔮",
+                rarity: "common"
+            },
+            {
+                id: 1003,
+                name: "Факел",
+                type: "resource",
+                description: "Освещает темные области",
+                value: 15,
+                price: 15,
+                icon: "🔥",
+                rarity: "common"
+            },
+            {
+                id: 1004,
+                name: "Лечебные травы",
+                type: "resource",
+                description: "Можно использовать для создания зелий", 
+                value: 25,
+                price: 25,
+                icon: "🌿",
+                rarity: "common"
+            }
+        ];
+        
+        this.items = [...this.items, ...fallbackLoot];
+        console.log("✅ Резервные предметы для лута созданы");
+    }
+
+    // ========== СИСТЕМА СЕТОВ ПРЕДМЕТОВ ==========
+    loadItemSetConfig() {
         this.itemSets = {
             "set_beginner": {
                 name: "Комплект Крестьянина Арканиума. Простые горожане, ученики гильдий, мобилизованные в ополчение. Этот комплект — удел тех, кто стоит в самом низу социальной пирамиды Арканиума. Собранный из того, что было, он символизирует надежду простого человека выжить в мире технологических чудес и политических бурь. Ношение полного сета говорит о готовности защищать свой дом, даже если в руках у тебя лишь медь и грубая ткань.",
@@ -85,7 +186,7 @@ class EquipmentSystem {
                 description: "Комплект из 6 вещей даст +15% к шансу критического удара(наносящего х2 урона)"
             },
             "set_crit4": {
-                name: "Комплект Элитного стрелка Арканиума. Элитные снайперы, личные охранники магнатов, специалисты по особым поручениям. Прочная бычья кожа и стальные вставки — это уже не просто униформа, а броня профессионала. Те, кто носит этот сет, работают на грани закона и политики. Их выстрелы могут изменить курс торговой сделки или остановить срыв поставок огненных ягод.",
+                name: "Комплект Элитного стрелка Арканиума. Элитные снайперы, личные охранники магнатов, специалисты по особым поручениям. Прочная бычья кожа и стальные вставки — это уже не просто униформа, а броня профессионала. Те, кто носит этот сет, работают на стыке закона и политики. Их выстрелы могут изменить курс торговой сделки или остановить срыв поставок огненных ягод.",
                 requiredPieces: 6,
                 bonus: { type: "crit_chance", value: 0.2 },
                 description: "Комплект из 6 вещей даст +20% к шансу критического удара(наносящего х2 урона)"
@@ -344,6 +445,35 @@ class EquipmentSystem {
             return true;
         }
         return false;
+    }
+
+    addItemToHero(hero, itemId) {
+        if (!hero || !itemId) return false;
+        
+        // Проверяем существование предмета
+        const item = this.getItemById(itemId);
+        if (!item) {
+            console.error(`❌ Предмет с ID ${itemId} не существует`);
+            return false;
+        }
+        
+        // Проверяем место в инвентаре
+        if (hero.inventory.length >= 10) {
+            console.warn(`❌ Инвентарь героя ${hero.name} полон`);
+            return false;
+        }
+        
+        // Проверяем, нет ли уже этого предмета
+        if (hero.inventory.includes(itemId)) {
+            console.warn(`⚠️ У героя ${hero.name} уже есть предмет ${item.name}`);
+            return false;
+        }
+        
+        // Добавляем предмет в инвентарь
+        hero.inventory.push(itemId);
+        
+        console.log(`✅ Предмет добавлен герою: ${item.name} (ID: ${itemId})`);
+        return true;
     }
 
     debugItems() {
