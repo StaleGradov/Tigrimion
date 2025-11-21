@@ -1180,24 +1180,27 @@ syncHeroWithOtherSystems() {
                     }
                     break;
             }
-            
-            // Показываем уведомление
-            if (showNotification && window.game) {
-                window.game.showNotification(reward.message, 'success');
-            }
-            
-            // Обновляем интерфейс героя
-            this.updateHeroInterface();
-            
-            console.log(`🎁 Выдана награда:`, reward);
-            
-        } catch (error) {
-            console.error("❌ Ошибка обработки награды:", error);
-            if (window.game) {
-                window.game.showNotification("Ошибка при получении награды", 'error');
-            }
+
+        // ⭐ ВАЖНО: Сначала синхронизируем, потом показываем уведомление
+        this.syncHeroWithOtherSystems();
+        
+        // Показываем уведомление
+        if (showNotification && window.game) {
+            window.game.showNotification(reward.message, 'success');
+        }
+        
+        // ⭐ ВАЖНО: Обновляем интерфейс ПОСЛЕ синхронизации
+        this.updateHeroInterface();
+        
+        console.log(`🎁 Выдана награда:`, reward);
+        
+    } catch (error) {
+        console.error("❌ Ошибка обработки награды:", error);
+        if (window.game) {
+            window.game.showNotification("Ошибка при получении награды", 'error');
         }
     }
+}
 
     // Получение имени предмета
     getItemName(itemId) {
@@ -1346,10 +1349,21 @@ syncHeroWithOtherSystems() {
     }
 
     // Обновляем интерфейс героя
+// В MapSystem обновите метод updateHeroInterface:
 updateHeroInterface() {
     // ⭐ БЕЗОПАСНЫЙ ВЫЗОВ: Проверяем наличие системы и героя
-    if (window.game?.systems?.hero && window.game.systems.hero.currentHero) {
-        window.game.systems.hero.updateHeroDisplay();
+    if (window.game?.systems?.hero) {
+        // Сначала синхронизируем, потом обновляем
+        this.syncHeroWithOtherSystems();
+        
+        // Ждем немного чтобы синхронизация завершилась
+        setTimeout(() => {
+            if (window.game.systems.hero.currentHero) {
+                window.game.systems.hero.updateHeroDisplay();
+            } else {
+                console.warn("⚠️ Не удалось обновить интерфейс: герой не установлен в HeroSystem");
+            }
+        }, 10);
     } else {
         console.warn("⚠️ HeroSystem не доступен для обновления интерфейса");
     }
