@@ -549,25 +549,6 @@ body {
     font-size: 10px; /* Чуть меньший шрифт */
 }
 
-/* СТИЛИ ДЛЯ ПОЛОСОК В БОЕВОМ ИНТЕРФЕЙСЕ (оставляем как есть) */
-.battle-screen-fullscreen .health-bar,
-.battle-screen-with-map .health-bar {
-    width: 100%;
-    height: 15px;
-    background: #4b5563;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0.5rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.battle-screen-fullscreen .health-fill,
-.battle-screen-with-map .health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s ease;
-}
-
 /* Секция с информацией о происхождении */
 .hero-origins-section-v2 {
     background: rgba(255, 215, 0, 0.1);
@@ -708,65 +689,6 @@ body {
     }
 }
 
-/* ========== СИСТЕМА БОЯ С КАРТОЙ ========== */
-.battle-screen-with-map {
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    height: 100vh;
-    background: #1f2937;
-}
-
-.tactical-map-side {
-    background: #000;
-    overflow: hidden;
-    position: relative;
-}
-
-.battle-side {
-    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-    border-left: 2px solid #4b5563;
-    display: flex;
-    flex-direction: column;
-}
-
-.battle-container {
-    flex: 1;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.battle-combatants {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-.combatant {
-    background: rgba(55, 65, 81, 0.8);
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-
-.combatant-image img {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    object-fit: cover;
-    border: 2px solid #4b5563;
-}
-
-.vs-divider {
-    text-align: center;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #f59e0b;
-    margin: 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
 /* ========== ИСПРАВЛЕННЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ И ОПЫТА ========== */
 .health-display-section, .experience-display-section {
     margin: 0 !important;
@@ -856,140 +778,609 @@ body {
     50% { opacity: 0.8; }
     100% { opacity: 1; }
 }
-.combatant-stats {
-    display: flex;
-    justify-content: space-around;
-    font-size: 0.8rem;
-    color: #9ca3af;
-}
 
-.battle-log {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
+/* ========== ИСПРАВЛЕННЫЕ СТИЛИ ТАКТИЧЕСКОГО БОЯ ========== */
+
+/* Основной контейнер боя */
+.battle-screen-fullscreen {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     padding: 1rem;
-    margin: 1rem 0;
-    overflow-y: auto;
-    max-height: 200px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.battle-log h4 {
-    color: #f59e0b;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
-.log-entries {
-    font-size: 0.9rem;
-}
-
-.log-entry {
-    padding: 0.25rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-}
-
-.battle-actions {
+    color: white;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
 }
 
-.btn-battle-attack, .btn-battle-block, .btn-battle-flee {
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
+/* Шапка боя */
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid #4b5563;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.battle-header h2 {
+    color: #ef4444;
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.battle-round {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #ef4444;
     font-weight: bold;
+    font-size: 1.1rem;
 }
 
-.btn-battle-attack { 
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.btn-battle-block { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-}
-
-.btn-battle-flee { 
+.btn-battle-back {
     background: linear-gradient(135deg, #6b7280, #4b5563);
     color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
-.btn-battle-attack:hover { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-}
-
-.btn-battle-block:hover { 
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    transform: translateY(-2px);
-}
-
-.btn-battle-flee:hover { 
+.btn-battle-back:hover {
     background: linear-gradient(135deg, #4b5563, #374151);
     transform: translateY(-2px);
 }
 
-/* Стили для экрана победы */
-.victory-screen {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+/* Основная область боя */
+.battle-main-area {
+    flex: 1;
     display: flex;
-    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    height: 70vh;
+    margin: 1rem 0;
 }
 
-.victory-content {
-    text-align: center;
-    padding: 2rem;
-    background: rgba(255, 255, 255, 0.1);
+/* Тактические панели */
+.tactical-panel {
+    background: rgba(30, 41, 59, 0.9);
     border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid;
+    width: 280px;
     backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    max-width: 500px;
+    align-self: center;
 }
 
-.victory-rewards {
+.player-panel {
+    border-color: #3b82f6;
+    margin-left: 20px;
+}
+
+.enemy-panel {
+    border-color: #ef4444;
+    margin-right: 20px;
+}
+
+.panel-title {
+    text-align: center;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.player-panel .panel-title {
+    color: #3b82f6;
+}
+
+.enemy-panel .panel-title {
+    color: #ef4444;
+}
+
+/* Статистика панелей */
+.panel-stats {
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin: 2rem 0;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
 }
 
-.reward-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 1rem;
-    border-radius: 10px;
-    min-width: 120px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+.stat-label {
+    color: #cbd5e1;
+    font-size: 0.9rem;
 }
 
-.reward-icon {
-    font-size: 2rem;
+.stat-value {
+    font-weight: bold;
+    color: white;
+}
+
+/* История действий */
+.action-history {
+    margin-bottom: 1.5rem;
+}
+
+.history-title {
+    color: #cbd5e1;
+    font-size: 0.9rem;
     margin-bottom: 0.5rem;
 }
 
-.reward-text {
+.history-entries {
+    min-height: 80px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.history-entry {
+    padding: 0.3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+}
+
+.history-entry:last-child {
+    border-bottom: none;
+}
+
+.history-empty {
+    color: #9ca3af;
+    text-align: center;
+    font-style: italic;
+    padding: 1rem;
+}
+
+/* Кнопки действий */
+.tactical-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+}
+
+.tactical-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #374151, #4b5563);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.tactical-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tactical-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.tactical-btn.attack { 
+    background: linear-gradient(135deg, #ef4444, #dc2626); 
+}
+.tactical-btn.strong-attack { 
+    background: linear-gradient(135deg, #dc2626, #b91c1c); 
+}
+.tactical-btn.crushing-attack { 
+    background: linear-gradient(135deg, #991b1b, #7f1d1d); 
+}
+.tactical-btn.block { 
+    background: linear-gradient(135deg, #3b82f6, #2563eb); 
+}
+.tactical-btn.break-block { 
+    background: linear-gradient(135deg, #f59e0b, #d97706); 
+}
+.tactical-btn.rest { 
+    background: linear-gradient(135deg, #10b981, #059669); 
+}
+
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+.btn-text {
+    flex: 1;
+    text-align: left;
+}
+
+.btn-cost {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* Сетка боя */
+.battle-grid-fullscreen {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 800px;
+    gap: 2rem;
+}
+
+.grid-side {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid #4b5563;
+    display: flex;
+    flex-direction: column;
+}
+
+.side-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #f59e0b;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* СЕТКА 6x6 - ИСПРАВЛЕННЫЕ РАЗМЕРЫ */
+.grid-container-6x6 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 1rem;
+    flex: 1;
+    min-height: 500px;
+}
+
+/* ЯЧЕЙКИ СЕТКИ - ОДИНАКОВОГО РАЗМЕРА */
+.grid-cell-fullscreen {
+    background: rgba(255, 255, 255, 0.1);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    position: relative;
+}
+
+.grid-cell-fullscreen.empty {
+    opacity: 0.3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-slot {
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+.grid-cell-fullscreen.dead {
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.dead-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    z-index: 10;
+}
+
+/* Отображение юнитов */
+.unit-display-fullscreen {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.unit-image {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 0.5rem;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #4b5563;
+    background: rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.unit-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.unit-info {
+    margin-top: auto;
+}
+
+.unit-name {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #f59e0b;
+    word-break: break-word;
+}
+
+/* ПОЛОСКА ЗДОРОВЬЯ - ИСПРАВЛЕННАЯ */
+.health-bar-fullscreen {
+    width: 100%;
+    height: 20px;
+    background: #4b5563;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0.3rem 0;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f59e0b);
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    z-index: 2;
+}
+
+.unit-stats {
+    margin-top: 0.5rem;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.3rem;
+}
+
+.stat-line span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    font-weight: bold;
+}
+
+/* Разделитель VS */
+.vs-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+}
+
+.vs-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #f59e0b;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 1rem 1.5rem;
+    border-radius: 50%;
+    border: 3px solid #f59e0b;
+}
+
+/* Управление боем */
+.battle-controls-fullscreen {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 1px solid #4b5563;
+}
+
+.battle-hint-fullscreen {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem;
     font-weight: bold;
     font-size: 1.1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.battle-actions-fullscreen {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-battle-flee {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-battle-flee:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5);
+}
+
+/* Лог боя */
+.battle-log-fullscreen {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 200px;
+    overflow: hidden;
+}
+
+.battle-log-fullscreen h4 {
+    color: #f59e0b;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.battle-log-entries {
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 0.95rem;
+}
+
+.log-entry {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+}
+
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* Стили для результата боя */
+.battle-result-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.battle-result-modal {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid;
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.battle-result-modal.victory {
+    border-color: #10b981;
+}
+
+.battle-result-modal.defeat {
+    border-color: #ef4444;
+}
+
+.battle-result-modal h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
     color: white;
 }
 
-.victory-message {
-    font-size: 1.2rem;
-    margin: 2rem 0;
-    color: white;
-    font-weight: bold;
+.result-details {
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.result-details p {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+}
+
+.result-details p:last-child {
+    border-bottom: none;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Анимации */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(0, 255, 0, 0.8); }
+    100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
+}
+
+/* Специфические стили для позиционирования */
+/* Герой в правой центральной ячейке (позиция 5) */
+.grid-side.allies-side .grid-cell-fullscreen:nth-child(6) {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Главный монстр в левой центральной ячейке (позиция 2) */
+.grid-side.enemies-side .grid-cell-fullscreen:nth-child(3) {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Подсветка активных ячеек */
+.grid-cell-fullscreen.selectable {
+    cursor: pointer;
+    border-color: #00ff00;
+    animation: pulse-glow 2s infinite;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.grid-cell-fullscreen.selectable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    background: rgba(0, 255, 0, 0.2);
 }
 
 /* ========== ОВЕРЛЕИ ========== */
@@ -1051,300 +1442,6 @@ body {
 .btn-close:hover {
     background: #374151;
     color: white;
-}
-
-/* ========== СТИЛИ ДЛЯ КАРТ ========== */
-.map-container {
-    background: rgba(30, 41, 59, 0.9);
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid #475569;
-}
-
-.map-grid {
-    display: grid;
-    gap: 4px;
-    margin-bottom: 1rem;
-}
-
-.map-cell {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1.2em;
-}
-
-.map-cell:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-}
-
-.map-cell.player-cell {
-    background: rgba(74, 222, 128, 0.3);
-    border-color: #4ade80;
-    animation: pulse 2s infinite;
-}
-
-.map-cell.global-cell {
-    background: rgba(59, 130, 246, 0.2);
-}
-
-.map-cell.local-cell {
-    background: rgba(139, 92, 246, 0.2);
-}
-
-.map-cell.tactical-cell {
-    background: rgba(76, 201, 240, 0.2);
-}
-
-.map-info {
-    text-align: center;
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-}
-
-.map-error {
-    text-align: center;
-    color: #f87171;
-    padding: 2rem;
-    background: rgba(248, 113, 113, 0.1);
-    border-radius: 8px;
-    border: 1px solid #f87171;
-}
-
-/* ========== СТИЛИ ДЛЯ ТАКТИЧЕСКИХ КАРТ РЕДАКТОРА ========== */
-.tigrimion-tactical-map {
-    max-width: 1200px !important;
-    width: 95vw !important;
-    max-height: 90vh !important;
-}
-
-.tactical-map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.9);
-    border-bottom: 1px solid #00ffff;
-}
-
-.tactical-map-header h4 {
-    color: #00ffff;
-    font-size: 1.4rem;
-    margin: 0;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: calc(90vh - 80px);
-}
-
-.tactical-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 15px;
-    overflow: hidden;
-    margin: 1rem;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
-}
-
-.tactical-map-info {
-    padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.9);
-    border-top: 1px solid #00ffff;
-}
-
-.map-description {
-    color: #cbd5e1;
-    margin-bottom: 0.8rem;
-    font-size: 0.95rem;
-}
-
-.player-position, .map-stats {
-    color: #00ffff;
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.movement-info {
-    background: rgba(255, 255, 0, 0.1);
-    padding: 0.8rem;
-    border-radius: 8px;
-    border: 1px solid #ffff00;
-    margin: 0.8rem 0;
-    text-align: center;
-}
-
-.movement-info span {
-    color: #ffff00;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Информация о редакторе */
-.map-editor-info {
-    background: rgba(0, 255, 255, 0.05);
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-}
-
-.map-editor-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem;
-    font-size: 0.85rem;
-}
-
-.map-editor-stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.3rem 0;
-    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-}
-
-.map-editor-stat:last-child {
-    border-bottom: none;
-}
-
-.map-editor-stat span:first-child {
-    color: #cbd5e1;
-}
-
-.map-editor-stat span:last-child {
-    color: #00ffff;
-    font-weight: bold;
-}
-
-/* Контролы карты */
-.map-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-/* ========== ИНВЕНТАРЬ ========== */
-.inventory-stats {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: rgba(30, 41, 59, 0.5);
-    border-radius: 8px;
-}
-
-.inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-}
-
-.inventory-item {
-    background: rgba(30, 41, 59, 0.8);
-    border: 3px solid #475569;
-    border-radius: 8px;
-    padding: 0;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    overflow: hidden;
-}
-
-.inventory-item[data-rarity="common"] { border-color: #9ca3af; }
-.inventory-item[data-rarity="uncommon"] { border-color: #4cc9f0; }
-.inventory-item[data-rarity="rare"] { border-color: #a855f7; }
-.inventory-item[data-rarity="epic"] { border-color: #f59e0b; }
-.inventory-item[data-rarity="legendary"] { border-color: #ffd700; }
-.inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
-
-.inventory-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.inventory-item-image {
-    width: 80px;
-    height: 80px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border-radius: 0;
-    overflow: hidden;
-    padding: 0;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.inventory-item-image img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain;
-}
-
-.inventory-item-info {
-    flex: 1;
-    min-width: 0;
-    padding: 0.8rem;
-}
-
-.inventory-item-info strong {
-    color: #ffd700;
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.9em;
-}
-
-.item-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 6px 0;
-    font-size: 0.8em;
-}
-
-.item-stats span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-}
-
-.item-description {
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-bottom: 0.8rem;
-    line-height: 1.3;
-}
-
-.item-status.equipped {
-    color: #10b981;
-    font-size: 0.8rem;
-    text-align: center;
-}
-
-.empty-inventory {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
-    color: #9ca3af;
-    font-size: 1.1rem;
 }
 
 /* ========== КНОПКИ ========== */
@@ -1427,534 +1524,6 @@ body {
     transform: translateY(-2px);
 }
 
-/* ========== СИСТЕМА РЕДКОСТЕЙ ========== */
-.rarity-common .item-background { 
-    border: 3px solid #9ca3af !important;
-    box-shadow: 0 6px 20px rgba(156, 163, 175, 0.4);
-}
-
-.rarity-uncommon .item-background { 
-    border: 4px solid #4cc9f0 !important;
-    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
-}
-
-.rarity-rare .item-background { 
-    border: 5px solid #a855f7 !important;
-    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
-}
-
-.rarity-epic .item-background { 
-    border: 6px solid #f59e0b !important;
-    box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-    animation: epic-pulse 3s ease-in-out infinite;
-}
-
-.rarity-legendary .item-background { 
-    border: 8px solid #ffd700 !important;
-    box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
-    animation: legendary-glow 2s ease-in-out infinite alternate;
-}
-
-.rarity-mythic .item-background { 
-    border: 10px solid #ff6b6b !important;
-    box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
-    animation: mythic-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes epic-pulse {
-    0% { 
-        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-        border-color: #f59e0b;
-    }
-    50% { 
-        box-shadow: 0 12px 45px rgba(245, 158, 11, 0.9);
-        border-color: #fbbf24;
-    }
-    100% { 
-        box-shadow: 0 12px 35px rgba(245, 158, 11, 0.7);
-        border-color: #f59e0b;
-    }
-}
-
-@keyframes legendary-glow {
-    from {
-        box-shadow: 0 15px 40px rgba(255, 215, 0, 0.8);
-        border-color: #ffd700;
-    }
-    to {
-        box-shadow: 0 15px 50px rgba(255, 215, 0, 1);
-        border-color: #fef08a;
-    }
-}
-
-@keyframes mythic-pulse {
-    0% { 
-        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
-        border-color: #ff6b6b;
-    }
-    50% { 
-        box-shadow: 0 20px 60px rgba(255, 107, 107, 1);
-        border-color: #fca5a5;
-    }
-    100% { 
-        box-shadow: 0 20px 50px rgba(255, 107, 107, 0.9);
-        border-color: #ff6b6b;
-    }
-}
-
-/* Анимации для экипированных предметов */
-.equipment-slot-mini.equipped[data-rarity="epic"] {
-    animation: equipment-epic-pulse 3s ease-in-out infinite;
-}
-
-.equipment-slot-mini.equipped[data-rarity="legendary"] {
-    animation: equipment-legendary-glow 2s ease-in-out infinite alternate;
-}
-
-.equipment-slot-mini.equipped[data-rarity="mythic"] {
-    animation: equipment-mythic-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes equipment-epic-pulse {
-    0% { 
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-    }
-    50% { 
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
-    }
-    100% { 
-        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
-    }
-}
-
-@keyframes equipment-legendary-glow {
-    from {
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
-    }
-    to {
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
-    }
-}
-
-@keyframes equipment-mythic-pulse {
-    0% { 
-        box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-    }
-    50% { 
-        box-shadow: 0 0 20px rgba(255, 107, 107, 0.8);
-    }
-    100% { 
-        box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
-    }
-}
-
-/* ========== СТИЛИ ДЛЯ БОНУСОВ И СЕТОВ ========== */
-.item-bonus-info {
-    background: rgba(76, 201, 240, 0.1);
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #4cc9f0;
-    margin: 10px 0;
-}
-
-.item-bonus-info h5 {
-    color: #4cc9f0;
-    margin-bottom: 8px;
-    font-size: 1.1em;
-}
-
-.bonus-display {
-    color: #4cc9f0;
-    font-weight: bold;
-    font-size: 1.1em;
-    text-align: center;
-}
-
-.item-set-details {
-    background: rgba(255, 215, 0, 0.1);
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #ffd700;
-    margin: 10px 0;
-}
-
-.item-set-details h5 {
-    color: #ffd700;
-    margin-bottom: 8px;
-    font-size: 1.1em;
-}
-
-.set-info {
-    font-size: 0.9em;
-}
-
-.set-bonus {
-    color: #ffd700;
-    font-weight: bold;
-    margin: 5px 0;
-}
-
-.set-description {
-    color: rgba(255, 255, 255, 0.8);
-    font-style: italic;
-    margin: 5px 0;
-}
-
-.set-requirements {
-    color: #4cc9f0;
-    font-size: 0.85em;
-}
-
-.item-bonus-display {
-    background: rgba(255, 215, 0, 0.2);
-    color: #ffd700;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.8em;
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    font-weight: 600;
-    margin: 5px 0;
-}
-
-.item-set-info {
-    background: rgba(255, 215, 0, 0.2);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-    margin: 5px 0;
-    color: #ffd700;
-    font-size: 0.8em;
-}
-
-/* ========== УВЕЛИЧЕННОЕ ИЗОБРАЖЕНИЕ ПРЕДМЕТА ========== */
-.item-image-zoom-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
-    backdrop-filter: blur(10px);
-    animation: zoomIn 0.3s ease-out;
-}
-
-@keyframes zoomIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.item-image-zoomed {
-    max-width: 80vw;
-    max-height: 80vh;
-    object-fit: contain;
-    border: 4px solid #4cc9f0;
-    border-radius: 15px;
-    box-shadow: 0 0 50px rgba(76, 201, 240, 0.5);
-    animation: scaleUp 0.3s ease-out;
-}
-
-@keyframes scaleUp {
-    from { 
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to { 
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.close-zoom {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(248, 113, 113, 0.3);
-    border: 2px solid #f87171;
-    color: white;
-    font-size: 2em;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    z-index: 2001;
-}
-
-.close-zoom:hover {
-    background: rgba(248, 113, 113, 0.5);
-    transform: scale(1.1);
-}
-
-.item-detail-image-zoom {
-    cursor: zoom-in;
-    transition: transform 0.3s ease;
-}
-
-.item-detail-image-zoom:hover {
-    transform: scale(1.05);
-}
-
-/* ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ========== */
-.item-detail-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-    padding: 20px;
-}
-
-.modal-content {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border-radius: 20px;
-    padding: 0;
-    max-width: 900px;
-    width: 95%;
-    max-height: 90vh;
-    overflow-y: auto;
-    border: 4px solid #4cc9f0;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
-    animation: modalAppear 0.4s ease-out;
-}
-
-@keyframes modalAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 30px;
-    background: rgba(0, 0, 0, 0.8);
-    border-bottom: 2px solid rgba(76, 201, 240, 0.4);
-    border-radius: 20px 20px 0 0;
-}
-
-.modal-header h4 {
-    color: #ffd700;
-    margin: 0;
-    font-size: 1.5em;
-    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
-}
-
-.close-modal {
-    background: rgba(248, 113, 113, 0.2);
-    border: 2px solid #f87171;
-    color: white;
-    font-size: 1.5em;
-    cursor: pointer;
-    padding: 0;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.close-modal:hover {
-    background: rgba(248, 113, 113, 0.4);
-    transform: scale(1.1);
-}
-
-.item-detail-content {
-    display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 30px;
-    padding: 30px;
-    align-items: start;
-}
-
-.item-detail-image {
-    text-align: center;
-    position: relative;
-}
-
-.detail-item-background {
-    background: transparent;
-    border-radius: 15px;
-    padding: 0;
-    border: 4px solid;
-    margin-bottom: 15px;
-    width: 100%;
-    height: 450px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.detail-item-background img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform 0.4s ease;
-    cursor: zoom-in;
-    max-width: 450px;
-    max-height: 450px;
-    padding: 10px;
-}
-
-.item-fallback-large {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border-radius: 10px;
-    font-size: 4em;
-}
-
-.item-rarity {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.9em;
-    font-weight: bold;
-    text-transform: uppercase;
-    display: inline-block;
-    color: white;
-}
-
-.rarity-common { background: #9ca3af; }
-.rarity-uncommon { background: #4cc9f0; }
-.rarity-rare { background: #a855f7; }
-.rarity-epic { background: #f59e0b; }
-.rarity-legendary { background: #ffd700; }
-.rarity-mythic { background: #ff6b6b; }
-
-.item-detail-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.item-name {
-    font-weight: bold;
-    font-size: 1.8em;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-    margin-bottom: 5px;
-}
-
-.item-type {
-    font-size: 1.1em;
-    color: #cbd5e1;
-    font-style: italic;
-    margin-bottom: 10px;
-}
-
-.item-description {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1em;
-    line-height: 1.6;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    border-left: 4px solid #4cc9f0;
-}
-
-.item-flavor {
-    color: rgba(255, 255, 255, 0.7);
-    font-style: italic;
-    font-size: 0.9em;
-    text-align: center;
-    padding: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border-left: 3px solid #4cc9f0;
-}
-
-.item-stats-detailed, .item-requirements {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.item-stats-detailed h5, .item-requirements h5 {
-    color: #4cc9f0;
-    margin-bottom: 12px;
-    font-size: 1.1em;
-    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
-    padding-bottom: 5px;
-}
-
-.stat-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    font-size: 0.95em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-line:last-child {
-    border-bottom: none;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: #4cc9f0;
-}
-
-.item-actions {
-    background: rgba(0, 0, 0, 0.7);
-    padding: 20px;
-    border-radius: 10px;
-    border: 2px solid rgba(255, 215, 0, 0.4);
-    margin-top: 10px;
-}
-
-.price-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.buy-price {
-    color: #ffd700;
-    font-size: 1.2em;
-}
-
-.sell-price {
-    color: #4ade80;
-    font-size: 1.1em;
-}
-
-.purchase-error {
-    color: #f87171;
-    font-size: 0.9em;
-    text-align: center;
-    margin-top: 10px;
-    font-weight: bold;
-}
-
 /* ========== АНИМАЦИИ ========== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
@@ -1971,2080 +1540,143 @@ body {
     animation: fadeIn 0.5s ease-out;
 }
 
-/* ========== УВЕДОМЛЕНИЯ ========== */
-.game-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    animation: slideInRight 0.3s ease-out;
-}
-
-.notification-content {
-    background: rgba(0, 0, 0, 0.9);
-    border-radius: 10px;
-    padding: 15px 20px;
-    border: 2px solid;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    min-width: 300px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-}
-
-.notification-info {
-    border-color: #4cc9f0;
-}
-
-.notification-success {
-    border-color: #4ade80;
-}
-
-.notification-error {
-    border-color: #f87171;
-}
-
-.notification-message {
-    color: white;
-    font-weight: bold;
-    flex: 1;
-}
-
-.notification-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 5px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.notification-close:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Стиль для пустых категорий */
-.empty-category {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 3rem;
-    color: #9ca3af;
-    font-size: 1.1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 1px dashed #475569;
-}
-
-/* ========== УВЕЛИЧЕННОЕ ОКНО ТАКТИЧЕСКОЙ КАРТЫ ========== */
-.overlay-content.tactical-map-overlay {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
-    background: #000000 !important;
-    margin: 2vh auto !important;
-    border-radius: 12px;
-    border: 1px solid #00ffff;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-}
-
-.tactical-map-content {
-    display: flex;
-    flex-direction: column;
-    height: calc(95vh - 100px) !important;
-    background: #000000;
-}
-
-.tactical-map-visual {
-    flex: 1;
-    position: relative;
-    background: #000000;
-    border: 2px solid #00ffff;
-    border-radius: 15px;
-    overflow: hidden;
-    margin: 1rem;
-    box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-/* Убедимся, что canvas занимает всю область */
-#tacticalMapCanvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-    background: transparent;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .overlay-content.tactical-map-overlay {
-        max-width: 98vw !important;
-        max-height: 98vh !important;
-        width: 98vw !important;
-        height: 98vh !important;
-        margin: 1vh auto !important;
-    }
-    
-    .tactical-map-content {
-        height: calc(98vh - 100px) !important;
-    }
-    
-    .tactical-map-visual {
-        min-height: 400px;
-        margin: 0.5rem;
-    }
-    
-    .tactical-map-header {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
-    
-    .map-controls {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    
-    /* Адаптивность для модальных окон */
-    .modal-content {
-        max-width: 95%;
-        max-height: 95vh;
-        margin: 10px;
-    }
-    
-    .item-detail-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 20px;
-    }
-    
-    .detail-item-background {
-        height: 250px;
-        padding: 20px;
-    }
-    
-    .item-detail-image {
-        max-width: 100%;
-    }
-    
-    .detail-item-background img {
-        max-width: 200px;
-        max-height: 200px;
-    }
-    
-    .item-fallback-large {
-        font-size: 3em;
-    }
-    
-    .item-name {
-        font-size: 1.5em;
-    }
-    
-    .modal-header {
-        padding: 15px 20px;
-    }
-    
-    .modal-header h4 {
-        font-size: 1.3em;
-    }
-}
-
-@media (max-width: 480px) {
-    .tactical-map-visual {
-        min-height: 350px;
-    }
-    
-    .zoom-controls {
-        padding: 0.3rem;
-    }
-    
-    .zoom-btn {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    /* Адаптивность для модальных окон */
-    .item-detail-content {
-        padding: 15px;
-        gap: 15px;
-    }
-    
-    .detail-item-background {
-        height: 200px;
-        padding: 15px;
-    }
-    
-    .detail-item-background img {
-        max-width: 150px;
-        max-height: 150px;
-    }
-    
-    .item-name {
-        font-size: 1.3em;
-    }
-    
-    .price-section {
-        flex-direction: column;
-        gap: 10px;
-        text-align: center;
-    }
-}
-
-/* Анимация для подсветки доступных ходов */
-@keyframes available-pulse {
-    0% { opacity: 0.3; }
-    50% { opacity: 0.6; }
-    100% { opacity: 0.3; }
-}
-
-/* Стили для отладки */
-.debug-info {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    color: #00ff00;
-    padding: 0.5rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    font-family: monospace;
-    z-index: 10;
-    border: 1px solid #00ff00;
-}
-
-/* ========== УЛУЧШЕННЫЕ СТИЛИ ДЛЯ КАРТ БЕЗ МАСШТАБИРОВАНИЯ ========== */
-.tactical-map-visual {
-    position: relative !important;
-    width: 100% !important;
-    height: 70vh !important;
-    min-height: 500px !important;
-    background: #000000 !important;
-    border: 2px solid #00ffff !important;
-    border-radius: 15px !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-}
-
-#tacticalMapCanvas {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    cursor: default !important;
-    background: transparent !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-}
-
-/* Убираем любые трансформации и переходы */
-.tactical-map-visual * {
-    transform: none !important;
-    transition: none !important;
-}
-
-/* Убираем контролы масштабирования */
-.zoom-controls {
-    display: none !important;
-}
-
-.zoom-info {
-    display: none !important;
-}
-
-/* Упрощаем header карты */
-.tactical-map-header .map-controls {
-    gap: 0.5rem;
-}
-
-/* Улучшаем информацию о позиции */
-.position-info {
-    background: rgba(0, 20, 40, 0.9);
-    padding: 1rem;
-    border-top: 1px solid #00ffff;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-}
-
-.player-position, .map-stats, .movement-info {
-    text-align: center;
-    padding: 0.5rem;
-    background: rgba(0, 255, 255, 0.1);
-    border-radius: 5px;
-    border: 1px solid rgba(0, 255, 255, 0.3);
-}
-
-.movement-info span {
-    color: #00ff00;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .position-info {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ========== АДАПТИВНОСТЬ ДЛЯ ИНТЕРФЕЙСА ГЕРОЯ V4 ========== */
-
-/* Для экранов меньше 1024px (планшеты) */
-@media (max-width: 1024px) {
-    .equipment-slot-column-v2 {
-        height: 220px !important;
-        width: 220px !important;
-    }
-    
-    .slot-icon-column-v2 {
-        height: calc(100% - 35px) !important;
-    }
-    
-    .slot-label-column-v2 {
-        height: 35px !important;
-        font-size: 0.85rem !important;
-    }
-    
-    .equipment-column-v2 {
-        width: 220px !important;
-        gap: 1.2rem !important;
-    }
-    
-    .hero-image-container-v2 {
-        height: 750px !important;
-    }
-    
-    .hero-image-container-v2 img {
-        height: 115%;
-        margin-top: -15%;
-        transform: translateY(-3%);
-    }
-    
-    .hero-main-window-v2 {
-        gap: 1.5rem !important;
-        padding: 1.5rem !important;
-    }
-    
-    .hero-overlay-stats-v2 {
-        bottom: 15px;
-        left: 15px;
-        right: 15px;
-        padding: 0.8rem;
-    }
-}
-
-/* Для экранов меньше 768px (мобильные телефоны) */
-@media (max-width: 768px) {
-    .hero-main-window-v2 {
-        flex-direction: column;
-        align-items: center;
-        gap: 1.5rem;
-    }
-    
-    .equipment-column-v2 {
-        flex-direction: row;
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-        order: 3;
-    }
-    
-    .equipment-slot-column-v2 {
-        height: 150px !important;
-        width: 150px !important;
-        flex: 0 0 calc(25% - 1rem) !important;
-    }
-    
-    .slot-icon-column-v2 {
-        height: calc(100% - 30px) !important;
-    }
-    
-    .slot-label-column-v2 {
-        height: 30px !important;
-        font-size: 0.75rem !important;
-    }
-    
-    .hero-center-area-v2 {
-        order: 1;
-        max-width: 100%;
-    }
-    
-    .hero-image-container-v2 {
-        height: 550px !important;
-        width: 100%;
-    }
-    
-    .hero-image-container-v2 img {
-        height: 110%;
-        margin-top: -10%;
-        transform: translateY(-2%);
-    }
-    
-    .hero-overlay-stats-v2 {
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        padding: 0.6rem;
-    }
-    
-    .bonuses-grid-v2 {
-        grid-template-columns: 1fr;
-    }
-    
-    .compact-stats-v2 {
-        grid-template-columns: 1fr;
-    }
-    
-    .hero-origins-section-v2,
-    .hero-bonuses-section-v2 {
-        padding: 0.5rem;
-    }
-    
-    .origin-item-v2,
-    .bonus-item-v2 {
-        padding: 0.25rem 0;
-        font-size: 0.85rem;
-    }
-}
-
-/* Для экранов меньше 480px (маленькие мобильные) */
-@media (max-width: 480px) {
-    .equipment-slot-column-v2 {
-        height: 120px !important;
-        width: 120px !important;
-        flex: 0 0 calc(33.333% - 0.8rem) !important;
-    }
-    
-    .slot-icon-column-v2 {
-        height: calc(100% - 25px) !important;
-    }
-    
-    .slot-label-column-v2 {
-        height: 25px !important;
-        font-size: 0.7rem !important;
-    }
-    
-    .hero-image-container-v2 {
-        height: 450px !important;
-    }
-    
-    .hero-image-container-v2 img {
-        height: 105%;
-        margin-top: -7%;
-        transform: translateY(-1%);
-    }
-    
-    .hero-main-window-v2 {
-        padding: 1rem !important;
-    }
-    
-    .hero-overlay-stats-v2 {
-        bottom: 8px;
-        left: 8px;
-        right: 8px;
-        padding: 0.5rem;
-    }
-    
-    .health-bar-container, .experience-bar-container {
-        height: 20px;
-    }
-    
-    .health-bar, .experience-bar {
-        font-size: 10px;
-    }
-}
-
-/* ========== АДАПТИВНОСТЬ ДЛЯ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ ========== */
-@media (max-width: 768px) {
-    .battle-screen-with-map {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
-    }
-    
-    .battle-side {
-        border-left: none;
-        border-top: 2px solid #4b5563;
-        max-height: 50vh;
-    }
-    
-    .victory-rewards {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .battle-combatants {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .vs-divider {
-        order: -1;
-        margin: 0;
-    }
-    
-    .heroes-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .overlay-container {
-        padding: 1rem;
-    }
-    
-    .overlay-content {
-        max-height: 90vh;
-    }
-}
-
-/* ========== ЭКРАН ОШИБКИ ========== */
-.error-screen {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-.error-content {
-    background: rgba(239, 68, 68, 0.1);
-    border: 2px solid #ef4444;
-    border-radius: 12px;
-    padding: 2rem;
-    max-width: 600px;
-    text-align: center;
-}
-
-.error-content h1 {
-    color: #ef4444;
-    margin-bottom: 1rem;
-    font-size: 2rem;
-}
-
-.error-details, .error-stack {
-    margin-bottom: 1rem;
-    text-align: left;
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-}
-
-.error-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-top: 1.5rem;
-}
-
-/* Фильтр инвентаря */
-.filter-info {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid #3b82f6;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    text-align: center;
-}
-
-.filter-info strong {
-    color: #3b82f6;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-/* Стили для скроллбара */
-.modal-content::-webkit-scrollbar {
-    width: 10px;
-}
-
-.modal-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    border-radius: 5px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #3b82f6, #3730a3);
-}
-
-/* Стили для магазина */
-.shop-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 25px;
-    justify-content: center;
-    padding: 0 20px;
-}
-
-.category-tab {
-    background: rgba(255, 255, 255, 0.15);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.1em;
-    backdrop-filter: blur(10px);
-    font-weight: 600;
-    min-width: 140px;
-    text-align: center;
-}
-
-.category-tab:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
-}
-
-.category-tab.active {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    border-color: #4cc9f0;
-    box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
-    transform: translateY(-2px);
-}
-
-.shop-subcategories {
-    margin: 20px 0;
-    padding: 0 20px;
-}
-
-.subcategory-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-}
-
-.subcategory-tab {
-    background: rgba(59, 130, 246, 0.15);
-    border: 2px solid rgba(59, 130, 246, 0.4);
-    color: #60a5fa;
-    padding: 12px 24px;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 1.1em;
-    font-weight: 600;
-    min-width: 120px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.subcategory-tab:hover {
-    background: rgba(59, 130, 246, 0.25);
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-}
-
-.subcategory-tab.active {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border-color: #3b82f6;
-    color: white;
-    box-shadow: 0 5px 20px rgba(59, 130, 246, 0.5);
-    transform: translateY(-2px);
-}
-
-.subcategory-count {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.8em;
-    font-weight: bold;
-}
-
-/* Стили для инвентаря с продажей */
-.inventory-item-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
-
-.btn-small {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8em;
-    transition: all 0.3s ease;
-    font-weight: 600;
-}
-
-.btn-small:hover {
-    transform: translateY(-2px);
-}
-
-.btn-sell {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-}
-
-.btn-sell:hover {
-    background: linear-gradient(135deg, #d97706, #b45309);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-}
-
-.action-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.action-buttons button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-.action-buttons .btn-primary {
-    background: linear-gradient(135deg, #4cc9f0, #4361ee);
-    color: white;
-}
-
-.action-buttons .btn-secondary {
-    background: rgba(255, 255, 255, 0.1);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.action-buttons .btn-sell {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-}
-
-.action-buttons .disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.action-buttons button:hover:not(.disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-/* Стили для сильных сторон */
-.hero-strengths-section {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.hero-strengths-section h4 {
-    color: #ffd700;
-    margin-bottom: 0.8rem;
-    font-size: 1.1rem;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
-    padding-bottom: 0.5rem;
-}
-
-.strengths-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.strength-item {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 0.8rem;
-    border-left: 3px solid;
-    transition: all 0.3s ease;
-}
-
-.strength-item:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateX(5px);
-}
-
-.strength-item[data-source="race"] {
-    border-left-color: #4cc9f0;
-}
-
-.strength-item[data-source="class"] {
-    border-left-color: #f59e0b;
-}
-
-.strength-item[data-source="saga"] {
-    border-left-color: #a855f7;
-}
-
-.strength-item[data-source="equipment"] {
-    border-left-color: #4ade80;
-}
-
-.strength-item[data-source="set"] {
-    border-left-color: #ff6b6b;
-}
-
-.strength-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.3rem;
-}
-
-.strength-icon {
-    font-size: 1.2rem;
-}
-
-.strength-name {
-    font-weight: bold;
-    color: #e5e7eb;
-    font-size: 0.9rem;
-}
-
-.strength-bonus {
-    color: #cbd5e1;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-.no-strengths {
-    text-align: center;
-    color: #9ca3af;
-    font-style: italic;
-    padding: 1rem;
-}
-/* ========== РАСТЯНУТОЕ ОКНО БОЯ С КАРТОЙ ========== */
-.battle-screen-with-map {
-    display: grid;
-    grid-template-columns: 30% 70%; /* Карта 30%, бой 70% */
-    height: 100vh;
-    background: #1f2937;
-}
-
-.tactical-map-side {
-    background: #000;
-    overflow: hidden;
-    position: relative;
-    border-right: 3px solid #4b5563;
-    padding: 1rem;
-}
-
-.battle-map-preview {
-    color: white;
-    text-align: center;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.battle-map-preview h3 {
-    color: #00ffff;
-    margin-bottom: 1rem;
-    font-size: 1.5rem;
-}
-
-.map-position-info {
-    background: rgba(0, 255, 255, 0.1);
-    padding: 0.8rem;
-    border-radius: 8px;
-    margin: 1rem 0;
-    border: 1px solid #00ffff;
-}
-
-.battle-map-controls {
-    margin-top: 2rem;
-}
-
-.battle-side.expanded {
-    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-    display: flex;
-    flex-direction: column;
-    padding: 2rem;
-}
-
-.battle-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.battle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #4b5563;
-}
-
-.battle-header h2 {
-    color: #ef4444;
-    font-size: 2.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.battle-round {
-    background: rgba(239, 68, 68, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    border: 1px solid #ef4444;
-    font-weight: bold;
-}
-
-/* Увеличиваем размеры для растянутого окна */
-.battle-combatants {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    margin: 2rem 0;
-    gap: 3rem;
-}
-
-.combatant {
-    background: rgba(55, 65, 81, 0.9);
-    border-radius: 15px;
-    padding: 2rem;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    border: 2px solid #4b5563;
-    min-width: 280px;
-    flex: 1;
-}
-
-.combatant-image img {
-    width: 140px;
-    height: 140px;
-    border-radius: 15px;
-    object-fit: cover;
-    border: 3px solid #4b5563;
-    margin-bottom: 1rem;
-}
-
-.combatant-info h4 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: #f59e0b;
-}
-
-.vs-divider {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: #f59e0b;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.health-bar {
-    width: 100%;
-    height: 25px;
-    background: #4b5563;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 1rem 0;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s ease;
-}
-
-.health-text {
-    font-size: 1.1rem;
-    color: #cbd5e1;
-    margin: 0.5rem 0;
-    font-weight: bold;
-}
-
-.combatant-stats {
-    display: flex;
-    justify-content: space-around;
-    font-size: 1rem;
-    color: #9ca3af;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    margin-top: 1rem;
-}
-
-.combatant-stats span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-}
-
-.battle-log {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin: 1rem 0;
-    overflow-y: auto;
-    max-height: 300px;
-    border: 2px solid rgba(255, 255, 255, 0.1);
-}
-
-.battle-log h4 {
-    color: #f59e0b;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.log-entries {
-    font-size: 1rem;
-}
-
-.log-entry {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-}
-
-.battle-actions {
-    display: flex;
-    gap: 1.5rem;
-    margin-top: 2rem;
-}
-
-.btn-battle-attack, 
-.btn-battle-block, 
-.btn-battle-flee {
-    padding: 18px 30px;
-    border: none;
-    border-radius: 10px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    flex: 1;
-}
-
-.btn-battle-attack { 
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.btn-battle-block { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-}
-
-.btn-battle-flee { 
-    background: linear-gradient(135deg, #6b7280, #4b5563);
-    color: white;
-}
-
-.btn-battle-attack:hover { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-}
-
-.btn-battle-block:hover { 
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-}
-
-.btn-battle-flee:hover { 
-    background: linear-gradient(135deg, #4b5563, #374151);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
-}
-
-/* Стили для экрана победы в бою */
-.victory-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.victory-content {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 3rem;
-    border-radius: 20px;
-    border: 3px solid #10b981;
-    max-width: 600px;
-    width: 100%;
-}
-
-.victory-rewards {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    margin: 2rem 0;
-}
-
-.reward-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: rgba(16, 185, 129, 0.2);
-    padding: 1.5rem;
-    border-radius: 15px;
-    min-width: 150px;
-    border: 2px solid rgba(16, 185, 129, 0.5);
-}
-
-.reward-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.reward-text {
-    font-weight: bold;
-    font-size: 1.3rem;
-    color: white;
-}
-
-.victory-message {
-    font-size: 1.4rem;
-    margin: 2rem 0;
-    color: white;
-    font-weight: bold;
-    line-height: 1.5;
-}
-
-/* Стили для результата боя */
-.battle-result {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-.battle-result-content {
-    background: rgba(0, 0, 0, 0.6);
-    padding: 3rem;
-    border-radius: 20px;
-    border: 3px solid;
-    max-width: 600px;
-    width: 100%;
-}
-
-.result-message {
-    font-size: 1.3rem;
-    margin: 2rem 0;
-    color: white;
-    line-height: 1.5;
-}
-
-/* ========== ПОЛНОЭКРАННЫЙ ИНТЕРФЕЙС БОЯ ========== */
-.battle-screen-fullscreen {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    padding: 1rem;
-    color: white;
-    display: flex;
-    flex-direction: column;
-}
-
-.battle-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 10px;
-    border: 1px solid #4b5563;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.battle-header h2 {
-    color: #ef4444;
-    font-size: 2rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    margin: 0;
-}
-
-.battle-round {
-    background: rgba(239, 68, 68, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    border: 1px solid #ef4444;
-    font-weight: bold;
-    font-size: 1.1rem;
-}
-
-.btn-battle-back {
-    background: linear-gradient(135deg, #6b7280, #4b5563);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.btn-battle-back:hover {
-    background: linear-gradient(135deg, #4b5563, #374151);
-    transform: translateY(-2px);
-}
-
-.battle-main-area {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 1rem 0;
-}
-
-.battle-grid-fullscreen {
-    display: flex;
-    gap: 3rem;
-    align-items: center;
-    width: 100%;
-    max-width: 1400px;
-}
-
-.grid-side {
-    flex: 1;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 15px;
-    padding: 1.5rem;
-    border: 2px solid #4b5563;
-}
-
-.side-title {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: #f59e0b;
-    font-size: 1.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.grid-container-6x6 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 1rem;
-    min-height: 600px;
-}
-
-.grid-cell-fullscreen {
-    background: rgba(255, 255, 255, 0.1);
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 180px;
-}
-
-.grid-cell-fullscreen.empty {
-    opacity: 0.3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.empty-slot {
-    font-size: 3rem;
-    opacity: 0.5;
-}
-
-.grid-cell-fullscreen.selectable {
-    cursor: pointer;
-    border-color: #00ff00;
-    animation: pulse-glow 2s infinite;
-    background: rgba(0, 255, 0, 0.1);
-}
-
-.grid-cell-fullscreen.selectable:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
-    background: rgba(0, 255, 0, 0.2);
-}
-
-.grid-cell-fullscreen.dead {
-    opacity: 0.5;
-    filter: grayscale(1);
-    position: relative;
-}
-
-.dead-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 4rem;
-    z-index: 10;
-}
-
-@keyframes pulse-glow {
-    0% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
-    50% { box-shadow: 0 0 25px rgba(0, 255, 0, 0.8); }
-    100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
-}
-
-.unit-display-fullscreen {
-    text-align: center;
-    width: 100%;
-}
-
-.unit-image {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 1rem;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 3px solid #4b5563;
-    background: rgba(0, 0, 0, 0.3);
-}
-
-.unit-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.image-fallback {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.unit-info {
-    margin-top: 0.5rem;
-}
-
-.unit-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 0.8rem;
-    color: #f59e0b;
-}
-/* ========== ПОЛОСКИ ЗДОРОВЬЯ ГЕРОЯ (В ИНТЕРФЕЙСЕ ГЕРОЯ) ========== */
-.hero-overlay-stats-v2 .health-display-section, 
-.hero-overlay-stats-v2 .experience-display-section {
-    margin: 8px 0;
-    padding: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.hero-overlay-stats-v2 .health-bar-container, 
-.hero-overlay-stats-v2 .experience-bar-container {
-    width: 100%;
-    background: #333;
-    border-radius: 8px;
-    margin: 4px 0 0 0;
-    overflow: hidden;
-    position: relative;
-    border: 2px solid #444;
-    height: 24px;
-}
-
-.hero-overlay-stats-v2 .health-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #e74c3c, #f39c12);
-    border-radius: 6px;
-    transition: width 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-    min-width: 50px;
-    font-size: 11px;
-}
-
-.hero-overlay-stats-v2 .health-bar.regening {
-    background: linear-gradient(90deg, #2ecc71, #27ae60);
-    animation: pulseHealth 1s infinite;
-}
-
-.hero-overlay-stats-v2 .experience-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4cc9f0, #4361ee);
-    border-radius: 6px;
-    transition: width 0.5s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
-    min-width: 50px;
-    font-size: 11px;
-}
-
-/* ========== СИСТЕМА БОЯ С КАРТОЙ ========== */
-/* А ЭТИ СТИЛИ ОСТАВЬТЕ КАК ЕСТЬ - они для боевых полосок */
-.health-bar {
-    width: 100%;
-    height: 15px;
-    background: #4b5563;
-    border-radius: 8px;
-    overflow: hidden;
-    margin: 0.5rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.3s ease;
-}
-.health-bar-fullscreen {
-    width: 100%;
-    height: 25px;
-    background: #4b5563;
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 0.5rem 0;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-}
-
-.health-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ef4444, #f59e0b);
-    transition: width 0.5s ease;
-}
-
-.health-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-}
-
-.unit-stats {
-    margin-top: 0.8rem;
-}
-
-.stat-line {
-    display: flex;
-    justify-content: space-around;
-    gap: 0.5rem;
-}
-
-.stat-line span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-    font-weight: bold;
-}
-
-.vs-separator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 2rem;
-}
-
-.vs-text {
-    font-size: 3rem;
-    font-weight: bold;
-    color: #f59e0b;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    background: rgba(0, 0, 0, 0.5);
-    padding: 1rem 2rem;
-    border-radius: 50%;
-    border: 3px solid #f59e0b;
-}
-
-/* Управление боем */
-.battle-controls-fullscreen {
-    margin: 1rem 0;
-    padding: 1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    border: 1px solid #4b5563;
-}
-
-.battle-hint-fullscreen {
-    text-align: center;
-    padding: 1rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.battle-actions-fullscreen {
-    display: flex;
-    justify-content: center;
-}
-
-.btn-battle-flee {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
-
-.btn-battle-flee:hover {
-    background: linear-gradient(135deg, #d97706, #b45309);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5);
-}
-
-/* Лог боя */
-.battle-log-fullscreen {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 10px;
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    max-height: 200px;
-    overflow: hidden;
-}
-
-.battle-log-fullscreen h4 {
-    color: #f59e0b;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.battle-log-entries {
-    max-height: 120px;
-    overflow-y: auto;
-    font-size: 0.95rem;
-}
-
-.log-entry {
-    padding: 0.6rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e5e7eb;
-}
-
-.log-entry:last-child {
-    border-bottom: none;
-}
-/* ========== ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ ========== */
-
-/* Стили для полосок здоровья в интерфейсе героя (оставляем как есть) */
-.hero-game-screen .health-bar-container,
-.hero-game-screen .experience-bar-container {
-    margin: 4px 0 !important;
-    padding: 0 !important;
-    height: 24px !important;
-}
-
-.hero-game-screen .health-bar,
-.hero-game-screen .experience-bar {
-    height: 100% !important;
-    font-size: 11px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-
-/* Стили для полосок здоровья в бою - ВОССТАНАВЛИВАЕМ */
-.battle-screen-fullscreen .health-bar-fullscreen {
-    width: 100% !important;
-    height: 25px !important;
-    background: #4b5563 !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    margin: 0.5rem 0 !important;
-    border: 2px solid rgba(255, 255, 255, 0.2) !important;
-    position: relative !important;
-    box-sizing: border-box !important;
-}
-
-.battle-screen-fullscreen .health-fill {
-    height: 100% !important;
-    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
-    transition: width 0.5s ease !important;
-    border-radius: 10px !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-}
-
-.battle-screen-fullscreen .health-text {
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    font-size: 0.9rem !important;
-    font-weight: bold !important;
-    color: white !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
-    z-index: 2 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Убираем конфликтующие стили только для боя */
-.battle-screen-fullscreen .unit-info {
-    position: relative !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.battle-screen-fullscreen .unit-display-fullscreen {
-    position: relative !important;
-    width: 100% !important;
-    height: 100% !important;
-}
-/* ========== СТИЛИ ДЛЯ ОКНА РЕЗУЛЬТАТОВ БОЯ ========== */
-.battle-result-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    backdrop-filter: blur(5px);
-}
-
-.battle-result-modal {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-    border: 3px solid;
-    border-radius: 15px;
-    padding: 2rem;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    animation: modalSlideIn 0.3s ease-out;
-}
-
-.battle-result-modal.victory {
-    border-color: #10b981;
-}
-
-.battle-result-modal.defeat {
-    border-color: #ef4444;
-}
-
-.battle-result-modal.flee {
-    border-color: #f59e0b;
-}
-
-.battle-result-modal h3 {
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
-    color: white;
-}
-
-.result-details {
-    margin: 1.5rem 0;
-    text-align: left;
-}
-
-.result-details p {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    color: #cbd5e1;
-}
-
-.result-details p:last-child {
-    border-bottom: none;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-/* ========== ПОЛНОЕ ИСПРАВЛЕНИЕ ТАКТИЧЕСКОЙ КАРТЫ ========== */
-.tactical-map-overlay .overlay-content {
-    max-width: 98vw !important;
-    max-height: 98vh !important;
-    width: 98vw !important;
-    height: 98vh !important;
-    margin: 1vh auto !important;
-    padding: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: #000000 !important;
-    border: 2px solid #00ffff !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-}
-
-.tactical-map-overlay .overlay-header {
-    flex-shrink: 0 !important;
-    margin: 0 !important;
-    padding: 1rem 1.5rem !important;
-    background: rgba(0, 20, 40, 0.95) !important;
-    border-bottom: 1px solid #00ffff !important;
-    height: auto !important;
-    min-height: auto !important;
-}
-
-.tactical-map-overlay .overlay-body {
-    flex: 1 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    height: calc(100% - 70px) !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-}
-
-.tactical-map-content {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-    height: 100% !important;
-    min-height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-.tactical-map-visual {
-    flex: 1 !important;
-    position: relative !important;
-    background: #000000 !important;
-    border: none !important;
-    border-radius: 0 !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: auto !important;
-    box-shadow: none !important;
-}
-
-#tacticalMapCanvas {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: block !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    cursor: pointer !important;
-}
-
-/* Убираем все лишние элементы */
-.tactical-map-header .map-controls,
-.position-info,
-.zoom-controls,
-.zoom-info,
-.map-editor-info,
-.movement-info {
-    display: none !important;
-}
-
-/* Убираем прокрутку */
-.tactical-map-overlay {
-    overflow: hidden !important;
-}
-
-.tactical-map-overlay .overlay-content {
-    overflow: hidden !important;
-}
-
-/* Упрощаем заголовок */
-.tactical-map-header h4 {
-    color: #00ffff !important;
-    font-size: 1.3rem !important;
-    margin: 0 !important;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
-}
-
-/* Стили для кнопки закрытия */
-.tactical-map-overlay .btn-close {
-    background: rgba(248, 113, 113, 0.2) !important;
-    border: 2px solid #f87171 !important;
-    color: white !important;
-    font-size: 1.2rem !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.tactical-map-overlay .btn-close:hover {
-    background: rgba(248, 113, 113, 0.4) !important;
-    transform: scale(1.1) !important;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-    .tactical-map-overlay .overlay-content {
-        max-width: 99vw !important;
-        max-height: 99vh !important;
-        width: 99vw !important;
-        height: 99vh !important;
-        margin: 0.5vh auto !important;
-    }
-    
-    .tactical-map-overlay .overlay-body {
-        height: calc(100% - 60px) !important;
-    }
-    
-    .tactical-map-overlay .overlay-header {
-        padding: 0.8rem 1rem !important;
-    }
-    
-    .tactical-map-header h4 {
-        font-size: 1.1rem !important;
-    }
-}
-/* ========== ТАКТИЧЕСКИЕ ПАНЕЛИ ========== */
-.tactical-panel {
-    background: rgba(30, 41, 59, 0.9);
-    border-radius: 15px;
-    padding: 1.5rem;
-    border: 2px solid;
-    width: 280px;
-    backdrop-filter: blur(10px);
-}
-
-.player-panel {
-    border-color: #3b82f6;
-}
-
-.enemy-panel {
-    border-color: #ef4444;
-}
-
-.panel-title {
-    text-align: center;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-.player-panel .panel-title {
-    color: #3b82f6;
-}
-
-.enemy-panel .panel-title {
-    color: #ef4444;
-}
-
-.panel-stats {
-    margin-bottom: 1.5rem;
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-}
-
-.stat-label {
-    color: #cbd5e1;
-    font-size: 0.9rem;
-}
-
-.stat-value {
-    font-weight: bold;
-    color: white;
-}
-
-.action-history {
-    margin-bottom: 1.5rem;
-}
-
-.history-title {
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.history-entries {
-    min-height: 80px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 0.5rem;
-}
-
-.history-entry {
-    padding: 0.3rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.85rem;
-}
-
-.history-entry:last-child {
-    border-bottom: none;
-}
-
-.history-empty {
-    color: #9ca3af;
-    text-align: center;
-    font-style: italic;
-    padding: 1rem;
-}
-
-/* Тактические кнопки действий */
-.tactical-actions {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.8rem;
-}
-
-.tactical-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.8rem 1rem;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #374151, #4b5563);
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 600;
-}
-
-.tactical-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.tactical-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.tactical-btn.attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.tactical-btn.strong-attack { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-.tactical-btn.crushing-attack { background: linear-gradient(135deg, #991b1b, #7f1d1d); }
-.tactical-btn.block { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.tactical-btn.break-block { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.tactical-btn.rest { background: linear-gradient(135deg, #10b981, #059669); }
-
-.btn-icon {
-    font-size: 1.2rem;
-}
-
-.btn-text {
-    flex: 1;
-    text-align: left;
-}
-
-.btn-cost {
-    font-size: 0.8rem;
-    opacity: 0.8;
-}
-
-/* Предпросмотр действий противника */
-.enemy-actions-preview {
-    margin-top: 1.5rem;
-}
-
-.preview-title {
-    color: #cbd5e1;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.enemy-actions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.enemy-action {
-    padding: 0.5rem;
-    background: rgba(239, 68, 68, 0.2);
-    border-radius: 6px;
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    font-size: 0.85rem;
-    text-align: center;
-}
-
 /* Адаптивность для тактических панелей */
 @media (max-width: 1200px) {
     .tactical-panel {
         width: 250px;
         padding: 1rem;
     }
+    
+    .grid-container-6x6 {
+        min-height: 450px;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 130px;
+    }
 }
 
 @media (max-width: 1024px) {
+    .battle-main-area {
+        flex-direction: column;
+        height: auto;
+        gap: 1rem;
+    }
+    
+    .battle-grid-fullscreen {
+        order: 1;
+        max-width: 100%;
+    }
+    
     .tactical-panel {
-        width: 220px;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .player-panel {
+        order: 2;
+    }
+    
+    .enemy-panel {
+        order: 3;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 400px;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .battle-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .header-left {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 350px;
+        gap: 0.5rem;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 100px;
+        padding: 0.5rem;
+    }
+    
+    .unit-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .image-fallback {
+        font-size: 2rem;
+    }
+    
+    .unit-name {
+        font-size: 0.9rem;
+    }
+    
+    .health-bar-fullscreen {
+        height: 16px;
+    }
+    
+    .health-text {
+        font-size: 0.7rem;
+    }
+    
+    .stat-line span {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.3rem;
+    }
+    
+    .vs-text {
+        font-size: 2rem;
+        padding: 0.8rem 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .battle-screen-fullscreen {
+        padding: 0.5rem;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 300px;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 80px;
+    }
+    
+    .unit-image {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .image-fallback {
+        font-size: 1.5rem;
+    }
+    
+    .unit-name {
+        font-size: 0.8rem;
     }
     
     .tactical-btn {
         padding: 0.6rem 0.8rem;
         font-size: 0.9rem;
+    }
+    
+    .btn-icon {
+        font-size: 1rem;
     }
 }
