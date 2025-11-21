@@ -289,156 +289,156 @@ class BattleSystem {
         });
     }
 
- // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
-showTacticalBattleInterface() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
+    showTacticalBattleInterface() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    const heroStats = this.getHeroStatsForBattle();
-    
-    app.innerHTML = `
-        <div class="battle-screen-fullscreen">
-            <header class="battle-header">
-                <div class="header-left">
-                    <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
-                </div>
-                <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
-                    ← Назад к карте
-                </button>
-            </header>
-            
-            <div class="battle-main-area">
-                <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                <div class="tactical-panel player-panel">
-                    <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="playerAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="playerCombo">Нет</span>
-                        </div>
+        const heroStats = this.getHeroStatsForBattle();
+        
+        app.innerHTML = `
+            <div class="battle-screen-fullscreen">
+                <header class="battle-header">
+                    <div class="header-left">
+                        <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
+                        <div class="battle-round">Раунд: ${this.battleRound}</div>
                     </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последние действия:</div>
-                        <div class="history-entries" id="playerHistory">
-                            <div class="history-empty">Еще нет действий</div>
-                        </div>
-                    </div>
-                    
-                    <div class="tactical-actions">
-                        <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
-                            <span class="btn-icon">⚔️</span>
-                            <span class="btn-text">Атака</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
-                            <span class="btn-icon">💥</span>
-                            <span class="btn-text">Силовая</span>
-                            <span class="btn-cost">(2 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
-                            <span class="btn-icon">💢</span>
-                            <span class="btn-text">Сокрушительная</span>
-                            <span class="btn-cost">(4 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
-                            <span class="btn-icon">🛡️</span>
-                            <span class="btn-text">Блок</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
-                            <span class="btn-icon">⚡</span>
-                            <span class="btn-text">Пробитие</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
-                            <span class="btn-icon">🌀</span>
-                            <span class="btn-text">Отдых</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ЦЕНТР - УВЕЛИЧЕННАЯ СЕТКА 6x6 -->
-                <div class="battle-grid-fullscreen">
-                    <div class="grid-side allies-side">
-                        <h3 class="side-title">ВАШ ОТРЯД</h3>
-                        <div class="grid-container-6x6">
-                            ${this.renderTacticalGrid('allies')}
-                        </div>
-                    </div>
-                    
-                    <div class="vs-separator">
-                        <div class="vs-text">VS</div>
-                    </div>
-                    
-                    <div class="grid-side enemies-side">
-                        <h3 class="side-title">ПРОТИВНИКИ</h3>
-                        <div class="grid-container-6x6">
-                            ${this.renderTacticalGrid('enemies')}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) -->
-                <div class="tactical-panel enemy-panel">
-                    <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="enemyAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="enemyCombo">Нет</span>
-                        </div>
-                    </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последнее действие:</div>
-                        <div class="history-entries" id="enemyHistory">
-                            <div class="history-empty">Еще нет действий</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- УПРАВЛЕНИЕ И ЛОГ -->
-            <div class="battle-controls-fullscreen">
-                <div class="battle-hint-fullscreen" id="battleHint">
-                    ${this.getTacticalHint()}
-                </div>
-                
-                <div class="battle-actions-fullscreen">
-                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
-                        🏃 Попытаться сбежать
+                    <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
+                        ← Назад к карте
                     </button>
+                </header>
+                
+                <div class="battle-main-area" style="display: flex; gap: 10px; align-items: stretch; justify-content: center; height: 70vh;">
+                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                    <div class="tactical-panel player-panel" style="align-self: center;">
+                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="playerAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="playerCombo">Нет</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="playerHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tactical-actions">
+                            <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
+                                <span class="btn-icon">⚔️</span>
+                                <span class="btn-text">Атака</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
+                                <span class="btn-icon">💥</span>
+                                <span class="btn-text">Силовая</span>
+                                <span class="btn-cost">(2 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
+                                <span class="btn-icon">💢</span>
+                                <span class="btn-text">Сокрушительная</span>
+                                <span class="btn-cost">(4 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Блок</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Пробитие</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
+                                <span class="btn-icon">🌀</span>
+                                <span class="btn-text">Отдых</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- ЦЕНТР - СЕТКА 6x6 -->
+                    <div class="battle-grid-fullscreen" style="flex: 1; display: flex; align-items: stretch; max-width: 800px;">
+                        <div class="grid-side allies-side" style="flex: 1;">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6" style="min-height: 500px; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);">
+                                ${this.renderTacticalGrid('allies')}
+                            </div>
+                        </div>
+                        
+                        <div class="vs-separator">
+                            <div class="vs-text">VS</div>
+                        </div>
+                        
+                        <div class="grid-side enemies-side" style="flex: 1;">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6" style="min-height: 500px; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr);">
+                                ${this.renderTacticalGrid('enemies')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК -->
+                    <div class="tactical-panel enemy-panel" style="align-self: center; margin-right: 20px;">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="enemyAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="enemyCombo">Нет</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последнее действие:</div>
+                            <div class="history-entries" id="enemyHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- УПРАВЛЕНИЕ И ЛОГ -->
+                <div class="battle-controls-fullscreen">
+                    <div class="battle-hint-fullscreen" id="battleHint">
+                        ${this.getTacticalHint()}
+                    </div>
+                    
+                    <div class="battle-actions-fullscreen">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="battle-log-fullscreen">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                    </div>
                 </div>
             </div>
-            
-            <div class="battle-log-fullscreen">
-                <h4>📜 Ход боя:</h4>
-                <div class="battle-log-entries" id="battleLogEntries">
-                    ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-        </div>
-    `;
+        `;
 
-    this.updateTacticalUI();
-}
+        this.updateTacticalUI();
+    }
 
     // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ
     handlePlayerAction(action) {
