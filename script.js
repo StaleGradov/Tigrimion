@@ -619,25 +619,30 @@ handleHeroDeath() {
         `;
     }
 
-    selectHero(heroId) {
-        const hero = this.systems.hero.heroes.find(h => h.id === heroId);
-        if (!hero) return;
+selectHero(heroId) {
+    const hero = this.systems.hero.heroes.find(h => h.id === heroId);
+    if (!hero) return;
 
-        this.currentHero = hero;
-        this.systems.hero.currentHero = hero;
-        
-        // Устанавливаем текущего героя в системе экипировки
-        if (this.systems.equipment) {
-            this.systems.equipment.setCurrentHero(hero);
-        }
-        
-        console.log(`🎯 Выбран герой: ${hero.name}`);
-        
-        // ⭐ СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
-        this.saveGame();
-        
-        this.showHeroGameScreen();
+    this.currentHero = hero;
+    this.systems.hero.currentHero = hero;
+    
+    // Устанавливаем текущего героя в системе экипировки
+    if (this.systems.equipment) {
+        this.systems.equipment.setCurrentHero(hero);
     }
+    
+    // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизируем с MapSystem
+    if (this.systems.map) {
+        this.systems.map.setCurrentHero(hero);
+    }
+    
+    console.log(`🎯 Выбран герой: ${hero.name}`);
+    
+    // ⭐ СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
+    this.saveGame();
+    
+    this.showHeroGameScreen();
+}
 
     // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ОБРАБОТКИ КЛИКОВ ПО СЛОТАМ ЭКИПИРОВКИ
     handleEquipmentSlotClick(slot) {
