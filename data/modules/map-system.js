@@ -157,14 +157,16 @@ class MapSystem {
         return item;
     }
 
-    setCurrentHero(hero) {
-        this.currentHero = hero;
-        console.log(`🎯 Установлен герой для карты: ${hero?.name || 'нет'}`);
-        
-        if (hero) {
-            this.updatePlayerPositionsFromHero(hero);
-        }
+setCurrentHero(hero) {
+    this.currentHero = hero;
+    console.log(`🎯 Установлен герой для карты: ${hero?.name || 'нет'}`);
+    
+    if (hero) {
+        this.updatePlayerPositionsFromHero(hero);
+        // ⭐ ВАЖНО: Синхронизируем с другими системами
+        this.syncHeroWithOtherSystems();
     }
+}
 
     updatePlayerPositionsFromHero(hero) {
         if (hero.mapPosition) {
@@ -692,6 +694,27 @@ class MapSystem {
         console.log("✅ Тестовая локация создана");
         return locationMap;
     }
+// ========== СИНХРОНИЗАЦИЯ ГЕРОЯ МЕЖДУ СИСТЕМАМИ ==========
+
+syncHeroWithOtherSystems() {
+    if (!this.currentHero) return;
+    
+    // Синхронизируем с основной игрой
+    if (window.game) {
+        window.game.currentHero = this.currentHero;
+        
+        // Синхронизируем с HeroSystem
+        if (window.game.systems.hero) {
+            window.game.systems.hero.currentHero = this.currentHero;
+            console.log("✅ Герой синхронизирован с HeroSystem");
+        }
+        
+        // Синхронизируем с EquipmentSystem
+        if (window.game.systems.equipment) {
+            window.game.systems.equipment.setCurrentHero(this.currentHero);
+        }
+    }
+}
 
     // ========== ОБНОВЛЕННЫЕ ОБРАБОТЧИКИ КЛИКОВ С ПРОВЕРКОЙ СОСЕДСТВА ==========
 
@@ -1203,21 +1226,24 @@ class MapSystem {
     }
 
     // Завершение мирного перемещения
-    completePeacefulMovement(targetX, targetY) {
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x: targetX, y: targetY};
-        
-        console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-        
-        this.saveMapState();
-        
-        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-        }
-        
-        this.updateMovementInfo();
+ completePeacefulMovement(targetX, targetY) {
+    const oldPosition = {...this.playerTacticalPosition};
+    this.playerTacticalPosition = {x: targetX, y: targetY};
+    
+    console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+    
+    // ⭐ ВАЖНО: Синхронизируем перед сохранением
+    this.syncHeroWithOtherSystems();
+    
+    this.saveMapState();
+    
+    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+        this.calculateMapPositioning();
+        this.drawTacticalMap();
     }
+    
+    this.updateMovementInfo();
+}
 
     startTacticalBattleForMovement(targetX, targetY, cellData) {
         const battleSystem = window.game?.systems?.battle;
@@ -1320,11 +1346,14 @@ class MapSystem {
     }
 
     // Обновляем интерфейс героя
-    updateHeroInterface() {
-        if (window.game?.systems?.hero) {
-            window.game.systems.hero.updateHeroDisplay();
-        }
+updateHeroInterface() {
+    // ⭐ БЕЗОПАСНЫЙ ВЫЗОВ: Проверяем наличие системы и героя
+    if (window.game?.systems?.hero && window.game.systems.hero.currentHero) {
+        window.game.systems.hero.updateHeroDisplay();
+    } else {
+        console.warn("⚠️ HeroSystem не доступен для обновления интерфейса");
     }
+}
 
     // ========== CANVAS И ОТОБРАЖЕНИЕ ==========
 
