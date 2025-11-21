@@ -1,324 +1,268 @@
 "use strict";
 
-class BattleSystem {
+class EnhancedBattleSystem {
     constructor() {
-        this.monsters = [];
-        this.battleActive = false;
-        this.currentMonsters = [];
-        this.currentHero = null;
-        this.battleLog = [];
-        this.battleRound = 0;
-        this.battleContext = 'normal';
+        // Наследуем базовую функциональность
+        this.battleSystem = new BattleSystem();
         
-        // ⭐ НОВОЕ: Система тактической дуэли
-        this.duelActive = false;
-        this.duelState = null;
-        this.useTacticalDuelForAll = true; // Включить дуэль для всех боев
-        
-        this.battleGrid = {
-            allies: [null, null, null, null, null, null],
-            enemies: [null, null, null, null, null, null]
+        // Переменные для тактической системы
+        this.currentPlayer = 1;
+        this.players = {
+            1: { 
+                ap: 3, 
+                currentAction: null,
+                combo: { type: null, count: 0 },
+                previousActions: []
+            },
+            2: { 
+                ap: 3, 
+                currentAction: null,
+                combo: { type: null, count: 0 },
+                previousActions: []
+            }
         };
-        this.selectedTarget = null;
-        this.availableTargets = [];
         
+        this.actionsCost = {
+            attack: 1,
+            strongAttack: 2,
+            crushingAttack: 4,
+            block: 1,
+            breakBlock: 1,
+            rest: 1
+        };
+        
+        this.bothPlayersReady = false;
         this.resultShown = false;
         this.battleEnding = false;
         
-        console.log("✅ BattleSystem инициализирован с системой дуэли");
+        console.log("✅ EnhancedBattleSystem инициализирован");
     }
 
-    async loadBattleData() {
-        try {
-            console.log("📥 Загружаем данные монстров...");
-            
-            const [enemiesResponse, monstersResponse] = await Promise.all([
-                fetch('data/enemies.json').catch(() => null),
-                fetch('data/monsters.json').catch(() => null)
-            ]);
-            
-            this.randomMonsters = [];
-            this.programmedMonsters = new Map();
-            
-            if (enemiesResponse && enemiesResponse.ok) {
-                this.randomMonsters = await enemiesResponse.json();
-                console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
-            } else {
-                console.error("❌ enemies.json не загружен!");
-                this.randomMonsters = [];
-            }
-            
-            if (monstersResponse && monstersResponse.ok) {
-                const programmedMonsters = await monstersResponse.json();
-                programmedMonsters.forEach(monster => {
-                    this.programmedMonsters.set(monster.id, monster);
-                });
-                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
-            } else {
-                console.error("❌ monsters.json не загружен!");
-            }
-            
-            this.monsters = [...this.randomMonsters, ...Array.from(this.programmedMonsters.values())];
-            console.log(`🎯 Всего монстров: ${this.monsters.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных монстров:", error);
-            this.randomMonsters = [];
-            this.programmedMonsters = new Map();
-            this.monsters = [];
-            return false;
-        }
-    }
-
-    getRandomMonsterForMovement() {
-        if (this.randomMonsters.length === 0) {
-            console.error("❌ Нет случайных монстров в enemies.json!");
-            return null;
-        }
-        
-        const randomIndex = Math.floor(Math.random() * this.randomMonsters.length);
-        const monster = this.randomMonsters[randomIndex];
-        console.log(`🎲 Выбран случайный монстр: ${monster.name}`);
-        return monster;
-    }
-
-    getMonsterById(monsterId) {
-        if (this.programmedMonsters.has(monsterId)) {
-            return this.programmedMonsters.get(monsterId);
-        }
-        
-        const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
-        if (randomMonster) {
-            return randomMonster;
-        }
-        
-        console.warn(`❌ Монстр с ID ${monsterId} не найден!`);
-        return null;
-    }
-
-    // ⭐ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Получаем актуальные статы из HeroSystem
-    getHeroStatsForBattle() {
-        if (!this.currentHero || !window.game.systems.hero) {
-            console.error("❌ Герой или HeroSystem не доступен");
-            return { currentHealth: 0, maxHealth: 0, damage: 0, armor: 0 };
-        }
-        
-        return window.game.systems.hero.calculateHeroStats(this.currentHero);
-    }
-
-    // ⭐ ОСНОВНОЙ МЕТОД: Запуск любого боя через тактическую дуэль
-    startBattleWithMonster(hero, monsterId, context = 'normal') {
+    // ⭐ ОСНОВНОЙ МЕТОД ИНТЕГРАЦИИ
+    startTacticalBattle(hero, monsters, context = 'normal') {
         if (!hero) {
             console.error("❌ Не могу начать бой: герой не передан");
             return;
         }
 
-        const monster = this.getMonsterById(monsterId);
-        if (!monster) {
-            console.error("❌ Монстр не найден:", monsterId);
-            return;
-        }
-
-        // ⭐ ВСЕГДА используем тактическую дуэль
-        this.startTacticalDuel(hero, monster, context);
-    }
-
-    // ⭐ НОВЫЙ МЕТОД: Запуск тактической дуэли
-    startTacticalDuel(hero, monster, context = 'normal') {
-        if (!hero || !monster) {
-            console.error("❌ Не могу начать дуэль: герой или монстр не передан");
-            return;
-        }
-
-        this.currentHero = hero;
-        this.currentMonsters = [monster];
-        this.battleContext = context;
-        this.duelActive = true;
-        
-        // ⭐ СБРАСЫВАЕМ ФЛАГИ ПРИ НАЧАЛЕ НОВОГО БОЯ
+        // Сбрасываем флаги
         this.resultShown = false;
         this.battleEnding = false;
 
-        // Инициализация состояния дуэли
-        this.duelState = {
-            currentTurn: 'hero',
-            players: {
-                hero: { 
-                    name: hero.name,
-                    health: 100, 
-                    maxHealth: 100,
-                    ap: 3, 
-                    currentAction: null,
-                    combo: { type: null, count: 0 },
-                    previousActions: [],
-                    stats: this.getHeroStatsForBattle() // Сохраняем статы героя
-                },
-                enemy: { 
-                    name: monster.name,
-                    health: 100, 
-                    maxHealth: 100,
-                    ap: 3, 
-                    currentAction: null,
-                    combo: { type: null, count: 0 },
-                    previousActions: [],
-                    monsterData: monster // Сохраняем данные монстра
-                }
-            },
-            actionsCost: {
-                attack: 1,
-                strongAttack: 2,
-                crushingAttack: 4,
-                block: 1,
-                breakBlock: 1,
-                rest: 1
-            },
-            bothPlayersReady: false,
-            round: 0
-        };
+        // Используем существующую логику для настройки боя
+        this.battleSystem.currentHero = hero;
+        this.battleSystem.currentMonsters = monsters;
+        this.battleSystem.battleActive = true;
+        this.battleSystem.battleRound = 0;
+        this.battleSystem.battleLog = [];
+        this.battleSystem.battleContext = context;
 
-        this.battleLog = [];
-        this.battleRound = 0;
-
-        console.log(`⚔️ Начинаем тактическую дуэль с ${monster.name}`);
-        this.showTacticalDuelScreen();
+        // Настраиваем сетку с героем на позиции 4
+        const heroStats = this.battleSystem.getHeroStatsForBattle();
+        this.setupTacticalGrid(hero, monsters, heroStats);
+        
+        console.log(`⚔️ Начинаем тактический бой с ${monsters.length} монстрами`);
+        this.showTacticalBattleInterface();
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Показать экран тактической дуэли
-    showTacticalDuelScreen() {
+    // ⭐ НАСТРОЙКА СЕТКИ С ТАКТИЧЕСКИМИ ПАНЕЛЯМИ
+    setupTacticalGrid(hero, monsters, heroStats) {
+        // Используем существующую логику размещения
+        this.battleSystem.setupBattleGrid(hero, monsters, heroStats);
+        
+        // Дополнительно: гарантируем что герой на позиции 4
+        this.placeHeroOnPosition4(hero, heroStats);
+    }
+
+    placeHeroOnPosition4(hero, heroStats) {
+        // Очищаем позицию 4 и ставим героя
+        this.battleSystem.battleGrid.allies[4] = {
+            type: 'hero',
+            data: hero,
+            position: 4,
+            maxHealth: heroStats.maxHealth,
+            currentHealth: heroStats.currentHealth
+        };
+    }
+
+    // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
+    showTacticalBattleInterface() {
         const app = document.getElementById('app');
         if (!app) return;
 
-        const duel = this.duelState;
-
+        const heroStats = this.battleSystem.getHeroStatsForBattle();
+        
         app.innerHTML = `
             <div class="battle-screen-fullscreen">
                 <header class="battle-header">
                     <div class="header-left">
                         <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                        <div class="battle-round">Раунд: ${duel.round}</div>
+                        <div class="battle-round">Раунд: ${this.battleSystem.battleRound}</div>
                     </div>
                     <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
                         ← Назад к карте
                     </button>
                 </header>
                 
-                <div class="duel-integration">
-                    <!-- Левая панель - действия героя -->
-                    <div class="duel-actions-left">
-                        <div class="duel-header">${duel.players.hero.name}</div>
-                        <div class="health-bar-fullscreen">
-                            <div class="health-fill" style="width: ${(duel.players.hero.health / duel.players.hero.maxHealth) * 100}%"></div>
-                            <div class="health-text">${Math.ceil(duel.players.hero.health)}/${duel.players.hero.maxHealth}</div>
-                        </div>
+                <div class="battle-main-area">
+                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                    <div class="tactical-panel player-panel">
+                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
                         
-                        <div class="ap-counter">Очки действий: ${duel.players.hero.ap}</div>
-                        
-                        <div class="combo-display">
-                            ${duel.players.hero.combo.count > 0 ? 
-                                `Комбо: ${this.getActionName(duel.players.hero.combo.type)} x${duel.players.hero.combo.count}` : 
-                                'Комбо: Нет'}
-                        </div>
-                        
-                        <div class="previous-action">
-                            ${duel.players.hero.previousActions.length > 0 ? 
-                                `Предыдущее: ${this.getActionName(duel.players.hero.previousActions[duel.players.hero.previousActions.length - 1])}` : 
-                                'Предыдущее: -'}
-                        </div>
-
-                        ${duel.currentTurn === 'hero' && !duel.bothPlayersReady ? `
-                            <div class="duel-actions">
-                                <button class="duel-action-btn attack" onclick="game.systems.battle.duelAction('attack')" 
-                                    ${duel.players.hero.ap < 1 ? 'disabled' : ''}>⚔️ Атака (1 ОД)</button>
-                                <button class="duel-action-btn strong-attack" onclick="game.systems.battle.duelAction('strongAttack')" 
-                                    ${duel.players.hero.ap < 2 ? 'disabled' : ''}>💥 Силовая (2 ОД)</button>
-                                <button class="duel-action-btn crushing-attack" onclick="game.systems.battle.duelAction('crushingAttack')" 
-                                    ${duel.players.hero.ap < 4 ? 'disabled' : ''}>💢 Сокрушительная (4 ОД)</button>
-                                <button class="duel-action-btn block" onclick="game.systems.battle.duelAction('block')" 
-                                    ${duel.players.hero.ap < 1 ? 'disabled' : ''}>🛡️ Блок (1 ОД)</button>
-                                <button class="duel-action-btn break-block" onclick="game.systems.battle.duelAction('breakBlock')" 
-                                    ${duel.players.hero.ap < 1 ? 'disabled' : ''}>⚡ Пробитие (1 ОД)</button>
-                                <button class="duel-action-btn rest" onclick="game.systems.battle.duelAction('rest')" 
-                                    ${duel.players.hero.ap < 1 ? 'disabled' : ''}>🌀 Отдых (1 ОД)</button>
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="playerAP">3/3</span>
                             </div>
-                        ` : `
-                            <div class="duel-turn-indicator">
-                                ${duel.bothPlayersReady ? 'Ожидание результата...' : 'Ожидание хода противника...'}
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="playerCombo">Нет</span>
                             </div>
-                        `}
-                    </div>
-
-                    <!-- Центральная область с индикатором хода -->
-                    <div style="flex: 0.5; display: flex; align-items: center; justify-content: center;">
-                        ${duel.bothPlayersReady ? `
-                            <button class="duel-resolve-btn" onclick="game.systems.battle.resolveDuelTurn()">
-                                Показать результат
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="playerHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tactical-actions">
+                            <button class="tactical-btn attack" data-action="attack" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('attack')">
+                                <span class="btn-icon">⚔️</span>
+                                <span class="btn-text">Атака</span>
+                                <span class="btn-cost">(1 ОД)</span>
                             </button>
-                        ` : `
-                            <div class="duel-turn-indicator">
-                                ${duel.currentTurn === 'hero' ? 'Ваш ход!' : 'Ход противника'}
+                            
+                            <button class="tactical-btn strong-attack" data-action="strongAttack" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('strongAttack')">
+                                <span class="btn-icon">💥</span>
+                                <span class="btn-text">Силовая</span>
+                                <span class="btn-cost">(2 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn crushing-attack" data-action="crushingAttack" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('crushingAttack')">
+                                <span class="btn-icon">💢</span>
+                                <span class="btn-text">Сокрушительная</span>
+                                <span class="btn-cost">(4 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn block" data-action="block" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('block')">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Блок</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn break-block" data-action="breakBlock" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('breakBlock')">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Пробитие</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn rest" data-action="rest" onclick="game.systems.battle.tacticalSystem.handlePlayerAction('rest')">
+                                <span class="btn-icon">🌀</span>
+                                <span class="btn-text">Отдых</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- ЦЕНТР - СЕТКА 6x6 -->
+                    <div class="battle-grid-fullscreen">
+                        <div class="grid-side allies-side">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderTacticalGrid('allies')}
                             </div>
-                        `}
+                        </div>
+                        
+                        <div class="vs-separator">
+                            <div class="vs-text">VS</div>
+                        </div>
+                        
+                        <div class="grid-side enemies-side">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderTacticalGrid('enemies')}
+                            </div>
+                        </div>
                     </div>
-
-                    <!-- Правая панель - действия противника -->
-                    <div class="duel-actions-right">
-                        <div class="duel-header">${duel.players.enemy.name}</div>
-                        <div class="health-bar-fullscreen">
-                            <div class="health-fill" style="width: ${(duel.players.enemy.health / duel.players.enemy.maxHealth) * 100}%"></div>
-                            <div class="health-text">${Math.ceil(duel.players.enemy.health)}/${duel.players.enemy.maxHealth}</div>
+                    
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК -->
+                    <div class="tactical-panel enemy-panel">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="enemyAP">3/3</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="enemyCombo">Нет</span>
+                            </div>
                         </div>
                         
-                        <div class="ap-counter">Очки действий: ${duel.players.enemy.ap}</div>
-                        
-                        <div class="combo-display">
-                            ${duel.players.enemy.combo.count > 0 ? 
-                                `Комбо: ${this.getActionName(duel.players.enemy.combo.type)} x${duel.players.enemy.combo.count}` : 
-                                'Комбо: Нет'}
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="enemyHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
                         </div>
                         
-                        <div class="previous-action">
-                            ${duel.players.enemy.previousActions.length > 0 ? 
-                                `Предыдущее: ${this.getActionName(duel.players.enemy.previousActions[duel.players.enemy.previousActions.length - 1])}` : 
-                                'Предыдущее: -'}
-                        </div>
-
-                        <div class="duel-turn-indicator">
-                            ${duel.currentTurn === 'enemy' && !duel.bothPlayersReady ? 'Противник думает...' : 
-                              duel.bothPlayersReady ? 'Готов к разрешению' : 'Ожидание своей очереди'}
+                        <div class="enemy-actions-preview">
+                            <div class="preview-title">Возможные действия противника:</div>
+                            <div class="enemy-actions-list">
+                                <div class="enemy-action">⚔️ Атака</div>
+                                <div class="enemy-action">🛡️ Блок</div>
+                                <div class="enemy-action">🌀 Отдых</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="duel-log" id="duelLogEntries">
-                    ${this.battleLog.map(entry => `<div class="log-entry ${entry.type || 'system'}-log">${entry.message}</div>`).join('')}
-                </div>
-                
-                <!-- Кнопка побега -->
+                <!-- УПРАВЛЕНИЕ И ЛОГ -->
                 <div class="battle-controls-fullscreen">
-                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFleeDuel()">
-                        🏃 Попытаться сбежать
-                    </button>
+                    <div class="battle-hint-fullscreen" id="battleHint">
+                        ${this.getTacticalHint()}
+                    </div>
+                    
+                    <div class="battle-actions-fullscreen">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tacticalSystem.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="battle-log-fullscreen">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleSystem.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                    </div>
                 </div>
             </div>
         `;
+
+        this.updateTacticalUI();
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Обработка действия в дуэли
-    duelAction(action) {
-        if (!this.duelActive || this.duelState.bothPlayersReady) return;
+    // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА
+    handlePlayerAction(action) {
+        if (this.battleEnding || this.resultShown) {
+            console.log("🛑 Бой уже завершается, игнорируем клик");
+            return;
+        }
 
-        const player = this.duelState.players.hero;
-        const cost = this.duelState.actionsCost[action];
-
-        if (player.ap < cost) {
-            this.addDuelLog("Недостаточно очков действий!", 'system');
+        const player = this.players[1];
+        
+        // Проверка доступности ОД
+        if (player.ap < this.actionsCost[action]) {
+            this.addBattleLog(`❌ Недостаточно ОД для ${this.getActionName(action)}!`);
             return;
         }
 
         // Списание ОД
-        player.ap -= cost;
-
+        player.ap -= this.actionsCost[action];
+        
         // Обновление комбо
         if (player.combo.type === action && player.combo.count < 4) {
             player.combo.count++;
@@ -329,291 +273,187 @@ class BattleSystem {
 
         // Сохранение действия
         player.currentAction = action;
-        player.previousActions.push(action);
+        player.previousActions.unshift(this.getActionName(action));
         if (player.previousActions.length > 3) {
-            player.previousActions.shift();
+            player.previousActions.pop();
         }
 
-        this.addDuelLog(`${player.name} выбирает ${this.getActionName(action)}`, 'hero');
-
-        // Переход хода к противнику
-        this.duelState.currentTurn = 'enemy';
-        this.duelState.bothPlayersReady = false;
-
-        // Ход ИИ
-        setTimeout(() => this.makeEnemyMove(), 1000);
-        this.showTacticalDuelScreen();
+        this.addBattleLog(`🎯 Вы выбрали: ${this.getActionName(action)} (комбо x${player.combo.count})`);
+        
+        // Автоматический ход монстров (ИИ)
+        this.executeEnemyTurn();
+        
+        this.updateTacticalUI();
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Логика ИИ для противника
-    makeEnemyMove() {
-        if (!this.duelActive || this.duelState.bothPlayersReady) return;
-
-        const enemy = this.duelState.players.enemy;
-        const hero = this.duelState.players.hero;
-
-        let action;
-
-        // Простая стратегия ИИ
-        if (enemy.health < 30 && enemy.ap >= 1) {
-            action = 'rest';
-        } else if (hero.combo.type && (hero.combo.type === 'attack' || hero.combo.type === 'strongAttack') && 
-                  hero.combo.count >= 2 && enemy.ap >= 1) {
-            action = 'block';
-        } else if (enemy.ap >= 4 && Math.random() > 0.6) {
-            action = 'crushingAttack';
-        } else if (enemy.ap >= 2 && (enemy.combo.type === 'strongAttack' || enemy.combo.type === 'attack')) {
-            action = enemy.combo.type;
-        } else if (enemy.combo.type && enemy.ap >= this.duelState.actionsCost[enemy.combo.type]) {
-            action = enemy.combo.type;
+    // ⭐ ХОД ПРОТИВНИКА (ИИ)
+    executeEnemyTurn() {
+        const enemy = this.players[2];
+        const availableActions = Object.keys(this.actionsCost).filter(a => 
+            this.actionsCost[a] <= enemy.ap
+        );
+        
+        if (availableActions.length === 0) {
+            // Если нет ОД - отдых
+            enemy.currentAction = 'rest';
+            enemy.ap += 1; // +1 ОД за отдых
         } else {
-            const availableActions = Object.keys(this.duelState.actionsCost).filter(a => 
-                this.duelState.actionsCost[a] <= enemy.ap
-            );
-            action = availableActions[Math.floor(Math.random() * availableActions.length)] || 'rest';
+            // Простая ИИ логика
+            const randomAction = availableActions[Math.floor(Math.random() * availableActions.length)];
+            enemy.currentAction = randomAction;
+            enemy.ap -= this.actionsCost[randomAction];
+            
+            // Обновление комбо
+            if (enemy.combo.type === randomAction && enemy.combo.count < 4) {
+                enemy.combo.count++;
+            } else {
+                enemy.combo.type = randomAction;
+                enemy.combo.count = 1;
+            }
         }
 
-        // Выполнение действия
-        const cost = this.duelState.actionsCost[action];
-        enemy.ap -= cost;
-
-        // Обновление комбо
-        if (enemy.combo.type === action && enemy.combo.count < 4) {
-            enemy.combo.count++;
-        } else {
-            enemy.combo.type = action;
-            enemy.combo.count = 1;
-        }
-
-        enemy.currentAction = action;
-        enemy.previousActions.push(action);
+        // Сохранение в историю
+        enemy.previousActions.unshift(this.getActionName(enemy.currentAction));
         if (enemy.previousActions.length > 3) {
-            enemy.previousActions.shift();
+            enemy.previousActions.pop();
         }
 
-        this.addDuelLog(`${enemy.name} выбирает ${this.getActionName(action)}`, 'enemy');
-
-        // Оба игрока сделали ход
-        this.duelState.bothPlayersReady = true;
-        this.duelState.round++;
-        this.showTacticalDuelScreen();
-    }
-
-    // ⭐ НОВЫЙ МЕТОД: Разрешение хода дуэли
-    resolveDuelTurn() {
-        const duel = this.duelState;
-        const action1 = duel.players.hero.currentAction;
-        const action2 = duel.players.enemy.currentAction;
-        const combo1 = duel.players.hero.combo.count;
-        const combo2 = duel.players.enemy.combo.count;
-
-        this.addDuelLog(`--- РАЗРЕШЕНИЕ ХОДА ${duel.round} ---`, 'system');
-
-        let damageToEnemy = 0;
-        let damageToHero = 0;
-        let heroHeal = 0;
-        let enemyHeal = 0;
-        let heroAPBonus = 0;
-        let enemyAPBonus = 0;
-
-        // Логика взаимодействия действий
-        if (action1 === 'attack') {
-            if (action2 === 'block') {
-                const blockEffect = [0.5, 0.25, 0, 0][Math.min(combo2 - 1, 3)];
-                damageToEnemy = this.calculateComboDamage('attack', combo1) * blockEffect;
-                this.addDuelLog(`Блок ${duel.players.enemy.name} уменьшил урон на ${(1-blockEffect)*100}%`, 'system');
-            } else {
-                damageToEnemy = this.calculateComboDamage('attack', combo1);
-            }
-        }
-
-        if (action2 === 'attack') {
-            if (action1 === 'block') {
-                const blockEffect = [0.5, 0.25, 0, 0][Math.min(combo1 - 1, 3)];
-                damageToHero = this.calculateComboDamage('attack', combo2) * blockEffect;
-                this.addDuelLog(`Блок ${duel.players.hero.name} уменьшил урон на ${(1-blockEffect)*100}%`, 'system');
-            } else {
-                damageToHero = this.calculateComboDamage('attack', combo2);
-            }
-        }
-
-        if (action1 === 'strongAttack') {
-            damageToEnemy = this.calculateComboDamage('strongAttack', combo1);
-            this.addDuelLog(`${duel.players.hero.name} наносит ${damageToEnemy} урона!`, 'hero');
-        }
-
-        if (action2 === 'strongAttack') {
-            damageToHero = this.calculateComboDamage('strongAttack', combo2);
-            this.addDuelLog(`${duel.players.enemy.name} наносит ${damageToHero} урона!`, 'enemy');
-        }
-
-        if (action1 === 'crushingAttack') {
-            damageToEnemy = this.calculateComboDamage('crushingAttack', combo1);
-            this.addDuelLog(`💢 ${duel.players.hero.name} наносит Сокрушительный удар ${damageToEnemy}!`, 'hero');
-        }
-
-        if (action2 === 'crushingAttack') {
-            damageToHero = this.calculateComboDamage('crushingAttack', combo2);
-            this.addDuelLog(`💢 ${duel.players.enemy.name} наносит Сокрушительный удар ${damageToHero}!`, 'enemy');
-        }
-
-        if (action1 === 'breakBlock') {
-            const isAgainstBlock = action2 === 'block';
-            damageToEnemy = this.calculateComboDamage('breakBlock', combo1, isAgainstBlock);
-            if (isAgainstBlock) {
-                this.addDuelLog(`Пробитие пробивает блок! Урон: ${damageToEnemy}`, 'hero');
-            } else {
-                this.addDuelLog(`Пробитие наносит ${damageToEnemy} урона`, 'hero');
-            }
-        }
-
-        if (action2 === 'breakBlock') {
-            const isAgainstBlock = action1 === 'block';
-            damageToHero = this.calculateComboDamage('breakBlock', combo2, isAgainstBlock);
-            if (isAgainstBlock) {
-                this.addDuelLog(`Пробитие пробивает блок! Урон: ${damageToHero}`, 'enemy');
-            } else {
-                this.addDuelLog(`Пробитие наносит ${damageToHero} урона`, 'enemy');
-            }
-        }
-
-        // Обработка отдыха
-        if (action1 === 'rest') {
-            heroHeal = [5, 10, 15, 20][Math.min(combo1 - 1, 3)];
-            heroAPBonus = [1, 2, 3, 4][Math.min(combo1 - 1, 3)];
-            duel.players.hero.health = Math.min(duel.players.hero.maxHealth, duel.players.hero.health + heroHeal);
-            this.addDuelLog(`${duel.players.hero.name} восстанавливает ${heroHeal} здоровья`, 'hero');
-        }
-
-        if (action2 === 'rest') {
-            enemyHeal = [5, 10, 15, 20][Math.min(combo2 - 1, 3)];
-            enemyAPBonus = [1, 2, 3, 4][Math.min(combo2 - 1, 3)];
-            duel.players.enemy.health = Math.min(duel.players.enemy.maxHealth, duel.players.enemy.health + enemyHeal);
-            this.addDuelLog(`${duel.players.enemy.name} восстанавливает здоровье`, 'enemy');
-        }
-
-        // Бонусы за блок
-        if (action1 === 'block') {
-            heroAPBonus = [1, 2, 3, 4][Math.min(combo1 - 1, 3)];
-            this.addDuelLog(`${duel.players.hero.name} получает +${heroAPBonus} ОД за блок`, 'hero');
-        }
-
-        if (action2 === 'block') {
-            enemyAPBonus = [1, 2, 3, 4][Math.min(combo2 - 1, 3)];
-            this.addDuelLog(`${duel.players.enemy.name} получает +${enemyAPBonus} ОД за блок`, 'enemy');
-        }
-
-        // Применение урона
-        duel.players.enemy.health = Math.max(0, duel.players.enemy.health - damageToEnemy);
-        duel.players.hero.health = Math.max(0, duel.players.hero.health - damageToHero);
-
-        // Применение бонусов ОД
-        duel.players.hero.ap += heroAPBonus;
-        duel.players.enemy.ap += enemyAPBonus;
-
-        // Восстановление ОД в начале хода
-        duel.players.hero.ap += 1;
-        duel.players.enemy.ap += 1;
-
-        // Сброс действий
-        duel.players.hero.currentAction = null;
-        duel.players.enemy.currentAction = null;
-        duel.bothPlayersReady = false;
-        duel.currentTurn = 'hero';
-
-        // Проверка окончания дуэли
-        if (duel.players.hero.health <= 0 || duel.players.enemy.health <= 0) {
-            this.endTacticalDuel();
-            return;
-        }
-
-        this.showTacticalDuelScreen();
-    }
-
-    // ⭐ НОВЫЙ МЕТОД: Завершение дуэли
-    endTacticalDuel() {
-        const duel = this.duelState;
-        const victory = duel.players.enemy.health <= 0;
-
-        // ⭐ ЗАЩИТА: Если результат уже показан, выходим
-        if (this.resultShown) {
-            console.log("🛑 Результат дуэли уже показан, игнорируем");
-            return;
-        }
+        this.addBattleLog(`👹 Противник использует: ${this.getActionName(enemy.currentAction)}`);
         
-        this.resultShown = true;
-
-        if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            this.currentHero.gold += totalReward;
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-            
-            this.addDuelLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`, 'system');
-        } else {
-            // ⭐ КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ: Устанавливаем здоровье в 1 и запускаем специальную регенерацию
-            this.currentHero.currentHealth = 1;
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addDuelLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1 и начнет регенерировать.", 'system');
-            
-            // ⭐ ЗАПУСКАЕМ СПЕЦИАЛЬНУЮ РЕГЕНЕРАЦИЮ ПОСЛЕ СМЕРТИ
-            if (window.game && window.game.handleHeroDeath) {
-                window.game.handleHeroDeath();
-            }
-        }
-        
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Обновляем здоровье героя в основной системе
-        if (this.currentHero && window.game.systems.hero) {
-            // Синхронизируем здоровье
-            this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth);
-            
-            // ⭐ ОБНОВЛЯЕМ ИНТЕРФЕЙС СРАЗУ
-            window.game.systems.hero.calculateHeroStats(this.currentHero);
-        }
-        
-        if (window.game) window.game.saveGame();
-        
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
-        }
-        
-        this.duelActive = false;
-        
-        // Показать результат и вернуться в игру
+        // Разрешение хода
         setTimeout(() => {
-            this.showDuelResult(victory);
-        }, 2000);
+            this.resolveTacticalTurn();
+        }, 1000);
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Показать результат дуэли
-    showDuelResult(victory) {
-        this.showBattleResult(victory, false);
-    }
-
-    // ⭐ НОВЫЙ МЕТОД: Попытка сбежать из дуэли
-    tryToFleeDuel() {
-        const fleeChance = 0.4;
+    // ⭐ РАЗРЕШЕНИЕ ТАКТИЧЕСКОГО ХОДА
+    resolveTacticalTurn() {
+        const playerAction = this.players[1].currentAction;
+        const enemyAction = this.players[2].currentAction;
         
-        if (Math.random() < fleeChance) {
-            this.addDuelLog("🏃 Вам удалось сбежать с поля боя!", 'system');
-            this.endTacticalDuel(false, true);
-        } else {
-            this.addDuelLog("❌ Попытка сбежать не удалась! Противник атакует.", 'system');
-            // Противник автоматически атакует
-            this.duelState.players.enemy.currentAction = 'attack';
-            this.duelState.bothPlayersReady = true;
-            this.resolveDuelTurn();
+        this.addBattleLog(`--- РАЗРЕШЕНИЕ ХОДА ---`);
+        
+        // Здесь будет сложная логика взаимодействия действий
+        // Пока упрощенная версия:
+        this.executeTacticalDamage(playerAction, enemyAction);
+        
+        // Сброс действий и восстановление ОД
+        this.players[1].currentAction = null;
+        this.players[2].currentAction = null;
+        this.players[1].ap = Math.min(3, this.players[1].ap + 1);
+        this.players[2].ap = Math.min(3, this.players[2].ap + 1);
+        
+        this.updateTacticalUI();
+        
+        // Проверка конца боя
+        if (this.checkBattleEnd()) {
+            this.endTacticalBattle();
         }
     }
 
-    // ⭐ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ДУЭЛИ
+    // ⭐ ВЫПОЛНЕНИЕ УРОНА С ИНТЕГРАЦИЕЙ ВАШИХ СТАТОВ
+    executeTacticalDamage(playerAction, enemyAction) {
+        const heroStats = this.battleSystem.getHeroStatsForBattle();
+        const hero = this.battleSystem.battleGrid.allies[4];
+        
+        // Базовый урон героя из вашей системы
+        const baseHeroDamage = heroStats.damage;
+        
+        // Множители атак из моей системы
+        const damageMultipliers = {
+            attack: 1.0,
+            strongAttack: 2.5, 
+            crushingAttack: 7.5,
+            breakBlock: 0.5
+        };
+        
+        // Расчет урона игрока
+        if (playerAction && damageMultipliers[playerAction]) {
+            const rawDamage = baseHeroDamage * damageMultipliers[playerAction];
+            const comboMultiplier = 1 + (this.players[1].combo.count * 0.1);
+            const finalDamage = Math.floor(rawDamage * comboMultiplier);
+            
+            // Применение урона к монстрам
+            this.applyDamageToMonsters(finalDamage, playerAction);
+        }
+        
+        // Расчет урона противника (упрощенно)
+        if (enemyAction === 'attack') {
+            const monsterDamage = this.calculateMonsterDamage();
+            const finalDamage = Math.max(1, monsterDamage - heroStats.armor);
+            
+            hero.currentHealth -= finalDamage;
+            this.addBattleLog(`👹 Монстры атакуют и наносят ${finalDamage} урона!`);
+        }
+    }
+
+    applyDamageToMonsters(damage, action) {
+        // Логика выбора цели и применения урона
+        const targetPosition = this.findAvailableTarget();
+        if (targetPosition !== null) {
+            const target = this.battleSystem.battleGrid.enemies[targetPosition];
+            if (target && target.currentHealth > 0) {
+                const finalDamage = Math.max(1, damage - (target.data.armor || 0));
+                target.currentHealth -= finalDamage;
+                
+                this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${target.data.name}!`);
+                
+                if (target.currentHealth <= 0) {
+                    target.currentHealth = 0;
+                    this.addBattleLog(`💀 ${target.data.name} повержен!`);
+                }
+            }
+        }
+    }
+
+    // ⭐ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+    findAvailableTarget() {
+        const hero = this.battleSystem.battleGrid.allies[4];
+        const attackType = this.battleSystem.getHeroAttackType(hero.data);
+        
+        let availablePositions = [];
+        
+        if (attackType === 'ranged') {
+            // Дальний бой - все позиции
+            availablePositions = [0, 1, 2, 3, 4, 5];
+        } else {
+            // Ближний бой - сначала ближние (0,2,4), потом дальние
+            availablePositions = [0, 2, 4].filter(pos => {
+                const unit = this.battleSystem.battleGrid.enemies[pos];
+                return unit && unit.currentHealth > 0;
+            });
+            
+            if (availablePositions.length === 0) {
+                availablePositions = [1, 3, 5].filter(pos => {
+                    const unit = this.battleSystem.battleGrid.enemies[pos];
+                    return unit && unit.currentHealth > 0;
+                });
+            }
+        }
+        
+        return availablePositions.length > 0 ? availablePositions[0] : null;
+    }
+
+    calculateMonsterDamage() {
+        // Упрощенный расчет урона монстров
+        const aliveMonsters = this.battleSystem.battleGrid.enemies.filter(unit => 
+            unit && unit.currentHealth > 0
+        );
+        
+        if (aliveMonsters.length === 0) return 0;
+        
+        const totalDamage = aliveMonsters.reduce((sum, monster) => 
+            sum + (monster.data.damage || 5), 0
+        );
+        
+        return Math.floor(totalDamage / aliveMonsters.length);
+    }
+
     getActionName(action) {
         const names = {
             attack: 'Атака',
-            strongAttack: 'Силовая',
-            crushingAttack: 'Сокрушительная',
+            strongAttack: 'Силовая атака',
+            crushingAttack: 'Сокрушительная атака',
             block: 'Блок',
             breakBlock: 'Пробитие',
             rest: 'Отдых'
@@ -621,149 +461,91 @@ class BattleSystem {
         return names[action] || action;
     }
 
-    calculateComboDamage(action, comboCount, isAgainstBlock = false) {
-        const baseDamage = {
-            attack: 10,
-            strongAttack: 25,
-            crushingAttack: 75,
-            breakBlock: isAgainstBlock ? 20 : 5
-        };
+    updateTacticalUI() {
+        // Обновление ОД
+        document.getElementById('playerAP').textContent = `${this.players[1].ap}/3`;
+        document.getElementById('enemyAP').textContent = `${this.players[2].ap}/3`;
         
-        const multipliers = {
-            attack: [1, 2, 4, 8],
-            strongAttack: [1, 2, 4, 8],
-            crushingAttack: [1, 2, 4, 8],
-            breakBlock: [1, 1.5, 2, 2.5]
-        };
-        
-        const comboIndex = Math.min(comboCount - 1, 3);
-        return Math.floor(baseDamage[action] * multipliers[action][comboIndex]);
-    }
-
-    addDuelLog(message, type = 'system') {
-        this.battleLog.push({ message, type });
-        if (this.battleLog.length > 8) this.battleLog.shift();
-        
-        const logContainer = document.getElementById('duelLogEntries');
-        if (logContainer) {
-            logContainer.innerHTML = this.battleLog.map(entry => 
-                `<div class="log-entry ${entry.type}-log">${entry.message}</div>`
-            ).join('');
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-    }
-
-    // ========== СОВМЕСТИМОСТЬ С СУЩЕСТВУЮЩЕЙ СИСТЕМОЙ ==========
-
-    // ⭐ ИСПРАВЛЕНИЕ: Принимаем heroStats для правильной инициализации
-    setupBattleGrid(hero, monsters, heroStats = null) {
-        this.battleGrid.allies = [null, null, null, null, null, null];
-        this.battleGrid.enemies = [null, null, null, null, null, null];
-        
-        // ⭐ ИСПРАВЛЕНИЕ: Используем актуальные статы вместо базовых
-        if (!heroStats) {
-            heroStats = this.getHeroStatsForBattle();
-        }
-        
-        this.battleGrid.allies[0] = {
-            type: 'hero',
-            data: hero,
-            position: 0,
-            maxHealth: heroStats.maxHealth, // ⭐ ИСПРАВЛЕНО: Используем maxHealth из HeroSystem
-            currentHealth: heroStats.currentHealth // ⭐ ИСПРАВЛЕНО: Используем currentHealth из HeroSystem
-        };
-
-        this.placeMonstersOnGrid(monsters);
-        this.updateAvailableTargets();
-    }
-
-    placeMonstersOnGrid(monsters) {
-        const meleePositions = [0, 2, 4];
-        const rangedPositions = [1, 3, 5];
-        
-        let meleeCount = 0;
-        let rangedCount = 0;
-
-        monsters.forEach(monster => {
-            const attackType = monster.attackType || 'melee';
-            let position;
+        // Обновление комбо
+        document.getElementById('playerCombo').textContent = 
+            this.players[1].combo.count > 0 ? 
+            `${this.getActionName(this.players[1].combo.type)} x${this.players[1].combo.count}` : 
+            'Нет';
             
-            if (attackType === 'melee' && meleeCount < 3) {
-                position = meleePositions[meleeCount++];
-            } else if (attackType === 'ranged' && rangedCount < 3) {
-                position = rangedPositions[rangedCount++];
-            } else {
-                const availablePositions = [...meleePositions, ...rangedPositions]
-                    .filter(pos => !this.battleGrid.enemies[pos]);
-                if (availablePositions.length > 0) {
-                    position = availablePositions[0];
-                    if (meleePositions.includes(position)) meleeCount++;
-                    else rangedCount++;
-                }
-            }
-
-            if (position !== undefined) {
-                this.battleGrid.enemies[position] = {
-                    type: 'monster',
-                    data: monster,
-                    position: position,
-                    maxHealth: monster.health,
-                    currentHealth: monster.currentHealth
-                };
-            }
-        });
+        document.getElementById('enemyCombo').textContent = 
+            this.players[2].combo.count > 0 ? 
+            `${this.getActionName(this.players[2].combo.type)} x${this.players[2].combo.count}` : 
+            'Нет';
+        
+        // Обновление истории
+        this.updateActionHistory('playerHistory', this.players[1].previousActions);
+        this.updateActionHistory('enemyHistory', this.players[2].previousActions);
+        
+        // Обновление сетки
+        this.updateTacticalGrid();
     }
 
-    // ⭐ СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ СОВМЕСТИМОСТИ
-    showFullscreenBattle() {
-        // Теперь всегда используем тактическую дуэль
-        if (this.currentMonsters.length > 0 && this.currentHero) {
-            this.startTacticalDuel(this.currentHero, this.currentMonsters[0], this.battleContext);
+    updateActionHistory(elementId, actions) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        if (actions.length === 0) {
+            element.innerHTML = '<div class="history-empty">Еще нет действий</div>';
+        } else {
+            element.innerHTML = actions.map(action => 
+                `<div class="history-entry">${action}</div>`
+            ).join('');
         }
     }
 
-    showTacticalBattleScreen() {
-        this.showFullscreenBattle();
-    }
-
-    returnToGame() {
-        // ⭐ СБРАСЫВАЕМ ФЛАГИ ПРИ ВОЗВРАТЕ В ИГРУ
-        this.resultShown = false;
-        this.battleEnding = false;
-        this.duelActive = false;
+    updateTacticalGrid() {
+        const alliesGrid = document.querySelector('.allies-side .grid-container-6x6');
+        const enemiesGrid = document.querySelector('.enemies-side .grid-container-6x6');
         
-        if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
-            window.game.showHeroGameScreen();
-            setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
-        } else if (window.game) {
-            window.game.showHeroGameScreen();
+        if (alliesGrid) {
+            alliesGrid.innerHTML = this.renderTacticalGrid('allies');
         }
-        
-        this.battleActive = false;
-        this.currentMonsters = [];
+        if (enemiesGrid) {
+            enemiesGrid.innerHTML = this.renderTacticalGrid('enemies');
+        }
     }
 
-    // ⭐ СУЩЕСТВУЮЩИЕ МЕТОДЫ ДЛЯ СОВМЕСТИМОСТИ
+    renderTacticalGrid(side) {
+        return this.battleSystem.renderFullscreenGrid(side);
+    }
+
     addBattleLog(message) {
-        this.addDuelLog(message, 'system');
+        this.battleSystem.addBattleLog(message);
     }
 
-    updateBattleLog() {
-        // Уже реализовано в addDuelLog
+    getTacticalHint() {
+        return "Выберите действие и наблюдайте за тактической дуэлью!";
     }
 
-    showBattleScreen() {
-        this.showTacticalDuelScreen();
+    checkBattleEnd() {
+        return this.battleSystem.isBattleOver();
     }
 
-    // ⭐ МЕТОД ДЛЯ БОЯ С МНОЖЕСТВОМ ВРАГОВ (будущая реализация)
-    startGroupBattle(hero, monsters, context = 'normal') {
-        // Пока используем дуэль с первым монстром
-        if (monsters.length > 0) {
-            this.startTacticalDuel(hero, monsters[0], context);
-        }
+    endTacticalBattle() {
+        this.battleSystem.endTacticalBattle(true);
+    }
+
+    tryToFlee() {
+        this.battleSystem.tryToFlee();
     }
 }
 
-window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem модуль загружен с тактической дуэлью для всех боев");
+// ⭐ ИНТЕГРАЦИЯ С СУЩЕСТВУЮЩЕЙ СИСТЕМОЙ
+// Добавляем тактическую систему в BattleSystem
+BattleSystem.prototype.tacticalSystem = new EnhancedBattleSystem();
+
+// Переопределяем метод показа боя для использования тактической системы
+BattleSystem.prototype.showFullscreenBattle = function() {
+    this.tacticalSystem.startTacticalBattle(
+        this.currentHero, 
+        this.currentMonsters, 
+        this.battleContext
+    );
+};
+
+console.log("🎯 EnhancedBattleSystem интегрирован в BattleSystem");
