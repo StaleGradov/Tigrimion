@@ -305,23 +305,34 @@ class HeroSystem {
     }
 
     // ⭐ НОВЫЙ МЕТОД: Обновление отображения героя
-    updateHeroDisplay(stats) {
-        const currentHero = this.currentHero || window.game?.currentHero;
-        if (!currentHero) return;
+updateHeroDisplay(stats) {
+    // ⭐ ЗАЩИТНАЯ ПРОВЕРКА: Проверяем все возможные источники героя
+    const currentHero = this.currentHero || window.game?.currentHero;
+    if (!currentHero) {
+        console.warn("⚠️ updateHeroDisplay: Герой не установлен в системе");
+        return;
+    }
+    
+    // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убедимся что currentHealth существует
+    if (typeof currentHero.currentHealth === 'undefined') {
+        console.warn("⚠️ updateHeroDisplay: currentHealth не определен", currentHero);
+        // Восстанавливаем здоровье если его нет
+        currentHero.currentHealth = currentHero.baseHealth || 100;
+    }
+
+    // Обновляем полоску здоровья
+    const healthBar = document.getElementById('heroHealthBar');
+    if (healthBar) {
+        const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
+        healthBar.style.width = `${healthPercent}%`;
+        healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
         
-        // Обновляем полоску здоровья
-        const healthBar = document.getElementById('heroHealthBar');
-        if (healthBar) {
-            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-            healthBar.style.width = `${healthPercent}%`;
-            healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
-            
-            if (currentHero.currentHealth < stats.maxHealth) {
-                healthBar.classList.add('regening');
-            } else {
-                healthBar.classList.remove('regening');
-            }
+        if (currentHero.currentHealth < stats.maxHealth) {
+            healthBar.classList.add('regening');
+        } else {
+            healthBar.classList.remove('regening');
         }
+    }
         
         // Обновляем полоску опыта
         const expBar = document.getElementById('heroExperienceBar');
