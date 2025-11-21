@@ -46,7 +46,7 @@ class MapSystem {
         this.lootTables = {
             1: { // Деревня - базовые награды
                 gold: { weight: 60, min: 5, max: 20 },
-                common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'bread'] },
+                common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'bread', 'torch'] },
                 information: { weight: 10, messages: [
                     "Местный житель рассказал о подозрительной активности в лесу...",
                     "Вы нашли старую карту с отметкой тайника",
@@ -137,6 +137,24 @@ class MapSystem {
         this.tooltipTimeout = null;
         
         console.log("✅ MapSystem инициализирован с системой переходов и уровней лута");
+    }
+
+    // ========== НОВЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРЕДМЕТА ПО ID ==========
+
+    getLootItemById(itemId) {
+        const itemSystem = window.game?.systems?.equipment;
+        if (!itemSystem) {
+            console.error("❌ EquipmentSystem не доступна");
+            return null;
+        }
+        
+        const item = itemSystem.getItemById(itemId);
+        if (!item) {
+            console.warn(`⚠️ Предмет с ID ${itemId} не найден в системе`);
+            return null;
+        }
+        
+        return item;
     }
 
     setCurrentHero(hero) {
@@ -1099,52 +1117,69 @@ class MapSystem {
         return types[0]; // fallback
     }
 
-    // Обработка награды
+    // ========== ОБНОВЛЕННЫЙ МЕТОД ОБРАБОТКИ НАГРАД ==========
+
     processReward(reward, col, row) {
         let showNotification = true;
         
-        switch(reward.type) {
-            case 'gold':
-                this.currentHero.gold += reward.amount;
-                break;
-                
-            case 'item':
-                const itemSystem = window.game?.systems?.items;
-                if (itemSystem) {
-                    const itemAdded = itemSystem.addItemToHero(this.currentHero, reward.itemId);
-                    if (!itemAdded) {
-                        reward.message = "Инвентарь полон! Награда потеряна.";
+        try {
+            switch(reward.type) {
+                case 'gold':
+                    this.currentHero.gold += reward.amount;
+                    console.log(`💰 Добавлено золото: ${reward.amount}`);
+                    break;
+                    
+                case 'item':
+                    const itemSystem = window.game?.systems?.equipment;
+                    if (itemSystem && itemSystem.addItemToHero) {
+                        // ПРОВЕРЯЕМ СУЩЕСТВОВАНИЕ ПРЕДМЕТА через новый метод
+                        const lootItem = this.getLootItemById(reward.itemId);
+                        if (!lootItem) {
+                            console.warn(`⚠️ Предмет лута не найден: ${reward.itemId}`);
+                            reward.message = `Найдено что-то странное... (${reward.itemId})`;
+                            break;
+                        }
+                        
+                        const itemAdded = itemSystem.addItemToHero(this.currentHero, reward.itemId);
+                        if (!itemAdded) {
+                            reward.message = "Инвентарь полон! Награда потеряна.";
+                        } else {
+                            reward.message = `Вы нашли: ${lootItem.name}!`;
+                        }
                     }
-                }
-                break;
-                
-            case 'information':
-                // Для важной информации можно показать диалог
-                if (this.isImportantInformation(reward.message)) {
-                    this.showInformationDialog(reward.message);
-                    showNotification = false;
-                }
-                break;
+                    break;
+                    
+                case 'information':
+                    // Для важной информации можно показать диалог
+                    if (this.isImportantInformation(reward.message)) {
+                        this.showInformationDialog(reward.message);
+                        showNotification = false;
+                    }
+                    break;
+            }
+            
+            // Показываем уведомление
+            if (showNotification && window.game) {
+                window.game.showNotification(reward.message, 'success');
+            }
+            
+            // Обновляем интерфейс героя
+            this.updateHeroInterface();
+            
+            console.log(`🎁 Выдана награда:`, reward);
+            
+        } catch (error) {
+            console.error("❌ Ошибка обработки награды:", error);
+            if (window.game) {
+                window.game.showNotification("Ошибка при получении награды", 'error');
+            }
         }
-        
-        // Показываем уведомление
-        if (showNotification && window.game) {
-            window.game.showNotification(reward.message, 'success');
-        }
-        
-        // Обновляем интерфейс героя
-        this.updateHeroInterface();
-        
-        console.log(`🎁 Выдана награда:`, reward);
     }
 
     // Получение имени предмета
     getItemName(itemId) {
-        const itemSystem = window.game?.systems?.items;
-        if (itemSystem && itemSystem.getItemName) {
-            return itemSystem.getItemName(itemId);
-        }
-        return itemId; // fallback
+        const lootItem = this.getLootItemById(itemId);
+        return lootItem ? lootItem.name : itemId; // fallback
     }
 
     // Проверка важности информации
