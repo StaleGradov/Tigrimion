@@ -2,6 +2,8 @@
   "meta": {
     "name": "Деревня охотников",
     "description": "Создано в редакторе",
+    "mapType": "peaceful",
+    "lootLevel": 1,
     "version": "1.0",
     "created": "2025-11-20T15:49:33.729Z",
     "author": "Tigrimion Map Editor"
@@ -45,6 +47,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 442.53898133384814,
             "editorY": 328.5,
@@ -61,6 +64,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 568.9786902863761,
             "editorY": 328.5,
@@ -77,6 +81,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 695.4183992389042,
             "editorY": 328.5,
@@ -93,6 +98,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 379.31912685758414,
             "editorY": 438,
@@ -125,6 +131,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 632.1985447626402,
             "editorY": 438,
@@ -141,6 +148,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 758.6382537151683,
             "editorY": 438,
@@ -157,6 +165,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 316.0992723813201,
             "editorY": 547.5,
@@ -173,6 +182,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 442.53898133384814,
             "editorY": 547.5,
@@ -189,6 +199,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 568.9786902863761,
             "editorY": 547.5,
@@ -243,6 +254,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+           "hasLoot": true,
           "originalData": {
             "editorX": 505.75883581011215,
             "editorY": 657,
@@ -259,6 +271,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 632.1985447626402,
             "editorY": 657,
@@ -291,6 +304,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 568.9786902863761,
             "editorY": 766.5,
@@ -307,6 +321,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 695.4183992389042,
             "editorY": 766.5,
@@ -323,6 +338,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 632.1985447626402,
             "editorY": 876,
@@ -339,6 +355,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+           "hasLoot": true,
           "originalData": {
             "editorX": 758.6382537151683,
             "editorY": 876,
@@ -355,6 +372,7 @@
           "type": "active",
           "passable": true,
           "visible": true,
+            "hasLoot": true,
           "originalData": {
             "editorX": 568.9786902863761,
             "editorY": 985.5,
