@@ -342,7 +342,7 @@ class BattleSystem {
                         <div class="panel-stats">
                             <div class="stat-item">
                                 <span class="stat-label">Очки действий:</span>
-                                <span class="stat-value" id="playerAP">3/3</span>
+                                <span class="stat-value" id="playerAP">3/∞</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Комбо:</span>
@@ -424,7 +424,7 @@ class BattleSystem {
                         <div class="panel-stats">
                             <div class="stat-item">
                                 <span class="stat-label">Очки действий:</span>
-                                <span class="stat-value" id="enemyAP">3/3</span>
+                                <span class="stat-value" id="enemyAP">3/∞</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-label">Комбо:</span>
@@ -475,7 +475,7 @@ class BattleSystem {
         this.updateTacticalUI();
     }
 
-    // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА
+    // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ
     handlePlayerAction(action) {
         if (this.battleEnding || this.resultShown) {
             console.log("🛑 Бой уже завершается, игнорируем клик");
@@ -493,7 +493,7 @@ class BattleSystem {
         // Списание ОД
         player.ap -= this.actionsCost[action];
         
-        // Обновление комбо
+        // Обновление комбо (сбрасывается при смене типа действия)
         if (player.combo.type === action && player.combo.count < 4) {
             player.combo.count++;
         } else {
@@ -516,6 +516,51 @@ class BattleSystem {
         }, 500);
         
         this.updateTacticalUI();
+    }
+
+    // ⭐ РАСЧЕТ МНОЖИТЕЛЯ КОМБО ПО ТИПУ АТАКИ
+    getComboMultiplier(action, comboCount) {
+        const baseMultipliers = {
+            attack: [1.0, 2.0, 4.0, 8.0],        // 100% → 200% → 400% → 800%
+            strongAttack: [2.5, 5.0, 10.0, 20.0], // 250% → 500% → 1000% → 2000%
+            crushingAttack: [7.5, 15.0, 30.0, 60.0], // 750% → 1500% → 3000% → 6000%
+            breakBlock: [0.5, 1.0, 1.5, 2.0]     // 50% → 100% → 150% → 200% (без блока)
+        };
+        
+        const index = Math.min(comboCount - 1, 3);
+        return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
+    }
+
+    // ⭐ РАСЧЕТ МНОЖИТЕЛЯ ПРОБИТИЯ С УЧЕТОМ БЛОКА ПРОТИВНИКА
+    getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
+        if (!enemyHasBlock) {
+            // Без блока: 50% → 100% → 150% → 200%
+            const multipliers = [0.5, 1.0, 1.5, 2.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
+        } else {
+            // С блоком: 200% → 300% → 400% → 500%
+            const multipliers = [2.0, 3.0, 4.0, 5.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
+        }
+    }
+
+    // ⭐ РАСЧЕТ ЭФФЕКТИВНОСТИ БЛОКА
+    getBlockEfficiency(comboCount) {
+        // 50% → 75% → 100% → 100% + отражение
+        const efficiencies = [0.5, 0.75, 1.0, 1.0];
+        return efficiencies[Math.min(comboCount - 1, 3)];
+    }
+
+    // ⭐ РАСЧЕТ ЭФФЕКТИВНОСТИ ОТДЫХА
+    getRestEfficiency(comboCount) {
+        // +1 ОД+5%HP → +2 ОД+10%HP → +3 ОД+15%HP → +4 ОД+20%HP
+        const apGain = [1, 2, 3, 4];
+        const healPercent = [0.05, 0.10, 0.15, 0.20];
+        
+        return {
+            ap: apGain[Math.min(comboCount - 1, 3)],
+            healPercent: healPercent[Math.min(comboCount - 1, 3)]
+        };
     }
 
     // ⭐ ХОД ПРОТИВНИКА (ИИ)
@@ -572,8 +617,8 @@ class BattleSystem {
         // Сброс действий и восстановление ОД
         this.players[1].currentAction = null;
         this.players[2].currentAction = null;
-        this.players[1].ap = Math.min(3, this.players[1].ap + 1);
-        this.players[2].ap = Math.min(3, this.players[2].ap + 1);
+        this.players[1].ap += 1; // +1 ОД каждый ход
+        this.players[2].ap += 1; // +1 ОД каждый ход
         
         this.updateTacticalUI();
         
@@ -585,7 +630,7 @@ class BattleSystem {
         }
     }
 
-    // ⭐ ВЫПОЛНЕНИЕ УРОНА С ИНТЕГРАЦИЕЙ ВАШИХ СТАТОВ
+    // ⭐ ВЫПОЛНЕНИЕ УРОНА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ КОМБО
     executeTacticalDamage(playerAction, enemyAction) {
         const heroStats = this.getHeroStatsForBattle();
         const hero = this.battleGrid.allies[4];
@@ -593,19 +638,28 @@ class BattleSystem {
         // Базовый урон героя из вашей системы
         const baseHeroDamage = heroStats.damage;
         
-        // Множители атак (пропорции как обсуждали)
-        const damageMultipliers = {
-            attack: 1.0,      // 100% урона = обычная атака
-            strongAttack: 2.5, // 250% урона
-            crushingAttack: 7.5, // 750% урона
-            breakBlock: 0.5   // 50% урона, но пробивает блок
-        };
+        // Проверяем, есть ли у противника блок
+        const enemyHasBlock = enemyAction === 'block';
         
-        // Расчет урона игрока
-        if (playerAction && damageMultipliers[playerAction]) {
-            const rawDamage = baseHeroDamage * damageMultipliers[playerAction];
-            const comboMultiplier = 1 + (this.players[1].combo.count * 0.1);
-            let finalDamage = Math.floor(rawDamage * comboMultiplier);
+        // Расчет урона игрока с правильной прогрессией комбо
+        if (playerAction && playerAction !== 'rest' && playerAction !== 'block') {
+            let damageMultiplier = 1.0;
+            let finalDamage = 0;
+            
+            if (playerAction === 'breakBlock') {
+                // Особый расчет для пробития
+                damageMultiplier = this.getBreakBlockMultiplier(this.players[1].combo.count, enemyHasBlock);
+                finalDamage = Math.floor(baseHeroDamage * damageMultiplier);
+                
+                if (enemyHasBlock) {
+                    this.addBattleLog(`⚡ Пробитие блока! Множитель x${damageMultiplier}`);
+                }
+            } else {
+                // Обычные атаки
+                damageMultiplier = this.getComboMultiplier(playerAction, this.players[1].combo.count);
+                const rawDamage = baseHeroDamage * damageMultiplier;
+                finalDamage = Math.floor(rawDamage);
+            }
             
             // Критический удар
             const isCrit = Math.random() < heroStats.critChance;
@@ -614,15 +668,46 @@ class BattleSystem {
                 this.addBattleLog(`💥 КРИТИЧЕСКИЙ УДАР!`);
             }
             
-            this.applyDamageToMonsters(finalDamage, playerAction, isCrit);
+            this.applyDamageToMonsters(finalDamage, playerAction, isCrit, enemyHasBlock);
         }
         
-        // Расчет урона противника
+        // Обработка блока игрока
+        if (playerAction === 'block') {
+            const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
+            this.addBattleLog(`🛡️ Блок активирован (эффективность: ${blockEfficiency * 100}%)`);
+            
+            // Отражение урона на 4-м стаке
+            if (this.players[1].combo.count >= 4) {
+                this.addBattleLog(`✨ Блок отражает урон обратно врагу!`);
+                // Здесь можно добавить логику отражения урона
+            }
+        }
+        
+        // Обработка отдыха игрока
+        if (playerAction === 'rest') {
+            const restEfficiency = this.getRestEfficiency(this.players[1].combo.count);
+            this.players[1].ap += restEfficiency.ap;
+            
+            if (hero) {
+                const healAmount = Math.floor(hero.maxHealth * restEfficiency.healPercent);
+                hero.currentHealth = Math.min(hero.maxHealth, hero.currentHealth + healAmount);
+                this.addBattleLog(`🌀 Отдых: +${restEfficiency.ap} ОД, +${healAmount} HP`);
+            }
+        }
+        
+        // Расчет урона противника с учетом блока игрока
         if (enemyAction === 'attack' || enemyAction === 'strongAttack') {
             const monsterDamage = this.calculateMonsterDamage();
             let finalDamage = Math.max(1, monsterDamage - heroStats.armor);
             
-            if (hero) {
+            // Учет блока игрока
+            if (playerAction === 'block') {
+                const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
+                finalDamage = Math.floor(finalDamage * (1 - blockEfficiency));
+                this.addBattleLog(`🛡️ Блок поглощает ${blockEfficiency * 100}% урона!`);
+            }
+            
+            if (hero && finalDamage > 0) {
                 hero.currentHealth -= finalDamage;
                 this.addBattleLog(`👹 Монстры атакуют и наносят ${finalDamage} урона!`);
                 
@@ -633,9 +718,22 @@ class BattleSystem {
                 }
             }
         }
+        
+        // Обработка блока противника
+        if (enemyAction === 'block') {
+            this.addBattleLog(`👹 Противник использует блок!`);
+        }
+        
+        // Обработка отдыха противника
+        if (enemyAction === 'rest') {
+            const enemyCombo = this.players[2].combo.count;
+            const apGain = Math.min(enemyCombo, 4); // +1 → +2 → +3 → +4 ОД
+            this.players[2].ap += apGain;
+            this.addBattleLog(`👹 Противник отдыхает: +${apGain} ОД`);
+        }
     }
 
-    applyDamageToMonsters(damage, action, isCrit = false) {
+    applyDamageToMonsters(damage, action, isCrit = false, enemyHasBlock = false) {
         const targetPosition = this.findAvailableTarget();
         if (targetPosition !== null) {
             const target = this.battleGrid.enemies[targetPosition];
@@ -643,8 +741,8 @@ class BattleSystem {
                 let finalDamage = Math.max(1, damage - (target.data.armor || 0));
                 
                 // Пробитие блока
-                if (action === 'breakBlock') {
-                    finalDamage = damage; // Игнорирует броню
+                if (action === 'breakBlock' && enemyHasBlock) {
+                    finalDamage = damage; // Игнорирует броню при пробитии блока
                     this.addBattleLog(`⚡ Пробитие игнорирует броню!`);
                 }
                 
@@ -775,19 +873,35 @@ class BattleSystem {
         const playerCombo = document.getElementById('playerCombo');
         const enemyCombo = document.getElementById('enemyCombo');
         
-        if (playerAP) playerAP.textContent = `${this.players[1].ap}/3`;
-        if (enemyAP) enemyAP.textContent = `${this.players[2].ap}/3`;
+        if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
+        if (enemyAP) enemyAP.textContent = `${this.players[2].ap}/∞`;
         
+        // Обновление комбо с отображением множителя
         if (playerCombo) {
-            playerCombo.textContent = this.players[1].combo.count > 0 ? 
-                `${this.getActionName(this.players[1].combo.type)} x${this.players[1].combo.count}` : 
-                'Нет';
+            if (this.players[1].combo.count > 0) {
+                const action = this.players[1].combo.type;
+                const count = this.players[1].combo.count;
+                let multiplierText = '';
+                
+                if (action === 'attack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
+                else if (action === 'strongAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
+                else if (action === 'crushingAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
+                else if (action === 'breakBlock') multiplierText = ` (x${this.getBreakBlockMultiplier(count, false)})`;
+                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}%)`;
+                else if (action === 'rest') multiplierText = ` (+${this.getRestEfficiency(count).ap}ОД)`;
+                
+                playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
+            } else {
+                playerCombo.textContent = 'Нет';
+            }
         }
             
         if (enemyCombo) {
-            enemyCombo.textContent = this.players[2].combo.count > 0 ? 
-                `${this.getActionName(this.players[2].combo.type)} x${this.players[2].combo.count}` : 
-                'Нет';
+            if (this.players[2].combo.count > 0) {
+                enemyCombo.textContent = `${this.getActionName(this.players[2].combo.type)} x${this.players[2].combo.count}`;
+            } else {
+                enemyCombo.textContent = 'Нет';
+            }
         }
         
         this.updateActionHistory('playerHistory', this.players[1].previousActions);
@@ -921,7 +1035,7 @@ class BattleSystem {
     }
 
     getTacticalHint() {
-        return "Выберите действие - система автоматически выберет цель!";
+        return "Выберите действие - система автоматически выберет цель! Комбо растет с каждым повторением одного типа действия.";
     }
 
     checkBattleEnd() {
@@ -1079,4 +1193,4 @@ class BattleSystem {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан под тактическую систему");
+console.log("📦 BattleSystem полностью переписан под тактическую систему с правильной прогрессией комбо");
