@@ -289,156 +289,156 @@ class BattleSystem {
         });
     }
 
-  // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
-showTacticalBattleInterface() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
+    showTacticalBattleInterface() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    const heroStats = this.getHeroStatsForBattle();
-    
-    app.innerHTML = `
-        <div class="battle-screen-fullscreen">
-            <header class="battle-header">
-                <div class="header-left">
-                    <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
-                </div>
-                <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
-                    ← Назад к карте
-                </button>
-            </header>
-            
-            <div class="battle-main-area">
-                <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                <div class="tactical-panel player-panel">
-                    <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="playerAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="playerCombo">Нет</span>
-                        </div>
+        const heroStats = this.getHeroStatsForBattle();
+        
+        app.innerHTML = `
+            <div class="battle-screen-fullscreen">
+                <header class="battle-header">
+                    <div class="header-left">
+                        <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
+                        <div class="battle-round">Раунд: ${this.battleRound}</div>
                     </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последние действия:</div>
-                        <div class="history-entries" id="playerHistory">
-                            <div class="history-empty">Еще нет действий</div>
-                        </div>
-                    </div>
-                    
-                    <div class="tactical-actions">
-                        <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
-                            <span class="btn-icon">⚔️</span>
-                            <span class="btn-text">Атака</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
-                            <span class="btn-icon">💥</span>
-                            <span class="btn-text">Силовая</span>
-                            <span class="btn-cost">(2 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
-                            <span class="btn-icon">💢</span>
-                            <span class="btn-text">Сокрушительная</span>
-                            <span class="btn-cost">(4 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
-                            <span class="btn-icon">🛡️</span>
-                            <span class="btn-text">Блок</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
-                            <span class="btn-icon">⚡</span>
-                            <span class="btn-text">Пробитие</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
-                            <span class="btn-icon">🌀</span>
-                            <span class="btn-text">Отдых</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ЦЕНТР - УВЕЛИЧЕННАЯ СЕТКА 6x6 -->
-                <div class="battle-grid-fullscreen">
-                    <div class="grid-side allies-side">
-                        <h3 class="side-title">ВАШ ОТРЯД</h3>
-                        <div class="grid-container-6x6">
-                            ${this.renderTacticalGrid('allies')}
-                        </div>
-                    </div>
-                    
-                    <div class="vs-separator">
-                        <div class="vs-text">VS</div>
-                    </div>
-                    
-                    <div class="grid-side enemies-side">
-                        <h3 class="side-title">ПРОТИВНИКИ</h3>
-                        <div class="grid-container-6x6">
-                            ${this.renderTacticalGrid('enemies')}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) -->
-                <div class="tactical-panel enemy-panel">
-                    <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="enemyAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="enemyCombo">Нет</span>
-                        </div>
-                    </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последнее действие:</div>
-                        <div class="history-entries" id="enemyHistory">
-                            <div class="history-empty">Еще нет действий</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- УПРАВЛЕНИЕ И ЛОГ -->
-            <div class="battle-controls-fullscreen">
-                <div class="battle-hint-fullscreen" id="battleHint">
-                    ${this.getTacticalHint()}
-                </div>
-                
-                <div class="battle-actions-fullscreen">
-                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
-                        🏃 Попытаться сбежать
+                    <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
+                        ← Назад к карте
                     </button>
+                </header>
+                
+                <div class="battle-main-area">
+                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                    <div class="tactical-panel player-panel">
+                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="playerAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="playerCombo">Нет</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="playerHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tactical-actions">
+                            <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
+                                <span class="btn-icon">⚔️</span>
+                                <span class="btn-text">Атака</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
+                                <span class="btn-icon">💥</span>
+                                <span class="btn-text">Силовая</span>
+                                <span class="btn-cost">(2 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
+                                <span class="btn-icon">💢</span>
+                                <span class="btn-text">Сокрушительная</span>
+                                <span class="btn-cost">(4 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Блок</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Пробитие</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
+                                <span class="btn-icon">🌀</span>
+                                <span class="btn-text">Отдых</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- ЦЕНТР - УВЕЛИЧЕННАЯ СЕТКА 6x6 -->
+                    <div class="battle-grid-fullscreen">
+                        <div class="grid-side allies-side">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderTacticalGrid('allies')}
+                            </div>
+                        </div>
+                        
+                        <div class="vs-separator">
+                            <div class="vs-text">VS</div>
+                        </div>
+                        
+                        <div class="grid-side enemies-side">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6">
+                                ${this.renderTacticalGrid('enemies')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) -->
+                    <div class="tactical-panel enemy-panel">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="enemyAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="enemyCombo">Нет</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последнее действие:</div>
+                            <div class="history-entries" id="enemyHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- УПРАВЛЕНИЕ И ЛОГ -->
+                <div class="battle-controls-fullscreen">
+                    <div class="battle-hint-fullscreen" id="battleHint">
+                        ${this.getTacticalHint()}
+                    </div>
+                    
+                    <div class="battle-actions-fullscreen">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="battle-log-fullscreen">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                    </div>
                 </div>
             </div>
-            
-            <div class="battle-log-fullscreen">
-                <h4>📜 Ход боя:</h4>
-                <div class="battle-log-entries" id="battleLogEntries">
-                    ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-        </div>
-    `;
+        `;
 
-    this.updateTacticalUI();
-}
+        this.updateTacticalUI();
+    }
 
     // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ
     handlePlayerAction(action) {
@@ -475,7 +475,7 @@ showTacticalBattleInterface() {
 
         this.addBattleLog(`🎯 Вы выбрали: ${this.getActionName(action)} (комбо x${player.combo.count})`);
         
-        // Автоматический ход монстров
+        // Автоматический ход монстров через ИИ
         setTimeout(() => {
             this.executeEnemyTurn();
         }, 500);
@@ -535,36 +535,32 @@ showTacticalBattleInterface() {
         };
     }
 
-    // ⭐ ХОД ПРОТИВНИКА (ИИ)
+    // ⭐ УМНЫЙ ИИ ДЛЯ ПРОТИВНИКА
     executeEnemyTurn() {
         const enemy = this.players[2];
-        const availableActions = ['attack', 'block', 'rest'].filter(a => 
-            this.actionsCost[a] <= enemy.ap
-        );
         
-        if (availableActions.length === 0) {
-            // Если нет ОД - отдых
-            enemy.currentAction = 'rest';
-            enemy.ap += 1;
+        // Создаем ИИ для этого хода
+        const tacticalAI = new TacticalAI(this);
+        
+        // Получаем интеллектуальное решение
+        const action = tacticalAI.decideAction();
+        
+        // Выполняем действие
+        enemy.currentAction = action;
+        enemy.ap -= this.actionsCost[action];
+        
+        // Обновление комбо
+        if (enemy.combo.type === action && enemy.combo.count < 4) {
+            enemy.combo.count++;
         } else {
-            // Простая ИИ логика
-            const randomAction = availableActions[Math.floor(Math.random() * availableActions.length)];
-            enemy.currentAction = randomAction;
-            enemy.ap -= this.actionsCost[randomAction];
-            
-            // Обновление комбо
-            if (enemy.combo.type === randomAction && enemy.combo.count < 4) {
-                enemy.combo.count++;
-            } else {
-                enemy.combo.type = randomAction;
-                enemy.combo.count = 1;
-            }
+            enemy.combo.type = action;
+            enemy.combo.count = 1;
         }
 
         // Сохранение в историю (только последнее действие)
-        enemy.previousActions = [this.getActionName(enemy.currentAction)];
+        enemy.previousActions = [this.getActionName(action)];
 
-        this.addBattleLog(`👹 Противник использует: ${this.getActionName(enemy.currentAction)}`);
+        this.addBattleLog(`👹 Противник использует: ${this.getActionName(action)}`);
         
         // Разрешение хода
         setTimeout(() => {
@@ -603,6 +599,12 @@ showTacticalBattleInterface() {
     executeTacticalDamage(playerAction, enemyAction) {
         const heroStats = this.getHeroStatsForBattle();
         const hero = this.battleGrid.allies[5];
+        
+        // 🔧 ИСПРАВЛЕНИЕ: Не даем здоровью уйти в минус
+        if (hero && hero.currentHealth <= 0) {
+            hero.currentHealth = 0;
+            return;
+        }
         
         // Базовый урон героя из вашей системы
         const baseHeroDamage = heroStats.damage;
@@ -683,7 +685,7 @@ showTacticalBattleInterface() {
             }
             
             if (hero && finalDamage > 0) {
-                hero.currentHealth -= finalDamage;
+                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage); // 🔧 ИСПРАВЛЕНИЕ: Не даем уйти в минус
                 this.addBattleLog(`👹 Монстры атакуют и наносят ${finalDamage} урона!`);
                 
                 // Вампиризм монстров (если есть)
@@ -721,7 +723,7 @@ showTacticalBattleInterface() {
                     this.addBattleLog(`⚡ Пробитие игнорирует броню!`);
                 }
                 
-                target.currentHealth -= finalDamage;
+                target.currentHealth = Math.max(0, target.currentHealth - finalDamage); // 🔧 ИСПРАВЛЕНИЕ: Не даем уйти в минус
                 
                 const critText = isCrit ? "💥 КРИТ " : "";
                 this.addBattleLog(`${critText}🎯 Вы наносите ${finalDamage} урона ${target.data.name}!`);
@@ -800,6 +802,65 @@ showTacticalBattleInterface() {
                 unit.currentHealth = Math.min(unit.maxHealth, unit.currentHealth + healAmount);
             }
         });
+    }
+
+    // ⭐ ПРОВЕРКА КОНЦА БОЯ С ИСПРАВЛЕНИЕМ ЗДОРОВЬЯ
+    checkBattleEnd() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
+        const hero = this.battleGrid.allies[5];
+        
+        // 🔧 ИСПРАВЛЕНИЕ: Если здоровье героя <= 0, устанавливаем его в 0
+        if (hero && hero.currentHealth <= 0) {
+            hero.currentHealth = 0;
+        }
+        
+        return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
+    }
+
+    isPlayerVictory() {
+        const hero = this.battleGrid.allies[5];
+        return hero && hero.currentHealth > 0;
+    }
+
+    // ⭐ ЗАВЕРШЕНИЕ БОЯ С ИСПРАВЛЕНИЕМ ЗДОРОВЬЯ ГЕРОЯ
+    endTacticalBattle(victory) {
+        if (this.resultShown) return;
+        this.resultShown = true;
+
+        if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            this.currentHero.gold += totalReward;
+            window.game.systems.level.addExperience(this.currentHero, totalExperience);
+            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+            
+            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+        } else {
+            // 🔧 ИСПРАВЛЕНИЕ: При поражении оставляем 1 HP вместо ухода в минус
+            this.currentHero.currentHealth = 1;
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1.");
+            
+            if (window.game && window.game.handleHeroDeath) {
+                window.game.handleHeroDeath();
+            }
+        }
+        
+        // 🔧 ИСПРАВЛЕНИЕ: Синхронизируем здоровье героя
+        if (this.currentHero && window.game.systems.hero) {
+            this.currentHero.currentHealth = this.battleGrid.allies[5]?.currentHealth || this.currentHero.currentHealth;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
+        
+        if (window.game) window.game.saveGame();
+        
+        if (this.battleContext === 'movement' && window.game.systems.map) {
+            window.game.systems.map.completeMovementAfterBattle(victory);
+        }
+        
+        this.battleActive = false;
+        this.showBattleResult(victory);
     }
 
     // ⭐ ОСТАЛЬНЫЕ МЕТОДЫ (совместимость)
@@ -1013,55 +1074,6 @@ showTacticalBattleInterface() {
         return "Выберите действие - система автоматически выберет цель! Комбо растет с каждым повторением одного типа действия.";
     }
 
-    checkBattleEnd() {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        const hero = this.battleGrid.allies[5];
-        return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
-    }
-
-    isPlayerVictory() {
-        const hero = this.battleGrid.allies[5];
-        return hero && hero.currentHealth > 0;
-    }
-
-    endTacticalBattle(victory) {
-        if (this.resultShown) return;
-        this.resultShown = true;
-
-        if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            this.currentHero.gold += totalReward;
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-            
-            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
-        } else {
-            this.currentHero.currentHealth = 1;
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1.");
-            
-            if (window.game && window.game.handleHeroDeath) {
-                window.game.handleHeroDeath();
-            }
-        }
-        
-        if (this.currentHero && window.game.systems.hero) {
-            this.currentHero.currentHealth = this.battleGrid.allies[5]?.currentHealth || this.currentHero.currentHealth;
-            window.game.systems.hero.calculateHeroStats(this.currentHero);
-        }
-        
-        if (window.game) window.game.saveGame();
-        
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
-        }
-        
-        this.battleActive = false;
-        this.showBattleResult(victory);
-    }
-
     showBattleResult(victory) {
         const app = document.getElementById('app');
         if (!app) return;
@@ -1167,5 +1179,351 @@ showTacticalBattleInterface() {
     }
 }
 
+// 🧠 КЛАСС УМНОГО ИИ ДЛЯ ПРОТИВНИКА
+class TacticalAI {
+    constructor(battleSystem) {
+        this.bs = battleSystem;
+        this.personality = this.analyzeMonsterGroup();
+        this.memory = {
+            playerPattern: [],
+            lastPlayerAction: null,
+            predictedNextAction: null,
+            dangerLevel: 0
+        };
+    }
+    
+    // ⭐ ОСНОВНОЙ МЕТОД ПРИНЯТИЯ РЕШЕНИЙ
+    decideAction() {
+        const enemy = this.bs.players[2];
+        const player = this.bs.players[1];
+        
+        // 1. АНАЛИЗ ТЕКУЩЕЙ СИТУАЦИИ
+        const situation = this.analyzeSituation();
+        
+        // 2. ВЫБОР СТРАТЕГИИ НА ОСНОВЕ СИТУАЦИИ
+        const strategy = this.chooseStrategy(situation);
+        
+        // 3. ВЫБОР КОНКРЕТНОГО ДЕЙСТВИЯ
+        const action = this.selectAction(strategy, enemy, player);
+        
+        console.log(`🤖 ИИ: Стратегия=${strategy}, Действие=${action}, ОД=${enemy.ap}`);
+        return action;
+    }
+    
+    analyzeSituation() {
+        const enemy = this.bs.players[2];
+        const player = this.bs.players[1];
+        const hero = this.bs.battleGrid.allies[5];
+        const monsters = this.bs.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
+        
+        return {
+            // Состояние сторон
+            heroHealthPercent: hero ? hero.currentHealth / hero.maxHealth : 0,
+            monsterHealthPercent: this.getAverageMonsterHealth(),
+            
+            // Ресурсы
+            playerAP: player.ap,
+            enemyAP: enemy.ap,
+            playerCombo: player.combo,
+            enemyCombo: enemy.combo,
+            
+            // Угрозы
+            playerComboThreat: this.calculatePlayerComboThreat(),
+            imminentDanger: this.checkImminentDanger(),
+            
+            // Паттерны игрока
+            playerPattern: this.analyzePlayerPattern(),
+            predictedAction: this.predictPlayerAction(),
+            
+            // Тактические возможности
+            canBreakCombo: this.canBreakPlayerCombo(),
+            canForceWasteAP: this.canForcePlayerToWasteAP(),
+            
+            // Статистика
+            turn: this.bs.battleRound,
+            monstersAlive: monsters.length
+        };
+    }
+    
+    chooseStrategy(situation) {
+        // 🚨 КРИТИЧЕСКИЕ СИТУАЦИИ
+        if (situation.imminentDanger === 'PLAYER_WIN_NEXT_TURN') {
+            return 'DESPERATE_DEFENSE';
+        }
+        
+        if (situation.heroHealthPercent < 0.3) {
+            return 'FINISHING_BLOW';
+        }
+        
+        if (situation.monsterHealthPercent < 0.4) {
+            return 'SURVIVAL';
+        }
+        
+        // 🎪 СИТУАТИВНЫЕ СТРАТЕГИИ
+        if (situation.playerComboThreat >= 8) {
+            return 'COMBO_BREAKER';
+        }
+        
+        if (situation.playerAP <= 1 && situation.enemyAP >= 2) {
+            return 'AGGRESSIVE_PRESSURE';
+        }
+        
+        if (situation.predictedAction === 'crushingAttack' && situation.enemyAP >= 2) {
+            return 'PREEMPTIVE_BLOCK';
+        }
+        
+        // 🔮 АДАПТАЦИЯ К СТИЛЮ ИГРОКА
+        if (situation.playerPattern === 'AGGRESSIVE') {
+            return 'COUNTER_ATTACK';
+        }
+        
+        if (situation.playerPattern === 'DEFENSIVE') {
+            return 'SUSTAINED_PRESSURE';
+        }
+        
+        // ⚖️ СТАНДАРТНАЯ СТРАТЕГИЯ
+        return 'BALANCED';
+    }
+    
+    selectAction(strategy, enemy, player) {
+        const availableActions = this.getAvailableActions(enemy.ap);
+        if (availableActions.length === 0) return 'rest';
+        
+        let weightedActions = [];
+        
+        switch(strategy) {
+            case 'DESPERATE_DEFENSE':
+                weightedActions = this.weightActions(availableActions, { block: 90, rest: 10 });
+                break;
+                
+            case 'FINISHING_BLOW':
+                weightedActions = this.weightActions(availableActions, { 
+                    strongAttack: 60, attack: 30, breakBlock: 10 
+                });
+                break;
+                
+            case 'SURVIVAL':
+                weightedActions = this.weightActions(availableActions, { 
+                    block: 50, rest: 40, attack: 10 
+                });
+                break;
+                
+            case 'COMBO_BREAKER':
+                if (player.combo.type === 'block') {
+                    weightedActions = this.weightActions(availableActions, { breakBlock: 80, attack: 20 });
+                } else {
+                    weightedActions = this.weightActions(availableActions, { block: 70, rest: 30 });
+                }
+                break;
+                
+            case 'AGGRESSIVE_PRESSURE':
+                weightedActions = this.weightActions(availableActions, { 
+                    strongAttack: 50, attack: 40, breakBlock: 10 
+                });
+                break;
+                
+            case 'PREEMPTIVE_BLOCK':
+                weightedActions = this.weightActions(availableActions, { block: 85, rest: 15 });
+                break;
+                
+            case 'COUNTER_ATTACK':
+                if (player.currentAction === 'attack' && enemy.ap >= 2) {
+                    weightedActions = this.weightActions(availableActions, { strongAttack: 70, block: 30 });
+                } else {
+                    weightedActions = this.weightActions(availableActions, { attack: 50, block: 40, rest: 10 });
+                }
+                break;
+                
+            case 'SUSTAINED_PRESSURE':
+                weightedActions = this.weightActions(availableActions, { 
+                    attack: 40, breakBlock: 35, rest: 25 
+                });
+                break;
+                
+            default: // BALANCED
+                weightedActions = this.weightActions(availableActions, { 
+                    attack: 40, block: 30, rest: 20, strongAttack: 10 
+                });
+        }
+        
+        // Применяем личность монстра
+        weightedActions = this.applyPersonalityModifiers(weightedActions);
+        
+        return weightedActions.length > 0 ? weightedActions[0] : 'rest';
+    }
+    
+    getAvailableActions(ap) {
+        return Object.keys(this.bs.actionsCost).filter(action => 
+            this.bs.actionsCost[action] <= ap
+        );
+    }
+    
+    weightActions(availableActions, weights) {
+        const weighted = [];
+        
+        availableActions.forEach(action => {
+            const weight = weights[action] || 5;
+            for (let i = 0; i < weight; i++) {
+                weighted.push(action);
+            }
+        });
+        
+        return weighted;
+    }
+    
+    applyPersonalityModifiers(actions) {
+        const modifiers = {
+            'BERSERKER': { attack: 1.5, strongAttack: 1.3, block: 0.5, rest: 0.3 },
+            'DEFENDER': { block: 2.0, rest: 1.5, attack: 0.6, strongAttack: 0.3 },
+            'TACTICIAN': { breakBlock: 1.8, strongAttack: 1.2, rest: 1.1 },
+            'AGGRESSIVE_SWARM': { attack: 1.4, strongAttack: 1.2, block: 0.7 },
+            'ENDURANCE_PACK': { block: 1.3, rest: 1.4, attack: 0.9 },
+            'STRATEGIC_GROUP': { breakBlock: 1.3, strongAttack: 1.1, block: 1.1 }
+        };
+        
+        const modifier = modifiers[this.personality] || {};
+        const weighted = [];
+        
+        actions.forEach(action => {
+            const weight = modifier[action] || 1;
+            for (let i = 0; i < weight; i++) {
+                weighted.push(action);
+            }
+        });
+        
+        return weighted;
+    }
+    
+    analyzeMonsterGroup() {
+        const monsters = this.bs.currentMonsters;
+        
+        if (monsters.length === 1) {
+            const monster = monsters[0];
+            if (monster.health > 50) return 'TACTICIAN';
+            if (monster.damage > 15) return 'BERSERKER';
+            if (monster.armor > 8) return 'DEFENDER';
+        }
+        
+        const totalDamage = monsters.reduce((sum, m) => sum + m.damage, 0);
+        const totalHealth = monsters.reduce((sum, m) => sum + m.health, 0);
+        
+        if (totalDamage / monsters.length > 12) return 'AGGRESSIVE_SWARM';
+        if (totalHealth / monsters.length > 40) return 'ENDURANCE_PACK';
+        
+        return 'STRATEGIC_GROUP';
+    }
+    
+    getAverageMonsterHealth() {
+        const monsters = this.bs.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
+        if (monsters.length === 0) return 0;
+        
+        const totalHealth = monsters.reduce((sum, m) => sum + m.currentHealth, 0);
+        const totalMaxHealth = monsters.reduce((sum, m) => sum + m.maxHealth, 0);
+        
+        return totalHealth / totalMaxHealth;
+    }
+    
+    calculatePlayerComboThreat() {
+        const player = this.bs.players[1];
+        if (!player.combo.type) return 0;
+        
+        const threatValues = {
+            'attack': [2, 4, 8, 16],
+            'strongAttack': [5, 10, 20, 40],
+            'crushingAttack': [15, 30, 60, 120],
+            'breakBlock': [1, 2, 3, 4],
+            'block': [1, 2, 3, 4],
+            'rest': [0, 0, 0, 0]
+        };
+        
+        const threat = threatValues[player.combo.type]?.[player.combo.count - 1] || 0;
+        const canExecute = player.ap >= (this.bs.actionsCost[player.combo.type] || 1);
+        
+        return canExecute ? threat : threat * 0.3;
+    }
+    
+    checkImminentDanger() {
+        const hero = this.bs.battleGrid.allies[5];
+        const player = this.bs.players[1];
+        
+        if (!hero || !player.combo.type) return 'NONE';
+        
+        // Упрощенная проверка возможности добивания
+        const playerDamage = this.bs.getHeroStatsForBattle().damage;
+        const comboMultiplier = this.bs.getComboMultiplier(player.combo.type, player.combo.count);
+        const potentialDamage = playerDamage * comboMultiplier;
+        
+        if (potentialDamage >= hero.currentHealth && player.ap >= this.bs.actionsCost[player.combo.type]) {
+            return 'PLAYER_WIN_NEXT_TURN';
+        }
+        
+        if (player.combo.count >= 3 && player.ap >= 3) {
+            return 'HIGH_COMBO_THREAT';
+        }
+        
+        return 'NONE';
+    }
+    
+    analyzePlayerPattern() {
+        const actions = this.bs.players[1].previousActions;
+        if (actions.length < 2) return 'UNKNOWN';
+        
+        const attackCount = actions.filter(a => a.includes('атака')).length;
+        const defenseCount = actions.filter(a => a === 'Блок' || a === 'Отдых').length;
+        
+        if (attackCount / actions.length > 0.7) return 'AGGRESSIVE';
+        if (defenseCount / actions.length > 0.6) return 'DEFENSIVE';
+        
+        return 'ADAPTIVE';
+    }
+    
+    predictPlayerAction() {
+        const player = this.bs.players[1];
+        const history = player.previousActions;
+        
+        if (history.length < 2) return null;
+        
+        const lastAction = this.getActionFromName(history[0]);
+        const secondLastAction = this.getActionFromName(history[1]);
+        
+        if (lastAction === secondLastAction && ['attack', 'strongAttack', 'crushingAttack'].includes(lastAction)) {
+            return lastAction;
+        }
+        
+        if (lastAction === 'block' && ['attack', 'strongAttack', 'crushingAttack'].includes(secondLastAction)) {
+            return secondLastAction;
+        }
+        
+        if (lastAction === 'rest' && player.ap <= 2) {
+            return 'strongAttack';
+        }
+        
+        return null;
+    }
+    
+    getActionFromName(actionName) {
+        const names = {
+            'Атака': 'attack',
+            'Силовая атака': 'strongAttack',
+            'Сокрушительная атака': 'crushingAttack',
+            'Блок': 'block',
+            'Пробитие': 'breakBlock',
+            'Отдых': 'rest'
+        };
+        
+        return names[actionName] || null;
+    }
+    
+    canBreakPlayerCombo() {
+        const player = this.bs.players[1];
+        return player.combo.count >= 2 && player.combo.type !== 'rest';
+    }
+    
+    canForcePlayerToWasteAP() {
+        const player = this.bs.players[1];
+        return player.ap <= 2 && this.bs.players[2].ap >= 2;
+    }
+}
+
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан под тактическую систему с правильной прогрессией комбо");
+console.log("📦 BattleSystem полностью переписан с умным ИИ и исправлением здоровья героя");
