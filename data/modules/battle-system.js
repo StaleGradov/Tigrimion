@@ -672,9 +672,9 @@ class BattleSystem {
             }
         }
         
-        // Расчет урона противника с учетом блока игрока
+        // 🔥 ИСПРАВЛЕНИЕ: Расчет урона противника с учетом комбо и прогрессии
         if (enemyAction === 'attack') {
-            const monsterDamage = this.calculateMonsterDamage();
+            const monsterDamage = this.calculateMonsterDamageWithCombo(enemyAction);
             let finalDamage = Math.max(1, monsterDamage - heroStats.armor);
             
             // Учет блока игрока
@@ -685,7 +685,7 @@ class BattleSystem {
             }
             
             if (hero && finalDamage > 0) {
-                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage); // 🔧 ИСПРАВЛЕНИЕ: Не даем уйти в минус
+                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
                 this.addBattleLog(`👹 Монстры атакуют и наносят ${finalDamage} урона!`);
                 
                 // Вампиризм монстров (если есть)
@@ -696,18 +696,92 @@ class BattleSystem {
             }
         }
         
-        // Обработка блока противника
+        // 🔥 ИСПРАВЛЕНИЕ: Обработка блока противника с прогрессией
         if (enemyAction === 'block') {
-            this.addBattleLog(`👹 Противник использует блок!`);
+            const enemyCombo = this.players[2].combo;
+            const blockEfficiency = this.getBlockEfficiency(enemyCombo.count);
+            const apBonus = this.getBlockAPBonus(enemyCombo.count);
+            
+            this.players[2].ap += apBonus;
+            this.addBattleLog(`👹 Противник блокирует (эффективность: ${blockEfficiency * 100}%) +${apBonus} ОД`);
+            
+            // Отражение урона на 4-м стаке
+            if (enemyCombo.count >= 4) {
+                this.addBattleLog(`✨ Блок противника отражает урон!`);
+                const reflectedDamage = Math.floor(baseHeroDamage * 0.5);
+                if (hero) {
+                    hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
+                    this.addBattleLog(`💥 Отражено ${reflectedDamage} урона обратно!`);
+                }
+            }
         }
         
-        // Обработка отдыха противника
+        // 🔥 ИСПРАВЛЕНИЕ: Обработка отдыха противника с прогрессией
         if (enemyAction === 'rest') {
             const enemyCombo = this.players[2].combo.count;
-            const apGain = Math.min(enemyCombo, 4); // +1 → +2 → +3 → +4 ОД
-            this.players[2].ap += apGain;
-            this.addBattleLog(`👹 Противник отдыхает: +${apGain} ОД`);
+            const restEfficiency = this.getRestEfficiency(enemyCombo);
+            
+            this.players[2].ap += restEfficiency.ap;
+            
+            // Лечение монстров
+            const aliveMonsters = this.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
+            if (aliveMonsters.length > 0) {
+                const healAmount = Math.floor(aliveMonsters[0].maxHealth * restEfficiency.healPercent);
+                aliveMonsters.forEach(monster => {
+                    monster.currentHealth = Math.min(monster.maxHealth, monster.currentHealth + healAmount);
+                });
+                this.addBattleLog(`👹 Противник отдыхает: +${restEfficiency.ap} ОД, +${healAmount} HP монстрам`);
+            }
         }
+        
+        // 🔥 ИСПРАВЛЕНИЕ: Обработка пробития противника
+        if (enemyAction === 'breakBlock') {
+            const playerHasBlock = playerAction === 'block';
+            const breakMultiplier = this.getBreakBlockMultiplier(this.players[2].combo.count, playerHasBlock);
+            const baseMonsterDamage = this.calculateBaseMonsterDamage();
+            const finalDamage = Math.floor(baseMonsterDamage * breakMultiplier);
+            
+            if (hero && finalDamage > 0) {
+                // Пробитие игнорирует броню
+                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
+                this.addBattleLog(`⚡ Противник пробивает защиту и наносит ${finalDamage} урона!`);
+            }
+        }
+    }
+
+    // 🔥 НОВЫЙ МЕТОД: Расчет урона монстров с учетом комбо
+    calculateMonsterDamageWithCombo(action) {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
+            unit && unit.currentHealth > 0
+        );
+        
+        if (aliveMonsters.length === 0) return 0;
+        
+        // Базовый урон монстров (средний)
+        const baseDamage = aliveMonsters.reduce((sum, monster) => 
+            sum + (monster.data.damage || 5), 0
+        ) / aliveMonsters.length;
+        
+        // Применяем множитель комбо
+        const comboMultiplier = this.getComboMultiplier(action, this.players[2].combo.count);
+        const finalDamage = baseDamage * comboMultiplier;
+        
+        console.log(`🎯 Урон монстров: база=${baseDamage}, комбо=${comboMultiplier}x, итого=${finalDamage}`);
+        
+        return Math.floor(finalDamage);
+    }
+
+    // 🔥 НОВЫЙ МЕТОД: Базовый урон монстра (без комбо)
+    calculateBaseMonsterDamage() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
+            unit && unit.currentHealth > 0
+        );
+        
+        if (aliveMonsters.length === 0) return 0;
+        
+        return aliveMonsters.reduce((sum, monster) => 
+            sum + (monster.data.damage || 5), 0
+        ) / aliveMonsters.length;
     }
 
     applyDamageToMonsters(damage, action, isCrit = false, enemyHasBlock = false) {
@@ -723,7 +797,7 @@ class BattleSystem {
                     this.addBattleLog(`⚡ Пробитие игнорирует броню!`);
                 }
                 
-                target.currentHealth = Math.max(0, target.currentHealth - finalDamage); // 🔧 ИСПРАВЛЕНИЕ: Не даем уйти в минус
+                target.currentHealth = Math.max(0, target.currentHealth - finalDamage);
                 
                 const critText = isCrit ? "💥 КРИТ " : "";
                 this.addBattleLog(`${critText}🎯 Вы наносите ${finalDamage} урона ${target.data.name}!`);
@@ -776,19 +850,7 @@ class BattleSystem {
         return availablePositions.length > 0 ? availablePositions[0] : null;
     }
 
-    calculateMonsterDamage() {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
-            unit && unit.currentHealth > 0
-        );
-        
-        if (aliveMonsters.length === 0) return 0;
-        
-        const totalDamage = aliveMonsters.reduce((sum, monster) => 
-            sum + (monster.data.damage || 5), 0
-        );
-        
-        return Math.floor(totalDamage / aliveMonsters.length);
-    }
+    // 🔥 УДАЛЕН СТАРЫЙ МЕТОД: calculateMonsterDamage() - заменен на calculateMonsterDamageWithCombo()
 
     hasVampirismMonsters() {
         return this.battleGrid.enemies.some(unit => 
@@ -1526,4 +1588,4 @@ class TacticalAI {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с умным ИИ и исправлением здоровья героя");
+console.log("📦 BattleSystem полностью переписан с умным ИИ, прогрессией комбо для монстров и исправлением здоровья героя");
