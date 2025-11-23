@@ -4807,3 +4807,269 @@ body {
     font-size: 2rem;
     opacity: 0.3;
 }
+/* ========== УВЕЛИЧЕННЫЕ КОНТЕЙНЕРЫ ДЛЯ ФОРМАТА 4:3 ========== */
+
+/* Основная сетка боя */
+.battle-grid-fullscreen {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 1500px;
+    min-width: 1100px;
+    margin: 0 20px;
+    gap: 20px;
+}
+
+/* Увеличенные контейнеры с форматом 4:3 */
+.grid-cell-fullscreen {
+    min-height: 280px !important; /* Увеличили высоту */
+    max-height: 300px;
+    padding: 0 !important;
+    border-width: 3px !important;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/3 !important;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Контейнер изображения занимает больше места */
+.unit-image-container {
+    width: 100%;
+    height: calc(100% - 90px); /* Увеличили место под изображение */
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Увеличили изображения */
+.unit-image {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+}
+
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem !important; /* Увеличили иконки */
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Увеличили полосу здоровья */
+.unit-health-container {
+    height: 60px; /* Увеличили высоту */
+    background: rgba(0, 0, 0, 0.9);
+    border-top: 3px solid rgba(255, 255, 255, 0.4);
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 5;
+}
+
+.health-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.9rem; /* Увеличили шрифт */
+}
+
+.health-label {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.health-numbers {
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem; /* Увеличили шрифт */
+}
+
+.health-bar-fullscreen {
+    height: 22px !important; /* Увеличили полосу */
+    margin: 0 !important;
+    background: #333 !important;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #444;
+    position: relative;
+}
+
+.health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    transition: width 0.3s ease; /* Плавная анимация */
+    border-radius: 10px;
+    position: relative;
+}
+
+.health-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem !important; /* Увеличили шрифт */
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    z-index: 2;
+}
+
+/* НОВЫЙ ЭЛЕМЕНТ: Основные статы под картинкой */
+.unit-main-stats {
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.main-stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.stat-damage {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.stat-armor {
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+.stat-type {
+    color: #10b981;
+    font-weight: bold;
+}
+
+.stat-row {
+    color: #8b5cf6;
+    font-weight: bold;
+}
+
+/* Увеличили всплывающую информацию */
+.unit-info-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.1) 20%,
+        rgba(0, 0, 0, 0.9) 70%,
+        rgba(0, 0, 0, 0.95) 100%
+    );
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 3;
+    border-radius: 10px 10px 0 0;
+}
+
+.overlay-unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.overlay-unit-name {
+    font-size: 1.2rem; /* Увеличили шрифт */
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.overlay-unit-level {
+    background: #3b82f6;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.overlay-unit-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.overlay-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.9rem; /* Увеличили шрифт */
+}
+
+.overlay-stat-label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+
+.overlay-stat-value {
+    font-weight: bold;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.overlay-unit-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    line-height: 1.4;
+}
+
+/* Увеличили сетку */
+.grid-container-6x6 {
+    min-height: 850px !important; /* Увеличили высоту сетки */
+    max-height: 900px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 15px !important;
+    width: 100%;
+}
+
+/* Адаптивность для больших экранов */
+@media (min-width: 1600px) {
+    .battle-grid-fullscreen {
+        max-width: 1600px !important;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 900px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 300px !important;
+    }
+}
