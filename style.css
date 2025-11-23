@@ -5915,3 +5915,110 @@ body {
 .health-changing {
     animation: healthChange 0.3s ease-in-out;
 }
+/* ========== ПОЛНОЕ ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ В БОЮ ========== */
+
+/* Сбрасываем все конфликтующие стили */
+.battle-screen-fullscreen .grid-cell-fullscreen .unit-health-container,
+.battle-screen-fullscreen .grid-cell-fullscreen .health-bar-fullscreen,
+.battle-screen-fullscreen .grid-cell-fullscreen .health-fill,
+.battle-screen-fullscreen .grid-cell-fullscreen .health-text {
+    all: unset !important;
+}
+
+/* Контейнер для полоски здоровья */
+.battle-screen-fullscreen .unit-health-container {
+    height: 50px !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
+    padding: 10px 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 100 !important;
+    border-radius: 0 0 10px 10px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+/* Сама полоска здоровья */
+.battle-screen-fullscreen .health-bar-fullscreen {
+    width: 100% !important;
+    height: 22px !important;
+    background: #333333 !important;
+    border-radius: 11px !important;
+    overflow: hidden !important;
+    border: 2px solid #555555 !important;
+    position: relative !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+    box-sizing: border-box !important;
+}
+
+/* Заполненная часть полоски */
+.battle-screen-fullscreen .health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    border-radius: 8px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transition: width 0.5s ease !important;
+    box-sizing: border-box !important;
+    min-width: 20px !important;
+}
+
+/* Текст здоровья */
+.battle-screen-fullscreen .health-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+    white-space: nowrap !important;
+}
+
+/* Цвета для разных уровней здоровья */
+.battle-screen-fullscreen .health-fill.health-high { 
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important; 
+}
+.battle-screen-fullscreen .health-fill.health-medium { 
+    background: linear-gradient(90deg, #eab308, #ca8a04) !important; 
+}
+.battle-screen-fullscreen .health-fill.health-low { 
+    background: linear-gradient(90deg, #ef4444, #dc2626) !important; 
+}
+
+/* Анимация при изменении здоровья */
+@keyframes healthPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.battle-screen-fullscreen .health-changing {
+    animation: healthPulse 0.3s ease-in-out;
+}
+
+/* Убедимся, что изображения не перекрывают полоски */
+.battle-screen-fullscreen .unit-image-container {
+    z-index: 1 !important;
+}
+
+.battle-screen-fullscreen .unit-health-container {
+    z-index: 2 !important;
+}
+/* ТЕСТОВЫЕ СТИЛИ - УДАЛИТЬ ПОСЛЕ ПРОВЕРКИ */
+.battle-screen-fullscreen .health-bar-fullscreen {
+    border: 3px solid red !important;
+}
+.battle-screen-fullscreen .health-fill {
+    background: blue !important;
+}
