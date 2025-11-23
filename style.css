@@ -5173,3 +5173,377 @@ body {
         border-color: #00ff00;
     }
 }
+/* ========== КОМПАКТНАЯ СЕТКА БОЯ ========== */
+.battle-main-area-compact {
+    display: flex;
+    gap: 15px;
+    align-items: stretch;
+    justify-content: center;
+    height: 75vh;
+    padding: 0 15px;
+    margin-top: 10px;
+}
+
+.battle-grid-compact {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 1200px;
+    min-width: 900px;
+    margin: 0 10px;
+    gap: 10px;
+}
+
+.grid-side-compact {
+    flex: 1;
+    min-width: 450px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid #4b5563;
+    margin: 0 5px;
+}
+
+.grid-container-6x6-compact {
+    min-height: 650px;
+    max-height: 680px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    width: 100%;
+    display: grid;
+}
+
+/* Улучшенные ячейки с фиксированной высотой */
+.grid-cell-fullscreen {
+    min-height: 200px !important;
+    max-height: 210px;
+    padding: 0 !important;
+    border-width: 2px !important;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/3 !important;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    margin: 3px;
+}
+
+/* Контейнер изображения занимает большую часть */
+.unit-image-container {
+    width: 100%;
+    height: calc(100% - 50px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    flex: 1;
+    border-radius: 8px 8px 0 0;
+}
+
+.unit-image {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+}
+
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem !important;
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px 8px 0 0;
+}
+
+/* Всплывающая подсказка снизу с именем */
+.unit-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.7) 20%,
+        rgba(0, 0, 0, 0.9) 50%,
+        rgba(0, 0, 0, 0.95) 100%
+    );
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 3;
+    border-radius: 0 0 8px 8px;
+}
+
+.unit-image-container:hover .unit-info-overlay {
+    opacity: 1;
+}
+
+.overlay-unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.overlay-unit-name {
+    font-size: 1rem !important;
+    font-weight: bold;
+    color: #f59e0b !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    flex: 1;
+}
+
+.overlay-unit-level {
+    background: #3b82f6;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: white;
+}
+
+.overlay-simple-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.overlay-health {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.overlay-health-label {
+    color: #fca5a5;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.overlay-health-numbers {
+    color: white;
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.overlay-main-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.overlay-damage,
+.overlay-armor,
+.overlay-type,
+.overlay-row {
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 3px 6px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Полоса здоровья внизу - изолированная */
+.unit-health-container {
+    height: 50px !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 8px 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 5 !important;
+    border-radius: 0 0 8px 8px !important;
+    margin: 0 !important;
+}
+
+.health-bar-fullscreen {
+    width: 100% !important;
+    height: 20px !important;
+    margin: 0 !important;
+    background: #333 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 2px solid #444 !important;
+    position: relative !important;
+}
+
+.health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    transition: width 0.5s ease !important;
+    border-radius: 6px !important;
+    position: relative !important;
+}
+
+.health-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 0.8rem !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Анимация для изменения здоровья */
+@keyframes healthChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.health-changing {
+    animation: healthChange 0.3s ease-in-out;
+}
+
+/* Стили для выбранной цели */
+.grid-cell-fullscreen.selectable {
+    cursor: pointer;
+    border-color: #00ff00 !important;
+    animation: pulse-glow 2s infinite;
+    background: rgba(0, 255, 0, 0.15) !important;
+}
+
+.grid-cell-fullscreen.selectable::before {
+    content: "🎯";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 1.2rem;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+@keyframes pulse-glow {
+    0% { 
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        border-color: #00ff00;
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+        border-color: #00ff00;
+    }
+    100% { 
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        border-color: #00ff00;
+    }
+}
+
+/* Индикатор смерти */
+.dead-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+/* Пустые слоты */
+.empty-slot {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    opacity: 0.3;
+}
+
+/* Адаптивность для больших экранов */
+@media (min-width: 1600px) {
+    .battle-grid-compact {
+        max-width: 1400px !important;
+    }
+    
+    .grid-side-compact {
+        min-width: 500px !important;
+    }
+    
+    .grid-container-6x6-compact {
+        min-height: 700px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 220px !important;
+    }
+}
+
+@media (max-width: 1400px) {
+    .battle-main-area-compact {
+        height: 70vh;
+    }
+    
+    .grid-container-6x6-compact {
+        min-height: 600px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 190px !important;
+    }
+    
+    .tactical-panel {
+        width: 280px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .battle-main-area-compact {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 12px;
+    }
+    
+    .battle-grid-compact {
+        order: 1;
+        width: 100%;
+        margin: 12px 0;
+        min-width: auto;
+    }
+    
+    .tactical-panel.player-panel {
+        order: 2;
+        width: 48%;
+    }
+    
+    .enemy-panels-container {
+        order: 3;
+        width: 48%;
+    }
+}
