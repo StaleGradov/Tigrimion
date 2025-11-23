@@ -6015,10 +6015,32 @@ body {
 .battle-screen-fullscreen .unit-health-container {
     z-index: 2 !important;
 }
-/* ТЕСТОВЫЕ СТИЛИ - УДАЛИТЬ ПОСЛЕ ПРОВЕРКИ */
-.battle-screen-fullscreen .health-bar-fullscreen {
-    border: 3px solid red !important;
+
+/* ========== АВАРИЙНЫЕ СТИЛИ ========== */
+.battle-screen-fullscreen .grid-cell-fullscreen .unit-health-container {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: 50px !important;
+    width: 100% !important;
+    background: linear-gradient(45deg, #ff0000, #00ff00) !important;
 }
-.battle-screen-fullscreen .health-fill {
-    background: blue !important;
+
+.battle-screen-fullscreen .grid-cell-fullscreen .health-bar-fullscreen {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 90% !important;
+    height: 20px !important;
+    background: #333333 !important;
+    border: 2px solid white !important;
+}
+
+.battle-screen-fullscreen .grid-cell-fullscreen .health-fill {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 70% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, #ff0000, #ffff00) !important;
 }
