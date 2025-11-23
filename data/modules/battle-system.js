@@ -973,79 +973,87 @@ class BattleSystem {
         return finalDamage;
     }
 
-    updateHealthBar(side, position, currentHealth, maxHealth) {
-        const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
-        
-        console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
-        
-        const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
-        const cell = document.querySelector(cellSelector);
-        
-        if (!cell) {
-            console.log(`❌ Ячейка не найдена: ${cellSelector}`);
-            return;
-        }
-        
-        let healthBar = cell.querySelector('.health-bar-fullscreen');
-        let healthFill = cell.querySelector('.health-fill');
-        
-        if (!healthBar) {
-            console.log("📝 Создаем отсутствующие элементы здоровья...");
-            healthBar = document.createElement('div');
-            healthBar.className = 'health-bar-fullscreen';
-            
-            healthFill = document.createElement('div');
-            healthFill.className = 'health-fill health-high';
-            
-            const healthText = document.createElement('div');
-            healthText.className = 'health-text';
-            
-            healthBar.appendChild(healthFill);
-            healthBar.appendChild(healthText);
-            
-            const healthContainer = cell.querySelector('.unit-health-container');
-            if (healthContainer) {
-                healthContainer.appendChild(healthBar);
-            } else {
-                const newContainer = document.createElement('div');
-                newContainer.className = 'unit-health-container';
-                newContainer.appendChild(healthBar);
-                cell.appendChild(newContainer);
-            }
-        }
-        
-        if (healthFill) {
-            console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
-            
-            setTimeout(() => {
-                healthFill.style.width = `${healthPercent}%`;
-                healthFill.style.display = 'block';
-                
-                healthFill.offsetHeight;
-                
-                healthFill.className = 'health-fill';
-                if (healthPercent > 60) {
-                    healthFill.classList.add('health-high');
-                } else if (healthPercent > 25) {
-                    healthFill.classList.add('health-medium');
-                } else {
-                    healthFill.classList.add('health-low');
-                }
-                
-                console.log(`🎨 Установлена ширина: ${healthFill.style.width}`);
-            }, 0);
-            
-        } else {
-            console.log(`❌ Не удалось создать/найти полоску здоровья`);
-        }
-        
-        const healthText = cell.querySelector('.health-text');
-        if (healthText) {
-            healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
-        }
-        
-        setTimeout(() => this.debugDOMStructure(), 50);
+  updateHealthBar(side, position, currentHealth, maxHealth) {
+    const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
+    
+    console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
+    
+    const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
+    const cell = document.querySelector(cellSelector);
+    
+    if (!cell) {
+        console.log(`❌ Ячейка не найдена: ${cellSelector}`);
+        return;
     }
+    
+    let healthBar = cell.querySelector('.health-bar-fullscreen');
+    let healthFill = cell.querySelector('.health-fill');
+    
+    if (!healthBar) {
+        console.log("📝 Создаем отсутствующие элементы здоровья...");
+        healthBar = document.createElement('div');
+        healthBar.className = 'health-bar-fullscreen';
+        
+        healthFill = document.createElement('div');
+        healthFill.className = 'health-fill health-high';
+        
+        const healthText = document.createElement('div');
+        healthText.className = 'health-text';
+        
+        healthBar.appendChild(healthFill);
+        healthBar.appendChild(healthText);
+        
+        const healthContainer = cell.querySelector('.unit-health-container');
+        if (healthContainer) {
+            healthContainer.appendChild(healthBar);
+        } else {
+            const newContainer = document.createElement('div');
+            newContainer.className = 'unit-health-container';
+            newContainer.appendChild(healthBar);
+            cell.appendChild(newContainer);
+        }
+    }
+    
+    if (healthFill) {
+        console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
+        
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: принудительное обновление
+        requestAnimationFrame(() => {
+            // Сначала сбрасываем ширину для принудительного рефлоу
+            healthFill.style.width = '0%';
+            healthFill.offsetHeight; // Принудительный рефлоу
+            
+            // Затем устанавливаем нужную ширину
+            healthFill.style.width = `${healthPercent}%`;
+            
+            // Принудительно обновляем цвет
+            healthFill.className = 'health-fill health-updating';
+            if (healthPercent > 60) {
+                healthFill.classList.add('health-high');
+            } else if (healthPercent > 25) {
+                healthFill.classList.add('health-medium');
+            } else {
+                healthFill.classList.add('health-low');
+            }
+            
+            console.log(`🎨 Установлена ширина: ${healthFill.style.width}, computed: ${window.getComputedStyle(healthFill).width}`);
+            
+            // Убираем анимацию после завершения
+            setTimeout(() => {
+                healthFill.classList.remove('health-updating');
+            }, 300);
+        });
+        
+    } else {
+        console.log(`❌ Не удалось создать/найти полоску здоровья`);
+    }
+    
+    // Обновляем текст
+    const healthText = cell.querySelector('.health-text');
+    if (healthText) {
+        healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+    }
+}
 
     updateAllHealthBars() {
         console.log("🔄 Принудительное обновление всех полосок здоровья...");
