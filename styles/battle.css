@@ -688,3 +688,71 @@
     font-size: 0.85rem;
     text-align: center;
 }
+/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
+.unit-health-container {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.health-bar-fullscreen {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+.health-fill {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 6px;
+}
+
+.health-fill.health-high {
+    background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.health-fill.health-medium {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.health-fill.health-low {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.health-text {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+}
+
+/* Анимация изменения здоровья */
+.health-changing {
+    animation: healthPulse 0.5s ease;
+}
+
+@keyframes healthPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
