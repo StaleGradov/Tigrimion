@@ -785,6 +785,77 @@ class BattleSystem {
         this.addBattleLog(`❤️ Вы лечитесь на ${actualHeal} HP (${healEfficiency * 100}% от макс. здоровья)`);
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Выполнение хода монстра с уроном
+executeMonsterAction(monster, monsterUnit) {
+    const hero = this.battleGrid.allies[5];
+    if (!hero || hero.currentHealth <= 0) return;
+
+    let damage = 0;
+    let message = '';
+    
+    switch(monster.currentAction) {
+        case 'attack':
+        case 'strongAttack':
+        case 'crushingAttack':
+            damage = this.calculateMonsterDamage(monster, monsterUnit);
+            const heroStats = this.getHeroStatsForBattle();
+            const finalDamage = Math.max(1, damage - heroStats.armor);
+            
+            hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
+            message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
+            break;
+            
+        case 'heal':
+            const healEfficiency = this.getHealEfficiency(monster.combo.count);
+            const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
+            const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
+            monsterUnit.currentHealth += actualHeal;
+            message = `❤️ ${monster.name} лечится на ${actualHeal} HP`;
+            break;
+            
+        case 'block':
+            message = `🛡️ ${monster.name} защищается`;
+            break;
+            
+        case 'rest':
+            const restEfficiency = this.getRestEfficiency(monster.combo.count);
+            monster.ap += restEfficiency.ap;
+            message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
+            break;
+            
+        default:
+            message = `👹 ${monster.name} совершает действие`;
+    }
+    
+    if (message) {
+        this.addBattleLog(message);
+    }
+}
+
+// ⭐ НОВЫЙ МЕТОД: Расчет урона монстра
+calculateMonsterDamage(monster, monsterUnit) {
+    let baseDamage = monster.damage;
+    let multiplier = 1.0;
+    
+    switch(monster.currentAction) {
+        case 'strongAttack':
+            multiplier = 1.5;
+            break;
+        case 'crushingAttack':
+            multiplier = 2.0;
+            break;
+    }
+    
+    // Применяем комбо
+    const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
+    multiplier *= comboMultiplier;
+    
+    const finalDamage = baseDamage * multiplier;
+    console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, множитель=${multiplier}, итого=${finalDamage}`);
+    
+    return Math.floor(finalDamage);
+}
+
     // ⭐ НОВЫЙ МЕТОД: Эффективность лечения по комбо
     getHealEfficiency(comboCount) {
         const efficiencies = [0.10, 0.20, 0.40, 0.80]; // 10%, 20%, 40%, 80%
@@ -806,58 +877,56 @@ class BattleSystem {
         this.executeNextMonsterTurn(0, aliveMonsters);
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Последовательное выполнение ходов монстров
-    executeNextMonsterTurn(index, monsters) {
-        if (index >= monsters.length) {
-            // Все монстры сходили - разрешаем ход
-            setTimeout(() => {
-                this.resolveTacticalTurn();
-            }, 500);
-            return;
-        }
-        
-        const monsterUnit = monsters[index];
-        const monster = monsterUnit.data;
-        
-        // Создаем ИИ для этого монстра
-        const tacticalAI = new TacticalAI(this, monster);
-        
-        // Получаем интеллектуальное решение
-        const action = tacticalAI.decideAction();
-        
-        // Выполняем действие монстра
-        monster.currentAction = action;
-        monster.ap -= this.actionsCost[action];
-        
-        // Обновление комбо монстра
-        if (monster.combo.type === action && monster.combo.count < 4) {
-            monster.combo.count++;
-        } else {
-            monster.combo.type = action;
-            monster.combo.count = 1;
-        }
 
-        // Сохранение в историю
-        monster.previousActions.unshift(this.getActionName(action));
-        if (monster.previousActions.length > 1) {
-            monster.previousActions.pop();
-        }
-
-        this.addBattleLog(`👹 ${monster.name} использует: ${this.getActionName(action)}`);
-        
-        // Обработка лечения монстра
-        if (action === 'heal') {
-            this.executeMonsterHeal(monster, monsterUnit);
-        }
-        
-        // Обновляем UI этого монстра
-        this.updateMonsterPanel(monster.battleId);
-        
-        // Переходим к следующему монстру
+  // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Последовательное выполнение ходов монстров
+executeNextMonsterTurn(index, monsters) {
+    if (index >= monsters.length) {
         setTimeout(() => {
-            this.executeNextMonsterTurn(index + 1, monsters);
-        }, 600);
+            this.resolveTacticalTurn();
+        }, 500);
+        return;
     }
+    
+    const monsterUnit = monsters[index];
+    const monster = monsterUnit.data;
+    
+    // Создаем ИИ для этого монстра
+    const tacticalAI = new TacticalAI(this, monster);
+    
+    // Получаем интеллектуальное решение
+    const action = tacticalAI.decideAction();
+    
+    // Выполняем действие монстра
+    monster.currentAction = action;
+    monster.ap -= this.actionsCost[action];
+    
+    // Обновление комбо монстра
+    if (monster.combo.type === action && monster.combo.count < 4) {
+        monster.combo.count++;
+    } else {
+        monster.combo.type = action;
+        monster.combo.count = 1;
+    }
+
+    // Сохранение в историю
+    monster.previousActions.unshift(this.getActionName(action));
+    if (monster.previousActions.length > 1) {
+        monster.previousActions.pop();
+    }
+
+    this.addBattleLog(`👹 ${monster.name} использует: ${this.getActionName(action)}`);
+    
+    // ⭐ ВЫПОЛНЯЕМ ДЕЙСТВИЕ МОНСТРА С УРОНОМ
+    this.executeMonsterAction(monster, monsterUnit);
+    
+    // Обновляем UI этого монстра
+    this.updateMonsterPanel(monster.battleId);
+    
+    // Переходим к следующему монстру
+    setTimeout(() => {
+        this.executeNextMonsterTurn(index + 1, monsters);
+    }, 800);
+}
 
     // ⭐ НОВЫЙ МЕТОД: Лечение монстра
     executeMonsterHeal(monster, monsterUnit) {
@@ -1371,7 +1440,7 @@ class BattleSystem {
     }
 }
 
-// 🧠 КЛАСС УМНОГО ИИ ДЛЯ МОНСТРОВ
+// 🧠 ОБНОВЛЕННЫЙ КЛАСС ИИ ДЛЯ МОНСТРОВ
 class TacticalAI {
     constructor(battleSystem, monster) {
         this.bs = battleSystem;
@@ -1382,20 +1451,40 @@ class TacticalAI {
         const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
-        // Простая логика для демонстрации
-        if (this.monster.currentHealth < this.monster.health * 0.3 && Math.random() < 0.6) {
+        const hero = this.bs.battleGrid.allies[5];
+        if (!hero) return 'rest';
+        
+        const heroHealthPercent = hero.currentHealth / hero.maxHealth;
+        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
+        
+        // Агрессивное поведение - чаще атакуем
+        if (this.monster.ap >= 1 && Math.random() < 0.7) {
+            if (this.monster.ap >= 4 && Math.random() < 0.3) {
+                return 'crushingAttack';
+            }
+            if (this.monster.ap >= 2 && Math.random() < 0.4) {
+                return 'strongAttack';
+            }
+            return 'attack';
+        }
+        
+        // Лечение только при критическом здоровье
+        if (monsterHealthPercent < 0.3 && Math.random() < 0.6 && availableActions.includes('heal')) {
             return 'heal';
         }
         
-        if (this.monster.ap >= 2 && Math.random() < 0.3) {
-            return 'strongAttack';
-        }
-        
-        if (this.monster.combo.type === 'block' && this.monster.combo.count >= 2) {
+        // Защита при низком здоровье
+        if (monsterHealthPercent < 0.5 && Math.random() < 0.4 && availableActions.includes('block')) {
             return 'block';
         }
         
-        return availableActions[Math.floor(Math.random() * availableActions.length)];
+        // Отдых только если мало ОД
+        if (this.monster.ap <= 1 && availableActions.includes('rest')) {
+            return 'rest';
+        }
+        
+        // По умолчанию атакуем
+        return availableActions.includes('attack') ? 'attack' : availableActions[0];
     }
     
     getAvailableActions() {
