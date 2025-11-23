@@ -1119,7 +1119,7 @@ debugHealthBars() {
             }
         }
     }
-    
+}
 // ДОБАВЬТЕ ЭТОТ МЕТОД
 debugDOMStructure() {
     console.log("🔍 ДИАГНОСТИКА DOM СТРУКТУРЫ:");
