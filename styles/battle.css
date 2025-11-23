@@ -688,81 +688,73 @@
     font-size: 0.85rem;
     text-align: center;
 }
-/* КРИТИЧЕСКИ ВАЖНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
+/* ========== КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ ========== */
+/* УДАЛИТЕ ВСЕ ПРЕДЫДУЩИЕ СТИЛИ ДЛЯ .health-bar-fullscreen, .health-fill и .unit-health-container */
+
 .unit-health-container {
-    display: flex !important;
     width: 100% !important;
-    margin-top: 10px !important;
-    min-height: 20px !important;
+    height: 20px !important;
+    margin: 8px 0 0 0 !important;
+    padding: 0 !important;
+    display: block !important;
     position: relative !important;
+    background: transparent !important;
+    border: none !important;
 }
 
 .health-bar-fullscreen {
-    display: flex !important;
     width: 100% !important;
-    height: 20px !important;
-    background: rgba(0, 0, 0, 0.8) !important;
+    height: 100% !important;
+    background: #000000 !important;
+    border: 2px solid #444444 !important;
     border-radius: 10px !important;
-    border: 2px solid rgba(255, 255, 255, 0.3) !important;
-    overflow: hidden !important;
     position: relative !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
 }
 
 .health-fill {
-    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     height: 100% !important;
     width: 100% !important;
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: #10b981 !important;
     border-radius: 8px !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    transition: width 0.3s ease !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: block !important;
     min-width: 0% !important;
     max-width: 100% !important;
     transform: translateZ(0) !important;
-    will-change: width !important;
-    /* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: принудительно сбрасываем ширину */
-    box-sizing: border-box !important;
 }
 
-/* УБЕДИТЕСЬ, что эти цвета ПРИМЕНЯЮТСЯ */
-.health-fill.health-high {
-    background: linear-gradient(90deg, #10b981, #34d399) !important;
-    border: 1px solid #10b981 !important;
-}
-
-.health-fill.health-medium {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
-    border: 1px solid #f59e0b !important;
-}
-
-.health-fill.health-low {
-    background: linear-gradient(90deg, #ef4444, #f87171) !important;
-    border: 1px solid #ef4444 !important;
-}
+/* Цвета здоровья */
+.health-fill.health-high { background: #10b981 !important; }
+.health-fill.health-medium { background: #f59e0b !important; }
+.health-fill.health-low { background: #ef4444 !important; }
 
 .health-text {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+    color: white !important;
     font-size: 11px !important;
     font-weight: bold !important;
-    color: white !important;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
-    pointer-events: none !important;
+    text-shadow: 1px 1px 2px black !important;
     z-index: 10 !important;
-    white-space: nowrap !important;
+    pointer-events: none !important;
 }
 
-/* Анимация для визуальной обратной связи */
-@keyframes healthUpdate {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-.health-updating {
-    animation: healthUpdate 0.3s ease-in-out !important;
+/* Принудительное скрытие всех других возможных элементов */
+.grid-cell-fullscreen .health-bar,
+.grid-cell-fullscreen .health-container,
+.grid-cell-fullscreen .hp-bar {
+    display: none !important;
 }
