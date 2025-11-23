@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tigrimion RPG</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="shop.css"> <!-- Добавьте эту строку -->
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="styles/core.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/ui.css">
+    <!-- Модульные стили -->
+    <link rel="stylesheet" href="styles/hero.css">
+    <link rel="stylesheet" href="styles/battle.css">
+    <link rel="stylesheet" href="styles/map.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <!-- Магазин (уже есть) -->
+    <link rel="stylesheet" href="shop.css">
 </head>
 <body>
-    <div id="app">
-        <!-- Игра будет рендериться здесь динамически -->
-    </div>
-
-    <!-- Область для оверлеев -->
+    <div id="app"><!-- Игра рендерится здесь --></div>
     <div id="overlay-container" class="overlay-container"></div>
-
-    <!-- Основной скрипт игры -->
     <script src="script.js"></script>
 </body>
 </html>
