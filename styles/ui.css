@@ -1,0 +1,503 @@
+/* ========== ИНВЕНТАРЬ ========== */
+.inventory-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 8px;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.inventory-item {
+    background: rgba(30, 41, 59, 0.8);
+    border: 3px solid #475569;
+    border-radius: 8px;
+    padding: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    overflow: hidden;
+}
+
+.inventory-item[data-rarity="common"] { border-color: #9ca3af; }
+.inventory-item[data-rarity="uncommon"] { border-color: #4cc9f0; }
+.inventory-item[data-rarity="rare"] { border-color: #a855f7; }
+.inventory-item[data-rarity="epic"] { border-color: #f59e0b; }
+.inventory-item[data-rarity="legendary"] { border-color: #ffd700; }
+.inventory-item[data-rarity="mythic"] { border-color: #ff6b6b; }
+
+.inventory-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.inventory-item-image {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border-radius: 0;
+    overflow: hidden;
+    padding: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.inventory-item-image img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+}
+
+.inventory-item-info {
+    flex: 1;
+    min-width: 0;
+    padding: 0.8rem;
+}
+
+.inventory-item-info strong {
+    color: #ffd700;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+}
+
+.item-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+    font-size: 0.8em;
+}
+
+.item-stats span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.item-description {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-bottom: 0.8rem;
+    line-height: 1.3;
+}
+
+.item-status.equipped {
+    color: #10b981;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.empty-inventory {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: #9ca3af;
+    font-size: 1.1rem;
+}
+
+/* ========== МОДАЛЬНЫЕ ОКНА ПРЕДМЕТОВ ========== */
+.item-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    padding: 20px;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 900px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 4px solid #4cc9f0;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
+    animation: modalAppear 0.4s ease-out;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid rgba(76, 201, 240, 0.4);
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-header h4 {
+    color: #ffd700;
+    margin: 0;
+    font-size: 1.5em;
+    text-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+}
+
+.close-modal {
+    background: rgba(248, 113, 113, 0.2);
+    border: 2px solid #f87171;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(248, 113, 113, 0.4);
+    transform: scale(1.1);
+}
+
+.item-detail-content {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+    padding: 30px;
+    align-items: start;
+}
+
+.item-detail-image {
+    text-align: center;
+    position: relative;
+}
+
+.detail-item-background {
+    background: transparent;
+    border-radius: 15px;
+    padding: 0;
+    border: 4px solid;
+    margin-bottom: 15px;
+    width: 100%;
+    height: 450px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.detail-item-background img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.4s ease;
+    cursor: zoom-in;
+    max-width: 450px;
+    max-height: 450px;
+    padding: 10px;
+}
+
+.item-fallback-large {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border-radius: 10px;
+    font-size: 4em;
+}
+
+.item-rarity {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    color: white;
+}
+
+.rarity-common { background: #9ca3af; }
+.rarity-uncommon { background: #4cc9f0; }
+.rarity-rare { background: #a855f7; }
+.rarity-epic { background: #f59e0b; }
+.rarity-legendary { background: #ffd700; }
+.rarity-mythic { background: #ff6b6b; }
+
+.item-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.item-name {
+    font-weight: bold;
+    font-size: 1.8em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    margin-bottom: 5px;
+}
+
+.item-type {
+    font-size: 1.1em;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.item-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1em;
+    line-height: 1.6;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #4cc9f0;
+}
+
+.item-flavor {
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+    font-size: 0.9em;
+    text-align: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid #4cc9f0;
+}
+
+.item-stats-detailed, .item-requirements {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.item-stats-detailed h5, .item-requirements h5 {
+    color: #4cc9f0;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+    padding-bottom: 5px;
+}
+
+.stat-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.95em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-line:last-child {
+    border-bottom: none;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #4cc9f0;
+}
+
+.item-actions {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    margin-top: 10px;
+}
+
+.price-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.buy-price {
+    color: #ffd700;
+    font-size: 1.2em;
+}
+
+.sell-price {
+    color: #4ade80;
+    font-size: 1.1em;
+}
+
+.purchase-error {
+    color: #f87171;
+    font-size: 0.9em;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+/* ========== УВЕДОМЛЕНИЯ ========== */
+.game-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.notification-content {
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    padding: 15px 20px;
+    border: 2px solid;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-info {
+    border-color: #4cc9f0;
+}
+
+.notification-success {
+    border-color: #4ade80;
+}
+
+.notification-error {
+    border-color: #f87171;
+}
+
+.notification-message {
+    color: white;
+    font-weight: bold;
+    flex: 1;
+}
+
+.notification-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ========== УВЕЛИЧЕННОЕ ИЗОБРАЖЕНИЕ ПРЕДМЕТА ========== */
+.item-image-zoom-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(10px);
+    animation: zoomIn 0.3s ease-out;
+}
+
+@keyframes zoomIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.item-image-zoomed {
+    max-width: 80vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border: 4px solid #4cc9f0;
+    border-radius: 15px;
+    box-shadow: 0 0 50px rgba(76, 201, 240, 0.5);
+    animation: scaleUp 0.3s ease-out;
+}
+
+@keyframes scaleUp {
+    from { 
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to { 
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.close-zoom {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(248, 113, 113, 0.3);
+    border: 2px solid #f87171;
+    color: white;
+    font-size: 2em;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-zoom:hover {
+    background: rgba(248, 113, 113, 0.5);
+    transform: scale(1.1);
+}
+
+.item-detail-image-zoom {
+    cursor: zoom-in;
+    transition: transform 0.3s ease;
+}
+
+.item-detail-image-zoom:hover {
+    transform: scale(1.05);
+}
