@@ -921,7 +921,6 @@ updateHealthBar(side, position, currentHealth, maxHealth) {
         overlayNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
     }
 }
-
     // Добавьте эту функцию в класс BattleSystem
 handleCellClick(position, side) {
     if (side === 'enemies' && this.pendingAction) {
@@ -1151,7 +1150,7 @@ handleCellClick(position, side) {
         return html;
     }
 
- renderTacticalGridCell(unit, position, side) {
+renderTacticalGridCell(unit, position, side) {
     const isEnemy = side === 'enemies';
     const isEmpty = !unit;
     
@@ -1211,7 +1210,7 @@ handleCellClick(position, side) {
                 </div>
             </div>
             
-            <!-- ПОЛОСКА ЗДОРОВЬЯ - УПРОЩЕННАЯ ВЕРСИЯ -->
+            <!-- ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ -->
             <div class="unit-health-container">
                 <div class="health-bar-fullscreen">
                     <div class="health-fill ${healthColor}" style="width: ${healthPercent}%"></div>
