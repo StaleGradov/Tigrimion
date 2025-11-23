@@ -688,125 +688,85 @@
     font-size: 0.85rem;
     text-align: center;
 }
-/* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
+/* КРИТИЧЕСКИ ВАЖНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
 .unit-health-container {
     display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 100%;
-    margin-top: 8px;
-}
-
-.health-bar-fullscreen {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 100%;
-    height: 16px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    overflow: hidden;
-    position: relative;
-}
-
-.health-fill {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: 100%;
-    transition: width 0.3s ease;
-    border-radius: 6px;
-}
-
-.health-fill.health-high {
-    background: linear-gradient(90deg, #10b981, #34d399);
-}
-
-.health-fill.health-medium {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.health-fill.health-low {
-    background: linear-gradient(90deg, #ef4444, #f87171);
-}
-
-.health-text {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 10px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    pointer-events: none;
-}
-
-/* Анимация изменения здоровья */
-.health-changing {
-    animation: healthPulse 0.5s ease;
-}
-
-@keyframes healthPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-/* ПРИНУДИТЕЛЬНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
-.health-bar-fullscreen {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     width: 100% !important;
-    height: 16px !important;
-    background: rgba(0, 0, 0, 0.7) !important;
-    border-radius: 8px !important;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    margin-top: 10px !important;
+    min-height: 20px !important;
+}
+
+.health-bar-fullscreen {
+    display: flex !important;
+    width: 100% !important;
+    height: 20px !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    border-radius: 10px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
     overflow: hidden !important;
     position: relative !important;
-    margin-top: 8px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .health-fill {
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     height: 100% !important;
-    width: 100% !important; /* Будет переопределено JS */
-    transition: width 0.5s ease-in-out !important;
-    border-radius: 6px !important;
+    width: 100% !important;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-radius: 8px !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     min-width: 0% !important;
     max-width: 100% !important;
+    transform: translateZ(0) !important; /* Аппаратное ускорение */
+    will-change: width !important;
 }
 
 .health-fill.health-high {
-    background: linear-gradient(90deg, #10b981, #34d399) !important;
+    background: linear-gradient(90deg, #10b981, #34d399, #10b981) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 2s infinite !important;
 }
 
 .health-fill.health-medium {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 2s infinite !important;
 }
 
 .health-fill.health-low {
-    background: linear-gradient(90deg, #ef4444, #f87171) !important;
+    background: linear-gradient(90deg, #ef4444, #f87171, #ef4444) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1s infinite !important;
 }
 
 .health-text {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     font-weight: bold !important;
     color: white !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
     pointer-events: none !important;
     z-index: 10 !important;
+    white-space: nowrap !important;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Анимация изменения здоровья */
+.health-changing {
+    animation: pulse 0.3s ease-in-out !important;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
 }
