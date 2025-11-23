@@ -4048,130 +4048,388 @@ body {
         font-size: 0.9rem;
     }
 }
-/* ========== УВЕЛИЧЕННАЯ СЕТКА БОЯ 6x6 И ПРАВИЛЬНОЕ РАСПОЛОЖЕНИЕ ПАНЕЛЕЙ ========== */
+/* ========== ОПТИМИЗИРОВАННАЯ СЕТКА БОЯ 6x6 С ФОРМАТОМ 4:3 ========== */
 
 /* Основной контейнер боя */
 .battle-main-area {
     display: flex;
-    gap: 20px;
+    gap: 15px;
     align-items: stretch;
     justify-content: center;
-    height: 75vh;
-    padding: 0 20px;
+    height: 85vh;
+    padding: 0 15px;
+    margin-top: 10px;
 }
 
-/* ЛЕВАЯ ПАНЕЛЬ - ИГРОК */
+/* ЛЕВАЯ ПАНЕЛЬ - ИГРОК (компактная) */
 .tactical-panel.player-panel {
-    align-self: center;
+    align-self: flex-start;
     width: 280px;
     flex-shrink: 0;
-    margin-left: 10px;
+    margin-left: 5px;
+    padding: 1rem;
+    min-height: auto;
 }
 
-/* ЦЕНТР - УВЕЛИЧЕННАЯ СЕТКА 6x6 */
+/* ЦЕНТР - ОПТИМИЗИРОВАННАЯ СЕТКА 6x6 С ФОРМАТОМ 4:3 */
 .battle-grid-fullscreen {
     flex: 1;
     display: flex;
     align-items: stretch;
-    max-width: 1200px;
-    min-width: 800px;
+    max-width: 1300px;
+    min-width: 900px;
+    margin: 0 10px;
 }
 
-/* УВЕЛИЧИВАЕМ СЕТКУ В 3 РАЗА */
+/* СЕТКА С ФОРМАТОМ 4:3 */
 .grid-container-6x6 {
-    min-height: 700px !important;
+    min-height: 650px !important;
+    max-height: 700px;
     grid-template-columns: repeat(2, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
-    gap: 15px !important;
+    gap: 12px !important;
 }
 
-/* УВЕЛИЧИВАЕМ ЯЧЕЙКИ СЕТКИ */
+/* КОНТЕЙНЕРЫ С ФОРМАТОМ 4:3 */
 .grid-cell-fullscreen {
-    min-height: 220px !important;
-    padding: 1.5rem !important;
-    border-width: 4px !important;
+    min-height: 200px !important;
+    max-height: 210px;
+    padding: 0.8rem !important;
+    border-width: 3px !important;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/3 !important;
 }
 
-/* УВЕЛИЧИВАЕМ ИЗОБРАЖЕНИЯ ЮНИТОВ */
+/* КОНТЕЙНЕР ИЗОБРАЖЕНИЯ С ФОРМАТОМ 4:3 */
+.unit-image-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+}
+
+/* ИЗОБРАЖЕНИЕ ЗАНИМАЕТ ВЕСЬ КОНТЕЙНЕР */
 .unit-image {
-    width: 150px !important;
-    height: 150px !important;
-    margin: 0 auto 1.5rem !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    object-fit: cover;
+    border-radius: 6px;
 }
 
 .image-fallback {
-    font-size: 5rem !important;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem !important;
+    background: rgba(0, 0, 0, 0.5);
 }
 
-/* УВЕЛИЧИВАЕМ ТЕКСТ В ЯЧЕЙКАХ */
-.unit-name {
-    font-size: 1.4rem !important;
-    margin-bottom: 1rem !important;
+/* ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ ПРИ НАВЕДЕНИИ (как в выборе героя) */
+.unit-info-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.1) 20%,
+        rgba(0, 0, 0, 0.7) 60%,
+        rgba(0, 0, 0, 0.9) 100%
+    );
+    padding: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 6px;
+    pointer-events: none;
+}
+
+.unit-image-container:hover .unit-info-overlay {
+    opacity: 1;
+}
+
+.overlay-unit-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 0.3rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.overlay-unit-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+}
+
+.overlay-stat {
+    display: flex;
+    justify-content: space-between;
+    color: #cbd5e1;
+}
+
+.overlay-stat-value {
+    font-weight: bold;
+    color: white;
+}
+
+/* ОСНОВНАЯ ИНФОРМАЦИЯ ПОД КОНТЕЙНЕРОМ */
+.unit-display-fullscreen {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.unit-info-external {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.unit-name-external {
+    font-size: 0.9rem !important;
+    font-weight: bold;
+    color: #f59e0b;
+    margin-bottom: 0.3rem !important;
 }
 
 .health-bar-fullscreen {
-    height: 30px !important;
-    margin: 1rem 0 !important;
+    height: 18px !important;
+    margin: 0.3rem 0 !important;
 }
 
 .health-text {
-    font-size: 1.1rem !important;
+    font-size: 0.8rem !important;
 }
 
-.unit-stats {
-    margin-top: 1.2rem !important;
+.unit-stats-external {
+    margin-top: 0.3rem !important;
 }
 
-.stat-line span {
-    padding: 0.6rem 1rem !important;
-    font-size: 1.1rem !important;
+.stat-line-external {
+    display: flex;
+    justify-content: space-around;
+    gap: 0.2rem;
+    margin-bottom: 0.2rem;
 }
 
-/* ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) */
+.stat-line-external span {
+    background: rgba(76, 201, 240, 0.2);
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 4px;
+    font-size: 0.7rem !important;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    font-weight: bold;
+}
+
+/* ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИКИ (компактная) */
 .tactical-panel.enemy-panel {
-    align-self: center;
+    align-self: flex-start;
     width: 280px;
     flex-shrink: 0;
-    margin-right: 30px;
+    margin-right: 5px;
+    padding: 1rem;
+    min-height: auto;
 }
 
-/* РАЗДЕЛИТЕЛЬ VS */
+/* РАЗДЕЛИТЕЛЬ VS (компактный) */
 .vs-separator {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 2rem;
-    min-width: 120px;
+    padding: 0 1rem;
+    min-width: 100px;
 }
 
 .vs-text {
-    font-size: 3.5rem !important;
-    padding: 1.5rem 2.5rem !important;
+    font-size: 2.5rem !important;
+    padding: 0.8rem 1.5rem !important;
+}
+
+/* КОМПАКТНЫЕ ЗАГОЛОВКИ ПАНЕЛЕЙ */
+.panel-title {
+    text-align: center;
+    margin-bottom: 0.8rem !important;
+    font-size: 1.1rem !important;
+    font-weight: bold;
+    padding: 0.3rem 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+}
+
+.player-panel .panel-title {
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.enemy-panel .panel-title {
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* КОМПАКТНЫЕ СТАТЫ В ПАНЕЛЯХ */
+.panel-stats {
+    margin-bottom: 1rem !important;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem !important;
+    padding: 0.3rem 0.5rem !important;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* КОМПАКТНЫЕ КНОПКИ ДЕЙСТВИЙ */
+.tactical-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem !important;
+}
+
+.tactical-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.8rem !important;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #374151, #4b5563);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* КОМПАКТНЫЙ ЗАГОЛОВОК БОЯ */
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem !important;
+    padding: 0.8rem 1rem !important;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    border: 1px solid #4b5563;
+}
+
+.battle-header h2 {
+    color: #ef4444;
+    font-size: 1.8rem !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+.battle-round {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.4rem 0.8rem !important;
+    border-radius: 15px;
+    border: 1px solid #ef4444;
+    font-weight: bold;
+    font-size: 0.9rem !important;
+}
+
+/* КОМПАКТНЫЕ ПАНЕЛИ УПРАВЛЕНИЯ */
+.battle-controls-fullscreen {
+    margin: 0.8rem 0 !important;
+    padding: 0.8rem 1rem !important;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid #4b5563;
+}
+
+.battle-hint-fullscreen {
+    text-align: center;
+    padding: 0.6rem !important;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    margin-bottom: 0.8rem !important;
+    font-weight: bold;
+    font-size: 0.9rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.battle-actions-fullscreen {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-battle-flee {
+    padding: 12px 24px !important;
+    font-size: 1rem !important;
+}
+
+/* КОМПАКТНЫЙ ЛОГ БОЯ */
+.battle-log-fullscreen {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.8rem !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 150px !important;
+}
+
+.battle-log-fullscreen h4 {
+    color: #f59e0b;
+    margin-bottom: 0.6rem !important;
+    font-size: 1rem !important;
+}
+
+.battle-log-entries {
+    max-height: 90px !important;
+    overflow-y: auto;
+    font-size: 0.85rem;
+}
+
+.log-entry {
+    padding: 0.4rem 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    font-size: 0.8rem;
 }
 
 /* АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ */
 @media (min-width: 1600px) {
     .battle-grid-fullscreen {
-        max-width: 1400px;
+        max-width: 1400px !important;
     }
     
     .grid-container-6x6 {
-        min-height: 800px !important;
+        min-height: 700px !important;
     }
     
     .grid-cell-fullscreen {
-        min-height: 250px !important;
+        min-height: 220px !important;
     }
 }
 
 /* АДАПТИВНОСТЬ ДЛЯ МАЛЕНЬКИХ ЭКРАНОВ */
 @media (max-width: 1400px) {
     .battle-main-area {
-        height: 70vh;
+        height: 80vh;
     }
     
     .grid-container-6x6 {
-        min-height: 600px !important;
+        min-height: 580px !important;
     }
     
     .grid-cell-fullscreen {
@@ -4187,13 +4445,14 @@ body {
     .battle-main-area {
         flex-wrap: wrap;
         height: auto;
-        gap: 15px;
+        gap: 10px;
     }
     
     .battle-grid-fullscreen {
         order: 1;
         width: 100%;
-        margin: 15px 0;
+        margin: 10px 0;
+        min-width: auto;
     }
     
     .tactical-panel.player-panel {
@@ -4211,175 +4470,11 @@ body {
     }
     
     .grid-cell-fullscreen {
-        min-height: 150px !important;
+        min-height: 160px !important;
     }
 }
 
-/* УВЕЛИЧИВАЕМ ПАНЕЛИ УПРАВЛЕНИЯ И ЛОГА */
-.battle-controls-fullscreen {
-    margin: 1.5rem 0;
-    padding: 1.5rem;
-}
-
-.battle-hint-fullscreen {
-    font-size: 1.2rem;
-    padding: 1.2rem;
-}
-
-.battle-log-fullscreen {
-    max-height: 250px;
-}
-
-.battle-log-entries {
-    max-height: 180px;
-}
-
-.log-entry {
-    padding: 0.8rem 0;
-    font-size: 1.05rem;
-}
-
-/* УВЕЛИЧИВАЕМ КНОПКИ */
-.btn-battle-flee {
-    padding: 20px 35px;
-    font-size: 1.4rem;
-}
-
-/* ЗАГОЛОВОК БОЯ */
-.battle-header h2 {
-    font-size: 2.8rem;
-}
-
-.battle-round {
-    font-size: 1.3rem;
-    padding: 0.8rem 1.5rem;
-}
-
-.btn-battle-back {
-    padding: 15px 30px;
-    font-size: 1.2rem;
-}
-/* ========== СТИЛИ ДЛЯ ГРУППОВЫХ ПАНЕЛЕЙ МОНСТРОВ ========== */
-.enemy-panels-container {
-    width: 320px;
-    flex-shrink: 0;
-    background: rgba(30, 41, 59, 0.9);
-    border-radius: 15px;
-    padding: 1.5rem;
-    border: 2px solid #ef4444;
-    backdrop-filter: blur(10px);
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.enemy-panels-container .panel-title {
-    text-align: center;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #ef4444;
-}
-
-.enemy-panels-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.enemy-panel-mini {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 10px;
-    padding: 1rem;
-    transition: all 0.3s ease;
-}
-
-.enemy-panel-mini:hover {
-    background: rgba(239, 68, 68, 0.15);
-    transform: translateY(-2px);
-}
-
-.enemy-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.8rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.enemy-name {
-    font-weight: bold;
-    color: #fca5a5;
-    font-size: 1rem;
-}
-
-.enemy-row {
-    font-size: 0.8rem;
-    color: #fcd34d;
-    background: rgba(252, 211, 77, 0.1);
-    padding: 0.2rem 0.5rem;
-    border-radius: 8px;
-    border: 1px solid rgba(252, 211, 77, 0.3);
-}
-
-.enemy-panel-stats {
-    margin-bottom: 0.8rem;
-}
-
-.enemy-panel-stats .stat-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    color: #cbd5e1;
-}
-
-.enemy-action-history {
-    font-size: 0.8rem;
-}
-
-.enemy-action-history .history-title {
-    color: #9ca3af;
-    margin-bottom: 0.3rem;
-    font-size: 0.75rem;
-}
-
-.enemy-action-history .history-entries {
-    min-height: 40px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 6px;
-    padding: 0.5rem;
-}
-
-.enemy-action-history .history-entry {
-    padding: 0.2rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.75rem;
-    color: #e5e7eb;
-}
-
-.enemy-action-history .history-entry:last-child {
-    border-bottom: none;
-}
-
-.enemy-action-history .history-empty {
-    color: #6b7280;
-    text-align: center;
-    font-style: italic;
-    font-size: 0.7rem;
-}
-
-.no-enemies {
-    text-align: center;
-    color: #9ca3af;
-    font-style: italic;
-    padding: 2rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 1px dashed #4b5563;
-}
-
-/* ========== СТИЛИ ДЛЯ ВЫБОРА ЦЕЛИ ========== */
+/* СТИЛИ ДЛЯ ВЫБОРА ЦЕЛИ */
 .grid-cell-fullscreen.selectable {
     cursor: pointer;
     border-color: #00ff00 !important;
@@ -4393,14 +4488,8 @@ body {
     position: absolute;
     top: 5px;
     right: 5px;
-    font-size: 1.2rem;
+    font-size: 1rem;
     z-index: 5;
-}
-
-.grid-cell-fullscreen.selectable:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
-    background: rgba(0, 255, 0, 0.2) !important;
 }
 
 @keyframes pulse-glow {
@@ -4409,7 +4498,7 @@ body {
         border-color: #00ff00;
     }
     50% { 
-        box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
         border-color: #00ff00;
     }
     100% { 
@@ -4418,427 +4507,17 @@ body {
     }
 }
 
-/* ========== СТИЛИ ДЛЯ КНОПКИ ЛЕЧЕНИЯ ========== */
-.tactical-btn.heal {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.tactical-btn.heal:hover:not(:disabled) {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
-}
-
-/* ========== ВИЗУАЛЬНОЕ РАЗДЕЛЕНИЕ РЯДОВ ========== */
+/* ВИЗУАЛЬНОЕ РАЗДЕЛЕНИЕ РЯДОВ */
 .grid-cell-fullscreen[data-side="enemies"][data-position="0"],
 .grid-cell-fullscreen[data-side="enemies"][data-position="2"], 
 .grid-cell-fullscreen[data-side="enemies"][data-position="4"] {
-    border-left: 4px solid #f59e0b !important;
-    background: rgba(245, 158, 11, 0.05) !important;
+    border-left: 3px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.03) !important;
 }
 
 .grid-cell-fullscreen[data-side="enemies"][data-position="1"],
 .grid-cell-fullscreen[data-side="enemies"][data-position="3"],
 .grid-cell-fullscreen[data-side="enemies"][data-position="5"] {
-    border-left: 4px solid #3b82f6 !important;
-    background: rgba(59, 130, 246, 0.05) !important;
-    position: relative;
-}
-
-/* Визуальный индикатор ряда - поднятый второй ряд */
-.grid-cell-fullscreen[data-side="enemies"][data-position="1"]::after,
-.grid-cell-fullscreen[data-side="enemies"][data-position="3"]::after,
-.grid-cell-fullscreen[data-side="enemies"][data-position="5"]::after {
-    content: "▲";
-    position: absolute;
-    top: -8px;
-    right: 8px;
-    font-size: 1rem;
-    color: #3b82f6;
-    background: rgba(30, 41, 59, 0.9);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid #3b82f6;
-}
-
-/* ========== АДАПТИВНОСТЬ ДЛЯ ГРУППОВЫХ ПАНЕЛЕЙ ========== */
-@media (max-width: 1400px) {
-    .enemy-panels-container {
-        width: 280px;
-        padding: 1rem;
-    }
-    
-    .enemy-panel-mini {
-        padding: 0.8rem;
-    }
-    
-    .enemy-name {
-        font-size: 0.9rem;
-    }
-    
-    .enemy-row {
-        font-size: 0.75rem;
-    }
-}
-
-@media (max-width: 1200px) {
-    .battle-main-area {
-        flex-wrap: wrap;
-        height: auto;
-    }
-    
-    .enemy-panels-container {
-        order: 3;
-        width: 100%;
-        max-height: 300px;
-        margin-top: 1rem;
-    }
-    
-    .enemy-panels-grid {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .enemy-panel-mini {
-        width: calc(33.333% - 1rem);
-        min-width: 250px;
-    }
-}
-
-@media (max-width: 768px) {
-    .enemy-panel-mini {
-        width: calc(50% - 0.5rem);
-        min-width: 200px;
-    }
-    
-    .enemy-panel-header {
-        flex-direction: column;
-        gap: 0.3rem;
-        align-items: flex-start;
-    }
-    
-    .enemy-row {
-        align-self: flex-end;
-    }
-}
-
-@media (max-width: 480px) {
-    .enemy-panel-mini {
-        width: 100%;
-    }
-    
-    .enemy-panels-container {
-        padding: 0.8rem;
-    }
-}
-
-/* ========== УЛУЧШЕНИЯ ДЛЯ СЕТКИ ========== */
-.unit-stats .stat-line {
-    display: flex;
-    justify-content: space-around;
-    gap: 0.3rem;
-    margin-bottom: 0.3rem;
-    flex-wrap: wrap;
-}
-
-.unit-stats .stat-line span {
-    background: rgba(76, 201, 240, 0.2);
-    padding: 0.3rem 0.6rem;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    border: 1px solid rgba(76, 201, 240, 0.3);
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-/* Индикатор типа атаки в ячейке */
-.unit-display-fullscreen::after {
-    content: "";
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
-}
-
-.grid-cell-fullscreen[data-side="allies"] .unit-display-fullscreen::after {
-    content: "🎯";
-}
-
-.grid-cell-fullscreen[data-side="enemies"] .unit-display-fullscreen::after {
-    content: "👹";
-}
-
-/* ========== АНИМАЦИИ ДЛЯ ЛЕЧЕНИЯ ========== */
-@keyframes heal-glow {
-    0% { 
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-        background: rgba(239, 68, 68, 0.1);
-    }
-    50% { 
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
-        background: rgba(239, 68, 68, 0.2);
-    }
-    100% { 
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
-        background: rgba(239, 68, 68, 0.1);
-    }
-}
-
-.healing-effect {
-    animation: heal-glow 1s ease-in-out;
-}
-
-/* ========== СТИЛИ ДЛЯ ПОДСКАЗОК ========== */
-.battle-hint-fullscreen {
-    background: rgba(59, 130, 246, 0.1) !important;
-    border: 1px solid rgba(59, 130, 246, 0.3) !important;
-    color: #3b82f6 !important;
-    font-weight: bold;
-}
-
-.battle-hint-fullscreen.target-selection {
-    background: rgba(34, 197, 94, 0.1) !important;
-    border: 1px solid rgba(34, 197, 94, 0.3) !important;
-    color: #16a34a !important;
-    animation: pulse-hint 2s infinite;
-}
-
-@keyframes pulse-hint {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
-}
-
-/* ========== УЛУЧШЕНИЯ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ ========== */
-.health-bar-fullscreen {
-    position: relative;
-    margin: 0.8rem 0;
-}
-
-.health-fill {
-    transition: width 0.5s ease;
-    position: relative;
-}
-
-.health-fill.low-health {
-    background: linear-gradient(90deg, #ef4444, #dc2626) !important;
-}
-
-.health-fill.medium-health {
-    background: linear-gradient(90deg, #f59e0b, #eab308) !important;
-}
-
-.health-fill.high-health {
-    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
-}
-
-/* ========== СТИЛИ ДЛЯ КОНТЕЙНЕРА ПАНЕЛЕЙ ========== */
-.enemy-panels-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.enemy-panels-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-}
-
-.enemy-panels-container::-webkit-scrollbar-thumb {
-    background: rgba(239, 68, 68, 0.5);
-    border-radius: 3px;
-}
-
-.enemy-panels-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(239, 68, 68, 0.7);
-}
-
-/* ========== ИНДИКАТОРЫ СОСТОЯНИЯ МОНСТРОВ ========== */
-.enemy-panel-mini.low-health {
-    border-color: #ef4444;
-    background: rgba(239, 68, 68, 0.15);
-}
-
-.enemy-panel-mini.medium-health {
-    border-color: #f59e0b;
-    background: rgba(245, 158, 11, 0.1);
-}
-
-.enemy-panel-mini.high-health {
-    border-color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-}
-
-/* ========== АНИМАЦИИ ПОЯВЛЕНИЯ ========== */
-.enemy-panel-mini {
-    animation: slideInRight 0.5s ease-out;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.grid-cell-fullscreen.selectable {
-    animation: pulse-glow 2s infinite, bounce 1s ease-in-out;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-5px);
-    }
-    60% {
-        transform: translateY(-3px);
-    }
-}
-/* ========== ОПТИМИЗАЦИЯ РАЗМЕРОВ СЕТКИ ========== */
-.battle-main-area {
-    height: 90vh !important; /* Уменьшаем высоту */
-    max-height: 900px;
-}
-
-.battle-grid-fullscreen {
-    max-width: 1500px !important; /* Увеличиваем ширину */
-    min-width: 1200px !important;
-    margin: 0 2rem;
-}
-
-.grid-container-6x6 {
-    min-height: 700px !important; /* Уменьшаем высоту сетки */
-    max-height: 800px;
-    grid-template-columns: repeat(2, 1fr) !important;
-    grid-template-rows: repeat(3, 1fr) !important;
-    gap: 12px !important;
-}
-
-.grid-cell-fullscreen {
-    min-height: 170px !important; /* Уменьшаем ячейки */
-    max-height: 180px;
-    padding: 1.2rem !important;
-}
-
-/* Увеличиваем центральную область */
-.grid-side {
-    flex: 1;
-    min-width: 400px;
-}
-
-/* Уменьшаем изображения юнитов */
-.unit-image {
-    width: 180px !important;
-    height: 170px !important;
-    margin: 0 auto 1.4rem !important;
-}
-
-.image-fallback {
-    font-size: 3rem !important;
-}
-
-/* Уменьшаем текст в ячейках */
-.unit-name {
-    font-size: 1.1rem !important;
-    margin-bottom: 0.5rem !important;
-}
-
-.health-bar-fullscreen {
-    height: 22px !important;
-    margin: 0.5rem 0 !important;
-}
-
-.health-text {
-    font-size: 0.9rem !important;
-}
-
-.unit-stats {
-    margin-top: 0.5rem !important;
-}
-
-.stat-line span {
-    padding: 0.3rem 0.5rem !important;
-    font-size: 0.75rem !important;
-}
-
-/* Увеличиваем разделитель VS */
-.vs-separator {
-    min-width: 150px;
-    padding: 0 2rem;
-}
-
-.vs-text {
-    font-size: 3rem !important;
-    padding: 1.2rem 2rem !important;
-}
-
-/* Адаптивность для широких экранов */
-@media (min-width: 1600px) {
-    .battle-grid-fullscreen {
-        max-width: 1600px !important;
-    }
-    
-    .grid-container-6x6 {
-        min-height: 550px !important;
-    }
-    
-    .grid-cell-fullscreen {
-        min-height: 170px !important;
-    }
-}
-
-/* Увеличиваем панели по ширине */
-.tactical-panel {
-    width: 300px !important; /* Шире панели действий */
-}
-
-.enemy-panels-container {
-    width: 350px !important; /* Шире панели монстров */
-}
-
-/* Оптимизация для лога боя */
-.battle-log-fullscreen {
-    max-height: 180px;
-}
-
-.battle-log-entries {
-    max-height: 120px;
-}
-/* Улучшаем внешний вид для новой компоновки */
-.battle-header {
-    padding: 0.8rem 1.5rem;
-}
-
-.battle-header h2 {
-    font-size: 2.2rem;
-}
-
-.battle-controls-fullscreen {
-    margin: 1rem 0;
-    padding: 1rem 1.5rem;
-}
-
-/* Увеличиваем кнопки */
-.btn-battle-flee {
-    padding: 16px 32px;
-    font-size: 1.2rem;
-}
-
-/* Оптимизация отступов */
-.battle-main-area {
-    gap: 1.5rem !important;
-    padding: 0 1rem;
+    border-left: 3px solid #3b82f6 !important;
+    background: rgba(59, 130, 246, 0.03) !important;
 }
