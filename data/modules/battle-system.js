@@ -313,28 +313,28 @@ class BattleSystem {
         return monsterGroup;
     }
 
-  // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Настройка тактической сетки с рядами
-setupTacticalGrid(hero, monsters, heroStats = null) {
-    this.battleGrid.allies = [null, null, null, null, null, null];
-    this.battleGrid.enemies = [null, null, null, null, null, null];
-    
-    if (!heroStats) {
-        heroStats = this.getHeroStatsForBattle();
-    }
-    
-    // ⭐ ГЕРОЙ НА ПОЗИЦИИ 4 (подняли на 1 позицию выше)
-    this.battleGrid.allies[4] = {
-        type: 'hero',
-        data: hero,
-        position: 4,
-        maxHealth: heroStats.maxHealth,
-        currentHealth: heroStats.currentHealth,
-        attackType: this.getHeroAttackType(hero)
-    };
+    // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Настройка тактической сетки с рядами
+    setupTacticalGrid(hero, monsters, heroStats = null) {
+        this.battleGrid.allies = [null, null, null, null, null, null];
+        this.battleGrid.enemies = [null, null, null, null, null, null];
+        
+        if (!heroStats) {
+            heroStats = this.getHeroStatsForBattle();
+        }
+        
+        // Герой на позиции 5 (самая правая центральная ячейка)
+        this.battleGrid.allies[5] = {
+            type: 'hero',
+            data: hero,
+            position: 5,
+            maxHealth: heroStats.maxHealth,
+            currentHealth: heroStats.currentHealth,
+            attackType: this.getHeroAttackType(hero)
+        };
 
-    this.placeMonstersOnGrid(monsters);
-    this.updateAvailableTargets();
-}
+        this.placeMonstersOnGrid(monsters);
+        this.updateAvailableTargets();
+    }
 
     // ⭐ НОВЫЙ МЕТОД: Размещение монстров по рядам
     placeMonstersOnGrid(monsters) {
@@ -707,36 +707,27 @@ setupTacticalGrid(hero, monsters, heroStats = null) {
         });
     }
 
-  // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Обновление доступных целей (ближний бой может атаковать второй ряд)
-updateAvailableTargets() {
-    const heroAttackType = this.getHeroAttackType(this.currentHero);
-    this.availableTargets = [];
-    
-    this.battleGrid.enemies.forEach((unit, position) => {
-        if (unit && unit.currentHealth > 0) {
-            // Для ближнего боя доступны монстры первого ряда
-            if (heroAttackType === 'melee') {
-                if (unit.row === 'front') {
-                    this.availableTargets.push(position);
-                } else {
-                    // Проверяем, есть ли живые монстры в первом ряду
-                    const hasAliveFrontRow = this.battleGrid.enemies.some((u, pos) => 
-                        u && u.currentHealth > 0 && u.row === 'front'
-                    );
-                    // Если нет живых в первом ряду - можно атаковать второй ряд
-                    if (!hasAliveFrontRow) {
+    // ⭐ НОВЫЙ МЕТОД: Обновление доступных целей
+    updateAvailableTargets() {
+        const heroAttackType = this.getHeroAttackType(this.currentHero);
+        this.availableTargets = [];
+        
+        this.battleGrid.enemies.forEach((unit, position) => {
+            if (unit && unit.currentHealth > 0) {
+                // Для ближнего боя доступны только монстры первого ряда
+                if (heroAttackType === 'melee') {
+                    if (unit.row === 'front') {
                         this.availableTargets.push(position);
                     }
+                } else {
+                    // Для дальнего боя доступны все монстры
+                    this.availableTargets.push(position);
                 }
-            } else {
-                // Для дальнего боя доступны все монстры
-                this.availableTargets.push(position);
             }
-        }
-    });
-    
-    console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets);
-}
+        });
+        
+        console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets);
+    }
 
     // ⭐ НОВЫЙ МЕТОД: Проверка является ли действие атакующим
     isAttackAction(action) {
@@ -880,20 +871,17 @@ calculateMonsterDamage(monster, monsterUnit) {
     return Math.floor(finalDamage);
 }
 
-// ⭐ ОБНОВЛЕННЫЙ МЕТОД: Обновление полоски здоровья с анимацией
+// ⭐ НОВЫЙ МЕТОД: Обновление полоски здоровья
 updateHealthBar(side, position, currentHealth, maxHealth) {
     const healthPercent = (currentHealth / maxHealth) * 100;
     const healthFill = document.getElementById(`health-${side}-${position}`);
     const healthText = healthFill?.parentElement?.querySelector('.health-text');
+    const healthNumbers = healthFill?.parentElement?.parentElement?.querySelector('.health-numbers');
     
     if (healthFill) {
-        // Добавляем анимацию изменения
-        healthFill.classList.add('health-changing');
-        
-        // Обновляем ширину
         healthFill.style.width = `${healthPercent}%`;
         
-        // Меняем цвет при низком здоровье
+        // Анимация изменения цвета при низком здоровье
         if (healthPercent <= 25) {
             healthFill.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
         } else if (healthPercent <= 50) {
@@ -901,21 +889,14 @@ updateHealthBar(side, position, currentHealth, maxHealth) {
         } else {
             healthFill.style.background = 'linear-gradient(90deg, #ef4444, #f59e0b)';
         }
-        
-        // Убираем анимацию после завершения
-        setTimeout(() => {
-            healthFill.classList.remove('health-changing');
-        }, 300);
     }
     
     if (healthText) {
         healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
     }
     
-    // Также обновляем числа во всплывающей информации
-    const overlayNumbers = document.querySelector(`[data-position="${position}"][data-side="${side}"] .overlay-health-numbers`);
-    if (overlayNumbers) {
-        overlayNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+    if (healthNumbers) {
+        healthNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
     }
 }
 
@@ -1245,7 +1226,8 @@ executeTacticalDamage(playerAction) {
         return html;
     }
 
-// ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Рендер ячейки тактической сетки с именем во всплывающей подсказке
+  // ⭐ ИСПРАВЛЕННЫЙ МЕТОД: Рендер ячейки тактической сетки с полосой здоровья и всплывающей информацией
+// ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Рендер ячейки тактической сетки с увеличенными контейнерами
 renderTacticalGridCell(unit, position, side) {
     const isEnemy = side === 'enemies';
     const isEmpty = !unit;
@@ -1278,10 +1260,61 @@ renderTacticalGridCell(unit, position, side) {
                 armor: heroStats.armor,
                 currentHealth: Math.ceil(unit.currentHealth),
                 maxHealth: unit.maxHealth,
-                attackType: unit.attackType
+                attackType: unit.attackType,
+                gold: this.currentHero.gold
             };
         }
 
+        // Статистика для всплывающей информации
+        let stats = '';
+        if (isEnemy) {
+            stats = `
+                <div class="overlay-unit-stats">
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">⚔️ Урон:</span>
+                        <span class="overlay-stat-value">${currentStats.damage}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">🛡️ Броня:</span>
+                        <span class="overlay-stat-value">${currentStats.armor}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">❤️ Здоровье:</span>
+                        <span class="overlay-stat-value">${currentStats.currentHealth}/${currentStats.maxHealth}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">🎯 Тип атаки:</span>
+                        <span class="overlay-stat-value">${currentStats.attackType === 'melee' ? 'Ближний' : 'Дальний'}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            stats = `
+                <div class="overlay-unit-stats">
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">⚔️ Урон:</span>
+                        <span class="overlay-stat-value">${currentStats.damage}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">🛡️ Броня:</span>
+                        <span class="overlay-stat-value">${currentStats.armor}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">❤️ Здоровье:</span>
+                        <span class="overlay-stat-value">${currentStats.currentHealth}/${currentStats.maxHealth}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">🎯 Тип атаки:</span>
+                        <span class="overlay-stat-value">${currentStats.attackType === 'melee' ? 'Ближний' : 'Дальний'}</span>
+                    </div>
+                    <div class="overlay-stat-row">
+                        <span class="overlay-stat-label">💰 Золото:</span>
+                        <span class="overlay-stat-value">${currentStats.gold.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
         content = `
             <div class="unit-image-container">
                 <!-- ИКОНКА ЗАНИМАЕТ ВЕСЬ КОНТЕЙНЕР -->
@@ -1291,32 +1324,47 @@ renderTacticalGridCell(unit, position, side) {
                     ${isEnemy ? '👹' : '🎯'}
                 </div>
                 
-                <!-- УЛУЧШЕННАЯ ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ СНИЗУ С ИМЕНЕМ -->
+                <!-- ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ ПРИ НАВЕДЕНИИ -->
                 <div class="unit-info-overlay">
                     <div class="overlay-unit-header">
-                        <span class="overlay-unit-name">${unit.data.name}</span>
-                        ${isEnemy ? `<span class="overlay-unit-level">Ур. ${unit.data.level || 1}</span>` : ''}
+                        <strong class="overlay-unit-name">${unit.data.name}</strong>
+                        <span class="overlay-unit-level">${isEnemy ? 'Монстр' : 'Герой'}</span>
                     </div>
-                    <div class="overlay-simple-stats">
-                        <div class="overlay-health">
-                            <span class="overlay-health-label">❤️ Здоровье:</span>
-                            <span class="overlay-health-numbers">${currentStats.currentHealth}/${currentStats.maxHealth}</span>
-                        </div>
-                        <div class="overlay-main-stats">
-                            <span class="overlay-damage">⚔️ ${currentStats.damage}</span>
-                            <span class="overlay-armor">🛡️ ${currentStats.armor}</span>
-                            <span class="overlay-type">${currentStats.attackType === 'melee' ? '🥊 Ближний' : '🏹 Дальний'}</span>
-                            ${isEnemy ? `<span class="overlay-row">${currentStats.row === 'front' ? '1-й ряд' : '2-й ряд'}</span>` : ''}
-                        </div>
+                    ${stats}
+                    <div class="overlay-unit-details">
+                        <div>${isEnemy ? 
+                            `Ряд: ${currentStats.row === 'front' ? 'Первый (ближний бой)' : 'Второй (дальний бой)'}` : 
+                            `Раса: ${window.game.getRaceName(this.currentHero.race)}`
+                        }</div>
+                        <div>${isEnemy ? 
+                            `Тип: ${unit.data.type || 'Обычный'}` : 
+                            `Класс: ${window.game.getClassName(this.currentHero.class)}`
+                        }</div>
                     </div>
                 </div>
             </div>
             
             <!-- ПОЛОСА ЗДОРОВЬЯ ВНИЗУ - ВИДНА ВСЕГДА -->
             <div class="unit-health-container">
+                <div class="health-info">
+                    <span class="health-label">❤️ Здоровье:</span>
+                    <span class="health-numbers">${currentStats.currentHealth}/${currentStats.maxHealth}</span>
+                </div>
                 <div class="health-bar-fullscreen">
                     <div class="health-fill" id="health-${side}-${position}" style="width: ${healthPercent}%"></div>
                     <div class="health-text">${currentStats.currentHealth}/${currentStats.maxHealth}</div>
+                </div>
+            </div>
+            
+            <!-- ОСНОВНЫЕ СТАТЫ ПОД КАРТИНКОЙ -->
+            <div class="unit-main-stats">
+                <div class="main-stat-line">
+                    <span class="stat-damage">⚔️ ${currentStats.damage}</span>
+                    <span class="stat-armor">🛡️ ${currentStats.armor}</span>
+                </div>
+                <div class="main-stat-line">
+                    <span class="stat-type">${currentStats.attackType === 'melee' ? '🥊 Ближний' : '🏹 Дальний'}</span>
+                    ${isEnemy ? `<span class="stat-row">${currentStats.row === 'front' ? '1-й ряд' : '2-й ряд'}</span>` : ''}
                 </div>
             </div>
         `;
