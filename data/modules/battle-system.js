@@ -313,28 +313,28 @@ class BattleSystem {
         return monsterGroup;
     }
 
-    // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Настройка тактической сетки с рядами
-    setupTacticalGrid(hero, monsters, heroStats = null) {
-        this.battleGrid.allies = [null, null, null, null, null, null];
-        this.battleGrid.enemies = [null, null, null, null, null, null];
-        
-        if (!heroStats) {
-            heroStats = this.getHeroStatsForBattle();
-        }
-        
-        // Герой на позиции 5 (самая правая центральная ячейка)
-        this.battleGrid.allies[5] = {
-            type: 'hero',
-            data: hero,
-            position: 5,
-            maxHealth: heroStats.maxHealth,
-            currentHealth: heroStats.currentHealth,
-            attackType: this.getHeroAttackType(hero)
-        };
-
-        this.placeMonstersOnGrid(monsters);
-        this.updateAvailableTargets();
+  // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Настройка тактической сетки с рядами
+setupTacticalGrid(hero, monsters, heroStats = null) {
+    this.battleGrid.allies = [null, null, null, null, null, null];
+    this.battleGrid.enemies = [null, null, null, null, null, null];
+    
+    if (!heroStats) {
+        heroStats = this.getHeroStatsForBattle();
     }
+    
+    // ⭐ ГЕРОЙ НА ПОЗИЦИИ 4 (подняли на 1 позицию выше)
+    this.battleGrid.allies[4] = {
+        type: 'hero',
+        data: hero,
+        position: 4,
+        maxHealth: heroStats.maxHealth,
+        currentHealth: heroStats.currentHealth,
+        attackType: this.getHeroAttackType(hero)
+    };
+
+    this.placeMonstersOnGrid(monsters);
+    this.updateAvailableTargets();
+}
 
     // ⭐ НОВЫЙ МЕТОД: Размещение монстров по рядам
     placeMonstersOnGrid(monsters) {
@@ -1245,7 +1245,7 @@ executeTacticalDamage(playerAction) {
         return html;
     }
 
-// ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Рендер ячейки тактической сетки с упрощенной информацией
+// ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Рендер ячейки тактической сетки с именем во всплывающей подсказке
 renderTacticalGridCell(unit, position, side) {
     const isEnemy = side === 'enemies';
     const isEmpty = !unit;
@@ -1291,8 +1291,12 @@ renderTacticalGridCell(unit, position, side) {
                     ${isEnemy ? '👹' : '🎯'}
                 </div>
                 
-                <!-- УПРОЩЕННАЯ ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ ВНИЗУ -->
+                <!-- УЛУЧШЕННАЯ ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ СНИЗУ С ИМЕНЕМ -->
                 <div class="unit-info-overlay">
+                    <div class="overlay-unit-header">
+                        <span class="overlay-unit-name">${unit.data.name}</span>
+                        ${isEnemy ? `<span class="overlay-unit-level">Ур. ${unit.data.level || 1}</span>` : ''}
+                    </div>
                     <div class="overlay-simple-stats">
                         <div class="overlay-health">
                             <span class="overlay-health-label">❤️ Здоровье:</span>
