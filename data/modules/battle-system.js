@@ -410,179 +410,178 @@ class BattleSystem {
         console.log(`🎯 Монстры размещены: ${frontRowMonsters.length} в первом ряду, ${backRowMonsters.length} во втором ряду`);
     }
 
-  showTacticalBattleInterface() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    showTacticalBattleInterface() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    const heroStats = this.getHeroStatsForBattle();
-    
-    app.innerHTML = `
-        <div class="battle-screen-fullscreen">
-            <header class="battle-header">
-                <div class="header-left">
-                    <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
-                </div>
-                <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
-                    ← Назад к карте
-                </button>
-            </header>
-            
-            <div class="battle-main-area-compact">
-                <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                <div class="tactical-panel player-panel">
-                    <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="playerAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="playerCombo">Нет</span>
-                        </div>
+        const heroStats = this.getHeroStatsForBattle();
+        
+        app.innerHTML = `
+            <div class="battle-screen-fullscreen">
+                <header class="battle-header">
+                    <div class="header-left">
+                        <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
+                        <div class="battle-round">Раунд: ${this.battleRound}</div>
                     </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последние действия:</div>
-                        <div class="history-entries" id="playerHistory">
-                            <div class="history-empty">Еще нет действий</div>
-                        </div>
-                    </div>
-                    
-                    <div class="tactical-actions">
-                        <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
-                            <span class="btn-icon">⚔️</span>
-                            <span class="btn-text">Атака</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
-                            <span class="btn-icon">💥</span>
-                            <span class="btn-text">Силовая</span>
-                            <span class="btn-cost">(2 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
-                            <span class="btn-icon">💢</span>
-                            <span class="btn-text">Сокрушительная</span>
-                            <span class="btn-cost">(4 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
-                            <span class="btn-icon">🛡️</span>
-                            <span class="btn-text">Блок</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
-                            <span class="btn-icon">⚡</span>
-                            <span class="btn-text">Пробитие</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
-                            <span class="btn-icon">🌀</span>
-                            <span class="btn-text">Отдых</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                        
-                        <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
-                            <span class="btn-icon">❤️</span>
-                            <span class="btn-text">Лечение</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
-                <div class="battle-grid-compact">
-                    <div class="grid-side-compact allies-side">
-                        <h3 class="side-title">ВАШ ОТРЯД</h3>
-                        <div class="grid-container-6x6-compact">
-                            ${this.renderTacticalGrid('allies')}
-                        </div>
-                    </div>
-                    
-                    <div class="grid-side-compact enemies-side">
-                        <h3 class="side-title">ПРОТИВНИКИ</h3>
-                        <div class="grid-container-6x6-compact">
-                            ${this.renderTacticalGrid('enemies')}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
-                <div class="enemy-panels-container">
-                    <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
-                    <div class="enemy-panels-grid" id="enemyPanelsGrid">
-                        ${this.renderEnemyPanels()}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- УПРАВЛЕНИЕ И ЛОГ -->
-            <div class="battle-controls-fullscreen">
-                <div class="battle-hint-fullscreen" id="battleHint">
-                    ${this.getTacticalHint()}
-                </div>
-                
-                <div class="battle-actions-fullscreen">
-                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
-                        🏃 Попытаться сбежать
+                    <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
+                        ← Назад к карте
                     </button>
+                </header>
+                
+                <div class="battle-main-area-compact">
+                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                    <div class="tactical-panel player-panel">
+                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="playerAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="playerCombo">Нет</span>
+                            </div>
+                        </div>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="playerHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tactical-actions">
+                            <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
+                                <span class="btn-icon">⚔️</span>
+                                <span class="btn-text">Атака</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
+                                <span class="btn-icon">💥</span>
+                                <span class="btn-text">Силовая</span>
+                                <span class="btn-cost">(2 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
+                                <span class="btn-icon">💢</span>
+                                <span class="btn-text">Сокрушительная</span>
+                                <span class="btn-cost">(4 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Блок</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Пробитие</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
+                                <span class="btn-icon">🌀</span>
+                                <span class="btn-text">Отдых</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                            
+                            <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
+                                <span class="btn-icon">❤️</span>
+                                <span class="btn-text">Лечение</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
+                    <div class="battle-grid-compact">
+                        <div class="grid-side-compact allies-side">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6-compact">
+                                ${this.renderTacticalGrid('allies')}
+                            </div>
+                        </div>
+                        
+                        <div class="grid-side-compact enemies-side">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6-compact">
+                                ${this.renderTacticalGrid('enemies')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
+                    <div class="enemy-panels-container">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
+                        <div class="enemy-panels-grid" id="enemyPanelsGrid">
+                            ${this.renderEnemyPanels()}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- УПРАВЛЕНИЕ И ЛОГ -->
+                <div class="battle-controls-fullscreen">
+                    <div class="battle-hint-fullscreen" id="battleHint">
+                        ${this.getTacticalHint()}
+                    </div>
+                    
+                    <div class="battle-actions-fullscreen">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="battle-log-fullscreen">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                    </div>
                 </div>
             </div>
+        `;
+
+        // 🔧 ЭКСТРЕННОЕ ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ
+        setTimeout(() => {
+            console.log("🔧 Применяем экстренное исправление полосок здоровья...");
             
-            <div class="battle-log-fullscreen">
-                <h4>📜 Ход боя:</h4>
-                <div class="battle-log-entries" id="battleLogEntries">
-                    ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-        </div>
-    `;
+            const healthContainers = document.querySelectorAll('.unit-health-container');
+            const healthBars = document.querySelectorAll('.health-bar-fullscreen');
+            const healthFills = document.querySelectorAll('.health-fill');
+            const healthTexts = document.querySelectorAll('.health-text');
+            
+            healthContainers.forEach(el => {
+                el.style.display = 'flex';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthBars.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthFills.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthTexts.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
+        }, 100);
 
-    // 🔧 ЭКСТРЕННОЕ ИСПРАВЛЕНИЕ ПОЛОСОК ЗДОРОВЬЯ
-    setTimeout(() => {
-        console.log("🔧 Применяем экстренное исправление полосок здоровья...");
-        
-        // Принудительно показываем все элементы здоровья
-        const healthContainers = document.querySelectorAll('.unit-health-container');
-        const healthBars = document.querySelectorAll('.health-bar-fullscreen');
-        const healthFills = document.querySelectorAll('.health-fill');
-        const healthTexts = document.querySelectorAll('.health-text');
-        
-        healthContainers.forEach(el => {
-            el.style.display = 'flex';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthBars.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthFills.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthTexts.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
-    }, 100);
-
-    this.updateTacticalUI();
-}
+        this.updateTacticalUI();
+    }
 
     renderEnemyPanels() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => 
@@ -709,22 +708,18 @@ class BattleSystem {
         
         this.battleGrid.enemies.forEach((unit, position) => {
             if (unit && unit.currentHealth > 0) {
-                // Для ближнего боя доступны монстры первого ряда
                 if (heroAttackType === 'melee') {
                     if (unit.row === 'front') {
                         this.availableTargets.push(position);
                     } else {
-                        // Проверяем, есть ли живые монстры в первом ряду
                         const hasAliveFrontRow = this.battleGrid.enemies.some((u, pos) => 
                             u && u.currentHealth > 0 && u.row === 'front'
                         );
-                        // Если нет живых в первом ряду - можно атаковать второй ряд
                         if (!hasAliveFrontRow) {
                             this.availableTargets.push(position);
                         }
                     }
                 } else {
-                    // Для дальнего боя доступны все монстры
                     this.availableTargets.push(position);
                 }
             }
@@ -833,360 +828,324 @@ class BattleSystem {
         }, 800);
     }
 
-  // ОБНОВЛЕННЫЙ executeMonsterAction - ПОЛНЫЙ КОД
-executeMonsterAction(monster, monsterUnit) {
-    const hero = this.battleGrid.allies[4];
-    if (!hero || hero.currentHealth <= 0) return;
+    executeMonsterAction(monster, monsterUnit) {
+        const hero = this.battleGrid.allies[4];
+        if (!hero || hero.currentHealth <= 0) return;
 
-    let damage = 0;
-    let message = '';
-    
-    switch(monster.currentAction) {
-        case 'attack':
-        case 'strongAttack':
-        case 'crushingAttack':
-            damage = this.calculateMonsterDamage(monster, monsterUnit);
-            const heroStats = this.getHeroStatsForBattle();
-            const finalDamage = Math.max(1, damage - heroStats.armor);
-            
-            console.log(`👹 МОНСТР АТАКУЕТ: ${monster.name}, урон: ${finalDamage}`);
-            
-            const oldHealth = hero.currentHealth;
-            hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
-            message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
-            
-            console.log(`👹 ДО атаки: ${oldHealth}, ПОСЛЕ: ${hero.currentHealth}`);
-            
-            // ОБНОВЛЯЕМ ПОЛОСКУ
-            this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
-            
-            if (hero.currentHealth <= 0) {
-                hero.currentHealth = 0;
-                this.updateHealthBar('allies', 4, 0, hero.maxHealth);
-                this.addBattleLog(`💀 Герой повержен атакой ${monster.name}!`);
-            }
-            break;
-            
-        case 'heal':
-            const healEfficiency = this.getHealEfficiency(monster.combo.count);
-            const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
-            const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
-            monsterUnit.currentHealth += actualHeal;
-            message = `❤️ ${monster.name} лечится на ${actualHeal} HP`;
-            
-            this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
-            break;
-            
-        case 'block':
-            message = `🛡️ ${monster.name} защищается`;
-            // Монстр получает бонус к ОД за блок
-            const blockAPBonus = this.getBlockAPBonus(monster.combo.count);
-            monster.ap += blockAPBonus;
-            message += ` и получает +${blockAPBonus} ОД`;
-            break;
-            
-        case 'rest':
-            const restEfficiency = this.getRestEfficiency(monster.combo.count);
-            monster.ap += restEfficiency.ap;
-            
-            // Монстр также может восстановить немного здоровья при отдыхе
-            if (restEfficiency.healPercent > 0) {
-                const restHeal = Math.floor(monsterUnit.maxHealth * restEfficiency.healPercent);
-                const actualRestHeal = Math.min(restHeal, monsterUnit.maxHealth - monsterUnit.currentHealth);
-                if (actualRestHeal > 0) {
-                    monsterUnit.currentHealth += actualRestHeal;
-                    this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
-                    message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД) и восстанавливает ${actualRestHeal} HP`;
+        let damage = 0;
+        let message = '';
+        
+        switch(monster.currentAction) {
+            case 'attack':
+            case 'strongAttack':
+            case 'crushingAttack':
+                damage = this.calculateMonsterDamage(monster, monsterUnit);
+                const heroStats = this.getHeroStatsForBattle();
+                const finalDamage = Math.max(1, damage - heroStats.armor);
+                
+                console.log(`👹 МОНСТР АТАКУЕТ: ${monster.name}, урон: ${finalDamage}`);
+                
+                const oldHealth = hero.currentHealth;
+                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
+                message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
+                
+                console.log(`👹 ДО атаки: ${oldHealth}, ПОСЛЕ: ${hero.currentHealth}`);
+                
+                this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
+                
+                if (hero.currentHealth <= 0) {
+                    hero.currentHealth = 0;
+                    this.updateHealthBar('allies', 4, 0, hero.maxHealth);
+                    this.addBattleLog(`💀 Герой повержен атакой ${monster.name}!`);
+                }
+                break;
+                
+            case 'heal':
+                const healEfficiency = this.getHealEfficiency(monster.combo.count);
+                const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
+                const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
+                monsterUnit.currentHealth += actualHeal;
+                message = `❤️ ${monster.name} лечится на ${actualHeal} HP`;
+                
+                this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
+                break;
+                
+            case 'block':
+                message = `🛡️ ${monster.name} защищается`;
+                const blockAPBonus = this.getBlockAPBonus(monster.combo.count);
+                monster.ap += blockAPBonus;
+                message += ` и получает +${blockAPBonus} ОД`;
+                break;
+                
+            case 'rest':
+                const restEfficiency = this.getRestEfficiency(monster.combo.count);
+                monster.ap += restEfficiency.ap;
+                
+                if (restEfficiency.healPercent > 0) {
+                    const restHeal = Math.floor(monsterUnit.maxHealth * restEfficiency.healPercent);
+                    const actualRestHeal = Math.min(restHeal, monsterUnit.maxHealth - monsterUnit.currentHealth);
+                    if (actualRestHeal > 0) {
+                        monsterUnit.currentHealth += actualRestHeal;
+                        this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
+                        message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД) и восстанавливает ${actualRestHeal} HP`;
+                    } else {
+                        message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
+                    }
                 } else {
                     message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
                 }
-            } else {
-                message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
-            }
-            break;
-            
-        case 'breakBlock':
-            // Пробитие блока - специальная атака против блокирующихся целей
-            const isHeroBlocking = this.players[1].currentAction === 'block';
-            damage = this.calculateMonsterDamage(monster, monsterUnit);
-            let breakBlockDamage = damage;
-            
-            if (isHeroBlocking) {
-                // Увеличенный урон против блокирующегося героя
-                const breakMultiplier = this.getBreakBlockMultiplier(monster.combo.count, true);
-                breakBlockDamage = Math.floor(damage * breakMultiplier);
-                message = `⚡ ${monster.name} пробивает вашу защиту и наносит ${breakBlockDamage} урона!`;
-            } else {
-                // Обычный урон против незащищающегося героя
-                const breakMultiplier = this.getBreakBlockMultiplier(monster.combo.count, false);
-                breakBlockDamage = Math.floor(damage * breakMultiplier);
-                message = `⚡ ${monster.name} использует пробитие и наносит ${breakBlockDamage} урона!`;
-            }
-            
-            const heroStatsBreak = this.getHeroStatsForBattle();
-            const finalBreakDamage = Math.max(1, breakBlockDamage - heroStatsBreak.armor);
-            
-            const oldBreakHealth = hero.currentHealth;
-            hero.currentHealth = Math.max(0, hero.currentHealth - finalBreakDamage);
-            
-            console.log(`⚡ ПРОБИТИЕ: ДО атаки: ${oldBreakHealth}, ПОСЛЕ: ${hero.currentHealth}`);
-            
-            this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
-            
-            if (hero.currentHealth <= 0) {
-                hero.currentHealth = 0;
-                this.updateHealthBar('allies', 4, 0, hero.maxHealth);
-                this.addBattleLog(`💀 Герой повержен пробивающей атакой ${monster.name}!`);
-            }
-            break;
-            
-        default:
-            message = `👹 ${monster.name} совершает неизвестное действие`;
-            console.warn(`❌ Неизвестное действие монстра: ${monster.currentAction}`);
-    }
-    
-    if (message) {
-        this.addBattleLog(message);
-    }
-    
-    // ДИАГНОСТИКА
-    setTimeout(() => {
-        this.debugHealthBars();
-    }, 100);
-    
-    // Обновляем панель монстра после действия
-    this.updateMonsterPanel(monster.battleId);
-}
-
-// ОБНОВЛЕННЫЙ calculateMonsterDamage - ПОЛНЫЙ КОД
-calculateMonsterDamage(monster, monsterUnit) {
-    let baseDamage = monster.damage || 10;
-    let multiplier = 1.0;
-    
-    // Множитель в зависимости от типа атаки
-    switch(monster.currentAction) {
-        case 'strongAttack':
-            multiplier = 1.5;
-            break;
-        case 'crushingAttack':
-            multiplier = 2.0;
-            break;
-        case 'breakBlock':
-            multiplier = 0.8; // База ниже, но может увеличиваться комбо
-            break;
-    }
-    
-    // Множитель комбо
-    const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
-    multiplier *= comboMultiplier;
-    
-    // Случайная вариация ±10%
-    const variation = 0.9 + Math.random() * 0.2;
-    multiplier *= variation;
-    
-    const finalDamage = Math.floor(baseDamage * multiplier);
-    
-    console.log(`🎯 Урон монстра ${monster.name}: ` +
-                `база=${baseDamage}, ` +
-                `тип=${monster.currentAction}, ` +
-                `комбо=${comboMultiplier}x, ` +
-                `вариация=${variation.toFixed(2)}, ` +
-                `итого=${finalDamage}`);
-    
-    return finalDamage;
-}
-
-updateHealthBar(side, position, currentHealth, maxHealth) {
-    const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
-    
-    console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
-    
-    const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
-    const cell = document.querySelector(cellSelector);
-    
-    if (!cell) {
-        console.log(`❌ Ячейка не найдена: ${cellSelector}`);
-        return;
-    }
-    
-    // ПРИНУДИТЕЛЬНО ИЩЕМ И СОЗДАЕМ ЭЛЕМЕНТЫ ЕСЛИ НУЖНО
-    let healthBar = cell.querySelector('.health-bar-fullscreen');
-    let healthFill = cell.querySelector('.health-fill');
-    
-    // Если нет элементов здоровья - создаем их
-    if (!healthBar) {
-        console.log("📝 Создаем отсутствующие элементы здоровья...");
-        healthBar = document.createElement('div');
-        healthBar.className = 'health-bar-fullscreen';
-        
-        healthFill = document.createElement('div');
-        healthFill.className = 'health-fill health-high';
-        
-        const healthText = document.createElement('div');
-        healthText.className = 'health-text';
-        
-        healthBar.appendChild(healthFill);
-        healthBar.appendChild(healthText);
-        
-        // Ищем куда вставить
-        const healthContainer = cell.querySelector('.unit-health-container');
-        if (healthContainer) {
-            healthContainer.appendChild(healthBar);
-        } else {
-            // Создаем контейнер если нет
-            const newContainer = document.createElement('div');
-            newContainer.className = 'unit-health-container';
-            newContainer.appendChild(healthBar);
-            cell.appendChild(newContainer);
+                break;
+                
+            case 'breakBlock':
+                const isHeroBlocking = this.players[1].currentAction === 'block';
+                damage = this.calculateMonsterDamage(monster, monsterUnit);
+                let breakBlockDamage = damage;
+                
+                if (isHeroBlocking) {
+                    const breakMultiplier = this.getBreakBlockMultiplier(monster.combo.count, true);
+                    breakBlockDamage = Math.floor(damage * breakMultiplier);
+                    message = `⚡ ${monster.name} пробивает вашу защиту и наносит ${breakBlockDamage} урона!`;
+                } else {
+                    const breakMultiplier = this.getBreakBlockMultiplier(monster.combo.count, false);
+                    breakBlockDamage = Math.floor(damage * breakMultiplier);
+                    message = `⚡ ${monster.name} использует пробитие и наносит ${breakBlockDamage} урона!`;
+                }
+                
+                const heroStatsBreak = this.getHeroStatsForBattle();
+                const finalBreakDamage = Math.max(1, breakBlockDamage - heroStatsBreak.armor);
+                
+                const oldBreakHealth = hero.currentHealth;
+                hero.currentHealth = Math.max(0, hero.currentHealth - finalBreakDamage);
+                
+                console.log(`⚡ ПРОБИТИЕ: ДО атаки: ${oldBreakHealth}, ПОСЛЕ: ${hero.currentHealth}`);
+                
+                this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
+                
+                if (hero.currentHealth <= 0) {
+                    hero.currentHealth = 0;
+                    this.updateHealthBar('allies', 4, 0, hero.maxHealth);
+                    this.addBattleLog(`💀 Герой повержен пробивающей атакой ${monster.name}!`);
+                }
+                break;
+                
+            default:
+                message = `👹 ${monster.name} совершает неизвестное действие`;
+                console.warn(`❌ Неизвестное действие монстра: ${monster.currentAction}`);
         }
-    }
-    
-    if (healthFill) {
-        console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
         
-        // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ С ОЧЕРЕДЬЮ РЕНДЕРА
+        if (message) {
+            this.addBattleLog(message);
+        }
+        
         setTimeout(() => {
-            healthFill.style.width = `${healthPercent}%`;
-            healthFill.style.display = 'block';
+            this.debugHealthBars();
+        }, 100);
+        
+        this.updateMonsterPanel(monster.battleId);
+    }
+
+    calculateMonsterDamage(monster, monsterUnit) {
+        let baseDamage = monster.damage || 10;
+        let multiplier = 1.0;
+        
+        switch(monster.currentAction) {
+            case 'strongAttack':
+                multiplier = 1.5;
+                break;
+            case 'crushingAttack':
+                multiplier = 2.0;
+                break;
+            case 'breakBlock':
+                multiplier = 0.8;
+                break;
+        }
+        
+        const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
+        multiplier *= comboMultiplier;
+        
+        const variation = 0.9 + Math.random() * 0.2;
+        multiplier *= variation;
+        
+        const finalDamage = Math.floor(baseDamage * multiplier);
+        
+        console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, тип=${monster.currentAction}, комбо=${comboMultiplier}x, вариация=${variation.toFixed(2)}, итого=${finalDamage}`);
+        
+        return finalDamage;
+    }
+
+    updateHealthBar(side, position, currentHealth, maxHealth) {
+        const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
+        
+        console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
+        
+        const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
+        const cell = document.querySelector(cellSelector);
+        
+        if (!cell) {
+            console.log(`❌ Ячейка не найдена: ${cellSelector}`);
+            return;
+        }
+        
+        let healthBar = cell.querySelector('.health-bar-fullscreen');
+        let healthFill = cell.querySelector('.health-fill');
+        
+        if (!healthBar) {
+            console.log("📝 Создаем отсутствующие элементы здоровья...");
+            healthBar = document.createElement('div');
+            healthBar.className = 'health-bar-fullscreen';
             
-            // Принудительный рефлоу
-            healthFill.offsetHeight;
+            healthFill = document.createElement('div');
+            healthFill.className = 'health-fill health-high';
             
-            // Обновляем цвет
-            healthFill.className = 'health-fill';
-            if (healthPercent > 60) {
-                healthFill.classList.add('health-high');
-            } else if (healthPercent > 25) {
-                healthFill.classList.add('health-medium');
+            const healthText = document.createElement('div');
+            healthText.className = 'health-text';
+            
+            healthBar.appendChild(healthFill);
+            healthBar.appendChild(healthText);
+            
+            const healthContainer = cell.querySelector('.unit-health-container');
+            if (healthContainer) {
+                healthContainer.appendChild(healthBar);
             } else {
-                healthFill.classList.add('health-low');
-            }
-            
-            console.log(`🎨 Установлена ширина: ${healthFill.style.width}`);
-        }, 0);
-        
-    } else {
-        console.log(`❌ Не удалось создать/найти полоску здоровья`);
-    }
-    
-    // Обновляем текст
-    const healthText = cell.querySelector('.health-text');
-    if (healthText) {
-        healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
-    }
-    
-    // ДИАГНОСТИКА DOM
-    setTimeout(() => this.debugDOMStructure(), 50);
-}
-
-// ОБНОВЛЕННЫЙ updateAllHealthBars - ПОЛНЫЙ КОД
-updateAllHealthBars() {
-    console.log("🔄 Принудительное обновление всех полосок здоровья...");
-    
-    // Обновляем здоровье героя
-    const hero = this.battleGrid.allies[4];
-    if (hero) {
-        console.log(`❤️ Герой: ${hero.currentHealth}/${hero.maxHealth}`);
-        this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
-    }
-    
-    // Обновляем здоровье всех монстров
-    this.battleGrid.enemies.forEach((monster, position) => {
-        if (monster) {
-            console.log(`👹 Монстр ${position}: ${monster.currentHealth}/${monster.maxHealth}`);
-            this.updateHealthBar('enemies', position, monster.currentHealth, monster.maxHealth);
-        }
-    });
-}
-
-// ДОБАВЬТЕ ЭТОТ МЕТОД ДЛЯ ДИАГНОСТИКИ
-debugHealthBars() {
-    console.log("🔍 ДИАГНОСТИКА ПОЛОСОК ЗДОРОВЬЯ:");
-    
-    // Проверяем героя
-    const hero = this.battleGrid.allies[4];
-    if (hero) {
-        const healthPercent = (hero.currentHealth / hero.maxHealth) * 100;
-        console.log(`❤️ Герой: ${hero.currentHealth}/${hero.maxHealth} (${healthPercent}%)`);
-        
-        const heroCell = document.querySelector('.grid-cell-fullscreen[data-position="4"][data-side="allies"]');
-        if (heroCell) {
-            const healthFill = heroCell.querySelector('.health-fill');
-            console.log(`🎯 Найдена полоска героя:`, healthFill);
-            if (healthFill) {
-                console.log(`📏 Текущая ширина: ${healthFill.style.width}`);
-                console.log(`🎨 Текущие классы: ${healthFill.className}`);
+                const newContainer = document.createElement('div');
+                newContainer.className = 'unit-health-container';
+                newContainer.appendChild(healthBar);
+                cell.appendChild(newContainer);
             }
         }
-    }
-}
-// ДОБАВЬТЕ ЭТОТ МЕТОД
-debugDOMStructure() {
-    console.log("🔍 ДИАГНОСТИКА DOM СТРУКТУРЫ:");
-    
-    const heroCell = document.querySelector('.grid-cell-fullscreen[data-position="4"][data-side="allies"]');
-    if (heroCell) {
-        console.log("❤️ СТРУКТУРА ГЕРОЯ:");
-        console.log("Весь HTML:", heroCell.outerHTML);
         
-        const healthBar = heroCell.querySelector('.health-bar-fullscreen');
-        const healthFill = heroCell.querySelector('.health-fill');
-        
-        console.log("Полоска здоровья найдена:", !!healthFill);
         if (healthFill) {
-            console.log("Стили полоски:", {
-                width: healthFill.style.width,
-                display: healthFill.style.display,
-                computedWidth: window.getComputedStyle(healthFill).width,
-                parentWidth: healthBar ? window.getComputedStyle(healthBar).width : 'no parent'
-            });
-        }
-    }
-    
-    const monsterCell = document.querySelector('.grid-cell-fullscreen[data-position="0"][data-side="enemies"]');
-    if (monsterCell) {
-        console.log("👹 СТРУКТУРА МОНСТРА:");
-        const healthFill = monsterCell.querySelector('.health-fill');
-        console.log("Полоска здоровья найдена:", !!healthFill);
-        if (healthFill) {
-            console.log("Стили полоски:", {
-                width: healthFill.style.width,
-                computedWidth: window.getComputedStyle(healthFill).width
-            });
-        }
-    }
-}
-
-    // Проверяем монстров
-    this.battleGrid.enemies.forEach((monster, position) => {
-        if (monster) {
-            const healthPercent = (monster.currentHealth / monster.maxHealth) * 100;
-            console.log(`👹 Монстр ${position}: ${monster.currentHealth}/${monster.maxHealth} (${healthPercent}%)`);
+            console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
             
-            const monsterCell = document.querySelector(`.grid-cell-fullscreen[data-position="${position}"][data-side="enemies"]`);
-            if (monsterCell) {
-                const healthFill = monsterCell.querySelector('.health-fill');
-                console.log(`🎯 Найдена полоска монстра ${position}:`, healthFill);
+            setTimeout(() => {
+                healthFill.style.width = `${healthPercent}%`;
+                healthFill.style.display = 'block';
+                
+                healthFill.offsetHeight;
+                
+                healthFill.className = 'health-fill';
+                if (healthPercent > 60) {
+                    healthFill.classList.add('health-high');
+                } else if (healthPercent > 25) {
+                    healthFill.classList.add('health-medium');
+                } else {
+                    healthFill.classList.add('health-low');
+                }
+                
+                console.log(`🎨 Установлена ширина: ${healthFill.style.width}`);
+            }, 0);
+            
+        } else {
+            console.log(`❌ Не удалось создать/найти полоску здоровья`);
+        }
+        
+        const healthText = cell.querySelector('.health-text');
+        if (healthText) {
+            healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+        }
+        
+        setTimeout(() => this.debugDOMStructure(), 50);
+    }
+
+    updateAllHealthBars() {
+        console.log("🔄 Принудительное обновление всех полосок здоровья...");
+        
+        const hero = this.battleGrid.allies[4];
+        if (hero) {
+            console.log(`❤️ Герой: ${hero.currentHealth}/${hero.maxHealth}`);
+            this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
+        }
+        
+        this.battleGrid.enemies.forEach((monster, position) => {
+            if (monster) {
+                console.log(`👹 Монстр ${position}: ${monster.currentHealth}/${monster.maxHealth}`);
+                this.updateHealthBar('enemies', position, monster.currentHealth, monster.maxHealth);
+            }
+        });
+    }
+
+    debugHealthBars() {
+        console.log("🔍 ДИАГНОСТИКА ПОЛОСОК ЗДОРОВЬЯ:");
+        
+        const hero = this.battleGrid.allies[4];
+        if (hero) {
+            const healthPercent = (hero.currentHealth / hero.maxHealth) * 100;
+            console.log(`❤️ Герой: ${hero.currentHealth}/${hero.maxHealth} (${healthPercent}%)`);
+            
+            const heroCell = document.querySelector('.grid-cell-fullscreen[data-position="4"][data-side="allies"]');
+            if (heroCell) {
+                const healthFill = heroCell.querySelector('.health-fill');
+                console.log(`🎯 Найдена полоска героя:`, healthFill);
                 if (healthFill) {
                     console.log(`📏 Текущая ширина: ${healthFill.style.width}`);
+                    console.log(`🎨 Текущие классы: ${healthFill.className}`);
                 }
             }
         }
-    });
-}
-
-    // Добавьте эту функцию в класс BattleSystem
-handleCellClick(position, side) {
-    if (side === 'enemies' && this.pendingAction) {
-        this.selectTarget(position);
+        
+        this.battleGrid.enemies.forEach((monster, position) => {
+            if (monster) {
+                const healthPercent = (monster.currentHealth / monster.maxHealth) * 100;
+                console.log(`👹 Монстр ${position}: ${monster.currentHealth}/${monster.maxHealth} (${healthPercent}%)`);
+                
+                const monsterCell = document.querySelector(`.grid-cell-fullscreen[data-position="${position}"][data-side="enemies"]`);
+                if (monsterCell) {
+                    const healthFill = monsterCell.querySelector('.health-fill');
+                    console.log(`🎯 Найдена полоска монстра ${position}:`, healthFill);
+                    if (healthFill) {
+                        console.log(`📏 Текущая ширина: ${healthFill.style.width}`);
+                    }
+                }
+            }
+        });
     }
-}
 
-// Улучшенный метод getHealEfficiency
-getHealEfficiency(comboCount) {
-    const efficiencies = [0.15, 0.25, 0.40, 0.60];
-    return efficiencies[Math.min(comboCount - 1, 3)];
-}
+    debugDOMStructure() {
+        console.log("🔍 ДИАГНОСТИКА DOM СТРУКТУРЫ:");
+        
+        const heroCell = document.querySelector('.grid-cell-fullscreen[data-position="4"][data-side="allies"]');
+        if (heroCell) {
+            console.log("❤️ СТРУКТУРА ГЕРОЯ:");
+            console.log("Весь HTML:", heroCell.outerHTML);
+            
+            const healthBar = heroCell.querySelector('.health-bar-fullscreen');
+            const healthFill = heroCell.querySelector('.health-fill');
+            
+            console.log("Полоска здоровья найдена:", !!healthFill);
+            if (healthFill) {
+                console.log("Стили полоски:", {
+                    width: healthFill.style.width,
+                    display: healthFill.style.display,
+                    computedWidth: window.getComputedStyle(healthFill).width,
+                    parentWidth: healthBar ? window.getComputedStyle(healthBar).width : 'no parent'
+                });
+            }
+        }
+        
+        const monsterCell = document.querySelector('.grid-cell-fullscreen[data-position="0"][data-side="enemies"]');
+        if (monsterCell) {
+            console.log("👹 СТРУКТУРА МОНСТРА:");
+            const healthFill = monsterCell.querySelector('.health-fill');
+            console.log("Полоска здоровья найдена:", !!healthFill);
+            if (healthFill) {
+                console.log("Стили полоски:", {
+                    width: healthFill.style.width,
+                    computedWidth: window.getComputedStyle(healthFill).width
+                });
+            }
+        }
+    }
+
+    handleCellClick(position, side) {
+        if (side === 'enemies' && this.pendingAction) {
+            this.selectTarget(position);
+        }
+    }
+
+    getHealEfficiency(comboCount) {
+        const efficiencies = [0.15, 0.25, 0.40, 0.60];
+        return efficiencies[Math.min(comboCount - 1, 3)];
+    }
 
     updateMonsterPanel(monsterId) {
         const monster = this.currentMonsters.find(m => m.battleId === monsterId);
@@ -1208,147 +1167,131 @@ getHealEfficiency(comboCount) {
         }
     }
 
-// Улучшенный метод getComboMultiplier для монстров
-getComboMultiplier(action, comboCount) {
-    const baseMultipliers = {
-        attack: [1.0, 1.2, 1.5, 2.0],
-        strongAttack: [1.5, 1.8, 2.2, 3.0],
-        crushingAttack: [2.0, 2.5, 3.5, 5.0],
-        breakBlock: [1.0, 1.3, 1.7, 2.2],
-        block: [1.0, 1.1, 1.2, 1.3], // Улучшение эффективности блока
-        rest: [1.0, 1.2, 1.4, 1.6], // Улучшение отдыха
-        heal: [1.0, 1.3, 1.7, 2.2]  // Улучшение лечения
-    };
-    
-    const index = Math.min(comboCount - 1, 3);
-    return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
-}
-
-// Улучшенный метод getBreakBlockMultiplier
-getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
-    if (!enemyHasBlock) {
-        const multipliers = [1.0, 1.2, 1.5, 2.0];
-        return multipliers[Math.min(comboCount - 1, 3)];
-    } else {
-        const multipliers = [2.0, 2.5, 3.0, 4.0];
-        return multipliers[Math.min(comboCount - 1, 3)];
+    getComboMultiplier(action, comboCount) {
+        const baseMultipliers = {
+            attack: [1.0, 1.2, 1.5, 2.0],
+            strongAttack: [1.5, 1.8, 2.2, 3.0],
+            crushingAttack: [2.0, 2.5, 3.5, 5.0],
+            breakBlock: [1.0, 1.3, 1.7, 2.2],
+            block: [1.0, 1.1, 1.2, 1.3],
+            rest: [1.0, 1.2, 1.4, 1.6],
+            heal: [1.0, 1.3, 1.7, 2.2]
+        };
+        
+        const index = Math.min(comboCount - 1, 3);
+        return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
     }
-}
 
-// Улучшенный метод getBlockEfficiency
-getBlockEfficiency(comboCount) {
-    const efficiencies = [0.5, 0.6, 0.75, 0.9];
-    return efficiencies[Math.min(comboCount - 1, 3)];
-}
-
-// Улучшенный метод getBlockAPBonus
-getBlockAPBonus(comboCount) {
-    const apBonuses = [1, 1, 2, 2];
-    return apBonuses[Math.min(comboCount - 1, 3)];
-}
-
-// Улучшенный метод getRestEfficiency
-getRestEfficiency(comboCount) {
-    const apGain = [1, 1, 2, 2];
-    const healPercent = [0.0, 0.05, 0.08, 0.12];
-    
-    return {
-        ap: apGain[Math.min(comboCount - 1, 3)],
-        healPercent: healPercent[Math.min(comboCount - 1, 3)]
-    };
-}
-
-  // ОБНОВЛЕННЫЙ resolveTacticalTurn - ПОЛНЫЙ КОД
-resolveTacticalTurn() {
-    const playerAction = this.players[1].currentAction;
-    
-    this.battleRound++;
-    this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
-    
-    // Выполняем урон игрока
-    this.executeTacticalDamage(playerAction);
-    
-    // Сбрасываем действие игрока и восстанавливаем ОД
-    this.players[1].currentAction = null;
-    this.players[1].ap = Math.min(this.players[1].ap + 1, 10); // Максимум 10 ОД
-    
-    // Восстанавливаем ОД монстрам
-    this.currentMonsters.forEach(monster => {
-        if (monster.currentHealth > 0) {
-            monster.ap = Math.min(monster.ap + 1, 10);
+    getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
+        if (!enemyHasBlock) {
+            const multipliers = [1.0, 1.2, 1.5, 2.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
+        } else {
+            const multipliers = [2.0, 2.5, 3.0, 4.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
         }
-    });
-    
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    
-    // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ВСЕХ ПОЛОСОК ПОСЛЕ ХОДА
-    setTimeout(() => {
-        console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
-        this.updateAllHealthBars();
-        this.updateTacticalUI();
-        
-        // ДИАГНОСТИКА
-        this.debugHealthBars();
-        
-        // Проверяем конец боя после обновления UI
-        if (this.checkBattleEnd()) {
-            setTimeout(() => {
-                this.endTacticalBattle(this.isPlayerVictory());
-            }, 1500);
-        }
-    }, 300);
-}
+    }
 
+    getBlockEfficiency(comboCount) {
+        const efficiencies = [0.5, 0.6, 0.75, 0.9];
+        return efficiencies[Math.min(comboCount - 1, 3)];
+    }
 
-  // ОБНОВЛЕННЫЙ executeTacticalDamage - ПОЛНЫЙ КОД
-executeTacticalDamage(playerAction) {
-    if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
-        const targetUnit = this.battleGrid.enemies[this.selectedTarget];
-        if (targetUnit && targetUnit.currentHealth > 0) {
-            const heroStats = this.getHeroStatsForBattle();
-            const player = this.players[1];
-            
-            let damage = heroStats.damage;
-            
-            if (playerAction === 'strongAttack') damage *= 1.5;
-            if (playerAction === 'crushingAttack') damage *= 2.0;
-            if (playerAction === 'breakBlock') damage *= 0.5;
-            
-            const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
-            damage *= comboMultiplier;
-            
-            let finalDamage = damage;
-            if (playerAction !== 'breakBlock') {
-                finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+    getBlockAPBonus(comboCount) {
+        const apBonuses = [1, 1, 2, 2];
+        return apBonuses[Math.min(comboCount - 1, 3)];
+    }
+
+    getRestEfficiency(comboCount) {
+        const apGain = [1, 1, 2, 2];
+        const healPercent = [0.0, 0.05, 0.08, 0.12];
+        
+        return {
+            ap: apGain[Math.min(comboCount - 1, 3)],
+            healPercent: healPercent[Math.min(comboCount - 1, 3)]
+        };
+    }
+
+    resolveTacticalTurn() {
+        const playerAction = this.players[1].currentAction;
+        
+        this.battleRound++;
+        this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
+        
+        this.executeTacticalDamage(playerAction);
+        
+        this.players[1].currentAction = null;
+        this.players[1].ap = Math.min(this.players[1].ap + 1, 10);
+        
+        this.currentMonsters.forEach(monster => {
+            if (monster.currentHealth > 0) {
+                monster.ap = Math.min(monster.ap + 1, 10);
             }
+        });
+        
+        this.selectedTarget = null;
+        this.pendingAction = null;
+        
+        setTimeout(() => {
+            console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
+            this.updateAllHealthBars();
+            this.updateTacticalUI();
             
-            finalDamage = Math.floor(finalDamage);
+            this.debugHealthBars();
             
-            const oldHealth = targetUnit.currentHealth;
-            targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
-            
-            console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
-            console.log(`🎯 ДО атаки: ${oldHealth}, ПОСЛЕ: ${targetUnit.currentHealth}`);
-            
-            this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
-            
-            // ОБНОВЛЯЕМ ПОЛОСКУ СРАЗУ
-            this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
-            
-            // ДИАГНОСТИКА ПОСЛЕ ОБНОВЛЕНИЯ
-            setTimeout(() => {
-                this.debugHealthBars();
-            }, 100);
-            
-            if (targetUnit.currentHealth <= 0) {
-                targetUnit.currentHealth = 0;
-                this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
-                this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
+            if (this.checkBattleEnd()) {
+                setTimeout(() => {
+                    this.endTacticalBattle(this.isPlayerVictory());
+                }, 1500);
+            }
+        }, 300);
+    }
+
+    executeTacticalDamage(playerAction) {
+        if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
+            const targetUnit = this.battleGrid.enemies[this.selectedTarget];
+            if (targetUnit && targetUnit.currentHealth > 0) {
+                const heroStats = this.getHeroStatsForBattle();
+                const player = this.players[1];
+                
+                let damage = heroStats.damage;
+                
+                if (playerAction === 'strongAttack') damage *= 1.5;
+                if (playerAction === 'crushingAttack') damage *= 2.0;
+                if (playerAction === 'breakBlock') damage *= 0.5;
+                
+                const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
+                damage *= comboMultiplier;
+                
+                let finalDamage = damage;
+                if (playerAction !== 'breakBlock') {
+                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                }
+                
+                finalDamage = Math.floor(finalDamage);
+                
+                const oldHealth = targetUnit.currentHealth;
+                targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
+                
+                console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
+                console.log(`🎯 ДО атаки: ${oldHealth}, ПОСЛЕ: ${targetUnit.currentHealth}`);
+                
+                this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
+                
+                this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
+                
+                setTimeout(() => {
+                    this.debugHealthBars();
+                }, 100);
+                
+                if (targetUnit.currentHealth <= 0) {
+                    targetUnit.currentHealth = 0;
+                    this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
+                    this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
+                }
             }
         }
     }
-}
 
     updateTacticalUI() {
         const playerAP = document.getElementById('playerAP');
@@ -1439,88 +1382,85 @@ executeTacticalDamage(playerAction) {
         return html;
     }
 
-renderTacticalGridCell(unit, position, side) {
-    const isEnemy = side === 'enemies';
-    const isEmpty = !unit;
-    
-    let cellClass = 'grid-cell-fullscreen';
-    let content = '';
-    
-    if (isEmpty) {
-        cellClass += ' empty';
-        content = '<div class="empty-slot">⚫</div>';
-    } else {
-        const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
-        const isAlive = unit.currentHealth > 0;
+    renderTacticalGridCell(unit, position, side) {
+        const isEnemy = side === 'enemies';
+        const isEmpty = !unit;
         
-        // Определяем цвет здоровья
-        let healthColor = 'health-high';
-        if (healthPercent <= 25) healthColor = 'health-low';
-        else if (healthPercent <= 60) healthColor = 'health-medium';
+        let cellClass = 'grid-cell-fullscreen';
+        let content = '';
         
-        const attackType = this.getHeroAttackType(unit.data);
-        const attackTypeText = attackType === 'ranged' ? '🏹 Дальний' : '🥊 Ближний';
-        
-        let damage, armor;
-        if (isEnemy) {
-            damage = unit.data.damage || 10;
-            armor = unit.data.armor || 0;
+        if (isEmpty) {
+            cellClass += ' empty';
+            content = '<div class="empty-slot">⚫</div>';
         } else {
-            const heroStats = this.getHeroStatsForBattle();
-            damage = heroStats.damage;
-            armor = heroStats.armor;
-        }
-        
-        content = `
-            <div class="unit-image-container">
-                <img class="unit-image" src="${unit.data.image}" alt="${unit.data.name}" 
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                <div class="image-fallback" style="display: none;">
-                    ${isEnemy ? '👹' : '🎯'}
+            const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
+            const isAlive = unit.currentHealth > 0;
+            
+            let healthColor = 'health-high';
+            if (healthPercent <= 25) healthColor = 'health-low';
+            else if (healthPercent <= 60) healthColor = 'health-medium';
+            
+            const attackType = this.getHeroAttackType(unit.data);
+            const attackTypeText = attackType === 'ranged' ? '🏹 Дальний' : '🥊 Ближний';
+            
+            let damage, armor;
+            if (isEnemy) {
+                damage = unit.data.damage || 10;
+                armor = unit.data.armor || 0;
+            } else {
+                const heroStats = this.getHeroStatsForBattle();
+                damage = heroStats.damage;
+                armor = heroStats.armor;
+            }
+            
+            content = `
+                <div class="unit-image-container">
+                    <img class="unit-image" src="${unit.data.image}" alt="${unit.data.name}" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div class="image-fallback" style="display: none;">
+                        ${isEnemy ? '👹' : '🎯'}
+                    </div>
+                    
+                    <div class="unit-info-overlay">
+                        <div class="overlay-unit-header">
+                            <div class="overlay-unit-name">${unit.data.name}</div>
+                            <div class="overlay-unit-level">${isEnemy ? 'Lvl 1' : 'Lvl ' + (unit.data.level || 1)}</div>
+                        </div>
+                        <div class="overlay-simple-stats">
+                            <div class="overlay-health">
+                                <span class="overlay-health-label">❤️ Здоровье:</span>
+                                <span class="overlay-health-numbers">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</span>
+                            </div>
+                            <div class="overlay-main-stats">
+                                <span class="overlay-damage">⚔️ ${damage}</span>
+                                <span class="overlay-armor">🛡️ ${armor}</span>
+                                <span class="overlay-type">${attackTypeText}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- Всплывающая информация -->
-                <div class="unit-info-overlay">
-                    <div class="overlay-unit-header">
-                        <div class="overlay-unit-name">${unit.data.name}</div>
-                        <div class="overlay-unit-level">${isEnemy ? 'Lvl 1' : 'Lvl ' + (unit.data.level || 1)}</div>
-                    </div>
-                    <div class="overlay-simple-stats">
-                        <div class="overlay-health">
-                            <span class="overlay-health-label">❤️ Здоровье:</span>
-                            <span class="overlay-health-numbers">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</span>
-                        </div>
-                        <div class="overlay-main-stats">
-                            <span class="overlay-damage">⚔️ ${damage}</span>
-                            <span class="overlay-armor">🛡️ ${armor}</span>
-                            <span class="overlay-type">${attackTypeText}</span>
-                        </div>
+                <div class="unit-health-container">
+                    <div class="health-bar-fullscreen">
+                        <div class="health-fill ${healthColor}" style="width: ${healthPercent}%"></div>
+                        <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
                     </div>
                 </div>
-            </div>
+            `;
             
-            <!-- ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ -->
-            <div class="unit-health-container">
-                <div class="health-bar-fullscreen">
-                    <div class="health-fill ${healthColor}" style="width: ${healthPercent}%"></div>
-                    <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
-                </div>
+            if (!isAlive) {
+                cellClass += ' dead';
+                content += '<div class="dead-overlay">💀</div>';
+            }
+        }
+        
+        return `
+            <div class="${cellClass}" data-position="${position}" data-side="${side}" 
+                 onclick="game.systems.battle.handleCellClick(${position}, '${side}')">
+                ${content}
             </div>
         `;
-        
-        if (!isAlive) {
-            cellClass += ' dead';
-            content += '<div class="dead-overlay">💀</div>';
-        }
     }
-    
-    return `
-        <div class="${cellClass}" data-position="${position}" data-side="${side}" 
-             onclick="game.systems.battle.handleCellClick(${position}, '${side}')">
-            ${content}
-        </div>
-    `;
-}
 
     getHeroAttackType(hero) {
         const equippedWeaponId = hero.equipment?.main_hand;
@@ -1551,32 +1491,30 @@ renderTacticalGridCell(unit, position, side) {
         return `Ваше оружие: ${heroAttackType === 'melee' ? 'ближнего боя' : 'дальнего боя'}. Можете атаковать ${rangeText}.`;
     }
 
-   // Улучшенный метод checkBattleEnd
-checkBattleEnd() {
-    const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-    const hero = this.battleGrid.allies[4];
-    
-    if (hero && hero.currentHealth <= 0) {
-        hero.currentHealth = 0;
-        this.addBattleLog("💀 Герой пал в бою!");
-        return true;
+    checkBattleEnd() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
+        const hero = this.battleGrid.allies[4];
+        
+        if (hero && hero.currentHealth <= 0) {
+            hero.currentHealth = 0;
+            this.addBattleLog("💀 Герой пал в бою!");
+            return true;
+        }
+        
+        if (aliveMonsters.length === 0) {
+            this.addBattleLog("🎉 Все противники повержены!");
+            return true;
+        }
+        
+        return false;
     }
-    
-    if (aliveMonsters.length === 0) {
-        this.addBattleLog("🎉 Все противники повержены!");
-        return true;
-    }
-    
-    return false;
-}
 
-   // Улучшенный метод isPlayerVictory
-isPlayerVictory() {
-    const hero = this.battleGrid.allies[4];
-    const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-    
-    return hero && hero.currentHealth > 0 && aliveMonsters.length === 0;
-}
+    isPlayerVictory() {
+        const hero = this.battleGrid.allies[4];
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
+        
+        return hero && hero.currentHealth > 0 && aliveMonsters.length === 0;
+    }
 
     endTacticalBattle(victory) {
         if (this.resultShown) return;
@@ -1775,5 +1713,4 @@ class TacticalAI {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с компактной сеткой боя");
-
+console.log("📦 BattleSystem полностью переписан с улучшенной системой здоровья");
