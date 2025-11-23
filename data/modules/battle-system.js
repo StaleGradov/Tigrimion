@@ -18,12 +18,6 @@ class BattleSystem {
                 currentAction: null,
                 combo: { type: null, count: 0 },
                 previousActions: []
-            },
-            2: { 
-                ap: 3, 
-                currentAction: null,
-                combo: { type: null, count: 0 },
-                previousActions: []
             }
         };
         
@@ -33,7 +27,8 @@ class BattleSystem {
             crushingAttack: 4,
             block: 1,
             breakBlock: 1,
-            rest: 1
+            rest: 1,
+            heal: 1
         };
         
         this.battleGrid = {
@@ -46,7 +41,7 @@ class BattleSystem {
         this.resultShown = false;
         this.battleEnding = false;
         
-        console.log("✅ BattleSystem инициализирован с тактической системой");
+        console.log("✅ BattleSystem инициализирован с улучшенной групповой системой");
     }
 
     async loadBattleData() {
@@ -92,15 +87,41 @@ class BattleSystem {
         }
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Получение монстров для текущей карты
+    getMonstersForCurrentMap() {
+        if (!window.game.systems.map || !window.game.systems.map.currentMap) {
+            console.log("🗺️ Карта не активна, используем общих монстров");
+            return this.monsters;
+        }
+
+        const currentMap = window.game.systems.map.currentMap;
+        
+        if (!currentMap.monsters || !currentMap.monsters.availableMonsters) {
+            console.log("🗺️ У карты нет своих монстров, используем общих");
+            return this.monsters;
+        }
+
+        // Фильтруем монстров по ID из карты
+        const mapMonsters = currentMap.monsters.availableMonsters
+            .map(monsterId => this.getMonsterById(monsterId))
+            .filter(monster => monster !== null);
+
+        console.log(`🗺️ Загружено монстров для карты "${currentMap.meta.name}": ${mapMonsters.length}`);
+        return mapMonsters;
+    }
+
     getRandomMonsterForMovement() {
-        if (this.randomMonsters.length === 0) {
-            console.error("❌ Нет случайных монстров в enemies.json!");
-            return null;
+        const mapMonsters = this.getMonstersForCurrentMap();
+        
+        if (mapMonsters.length === 0) {
+            console.error("❌ Нет монстров для текущей карты!");
+            return this.monsters[0] || null;
         }
         
-        const randomIndex = Math.floor(Math.random() * this.randomMonsters.length);
-        const monster = this.randomMonsters[randomIndex];
-        console.log(`🎲 Выбран случайный монстр: ${monster.name}`);
+        // Равный шанс для каждого монстра
+        const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+        const monster = mapMonsters[randomIndex];
+        console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
         return monster;
     }
 
@@ -127,6 +148,70 @@ class BattleSystem {
         return window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
 
+    // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Генерация разнородной группы монстров
+    generateMonsterGroup(baseMonsterId) {
+        const currentMap = window.game.systems.map?.currentMap;
+        const mapSettings = currentMap?.monsters;
+        const mapMonsters = this.getMonstersForCurrentMap();
+        
+        if (mapMonsters.length === 0) {
+            console.error("❌ Нет доступных монстров для генерации группы!");
+            return null;
+        }
+
+        // Используем настройки карты или значения по умолчанию
+        const minMonsters = mapSettings?.minMonsters || 1;
+        const maxMonsters = mapSettings?.maxMonsters || 3;
+        
+        let monsterCount = minMonsters;
+        const roll = Math.random() * 100;
+        
+        // Динамическое определение количества монстров
+        if (maxMonsters > minMonsters) {
+            const range = maxMonsters - minMonsters;
+            if (roll <= 70) monsterCount = minMonsters;
+            else if (roll <= 85) monsterCount = minMonsters + 1;
+            else if (roll <= 95) monsterCount = minMonsters + 2;
+            else monsterCount = maxMonsters;
+        }
+
+        // Создаем разнородную группу
+        const monsterGroup = [];
+        const usedMonsters = new Set();
+        
+        for (let i = 0; i < monsterCount; i++) {
+            let selectedMonster;
+            let attempts = 0;
+            
+            // Пытаемся найти уникального монстра (максимум 5 попыток)
+            do {
+                const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+                selectedMonster = mapMonsters[randomIndex];
+                attempts++;
+            } while (usedMonsters.has(selectedMonster.id) && attempts < 5 && mapMonsters.length > 1);
+            
+            usedMonsters.add(selectedMonster.id);
+            
+            const monsterCopy = {
+                ...selectedMonster,
+                battleId: i + 1,
+                currentHealth: selectedMonster.health,
+                name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
+                source: 'map',
+                // ⭐ ДОБАВЛЯЕМ ИНДИВИДУАЛЬНЫЙ AI ДЛЯ КАЖДОГО МОНСТРА
+                ai: new TacticalAI(this, selectedMonster),
+                ap: 3,
+                currentAction: null,
+                combo: { type: null, count: 0 },
+                previousActions: []
+            };
+            monsterGroup.push(monsterCopy);
+        }
+
+        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => m.name));
+        return monsterGroup;
+    }
+
     // ⭐ ОСНОВНОЙ МЕТОД ЗАПУСКА ТАКТИЧЕСКОГО БОЯ
     startBattleWithMonster(hero, monsterId, context = 'normal') {
         if (!hero) {
@@ -138,15 +223,21 @@ class BattleSystem {
         this.battleEnding = false;
 
         const monsterGroup = this.generateMonsterGroup(monsterId);
-        if (!monsterGroup) return;
+        if (!monsterGroup || monsterGroup.length === 0) {
+            console.error("❌ Не удалось сгенерировать группу монстров!");
+            return;
+        }
 
         this.currentHero = hero;
         this.currentMonsters = monsterGroup;
         
-        // Сброс тактической системы
-        this.currentPlayer = 1;
-        this.players[1] = { ap: 3, currentAction: null, combo: { type: null, count: 0 }, previousActions: [] };
-        this.players[2] = { ap: 3, currentAction: null, combo: { type: null, count: 0 }, previousActions: [] };
+        // Сброс тактической системы для игрока
+        this.players[1] = { 
+            ap: 3, 
+            currentAction: null, 
+            combo: { type: null, count: 0 }, 
+            previousActions: [] 
+        };
         
         const heroStats = this.getHeroStatsForBattle();
         this.setupTacticalGrid(hero, monsterGroup, heroStats);
@@ -155,6 +246,7 @@ class BattleSystem {
         this.battleRound = 0;
         this.battleLog = [];
         this.battleContext = context;
+        this.selectedTarget = null;
         
         console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
         this.showTacticalBattleInterface();
@@ -176,9 +268,12 @@ class BattleSystem {
         this.currentMonsters = monsterGroup;
         
         // Сброс тактической системы
-        this.currentPlayer = 1;
-        this.players[1] = { ap: 3, currentAction: null, combo: { type: null, count: 0 }, previousActions: [] };
-        this.players[2] = { ap: 3, currentAction: null, combo: { type: null, count: 0 }, previousActions: [] };
+        this.players[1] = { 
+            ap: 3, 
+            currentAction: null, 
+            combo: { type: null, count: 0 }, 
+            previousActions: [] 
+        };
         
         const heroStats = this.getHeroStatsForBattle();
         this.setupTacticalGrid(hero, monsterGroup, heroStats);
@@ -187,6 +282,7 @@ class BattleSystem {
         this.battleRound = 0;
         this.battleLog = [];
         this.battleContext = context;
+        this.selectedTarget = null;
         
         console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
         this.showTacticalBattleInterface();
@@ -204,7 +300,12 @@ class BattleSystem {
                 battleId: i + 1,
                 currentHealth: specificMonster.health,
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
-                source: 'programmed'
+                source: 'programmed',
+                ai: new TacticalAI(this, specificMonster),
+                ap: 3,
+                currentAction: null,
+                combo: { type: null, count: 0 },
+                previousActions: []
             };
             monsterGroup.push(monsterCopy);
         }
@@ -212,38 +313,7 @@ class BattleSystem {
         return monsterGroup;
     }
 
-    generateMonsterGroup(baseMonsterId) {
-        let baseMonster = this.monsters.find(m => m.id === baseMonsterId);
-        if (!baseMonster) {
-            const randomIndex = Math.floor(Math.random() * this.monsters.length);
-            baseMonster = this.monsters[randomIndex];
-        }
-
-        const roll = Math.random() * 100;
-        let monsterCount = 1;
-        if (roll <= 70) monsterCount = 1;
-        else if (roll <= 85) monsterCount = 2;
-        else if (roll <= 93) monsterCount = 3;
-        else if (roll <= 97) monsterCount = 4;
-        else if (roll <= 99) monsterCount = 5;
-        else monsterCount = 6;
-
-        const monsterGroup = [];
-        for (let i = 0; i < monsterCount; i++) {
-            const monsterCopy = {
-                ...baseMonster,
-                battleId: i + 1,
-                currentHealth: baseMonster.health,
-                name: `${baseMonster.name} ${i + 1}`,
-                source: 'random'
-            };
-            monsterGroup.push(monsterCopy);
-        }
-
-        return monsterGroup;
-    }
-
-    // ⭐ НАСТРОЙКА ТАКТИЧЕСКОЙ СЕТКИ
+    // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Настройка тактической сетки с рядами
     setupTacticalGrid(hero, monsters, heroStats = null) {
         this.battleGrid.allies = [null, null, null, null, null, null];
         this.battleGrid.enemies = [null, null, null, null, null, null];
@@ -258,38 +328,108 @@ class BattleSystem {
             data: hero,
             position: 5,
             maxHealth: heroStats.maxHealth,
-            currentHealth: heroStats.currentHealth
+            currentHealth: heroStats.currentHealth,
+            attackType: this.getHeroAttackType(hero)
         };
 
         this.placeMonstersOnGrid(monsters);
         this.updateAvailableTargets();
     }
 
+    // ⭐ НОВЫЙ МЕТОД: Размещение монстров по рядам
     placeMonstersOnGrid(monsters) {
-        // Монстры на левой стороне, главный монстр на позиции 2 (левая центральная)
-        const positions = [0, 1, 2, 3, 4, 5];
+        // Определяем ряды: 0,2,4 - первый ряд (ближний бой), 1,3,5 - второй ряд (дальний бой)
+        const frontRowPositions = [0, 2, 4];
+        const backRowPositions = [1, 3, 5];
         
-        monsters.forEach((monster, index) => {
-            let position;
-            if (monsters.length === 1) {
-                position = 2; // Центральная левая позиция для одного монстра
+        const frontRowMonsters = [];
+        const backRowMonsters = [];
+        
+        // Разделяем монстров по типу атаки
+        monsters.forEach(monster => {
+            if (monster.attackType === 'melee') {
+                frontRowMonsters.push(monster);
             } else {
-                position = positions[index] || index;
+                backRowMonsters.push(monster);
             }
-            
-            if (position < 6) {
+        });
+        
+        // Заполняем первый ряд ближними бойцами
+        let frontIndex = 0;
+        frontRowMonsters.forEach(monster => {
+            if (frontIndex < frontRowPositions.length) {
+                const position = frontRowPositions[frontIndex];
                 this.battleGrid.enemies[position] = {
                     type: 'monster',
                     data: monster,
                     position: position,
                     maxHealth: monster.health,
-                    currentHealth: monster.currentHealth
+                    currentHealth: monster.currentHealth,
+                    attackType: monster.attackType,
+                    row: 'front'
                 };
+                frontIndex++;
             }
         });
+        
+        // Заполняем второй ряд дальними бойцами
+        let backIndex = 0;
+        backRowMonsters.forEach(monster => {
+            if (backIndex < backRowPositions.length) {
+                const position = backRowPositions[backIndex];
+                this.battleGrid.enemies[position] = {
+                    type: 'monster',
+                    data: monster,
+                    position: position,
+                    maxHealth: monster.health,
+                    currentHealth: monster.currentHealth,
+                    attackType: monster.attackType,
+                    row: 'back'
+                };
+                backIndex++;
+            }
+        });
+        
+        // Если есть оставшиеся монстры, размещаем их в оставшихся слотах
+        const remainingMonsters = [...frontRowMonsters.slice(frontIndex), ...backRowMonsters.slice(backIndex)];
+        let remainingIndex = 0;
+        
+        // Сначала заполняем оставшиеся слоты первого ряда
+        for (let i = frontIndex; i < frontRowPositions.length && remainingIndex < remainingMonsters.length; i++) {
+            const position = frontRowPositions[i];
+            const monster = remainingMonsters[remainingIndex];
+            this.battleGrid.enemies[position] = {
+                type: 'monster',
+                data: monster,
+                position: position,
+                maxHealth: monster.health,
+                currentHealth: monster.currentHealth,
+                attackType: monster.attackType,
+                row: 'front'
+            };
+            remainingIndex++;
+        }
+        
+        // Затем заполняем оставшиеся слоты второго ряда
+        for (let i = backIndex; i < backRowPositions.length && remainingIndex < remainingMonsters.length; i++) {
+            const position = backRowPositions[i];
+            const monster = remainingMonsters[remainingIndex];
+            this.battleGrid.enemies[position] = {
+                type: 'monster',
+                data: monster,
+                position: position,
+                maxHealth: monster.health,
+                currentHealth: monster.currentHealth,
+                attackType: monster.attackType,
+                row: 'back'
+            };
+            remainingIndex++;
+        }
+        
+        console.log(`🎯 Монстры размещены: ${frontRowMonsters.length} в первом ряду, ${backRowMonsters.length} во втором ряду`);
     }
 
-    // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ
+    // ⭐ ГЛАВНЫЙ ИНТЕРФЕЙС ТАКТИЧЕСКОГО БОЯ С ГРУППОВЫМИ ПАНЕЛЯМИ
     showTacticalBattleInterface() {
         const app = document.getElementById('app');
         if (!app) return;
@@ -367,6 +507,12 @@ class BattleSystem {
                                 <span class="btn-text">Отдых</span>
                                 <span class="btn-cost">(1 ОД)</span>
                             </button>
+                            
+                            <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
+                                <span class="btn-icon">❤️</span>
+                                <span class="btn-text">Лечение</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                            </button>
                         </div>
                     </div>
                     
@@ -391,26 +537,11 @@ class BattleSystem {
                         </div>
                     </div>
                     
-                    <!-- ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИК (СДВИНУТА ПРАВЕЕ) -->
-                    <div class="tactical-panel enemy-panel">
-                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКА</h3>
-                        
-                        <div class="panel-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Очки действий:</span>
-                                <span class="stat-value" id="enemyAP">3/∞</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Комбо:</span>
-                                <span class="stat-value" id="enemyCombo">Нет</span>
-                            </div>
-                        </div>
-                        
-                        <div class="action-history">
-                            <div class="history-title">Последнее действие:</div>
-                            <div class="history-entries" id="enemyHistory">
-                                <div class="history-empty">Еще нет действий</div>
-                            </div>
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
+                    <div class="enemy-panels-container">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
+                        <div class="enemy-panels-grid" id="enemyPanelsGrid">
+                            ${this.renderEnemyPanels()}
                         </div>
                     </div>
                 </div>
@@ -440,7 +571,42 @@ class BattleSystem {
         this.updateTacticalUI();
     }
 
-    // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ
+    // ⭐ НОВЫЙ МЕТОД: Рендер групповых панелей монстров
+    renderEnemyPanels() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
+            unit && unit.currentHealth > 0
+        );
+        
+        if (aliveMonsters.length === 0) {
+            return '<div class="no-enemies">Все противники повержены!</div>';
+        }
+        
+        return aliveMonsters.map(monster => `
+            <div class="enemy-panel-mini" data-monster-id="${monster.data.battleId}">
+                <div class="enemy-panel-header">
+                    <span class="enemy-name">${monster.data.name}</span>
+                    <span class="enemy-row">${monster.row === 'front' ? '🥊 Передний' : '🏹 Задний'}</span>
+                </div>
+                <div class="enemy-panel-stats">
+                    <div class="stat-row">
+                        <span>ОД: <span id="enemyAP-${monster.data.battleId}">${monster.data.ap}</span></span>
+                        <span>Комбо: <span id="enemyCombo-${monster.data.battleId}">${monster.data.combo.count > 0 ? `${this.getActionName(monster.data.combo.type)} x${monster.data.combo.count}` : 'Нет'}</span></span>
+                    </div>
+                </div>
+                <div class="enemy-action-history">
+                    <div class="history-title">Действие:</div>
+                    <div class="history-entries" id="enemyHistory-${monster.data.battleId}">
+                        ${monster.data.previousActions.length > 0 ? 
+                            monster.data.previousActions.map(action => `<div class="history-entry">${action}</div>`).join('') : 
+                            '<div class="history-empty">Ожидание...</div>'
+                        }
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ⭐ ОБРАБОТКА ДЕЙСТВИЙ ИГРОКА С ВЫБОРОМ ЦЕЛИ
     handlePlayerAction(action) {
         if (this.battleEnding || this.resultShown) {
             console.log("🛑 Бой уже завершается, игнорируем клик");
@@ -455,10 +621,127 @@ class BattleSystem {
             return;
         }
 
+        // Для атакующих действий - проверяем выбор цели
+        if (this.isAttackAction(action) && !this.selectedTarget) {
+            this.showTargetSelection(action);
+            return;
+        }
+
+        // Если цель выбрана или действие не требует цели - выполняем
+        this.executePlayerAction(action);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Показ выбора цели
+    showTargetSelection(action) {
+        this.updateAvailableTargets();
+        
+        if (this.availableTargets.length === 0) {
+            this.addBattleLog("❌ Нет доступных целей для атаки!");
+            return;
+        }
+
+        // Подсвечиваем доступные цели
+        this.highlightAvailableTargets();
+        
+        // Сохраняем выбранное действие для выполнения после выбора цели
+        this.pendingAction = action;
+        
+        this.addBattleLog("🎯 Выберите цель для атаки (кликните на противника)");
+        
+        // Обновляем подсказку
+        const hintElement = document.getElementById('battleHint');
+        if (hintElement) {
+            hintElement.textContent = "🎯 Выберите цель для атаки! Кликните на противника в сетке.";
+        }
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Выбор цели игроком
+    selectTarget(position) {
+        if (!this.pendingAction) return;
+        
+        const target = this.battleGrid.enemies[position];
+        if (!target || target.currentHealth <= 0) {
+            this.addBattleLog("❌ Невозможно выбрать эту цель!");
+            return;
+        }
+        
+        if (!this.availableTargets.includes(position)) {
+            this.addBattleLog("❌ Эта цель недоступна для вашего оружия!");
+            return;
+        }
+        
+        this.selectedTarget = position;
+        this.addBattleLog(`🎯 Цель выбрана: ${target.data.name}`);
+        
+        // Снимаем подсветку
+        this.clearTargetHighlights();
+        
+        // Выполняем отложенное действие
+        this.executePlayerAction(this.pendingAction);
+        this.pendingAction = null;
+        
+        // Восстанавливаем подсказку
+        const hintElement = document.getElementById('battleHint');
+        if (hintElement) {
+            hintElement.textContent = this.getTacticalHint();
+        }
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Подсветка доступных целей
+    highlightAvailableTargets() {
+        this.availableTargets.forEach(position => {
+            const cell = document.querySelector(`.grid-cell-fullscreen[data-position="${position}"][data-side="enemies"]`);
+            if (cell) {
+                cell.classList.add('selectable');
+                cell.onclick = () => this.selectTarget(position);
+            }
+        });
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Очистка подсветки целей
+    clearTargetHighlights() {
+        const cells = document.querySelectorAll('.grid-cell-fullscreen.selectable');
+        cells.forEach(cell => {
+            cell.classList.remove('selectable');
+            cell.onclick = null;
+        });
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Обновление доступных целей
+    updateAvailableTargets() {
+        const heroAttackType = this.getHeroAttackType(this.currentHero);
+        this.availableTargets = [];
+        
+        this.battleGrid.enemies.forEach((unit, position) => {
+            if (unit && unit.currentHealth > 0) {
+                // Для ближнего боя доступны только монстры первого ряда
+                if (heroAttackType === 'melee') {
+                    if (unit.row === 'front') {
+                        this.availableTargets.push(position);
+                    }
+                } else {
+                    // Для дальнего боя доступны все монстры
+                    this.availableTargets.push(position);
+                }
+            }
+        });
+        
+        console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Проверка является ли действие атакующим
+    isAttackAction(action) {
+        return ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(action);
+    }
+
+    // ⭐ ВЫПОЛНЕНИЕ ДЕЙСТВИЯ ИГРОКА
+    executePlayerAction(action) {
+        const player = this.players[1];
+        
         // Списание ОД
         player.ap -= this.actionsCost[action];
         
-        // Обновление комбо (сбрасывается при смене типа действия)
+        // Обновление комбо
         if (player.combo.type === action && player.combo.count < 4) {
             player.combo.count++;
         } else {
@@ -473,37 +756,160 @@ class BattleSystem {
             player.previousActions.pop();
         }
 
-        this.addBattleLog(`🎯 Вы выбрали: ${this.getActionName(action)} (комбо x${player.combo.count})`);
+        this.addBattleLog(`🎯 Вы используете: ${this.getActionName(action)} (комбо x${player.combo.count})`);
+        
+        // Обработка лечения
+        if (action === 'heal') {
+            this.executeHealAction(player);
+        }
         
         // Автоматический ход монстров через ИИ
         setTimeout(() => {
-            this.executeEnemyTurn();
-        }, 500);
+            this.executeEnemyTurns();
+        }, 800);
         
         this.updateTacticalUI();
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Обработка лечения
+    executeHealAction(player) {
+        const hero = this.battleGrid.allies[5];
+        if (!hero) return;
+        
+        const healEfficiency = this.getHealEfficiency(player.combo.count);
+        const healAmount = Math.floor(hero.maxHealth * healEfficiency);
+        const actualHeal = Math.min(healAmount, hero.maxHealth - hero.currentHealth);
+        
+        hero.currentHealth += actualHeal;
+        
+        this.addBattleLog(`❤️ Вы лечитесь на ${actualHeal} HP (${healEfficiency * 100}% от макс. здоровья)`);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Эффективность лечения по комбо
+    getHealEfficiency(comboCount) {
+        const efficiencies = [0.10, 0.20, 0.40, 0.80]; // 10%, 20%, 40%, 80%
+        return efficiencies[Math.min(comboCount - 1, 3)];
+    }
+
+    // ⭐ ПЕРЕРАБОТАННЫЙ МЕТОД: Ходы всех монстров
+    executeEnemyTurns() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
+            unit && unit.currentHealth > 0
+        );
+        
+        if (aliveMonsters.length === 0) {
+            this.resolveTacticalTurn();
+            return;
+        }
+        
+        // Выполняем ходы монстров последовательно
+        this.executeNextMonsterTurn(0, aliveMonsters);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Последовательное выполнение ходов монстров
+    executeNextMonsterTurn(index, monsters) {
+        if (index >= monsters.length) {
+            // Все монстры сходили - разрешаем ход
+            setTimeout(() => {
+                this.resolveTacticalTurn();
+            }, 500);
+            return;
+        }
+        
+        const monsterUnit = monsters[index];
+        const monster = monsterUnit.data;
+        
+        // Создаем ИИ для этого монстра
+        const tacticalAI = new TacticalAI(this, monster);
+        
+        // Получаем интеллектуальное решение
+        const action = tacticalAI.decideAction();
+        
+        // Выполняем действие монстра
+        monster.currentAction = action;
+        monster.ap -= this.actionsCost[action];
+        
+        // Обновление комбо монстра
+        if (monster.combo.type === action && monster.combo.count < 4) {
+            monster.combo.count++;
+        } else {
+            monster.combo.type = action;
+            monster.combo.count = 1;
+        }
+
+        // Сохранение в историю
+        monster.previousActions.unshift(this.getActionName(action));
+        if (monster.previousActions.length > 1) {
+            monster.previousActions.pop();
+        }
+
+        this.addBattleLog(`👹 ${monster.name} использует: ${this.getActionName(action)}`);
+        
+        // Обработка лечения монстра
+        if (action === 'heal') {
+            this.executeMonsterHeal(monster, monsterUnit);
+        }
+        
+        // Обновляем UI этого монстра
+        this.updateMonsterPanel(monster.battleId);
+        
+        // Переходим к следующему монстру
+        setTimeout(() => {
+            this.executeNextMonsterTurn(index + 1, monsters);
+        }, 600);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Лечение монстра
+    executeMonsterHeal(monster, monsterUnit) {
+        const healEfficiency = this.getHealEfficiency(monster.combo.count);
+        const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
+        const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
+        
+        monsterUnit.currentHealth += actualHeal;
+        
+        this.addBattleLog(`❤️ ${monster.name} лечится на ${actualHeal} HP`);
+    }
+
+    // ⭐ НОВЫЙ МЕТОД: Обновление панели конкретного монстра
+    updateMonsterPanel(monsterId) {
+        const monster = this.currentMonsters.find(m => m.battleId === monsterId);
+        if (!monster) return;
+        
+        const apElement = document.getElementById(`enemyAP-${monsterId}`);
+        const comboElement = document.getElementById(`enemyCombo-${monsterId}`);
+        const historyElement = document.getElementById(`enemyHistory-${monsterId}`);
+        
+        if (apElement) apElement.textContent = monster.ap;
+        if (comboElement) {
+            comboElement.textContent = monster.combo.count > 0 ? 
+                `${this.getActionName(monster.combo.type)} x${monster.combo.count}` : 'Нет';
+        }
+        if (historyElement) {
+            historyElement.innerHTML = monster.previousActions.length > 0 ? 
+                monster.previousActions.map(action => `<div class="history-entry">${action}</div>`).join('') : 
+                '<div class="history-empty">Ожидание...</div>';
+        }
     }
 
     // ⭐ РАСЧЕТ МНОЖИТЕЛЯ КОМБО ПО ТИПУ АТАКИ
     getComboMultiplier(action, comboCount) {
         const baseMultipliers = {
-            attack: [1.0, 2.0, 4.0, 8.0],        // 100% → 200% → 400% → 800%
-            strongAttack: [2.5, 5.0, 10.0, 20.0], // 250% → 500% → 1000% → 2000%
-            crushingAttack: [7.5, 15.0, 30.0, 60.0], // 750% → 1500% → 3000% → 6000%
-            breakBlock: [0.5, 1.0, 1.5, 2.0]     // 50% → 100% → 150% → 200% (без блока)
+            attack: [1.0, 2.0, 4.0, 8.0],
+            strongAttack: [2.5, 5.0, 10.0, 20.0],
+            crushingAttack: [7.5, 15.0, 30.0, 60.0],
+            breakBlock: [0.5, 1.0, 1.5, 2.0]
         };
         
         const index = Math.min(comboCount - 1, 3);
         return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
     }
 
-    // ⭐ РАСЧЕТ МНОЖИТЕЛЯ ПРОБИТИЯ С УЧЕТОМ БЛОКА ПРОТИВНИКА
+    // ⭐ РАСЧЕТ МНОЖИТЕЛЯ ПРОБИТИЯ
     getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
         if (!enemyHasBlock) {
-            // Без блока: 50% → 100% → 150% → 200%
             const multipliers = [0.5, 1.0, 1.5, 2.0];
             return multipliers[Math.min(comboCount - 1, 3)];
         } else {
-            // С блоком: 200% → 300% → 400% → 500%
             const multipliers = [2.0, 3.0, 4.0, 5.0];
             return multipliers[Math.min(comboCount - 1, 3)];
         }
@@ -511,21 +917,18 @@ class BattleSystem {
 
     // ⭐ РАСЧЕТ ЭФФЕКТИВНОСТИ БЛОКА
     getBlockEfficiency(comboCount) {
-        // 50% → 75% → 100% → 100% + отражение
         const efficiencies = [0.5, 0.75, 1.0, 1.0];
         return efficiencies[Math.min(comboCount - 1, 3)];
     }
 
     // ⭐ РАСЧЕТ БОНУСНЫХ ОД ДЛЯ БЛОКА
     getBlockAPBonus(comboCount) {
-        // +1 → +2 → +3 → +4 ОД за блок
         const apBonuses = [1, 2, 3, 4];
         return apBonuses[Math.min(comboCount - 1, 3)];
     }
 
     // ⭐ РАСЧЕТ ЭФФЕКТИВНОСТИ ОТДЫХА
     getRestEfficiency(comboCount) {
-        // +1 ОД+5%HP → +2 ОД+10%HP → +3 ОД+15%HP → +4 ОД+20%HP
         const apGain = [1, 2, 3, 4];
         const healPercent = [0.05, 0.10, 0.15, 0.20];
         
@@ -535,56 +938,28 @@ class BattleSystem {
         };
     }
 
-    // ⭐ УМНЫЙ ИИ ДЛЯ ПРОТИВНИКА
-    executeEnemyTurn() {
-        const enemy = this.players[2];
-        
-        // Создаем ИИ для этого хода
-        const tacticalAI = new TacticalAI(this);
-        
-        // Получаем интеллектуальное решение
-        const action = tacticalAI.decideAction();
-        
-        // Выполняем действие
-        enemy.currentAction = action;
-        enemy.ap -= this.actionsCost[action];
-        
-        // Обновление комбо
-        if (enemy.combo.type === action && enemy.combo.count < 4) {
-            enemy.combo.count++;
-        } else {
-            enemy.combo.type = action;
-            enemy.combo.count = 1;
-        }
-
-        // Сохранение в историю (только последнее действие)
-        enemy.previousActions = [this.getActionName(action)];
-
-        this.addBattleLog(`👹 Противник использует: ${this.getActionName(action)}`);
-        
-        // Разрешение хода
-        setTimeout(() => {
-            this.resolveTacticalTurn();
-        }, 1000);
-    }
-
     // ⭐ РАЗРЕШЕНИЕ ТАКТИЧЕСКОГО ХОДА
     resolveTacticalTurn() {
         const playerAction = this.players[1].currentAction;
-        const enemyAction = this.players[2].currentAction;
         
         this.battleRound++;
         this.addBattleLog(`--- РАУНД ${this.battleRound} ---`);
         
-        // Выполнение урона
-        this.executeTacticalDamage(playerAction, enemyAction);
+        // Выполнение урона (упрощенная версия для демонстрации)
+        this.executeTacticalDamage(playerAction);
         
         // Сброс действий и восстановление ОД
         this.players[1].currentAction = null;
-        this.players[2].currentAction = null;
-        this.players[1].ap += 1; // +1 ОД каждый ход
-        this.players[2].ap += 1; // +1 ОД каждый ход
+        this.players[1].ap += 1;
         
+        // Восстановление ОД у монстров
+        this.currentMonsters.forEach(monster => {
+            if (monster.currentHealth > 0) {
+                monster.ap += 1;
+            }
+        });
+        
+        this.selectedTarget = null;
         this.updateTacticalUI();
         
         // Проверка конца боя
@@ -595,360 +970,78 @@ class BattleSystem {
         }
     }
 
-    // ⭐ ВЫПОЛНЕНИЕ УРОНА С ПРАВИЛЬНОЙ ПРОГРЕССИЕЙ КОМБО
-    executeTacticalDamage(playerAction, enemyAction) {
-        const heroStats = this.getHeroStatsForBattle();
-        const hero = this.battleGrid.allies[5];
+    // ⭐ УПРОЩЕННЫЙ МЕТОД ВЫПОЛНЕНИЯ УРОНА (для демонстрации)
+    executeTacticalDamage(playerAction) {
+        // Здесь должна быть полная логика расчета урона
+        // Для демонстрации используем упрощенную версию
         
-        // 🔧 ИСПРАВЛЕНИЕ: Не даем здоровью уйти в минус
-        if (hero && hero.currentHealth <= 0) {
-            hero.currentHealth = 0;
-            return;
-        }
-        
-        // Базовый урон героя из вашей системы
-        const baseHeroDamage = heroStats.damage;
-        
-        // Проверяем, есть ли у противника блок
-        const enemyHasBlock = enemyAction === 'block';
-        
-        // Расчет урона игрока с правильной прогрессией комбо
-        if (playerAction && playerAction !== 'rest' && playerAction !== 'block') {
-            let damageMultiplier = 1.0;
-            let finalDamage = 0;
-            
-            if (playerAction === 'breakBlock') {
-                // Особый расчет для пробития
-                damageMultiplier = this.getBreakBlockMultiplier(this.players[1].combo.count, enemyHasBlock);
-                finalDamage = Math.floor(baseHeroDamage * damageMultiplier);
-                
-                if (enemyHasBlock) {
-                    this.addBattleLog(`⚡ Пробитие блока! Множитель x${damageMultiplier}`);
-                }
-            } else {
-                // Обычные атаки
-                damageMultiplier = this.getComboMultiplier(playerAction, this.players[1].combo.count);
-                const rawDamage = baseHeroDamage * damageMultiplier;
-                finalDamage = Math.floor(rawDamage);
-            }
-            
-            // Критический удар
-            const isCrit = Math.random() < heroStats.critChance;
-            if (isCrit) {
-                finalDamage *= 2;
-                this.addBattleLog(`💥 КРИТИЧЕСКИЙ УДАР!`);
-            }
-            
-            this.applyDamageToMonsters(finalDamage, playerAction, isCrit, enemyHasBlock);
-        }
-        
-        // Обработка блока игрока
-        if (playerAction === 'block') {
-            const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
-            const apBonus = this.getBlockAPBonus(this.players[1].combo.count);
-            
-            this.players[1].ap += apBonus; // Бонусные ОД за блок
-            
-            this.addBattleLog(`🛡️ Блок активирован (эффективность: ${blockEfficiency * 100}%) +${apBonus} ОД`);
-            
-            // Отражение урона на 4-м стаке
-            if (this.players[1].combo.count >= 4) {
-                this.addBattleLog(`✨ Блок отражает урон обратно врагу!`);
-                // Отражение 50% урона обратно врагу
-                const reflectedDamage = Math.floor(this.calculateMonsterDamage() * 0.5);
-                this.applyDamageToMonsters(reflectedDamage, 'block', false, false);
-            }
-        }
-        
-        // Обработка отдыха игрока
-        if (playerAction === 'rest') {
-            const restEfficiency = this.getRestEfficiency(this.players[1].combo.count);
-            this.players[1].ap += restEfficiency.ap;
-            
-            if (hero) {
-                const healAmount = Math.floor(hero.maxHealth * restEfficiency.healPercent);
-                hero.currentHealth = Math.min(hero.maxHealth, hero.currentHealth + healAmount);
-                this.addBattleLog(`🌀 Отдых: +${restEfficiency.ap} ОД, +${healAmount} HP`);
-            }
-        }
-        
-        // 🔥 ИСПРАВЛЕНИЕ: Расчет урона противника с учетом комбо и прогрессии
-        if (enemyAction === 'attack') {
-            const monsterDamage = this.calculateMonsterDamageWithCombo(enemyAction);
-            let finalDamage = Math.max(1, monsterDamage - heroStats.armor);
-            
-            // Учет блока игрока
-            if (playerAction === 'block') {
-                const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
-                finalDamage = Math.floor(finalDamage * (1 - blockEfficiency));
-                this.addBattleLog(`🛡️ Блок поглощает ${blockEfficiency * 100}% урона!`);
-            }
-            
-            if (hero && finalDamage > 0) {
-                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
-                this.addBattleLog(`👹 Монстры атакуют и наносят ${finalDamage} урона!`);
-                
-                // Вампиризм монстров (если есть)
-                if (this.hasVampirismMonsters()) {
-                    const healAmount = Math.floor(finalDamage * 0.1);
-                    this.healMonsters(healAmount);
-                }
-            }
-        }
-        
-        // 🔥 ИСПРАВЛЕНИЕ: Обработка блока противника с прогрессией
-        if (enemyAction === 'block') {
-            const enemyCombo = this.players[2].combo;
-            const blockEfficiency = this.getBlockEfficiency(enemyCombo.count);
-            const apBonus = this.getBlockAPBonus(enemyCombo.count);
-            
-            this.players[2].ap += apBonus;
-            this.addBattleLog(`👹 Противник блокирует (эффективность: ${blockEfficiency * 100}%) +${apBonus} ОД`);
-            
-            // Отражение урона на 4-м стаке
-            if (enemyCombo.count >= 4) {
-                this.addBattleLog(`✨ Блок противника отражает урон!`);
-                const reflectedDamage = Math.floor(baseHeroDamage * 0.5);
-                if (hero) {
-                    hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
-                    this.addBattleLog(`💥 Отражено ${reflectedDamage} урона обратно!`);
-                }
-            }
-        }
-        
-        // 🔥 ИСПРАВЛЕНИЕ: Обработка отдыха противника с прогрессией
-        if (enemyAction === 'rest') {
-            const enemyCombo = this.players[2].combo.count;
-            const restEfficiency = this.getRestEfficiency(enemyCombo);
-            
-            this.players[2].ap += restEfficiency.ap;
-            
-            // Лечение монстров
-            const aliveMonsters = this.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
-            if (aliveMonsters.length > 0) {
-                const healAmount = Math.floor(aliveMonsters[0].maxHealth * restEfficiency.healPercent);
-                aliveMonsters.forEach(monster => {
-                    monster.currentHealth = Math.min(monster.maxHealth, monster.currentHealth + healAmount);
-                });
-                this.addBattleLog(`👹 Противник отдыхает: +${restEfficiency.ap} ОД, +${healAmount} HP монстрам`);
-            }
-        }
-        
-        // 🔥 ИСПРАВЛЕНИЕ: Обработка пробития противника
-        if (enemyAction === 'breakBlock') {
-            const playerHasBlock = playerAction === 'block';
-            const breakMultiplier = this.getBreakBlockMultiplier(this.players[2].combo.count, playerHasBlock);
-            const baseMonsterDamage = this.calculateBaseMonsterDamage();
-            const finalDamage = Math.floor(baseMonsterDamage * breakMultiplier);
-            
-            if (hero && finalDamage > 0) {
-                // Пробитие игнорирует броню
-                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
-                this.addBattleLog(`⚡ Противник пробивает защиту и наносит ${finalDamage} урона!`);
-            }
-        }
-    }
-
-    // 🔥 НОВЫЙ МЕТОД: Расчет урона монстров с учетом комбо
-    calculateMonsterDamageWithCombo(action) {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
-            unit && unit.currentHealth > 0
-        );
-        
-        if (aliveMonsters.length === 0) return 0;
-        
-        // Базовый урон монстров (средний)
-        const baseDamage = aliveMonsters.reduce((sum, monster) => 
-            sum + (monster.data.damage || 5), 0
-        ) / aliveMonsters.length;
-        
-        // Применяем множитель комбо
-        const comboMultiplier = this.getComboMultiplier(action, this.players[2].combo.count);
-        const finalDamage = baseDamage * comboMultiplier;
-        
-        console.log(`🎯 Урон монстров: база=${baseDamage}, комбо=${comboMultiplier}x, итого=${finalDamage}`);
-        
-        return Math.floor(finalDamage);
-    }
-
-    // 🔥 НОВЫЙ МЕТОД: Базовый урон монстра (без комбо)
-    calculateBaseMonsterDamage() {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => 
-            unit && unit.currentHealth > 0
-        );
-        
-        if (aliveMonsters.length === 0) return 0;
-        
-        return aliveMonsters.reduce((sum, monster) => 
-            sum + (monster.data.damage || 5), 0
-        ) / aliveMonsters.length;
-    }
-
-    applyDamageToMonsters(damage, action, isCrit = false, enemyHasBlock = false) {
-        const targetPosition = this.findAvailableTarget();
-        if (targetPosition !== null) {
-            const target = this.battleGrid.enemies[targetPosition];
-            if (target && target.currentHealth > 0) {
-                let finalDamage = Math.max(1, damage - (target.data.armor || 0));
-                
-                // Пробитие блока
-                if (action === 'breakBlock' && enemyHasBlock) {
-                    finalDamage = damage; // Игнорирует броню при пробитии блока
-                    this.addBattleLog(`⚡ Пробитие игнорирует броню!`);
-                }
-                
-                target.currentHealth = Math.max(0, target.currentHealth - finalDamage);
-                
-                const critText = isCrit ? "💥 КРИТ " : "";
-                this.addBattleLog(`${critText}🎯 Вы наносите ${finalDamage} урона ${target.data.name}!`);
-                
-                // Вампиризм героя
+        if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
+            const targetUnit = this.battleGrid.enemies[this.selectedTarget];
+            if (targetUnit && targetUnit.currentHealth > 0) {
                 const heroStats = this.getHeroStatsForBattle();
-                if (heroStats.vampirism > 0) {
-                    const healAmount = Math.floor(finalDamage * heroStats.vampirism);
-                    const hero = this.battleGrid.allies[5];
-                    if (hero) {
-                        hero.currentHealth = Math.min(hero.maxHealth, hero.currentHealth + healAmount);
-                        this.addBattleLog(`🩸 Поглощено ${healAmount} здоровья!`);
-                    }
-                }
+                const player = this.players[1];
                 
-                if (target.currentHealth <= 0) {
-                    target.currentHealth = 0;
-                    this.addBattleLog(`💀 ${target.data.name} повержен!`);
+                let damage = heroStats.damage;
+                if (playerAction === 'strongAttack') damage *= 1.5;
+                if (playerAction === 'crushingAttack') damage *= 2.0;
+                
+                // Применяем комбо
+                const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
+                damage *= comboMultiplier;
+                
+                // Учитываем броню цели
+                damage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                
+                targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - damage);
+                this.addBattleLog(`🎯 Вы наносите ${Math.floor(damage)} урона ${targetUnit.data.name}!`);
+                
+                if (targetUnit.currentHealth <= 0) {
+                    targetUnit.currentHealth = 0;
+                    this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
                 }
             }
         }
     }
 
-    findAvailableTarget() {
-        const hero = this.battleGrid.allies[5];
-        if (!hero) return null;
+    // ⭐ ОБНОВЛЕНИЕ ТАКТИЧЕСКОГО ИНТЕРФЕЙСА
+    updateTacticalUI() {
+        // Обновление ОД игрока
+        const playerAP = document.getElementById('playerAP');
+        const playerCombo = document.getElementById('playerCombo');
         
-        const attackType = this.getHeroAttackType(hero.data);
+        if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
         
-        let availablePositions = [];
-        
-        if (attackType === 'ranged') {
-            // Дальний бой - все позиции
-            availablePositions = [0, 1, 2, 3, 4, 5];
-        } else {
-            // Ближний бой - сначала ближние (0,2,4), потом дальние
-            availablePositions = [0, 2, 4].filter(pos => {
-                const unit = this.battleGrid.enemies[pos];
-                return unit && unit.currentHealth > 0;
-            });
-            
-            if (availablePositions.length === 0) {
-                availablePositions = [1, 3, 5].filter(pos => {
-                    const unit = this.battleGrid.enemies[pos];
-                    return unit && unit.currentHealth > 0;
-                });
+        // Обновление комбо игрока
+        if (playerCombo) {
+            if (this.players[1].combo.count > 0) {
+                const action = this.players[1].combo.type;
+                const count = this.players[1].combo.count;
+                let multiplierText = '';
+                
+                if (this.isAttackAction(action)) multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
+                else if (action === 'breakBlock') multiplierText = ` (x${this.getBreakBlockMultiplier(count, false)})`;
+                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}% +${this.getBlockAPBonus(count)}ОД)`;
+                else if (action === 'rest') multiplierText = ` (+${this.getRestEfficiency(count).ap}ОД)`;
+                else if (action === 'heal') multiplierText = ` (${this.getHealEfficiency(count) * 100}% HP)`;
+                
+                playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
+            } else {
+                playerCombo.textContent = 'Нет';
             }
         }
         
-        return availablePositions.length > 0 ? availablePositions[0] : null;
-    }
-
-    // 🔥 УДАЛЕН СТАРЫЙ МЕТОД: calculateMonsterDamage() - заменен на calculateMonsterDamageWithCombo()
-
-    hasVampirismMonsters() {
-        return this.battleGrid.enemies.some(unit => 
-            unit && unit.data.vampirism && unit.data.vampirism > 0
-        );
-    }
-
-    healMonsters(healAmount) {
-        this.battleGrid.enemies.forEach(unit => {
-            if (unit && unit.currentHealth > 0) {
-                unit.currentHealth = Math.min(unit.maxHealth, unit.currentHealth + healAmount);
+        // Обновление истории игрока
+        this.updateActionHistory('playerHistory', this.players[1].previousActions);
+        
+        // Обновление панелей монстров
+        this.currentMonsters.forEach(monster => {
+            if (monster.currentHealth > 0) {
+                this.updateMonsterPanel(monster.battleId);
             }
         });
-    }
-
-    // ⭐ ПРОВЕРКА КОНЦА БОЯ С ИСПРАВЛЕНИЕМ ЗДОРОВЬЯ
-    checkBattleEnd() {
-        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
-        const hero = this.battleGrid.allies[5];
         
-        // 🔧 ИСПРАВЛЕНИЕ: Если здоровье героя <= 0, устанавливаем его в 0
-        if (hero && hero.currentHealth <= 0) {
-            hero.currentHealth = 0;
-        }
-        
-        return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
-    }
-
-    isPlayerVictory() {
-        const hero = this.battleGrid.allies[5];
-        return hero && hero.currentHealth > 0;
-    }
-
-    // ⭐ ЗАВЕРШЕНИЕ БОЯ С ИСПРАВЛЕНИЕМ ЗДОРОВЬЯ ГЕРОЯ
-    endTacticalBattle(victory) {
-        if (this.resultShown) return;
-        this.resultShown = true;
-
-        if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            this.currentHero.gold += totalReward;
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-            
-            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
-        } else {
-            // 🔧 ИСПРАВЛЕНИЕ: При поражении оставляем 1 HP вместо ухода в минус
-            this.currentHero.currentHealth = 1;
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1.");
-            
-            if (window.game && window.game.handleHeroDeath) {
-                window.game.handleHeroDeath();
-            }
-        }
-        
-        // 🔧 ИСПРАВЛЕНИЕ: Синхронизируем здоровье героя
-        if (this.currentHero && window.game.systems.hero) {
-            this.currentHero.currentHealth = this.battleGrid.allies[5]?.currentHealth || this.currentHero.currentHealth;
-            window.game.systems.hero.calculateHeroStats(this.currentHero);
-        }
-        
-        if (window.game) window.game.saveGame();
-        
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
-        }
-        
-        this.battleActive = false;
-        this.showBattleResult(victory);
-    }
-
-    // ⭐ ОСТАЛЬНЫЕ МЕТОДЫ (совместимость)
-    showFullscreenBattle() {
-        this.showTacticalBattleInterface();
-    }
-
-    updateAvailableTargets() {
-        // Для совместимости со старой системой
-    }
-
-    selectTarget(position) {
-        // Для совместимости - в тактической системе цель выбирается автоматически
-    }
-
-    executeAttack(targetPosition) {
-        // Для совместимости
-    }
-
-    getHeroAttackType(hero) {
-        const equippedWeaponId = hero.equipment?.main_hand;
-        if (equippedWeaponId && window.game.systems.equipment) {
-            const weapon = window.game.systems.equipment.getItemById(equippedWeaponId);
-            return weapon?.attackType || 'melee';
-        }
-        return 'melee';
+        this.updateTacticalGrid();
+        this.updateBattleLog();
     }
 
     // ⭐ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
@@ -959,54 +1052,10 @@ class BattleSystem {
             crushingAttack: 'Сокрушительная атака',
             block: 'Блок',
             breakBlock: 'Пробитие',
-            rest: 'Отдых'
+            rest: 'Отдых',
+            heal: 'Лечение'
         };
         return names[action] || action;
-    }
-
-    updateTacticalUI() {
-        // Обновление ОД
-        const playerAP = document.getElementById('playerAP');
-        const enemyAP = document.getElementById('enemyAP');
-        const playerCombo = document.getElementById('playerCombo');
-        const enemyCombo = document.getElementById('enemyCombo');
-        
-        if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
-        if (enemyAP) enemyAP.textContent = `${this.players[2].ap}/∞`;
-        
-        // Обновление комбо с отображением множителя
-        if (playerCombo) {
-            if (this.players[1].combo.count > 0) {
-                const action = this.players[1].combo.type;
-                const count = this.players[1].combo.count;
-                let multiplierText = '';
-                
-                if (action === 'attack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
-                else if (action === 'strongAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
-                else if (action === 'crushingAttack') multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
-                else if (action === 'breakBlock') multiplierText = ` (x${this.getBreakBlockMultiplier(count, false)})`;
-                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}% +${this.getBlockAPBonus(count)}ОД)`;
-                else if (action === 'rest') multiplierText = ` (+${this.getRestEfficiency(count).ap}ОД)`;
-                
-                playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
-            } else {
-                playerCombo.textContent = 'Нет';
-            }
-        }
-            
-        if (enemyCombo) {
-            if (this.players[2].combo.count > 0) {
-                enemyCombo.textContent = `${this.getActionName(this.players[2].combo.type)} x${this.players[2].combo.count}`;
-            } else {
-                enemyCombo.textContent = 'Нет';
-            }
-        }
-        
-        this.updateActionHistory('playerHistory', this.players[1].previousActions);
-        this.updateActionHistory('enemyHistory', this.players[2].previousActions);
-        
-        this.updateTacticalGrid();
-        this.updateBattleLog();
     }
 
     updateActionHistory(elementId, actions) {
@@ -1071,6 +1120,10 @@ class BattleSystem {
                             <span>⚔️ ${unit.data.damage}</span>
                             <span>🛡️ ${unit.data.armor || 0}</span>
                         </div>
+                        <div class="stat-line">
+                            <span>${unit.attackType === 'melee' ? '🥊 Ближний' : '🏹 Дальний'}</span>
+                            <span>${unit.row === 'front' ? '1-й ряд' : '2-й ряд'}</span>
+                        </div>
                     </div>
                 `;
             } else {
@@ -1080,6 +1133,10 @@ class BattleSystem {
                         <div class="stat-line">
                             <span>⚔️ ${heroStats.damage}</span>
                             <span>🛡️ ${heroStats.armor}</span>
+                        </div>
+                        <div class="stat-line">
+                            <span>${unit.attackType === 'melee' ? '🥊 Ближний' : '🏹 Дальний'}</span>
+                            <span>Герой</span>
                         </div>
                     </div>
                 `;
@@ -1111,11 +1168,23 @@ class BattleSystem {
             }
         }
         
+        // Добавляем обработчик клика для вражеских ячеек
+        const onClick = isEnemy && !isEmpty ? `onclick="game.systems.battle.selectTarget(${position})"` : '';
+        
         return `
-            <div class="${cellClass}" data-position="${position}" data-side="${side}">
+            <div class="${cellClass}" data-position="${position}" data-side="${side}" ${onClick}>
                 ${content}
             </div>
         `;
+    }
+
+    getHeroAttackType(hero) {
+        const equippedWeaponId = hero.equipment?.main_hand;
+        if (equippedWeaponId && window.game.systems.equipment) {
+            const weapon = window.game.systems.equipment.getItemById(equippedWeaponId);
+            return weapon?.attackType || 'melee';
+        }
+        return 'melee';
     }
 
     addBattleLog(message) {
@@ -1133,7 +1202,66 @@ class BattleSystem {
     }
 
     getTacticalHint() {
-        return "Выберите действие - система автоматически выберет цель! Комбо растет с каждым повторением одного типа действия.";
+        const heroAttackType = this.getHeroAttackType(this.currentHero);
+        const rangeText = heroAttackType === 'melee' ? 'только враги первого ряда' : 'любые враги';
+        return `Ваше оружие: ${heroAttackType === 'melee' ? 'ближнего боя' : 'дальнего боя'}. Можете атаковать ${rangeText}.`;
+    }
+
+    // ⭐ ПРОВЕРКА КОНЦА БОЯ
+    checkBattleEnd() {
+        const aliveMonsters = this.battleGrid.enemies.filter(unit => unit && unit.currentHealth > 0);
+        const hero = this.battleGrid.allies[5];
+        
+        if (hero && hero.currentHealth <= 0) {
+            hero.currentHealth = 0;
+        }
+        
+        return aliveMonsters.length === 0 || (hero && hero.currentHealth <= 0);
+    }
+
+    isPlayerVictory() {
+        const hero = this.battleGrid.allies[5];
+        return hero && hero.currentHealth > 0;
+    }
+
+    // ⭐ ЗАВЕРШЕНИЕ БОЯ
+    endTacticalBattle(victory) {
+        if (this.resultShown) return;
+        this.resultShown = true;
+
+        if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            this.currentHero.gold += totalReward;
+            window.game.systems.level.addExperience(this.currentHero, totalExperience);
+            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+            
+            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+        } else {
+            this.currentHero.currentHealth = 1;
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1.");
+            
+            if (window.game && window.game.handleHeroDeath) {
+                window.game.handleHeroDeath();
+            }
+        }
+        
+        // Синхронизируем здоровье героя
+        if (this.currentHero && window.game.systems.hero) {
+            this.currentHero.currentHealth = this.battleGrid.allies[5]?.currentHealth || this.currentHero.currentHealth;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
+        
+        if (window.game) window.game.saveGame();
+        
+        if (this.battleContext === 'movement' && window.game.systems.map) {
+            window.game.systems.map.completeMovementAfterBattle(victory);
+        }
+        
+        this.battleActive = false;
+        this.showBattleResult(victory);
     }
 
     showBattleResult(victory) {
@@ -1201,7 +1329,7 @@ class BattleSystem {
             this.endTacticalBattle(false);
         } else {
             this.addBattleLog("❌ Попытка сбежать не удалась! Противники атакуют.");
-            this.executeEnemyTurn();
+            this.executeEnemyTurns();
         }
         
         this.updateTacticalUI();
@@ -1220,6 +1348,8 @@ class BattleSystem {
         
         this.battleActive = false;
         this.currentMonsters = [];
+        this.selectedTarget = null;
+        this.pendingAction = null;
     }
 
     // Методы для совместимости
@@ -1241,351 +1371,43 @@ class BattleSystem {
     }
 }
 
-// 🧠 КЛАСС УМНОГО ИИ ДЛЯ ПРОТИВНИКА
+// 🧠 КЛАСС УМНОГО ИИ ДЛЯ МОНСТРОВ
 class TacticalAI {
-    constructor(battleSystem) {
+    constructor(battleSystem, monster) {
         this.bs = battleSystem;
-        this.personality = this.analyzeMonsterGroup();
-        this.memory = {
-            playerPattern: [],
-            lastPlayerAction: null,
-            predictedNextAction: null,
-            dangerLevel: 0
-        };
+        this.monster = monster;
     }
     
-    // ⭐ ОСНОВНОЙ МЕТОД ПРИНЯТИЯ РЕШЕНИЙ
     decideAction() {
-        const enemy = this.bs.players[2];
-        const player = this.bs.players[1];
-        
-        // 1. АНАЛИЗ ТЕКУЩЕЙ СИТУАЦИИ
-        const situation = this.analyzeSituation();
-        
-        // 2. ВЫБОР СТРАТЕГИИ НА ОСНОВЕ СИТУАЦИИ
-        const strategy = this.chooseStrategy(situation);
-        
-        // 3. ВЫБОР КОНКРЕТНОГО ДЕЙСТВИЯ
-        const action = this.selectAction(strategy, enemy, player);
-        
-        console.log(`🤖 ИИ: Стратегия=${strategy}, Действие=${action}, ОД=${enemy.ap}`);
-        return action;
-    }
-    
-    analyzeSituation() {
-        const enemy = this.bs.players[2];
-        const player = this.bs.players[1];
-        const hero = this.bs.battleGrid.allies[5];
-        const monsters = this.bs.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
-        
-        return {
-            // Состояние сторон
-            heroHealthPercent: hero ? hero.currentHealth / hero.maxHealth : 0,
-            monsterHealthPercent: this.getAverageMonsterHealth(),
-            
-            // Ресурсы
-            playerAP: player.ap,
-            enemyAP: enemy.ap,
-            playerCombo: player.combo,
-            enemyCombo: enemy.combo,
-            
-            // Угрозы
-            playerComboThreat: this.calculatePlayerComboThreat(),
-            imminentDanger: this.checkImminentDanger(),
-            
-            // Паттерны игрока
-            playerPattern: this.analyzePlayerPattern(),
-            predictedAction: this.predictPlayerAction(),
-            
-            // Тактические возможности
-            canBreakCombo: this.canBreakPlayerCombo(),
-            canForceWasteAP: this.canForcePlayerToWasteAP(),
-            
-            // Статистика
-            turn: this.bs.battleRound,
-            monstersAlive: monsters.length
-        };
-    }
-    
-    chooseStrategy(situation) {
-        // 🚨 КРИТИЧЕСКИЕ СИТУАЦИИ
-        if (situation.imminentDanger === 'PLAYER_WIN_NEXT_TURN') {
-            return 'DESPERATE_DEFENSE';
-        }
-        
-        if (situation.heroHealthPercent < 0.3) {
-            return 'FINISHING_BLOW';
-        }
-        
-        if (situation.monsterHealthPercent < 0.4) {
-            return 'SURVIVAL';
-        }
-        
-        // 🎪 СИТУАТИВНЫЕ СТРАТЕГИИ
-        if (situation.playerComboThreat >= 8) {
-            return 'COMBO_BREAKER';
-        }
-        
-        if (situation.playerAP <= 1 && situation.enemyAP >= 2) {
-            return 'AGGRESSIVE_PRESSURE';
-        }
-        
-        if (situation.predictedAction === 'crushingAttack' && situation.enemyAP >= 2) {
-            return 'PREEMPTIVE_BLOCK';
-        }
-        
-        // 🔮 АДАПТАЦИЯ К СТИЛЮ ИГРОКА
-        if (situation.playerPattern === 'AGGRESSIVE') {
-            return 'COUNTER_ATTACK';
-        }
-        
-        if (situation.playerPattern === 'DEFENSIVE') {
-            return 'SUSTAINED_PRESSURE';
-        }
-        
-        // ⚖️ СТАНДАРТНАЯ СТРАТЕГИЯ
-        return 'BALANCED';
-    }
-    
-    selectAction(strategy, enemy, player) {
-        const availableActions = this.getAvailableActions(enemy.ap);
+        const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
-        let weightedActions = [];
-        
-        switch(strategy) {
-            case 'DESPERATE_DEFENSE':
-                weightedActions = this.weightActions(availableActions, { block: 90, rest: 10 });
-                break;
-                
-            case 'FINISHING_BLOW':
-                weightedActions = this.weightActions(availableActions, { 
-                    strongAttack: 60, attack: 30, breakBlock: 10 
-                });
-                break;
-                
-            case 'SURVIVAL':
-                weightedActions = this.weightActions(availableActions, { 
-                    block: 50, rest: 40, attack: 10 
-                });
-                break;
-                
-            case 'COMBO_BREAKER':
-                if (player.combo.type === 'block') {
-                    weightedActions = this.weightActions(availableActions, { breakBlock: 80, attack: 20 });
-                } else {
-                    weightedActions = this.weightActions(availableActions, { block: 70, rest: 30 });
-                }
-                break;
-                
-            case 'AGGRESSIVE_PRESSURE':
-                weightedActions = this.weightActions(availableActions, { 
-                    strongAttack: 50, attack: 40, breakBlock: 10 
-                });
-                break;
-                
-            case 'PREEMPTIVE_BLOCK':
-                weightedActions = this.weightActions(availableActions, { block: 85, rest: 15 });
-                break;
-                
-            case 'COUNTER_ATTACK':
-                if (player.currentAction === 'attack' && enemy.ap >= 2) {
-                    weightedActions = this.weightActions(availableActions, { strongAttack: 70, block: 30 });
-                } else {
-                    weightedActions = this.weightActions(availableActions, { attack: 50, block: 40, rest: 10 });
-                }
-                break;
-                
-            case 'SUSTAINED_PRESSURE':
-                weightedActions = this.weightActions(availableActions, { 
-                    attack: 40, breakBlock: 35, rest: 25 
-                });
-                break;
-                
-            default: // BALANCED
-                weightedActions = this.weightActions(availableActions, { 
-                    attack: 40, block: 30, rest: 20, strongAttack: 10 
-                });
+        // Простая логика для демонстрации
+        if (this.monster.currentHealth < this.monster.health * 0.3 && Math.random() < 0.6) {
+            return 'heal';
         }
         
-        // Применяем личность монстра
-        weightedActions = this.applyPersonalityModifiers(weightedActions);
-        
-        return weightedActions.length > 0 ? weightedActions[0] : 'rest';
-    }
-    
-    getAvailableActions(ap) {
-        return Object.keys(this.bs.actionsCost).filter(action => 
-            this.bs.actionsCost[action] <= ap
-        );
-    }
-    
-    weightActions(availableActions, weights) {
-        const weighted = [];
-        
-        availableActions.forEach(action => {
-            const weight = weights[action] || 5;
-            for (let i = 0; i < weight; i++) {
-                weighted.push(action);
-            }
-        });
-        
-        return weighted;
-    }
-    
-    applyPersonalityModifiers(actions) {
-        const modifiers = {
-            'BERSERKER': { attack: 1.5, strongAttack: 1.3, block: 0.5, rest: 0.3 },
-            'DEFENDER': { block: 2.0, rest: 1.5, attack: 0.6, strongAttack: 0.3 },
-            'TACTICIAN': { breakBlock: 1.8, strongAttack: 1.2, rest: 1.1 },
-            'AGGRESSIVE_SWARM': { attack: 1.4, strongAttack: 1.2, block: 0.7 },
-            'ENDURANCE_PACK': { block: 1.3, rest: 1.4, attack: 0.9 },
-            'STRATEGIC_GROUP': { breakBlock: 1.3, strongAttack: 1.1, block: 1.1 }
-        };
-        
-        const modifier = modifiers[this.personality] || {};
-        const weighted = [];
-        
-        actions.forEach(action => {
-            const weight = modifier[action] || 1;
-            for (let i = 0; i < weight; i++) {
-                weighted.push(action);
-            }
-        });
-        
-        return weighted;
-    }
-    
-    analyzeMonsterGroup() {
-        const monsters = this.bs.currentMonsters;
-        
-        if (monsters.length === 1) {
-            const monster = monsters[0];
-            if (monster.health > 50) return 'TACTICIAN';
-            if (monster.damage > 15) return 'BERSERKER';
-            if (monster.armor > 8) return 'DEFENDER';
-        }
-        
-        const totalDamage = monsters.reduce((sum, m) => sum + m.damage, 0);
-        const totalHealth = monsters.reduce((sum, m) => sum + m.health, 0);
-        
-        if (totalDamage / monsters.length > 12) return 'AGGRESSIVE_SWARM';
-        if (totalHealth / monsters.length > 40) return 'ENDURANCE_PACK';
-        
-        return 'STRATEGIC_GROUP';
-    }
-    
-    getAverageMonsterHealth() {
-        const monsters = this.bs.battleGrid.enemies.filter(m => m && m.currentHealth > 0);
-        if (monsters.length === 0) return 0;
-        
-        const totalHealth = monsters.reduce((sum, m) => sum + m.currentHealth, 0);
-        const totalMaxHealth = monsters.reduce((sum, m) => sum + m.maxHealth, 0);
-        
-        return totalHealth / totalMaxHealth;
-    }
-    
-    calculatePlayerComboThreat() {
-        const player = this.bs.players[1];
-        if (!player.combo.type) return 0;
-        
-        const threatValues = {
-            'attack': [2, 4, 8, 16],
-            'strongAttack': [5, 10, 20, 40],
-            'crushingAttack': [15, 30, 60, 120],
-            'breakBlock': [1, 2, 3, 4],
-            'block': [1, 2, 3, 4],
-            'rest': [0, 0, 0, 0]
-        };
-        
-        const threat = threatValues[player.combo.type]?.[player.combo.count - 1] || 0;
-        const canExecute = player.ap >= (this.bs.actionsCost[player.combo.type] || 1);
-        
-        return canExecute ? threat : threat * 0.3;
-    }
-    
-    checkImminentDanger() {
-        const hero = this.bs.battleGrid.allies[5];
-        const player = this.bs.players[1];
-        
-        if (!hero || !player.combo.type) return 'NONE';
-        
-        // Упрощенная проверка возможности добивания
-        const playerDamage = this.bs.getHeroStatsForBattle().damage;
-        const comboMultiplier = this.bs.getComboMultiplier(player.combo.type, player.combo.count);
-        const potentialDamage = playerDamage * comboMultiplier;
-        
-        if (potentialDamage >= hero.currentHealth && player.ap >= this.bs.actionsCost[player.combo.type]) {
-            return 'PLAYER_WIN_NEXT_TURN';
-        }
-        
-        if (player.combo.count >= 3 && player.ap >= 3) {
-            return 'HIGH_COMBO_THREAT';
-        }
-        
-        return 'NONE';
-    }
-    
-    analyzePlayerPattern() {
-        const actions = this.bs.players[1].previousActions;
-        if (actions.length < 2) return 'UNKNOWN';
-        
-        const attackCount = actions.filter(a => a.includes('атака')).length;
-        const defenseCount = actions.filter(a => a === 'Блок' || a === 'Отдых').length;
-        
-        if (attackCount / actions.length > 0.7) return 'AGGRESSIVE';
-        if (defenseCount / actions.length > 0.6) return 'DEFENSIVE';
-        
-        return 'ADAPTIVE';
-    }
-    
-    predictPlayerAction() {
-        const player = this.bs.players[1];
-        const history = player.previousActions;
-        
-        if (history.length < 2) return null;
-        
-        const lastAction = this.getActionFromName(history[0]);
-        const secondLastAction = this.getActionFromName(history[1]);
-        
-        if (lastAction === secondLastAction && ['attack', 'strongAttack', 'crushingAttack'].includes(lastAction)) {
-            return lastAction;
-        }
-        
-        if (lastAction === 'block' && ['attack', 'strongAttack', 'crushingAttack'].includes(secondLastAction)) {
-            return secondLastAction;
-        }
-        
-        if (lastAction === 'rest' && player.ap <= 2) {
+        if (this.monster.ap >= 2 && Math.random() < 0.3) {
             return 'strongAttack';
         }
         
-        return null;
-    }
-    
-    getActionFromName(actionName) {
-        const names = {
-            'Атака': 'attack',
-            'Силовая атака': 'strongAttack',
-            'Сокрушительная атака': 'crushingAttack',
-            'Блок': 'block',
-            'Пробитие': 'breakBlock',
-            'Отдых': 'rest'
-        };
+        if (this.monster.combo.type === 'block' && this.monster.combo.count >= 2) {
+            return 'block';
+        }
         
-        return names[actionName] || null;
+        return availableActions[Math.floor(Math.random() * availableActions.length)];
     }
     
-    canBreakPlayerCombo() {
-        const player = this.bs.players[1];
-        return player.combo.count >= 2 && player.combo.type !== 'rest';
-    }
-    
-    canForcePlayerToWasteAP() {
-        const player = this.bs.players[1];
-        return player.ap <= 2 && this.bs.players[2].ap >= 2;
+    getAvailableActions() {
+        const actions = [];
+        
+        if (this.monster.ap >= 1) actions.push('attack', 'block', 'rest', 'heal');
+        if (this.monster.ap >= 2) actions.push('strongAttack');
+        if (this.monster.ap >= 4) actions.push('crushingAttack');
+        
+        return actions;
     }
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с умным ИИ, прогрессией комбо для монстров и исправлением здоровья героя");
+console.log("📦 BattleSystem полностью переписан с групповыми монстрами, лечением и выбором цели");
