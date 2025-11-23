@@ -874,17 +874,22 @@ class BattleSystem {
         return Math.floor(finalDamage);
     }
 
-// И обновите функцию updateHealthBar:
 updateHealthBar(side, position, currentHealth, maxHealth) {
-    const healthPercent = (currentHealth / maxHealth) * 100;
+    const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
     
-    // Находим элементы по позиции и стороне
+    console.log(`🔄 Обновление здоровья: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
+    
+    // Находим элементы
     const healthFill = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-fill`);
     const healthText = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-text`);
     
     if (healthFill) {
-        // Обновляем ширину
+        console.log(`🎯 Найдена полоска здоровья, устанавливаем ширину: ${healthPercent}%`);
+        
+        // Принудительно обновляем ширину
         healthFill.style.width = `${healthPercent}%`;
+        healthFill.style.display = 'block';
+        healthFill.style.visibility = 'visible';
         
         // Обновляем цвет
         healthFill.classList.remove('health-high', 'health-medium', 'health-low');
@@ -896,24 +901,25 @@ updateHealthBar(side, position, currentHealth, maxHealth) {
             healthFill.classList.add('health-low');
         }
         
-        // Добавляем анимацию
+        // Анимация
         healthFill.classList.add('health-changing');
         setTimeout(() => {
             healthFill.classList.remove('health-changing');
         }, 300);
+    } else {
+        console.log(`❌ Полоска здоровья не найдена для: ${side} ${position}`);
     }
     
     if (healthText) {
         healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+        healthText.style.display = 'block';
     }
     
-    // Обновляем числа во всплывающей подсказке
+    // Обновляем всплывающую подсказку
     const overlayNumbers = document.querySelector(`[data-position="${position}"][data-side="${side}"] .overlay-health-numbers`);
     if (overlayNumbers) {
         overlayNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
     }
-    
-    console.log(`🔄 Обновлено здоровье: ${side} позиция ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
 }
 
     // Добавьте эту функцию в класс BattleSystem
