@@ -916,12 +916,29 @@ updateHealthBar(side, position, currentHealth, maxHealth) {
     
     console.log(`🔄 Обновление здоровья: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
     
-    // Находим элементы
-    const healthFill = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-fill`);
-    const healthText = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-text`);
+    // Ищем элементы с учетом стороны и позиции
+    const selector = `[data-position="${position}"][data-side="${side}"]`;
+    const cell = document.querySelector(selector);
     
+    if (!cell) {
+        console.log(`❌ Ячейка не найдена: ${selector}`);
+        return;
+    }
+    
+    // Находим элементы внутри ячейки
+    const healthFill = cell.querySelector('.health-fill');
+    const healthText = cell.querySelector('.health-text');
+    const overlayNumbers = cell.querySelector('.overlay-health-numbers');
+    
+    console.log(`🎯 Найдены элементы:`, {
+        healthFill: !!healthFill,
+        healthText: !!healthText,
+        overlayNumbers: !!overlayNumbers
+    });
+    
+    // ОБНОВЛЯЕМ ПОЛОСКУ ЗДОРОВЬЯ
     if (healthFill) {
-        console.log(`🎯 Найдена полоска здоровья, устанавливаем ширину: ${healthPercent}%`);
+        console.log(`🎯 Устанавливаем ширину полоски: ${healthPercent}%`);
         
         // Принудительно обновляем ширину
         healthFill.style.width = `${healthPercent}%`;
@@ -938,25 +955,36 @@ updateHealthBar(side, position, currentHealth, maxHealth) {
             healthFill.classList.add('health-low');
         }
         
-        // Анимация
+        // Анимация изменения
         healthFill.classList.add('health-changing');
         setTimeout(() => {
             healthFill.classList.remove('health-changing');
         }, 300);
     } else {
-        console.log(`❌ Полоска здоровья не найдена для: ${side} ${position}`);
+        console.log(`❌ Полоска здоровья не найдена в ячейке`);
     }
     
+    // ОБНОВЛЯЕМ ТЕКСТ
     if (healthText) {
         healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
         healthText.style.display = 'block';
+        console.log(`📝 Обновлен текст здоровья: ${healthText.textContent}`);
     }
     
-    // Обновляем всплывающую подсказку
-    const overlayNumbers = document.querySelector(`[data-position="${position}"][data-side="${side}"] .overlay-health-numbers`);
+    // ОБНОВЛЯЕМ ВСПЛЫВАЮЩУЮ ПОДСКАЗКУ
     if (overlayNumbers) {
         overlayNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+        console.log(`ℹ️ Обновлена подсказка: ${overlayNumbers.textContent}`);
     }
+    
+    // ДОПОЛНИТЕЛЬНОЕ ИСПРАВЛЕНИЕ: принудительно обновляем стили
+    setTimeout(() => {
+        if (healthFill) {
+            healthFill.style.width = `${healthPercent}%`;
+            // Принудительный рефлоу для анимации
+            healthFill.offsetHeight;
+        }
+    }, 10);
 }
     // Добавьте эту функцию в класс BattleSystem
 handleCellClick(position, side) {
