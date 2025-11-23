@@ -5296,3 +5296,369 @@ body {
 .health-changing {
     animation: healthChange 0.3s ease-in-out;
 }
+/* ========== ИСПРАВЛЕНИЯ ДЛЯ ТАКТИЧЕСКОГО БОЯ - ВСТАВИТЬ В КОНЕЦ ФАЙЛА ========== */
+
+/* РАСШИРЯЕМ КОНТЕЙНЕРЫ СЕТКИ */
+.grid-side {
+    flex: 1;
+    min-width: 550px !important;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px !important;
+    border: 2px solid #4b5563;
+    margin: 0 10px;
+}
+
+/* УВЕЛИЧИВАЕМ САМУ СЕТКУ */
+.grid-container-6x6 {
+    min-height: 880px !important;
+    max-height: 920px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 25px !important;
+    width: 100%;
+    padding: 15px;
+}
+
+/* УВЕЛИЧИВАЕМ ЯЧЕЙКИ И ИСПРАВЛЯЕМ ОТСТУПЫ */
+.grid-cell-fullscreen {
+    min-height: 260px !important;
+    max-height: 280px;
+    padding: 0 !important;
+    border-width: 3px !important;
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4/3 !important;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ИСПРАВЛЯЕМ КОНТЕЙНЕР ИЗОБРАЖЕНИЯ */
+.unit-image-container {
+    width: 100%;
+    height: calc(100% - 55px);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    flex: 1;
+    border-radius: 10px 10px 0 0;
+}
+
+/* УВЕЛИЧИВАЕМ ИЗОБРАЖЕНИЯ */
+.unit-image {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    border: none !important;
+    object-fit: cover;
+    border-radius: 10px 10px 0 0;
+    transition: transform 0.3s ease;
+}
+
+.unit-image-container:hover .unit-image {
+    transform: scale(1.05);
+}
+
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.5rem !important;
+    background: rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 10px 10px 0 0;
+}
+
+/* ИСПРАВЛЕННАЯ ВСПЛЫВАЮЩАЯ ПОДСКАЗКА С ИМЕНЕМ МОНСТРА (СНИЗУ) */
+.unit-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.7) 20%,
+        rgba(0, 0, 0, 0.9) 50%,
+        rgba(0, 0, 0, 0.95) 100%
+    );
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 3;
+    border-radius: 0 0 10px 10px;
+}
+
+.unit-image-container:hover .unit-info-overlay {
+    opacity: 1;
+}
+
+/* ЗАГОЛОВОК С ИМЕНЕМ МОНСТРА/ГЕРОЯ */
+.overlay-unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.overlay-unit-name {
+    font-size: 1.1rem !important;
+    font-weight: bold;
+    color: #f59e0b !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    flex: 1;
+}
+
+.overlay-unit-level {
+    background: #3b82f6;
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* ОСНОВНЫЕ СТАТЫ */
+.overlay-simple-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.overlay-health {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.overlay-health-label {
+    color: #fca5a5;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.overlay-health-numbers {
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.overlay-main-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.overlay-damage {
+    color: #f59e0b;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.overlay-armor {
+    color: #3b82f6;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.overlay-type {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.overlay-row {
+    color: #8b5cf6;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ИСПРАВЛЕННАЯ ПОЛОСКА ЗДОРОВЬЯ (ВСЕГДА ВНИЗУ) */
+.unit-health-container {
+    height: 55px !important;
+    background: rgba(0, 0, 0, 0.9) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.3) !important;
+    padding: 10px 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 5 !important;
+    border-radius: 0 0 10px 10px !important;
+    margin: 0 !important;
+}
+
+.health-bar-fullscreen {
+    width: 100% !important;
+    height: 22px !important;
+    margin: 0 !important;
+    background: #333 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    border: 2px solid #444 !important;
+    position: relative !important;
+}
+
+.health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    transition: width 0.5s ease !important;
+    border-radius: 8px !important;
+    position: relative !important;
+}
+
+.health-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 0.85rem !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7) !important;
+    z-index: 2 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ПОДНИМАЕМ ГЕРОЯ НА 1 ПОЗИЦИЮ ВЫШЕ (позиция 4 вместо 5) */
+.grid-cell-fullscreen[data-side="allies"][data-position="4"] {
+    border: 3px solid #10b981 !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Стиль для героя */
+.grid-cell-fullscreen[data-side="allies"][data-position="4"] .unit-image-container {
+    border: 2px solid #10b981;
+}
+
+/* УВЕЛИЧИВАЕМ ОСНОВНОЙ КОНТЕЙНЕР БОЯ */
+.battle-grid-fullscreen {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 1700px !important;
+    min-width: 1300px !important;
+    margin: 0 40px !important;
+    gap: 30px !important;
+}
+
+/* РАСШИРЯЕМ РАЗДЕЛИТЕЛЬ VS */
+.vs-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 25px !important;
+    min-width: 160px !important;
+}
+
+.vs-text {
+    font-size: 3rem !important;
+    padding: 1.5rem 3rem !important;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    border: 4px solid #f59e0b;
+    color: #f59e0b;
+    font-weight: bold;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.4);
+}
+
+/* АДАПТИВНОСТЬ ДЛЯ БОЛЬШИХ ЭКРАНОВ */
+@media (min-width: 1800px) {
+    .battle-grid-fullscreen {
+        max-width: 1900px !important;
+    }
+    
+    .grid-side {
+        min-width: 600px !important;
+    }
+    
+    .grid-container-6x6 {
+        min-height: 950px !important;
+    }
+    
+    .grid-cell-fullscreen {
+        min-height: 300px !important;
+    }
+}
+
+/* АНИМАЦИЯ ДЛЯ ИЗМЕНЕНИЯ ЗДОРОВЬЯ */
+@keyframes healthChange {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.health-changing {
+    animation: healthChange 0.3s ease-in-out;
+}
+
+/* СТИЛИ ДЛЯ ВЫБРАННОЙ ЦЕЛИ */
+.grid-cell-fullscreen.selectable {
+    cursor: pointer;
+    border-color: #00ff00 !important;
+    animation: pulse-glow 2s infinite;
+    background: rgba(0, 255, 0, 0.15) !important;
+}
+
+.grid-cell-fullscreen.selectable::before {
+    content: "🎯";
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 6px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+@keyframes pulse-glow {
+    0% { 
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        border-color: #00ff00;
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(0, 255, 0, 0.8);
+        border-color: #00ff00;
+    }
+    100% { 
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        border-color: #00ff00;
+    }
+}
