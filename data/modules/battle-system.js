@@ -833,83 +833,87 @@ class BattleSystem {
         }, 800);
     }
 
-    executeMonsterAction(monster, monsterUnit) {
-        const hero = this.battleGrid.allies[4];
-        if (!hero || hero.currentHealth <= 0) return;
+  executeMonsterAction(monster, monsterUnit) {
+    const hero = this.battleGrid.allies[4];
+    if (!hero || hero.currentHealth <= 0) return;
 
-        let damage = 0;
-        let message = '';
-        
-        switch(monster.currentAction) {
-            case 'attack':
-            case 'strongAttack':
-            case 'crushingAttack':
-                damage = this.calculateMonsterDamage(monster, monsterUnit);
-                const heroStats = this.getHeroStatsForBattle();
-                const finalDamage = Math.max(1, damage - heroStats.armor);
-                
-                const oldHealth = hero.currentHealth;
-                hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
-                message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
-                
-                this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
-                
-                if (hero.currentHealth <= 0) {
-                    hero.currentHealth = 0;
-                    this.updateHealthBar('allies', 4, 0, hero.maxHealth);
-                }
-                break;
-                
-            case 'heal':
-                const healEfficiency = this.getHealEfficiency(monster.combo.count);
-                const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
-                const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
-                monsterUnit.currentHealth += actualHeal;
-                message = `❤️ ${monster.name} лечится на ${actualHeal} HP`;
-                
-                this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
-                break;
-                
-            case 'block':
-                message = `🛡️ ${monster.name} защищается`;
-                break;
-                
-            case 'rest':
-                const restEfficiency = this.getRestEfficiency(monster.combo.count);
-                monster.ap += restEfficiency.ap;
-                message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
-                break;
-                
-            default:
-                message = `👹 ${monster.name} совершает действие`;
-        }
-        
-        if (message) {
-            this.addBattleLog(message);
-        }
+    let damage = 0;
+    let message = '';
+    
+    switch(monster.currentAction) {
+        case 'attack':
+        case 'strongAttack':
+        case 'crushingAttack':
+            damage = this.calculateMonsterDamage(monster, monsterUnit);
+            const heroStats = this.getHeroStatsForBattle();
+            const finalDamage = Math.max(1, damage - heroStats.armor);
+            
+            console.log(`👹 МОНСТР АТАКУЕТ: ${monster.name}, урон: ${finalDamage}`);
+            console.log(`👹 Здоровье героя до: ${hero.currentHealth}, после: ${hero.currentHealth - finalDamage}`);
+            
+            const oldHealth = hero.currentHealth;
+            hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
+            message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
+            
+            // ВЫЗОВ ОБНОВЛЕНИЯ ПОЛОСКИ ГЕРОЯ
+            this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
+            
+            if (hero.currentHealth <= 0) {
+                hero.currentHealth = 0;
+                this.updateHealthBar('allies', 4, 0, hero.maxHealth);
+            }
+            break;
+            
+        case 'heal':
+            const healEfficiency = this.getHealEfficiency(monster.combo.count);
+            const healAmount = Math.floor(monsterUnit.maxHealth * healEfficiency);
+            const actualHeal = Math.min(healAmount, monsterUnit.maxHealth - monsterUnit.currentHealth);
+            monsterUnit.currentHealth += actualHeal;
+            message = `❤️ ${monster.name} лечится на ${actualHeal} HP`;
+            
+            this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
+            break;
+            
+        case 'block':
+            message = `🛡️ ${monster.name} защищается`;
+            break;
+            
+        case 'rest':
+            const restEfficiency = this.getRestEfficiency(monster.combo.count);
+            monster.ap += restEfficiency.ap;
+            message = `🌀 ${monster.name} отдыхает (+${restEfficiency.ap} ОД)`;
+            break;
+            
+        default:
+            message = `👹 ${monster.name} совершает действие`;
     }
+    
+    if (message) {
+        this.addBattleLog(message);
+    }
+}
 
-    calculateMonsterDamage(monster, monsterUnit) {
-        let baseDamage = monster.damage || 10;
-        let multiplier = 1.0;
-        
-        switch(monster.currentAction) {
-            case 'strongAttack':
-                multiplier = 1.5;
-                break;
-            case 'crushingAttack':
-                multiplier = 2.0;
-                break;
-        }
-        
-        const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
-        multiplier *= comboMultiplier;
-        
-        const finalDamage = baseDamage * multiplier;
-        console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, множитель=${multiplier}, итого=${Math.floor(finalDamage)}`);
-        
-        return Math.floor(finalDamage);
+calculateMonsterDamage(monster, monsterUnit) {
+    let baseDamage = monster.damage || 10;
+    let multiplier = 1.0;
+    
+    switch(monster.currentAction) {
+        case 'strongAttack':
+            multiplier = 1.5;
+            break;
+        case 'crushingAttack':
+            multiplier = 2.0;
+            break;
     }
+    
+    const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
+    multiplier *= comboMultiplier;
+    
+    const finalDamage = baseDamage * multiplier;
+    console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, множитель=${multiplier}, итого=${Math.floor(finalDamage)}`);
+    
+    return Math.floor(finalDamage);
+}
 
 updateHealthBar(side, position, currentHealth, maxHealth) {
     const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
@@ -1087,44 +1091,48 @@ handleCellClick(position, side) {
         }
     }
 
-    executeTacticalDamage(playerAction) {
-        if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
-            const targetUnit = this.battleGrid.enemies[this.selectedTarget];
-            if (targetUnit && targetUnit.currentHealth > 0) {
-                const heroStats = this.getHeroStatsForBattle();
-                const player = this.players[1];
-                
-                let damage = heroStats.damage;
-                
-                if (playerAction === 'strongAttack') damage *= 1.5;
-                if (playerAction === 'crushingAttack') damage *= 2.0;
-                if (playerAction === 'breakBlock') damage *= 0.5;
-                
-                const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
-                damage *= comboMultiplier;
-                
-                let finalDamage = damage;
-                if (playerAction !== 'breakBlock') {
-                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
-                }
-                
-                finalDamage = Math.floor(finalDamage);
-                
-                const oldHealth = targetUnit.currentHealth;
-                targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
-                
-                this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
-                
-                this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
-                
-                if (targetUnit.currentHealth <= 0) {
-                    targetUnit.currentHealth = 0;
-                    this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
-                    this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
-                }
+  executeTacticalDamage(playerAction) {
+    if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
+        const targetUnit = this.battleGrid.enemies[this.selectedTarget];
+        if (targetUnit && targetUnit.currentHealth > 0) {
+            const heroStats = this.getHeroStatsForBattle();
+            const player = this.players[1];
+            
+            let damage = heroStats.damage;
+            
+            if (playerAction === 'strongAttack') damage *= 1.5;
+            if (playerAction === 'crushingAttack') damage *= 2.0;
+            if (playerAction === 'breakBlock') damage *= 0.5;
+            
+            const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
+            damage *= comboMultiplier;
+            
+            let finalDamage = damage;
+            if (playerAction !== 'breakBlock') {
+                finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+            }
+            
+            finalDamage = Math.floor(finalDamage);
+            
+            console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
+            console.log(`🎯 Здоровье до: ${targetUnit.currentHealth}, после: ${targetUnit.currentHealth - finalDamage}`);
+            
+            const oldHealth = targetUnit.currentHealth;
+            targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
+            
+            this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
+            
+            // ВЫЗОВ ОБНОВЛЕНИЯ ПОЛОСКИ
+            this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
+            
+            if (targetUnit.currentHealth <= 0) {
+                targetUnit.currentHealth = 0;
+                this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
+                this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
             }
         }
     }
+}
 
     updateTacticalUI() {
         const playerAP = document.getElementById('playerAP');
