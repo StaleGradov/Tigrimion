@@ -688,12 +688,13 @@
     font-size: 0.85rem;
     text-align: center;
 }
-/* КРИТИЧЕСКИ ВАЖНЫЕ СТИЛИ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
+/* КРИТИЧЕСКИ ВАЖНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ПОЛОСОК ЗДОРОВЬЯ */
 .unit-health-container {
     display: flex !important;
     width: 100% !important;
     margin-top: 10px !important;
     min-height: 20px !important;
+    position: relative !important;
 }
 
 .health-bar-fullscreen {
@@ -719,26 +720,26 @@
     top: 0 !important;
     min-width: 0% !important;
     max-width: 100% !important;
-    transform: translateZ(0) !important; /* Аппаратное ускорение */
+    transform: translateZ(0) !important;
     will-change: width !important;
+    /* КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: принудительно сбрасываем ширину */
+    box-sizing: border-box !important;
 }
 
+/* УБЕДИТЕСЬ, что эти цвета ПРИМЕНЯЮТСЯ */
 .health-fill.health-high {
-    background: linear-gradient(90deg, #10b981, #34d399, #10b981) !important;
-    background-size: 200% 100% !important;
-    animation: shimmer 2s infinite !important;
+    background: linear-gradient(90deg, #10b981, #34d399) !important;
+    border: 1px solid #10b981 !important;
 }
 
 .health-fill.health-medium {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b) !important;
-    background-size: 200% 100% !important;
-    animation: shimmer 2s infinite !important;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24) !important;
+    border: 1px solid #f59e0b !important;
 }
 
 .health-fill.health-low {
-    background: linear-gradient(90deg, #ef4444, #f87171, #ef4444) !important;
-    background-size: 200% 100% !important;
-    animation: shimmer 1s infinite !important;
+    background: linear-gradient(90deg, #ef4444, #f87171) !important;
+    border: 1px solid #ef4444 !important;
 }
 
 .health-text {
@@ -755,18 +756,13 @@
     white-space: nowrap !important;
 }
 
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}
-
-/* Анимация изменения здоровья */
-.health-changing {
-    animation: pulse 0.3s ease-in-out !important;
-}
-
-@keyframes pulse {
+/* Анимация для визуальной обратной связи */
+@keyframes healthUpdate {
     0% { transform: scale(1); }
     50% { transform: scale(1.02); }
     100% { transform: scale(1); }
+}
+
+.health-updating {
+    animation: healthUpdate 0.3s ease-in-out !important;
 }
