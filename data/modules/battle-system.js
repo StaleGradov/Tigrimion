@@ -1128,93 +1128,85 @@ class BattleSystem {
         return html;
     }
 
-    renderTacticalGridCell(unit, position, side) {
-        const isEnemy = side === 'enemies';
-        const isEmpty = !unit;
+  renderTacticalGridCell(unit, position, side) {
+    const isEnemy = side === 'enemies';
+    const isEmpty = !unit;
+    
+    let cellClass = 'grid-cell-fullscreen';
+    let content = '';
+    
+    if (isEmpty) {
+        cellClass += ' empty';
+        content = '<div class="empty-slot">⚫</div>';
+    } else {
+        const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
+        const isAlive = unit.currentHealth > 0;
         
-        let cellClass = 'grid-cell-fullscreen';
-        let content = '';
+        // Получаем тип атаки и преобразуем в читаемый формат
+        const attackType = this.getHeroAttackType(unit.data);
+        const attackTypeText = attackType === 'ranged' ? '🏹 Дальний' : '🥊 Ближний';
         
-        if (isEmpty) {
-            cellClass += ' empty';
-            content = '<div class="empty-slot">⚫</div>';
+        // Получаем статы
+        let damage, armor;
+        if (isEnemy) {
+            damage = unit.data.damage || 10;
+            armor = unit.data.armor || 0;
         } else {
-            const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
-            const isAlive = unit.currentHealth > 0;
-            
-            let currentStats;
-            if (isEnemy) {
-                currentStats = {
-                    damage: unit.data.damage || 10,
-                    armor: unit.data.armor || 0,
-                    currentHealth: Math.ceil(unit.currentHealth),
-                    maxHealth: unit.maxHealth,
-                    attackType: unit.attackType,
-                    row: unit.row
-                };
-            } else {
-                const heroStats = this.getHeroStatsForBattle();
-                currentStats = {
-                    damage: heroStats.damage,
-                    armor: heroStats.armor,
-                    currentHealth: Math.ceil(unit.currentHealth),
-                    maxHealth: unit.maxHealth,
-                    attackType: unit.attackType
-                };
-            }
-
-            content = `
-                <div class="unit-image-container">
-                    <img class="unit-image" src="${unit.data.image}" alt="${unit.data.name}" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                    <div class="image-fallback" style="display: none;">
-                        ${isEnemy ? '👹' : '🎯'}
-                    </div>
-                    
-                    <!-- ВСПЛЫВАЮЩАЯ ПОДСКАЗКА СНИЗУ С ИМЕНЕМ -->
-                    <div class="unit-info-overlay">
-                        <div class="overlay-unit-header">
-                            <div class="overlay-unit-name">${unit.data.name}</div>
-                            <div class="overlay-unit-level">${isEnemy ? 'Lvl 1' : 'Lvl ' + (unit.data.level || 1)}</div>
-                        </div>
-                        <div class="overlay-simple-stats">
-                            <div class="overlay-health">
-                                <span class="overlay-health-label">❤️ Здоровье:</span>
-                                <span class="overlay-health-numbers">${currentStats.currentHealth}/${currentStats.maxHealth}</span>
-                            </div>
-                            <div class="overlay-main-stats">
-                                <span class="overlay-damage">⚔️ ${currentStats.damage}</span>
-                                <span class="overlay-armor">🛡️ ${currentStats.armor}</span>
-                                <span class="overlay-type">${currentStats.attackType === 'melee' ? '🥊 Ближний' : '🏹 Дальний'}</span>
-                                ${isEnemy ? `<span class="overlay-row">${currentStats.row === 'front' ? '1-й ряд' : '2-й ряд'}</span>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ПОЛОСА ЗДОРОВЬЯ ВНИЗУ - НЕ КОНФЛИКТУЕТ С ДРУГИМИ СТИЛЯМИ -->
-                <div class="unit-health-container">
-                    <div class="health-bar-fullscreen">
-                        <div class="health-fill" id="health-${side}-${position}" style="width: ${healthPercent}%"></div>
-                        <div class="health-text">${currentStats.currentHealth}/${currentStats.maxHealth}</div>
-                    </div>
-                </div>
-            `;
-            
-            if (!isAlive) {
-                cellClass += ' dead';
-                content += '<div class="dead-overlay">💀</div>';
-            }
+            const heroStats = this.getHeroStatsForBattle();
+            damage = heroStats.damage;
+            armor = heroStats.armor;
         }
         
-        const onClick = isEnemy && !isEmpty ? `onclick="game.systems.battle.selectTarget(${position})"` : '';
-        
-        return `
-            <div class="${cellClass}" data-position="${position}" data-side="${side}" ${onClick}>
-                ${content}
+        // НОВАЯ СТРУКТУРА - совместимая с исправленными стилями
+        content = `
+            <div class="unit-image-container">
+                <img class="unit-image" src="${unit.data.image}" alt="${unit.data.name}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                <div class="image-fallback" style="display: none;">
+                    ${isEnemy ? '👹' : '🎯'}
+                </div>
+                
+                <!-- ВСПЛЫВАЮЩАЯ ПОДСКАЗКА СНИЗУ С ИМЕНЕМ -->
+                <div class="unit-info-overlay">
+                    <div class="overlay-unit-header">
+                        <div class="overlay-unit-name">${unit.data.name}</div>
+                        <div class="overlay-unit-level">${isEnemy ? 'Lvl 1' : 'Lvl ' + (unit.data.level || 1)}</div>
+                    </div>
+                    <div class="overlay-simple-stats">
+                        <div class="overlay-health">
+                            <span class="overlay-health-label">❤️ Здоровье:</span>
+                            <span class="overlay-health-numbers">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</span>
+                        </div>
+                        <div class="overlay-main-stats">
+                            <span class="overlay-damage">⚔️ ${damage}</span>
+                            <span class="overlay-armor">🛡️ ${armor}</span>
+                            <span class="overlay-type">${attackTypeText}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ПОЛОСКА ЗДОРОВЬЯ ВНИЗУ -->
+            <div class="unit-health-container">
+                <div class="health-bar-fullscreen">
+                    <div class="health-fill" style="width: ${healthPercent}%"></div>
+                    <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
+                </div>
             </div>
         `;
+        
+        if (!isAlive) {
+            cellClass += ' dead';
+            content += '<div class="dead-overlay">💀</div>';
+        }
     }
+    
+    return `
+        <div class="${cellClass}" data-position="${position}" data-side="${side}">
+            ${content}
+        </div>
+    `;
+}
 
     getHeroAttackType(hero) {
         const equippedWeaponId = hero.equipment?.main_hand;
