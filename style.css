@@ -4741,9 +4741,9 @@ body {
 
 /* Уменьшаем изображения юнитов */
 .unit-image {
-    width: 100px !important;
-    height: 100px !important;
-    margin: 0 auto 0.8rem !important;
+    width: 120px !important;
+    height: 110px !important;
+    margin: 0 auto 1rem !important;
 }
 
 .image-fallback {
