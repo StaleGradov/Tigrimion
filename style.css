@@ -4709,8 +4709,8 @@ body {
 }
 /* ========== ОПТИМИЗАЦИЯ РАЗМЕРОВ СЕТКИ ========== */
 .battle-main-area {
-    height: 65vh !important; /* Уменьшаем высоту */
-    max-height: 650px;
+    height: 80vh !important; /* Уменьшаем высоту */
+    max-height: 800px;
 }
 
 .battle-grid-fullscreen {
@@ -4720,17 +4720,17 @@ body {
 }
 
 .grid-container-6x6 {
-    min-height: 500px !important; /* Уменьшаем высоту сетки */
-    max-height: 550px;
+    min-height: 600px !important; /* Уменьшаем высоту сетки */
+    max-height: 700px;
     grid-template-columns: repeat(2, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
     gap: 12px !important;
 }
 
 .grid-cell-fullscreen {
-    min-height: 150px !important; /* Уменьшаем ячейки */
-    max-height: 160px;
-    padding: 1rem !important;
+    min-height: 170px !important; /* Уменьшаем ячейки */
+    max-height: 180px;
+    padding: 1.2rem !important;
 }
 
 /* Увеличиваем центральную область */
