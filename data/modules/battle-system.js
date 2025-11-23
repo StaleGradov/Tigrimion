@@ -874,25 +874,30 @@ class BattleSystem {
         return Math.floor(finalDamage);
     }
 
-  updateHealthBar(side, position, currentHealth, maxHealth) {
+// И обновите функцию updateHealthBar:
+updateHealthBar(side, position, currentHealth, maxHealth) {
     const healthPercent = (currentHealth / maxHealth) * 100;
+    
+    // Находим элементы по позиции и стороне
     const healthFill = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-fill`);
     const healthText = document.querySelector(`[data-position="${position}"][data-side="${side}"] .health-text`);
     
     if (healthFill) {
-        healthFill.classList.add('health-changing');
+        // Обновляем ширину
         healthFill.style.width = `${healthPercent}%`;
         
-        // Обновляем цвет в зависимости от процента здоровья
-        healthFill.classList.remove('high', 'medium', 'low');
+        // Обновляем цвет
+        healthFill.classList.remove('health-high', 'health-medium', 'health-low');
         if (healthPercent > 60) {
-            healthFill.classList.add('high');
-        } else if (healthPercent > 30) {
-            healthFill.classList.add('medium');
+            healthFill.classList.add('health-high');
+        } else if (healthPercent > 25) {
+            healthFill.classList.add('health-medium');
         } else {
-            healthFill.classList.add('low');
+            healthFill.classList.add('health-low');
         }
         
+        // Добавляем анимацию
+        healthFill.classList.add('health-changing');
         setTimeout(() => {
             healthFill.classList.remove('health-changing');
         }, 300);
@@ -906,6 +911,15 @@ class BattleSystem {
     const overlayNumbers = document.querySelector(`[data-position="${position}"][data-side="${side}"] .overlay-health-numbers`);
     if (overlayNumbers) {
         overlayNumbers.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
+    }
+    
+    console.log(`🔄 Обновлено здоровье: ${side} позиция ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
+}
+
+    // Добавьте эту функцию в класс BattleSystem
+handleCellClick(position, side) {
+    if (side === 'enemies' && this.pendingAction) {
+        this.selectTarget(position);
     }
 }
 
@@ -1131,7 +1145,7 @@ class BattleSystem {
         return html;
     }
 
-  renderTacticalGridCell(unit, position, side) {
+ renderTacticalGridCell(unit, position, side) {
     const isEnemy = side === 'enemies';
     const isEmpty = !unit;
     
@@ -1145,10 +1159,10 @@ class BattleSystem {
         const healthPercent = (unit.currentHealth / unit.maxHealth) * 100;
         const isAlive = unit.currentHealth > 0;
         
-        // Определяем класс цвета здоровья
-        let healthColorClass = 'high';
-        if (healthPercent <= 30) healthColorClass = 'low';
-        else if (healthPercent <= 60) healthColorClass = 'medium';
+        // Определяем цвет здоровья
+        let healthColor = 'health-high';
+        if (healthPercent <= 25) healthColor = 'health-low';
+        else if (healthPercent <= 60) healthColor = 'health-medium';
         
         const attackType = this.getHeroAttackType(unit.data);
         const attackTypeText = attackType === 'ranged' ? '🏹 Дальний' : '🥊 Ближний';
@@ -1171,6 +1185,7 @@ class BattleSystem {
                     ${isEnemy ? '👹' : '🎯'}
                 </div>
                 
+                <!-- Всплывающая информация -->
                 <div class="unit-info-overlay">
                     <div class="overlay-unit-header">
                         <div class="overlay-unit-name">${unit.data.name}</div>
@@ -1190,9 +1205,10 @@ class BattleSystem {
                 </div>
             </div>
             
+            <!-- ПОЛОСКА ЗДОРОВЬЯ - УПРОЩЕННАЯ ВЕРСИЯ -->
             <div class="unit-health-container">
                 <div class="health-bar-fullscreen">
-                    <div class="health-fill ${healthColorClass}" style="width: ${healthPercent}%"></div>
+                    <div class="health-fill ${healthColor}" style="width: ${healthPercent}%"></div>
                     <div class="health-text">${Math.ceil(unit.currentHealth)}/${unit.maxHealth}</div>
                 </div>
             </div>
@@ -1205,7 +1221,8 @@ class BattleSystem {
     }
     
     return `
-        <div class="${cellClass}" data-position="${position}" data-side="${side}">
+        <div class="${cellClass}" data-position="${position}" data-side="${side}" 
+             onclick="game.systems.battle.handleCellClick(${position}, '${side}')">
             ${content}
         </div>
     `;
