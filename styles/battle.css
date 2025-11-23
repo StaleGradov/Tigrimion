@@ -844,3 +844,163 @@
 .battle-screen-fullscreen .experience-bar {
     all: unset !important;
 }
+/* ========== КОМПАКТНАЯ СЕТКА БОЯ ========== */
+.battle-main-area-compact {
+    display: flex;
+    gap: 15px;
+    align-items: stretch;
+    justify-content: center;
+    height: 75vh;
+    padding: 0 15px;
+    margin-top: 10px;
+    width: 100%;
+    max-width: 1800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.battle-grid-compact {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    max-width: 1200px;
+    min-width: 900px;
+    margin: 0 10px;
+    gap: 10px;
+}
+
+.grid-side-compact {
+    flex: 1;
+    min-width: 450px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 15px;
+    border: 2px solid #4b5563;
+    margin: 0 5px;
+}
+
+.grid-container-6x6-compact {
+    min-height: 650px;
+    max-height: 680px;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    width: 100%;
+    display: grid;
+}
+
+/* Контейнер для групповых панелей монстров */
+.enemy-panels-container {
+    width: 320px;
+    flex-shrink: 0;
+    margin-right: 10px;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #ef4444;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.enemy-panels-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.enemy-panel-mini {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.enemy-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.enemy-name {
+    font-weight: bold;
+    color: #fca5a5;
+    font-size: 1rem;
+}
+
+.enemy-row {
+    font-size: 0.8rem;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+}
+
+.enemy-panel-stats {
+    margin-bottom: 0.8rem;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+}
+
+.enemy-action-history {
+    font-size: 0.8rem;
+}
+
+.no-enemies {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 2rem;
+}
+
+/* Адаптивность для компактной сетки */
+@media (max-width: 1400px) {
+    .battle-main-area-compact {
+        height: 70vh;
+    }
+    
+    .grid-container-6x6-compact {
+        min-height: 600px !important;
+    }
+    
+    .grid-side-compact {
+        min-width: 400px;
+    }
+    
+    .enemy-panels-container {
+        width: 280px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .battle-main-area-compact {
+        flex-wrap: wrap;
+        height: auto;
+        gap: 12px;
+    }
+    
+    .battle-grid-compact {
+        order: 1;
+        width: 100%;
+        margin: 12px 0;
+        min-width: auto;
+    }
+    
+    .tactical-panel.player-panel {
+        order: 2;
+        width: 48%;
+    }
+    
+    .enemy-panels-container {
+        order: 3;
+        width: 48%;
+    }
+}
