@@ -4119,7 +4119,7 @@ body {
 /* КОНТЕЙНЕР ИЗОБРАЖЕНИЯ ЗАНИМАЕТ ВСЁ ПРОСТРАНСТВО КРОМЕ ПОЛОСЫ ЗДОРОВЬЯ */
 .unit-image-container {
     width: 100%;
-    height: calc(100% - 40px);
+    height: calc(100% - 50px); /* Оставляем место для полосы HP */
     position: relative;
     overflow: hidden;
     cursor: pointer;
@@ -4146,24 +4146,45 @@ body {
     color: rgba(255, 255, 255, 0.5);
 }
 
-/* ПОЛОСА ЗДОРОВЬЯ ВНИЗУ КОНТЕЙНЕРА */
+/* ПОЛОСА ЗДОРОВЬЯ ВНИЗУ КОНТЕЙНЕРА - ВИДНА ВСЕГДА */
 .unit-health-container {
-    height: 40px;
-    background: rgba(0, 0, 0, 0.6);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 5px 10px;
+    height: 50px;
+    background: rgba(0, 0, 0, 0.7);
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 12px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
+    z-index: 5;
+}
+
+.health-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.8rem;
+}
+
+.health-label {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.health-numbers {
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
 }
 
 .health-bar-fullscreen {
-    height: 16px !important;
-    margin: 2px 0 !important;
+    height: 18px !important;
+    margin: 0 !important;
     background: #333 !important;
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px solid #444;
+    border: 2px solid #444;
     position: relative;
 }
 
@@ -4171,7 +4192,8 @@ body {
     height: 100% !important;
     background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
     transition: width 0.5s ease;
-    border-radius: 7px;
+    border-radius: 8px;
+    position: relative;
 }
 
 .health-text {
@@ -4179,7 +4201,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.75rem !important;
+    font-size: 0.8rem !important;
     font-weight: bold;
     color: white;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
@@ -4197,7 +4219,7 @@ body {
         to bottom,
         transparent 0%,
         rgba(0, 0, 0, 0.1) 20%,
-        rgba(0, 0, 0, 0.8) 60%,
+        rgba(0, 0, 0, 0.85) 70%,
         rgba(0, 0, 0, 0.95) 100%
     );
     padding: 1rem;
@@ -4205,8 +4227,9 @@ body {
     flex-direction: column;
     justify-content: flex-end;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
     pointer-events: none;
+    z-index: 10;
 }
 
 .unit-image-container:hover .unit-info-overlay {
@@ -4238,7 +4261,7 @@ body {
 .overlay-unit-stats {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.5rem;
     margin-bottom: 0.8rem;
 }
 
@@ -4246,29 +4269,30 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.2rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 0.85rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.9rem;
 }
 
 .overlay-stat-label {
     color: #cbd5e1;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
 }
 
 .overlay-stat-value {
     font-weight: bold;
     color: white;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 .overlay-unit-details {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.3rem;
     margin-bottom: 0.8rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #cbd5e1;
+    line-height: 1.3;
 }
 
 /* ПРАВАЯ ПАНЕЛЬ - ПРОТИВНИКИ (шире) */
@@ -4591,4 +4615,29 @@ body {
 .grid-cell-fullscreen[data-side="enemies"][data-position="3"],
 .grid-cell-fullscreen[data-side="enemies"][data-position="5"] {
     border-left: 4px solid #3b82f6 !important;
+}
+
+/* УБИРАЕМ ЛИШНЮЮ ИНФОРМАЦИЮ ИЗ ОСНОВНОГО ОТОБРАЖЕНИЯ */
+.unit-display-fullscreen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Убираем внешнюю информацию, оставляем только полосу HP */
+.unit-info-external {
+    display: none;
+}
+
+.unit-name-external {
+    display: none;
+}
+
+.unit-stats-external {
+    display: none;
+}
+
+.stat-line-external {
+    display: none;
 }
