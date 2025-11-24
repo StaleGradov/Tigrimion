@@ -134,6 +134,7 @@ class MapSystem {
         this.tooltipElement = null;
         this.currentTooltip = null;
         this.tooltipTimeout = null;
+        this.resizeTimeout = null;
         
         console.log("✅ MapSystem инициализирован с расширенной системой масштабирования");
     }
@@ -1303,7 +1304,7 @@ class MapSystem {
                 }
             }, 10);
         } else {
-            console.warn("⚠️ HeroSystem не доступен для обновления интерфейса");
+            console.warn("⚠️ HeroSystem не доступен для обновления интерфейс");
         }
     }
 
@@ -1370,26 +1371,32 @@ class MapSystem {
 
         const rect = container.getBoundingClientRect();
         
+        // Используем реальные размеры контейнера
+        const containerWidth = rect.width;
+        const containerHeight = rect.height;
+
         const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
         const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
 
         console.log(`🎯 Editor canvas: ${editorWidth}x${editorHeight}`);
-        console.log(`📐 Container: ${rect.width}x${rect.height}`);
+        console.log(`📐 Container: ${containerWidth}x${containerHeight}`);
         console.log(`🔍 Zoom level: ${this.zoomLevel}`);
 
-        // Убираем ограничение базового масштаба
-        const baseScale = 1.0;
+        // Базовый масштаб для fitting
+        const scaleX = containerWidth / editorWidth;
+        const scaleY = containerHeight / editorHeight;
+        const baseScale = Math.min(scaleX, scaleY, 1.0); // Не увеличиваем больше оригинала
 
-        // Применяем только пользовательский зум
+        // Применяем пользовательский зум
         const finalScale = baseScale * this.zoomLevel;
 
         // Рассчитываем размеры с учетом зума
         const scaledWidth = editorWidth * finalScale;
         const scaledHeight = editorHeight * finalScale;
 
-        // Центрируем карту относительно контейнера
-        let offsetX = (rect.width - scaledWidth) / 2;
-        let offsetY = (rect.height - scaledHeight) / 2;
+        // Центрируем карту
+        let offsetX = (containerWidth - scaledWidth) / 2;
+        let offsetY = (containerHeight - scaledHeight) / 2;
 
         // Применяем смещение от перетаскивания
         offsetX += this.mapOffset.x;
@@ -1398,6 +1405,11 @@ class MapSystem {
         console.log(`📏 Final scale: ${finalScale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
         console.log(`📏 Scaled size: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
 
+        // Обновляем canvas размеры
+        this.canvas.width = containerWidth;
+        this.canvas.height = containerHeight;
+
+        // Обновляем позиции всех клеток
         Object.values(this.currentTacticalMap.cells).forEach(cell => {
             const originalX = cell.originalX || cell.x;
             const originalY = cell.originalY || cell.y;
@@ -1407,9 +1419,6 @@ class MapSystem {
             
             cell.scaledSize = (this.currentTacticalMap.cellSize || 40) * finalScale;
         });
-
-        this.canvas.width = rect.width;
-        this.canvas.height = rect.height;
     }
     
     setupCanvasEventListeners() {
@@ -1636,6 +1645,24 @@ class MapSystem {
         if (!this.canvasInitialized) return;
         
         console.log("🔄 Адаптация к изменению размеров окна");
+        
+        // Используем debounce чтобы избежать множественных вызовов
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
+        
+        this.resizeTimeout = setTimeout(() => {
+            this.forceResize();
+        }, 100);
+    }
+
+    forceResize() {
+        if (!this.canvasInitialized) return;
+        
+        console.log("🔄 Принудительное обновление размеров карты");
+        
+        // Сбрасываем кэш позиций
+        this.lastHoveredHex = null;
         
         this.calculateMapPositioning();
         this.redrawBackground();
@@ -1878,8 +1905,10 @@ class MapSystem {
     getHexAtCanvasPosition(canvasX, canvasY) {
         if (!this.currentTacticalMap) return null;
 
-        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
+        // Используем scaledSize для определения радиуса гекса
+        const hexSize = (this.currentTacticalMap.cellSize || 40) * this.zoomLevel * 0.8;
         
+        // Сначала проверяем последний ховеренный гекс (оптимизация)
         if (this.lastHoveredHex) {
             const centerX = this.lastHoveredHex.displayX;
             const centerY = this.lastHoveredHex.displayY;
@@ -1896,6 +1925,10 @@ class MapSystem {
             }
         }
         
+        // Ищем среди всех клеток
+        let closestHex = null;
+        let minDistance = Infinity;
+
         for (const cell of Object.values(this.currentTacticalMap.cells)) {
             const centerX = cell.displayX;
             const centerY = cell.displayY;
@@ -1907,14 +1940,15 @@ class MapSystem {
                 Math.pow(canvasY - centerY, 2)
             );
             
-            if (distance <= hexSize) {
-                this.lastHoveredHex = cell;
-                return cell;
+            // Находим ближайший гекс в пределах размера
+            if (distance <= hexSize && distance < minDistance) {
+                minDistance = distance;
+                closestHex = cell;
             }
         }
         
-        this.lastHoveredHex = null;
-        return null;
+        this.lastHoveredHex = closestHex;
+        return closestHex;
     }
 
     showTooltipForHex(hex, mouseX, mouseY) {
