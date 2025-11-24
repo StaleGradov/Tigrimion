@@ -1004,8 +1004,11 @@ class MapSystem {
         
         console.log(`🎯 Начало перемещения на [${x}, ${y}], тип карты: ${mapType}`);
         
+        // ДЕБАГ ИНФОРМАЦИЯ
+        this.debugMovementInfo(x, y, cellData);
+        
         if (mapType === 'peaceful') {
-            // МИРНОЕ ПЕРЕМЕЩЕНИЕ - выполняем сразу
+            // МИРНОЕ ПЕРЕМЕЩЕНИЕ - выполняем сразу ДЛЯ ЛЮБОЙ ПРОХОДИМОЙ КЛЕТКИ
             this.handlePeacefulMovement(x, y, cellData);
         } else {
             // БОЕВОЕ ПЕРЕМЕЩЕНИЕ - запускаем бой
@@ -1022,14 +1025,16 @@ class MapSystem {
         
         const mapId = this.getCurrentMapId();
         
-        // Помечаем клетку как исследованную
+        // Помечаем клетку как исследованную (даже если уже исследована)
         this.markCellExplored(mapId, targetX, targetY);
         
-        // Проверяем и собираем лут
+        // Проверяем и собираем лут (только если есть лут и он еще не собран)
         if (cellData.hasLoot && !this.isLootCollected(mapId, targetX, targetY)) {
+            console.log(`🎁 Найден лут на клетке [${targetX}, ${targetY}]`);
             this.collectLoot(cellData, targetX, targetY);
         } else {
-            // Если лута нет, просто перемещаемся
+            // Если лута нет или он уже собран - просто перемещаемся
+            console.log(`➡️ Перемещение без лута на [${targetX}, ${targetY}]`);
             this.completePeacefulMovement(targetX, targetY);
         }
     }
@@ -1421,6 +1426,35 @@ class MapSystem {
         } else {
             console.warn("⚠️ HeroSystem не доступен для обновления интерфейса");
         }
+    }
+
+    // ========== ДОБАВИМ ДЕБАГ-ИНФОРМАЦИЮ В КОНСОЛЬ ==========
+
+    debugMovementInfo(x, y, cellData) {
+        const mapId = this.getCurrentMapId();
+        const isExplored = this.isCellExplored(mapId, x, y);
+        const hasLoot = cellData.hasLoot;
+        const lootCollected = this.isLootCollected(mapId, x, y);
+        
+        console.group(`🎯 ДЕБАГ ПЕРЕМЕЩЕНИЯ на [${x}, ${y}]`);
+        console.log('Тип клетки:', cellData.type);
+        console.log('Проходимость:', cellData.passable);
+        console.log('Есть лут:', hasLoot);
+        console.log('Исследована:', isExplored);
+        console.log('Лут собран:', lootCollected);
+        console.log('Тип карты:', this.currentTacticalMap.jsonData?.meta?.mapType || 'combat');
+        console.log('Текущая позиция:', this.playerTacticalPosition);
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        console.log('Доступные соседи:', neighbors.map(n => `[${n.col},${n.row}]`));
+        
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+        console.log('Достижима:', isReachable);
+        console.groupEnd();
+        
+        return isReachable;
     }
 
     // ========== CANVAS И ОТОБРАЖЕНИЕ ==========
@@ -2662,9 +2696,17 @@ class MapSystem {
         console.log("Доступные ходы:", availableMoves);
         
         if (availableMoves.length > 0) {
-            const randomMove = availableMoves[0];
-            console.log(`Пытаемся переместиться на: [${randomMove.col}, ${randomMove.row}]`);
-            this.moveOnTacticalMap(randomMove.col, randomMove.row);
+            // Выбираем первую доступную клетку
+            const targetMove = availableMoves[0];
+            console.log(`Пытаемся переместиться на: [${targetMove.col}, ${targetMove.row}]`);
+            
+            const cellData = this.currentTacticalMap.cells[`${targetMove.col},${targetMove.row}`];
+            if (cellData) {
+                // Вызываем напрямую метод мирного перемещения
+                this.handlePeacefulMovement(targetMove.col, targetMove.row, cellData);
+            } else {
+                console.error("❌ Клетка не найдена");
+            }
         } else {
             console.log("❌ Нет доступных ходов для тестирования");
         }
@@ -2889,4 +2931,4 @@ class MapSystem {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с исправленной системой перемещения");
+console.log("📦 MapSystem модуль загружен с полной системой перемещения");
