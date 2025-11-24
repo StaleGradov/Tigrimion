@@ -196,7 +196,7 @@
   },
   {
     "id": 16,
-    "name": "Теневой пантера",
+    "name": "Теневая пантера",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/shadow_panther.jpg",
     "attackType": "melee",
     "preferredPosition": "front",
@@ -209,7 +209,7 @@
   },
   {
     "id": 17,
-    "name": "Стальной кабан",
+    "name": "Дикий вепрь",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/steel_boar.jpg",
     "attackType": "melee",
     "preferredPosition": "front",
