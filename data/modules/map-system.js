@@ -135,7 +135,7 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с системой масштабирования");
+        console.log("✅ MapSystem инициализирован с полной системой масштабирования");
     }
 
     getLootItemById(itemId) {
@@ -1477,8 +1477,8 @@ class MapSystem {
         // Пересчитываем позиционирование с учетом масштаба
         this.calculateMapPositioning();
         
-        // Перерисовываем карту
-        this.drawTacticalMap();
+        // Перерисовываем ВСЁ (включая фон)
+        this.redrawBackground();
         
         console.log(`🔍 Масштаб изменен: ${Math.round(this.zoomLevel * 100)}%`);
     }
@@ -1503,7 +1503,7 @@ class MapSystem {
         this.mapOffset.y = e.clientY - this.dragStart.y;
         
         this.calculateMapPositioning();
-        this.drawTacticalMap();
+        this.redrawBackground(); // Используем redrawBackground вместо drawTacticalMap
     }
 
     stopDragging() {
@@ -1519,14 +1519,334 @@ class MapSystem {
         const newZoom = this.zoomLevel * zoomFactor;
         
         if (newZoom >= this.minZoom && newZoom <= this.maxZoom) {
-            // Сохраняем позицию мыши относительно карты для плавного зума
-            const rect = this.canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            
             this.zoomLevel = newZoom;
-            this.applyZoom();
+            this.applyZoom(); // Используем applyZoom который перерисует фон
         }
+    }
+
+    drawTacticalMap() {
+        if (!this.ctx || !this.currentTacticalMap) {
+            console.log("❌ Canvas context или карта не доступна");
+            return;
+        }
+
+        const canvas = this.canvas;
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Всегда начинаем с отрисовки фона
+        this.drawBackground();
+        
+        // Гексы и сетка рисуются внутри drawBackground после загрузки изображения
+        // или в случае ошибки загрузки
+    }
+
+    drawBackground() {
+        const map = this.currentTacticalMap;
+        
+        // Если нет фонового изображения, рисуем градиент
+        if (!map.image) {
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Рисуем гексы поверх градиента
+            this.drawHexes();
+            if (this.showGrid) {
+                this.drawHexGrid();
+            }
+            return;
+        }
+
+        const container = document.querySelector('.tactical-map-visual');
+        if (!container) return;
+
+        const rect = container.getBoundingClientRect();
+        const editorWidth = map.originalCanvasWidth || 1024;
+        const editorHeight = map.originalCanvasHeight || 1024;
+
+        console.log(`🎯 Background: Editor ${editorWidth}x${editorHeight}, Container ${rect.width}x${rect.height}, Zoom ${this.zoomLevel}`);
+
+        // Базовый масштаб для вписывания в контейнер (как в calculateMapPositioning)
+        const baseScaleX = rect.width / editorWidth;
+        const baseScaleY = rect.height / editorHeight;
+        const baseScale = Math.min(baseScaleX, baseScaleY, 1.0);
+
+        // Применяем пользовательский зум
+        const finalScale = baseScale * this.zoomLevel;
+
+        // Рассчитываем смещение с учетом зума и перетаскивания
+        const scaledWidth = editorWidth * finalScale;
+        const scaledHeight = editorHeight * finalScale;
+
+        // Центрируем карту, если она меньше контейнера
+        let offsetX = (rect.width - scaledWidth) / 2;
+        let offsetY = (rect.height - scaledHeight) / 2;
+
+        // Применяем смещение от перетаскивания
+        offsetX += this.mapOffset.x;
+        offsetY += this.mapOffset.y;
+
+        console.log(`📏 Background scale: ${finalScale.toFixed(3)}, offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+
+        const img = new Image();
+        img.onload = () => {
+            // Очищаем canvas
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Рисуем фон с учетом масштаба и смещения
+            this.ctx.drawImage(
+                img, 
+                offsetX, 
+                offsetY, 
+                scaledWidth, 
+                scaledHeight
+            );
+            
+            // Повторно рисуем гексы поверх фона
+            this.drawHexes();
+            
+            if (this.showGrid) {
+                this.drawHexGrid();
+            }
+            
+            console.log("✅ Фон отрисован с масштабированием");
+        };
+        
+        img.onerror = () => {
+            console.error("❌ Ошибка загрузки фона карты");
+            // Fallback на градиент
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(1, '#16213e');
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Все равно рисуем гексы
+            this.drawHexes();
+            if (this.showGrid) {
+                this.drawHexGrid();
+            }
+        };
+        
+        img.src = map.image;
+    }
+
+    redrawBackground() {
+        if (!this.currentTacticalMap || !this.canvasInitialized) return;
+        
+        console.log("🔄 Принудительная перерисовка фона с текущим масштабом");
+        this.drawBackground();
+    }
+
+    drawHexGrid() {
+        const cells = Object.values(this.currentTacticalMap.cells);
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
+        this.ctx.lineWidth = 1;
+        
+        cells.forEach(cell => {
+            if (cell.visible) {
+                const centerX = cell.displayX;
+                const centerY = cell.displayY;
+                
+                if (!centerX || !centerY) return;
+                
+                this.ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = Math.PI / 3 * i + Math.PI / 6;
+                    const x = centerX + hexSize * Math.cos(angle);
+                    const y = centerY + hexSize * Math.sin(angle);
+                    
+                    if (i === 0) this.ctx.moveTo(x, y);
+                    else this.ctx.lineTo(x, y);
+                }
+                this.ctx.closePath();
+                this.ctx.stroke();
+            }
+        });
+        this.ctx.restore();
+    }
+
+    drawHexes() {
+        const cells = Object.values(this.currentTacticalMap.cells);
+        
+        cells.forEach(cell => {
+            if (cell.visible) {
+                this.drawSingleHex(cell);
+                this.drawHexContent(cell);
+            }
+        });
+    }
+
+    drawSingleHex(cell) {
+        const hexSize = cell.scaledSize || (this.currentTacticalMap.cellSize || 40) * this.zoomLevel;
+        
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+
+        if (!centerX || !centerY) return;
+
+        this.ctx.save();
+        this.ctx.beginPath();
+        
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + hexSize * Math.cos(angle);
+            const y = centerY + hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+
+        if (this.showGrid) {
+            this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
+            this.ctx.lineWidth = 1;
+            this.ctx.stroke();
+        }
+        
+        this.ctx.restore();
+    }
+
+    drawHexContent(cell) {
+        const centerX = cell.displayX;
+        const centerY = cell.displayY;
+        
+        if (!centerX || !centerY) return;
+
+        this.ctx.save();
+        
+        // Используем масштабированный размер
+        const hexSize = cell.scaledSize || (this.currentTacticalMap.cellSize || 40) * this.zoomLevel;
+        
+        if (cell.isHighlighted) {
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i + Math.PI / 6;
+                const x = centerX + hexSize * Math.cos(angle);
+                const y = centerY + hexSize * Math.sin(angle);
+                
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+            
+            if (this.isTransitionCell(cell)) {
+                this.ctx.fillStyle = cell.highlightColor || 'rgba(255, 215, 0, 0.4)';
+            } else {
+                this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+            }
+            this.ctx.fill();
+        }
+
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+
+        // Масштабируем размер шрифта
+        let fontSize = 16 * this.zoomLevel;
+        let symbol = '·';
+        let color = '#ffffff';
+
+        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+            symbol = '🎯';
+            fontSize = 20 * this.zoomLevel;
+        } 
+        else if (cell.hasLoot) {
+            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+            symbol = this.getLootSymbol(lootLevel);
+            color = this.getLootColor(lootLevel);
+            fontSize = 18 * this.zoomLevel;
+        }
+        else {
+            if (cell.type === 'active' && !cell.objectType) {
+                symbol = '·';
+                color = '#ffffff';
+                fontSize = 24 * this.zoomLevel;
+            } else {
+                symbol = this.objectSymbols[cell.type] || '·';
+                
+                switch(cell.type) {
+                    case 'monster':
+                    case 'orc_camp':
+                    case 'bandit_camp':
+                        color = '#ef4444';
+                        break;
+                    case 'chest':
+                    case 'weapon':
+                    case 'armor':
+                    case 'magic_crystal':
+                        color = '#f59e0b';
+                        break;
+                    case 'npc':
+                    case 'merchant':
+                    case 'traveler':
+                        color = '#3b82f6';
+                        break;
+                    case 'exit':
+                    case 'portal':
+                    case 'cave':
+                    case 'dungeon':
+                        color = '#8b5cf6';
+                        break;
+                    case 'tavern':
+                    case 'shop':
+                    case 'village':
+                    case 'castle':
+                    case 'temple':
+                        color = '#fbbf24';
+                        break;
+                    case 'obstacle':
+                    case 'tree':
+                    case 'elegant_tree':
+                    case 'black_monolith':
+                    case 'mountain':
+                        color = '#6b7280';
+                        break;
+                    case 'lava_crack':
+                    case 'campfire':
+                        color = '#dc2626';
+                        break;
+                    case 'graveyard_cross':
+                    case 'ancient_rune':
+                        color = '#d6d3d1';
+                        break;
+                    case 'water':
+                    case 'bridge':
+                        color = '#0ea5e9';
+                        break;
+                    case 'cart':
+                        color = '#78350f';
+                        break;
+                    case 'inactive':
+                        color = '#ef4444';
+                        break;
+                    default:
+                        color = '#ffffff';
+                }
+            }
+        }
+
+        // Ограничиваем минимальный и максимальный размер шрифта
+        fontSize = Math.max(8, Math.min(30, fontSize));
+        
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.fillStyle = color;
+        this.ctx.fillText(symbol, centerX, centerY);
+        this.ctx.restore();
+    }
+
+    getLootSymbol(lootLevel) {
+        const symbols = ['💎', '⭐', '🔮', '👑', '🏆'];
+        return symbols[lootLevel - 1] || symbols[0];
+    }
+
+    getLootColor(lootLevel) {
+        const colors = ['#f59e0b', '#eab308', '#a855f7', '#ec4899', '#ef4444'];
+        return colors[lootLevel - 1] || colors[0];
     }
 
     handleCanvasHover(e) {
@@ -1773,280 +2093,6 @@ class MapSystem {
         if (needsRedraw && this.canvasInitialized) {
             this.drawTacticalMap();
         }
-    }
-
-    drawTacticalMap() {
-        if (!this.ctx || !this.currentTacticalMap) {
-            console.log("❌ Canvas context или карта не доступна");
-            return;
-        }
-
-        const canvas = this.canvas;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        this.drawBackground();
-        this.drawHexes();
-
-        if (this.showGrid) {
-            this.drawHexGrid();
-        }
-    }
-
-    drawBackground() {
-        const map = this.currentTacticalMap;
-        if (!map.image) {
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            return;
-        }
-
-        const editorWidth = map.originalCanvasWidth || 1024;
-        const editorHeight = map.originalCanvasHeight || 1024;
-
-        const scaleX = this.canvas.width / editorWidth;
-        const scaleY = this.canvas.height / editorHeight;
-        const scale = Math.min(scaleX, scaleY, 1.0);
-
-        const offsetX = (this.canvas.width - editorWidth * scale) / 2;
-        const offsetY = (this.canvas.height - editorHeight * scale) / 2;
-
-        const img = new Image();
-        img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.drawImage(
-                img, 
-                offsetX, 
-                offsetY, 
-                editorWidth * scale, 
-                editorHeight * scale
-            );
-            
-            this.drawHexes();
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-        };
-        img.onerror = () => {
-            console.error("❌ Ошибка загрузки фона карты");
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        };
-        img.src = map.image;
-    }
-
-    drawHexGrid() {
-        const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
-        this.ctx.lineWidth = 1;
-        
-        cells.forEach(cell => {
-            if (cell.visible) {
-                const centerX = cell.displayX;
-                const centerY = cell.displayY;
-                
-                if (!centerX || !centerY) return;
-                
-                this.ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const angle = Math.PI / 3 * i + Math.PI / 6;
-                    const x = centerX + hexSize * Math.cos(angle);
-                    const y = centerY + hexSize * Math.sin(angle);
-                    
-                    if (i === 0) this.ctx.moveTo(x, y);
-                    else this.ctx.lineTo(x, y);
-                }
-                this.ctx.closePath();
-                this.ctx.stroke();
-            }
-        });
-        this.ctx.restore();
-    }
-
-    drawHexes() {
-        const cells = Object.values(this.currentTacticalMap.cells);
-        
-        cells.forEach(cell => {
-            if (cell.visible) {
-                this.drawSingleHex(cell);
-                this.drawHexContent(cell);
-            }
-        });
-    }
-
-    drawSingleHex(cell) {
-        const hexSize = cell.scaledSize || (this.currentTacticalMap.cellSize || 40) * this.zoomLevel;
-        
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
-
-        if (!centerX || !centerY) return;
-
-        this.ctx.save();
-        this.ctx.beginPath();
-        
-        for (let i = 0; i < 6; i++) {
-            const angle = Math.PI / 3 * i + Math.PI / 6;
-            const x = centerX + hexSize * Math.cos(angle);
-            const y = centerY + hexSize * Math.sin(angle);
-            
-            if (i === 0) this.ctx.moveTo(x, y);
-            else this.ctx.lineTo(x, y);
-        }
-        this.ctx.closePath();
-
-        if (this.showGrid) {
-            this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
-            this.ctx.lineWidth = 1;
-            this.ctx.stroke();
-        }
-        
-        this.ctx.restore();
-    }
-
-    drawHexContent(cell) {
-        const centerX = cell.displayX;
-        const centerY = cell.displayY;
-        
-        if (!centerX || !centerY) return;
-
-        this.ctx.save();
-        
-        // Используем масштабированный размер
-        const hexSize = cell.scaledSize || (this.currentTacticalMap.cellSize || 40) * this.zoomLevel;
-        
-        if (cell.isHighlighted) {
-            this.ctx.beginPath();
-            for (let i = 0; i < 6; i++) {
-                const angle = Math.PI / 3 * i + Math.PI / 6;
-                const x = centerX + hexSize * Math.cos(angle);
-                const y = centerY + hexSize * Math.sin(angle);
-                
-                if (i === 0) this.ctx.moveTo(x, y);
-                else this.ctx.lineTo(x, y);
-            }
-            this.ctx.closePath();
-            
-            if (this.isTransitionCell(cell)) {
-                this.ctx.fillStyle = cell.highlightColor || 'rgba(255, 215, 0, 0.4)';
-            } else {
-                this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
-            }
-            this.ctx.fill();
-        }
-
-        this.ctx.textAlign = 'center';
-        this.ctx.textBaseline = 'middle';
-
-        // Масштабируем размер шрифта
-        let fontSize = 16 * this.zoomLevel;
-        let symbol = '·';
-        let color = '#ffffff';
-
-        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-            symbol = '🎯';
-            fontSize = 20 * this.zoomLevel;
-        } 
-        else if (cell.hasLoot) {
-            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
-            symbol = this.getLootSymbol(lootLevel);
-            color = this.getLootColor(lootLevel);
-            fontSize = 18 * this.zoomLevel;
-        }
-        else {
-            if (cell.type === 'active' && !cell.objectType) {
-                symbol = '·';
-                color = '#ffffff';
-                fontSize = 24 * this.zoomLevel;
-            } else {
-                symbol = this.objectSymbols[cell.type] || '·';
-                
-                switch(cell.type) {
-                    case 'monster':
-                    case 'orc_camp':
-                    case 'bandit_camp':
-                        color = '#ef4444';
-                        break;
-                    case 'chest':
-                    case 'weapon':
-                    case 'armor':
-                    case 'magic_crystal':
-                        color = '#f59e0b';
-                        break;
-                    case 'npc':
-                    case 'merchant':
-                    case 'traveler':
-                        color = '#3b82f6';
-                        break;
-                    case 'exit':
-                    case 'portal':
-                    case 'cave':
-                    case 'dungeon':
-                        color = '#8b5cf6';
-                        break;
-                    case 'tavern':
-                    case 'shop':
-                    case 'village':
-                    case 'castle':
-                    case 'temple':
-                        color = '#fbbf24';
-                        break;
-                    case 'obstacle':
-                    case 'tree':
-                    case 'elegant_tree':
-                    case 'black_monolith':
-                    case 'mountain':
-                        color = '#6b7280';
-                        break;
-                    case 'lava_crack':
-                    case 'campfire':
-                        color = '#dc2626';
-                        break;
-                    case 'graveyard_cross':
-                    case 'ancient_rune':
-                        color = '#d6d3d1';
-                        break;
-                    case 'water':
-                    case 'bridge':
-                        color = '#0ea5e9';
-                        break;
-                    case 'cart':
-                        color = '#78350f';
-                        break;
-                    case 'inactive':
-                        color = '#ef4444';
-                        break;
-                    default:
-                        color = '#ffffff';
-                }
-            }
-        }
-
-        // Ограничиваем минимальный и максимальный размер шрифта
-        fontSize = Math.max(8, Math.min(30, fontSize));
-        
-        this.ctx.font = `bold ${fontSize}px Arial`;
-        this.ctx.fillStyle = color;
-        this.ctx.fillText(symbol, centerX, centerY);
-        this.ctx.restore();
-    }
-
-    getLootSymbol(lootLevel) {
-        const symbols = ['💎', '⭐', '🔮', '👑', '🏆'];
-        return symbols[lootLevel - 1] || symbols[0];
-    }
-
-    getLootColor(lootLevel) {
-        const colors = ['#f59e0b', '#eab308', '#a855f7', '#ec4899', '#ef4444'];
-        return colors[lootLevel - 1] || colors[0];
     }
 
     getAvailableMoves() {
@@ -2811,7 +2857,24 @@ class MapSystem {
             window.game.systems.hero.showHeroGameScreen();
         }
     }
+
+    debugBackgroundInfo() {
+        console.group("🎨 Debug Background Info");
+        const map = this.currentTacticalMap;
+        const container = document.querySelector('.tactical-map-visual');
+        
+        if (container) {
+            const rect = container.getBoundingClientRect();
+            console.log("Container size:", rect.width, "x", rect.height);
+        }
+        
+        console.log("Original canvas size:", map.originalCanvasWidth, "x", map.originalCanvasHeight);
+        console.log("Current zoom:", this.zoomLevel);
+        console.log("Map offset:", this.mapOffset);
+        console.log("Has background image:", !!map.image);
+        console.groupEnd();
+    }
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой масштабирования");
+console.log("📦 MapSystem модуль загружен с полной системой масштабирования фона и гексов");
