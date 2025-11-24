@@ -68,9 +68,9 @@
 
 /* ========== СТИЛИ ДЛЯ ТАКТИЧЕСКИХ КАРТ РЕДАКТОРА ========== */
 .tigrimion-tactical-map {
-    max-width: 1200px !important;
-    width: 95vw !important;
-    max-height: 90vh !important;
+    max-width: 1400px !important; /* Увеличено на 40% */
+    width: 98vw !important; /* Увеличено */
+    max-height: 95vh !important; /* Увеличено */
 }
 
 .tactical-map-header {
@@ -91,7 +91,7 @@
 .tactical-map-content {
     display: flex;
     flex-direction: column;
-    height: calc(90vh - 80px);
+    height: calc(95vh - 80px) !important; /* Увеличено */
 }
 
 .tactical-map-visual {
@@ -101,9 +101,9 @@
     border: 2px solid #00ffff;
     border-radius: 15px;
     overflow: hidden;
-    margin: 1rem;
+    margin: 1.5rem; /* Увеличено */
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
+    min-height: 600px; /* Увеличено на 40% */
 }
 
 .tactical-map-info {
@@ -184,12 +184,12 @@
 
 /* ========== УВЕЛИЧЕННОЕ ОКНО ТАКТИЧЕСКОЙ КАРТЫ ========== */
 .overlay-content.tactical-map-overlay {
-    max-width: 95vw !important;
-    max-height: 95vh !important;
-    width: 95vw !important;
-    height: 95vh !important;
+    max-width: 98vw !important; /* Увеличено */
+    max-height: 98vh !important; /* Увеличено */
+    width: 98vw !important; /* Увеличено */
+    height: 98vh !important; /* Увеличено */
     background: #000000 !important;
-    margin: 2vh auto !important;
+    margin: 1vh auto !important; /* Уменьшено для компенсации увеличения */
     border-radius: 12px;
     border: 1px solid #00ffff;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
@@ -200,7 +200,7 @@
 .tactical-map-content {
     display: flex;
     flex-direction: column;
-    height: calc(95vh - 100px) !important;
+    height: calc(98vh - 100px) !important; /* Увеличено */
     background: #000000;
 }
 
@@ -211,9 +211,9 @@
     border: 2px solid #00ffff;
     border-radius: 15px;
     overflow: hidden;
-    margin: 1rem;
+    margin: 1.5rem; /* Увеличено */
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
-    min-height: 500px;
+    min-height: 600px; /* Увеличено на 40% */
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
@@ -223,6 +223,12 @@
     height: 100% !important;
     display: block;
     background: transparent;
+}
+
+/* Увеличиваем размеры canvas */
+.tactical-map-visual canvas {
+    transform: scale(1.4); /* Увеличиваем сам canvas на 40% */
+    transform-origin: center center;
 }
 
 /* Убираем любые трансформации и переходы */
@@ -290,4 +296,23 @@
     font-family: monospace;
     z-index: 10;
     border: 1px solid #00ff00;
+}
+
+/* Увеличиваем размеры контейнеров карты */
+.map-grid {
+    transform: scale(1.4); /* Увеличиваем сетку карты на 40% */
+    transform-origin: center center;
+    margin: 2rem 0; /* Увеличиваем отступы */
+}
+
+/* Увеличиваем отступы в основном контейнере */
+.map-container {
+    padding: 2rem; /* Увеличено */
+}
+
+/* Увеличиваем размеры ячеек карты */
+.map-cell {
+    font-size: 1.4em; /* Увеличено */
+    min-width: 50px; /* Добавлено минимальной ширины */
+    min-height: 50px; /* Добавлено минимальной высоты */
 }
