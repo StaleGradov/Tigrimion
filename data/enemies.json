@@ -9,7 +9,7 @@
     "health": 120,
     "armor": 0,
     "damage": 10,
-    "reward": 0.01,
+    "reward": 0.1,
     "experience": 1
   },
   {
@@ -22,7 +22,7 @@
     "health": 160,
     "armor": 0,
     "damage": 20,
-    "reward": 0.01,
+    "reward": 0.1,
     "experience": 1
   },
   {
@@ -35,7 +35,7 @@
     "health": 200,
     "armor": 5,
     "damage": 30,
-    "reward": 0.01,
+    "reward": 0.1,
     "experience": 1
   },
   {
@@ -48,7 +48,7 @@
     "health": 240,
     "armor": 5,
     "damage": 40,
-    "reward": 0.012,
+    "reward": 0.12,
     "experience": 1.2
   },
   {
@@ -61,7 +61,7 @@
     "health": 320,
     "armor": 10,
     "damage": 40,
-    "reward": 0.014,
+    "reward": 0.14,
     "experience": 1.4
   },
   {
@@ -74,7 +74,7 @@
     "health": 360,
     "armor": 10,
     "damage": 50,
-    "reward": 0.03,
+    "reward": 0.3,
     "experience": 3
   },
   {
@@ -87,7 +87,7 @@
     "health": 440,
     "armor": 15,
     "damage": 60,
-    "reward": 0.035,
+    "reward": 0.35,
     "experience": 3.5
   },
   {
@@ -100,7 +100,7 @@
     "health": 800,
     "armor": 20,
     "damage": 40,
-    "reward": 0.04,
+    "reward": 0.4,
     "experience": 4
   },
   {
@@ -113,7 +113,7 @@
     "health": 320,
     "armor": 10,
     "damage": 50,
-    "reward": 0.025,
+    "reward": 0.25,
     "experience": 2.5
   },
   {
@@ -126,7 +126,7 @@
     "health": 300,
     "armor": 5,
     "damage": 40,
-    "reward": 0.02,
+    "reward": 0.2,
     "experience": 2
   },
   {
@@ -139,7 +139,7 @@
     "health": 280,
     "armor": 15,
     "damage": 35,
-    "reward": 0.025,
+    "reward": 0.25,
     "experience": 2.5
   },
   {
@@ -152,7 +152,7 @@
     "health": 180,
     "armor": 5,
     "damage": 25,
-    "reward": 0.015,
+    "reward": 0.15,
     "experience": 1.5
   },
   {
@@ -165,7 +165,7 @@
     "health": 220,
     "armor": 10,
     "damage": 40,
-    "reward": 0.022,
+    "reward": 0.22,
     "experience": 2.2
   },
   {
@@ -178,7 +178,7 @@
     "health": 200,
     "armor": 8,
     "damage": 30,
-    "reward": 0.018,
+    "reward": 0.18,
     "experience": 1.8
   },
   {
@@ -191,7 +191,7 @@
     "health": 350,
     "armor": 20,
     "damage": 45,
-    "reward": 0.035,
+    "reward": 0.35,
     "experience": 3.5
   },
   {
@@ -204,7 +204,7 @@
     "health": 260,
     "armor": 12,
     "damage": 50,
-    "reward": 0.03,
+    "reward": 0.3,
     "experience": 3
   },
   {
@@ -217,7 +217,7 @@
     "health": 400,
     "armor": 35,
     "damage": 40,
-    "reward": 0.04,
+    "reward": 0.4,
     "experience": 4
   },
   {
@@ -230,7 +230,7 @@
     "health": 180,
     "armor": 8,
     "damage": 35,
-    "reward": 0.02,
+    "reward": 0.2,
     "experience": 2
   },
   {
@@ -243,7 +243,7 @@
     "health": 300,
     "armor": 15,
     "damage": 55,
-    "reward": 0.045,
+    "reward": 0.45,
     "experience": 4.5
   },
   {
@@ -256,7 +256,7 @@
     "health": 150,
     "armor": 5,
     "damage": 45,
-    "reward": 0.025,
+    "reward": 0.25,
     "experience": 2.5
   },
   {
@@ -269,7 +269,7 @@
     "health": 450,
     "armor": 25,
     "damage": 60,
-    "reward": 0.05,
+    "reward": 0.5,
     "experience": 5
   },
   {
@@ -282,7 +282,7 @@
     "health": 500,
     "armor": 15,
     "damage": 70,
-    "reward": 0.055,
+    "reward": 0.55,
     "experience": 5.5
   },
   {
@@ -295,7 +295,7 @@
     "health": 280,
     "armor": 10,
     "damage": 65,
-    "reward": 0.048,
+    "reward": 0.48,
     "experience": 4.8
   },
   {
@@ -308,7 +308,7 @@
     "health": 320,
     "armor": 30,
     "damage": 55,
-    "reward": 0.042,
+    "reward": 0.42,
     "experience": 4.2
   },
   {
@@ -321,7 +321,7 @@
     "health": 380,
     "armor": 20,
     "damage": 50,
-    "reward": 0.038,
+    "reward": 0.38,
     "experience": 3.8
   },
   {
@@ -334,7 +334,7 @@
     "health": 420,
     "armor": 25,
     "damage": 55,
-    "reward": 0.045,
+    "reward": 0.45,
     "experience": 4.5
   },
   {
@@ -347,7 +347,7 @@
     "health": 200,
     "armor": 12,
     "damage": 48,
-    "reward": 0.03,
+    "reward": 0.3,
     "experience": 3
   },
   {
@@ -360,7 +360,7 @@
     "health": 350,
     "armor": 18,
     "damage": 68,
-    "reward": 0.052,
+    "reward": 0.52,
     "experience": 5.2
   },
   {
@@ -373,7 +373,7 @@
     "health": 320,
     "armor": 15,
     "damage": 58,
-    "reward": 0.044,
+    "reward": 0.44,
     "experience": 4.4
   },
   {
@@ -386,7 +386,7 @@
     "health": 340,
     "armor": 22,
     "damage": 52,
-    "reward": 0.04,
+    "reward": 0.4,
     "experience": 4
   },
   {
@@ -399,7 +399,7 @@
     "health": 480,
     "armor": 40,
     "damage": 45,
-    "reward": 0.048,
+    "reward": 0.48,
     "experience": 4.8
   },
   {
@@ -412,7 +412,7 @@
     "health": 190,
     "armor": 10,
     "damage": 42,
-    "reward": 0.026,
+    "reward": 0.26,
     "experience": 2.6
   },
   {
@@ -425,7 +425,7 @@
     "health": 290,
     "armor": 18,
     "damage": 56,
-    "reward": 0.037,
+    "reward": 0.37,
     "experience": 3.7
   },
   {
@@ -438,7 +438,7 @@
     "health": 170,
     "armor": 8,
     "damage": 52,
-    "reward": 0.028,
+    "reward": 0.28,
     "experience": 2.8
   },
   {
@@ -451,7 +451,7 @@
     "health": 600,
     "armor": 35,
     "damage": 65,
-    "reward": 0.062,
+    "reward": 0.62,
     "experience": 6.2
   },
   {
@@ -464,7 +464,7 @@
     "health": 550,
     "armor": 25,
     "damage": 75,
-    "reward": 0.06,
+    "reward": 0.6,
     "experience": 6
   },
   {
@@ -477,7 +477,7 @@
     "health": 270,
     "armor": 14,
     "damage": 62,
-    "reward": 0.046,
+    "reward": 0.46,
     "experience": 4.6
   },
   {
@@ -490,7 +490,7 @@
     "health": 520,
     "armor": 38,
     "damage": 58,
-    "reward": 0.055,
+    "reward": 0.55,
     "experience": 5.5
   },
   {
@@ -503,7 +503,7 @@
     "health": 480,
     "armor": 30,
     "damage": 60,
-    "reward": 0.052,
+    "reward": 0.52,
     "experience": 5.2
   },
   {
@@ -516,7 +516,7 @@
     "health": 330,
     "armor": 20,
     "damage": 64,
-    "reward": 0.05,
+    "reward": 0.5,
     "experience": 5
   },
   {
@@ -529,7 +529,7 @@
     "health": 220,
     "armor": 15,
     "damage": 55,
-    "reward": 0.035,
+    "reward": 0.35,
     "experience": 3.5
   },
   {
@@ -542,7 +542,7 @@
     "health": 680,
     "armor": 28,
     "damage": 78,
-    "reward": 0.072,
+    "reward": 0.72,
     "experience": 7.2
   },
   {
@@ -555,7 +555,7 @@
     "health": 380,
     "armor": 18,
     "damage": 60,
-    "reward": 0.047,
+    "reward": 0.47,
     "experience": 4.7
   },
   {
@@ -568,7 +568,7 @@
     "health": 310,
     "armor": 16,
     "damage": 58,
-    "reward": 0.044,
+    "reward": 0.44,
     "experience": 4.4
   },
   {
@@ -581,7 +581,7 @@
     "health": 580,
     "armor": 32,
     "damage": 68,
-    "reward": 0.062,
+    "reward": 0.62,
     "experience": 6.2
   },
   {
@@ -594,7 +594,7 @@
     "health": 290,
     "armor": 12,
     "damage": 66,
-    "reward": 0.048,
+    "reward": 0.48,
     "experience": 4.8
   },
   {
@@ -607,7 +607,7 @@
     "health": 540,
     "armor": 35,
     "damage": 52,
-    "reward": 0.054,
+    "reward": 0.54,
     "experience": 5.4
   },
   {
@@ -620,7 +620,7 @@
     "health": 240,
     "armor": 10,
     "damage": 62,
-    "reward": 0.04,
+    "reward": 0.4,
     "experience": 4
   },
   {
@@ -633,7 +633,7 @@
     "health": 720,
     "armor": 45,
     "damage": 72,
-    "reward": 0.078,
+    "reward": 0.78,
     "experience": 7.8
   },
   {
@@ -646,7 +646,7 @@
     "health": 620,
     "armor": 40,
     "damage": 55,
-    "reward": 0.065,
+    "reward": 0.65,
     "experience": 6.5
   }
 ]
