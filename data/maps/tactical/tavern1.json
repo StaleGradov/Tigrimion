@@ -2,6 +2,7 @@
   "meta": {
     "name": "Моя карта",
     "description": "Создано в редакторе",
+    "mapType": "peaceful",
     "version": "1.0",
     "created": "2025-11-24T17:28:58.704Z",
     "author": "Tigrimion Map Editor"
