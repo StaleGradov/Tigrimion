@@ -109,71 +109,78 @@
 .battle-main-area-compact {
     flex: 1;
     display: flex;
-    gap: 25px;
+    gap: 15px; /* УМЕНЬШЕННЫЙ ОТСТУП МЕЖДУ КОНТЕЙНЕРАМИ */
     align-items: flex-start;
     justify-content: center; /* ЦЕНТРИРОВАНИЕ */
     width: 100%;
     max-width: 1800px; /* ОГРАНИЧЕНИЕ ШИРИНЫ */
     margin: 0 auto; /* ЦЕНТРИРОВАНИЕ */
-    padding: 0 20px;
+    padding: 0 10px;
+    height: 90vh; /* ЗАНИМАЕТ 90% ВЫСОТЫ ЭКРАНА */
 }
 
 /* Левая панель - действия героя */
 .tactical-panel.player-panel {
-    width: 320px;
+    width: 350px; /* УВЕЛИЧЕНА ШИРИНА */
     flex-shrink: 0;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.95);
     border: 2px solid #3b82f6;
     border-radius: 10px;
-    align-self: flex-start;
+    align-self: stretch; /* РАСТЯГИВАЕТСЯ ПО ВЫСОТЕ */
+    height: 100%; /* ЗАНИМАЕТ ВСЮ ВЫСОТУ */
 }
 
 /* КОМПАКТНАЯ СЕТКА БОЯ БЕЗ VS */
 .battle-grid-compact {
     display: flex;
-    gap: 40px; /* Расстояние между союзниками и врагами */
+    gap: 20px; /* УМЕНЬШЕННЫЙ ОТСТУП МЕЖДУ СТОРОНАМИ */
     align-items: flex-start;
     justify-content: center;
-    min-width: 1100px; /* Фиксированная минимальная ширина */
-    max-width: 1200px; /* Ограничение максимальной ширины */
+    min-width: 1200px; /* УВЕЛИЧЕНА МИНИМАЛЬНАЯ ШИРИНА */
+    max-width: 1300px; /* УВЕЛИЧЕНА МАКСИМАЛЬНАЯ ШИРИНА */
+    height: 100%; /* ЗАНИМАЕТ ВСЮ ВЫСОТУ */
 }
 
-/* БОКОВАЯ ЧАСТЬ СЕТКИ - КОМПАКТНАЯ */
+/* БОКОВАЯ ЧАСТЬ СЕТКИ - УВЕЛИЧЕННАЯ */
 .grid-side-compact {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     border: 2px solid #4b5563;
-    min-width: 500px; /* Увеличенная ширина */
-    max-width: 550px;
+    min-width: 580px; /* ЗНАЧИТЕЛЬНО УВЕЛИЧЕНА ШИРИНА */
+    max-width: 600px;
+    height: 100%; /* ЗАНИМАЕТ ВСЮ ВЫСОТУ */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Заголовок стороны */
 .side-title {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     color: #f59e0b;
     font-size: 1.5rem;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
 }
 
-/* СЕТКА 6x6 - КОМПАКТНАЯ ВЕРСИЯ */
+/* СЕТКА 6x6 - УВЕЛИЧЕННАЯ ВЕРСИЯ */
 .grid-container-6x6-compact {
-    min-height: 800px !important;
-    max-height: 820px;
+    flex: 1; /* ЗАНИМАЕТ ВСЮ ОСТАВШУЮСЯ ВЫСОТУ */
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     grid-template-rows: repeat(3, 1fr) !important;
-    gap: 20px !important;
+    gap: 15px !important; /* УМЕНЬШЕННЫЙ ОТСТУП МЕЖДУ ЯЧЕЙКАМИ */
     width: 100%;
-    padding: 15px;
+    padding: 10px;
+    min-height: 0; /* ВАЖНО ДЛЯ ГРИДА */
 }
 
-/* ЯЧЕЙКИ СЕТКИ С УВЕЛИЧЕННЫМ РАЗМЕРОМ */
+/* ЯЧЕЙКИ СЕТКИ - ЗНАЧИТЕЛЬНО УВЕЛИЧЕННЫЕ */
 .grid-cell-fullscreen {
-    min-height: 240px !important;
-    max-height: 250px;
+    min-height: 280px !important; /* УВЕЛИЧЕНА ВЫСОТА */
+    max-height: 300px;
     padding: 0 !important;
     border-width: 3px !important;
     position: relative;
@@ -185,7 +192,6 @@
     flex-direction: column;
     border: 3px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
-    margin: 5px;
 }
 
 /* Пустая ячейка */
@@ -243,20 +249,23 @@
 
 /* ПРАВАЯ ОБЛАСТЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ */
 .enemy-panels-container {
-    width: 350px;
+    width: 350px; /* УВЕЛИЧЕНА ШИРИНА */
     flex-shrink: 0;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.95);
     border: 2px solid #ef4444;
     border-radius: 10px;
-    align-self: flex-start;
+    align-self: stretch; /* РАСТЯГИВАЕТСЯ ПО ВЫСОТЕ */
+    height: 100%; /* ЗАНИМАЕТ ВСЮ ВЫСОТУ */
 }
 
 /* Сетка панелей врагов */
 .enemy-panels-grid {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px; /* УМЕНЬШЕННЫЙ ОТСТУП */
+    height: 100%;
+    overflow-y: auto;
 }
 
 /* Мини-панель врага */
@@ -265,7 +274,7 @@
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 8px;
     padding: 12px;
-    margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
 /* Шапка панели врага */
@@ -333,35 +342,35 @@
     flex-direction: column;
 }
 
-/* Контейнер изображения юнита - УВЕЛИЧЕННЫЙ РАЗМЕР */
+/* Контейнер изображения юнита - ЗНАЧИТЕЛЬНО УВЕЛИЧЕННЫЙ */
 .unit-image-container {
     width: 100%;
-    height: calc(100% - 60px);
+    height: calc(100% - 70px); /* БОЛЬШЕ МЕСТА ДЛЯ ИЗОБРАЖЕНИЯ */
     position: relative;
-    overflow: visible;
+    overflow: hidden; /* СКРЫВАЕМ ВЫХОДЯЩИЕ ЗА ГРАНИЦЫ */
     cursor: pointer;
     flex: 1;
     border-radius: 10px 10px 0 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px;
+    padding: 5px; /* УМЕНЬШЕННЫЙ ОТСТУП */
 }
 
-/* Изображение юнита - УВЕЛИЧЕННОЕ */
+/* Изображение юнита - УВЕЛИЧЕННОЕ С СОХРАНЕНИЕМ ПРОПОРЦИЙ */
 .unit-image {
-    width: 95% !important;
-    height: 95% !important;
+    width: 100% !important; /* ЗАНИМАЕТ ВСЮ ШИРИНУ */
+    height: 100% !important; /* ЗАНИМАЕТ ВСЮ ВЫСОТУ */
     margin: 0 !important;
     border: none !important;
-    object-fit: contain !important;
+    object-fit: contain !important; /* СОХРАНЯЕТ ПРОПОРЦИИ БЕЗ ОБРЕЗКИ */
     border-radius: 8px 8px 0 0;
     transition: transform 0.3s ease;
 }
 
 /* Ховер-эффект для изображения */
 .unit-image-container:hover .unit-image {
-    transform: scale(1.08);
+    transform: scale(1.05);
 }
 
 /* Заглушка при отсутствии изображения */
@@ -371,7 +380,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 3rem !important;
+    font-size: 4rem !important; /* УВЕЛИЧЕН РАЗМЕР */
     background: rgba(0, 0, 0, 0.3);
     color: rgba(255, 255, 255, 0.5);
     border-radius: 8px 8px 0 0;
@@ -381,10 +390,10 @@
 
 /* Контейнер здоровья в полноэкранном бою */
 .battle-screen-fullscreen .unit-health-container {
-    height: 60px !important;
+    height: 70px !important; /* УВЕЛИЧЕНА ВЫСОТА */
     background: rgba(0, 0, 0, 0.95) !important;
     border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
-    padding: 12px 18px !important;
+    padding: 15px 20px !important; /* УВЕЛИЧЕНЫ ОТСТУПЫ */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -394,14 +403,15 @@
     margin: 0 !important;
     box-sizing: border-box !important;
     width: 100% !important;
+    flex-shrink: 0; /* НЕ СЖИМАЕТСЯ */
 }
 
 /* Полоска здоровья */
 .battle-screen-fullscreen .health-bar-fullscreen {
     width: 100% !important;
-    height: 25px !important;
+    height: 30px !important; /* УВЕЛИЧЕНА ВЫСОТА */
     background: #333333 !important;
-    border-radius: 12px !important;
+    border-radius: 15px !important;
     overflow: hidden !important;
     border: 2px solid #555555 !important;
     position: relative !important;
@@ -413,7 +423,7 @@
 .battle-screen-fullscreen .health-fill {
     height: 100% !important;
     background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
-    border-radius: 10px !important;
+    border-radius: 13px !important;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
@@ -428,7 +438,7 @@
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    font-size: 13px !important;
+    font-size: 14px !important; /* УВЕЛИЧЕН РАЗМЕР ШРИФТА */
     font-weight: bold !important;
     color: white !important;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
@@ -953,13 +963,13 @@
     }
     
     .battle-grid-compact {
-        min-width: 1000px;
-        max-width: 1100px;
+        min-width: 1100px;
+        max-width: 1200px;
     }
     
     .grid-side-compact {
-        min-width: 450px;
-        max-width: 500px;
+        min-width: 520px;
+        max-width: 540px;
     }
 }
 
@@ -967,44 +977,46 @@
     .battle-main-area-compact {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 20px;
+        gap: 15px;
+        height: auto;
     }
     
     .battle-grid-compact {
         order: 1;
-        min-width: 900px;
+        min-width: 1000px;
     }
     
     .tactical-panel.player-panel {
         order: 2;
-        width: 45%;
-        min-width: 300px;
+        width: 48%;
+        min-width: 320px;
+        height: auto;
     }
     
     .enemy-panels-container {
         order: 3;
-        width: 45%;
-        min-width: 300px;
+        width: 48%;
+        min-width: 320px;
+        height: auto;
     }
 }
 
 @media (max-width: 1200px) {
     .battle-grid-compact {
-        min-width: 800px;
-        gap: 20px;
+        min-width: 900px;
+        gap: 15px;
     }
     
     .grid-side-compact {
-        min-width: 380px;
+        min-width: 430px;
     }
     
     .grid-container-6x6-compact {
-        min-height: 700px !important;
-        gap: 15px !important;
+        gap: 12px !important;
     }
     
     .grid-cell-fullscreen {
-        min-height: 200px !important;
+        min-height: 250px !important;
     }
 }
 
@@ -1015,35 +1027,35 @@
     }
     
     .battle-grid-compact {
-        min-width: 600px;
+        min-width: 700px;
         width: 100%;
     }
     
     .tactical-panel.player-panel,
     .enemy-panels-container {
         width: 90%;
-        max-width: 600px;
+        max-width: 700px;
     }
 }
 
 @media (max-width: 768px) {
     .battle-grid-compact {
-        min-width: 400px;
+        min-width: 500px;
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
     }
     
     .grid-side-compact {
-        min-width: 350px;
+        min-width: 450px;
         width: 100%;
     }
     
     .grid-container-6x6-compact {
-        min-height: 600px !important;
+        min-height: 500px !important;
     }
     
     .grid-cell-fullscreen {
-        min-height: 180px !important;
+        min-height: 200px !important;
     }
     
     .battle-header {
