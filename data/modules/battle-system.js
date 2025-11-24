@@ -841,13 +841,42 @@ class BattleSystem {
             case 'crushingAttack':
                 damage = this.calculateMonsterDamage(monster, monsterUnit);
                 const heroStats = this.getHeroStatsForBattle();
-                const finalDamage = Math.max(1, damage - heroStats.armor);
+                
+                // Проверяем блок героя
+                const isHeroBlocking = this.players[1].currentAction === 'block';
+                let finalDamage = damage;
+                
+                if (isHeroBlocking) {
+                    const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
+                    const blockedDamage = Math.floor(damage * blockEfficiency);
+                    finalDamage = Math.max(1, damage - blockedDamage - heroStats.armor);
+                    
+                    // Отражение урона
+                    const reflectionPercent = this.getBlockReflectionPercent(this.players[1].combo.count);
+                    const reflectedDamage = Math.floor(damage * reflectionPercent);
+                    
+                    if (reflectedDamage > 0) {
+                        const oldMonsterHealth = monsterUnit.currentHealth;
+                        monsterUnit.currentHealth = Math.max(0, monsterUnit.currentHealth - reflectedDamage);
+                        this.updateHealthBar('enemies', monsterUnit.position, monsterUnit.currentHealth, monsterUnit.maxHealth);
+                        
+                        message = `👹 ${monster.name} атакует, но вы блокируете ${blockedDamage} урона и отражаете ${reflectedDamage} урона!`;
+                        
+                        if (monsterUnit.currentHealth <= 0) {
+                            this.addBattleLog(`💀 ${monster.name} погибает от отраженного урона!`);
+                        }
+                    } else {
+                        message = `👹 ${monster.name} атакует, но вы блокируете ${blockedDamage} урона!`;
+                    }
+                } else {
+                    finalDamage = Math.max(1, damage - heroStats.armor);
+                    message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
+                }
                 
                 console.log(`👹 МОНСТР АТАКУЕТ: ${monster.name}, урон: ${finalDamage}`);
                 
                 const oldHealth = hero.currentHealth;
                 hero.currentHealth = Math.max(0, hero.currentHealth - finalDamage);
-                message = `👹 ${monster.name} атакует и наносит ${finalDamage} урона!`;
                 
                 console.log(`👹 ДО атаки: ${oldHealth}, ПОСЛЕ: ${hero.currentHealth}`);
                 
@@ -897,11 +926,11 @@ class BattleSystem {
                 break;
                 
             case 'breakBlock':
-                const isHeroBlocking = this.players[1].currentAction === 'block';
+                const isHeroBlockingBreak = this.players[1].currentAction === 'block';
                 damage = this.calculateMonsterDamage(monster, monsterUnit);
-                let breakBlockDamage = damage;
                 
-                if (isHeroBlocking) {
+                let breakBlockDamage;
+                if (isHeroBlockingBreak) {
                     const breakMultiplier = this.getBreakBlockMultiplier(monster.combo.count, true);
                     breakBlockDamage = Math.floor(damage * breakMultiplier);
                     message = `⚡ ${monster.name} пробивает вашу защиту и наносит ${breakBlockDamage} урона!`;
@@ -950,14 +979,16 @@ class BattleSystem {
         
         switch(monster.currentAction) {
             case 'strongAttack':
-                multiplier = 1.5;
+                multiplier = 2.5; // 250% базовый урон
                 break;
             case 'crushingAttack':
-                multiplier = 2.0;
+                multiplier = 7.5; // 750% базовый урон
                 break;
             case 'breakBlock':
-                multiplier = 0.8;
+                multiplier = 0.5; // 50% базовый урон (без блока)
                 break;
+            default:
+                multiplier = 1.0; // 100% базовый урон
         }
         
         const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
@@ -973,87 +1004,87 @@ class BattleSystem {
         return finalDamage;
     }
 
-  updateHealthBar(side, position, currentHealth, maxHealth) {
-    const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
-    
-    console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
-    
-    const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
-    const cell = document.querySelector(cellSelector);
-    
-    if (!cell) {
-        console.log(`❌ Ячейка не найдена: ${cellSelector}`);
-        return;
-    }
-    
-    let healthBar = cell.querySelector('.health-bar-fullscreen');
-    let healthFill = cell.querySelector('.health-fill');
-    
-    if (!healthBar) {
-        console.log("📝 Создаем отсутствующие элементы здоровья...");
-        healthBar = document.createElement('div');
-        healthBar.className = 'health-bar-fullscreen';
+    updateHealthBar(side, position, currentHealth, maxHealth) {
+        const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
         
-        healthFill = document.createElement('div');
-        healthFill.className = 'health-fill health-high';
+        console.log(`🔄 ОБНОВЛЕНИЕ ПОЛОСКИ: ${side} ${position} = ${currentHealth}/${maxHealth} (${healthPercent}%)`);
         
-        const healthText = document.createElement('div');
-        healthText.className = 'health-text';
+        const cellSelector = `.grid-cell-fullscreen[data-position="${position}"][data-side="${side}"]`;
+        const cell = document.querySelector(cellSelector);
         
-        healthBar.appendChild(healthFill);
-        healthBar.appendChild(healthText);
+        if (!cell) {
+            console.log(`❌ Ячейка не найдена: ${cellSelector}`);
+            return;
+        }
         
-        const healthContainer = cell.querySelector('.unit-health-container');
-        if (healthContainer) {
-            healthContainer.appendChild(healthBar);
+        let healthBar = cell.querySelector('.health-bar-fullscreen');
+        let healthFill = cell.querySelector('.health-fill');
+        
+        if (!healthBar) {
+            console.log("📝 Создаем отсутствующие элементы здоровья...");
+            healthBar = document.createElement('div');
+            healthBar.className = 'health-bar-fullscreen';
+            
+            healthFill = document.createElement('div');
+            healthFill.className = 'health-fill health-high';
+            
+            const healthText = document.createElement('div');
+            healthText.className = 'health-text';
+            
+            healthBar.appendChild(healthFill);
+            healthBar.appendChild(healthText);
+            
+            const healthContainer = cell.querySelector('.unit-health-container');
+            if (healthContainer) {
+                healthContainer.appendChild(healthBar);
+            } else {
+                const newContainer = document.createElement('div');
+                newContainer.className = 'unit-health-container';
+                newContainer.appendChild(healthBar);
+                cell.appendChild(newContainer);
+            }
+        }
+        
+        if (healthFill) {
+            console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
+            
+            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: принудительное обновление
+            requestAnimationFrame(() => {
+                // Сначала сбрасываем ширину для принудительного рефлоу
+                healthFill.style.width = '0%';
+                healthFill.offsetHeight; // Принудительный рефлоу
+                
+                // Затем устанавливаем нужную ширину
+                healthFill.style.width = `${healthPercent}%`;
+                
+                // Принудительно обновляем цвет
+                healthFill.className = 'health-fill health-updating';
+                if (healthPercent > 60) {
+                    healthFill.classList.add('health-high');
+                } else if (healthPercent > 25) {
+                    healthFill.classList.add('health-medium');
+                } else {
+                    healthFill.classList.add('health-low');
+                }
+                
+                console.log(`🎨 Установлена ширина: ${healthFill.style.width}, computed: ${window.getComputedStyle(healthFill).width}`);
+                
+                // Убираем анимацию после завершения
+                setTimeout(() => {
+                    healthFill.classList.remove('health-updating');
+                }, 300);
+            });
+            
         } else {
-            const newContainer = document.createElement('div');
-            newContainer.className = 'unit-health-container';
-            newContainer.appendChild(healthBar);
-            cell.appendChild(newContainer);
+            console.log(`❌ Не удалось создать/найти полоску здоровья`);
+        }
+        
+        // Обновляем текст
+        const healthText = cell.querySelector('.health-text');
+        if (healthText) {
+            healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
         }
     }
-    
-    if (healthFill) {
-        console.log(`✅ Полоска найдена/создана, устанавливаем ширину: ${healthPercent}%`);
-        
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: принудительное обновление
-        requestAnimationFrame(() => {
-            // Сначала сбрасываем ширину для принудительного рефлоу
-            healthFill.style.width = '0%';
-            healthFill.offsetHeight; // Принудительный рефлоу
-            
-            // Затем устанавливаем нужную ширину
-            healthFill.style.width = `${healthPercent}%`;
-            
-            // Принудительно обновляем цвет
-            healthFill.className = 'health-fill health-updating';
-            if (healthPercent > 60) {
-                healthFill.classList.add('health-high');
-            } else if (healthPercent > 25) {
-                healthFill.classList.add('health-medium');
-            } else {
-                healthFill.classList.add('health-low');
-            }
-            
-            console.log(`🎨 Установлена ширина: ${healthFill.style.width}, computed: ${window.getComputedStyle(healthFill).width}`);
-            
-            // Убираем анимацию после завершения
-            setTimeout(() => {
-                healthFill.classList.remove('health-updating');
-            }, 300);
-        });
-        
-    } else {
-        console.log(`❌ Не удалось создать/найти полоску здоровья`);
-    }
-    
-    // Обновляем текст
-    const healthText = cell.querySelector('.health-text');
-    if (healthText) {
-        healthText.textContent = `${Math.ceil(currentHealth)}/${maxHealth}`;
-    }
-}
 
     updateAllHealthBars() {
         console.log("🔄 Принудительное обновление всех полосок здоровья...");
@@ -1150,8 +1181,76 @@ class BattleSystem {
         }
     }
 
+    // 🎯 ИСПРАВЛЕННАЯ СИСТЕМА КОМБО
+    getComboMultiplier(action, comboCount) {
+        const baseMultipliers = {
+            // ⚔️ Атака: 100% → 200% → 400% → 800%
+            attack: [1.0, 2.0, 4.0, 8.0],
+            
+            // 💥 Силовая: 250% → 500% → 1000% → 2000%
+            strongAttack: [2.5, 5.0, 10.0, 20.0],
+            
+            // 💢 Сокрушительная: 750% → 1500% → 3000% → 6000%
+            crushingAttack: [7.5, 15.0, 30.0, 60.0],
+            
+            // ⚡ Пробитие (множители для случая без блока)
+            breakBlock: [0.5, 1.0, 1.5, 2.0],
+            
+            // 🛡️ Блок: 50% → 75% → 100% → 100% блок
+            block: [0.5, 0.75, 1.0, 1.0],
+            
+            // ❤️ Лечение: 10% → 20% → 40% → 80%
+            heal: [0.10, 0.20, 0.40, 0.80]
+        };
+        
+        const index = Math.min(comboCount - 1, 3);
+        return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
+    }
+
+    getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
+        if (!enemyHasBlock) {
+            // ⚡ Пробитие без блока: 50% → 100% → 150% → 200%
+            const multipliers = [0.5, 1.0, 1.5, 2.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
+        } else {
+            // ⚡ Пробитие с блоком: 200% → 300% → 400% → 500%
+            const multipliers = [2.0, 3.0, 4.0, 5.0];
+            return multipliers[Math.min(comboCount - 1, 3)];
+        }
+    }
+
+    getBlockEfficiency(comboCount) {
+        // 🛡️ Блок: 50% → 75% → 100% → 100% блок
+        const efficiencies = [0.5, 0.75, 1.0, 1.0];
+        return efficiencies[Math.min(comboCount - 1, 3)];
+    }
+
+    getBlockReflectionPercent(comboCount) {
+        // 🛡️ Отражение: 25% → 50% → 75% → 100%
+        const reflectionPercents = [0.25, 0.50, 0.75, 1.0];
+        return reflectionPercents[Math.min(comboCount - 1, 3)];
+    }
+
+    getBlockAPBonus(comboCount) {
+        // 🛡️ Блок: +1 → +2 → +3 → +4 ОД
+        const apBonuses = [1, 2, 3, 4];
+        return apBonuses[Math.min(comboCount - 1, 3)];
+    }
+
+    getRestEfficiency(comboCount) {
+        // 🌀 Отдых: +1 ОД+5%HP → +2 ОД+10%HP → +3 ОД+15%HP → +4 ОД+20%HP
+        const apGain = [1, 2, 3, 4];
+        const healPercent = [0.05, 0.10, 0.15, 0.20];
+        
+        return {
+            ap: apGain[Math.min(comboCount - 1, 3)],
+            healPercent: healPercent[Math.min(comboCount - 1, 3)]
+        };
+    }
+
     getHealEfficiency(comboCount) {
-        const efficiencies = [0.15, 0.25, 0.40, 0.60];
+        // ❤️ Лечение: 10% → 20% → 40% → 80%
+        const efficiencies = [0.10, 0.20, 0.40, 0.80];
         return efficiencies[Math.min(comboCount - 1, 3)];
     }
 
@@ -1173,51 +1272,6 @@ class BattleSystem {
                 monster.previousActions.map(action => `<div class="history-entry">${action}</div>`).join('') : 
                 '<div class="history-empty">Ожидание...</div>';
         }
-    }
-
-    getComboMultiplier(action, comboCount) {
-        const baseMultipliers = {
-            attack: [1.0, 1.2, 1.5, 2.0],
-            strongAttack: [1.5, 1.8, 2.2, 3.0],
-            crushingAttack: [2.0, 2.5, 3.5, 5.0],
-            breakBlock: [1.0, 1.3, 1.7, 2.2],
-            block: [1.0, 1.1, 1.2, 1.3],
-            rest: [1.0, 1.2, 1.4, 1.6],
-            heal: [1.0, 1.3, 1.7, 2.2]
-        };
-        
-        const index = Math.min(comboCount - 1, 3);
-        return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
-    }
-
-    getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
-        if (!enemyHasBlock) {
-            const multipliers = [1.0, 1.2, 1.5, 2.0];
-            return multipliers[Math.min(comboCount - 1, 3)];
-        } else {
-            const multipliers = [2.0, 2.5, 3.0, 4.0];
-            return multipliers[Math.min(comboCount - 1, 3)];
-        }
-    }
-
-    getBlockEfficiency(comboCount) {
-        const efficiencies = [0.5, 0.6, 0.75, 0.9];
-        return efficiencies[Math.min(comboCount - 1, 3)];
-    }
-
-    getBlockAPBonus(comboCount) {
-        const apBonuses = [1, 1, 2, 2];
-        return apBonuses[Math.min(comboCount - 1, 3)];
-    }
-
-    getRestEfficiency(comboCount) {
-        const apGain = [1, 1, 2, 2];
-        const healPercent = [0.0, 0.05, 0.08, 0.12];
-        
-        return {
-            ap: apGain[Math.min(comboCount - 1, 3)],
-            healPercent: healPercent[Math.min(comboCount - 1, 3)]
-        };
     }
 
     resolveTacticalTurn() {
@@ -1263,28 +1317,61 @@ class BattleSystem {
                 const player = this.players[1];
                 
                 let damage = heroStats.damage;
+                let baseMultiplier = 1.0;
                 
-                if (playerAction === 'strongAttack') damage *= 1.5;
-                if (playerAction === 'crushingAttack') damage *= 2.0;
-                if (playerAction === 'breakBlock') damage *= 0.5;
+                // Базовые множители для разных типов атак
+                if (playerAction === 'strongAttack') baseMultiplier = 2.5;
+                if (playerAction === 'crushingAttack') baseMultiplier = 7.5;
+                if (playerAction === 'breakBlock') baseMultiplier = 0.5;
                 
                 const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
-                damage *= comboMultiplier;
+                damage = Math.floor(damage * baseMultiplier * comboMultiplier);
                 
                 let finalDamage = damage;
-                if (playerAction !== 'breakBlock') {
-                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
-                }
                 
-                finalDamage = Math.floor(finalDamage);
+                // Проверяем блок монстра
+                const isMonsterBlocking = targetUnit.data.currentAction === 'block';
+                
+                if (playerAction === 'breakBlock' && isMonsterBlocking) {
+                    // Пробитие против блока использует специальный множитель
+                    const breakMultiplier = this.getBreakBlockMultiplier(player.combo.count, true);
+                    finalDamage = Math.floor(damage * breakMultiplier);
+                    this.addBattleLog(`🎯 Вы пробиваете защиту ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
+                } else if (isMonsterBlocking && playerAction !== 'breakBlock') {
+                    // Обычная атака против блока
+                    const blockEfficiency = this.getBlockEfficiency(targetUnit.data.combo.count);
+                    const blockedDamage = Math.floor(damage * blockEfficiency);
+                    finalDamage = Math.max(1, damage - blockedDamage - (targetUnit.data.armor || 0));
+                    
+                    // Отражение урона
+                    const reflectionPercent = this.getBlockReflectionPercent(targetUnit.data.combo.count);
+                    const reflectedDamage = Math.floor(damage * reflectionPercent);
+                    
+                    if (reflectedDamage > 0) {
+                        const hero = this.battleGrid.allies[4];
+                        const oldHeroHealth = hero.currentHealth;
+                        hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
+                        this.updateHealthBar('allies', 4, hero.currentHealth, hero.maxHealth);
+                        
+                        this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона и отражает ${reflectedDamage} урона!`);
+                        
+                        if (hero.currentHealth <= 0) {
+                            this.addBattleLog(`💀 Вы погибаете от отраженного урона!`);
+                        }
+                    } else {
+                        this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона!`);
+                    }
+                } else {
+                    // Обычная атака без блока
+                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                    this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
+                }
                 
                 const oldHealth = targetUnit.currentHealth;
                 targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
                 
                 console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
                 console.log(`🎯 ДО атаки: ${oldHealth}, ПОСЛЕ: ${targetUnit.currentHealth}`);
-                
-                this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
                 
                 this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
                 
@@ -1313,11 +1400,23 @@ class BattleSystem {
                 const count = this.players[1].combo.count;
                 let multiplierText = '';
                 
-                if (this.isAttackAction(action)) multiplierText = ` (x${this.getComboMultiplier(action, count)})`;
-                else if (action === 'breakBlock') multiplierText = ` (x${this.getBreakBlockMultiplier(count, false)})`;
-                else if (action === 'block') multiplierText = ` (${this.getBlockEfficiency(count) * 100}% +${this.getBlockAPBonus(count)}ОД)`;
-                else if (action === 'rest') multiplierText = ` (+${this.getRestEfficiency(count).ap}ОД)`;
-                else if (action === 'heal') multiplierText = ` (${this.getHealEfficiency(count) * 100}% HP)`;
+                if (this.isAttackAction(action)) {
+                    const multiplier = this.getComboMultiplier(action, count);
+                    multiplierText = ` (x${multiplier})`;
+                } else if (action === 'breakBlock') {
+                    multiplierText = ` (${this.getBreakBlockMultiplier(count, false) * 100}%/${this.getBreakBlockMultiplier(count, true) * 100}% урона)`;
+                } else if (action === 'block') {
+                    const blockPercent = this.getBlockEfficiency(count) * 100;
+                    const reflectionPercent = this.getBlockReflectionPercent(count) * 100;
+                    const apBonus = this.getBlockAPBonus(count);
+                    multiplierText = ` (${blockPercent}% блок + ${reflectionPercent}% отражение +${apBonus}ОД)`;
+                } else if (action === 'rest') {
+                    const restEff = this.getRestEfficiency(count);
+                    multiplierText = ` (+${restEff.ap}ОД +${restEff.healPercent * 100}% HP)`;
+                } else if (action === 'heal') {
+                    const healPercent = this.getHealEfficiency(count) * 100;
+                    multiplierText = ` (${healPercent}% HP)`;
+                }
                 
                 playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
             } else {
@@ -1721,4 +1820,4 @@ class TacticalAI {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с улучшенной системой здоровья");
+console.log("📦 BattleSystem полностью переписан с ИСПРАВЛЕННОЙ системой комбо");
