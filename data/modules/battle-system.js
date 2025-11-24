@@ -45,83 +45,114 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован с улучшенной групповой системой");
     }
 
-    async loadBattleData() {
-        try {
-            console.log("📥 Загружаем данные монстров...");
-            
-            const [enemiesResponse, monstersResponse] = await Promise.all([
-                fetch('data/enemies.json').catch(() => null),
-                fetch('data/monsters.json').catch(() => null)
-            ]);
-            
+   async loadBattleData() {
+    try {
+        console.log("📥 Загружаем данные монстров...");
+        
+        const [enemiesResponse, monstersResponse] = await Promise.all([
+            fetch('data/enemies.json').catch(() => null),
+            fetch('data/monsters.json').catch(() => null)
+        ]);
+        
+        this.randomMonsters = [];
+        this.programmedMonsters = new Map();
+        
+        // ПЕРВОЕ: загружаем случайных монстров (enemies.json)
+        if (enemiesResponse && enemiesResponse.ok) {
+            this.randomMonsters = await enemiesResponse.json();
+            console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
+        } else {
+            console.error("❌ enemies.json не загружен!");
             this.randomMonsters = [];
-            this.programmedMonsters = new Map();
-            
-            if (enemiesResponse && enemiesResponse.ok) {
-                this.randomMonsters = await enemiesResponse.json();
-                console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
-            } else {
-                console.error("❌ enemies.json не загружен!");
-                this.randomMonsters = [];
+        }
+        
+        // ВТОРОЕ: загружаем запрограммированных монстров (monsters.json)  
+        if (monstersResponse && monstersResponse.ok) {
+            const programmedMonsters = await monstersResponse.json();
+            programmedMonsters.forEach(monster => {
+                this.programmedMonsters.set(monster.id, monster);
+            });
+            console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
+        } else {
+            console.error("❌ monsters.json не загружен!");
+        }
+        
+        // ОБЪЕДИНЯЕМ: сначала случайные, потом запрограммированные
+        this.monsters = [...this.randomMonsters];
+        
+        // Добавляем запрограммированных только если они есть
+        if (this.programmedMonsters.size > 0) {
+            this.monsters.push(...Array.from(this.programmedMonsters.values()));
+        }
+        
+        console.log(`🎯 Всего монстров: ${this.monsters.length} (${this.randomMonsters.length} случайных, ${this.programmedMonsters.size} запрограммированных)`);
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных монстров:", error);
+        this.randomMonsters = [];
+        this.programmedMonsters = new Map();
+        this.monsters = [];
+        return false;
+    }
+}
+
+  getMonstersForCurrentMap() {
+    if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
+        console.log("🗺️ Карта не активна, используем случайных монстров");
+        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+    }
+
+    const currentMap = window.game.systems.map.currentTacticalMap;
+    
+    // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
+    if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
+        console.log("🗺️ У карты нет своих монстров, используем случайных");
+        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+    }
+
+    // ФИЛЬТРУЕМ: сначала ищем в запрограммированных, потом в случайных
+    const mapMonsters = currentMap.jsonData.meta.monsters
+        .map(monsterId => {
+            // Сначала ищем в запрограммированных монстрах
+            if (this.programmedMonsters.has(monsterId)) {
+                return this.programmedMonsters.get(monsterId);
             }
-            
-            if (monstersResponse && monstersResponse.ok) {
-                const programmedMonsters = await monstersResponse.json();
-                programmedMonsters.forEach(monster => {
-                    this.programmedMonsters.set(monster.id, monster);
-                });
-                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
-            } else {
-                console.error("❌ monsters.json не загружен!");
+            // Потом в случайных
+            const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
+            if (randomMonster) {
+                return randomMonster;
             }
-            
-            this.monsters = [...this.randomMonsters, ...Array.from(this.programmedMonsters.values())];
-            console.log(`🎯 Всего монстров: ${this.monsters.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных монстров:", error);
-            this.randomMonsters = [];
-            this.programmedMonsters = new Map();
-            this.monsters = [];
-            return false;
-        }
+            console.warn(`❌ Монстр с ID ${monsterId} не найден ни в запрограммированных, ни в случайных!`);
+            return null;
+        })
+        .filter(monster => monster !== null);
+
+    console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
+    
+    // Если для карты нет монстров, используем случайных
+    if (mapMonsters.length === 0) {
+        console.log("🗺️ Для карты нет валидных монстров, используем случайных");
+        return this.randomMonsters;
     }
+    
+    return mapMonsters;
+}
 
-    getMonstersForCurrentMap() {
-        if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
-            console.log("🗺️ Карта не активна, используем общих монстров");
-            return this.monsters;
-        }
-
-        const currentMap = window.game.systems.map.currentTacticalMap;
-        
-        if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
-            console.log("🗺️ У карты нет своих монстров, используем общих");
-            return this.monsters;
-        }
-
-        const mapMonsters = currentMap.jsonData.meta.monsters
-            .map(monsterId => this.getMonsterById(monsterId))
-            .filter(monster => monster !== null);
-
-        console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
-        return mapMonsters;
+   getRandomMonsterForMovement() {
+    const mapMonsters = this.getMonstersForCurrentMap();
+    
+    if (mapMonsters.length === 0) {
+        console.error("❌ Нет монстров для текущей карты!");
+        // Возвращаем случайного монстра из общих
+        return this.randomMonsters[0] || null;
     }
-
-    getRandomMonsterForMovement() {
-        const mapMonsters = this.getMonstersForCurrentMap();
-        
-        if (mapMonsters.length === 0) {
-            console.error("❌ Нет монстров для текущей карты!");
-            return this.monsters[0] || null;
-        }
-        
-        const randomIndex = Math.floor(Math.random() * mapMonsters.length);
-        const monster = mapMonsters[randomIndex];
-        console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
-        return monster;
-    }
+    
+    const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+    const monster = mapMonsters[randomIndex];
+    console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
+    return monster;
+}
 
     getMonsterById(monsterId) {
         if (this.programmedMonsters.has(monsterId)) {
