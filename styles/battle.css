@@ -1,4 +1,39 @@
-/* ========== ИСПРАВЛЕННЫЙ КОМПАКТНЫЙ ИНТЕРФЕЙС БОЯ ========== */
+/* ========== СТИЛИ ДЛЯ СИСТЕМЫ БОЯ ========== */
+
+/* ========== БАЗОВЫЕ СТИЛИ БОЯ ========== */
+
+/* Контейнер боя с картой - разделяет экран на основную область и боковую панель */
+.battle-screen-with-map {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    height: 100vh;
+    background: #1f2937;
+}
+
+/* Боковая панель с тактической картой */
+.tactical-map-side {
+    background: #000;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Основная область боя */
+.battle-side {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    border-left: 2px solid #4b5563;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Контейнер содержимого боя */
+.battle-container {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ========== ПОЛНОЭКРАННЫЙ ИНТЕРФЕЙС БОЯ С СЕТКОЙ 6x6 ========== */
 
 /* Основной контейнер полноэкранного боя - ЦЕНТРИРОВАННЫЙ */
 .battle-screen-fullscreen {
@@ -11,6 +46,65 @@
     align-items: center; /* ЦЕНТРИРОВАНИЕ ПО ГОРИЗОНТАЛИ */
 }
 
+/* Шапка боя */
+.battle-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    border: 1px solid #4b5563;
+    width: 100%;
+    max-width: 1800px; /* ОГРАНИЧЕНИЕ ШИРИНЫ */
+}
+
+/* Левая часть шапки */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+/* Заголовок боя */
+.battle-header h2 {
+    color: #ef4444;
+    font-size: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin: 0;
+}
+
+/* Отображение текущего раунда */
+.battle-round {
+    background: rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #ef4444;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Кнопка возврата */
+.btn-battle-back {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+/* Ховер-эффект для кнопки */
+.btn-battle-back:hover {
+    background: linear-gradient(135deg, #4b5563, #374151);
+    transform: translateY(-2px);
+}
+
+/* ========== ОСНОВНАЯ ОБЛАСТЬ БОЯ С СЕТКОЙ 6x6 ========== */
+
 /* ОСНОВНАЯ ОБЛАСТЬ БОЯ - КОМПАКТНАЯ И ЦЕНТРИРОВАННАЯ */
 .battle-main-area-compact {
     flex: 1;
@@ -22,6 +116,17 @@
     max-width: 1800px; /* ОГРАНИЧЕНИЕ ШИРИНЫ */
     margin: 0 auto; /* ЦЕНТРИРОВАНИЕ */
     padding: 0 20px;
+}
+
+/* Левая панель - действия героя */
+.tactical-panel.player-panel {
+    width: 320px;
+    flex-shrink: 0;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #3b82f6;
+    border-radius: 10px;
+    align-self: flex-start;
 }
 
 /* КОМПАКТНАЯ СЕТКА БОЯ БЕЗ VS */
@@ -65,7 +170,7 @@
     padding: 15px;
 }
 
-/* ЯЧЕЙКИ СЕТКИ - КОМПАКТНЫЕ С УВЕЛИЧЕННЫМ РАЗМЕРОМ */
+/* ЯЧЕЙКИ СЕТКИ С УВЕЛИЧЕННЫМ РАЗМЕРОМ */
 .grid-cell-fullscreen {
     min-height: 240px !important;
     max-height: 250px;
@@ -80,17 +185,60 @@
     flex-direction: column;
     border: 3px solid rgba(255, 255, 255, 0.2);
     transition: all 0.3s ease;
+    margin: 5px;
 }
 
-/* ЛЕВАЯ ПАНЕЛЬ - ИГРОК */
-.tactical-panel.player-panel {
-    width: 320px;
-    flex-shrink: 0;
-    padding: 1rem;
-    background: rgba(15, 23, 42, 0.95);
-    border: 2px solid #3b82f6;
-    border-radius: 10px;
-    align-self: flex-start;
+/* Пустая ячейка */
+.grid-cell-fullscreen.empty {
+    opacity: 0.3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Заглушка для пустой ячейки */
+.empty-slot {
+    font-size: 3rem;
+    opacity: 0.5;
+}
+
+/* Выбираемая ячейка */
+.grid-cell-fullscreen.selectable {
+    cursor: pointer;
+    border-color: #00ff00 !important;
+    animation: pulse-glow 2s infinite;
+    background: rgba(0, 255, 0, 0.15) !important;
+}
+
+/* Ховер-эффект для выбираемой ячейки */
+.grid-cell-fullscreen.selectable:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+    background: rgba(0, 255, 0, 0.2) !important;
+}
+
+/* Мертвая ячейка */
+.grid-cell-fullscreen.dead {
+    opacity: 0.5;
+    filter: grayscale(1);
+    position: relative;
+}
+
+/* Оверлей для мертвого юнита */
+.dead-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 4rem;
+    z-index: 10;
+}
+
+/* Анимация пульсации для выбираемых ячеек */
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
+    50% { box-shadow: 0 0 25px rgba(0, 255, 0, 0.8); }
+    100% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
 }
 
 /* ПРАВАЯ ОБЛАСТЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ */
@@ -174,7 +322,452 @@
     border-radius: 8px;
 }
 
-/* ========== ИСПРАВЛЕНИЯ ДЛЯ УПРАВЛЕНИЯ И ЛОГА ========== */
+/* ========== ОТОБРАЖЕНИЕ ЮНИТОВ В СЕТКЕ ========== */
+
+/* Контейнер отображения юнита */
+.unit-display-fullscreen {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Контейнер изображения юнита - УВЕЛИЧЕННЫЙ РАЗМЕР */
+.unit-image-container {
+    width: 100%;
+    height: calc(100% - 60px);
+    position: relative;
+    overflow: visible;
+    cursor: pointer;
+    flex: 1;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+/* Изображение юнита - УВЕЛИЧЕННОЕ */
+.unit-image {
+    width: 95% !important;
+    height: 95% !important;
+    margin: 0 !important;
+    border: none !important;
+    object-fit: contain !important;
+    border-radius: 8px 8px 0 0;
+    transition: transform 0.3s ease;
+}
+
+/* Ховер-эффект для изображения */
+.unit-image-container:hover .unit-image {
+    transform: scale(1.08);
+}
+
+/* Заглушка при отсутствии изображения */
+.image-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem !important;
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px 8px 0 0;
+}
+
+/* ========== ИСПРАВЛЕННЫЕ ПОЛОСКИ ЗДОРОВЬЯ ДЛЯ БОЯ ========== */
+
+/* Контейнер здоровья в полноэкранном бою */
+.battle-screen-fullscreen .unit-health-container {
+    height: 60px !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
+    padding: 12px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    z-index: 100 !important;
+    border-radius: 0 0 8px 8px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+/* Полоска здоровья */
+.battle-screen-fullscreen .health-bar-fullscreen {
+    width: 100% !important;
+    height: 25px !important;
+    background: #333333 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    border: 2px solid #555555 !important;
+    position: relative !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+    box-sizing: border-box !important;
+}
+
+/* Заполнение полоски здоровья */
+.battle-screen-fullscreen .health-fill {
+    height: 100% !important;
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+    border-radius: 10px !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    transition: width 0.5s ease !important;
+    box-sizing: border-box !important;
+    min-width: 20px !important;
+}
+
+/* Текст здоровья */
+.battle-screen-fullscreen .health-text {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+    z-index: 10 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    pointer-events: none !important;
+    white-space: nowrap !important;
+}
+
+/* Цвета для разных уровней здоровья в бою */
+.battle-screen-fullscreen .health-fill.health-high { 
+    background: linear-gradient(90deg, #22c55e, #16a34a) !important;
+}
+.battle-screen-fullscreen .health-fill.health-medium { 
+    background: linear-gradient(90deg, #eab308, #ca8a04) !important;
+}
+.battle-screen-fullscreen .health-fill.health-low { 
+    background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+}
+
+/* Анимация при изменении здоровья */
+@keyframes healthPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.battle-screen-fullscreen .health-changing {
+    animation: healthPulse 0.3s ease-in-out;
+}
+
+/* ========== ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ ПРИ НАВЕДЕНИИ ========== */
+
+/* Оверлей с информацией о юните */
+.unit-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(
+        to top,
+        transparent 0%,
+        rgba(0, 0, 0, 0.7) 20%,
+        rgba(0, 0, 0, 0.9) 50%,
+        rgba(0, 0, 0, 0.95) 100%
+    );
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 8;
+    border-radius: 0 0 8px 8px;
+}
+
+/* Показываем оверлей при наведении */
+.unit-image-container:hover .unit-info-overlay {
+    opacity: 1;
+}
+
+/* Шапка оверлея */
+.overlay-unit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Имя юнита в оверлее */
+.overlay-unit-name {
+    font-size: 1.1rem !important;
+    font-weight: bold;
+    color: #f59e0b !important;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    flex: 1;
+    text-align: left;
+}
+
+/* Уровень юнита в оверлее */
+.overlay-unit-level {
+    background: #3b82f6;
+    padding: 0.3rem 0.7rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* Простые статы в оверлее */
+.overlay-simple-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Здоровье в оверлее */
+.overlay-health {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+/* Метка здоровья */
+.overlay-health-label {
+    color: #fca5a5;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Числовые значения здоровья */
+.overlay-health-numbers {
+    color: white;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Основные статы в оверлее */
+.overlay-main-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+/* Урон в оверлее */
+.overlay-damage {
+    color: #f59e0b;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Броня в оверлее */
+.overlay-armor {
+    color: #3b82f6;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* Тип в оверлее */
+.overlay-type {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Ряд в оверлее */
+.overlay-row {
+    color: #8b5cf6;
+    font-weight: bold;
+    font-size: 0.85rem;
+    background: rgba(139, 92, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ========== ТАКТИЧЕСКИЕ ПАНЕЛИ ========== */
+
+/* Заголовок панели */
+.panel-title {
+    text-align: center;
+    margin-bottom: 1rem !important;
+    font-size: 1.3rem !important;
+    font-weight: bold;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    border: 1px solid;
+}
+
+/* Заголовок панели игрока */
+.player-panel .panel-title {
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Заголовок панели противника */
+.enemy-panels-container .panel-title {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Статы в панелях */
+.panel-stats {
+    margin-bottom: 1.2rem !important;
+}
+
+/* Элемент стата */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem !important;
+    padding: 0.4rem 0.6rem !important;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Метка стата */
+.stat-label {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+
+/* Значение стата */
+.stat-value {
+    font-weight: bold;
+    color: white;
+    font-size: 0.9rem;
+}
+
+/* История действий */
+.action-history {
+    margin-bottom: 1.5rem;
+}
+
+/* Заголовок истории */
+.history-title {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Контейнер записей истории */
+.history-entries {
+    min-height: 80px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 0.5rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+/* Запись в истории */
+.history-entry {
+    padding: 0.3rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.85rem;
+}
+
+/* Последняя запись в истории */
+.history-entry:last-child {
+    border-bottom: none;
+}
+
+/* Пустая история */
+.history-empty {
+    color: #9ca3af;
+    text-align: center;
+    font-style: italic;
+    padding: 1rem;
+}
+
+/* Кнопки действий героя */
+.tactical-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem !important;
+}
+
+/* Тактическая кнопка */
+.tactical-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 1rem !important;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #374151, #4b5563);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Ховер-эффект для кнопки */
+.tactical-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Отключенная кнопка */
+.tactical-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Стили для разных типов кнопок */
+.tactical-btn.attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.tactical-btn.strong-attack { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.tactical-btn.crushing-attack { background: linear-gradient(135deg, #991b1b, #7f1d1d); }
+.tactical-btn.block { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.tactical-btn.break-block { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.tactical-btn.rest { background: linear-gradient(135deg, #10b981, #059669); }
+
+/* Иконка кнопки */
+.btn-icon {
+    font-size: 1.2rem;
+}
+
+/* Текст кнопки */
+.btn-text {
+    flex: 1;
+    text-align: left;
+}
+
+/* Стоимость действия */
+.btn-cost {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+/* ========== УПРАВЛЕНИЕ БОЕМ ========== */
 
 /* Элементы управления боем - ЦЕНТРИРОВАННЫЕ */
 .battle-controls-fullscreen {
@@ -187,6 +780,45 @@
     max-width: 1800px; /* ОГРАНИЧЕНИЕ ШИРИНЫ */
 }
 
+/* Подсказка в бою */
+.battle-hint-fullscreen {
+    text-align: center;
+    padding: 0.8rem !important;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1rem !important;
+    font-weight: bold;
+    font-size: 1rem !important;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+/* Контейнер действий в бою */
+.battle-actions-fullscreen {
+    display: flex;
+    justify-content: center;
+}
+
+/* Кнопка бегства */
+.btn-battle-flee {
+    padding: 14px 28px !important;
+    font-size: 1.1rem !important;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+/* Ховер-эффект для кнопки бегства */
+.btn-battle-flee:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+}
+
 /* Лог боя - ЦЕНТРИРОВАННЫЙ */
 .battle-log-fullscreen {
     background: rgba(0, 0, 0, 0.4);
@@ -197,6 +829,120 @@
     width: 100%;
     max-width: 1800px; /* ОГРАНИЧЕНИЕ ШИРИНЫ */
     margin-bottom: 1rem;
+}
+
+/* Заголовок лога */
+.battle-log-fullscreen h4 {
+    color: #f59e0b;
+    margin-bottom: 0.8rem !important;
+    font-size: 1.1rem !important;
+}
+
+/* Контейнер записей лога */
+.battle-log-entries {
+    max-height: 120px !important;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+/* Запись в логе */
+.log-entry {
+    padding: 0.5rem 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    font-size: 0.85rem;
+}
+
+/* Последняя запись в логе */
+.log-entry:last-child {
+    border-bottom: none;
+}
+
+/* ========== ВСПЛЫВАЮЩЕЕ ОКНО ПОБЕДЫ ========== */
+
+/* Оверлей для модального окна */
+.battle-result-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+/* Модальное окно результата */
+.battle-result-modal {
+    background: linear-gradient(135deg, #1e3a8a, #3730a3);
+    border-radius: 20px;
+    padding: 3rem;
+    text-align: center;
+    color: white;
+    max-width: 600px;
+    width: 90%;
+    border: 4px solid #f59e0b;
+    box-shadow: 0 0 50px rgba(245, 158, 11, 0.5);
+    animation: modalAppear 0.5s ease-out;
+}
+
+/* Модальное окно поражения */
+.battle-result-modal.defeat {
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    border-color: #ef4444;
+}
+
+/* Анимация появления модального окна */
+@keyframes modalAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Заголовок результата */
+.battle-result-modal h3 {
+    font-size: 3rem;
+    color: #f59e0b;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+}
+
+/* Сообщение результата */
+.result-details {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    color: #e5e7eb;
+}
+
+/* Кнопка в модальном окне */
+.battle-result-modal .btn-primary {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    min-width: 160px;
+}
+
+/* Ховер-эффект для кнопки */
+.battle-result-modal .btn-primary:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ========== АДАПТИВНОСТЬ ДЛЯ КОМПАКТНОГО ИНТЕРФЕЙСА ========== */
@@ -299,4 +1045,40 @@
     .grid-cell-fullscreen {
         min-height: 180px !important;
     }
+    
+    .battle-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .header-left {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* ========== ЗАЩИТА ОТ КОНФЛИКТОВ С ИНТЕРФЕЙСОМ ГЕРОЯ ========== */
+
+/* Убедимся, что стили интерфейса героя не влияют на бой */
+.hero-game-screen .health-bar-container,
+.hero-game-screen .health-bar,
+.hero-game-screen .experience-bar-container,
+.hero-game-screen .experience-bar {
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    height: 24px !important;
+}
+
+/* Сброс любых конфликтующих стилей для боя */
+.battle-screen-fullscreen .health-display-section,
+.battle-screen-fullscreen .experience-display-section,
+.battle-screen-fullscreen .health-bar-container,
+.battle-screen-fullscreen .experience-bar-container {
+    all: unset !important;
+}
+
+.battle-screen-fullscreen .health-bar,
+.battle-screen-fullscreen .experience-bar {
+    all: unset !important;
 }
