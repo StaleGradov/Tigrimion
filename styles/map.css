@@ -334,3 +334,336 @@
 .tactical-map-visual canvas:active {
     cursor: grabbing;
 }
+/* ========== СТИЛИ ДЛЯ КАРТ ========== */
+.map-container {
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid #475569;
+}
+
+.map-grid {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 1rem;
+}
+
+.map-cell {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.2em;
+}
+
+.map-cell:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.map-cell.player-cell {
+    background: rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
+    animation: pulse 2s infinite;
+}
+
+.map-cell.global-cell {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.map-cell.local-cell {
+    background: rgba(139, 92, 246, 0.2);
+}
+
+.map-cell.tactical-cell {
+    background: rgba(76, 201, 240, 0.2);
+}
+
+.map-info {
+    text-align: center;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+}
+
+.map-error {
+    text-align: center;
+    color: #f87171;
+    padding: 2rem;
+    background: rgba(248, 113, 113, 0.1);
+    border-radius: 8px;
+    border: 1px solid #f87171;
+}
+
+/* ========== СТИЛИ ДЛЯ ТАКТИЧЕСКИХ КАРТ РЕДАКТОРА ========== */
+.tigrimion-tactical-map {
+    max-width: 1200px !important;
+    width: 95vw !important;
+    max-height: 90vh !important;
+}
+
+.tactical-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: rgba(0, 20, 40, 0.9);
+    border-bottom: 1px solid #00ffff;
+    flex-shrink: 0;
+}
+
+.tactical-map-header h4 {
+    color: #00ffff;
+    font-size: 1.4rem;
+    margin: 0;
+}
+
+.tactical-map-content {
+    display: flex;
+    flex-direction: column;
+    height: 100% !important;
+    background: #000000;
+    flex: 1;
+}
+
+.tactical-map-visual {
+    flex: 1;
+    position: relative;
+    background: #000000;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    margin: 0;
+    box-shadow: none;
+    min-height: auto;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.tactical-map-info {
+    padding: 1rem 1.5rem;
+    background: rgba(0, 20, 40, 0.9);
+    border-top: 1px solid #00ffff;
+    flex-shrink: 0;
+}
+
+.map-description {
+    color: #cbd5e1;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.player-position, .map-stats {
+    color: #00ffff;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.movement-info {
+    background: rgba(255, 255, 0, 0.1);
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #ffff00;
+    margin: 0.8rem 0;
+    text-align: center;
+}
+
+.movement-info span {
+    color: #ffff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Информация о редакторе */
+.map-editor-info {
+    background: rgba(0, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.map-editor-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+}
+
+.map-editor-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.map-editor-stat:last-child {
+    border-bottom: none;
+}
+
+.map-editor-stat span:first-child {
+    color: #cbd5e1;
+}
+
+.map-editor-stat span:last-child {
+    color: #00ffff;
+    font-weight: bold;
+}
+
+/* Контролы карты */
+.map-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ========== УВЕЛИЧЕННОЕ ОКНО ТАКТИЧЕСКОЙ КАРТЫ ========== */
+.overlay-content.tactical-map-overlay {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    width: 95vw !important;
+    height: 95vh !important;
+    background: #000000 !important;
+    margin: 2vh auto !important;
+    border-radius: 12px;
+    border: 1px solid #00ffff;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Убедимся, что canvas занимает всю область */
+#tacticalMapCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    background: transparent;
+}
+
+/* Убираем любые трансформации и переходы */
+.tactical-map-visual * {
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Улучшаем информацию о позиции */
+.position-info {
+    background: rgba(0, 20, 40, 0.9);
+    padding: 1rem;
+    border-top: 1px solid #00ffff;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.player-position, .map-stats, .movement-info {
+    text-align: center;
+    padding: 0.5rem;
+    background: rgba(0, 255, 255, 0.1);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.movement-info span {
+    color: #00ff00;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Анимация для подсветки доступных ходов */
+@keyframes available-pulse {
+    0% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+    100% { opacity: 0.3; }
+}
+
+/* Стили для отладки */
+.debug-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: monospace;
+    z-index: 10;
+    border: 1px solid #00ff00;
+}
+
+/* Стили для контролов масштабирования */
+.zoom-controls {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 20, 40, 0.9);
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.zoom-info {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.btn-control {
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-control:hover {
+    background: rgba(0, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Курсоры для перетаскивания */
+.tactical-map-visual canvas {
+    cursor: grab;
+}
+
+.tactical-map-visual canvas:active {
+    cursor: grabbing;
+}
+
+.tactical-map-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    background: rgba(0, 20, 40, 0.7);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    flex-shrink: 0;
+}
+
+.map-type-badge {
+    background: rgba(0, 255, 255, 0.2);
+    color: #00ffff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+/* Убираем все ограничивающие трансформации */
+.tactical-map-overlay * {
+    box-sizing: border-box;
+}
