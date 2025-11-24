@@ -109,7 +109,7 @@
 .battle-main-area-wide {
     flex: 1;
     display: flex;
-    gap: 60px;
+    gap: 100px; /* УВЕЛИЧЕННЫЙ ЗАЗОР МЕЖДУ КОМАНДАМИ */
     align-items: flex-start;
     justify-content: center;
     width: 100%;
@@ -131,19 +131,19 @@
     height: 100%;
 }
 
-/* Центральная область - сетка боя */
-.battle-grid-center {
+/* Центральная область - ОЧЕНЬ ШИРОКАЯ СЕТКА БОЯ */
+.battle-grid-center-wide {
     flex: 1;
     display: flex;
-    gap: 80px;
+    gap: 120px; /* ОЧЕНЬ БОЛЬШОЙ ЗАЗОР МЕЖДУ КОМАНДАМИ */
     align-items: flex-start;
     justify-content: center;
-    max-width: 1200px;
+    max-width: 1400px;
     height: 100%;
 }
 
 /* БОКОВАЯ ЧАСТЬ СЕТКИ - УВЕЛИЧЕННАЯ */
-.grid-side-wide {
+.grid-side-spaced {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 15px;
     padding: 25px;
@@ -167,7 +167,7 @@
 }
 
 /* СЕТКА 6x6 - УВЕЛИЧЕННАЯ ВЕРСИЯ */
-.grid-container-6x6-wide {
+.grid-container-6x6-spaced {
     flex: 1;
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
@@ -179,7 +179,7 @@
 }
 
 /* ЯЧЕЙКИ СЕТКИ - УВЕЛИЧЕННЫЕ */
-.grid-cell-wide {
+.grid-cell-spaced {
     min-height: 300px !important;
     max-height: 320px;
     padding: 0 !important;
@@ -197,7 +197,7 @@
 }
 
 /* Пустая ячейка */
-.grid-cell-wide.empty {
+.grid-cell-spaced.empty {
     opacity: 0.3;
     display: flex;
     align-items: center;
@@ -211,7 +211,7 @@
 }
 
 /* Выбираемая ячейка */
-.grid-cell-wide.selectable {
+.grid-cell-spaced.selectable {
     cursor: pointer;
     border-color: #00ff00 !important;
     animation: pulse-glow 2s infinite;
@@ -219,14 +219,14 @@
 }
 
 /* Ховер-эффект для выбираемой ячейки */
-.grid-cell-wide.selectable:hover {
+.grid-cell-spaced.selectable:hover {
     transform: scale(1.05);
     box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
     background: rgba(0, 255, 0, 0.2) !important;
 }
 
 /* Мертвая ячейка */
-.grid-cell-wide.dead {
+.grid-cell-spaced.dead {
     opacity: 0.5;
     filter: grayscale(1);
     position: relative;
@@ -252,7 +252,7 @@
 /* ========== ОТОБРАЖЕНИЕ ЮНИТОВ В СЕТКЕ ========== */
 
 /* Контейнер отображения юнита */
-.unit-display-wide {
+.unit-display-spaced {
     text-align: center;
     width: 100%;
     height: 100%;
@@ -261,7 +261,7 @@
 }
 
 /* Контейнер изображения юнита */
-.unit-image-container-wide {
+.unit-image-container-spaced {
     width: 100%;
     height: calc(100% - 80px);
     position: relative;
@@ -276,7 +276,7 @@
 }
 
 /* Изображение юнита */
-.unit-image-wide {
+.unit-image-spaced {
     width: 95% !important;
     height: 95% !important;
     margin: 0 !important;
@@ -287,12 +287,12 @@
 }
 
 /* Ховер-эффект для изображения */
-.unit-image-container-wide:hover .unit-image-wide {
+.unit-image-container-spaced:hover .unit-image-spaced {
     transform: scale(1.05);
 }
 
 /* Заглушка при отсутствии изображения */
-.image-fallback-wide {
+.image-fallback-spaced {
     width: 100%;
     height: 100%;
     display: flex;
@@ -307,7 +307,7 @@
 /* ========== ИСПРАВЛЕННЫЕ ПОЛОСКИ ЗДОРОВЬЯ ========== */
 
 /* Контейнер здоровья */
-.unit-health-container-wide {
+.unit-health-container-spaced {
     height: 80px !important;
     background: rgba(0, 0, 0, 0.95) !important;
     border-top: 2px solid rgba(255, 255, 255, 0.4) !important;
@@ -325,7 +325,7 @@
 }
 
 /* Полоска здоровья */
-.health-bar-wide {
+.health-bar-spaced {
     width: 100% !important;
     height: 35px !important;
     background: #333333 !important;
@@ -338,7 +338,7 @@
 }
 
 /* Заполнение полоски здоровья */
-.health-fill-wide {
+.health-fill-spaced {
     height: 100% !important;
     background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
     border-radius: 15px !important;
@@ -351,7 +351,7 @@
 }
 
 /* Текст здоровья */
-.health-text-wide {
+.health-text-spaced {
     position: absolute !important;
     top: 50% !important;
     left: 50% !important;
@@ -368,13 +368,13 @@
 }
 
 /* Цвета для разных уровней здоровья */
-.health-fill-wide.health-high { 
+.health-fill-spaced.health-high { 
     background: linear-gradient(90deg, #22c55e, #16a34a) !important;
 }
-.health-fill-wide.health-medium { 
+.health-fill-spaced.health-medium { 
     background: linear-gradient(90deg, #eab308, #ca8a04) !important;
 }
-.health-fill-wide.health-low { 
+.health-fill-spaced.health-low { 
     background: linear-gradient(90deg, #ef4444, #dc2626) !important;
 }
 
@@ -385,14 +385,14 @@
     100% { opacity: 1; }
 }
 
-.health-changing-wide {
+.health-changing-spaced {
     animation: healthPulse 0.3s ease-in-out;
 }
 
 /* ========== ВСПЛЫВАЮЩАЯ ИНФОРМАЦИЯ ПРИ НАВЕДЕНИИ ========== */
 
 /* Оверлей с информацией о юните */
-.unit-info-overlay-wide {
+.unit-info-overlay-spaced {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -417,12 +417,12 @@
 }
 
 /* Показываем оверлей при наведении */
-.unit-image-container-wide:hover .unit-info-overlay-wide {
+.unit-image-container-spaced:hover .unit-info-overlay-spaced {
     opacity: 1;
 }
 
 /* Шапка оверлея */
-.overlay-unit-header-wide {
+.overlay-unit-header-spaced {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -432,7 +432,7 @@
 }
 
 /* Имя юнита в оверлее */
-.overlay-unit-name-wide {
+.overlay-unit-name-spaced {
     font-size: 1.1rem !important;
     font-weight: bold;
     color: #f59e0b !important;
@@ -442,7 +442,7 @@
 }
 
 /* Уровень юнита в оверлее */
-.overlay-unit-level-wide {
+.overlay-unit-level-spaced {
     background: #3b82f6;
     padding: 0.3rem 0.7rem;
     border-radius: 12px;
@@ -452,14 +452,14 @@
 }
 
 /* Простые статы в оверлее */
-.overlay-simple-stats-wide {
+.overlay-simple-stats-spaced {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
 /* Здоровье в оверлее */
-.overlay-health-wide {
+.overlay-health-spaced {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -467,21 +467,21 @@
 }
 
 /* Метка здоровья */
-.overlay-health-label-wide {
+.overlay-health-label-spaced {
     color: #fca5a5;
     font-weight: bold;
     font-size: 0.9rem;
 }
 
 /* Числовые значения здоровья */
-.overlay-health-numbers-wide {
+.overlay-health-numbers-spaced {
     color: white;
     font-weight: bold;
     font-size: 0.9rem;
 }
 
 /* Основные статы в оверлее */
-.overlay-main-stats-wide {
+.overlay-main-stats-spaced {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -491,7 +491,7 @@
 }
 
 /* Урон в оверлее */
-.overlay-damage-wide {
+.overlay-damage-spaced {
     color: #f59e0b;
     font-weight: bold;
     font-size: 0.85rem;
@@ -502,7 +502,7 @@
 }
 
 /* Броня в оверлее */
-.overlay-armor-wide {
+.overlay-armor-spaced {
     color: #3b82f6;
     font-weight: bold;
     font-size: 0.85rem;
@@ -513,7 +513,7 @@
 }
 
 /* Тип в оверлее */
-.overlay-type-wide {
+.overlay-type-spaced {
     color: #10b981;
     font-weight: bold;
     font-size: 0.85rem;
@@ -524,7 +524,7 @@
 }
 
 /* Ряд в оверлее */
-.overlay-row-wide {
+.overlay-row-spaced {
     color: #8b5cf6;
     font-weight: bold;
     font-size: 0.85rem;
@@ -537,7 +537,7 @@
 /* ========== ТАКТИЧЕСКИЕ ПАНЕЛИ ========== */
 
 /* Заголовок панели */
-.panel-title-wide {
+.panel-title-spaced {
     text-align: center;
     margin-bottom: 1.5rem !important;
     font-size: 1.4rem !important;
@@ -549,26 +549,26 @@
 }
 
 /* Заголовок панели игрока */
-.hero-actions-panel .panel-title-wide {
+.hero-actions-panel .panel-title-spaced {
     color: #3b82f6;
     border-color: rgba(59, 130, 246, 0.4);
     background: rgba(59, 130, 246, 0.1);
 }
 
 /* Заголовок панели противника */
-.enemy-actions-panel .panel-title-wide {
+.enemy-actions-panel .panel-title-spaced {
     color: #ef4444;
     border-color: rgba(239, 68, 68, 0.4);
     background: rgba(239, 68, 68, 0.1);
 }
 
 /* Статы в панелях */
-.panel-stats-wide {
+.panel-stats-spaced {
     margin-bottom: 1.5rem !important;
 }
 
 /* Элемент стата */
-.stat-item-wide {
+.stat-item-spaced {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.6rem !important;
@@ -580,25 +580,25 @@
 }
 
 /* Метка стата */
-.stat-label-wide {
+.stat-label-spaced {
     color: #cbd5e1;
     font-size: 0.9rem;
 }
 
 /* Значение стата */
-.stat-value-wide {
+.stat-value-spaced {
     font-weight: bold;
     color: white;
     font-size: 0.95rem;
 }
 
 /* История действий */
-.action-history-wide {
+.action-history-spaced {
     margin-bottom: 1.5rem;
 }
 
 /* Заголовок истории */
-.history-title-wide {
+.history-title-spaced {
     color: #cbd5e1;
     font-size: 0.95rem;
     margin-bottom: 0.8rem;
@@ -606,7 +606,7 @@
 }
 
 /* Контейнер записей истории */
-.history-entries-wide {
+.history-entries-spaced {
     min-height: 100px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
@@ -616,19 +616,19 @@
 }
 
 /* Запись в истории */
-.history-entry-wide {
+.history-entry-spaced {
     padding: 0.4rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.9rem;
 }
 
 /* Последняя запись в истории */
-.history-entry-wide:last-child {
+.history-entry-spaced:last-child {
     border-bottom: none;
 }
 
 /* Пустая история */
-.history-empty-wide {
+.history-empty-spaced {
     color: #9ca3af;
     text-align: center;
     font-style: italic;
@@ -636,14 +636,14 @@
 }
 
 /* Кнопки действий героя */
-.tactical-actions-wide {
+.tactical-actions-spaced {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.8rem !important;
 }
 
 /* Тактическая кнопка */
-.tactical-btn-wide {
+.tactical-btn-spaced {
     display: flex;
     align-items: center;
     gap: 0.8rem;
@@ -659,39 +659,39 @@
 }
 
 /* Ховер-эффект для кнопки */
-.tactical-btn-wide:hover:not(:disabled) {
+.tactical-btn-spaced:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
 }
 
 /* Отключенная кнопка */
-.tactical-btn-wide:disabled {
+.tactical-btn-spaced:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
 }
 
 /* Стили для разных типов кнопок */
-.tactical-btn-wide.attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.tactical-btn-wide.strong-attack { background: linear-gradient(135deg, #dc2626, #b91c1c); }
-.tactical-btn-wide.crushing-attack { background: linear-gradient(135deg, #991b1b, #7f1d1d); }
-.tactical-btn-wide.block { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-.tactical-btn-wide.break-block { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.tactical-btn-wide.rest { background: linear-gradient(135deg, #10b981, #059669); }
+.tactical-btn-spaced.attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.tactical-btn-spaced.strong-attack { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.tactical-btn-spaced.crushing-attack { background: linear-gradient(135deg, #991b1b, #7f1d1d); }
+.tactical-btn-spaced.block { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.tactical-btn-spaced.break-block { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.tactical-btn-spaced.rest { background: linear-gradient(135deg, #10b981, #059669); }
 
 /* Иконка кнопки */
-.btn-icon-wide {
+.btn-icon-spaced {
     font-size: 1.3rem;
 }
 
 /* Текст кнопки */
-.btn-text-wide {
+.btn-text-spaced {
     flex: 1;
     text-align: left;
 }
 
 /* Стоимость действия */
-.btn-cost-wide {
+.btn-cost-spaced {
     font-size: 0.85rem;
     opacity: 0.8;
 }
@@ -699,7 +699,7 @@
 /* ========== УПРАВЛЕНИЕ БОЕМ ========== */
 
 /* Элементы управления боем - ЦЕНТРИРОВАННЫЕ */
-.battle-controls-wide {
+.battle-controls-spaced {
     margin: 1rem 0 !important;
     padding: 1rem 1.5rem !important;
     background: rgba(0, 0, 0, 0.4);
@@ -710,7 +710,7 @@
 }
 
 /* Подсказка в бою */
-.battle-hint-wide {
+.battle-hint-spaced {
     text-align: center;
     padding: 1rem !important;
     background: rgba(59, 130, 246, 0.1);
@@ -723,13 +723,13 @@
 }
 
 /* Контейнер действий в бою */
-.battle-actions-wide {
+.battle-actions-spaced {
     display: flex;
     justify-content: center;
 }
 
 /* Кнопка бегства */
-.btn-battle-flee-wide {
+.btn-battle-flee-spaced {
     padding: 15px 30px !important;
     font-size: 1.2rem !important;
     background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -742,14 +742,14 @@
 }
 
 /* Ховер-эффект для кнопки бегства */
-.btn-battle-flee-wide:hover {
+.btn-battle-flee-spaced:hover {
     background: linear-gradient(135deg, #d97706, #b45309);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
 }
 
 /* Лог боя - ЦЕНТРИРОВАННЫЙ */
-.battle-log-wide {
+.battle-log-spaced {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 10px;
     padding: 1.2rem !important;
@@ -761,21 +761,21 @@
 }
 
 /* Заголовок лога */
-.battle-log-wide h4 {
+.battle-log-spaced h4 {
     color: #f59e0b;
     margin-bottom: 1rem !important;
     font-size: 1.2rem !important;
 }
 
 /* Контейнер записей лога */
-.battle-log-entries-wide {
+.battle-log-entries-spaced {
     max-height: 140px !important;
     overflow-y: auto;
     font-size: 0.95rem;
 }
 
 /* Запись в логе */
-.log-entry-wide {
+.log-entry-spaced {
     padding: 0.6rem 0 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     color: #e5e7eb;
@@ -783,14 +783,14 @@
 }
 
 /* Последняя запись в логе */
-.log-entry-wide:last-child {
+.log-entry-spaced:last-child {
     border-bottom: none;
 }
 
 /* ========== ВСПЛЫВАЮЩЕЕ ОКНО ПОБЕДЫ ========== */
 
 /* Оверлей для модального окна */
-.battle-result-overlay-wide {
+.battle-result-overlay-spaced {
     position: fixed;
     top: 0;
     left: 0;
@@ -805,7 +805,7 @@
 }
 
 /* Модальное окно результата */
-.battle-result-modal-wide {
+.battle-result-modal-spaced {
     background: linear-gradient(135deg, #1e3a8a, #3730a3);
     border-radius: 20px;
     padding: 3rem;
@@ -819,7 +819,7 @@
 }
 
 /* Модальное окно поражения */
-.battle-result-modal-wide.defeat {
+.battle-result-modal-spaced.defeat {
     background: linear-gradient(135deg, #7f1d1d, #991b1b);
     border-color: #ef4444;
 }
@@ -837,7 +837,7 @@
 }
 
 /* Заголовок результата */
-.battle-result-modal-wide h3 {
+.battle-result-modal-spaced h3 {
     font-size: 3rem;
     color: #f59e0b;
     margin-bottom: 1.5rem;
@@ -846,7 +846,7 @@
 }
 
 /* Сообщение результата */
-.result-details-wide {
+.result-details-spaced {
     font-size: 1.3rem;
     margin-bottom: 2rem;
     line-height: 1.6;
@@ -854,7 +854,7 @@
 }
 
 /* Кнопка в модальном окне */
-.battle-result-modal-wide .btn-primary {
+.battle-result-modal-spaced .btn-primary {
     padding: 1rem 2rem;
     font-size: 1.1rem;
     background: linear-gradient(135deg, #f59e0b, #d97706);
@@ -868,7 +868,7 @@
 }
 
 /* Ховер-эффект для кнопки */
-.battle-result-modal-wide .btn-primary:hover {
+.battle-result-modal-spaced .btn-primary:hover {
     background: linear-gradient(135deg, #d97706, #b45309);
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
@@ -879,14 +879,14 @@
 @media (max-width: 1800px) {
     .battle-main-area-wide {
         max-width: 1800px;
-        gap: 40px;
+        gap: 80px;
     }
     
-    .battle-grid-center {
-        gap: 60px;
+    .battle-grid-center-wide {
+        gap: 100px;
     }
     
-    .grid-side-wide {
+    .grid-side-spaced {
         width: 450px;
     }
 }
@@ -894,14 +894,14 @@
 @media (max-width: 1600px) {
     .battle-main-area-wide {
         max-width: 1600px;
-        gap: 30px;
+        gap: 60px;
     }
     
-    .battle-grid-center {
-        gap: 50px;
+    .battle-grid-center-wide {
+        gap: 80px;
     }
     
-    .grid-side-wide {
+    .grid-side-spaced {
         width: 420px;
     }
     
@@ -915,15 +915,15 @@
     .battle-main-area-wide {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 30px;
+        gap: 40px;
         height: auto;
     }
     
-    .battle-grid-center {
+    .battle-grid-center-wide {
         order: 1;
         width: 100%;
-        max-width: 1000px;
-        gap: 40px;
+        max-width: 1200px;
+        gap: 60px;
     }
     
     .hero-actions-panel {
@@ -942,20 +942,20 @@
 }
 
 @media (max-width: 1200px) {
-    .battle-grid-center {
-        gap: 30px;
+    .battle-grid-center-wide {
+        gap: 40px;
     }
     
-    .grid-side-wide {
+    .grid-side-spaced {
         width: 380px;
         padding: 20px;
     }
     
-    .grid-container-6x6-wide {
+    .grid-container-6x6-spaced {
         gap: 20px !important;
     }
     
-    .grid-cell-wide {
+    .grid-cell-spaced {
         min-height: 260px !important;
     }
 }
@@ -966,7 +966,7 @@
         align-items: center;
     }
     
-    .battle-grid-center {
+    .battle-grid-center-wide {
         min-width: 800px;
         width: 100%;
     }
@@ -979,22 +979,22 @@
 }
 
 @media (max-width: 850px) {
-    .battle-grid-center {
+    .battle-grid-center-wide {
         min-width: 600px;
         flex-direction: column;
-        gap: 20px;
+        gap: 30px;
     }
     
-    .grid-side-wide {
+    .grid-side-spaced {
         width: 100%;
         min-width: 500px;
     }
     
-    .grid-container-6x6-wide {
+    .grid-container-6x6-spaced {
         min-height: 600px !important;
     }
     
-    .grid-cell-wide {
+    .grid-cell-spaced {
         min-height: 280px !important;
     }
 }
