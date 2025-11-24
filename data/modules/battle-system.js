@@ -89,25 +89,27 @@ class BattleSystem {
     }
 
     getMonstersForCurrentMap() {
-        if (!window.game.systems.map || !window.game.systems.map.currentMap) {
-            console.log("🗺️ Карта не активна, используем общих монстров");
-            return this.monsters;
-        }
-
-        const currentMap = window.game.systems.map.currentMap;
-        
-        if (!currentMap.monsters || !currentMap.monsters.availableMonsters) {
-            console.log("🗺️ У карты нет своих монстров, используем общих");
-            return this.monsters;
-        }
-
-        const mapMonsters = currentMap.monsters.availableMonsters
-            .map(monsterId => this.getMonsterById(monsterId))
-            .filter(monster => monster !== null);
-
-        console.log(`🗺️ Загружено монстров для карты "${currentMap.meta.name}": ${mapMonsters.length}`);
-        return mapMonsters;
+    if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
+        console.log("🗺️ Карта не активна, используем общих монстров");
+        return this.monsters;
     }
+
+    const currentMap = window.game.systems.map.currentTacticalMap;
+    
+    // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
+    if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
+        console.log("🗺️ У карты нет своих монстров, используем общих");
+        return this.monsters;
+    }
+
+    // ФИЛЬТРУЕМ ПО ЧИСЛОВЫМ ID
+    const mapMonsters = currentMap.jsonData.meta.monsters
+        .map(monsterId => this.getMonsterById(monsterId))
+        .filter(monster => monster !== null);
+
+    console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
+    return mapMonsters;
+}
 
     getRandomMonsterForMovement() {
         const mapMonsters = this.getMonstersForCurrentMap();
