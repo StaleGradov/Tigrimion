@@ -119,9 +119,9 @@
     height: 90vh;
 }
 
-/* Левая панель - действия героя */
+/* Левая панель - действия героя - ШИРЕ */
 .tactical-panel.player-panel {
-    width: 380px; /* УВЕЛИЧИЛИ ШИРИНУ */
+    width: 480px; /* УВЕЛИЧИЛИ ШИРИНУ ЕЩЕ БОЛЬШЕ */
     flex-shrink: 0;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.95);
@@ -248,9 +248,9 @@
     100% { box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
 }
 
-/* ПРАВАЯ ОБЛАСТЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ */
+/* ПРАВАЯ ОБЛАСТЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ - ШИРЕ */
 .enemy-panels-container {
-    width: 380px; /* УВЕЛИЧИЛИ ШИРИНУ */
+    width: 480px; /* УВЕЛИЧИЛИ ШИРИНУ ЕЩЕ БОЛЬШЕ */
     flex-shrink: 0;
     padding: 1rem;
     background: rgba(15, 23, 42, 0.95);
@@ -260,22 +260,24 @@
     height: 100%;
 }
 
-/* Сетка панелей врагов */
+/* Сетка панелей врагов - ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 .enemy-panels-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px; /* УМЕНЬШЕННЫЙ ОТСТУП */
+    gap: 12px; /* ВЕРТИКАЛЬНЫЙ ОТСТУП (как было) */
+    padding: 0 15px; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
     height: 100%;
     overflow-y: auto;
 }
 
-/* Мини-панель врага */
+/* Мини-панель врага - УВЕЛИЧИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 .enemy-panel-mini {
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: 8px;
-    padding: 12px;
+    padding: 12px 20px; /* УВЕЛИЧИЛИ ГОРИЗОНТАЛЬНЫЙ PADDING */
     flex-shrink: 0;
+    margin: 0 8px; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 }
 
 /* Шапка панели врага */
@@ -655,11 +657,12 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem !important;
-    padding: 0.4rem 0.6rem !important;
+    padding: 0.4rem 1rem !important; /* УВЕЛИЧИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
     background: rgba(255, 255, 255, 0.08);
     border-radius: 6px;
     font-size: 0.9rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 0.5rem 8px !important; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 }
 
 /* Метка стата */
@@ -695,6 +698,7 @@
     padding: 0.5rem;
     max-height: 120px;
     overflow-y: auto;
+    margin: 0 8px; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 }
 
 /* Запись в истории */
@@ -722,6 +726,7 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.6rem !important;
+    margin: 0 8px; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 }
 
 /* Тактическая кнопка */
@@ -776,6 +781,13 @@
 .btn-cost {
     font-size: 0.8rem;
     opacity: 0.8;
+}
+
+/* Аналогично для панели игрока - добавим отступы */
+.tactical-panel.player-panel .panel-stats,
+.tactical-panel.player-panel .action-history,
+.tactical-panel.player-panel .tactical-actions {
+    padding: 0 15px; /* ДОБАВИЛИ ГОРИЗОНТАЛЬНЫЕ ОТСТУПЫ */
 }
 
 /* ========== УПРАВЛЕНИЕ БОЕМ ========== */
@@ -972,6 +984,11 @@
         min-width: 550px;
         max-width: 580px;
     }
+    
+    .tactical-panel.player-panel,
+    .enemy-panels-container {
+        width: 450px;
+    }
 }
 
 @media (max-width: 1600px) {
@@ -993,6 +1010,11 @@
         min-height: 280px !important;
         max-height: 300px;
     }
+    
+    .tactical-panel.player-panel,
+    .enemy-panels-container {
+        width: 420px;
+    }
 }
 
 @media (max-width: 1400px) {
@@ -1012,14 +1034,14 @@
     .tactical-panel.player-panel {
         order: 2;
         width: 45%;
-        min-width: 350px;
+        min-width: 380px;
         height: auto;
     }
     
     .enemy-panels-container {
         order: 3;
         width: 45%;
-        min-width: 350px;
+        min-width: 380px;
         height: auto;
     }
 }
@@ -1057,7 +1079,11 @@
     .tactical-panel.player-panel,
     .enemy-panels-container {
         width: 90%;
-        max-width: 800px;
+        max-width: 600px;
+    }
+    
+    .enemy-panel-mini {
+        margin: 0 12px; /* УВЕЛИЧИЛИ ОТСТУПЫ НА МОБИЛЬНЫХ */
     }
 }
 
