@@ -725,7 +725,7 @@ class MapSystem {
         return locationMap;
     }
 
-    // ========== ОБНОВЛЕННЫЕ ОБРАБОТЧИКИ КЛИКОВ С ПРОВЕРКОЙ СОСЕДСТВА ==========
+    // ========== ИСПРАВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ ==========
 
     handleCanvasClick(e) {
         if (!this.currentTacticalMap) return;
@@ -946,7 +946,7 @@ class MapSystem {
         this.updateMovementInfo();
     }
 
-    // ========== ОБНОВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ С УЧЕТОМ ПЕРЕХОДОВ И ЛУТА ==========
+    // ========== ИСПРАВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ ==========
 
     moveOnTacticalMap(x, y) {
         if (!this.currentHero) {
@@ -970,13 +970,23 @@ class MapSystem {
             return;
         }
 
+        // ПРОВЕРКА ПЕРЕХОДОВ - должна быть ПЕРВОЙ
         if (this.isTransitionCell(cellData)) {
-            this.showTransitionWarning(cellData);
+            this.handleTransitionClick(cellData);
             return;
         }
 
+        // ПРОВЕРКА ДОСТУПНОСТИ КЛЕТКИ
+        if (cellData.passable === false) {
+            console.log("🚫 Клетка непроходима");
+            if (window.game) {
+                window.game.showNotification("Эта клетка непроходима!", 'error');
+            }
+            return;
+        }
+
+        // ПРОВЕРКА СОСЕДСТВА
         const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        
         const isReachable = neighbors.some(neighbor => 
             neighbor.row === y && neighbor.col === x
         );
@@ -989,22 +999,24 @@ class MapSystem {
             return;
         }
 
-        // ⭐ ИЗМЕНЕНИЕ: НЕ закрываем карту при перемещении!
-        
-        // НОВАЯ ЛОГИКА: проверяем тип карты
+        // ОПРЕДЕЛЕНИЕ ТИПА КАРТЫ И ВЫБОР ЛОГИКИ ПЕРЕМЕЩЕНИЯ
         const mapType = this.currentTacticalMap.jsonData?.meta?.mapType || 'combat';
         
+        console.log(`🎯 Начало перемещения на [${x}, ${y}], тип карты: ${mapType}`);
+        
         if (mapType === 'peaceful') {
+            // МИРНОЕ ПЕРЕМЕЩЕНИЕ - выполняем сразу
             this.handlePeacefulMovement(x, y, cellData);
         } else {
-            // Старая логика боя
+            // БОЕВОЕ ПЕРЕМЕЩЕНИЕ - запускаем бой
             setTimeout(() => {
                 this.startTacticalBattleForMovement(x, y, cellData);
             }, 50);
         }
     }
 
-    // НОВЫЙ МЕТОД для обработки движения на мирных картах
+    // ========== ДОРАБОТАННЫЙ МЕТОД МИРНОГО ПЕРЕМЕЩЕНИЯ ==========
+
     handlePeacefulMovement(targetX, targetY, cellData) {
         console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
         
@@ -1013,13 +1025,13 @@ class MapSystem {
         // Помечаем клетку как исследованную
         this.markCellExplored(mapId, targetX, targetY);
         
-        // Проверяем и собираем лут (теперь проверяем hasLoot вместо loot)
+        // Проверяем и собираем лут
         if (cellData.hasLoot && !this.isLootCollected(mapId, targetX, targetY)) {
             this.collectLoot(cellData, targetX, targetY);
+        } else {
+            // Если лута нет, просто перемещаемся
+            this.completePeacefulMovement(targetX, targetY);
         }
-        
-        // Выполняем перемещение
-        this.completePeacefulMovement(targetX, targetY);
     }
 
     // ========== СИСТЕМА ИССЛЕДОВАНИЯ И ЛУТА ==========
@@ -1068,7 +1080,8 @@ class MapSystem {
         return this.currentTacticalMap?.id || 'unknown';
     }
 
-    // Метод сбора лута с рандомной наградой
+    // ========== ИСПРАВЛЕННЫЙ МЕТОД СБОРА ЛУТА ==========
+
     collectLoot(cellData, col, row) {
         const mapId = this.getCurrentMapId();
         const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
@@ -1078,11 +1091,8 @@ class MapSystem {
         // Генерируем случайную награду
         const reward = this.generateRandomReward(lootLevel);
         
-        // Обрабатываем награду
-        this.processReward(reward, col, row);
-        
-        // Помечаем лут как собранный
-        this.markLootCollected(mapId, col, row);
+        // Обрабатываем награду и только ПОТОМ перемещаемся
+        this.processRewardWithMovement(reward, col, row, cellData);
     }
 
     // Генерация случайной награды по уровню
@@ -1155,66 +1165,88 @@ class MapSystem {
         return types[0]; // fallback
     }
 
-    // ========== ОБНОВЛЕННЫЙ МЕТОД ОБРАБОТКИ НАГРАД ==========
+    // ========== НОВЫЙ МЕТОД ДЛЯ ОБРАБОТКИ НАГРАДЫ С ПЕРЕМЕЩЕНИЕМ ==========
 
-    processReward(reward, col, row) {
+    processRewardWithMovement(reward, col, row, cellData) {
         let showNotification = true;
+        let completed = false;
         
         try {
             switch(reward.type) {
                 case 'gold':
                     this.currentHero.gold += reward.amount;
                     console.log(`💰 Добавлено золото: ${reward.amount}`);
+                    completed = true;
                     break;
                     
                 case 'item':
                     const itemSystem = window.game?.systems?.equipment;
                     if (itemSystem && itemSystem.addItemToHero) {
-                        // ПРОВЕРЯЕМ СУЩЕСТВОВАНИЕ ПРЕДМЕТА через новый метод
                         const lootItem = this.getLootItemById(reward.itemId);
                         if (!lootItem) {
                             console.warn(`⚠️ Предмет лута не найден: ${reward.itemId}`);
                             reward.message = `Найдено что-то странное... (${reward.itemId})`;
-                            break;
-                        }
-                        
-                        const itemAdded = itemSystem.addItemToHero(this.currentHero, reward.itemId);
-                        if (!itemAdded) {
-                            reward.message = "Инвентарь полон! Награда потеряна.";
                         } else {
-                            reward.message = `Вы нашли: ${lootItem.name}!`;
+                            const itemAdded = itemSystem.addItemToHero(this.currentHero, reward.itemId);
+                            if (!itemAdded) {
+                                reward.message = "Инвентарь полон! Награда потеряна.";
+                            } else {
+                                reward.message = `Вы нашли: ${lootItem.name}!`;
+                            }
                         }
+                        completed = true;
                     }
                     break;
                     
                 case 'information':
-                    // Для важной информации можно показать диалог
                     if (this.isImportantInformation(reward.message)) {
                         this.showInformationDialog(reward.message);
                         showNotification = false;
+                        // Для диалогов завершаем перемещение после закрытия диалога
+                        this.delayedMovementAfterDialog(col, row, reward.message);
+                        return; // Не завершаем сразу
                     }
+                    completed = true;
                     break;
             }
             
-            // ⭐ ВАЖНО: Сначала синхронизируем, потом показываем уведомление
-            this.syncHeroWithOtherSystems();
-            
-            // Показываем уведомление
-            if (showNotification && window.game) {
-                window.game.showNotification(reward.message, 'success');
+            if (completed) {
+                // Помечаем лут как собранный и перемещаемся
+                this.markLootCollected(this.getCurrentMapId(), col, row);
+                
+                // Синхронизируем героя
+                this.syncHeroWithOtherSystems();
+                
+                // Показываем уведомление
+                if (showNotification && window.game) {
+                    window.game.showNotification(reward.message, 'success');
+                }
+                
+                // Завершаем перемещение
+                this.completePeacefulMovement(col, row);
+                
+                console.log(`🎁 Награда обработана и перемещение завершено:`, reward);
             }
-            
-            // ⭐ ВАЖНО: Обновляем интерфейс ПОСЛЕ синхронизации
-            this.updateHeroInterface();
-            
-            console.log(`🎁 Выдана награда:`, reward);
             
         } catch (error) {
             console.error("❌ Ошибка обработки награды:", error);
             if (window.game) {
                 window.game.showNotification("Ошибка при получении награды", 'error');
             }
+            // Все равно перемещаемся даже при ошибке
+            this.completePeacefulMovement(col, row);
         }
+    }
+
+    // ========== НОВЫЙ МЕТОД ДЛЯ ОТЛОЖЕННОГО ПЕРЕМЕЩЕНИЯ ПОСЛЕ ДИАЛОГА ==========
+
+    delayedMovementAfterDialog(col, row, message) {
+        // Ждем немного, чтобы диалог успел показаться
+        setTimeout(() => {
+            this.markLootCollected(this.getCurrentMapId(), col, row);
+            this.completePeacefulMovement(col, row);
+            console.log(`💡 Перемещение после диалога: ${message}`);
+        }, 100);
     }
 
     // Получение имени предмета
@@ -1243,27 +1275,29 @@ class MapSystem {
         }
     }
 
-    // Завершение мирного перемещения
+    // ========== УПРОЩЕННЫЙ МЕТОД ЗАВЕРШЕНИЯ ПЕРЕМЕЩЕНИЯ ==========
+
     completePeacefulMovement(targetX, targetY) {
         const oldPosition = {...this.playerTacticalPosition};
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
         console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
         
-        // ⭐ ВАЖНО: Синхронизируем перед сохранением
+        // Синхронизируем перед сохранением
         this.syncHeroWithOtherSystems();
-        
         this.saveMapState();
         
-        // ⭐ ИЗМЕНЕНИЕ: НЕ закрываем карту автоматически, только перерисовываем
+        // Перерисовываем карту
         if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
             this.calculateMapPositioning();
             this.drawTacticalMap();
             
-            // ⭐ ДОБАВЛЯЕМ: Показываем уведомление НА КАРТЕ вместо закрытия
-            if (window.game) {
-                window.game.showNotification("✅ Перемещение завершено", 'success');
-            }
+            // Показываем уведомление о перемещении (только если не было других уведомлений)
+            setTimeout(() => {
+                if (window.game) {
+                    window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
+                }
+            }, 300);
         }
         
         this.updateMovementInfo();
@@ -2340,6 +2374,9 @@ class MapSystem {
                     <button class="btn-control" onclick="game.systems.map.debugInfo()">
                         🐛 Отладка
                     </button>
+                    <button class="btn-control" onclick="game.systems.map.testPeacefulMovement()">
+                        🧪 Тест перемещения
+                    </button>
                     <div class="position-info">
                         Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
                         ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
@@ -2582,6 +2619,8 @@ class MapSystem {
         }
     }
 
+    // ========== ДЕБАГ И ТЕСТИРОВАНИЕ ==========
+
     debugInfo() {
         console.group("🗺️ MapSystem Debug Info");
         console.log("Глобальная позиция:", this.playerGlobalPosition);
@@ -2597,7 +2636,38 @@ class MapSystem {
         console.log("Текущий герой:", this.currentHero?.name || 'нет');
         console.log("Исследованные клетки:", this.exploredCells.size);
         console.log("Собранный лут:", this.collectedLoot.size);
+        
+        // Информация о доступных ходах
+        const availableMoves = this.getAvailableMoves();
+        console.log("Доступные ходы:", availableMoves.length);
+        availableMoves.forEach(move => {
+            console.log(`  [${move.col},${move.row}] - ${move.direction}${move.isMonster ? ' (монстр)' : ''}`);
+        });
+        
         console.groupEnd();
+    }
+
+    // ========== ТЕСТИРОВАНИЕ МИРНОГО ПЕРЕМЕЩЕНИЯ ==========
+
+    testPeacefulMovement() {
+        if (!this.currentTacticalMap) {
+            console.error("❌ Нет текущей карты");
+            return;
+        }
+        
+        console.log("🧪 Тестирование мирного перемещения...");
+        
+        // Находим доступные ходы
+        const availableMoves = this.getAvailableMoves();
+        console.log("Доступные ходы:", availableMoves);
+        
+        if (availableMoves.length > 0) {
+            const randomMove = availableMoves[0];
+            console.log(`Пытаемся переместиться на: [${randomMove.col}, ${randomMove.row}]`);
+            this.moveOnTacticalMap(randomMove.col, randomMove.row);
+        } else {
+            console.log("❌ Нет доступных ходов для тестирования");
+        }
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОТРИСОВКИ ==========
@@ -2819,4 +2889,4 @@ class MapSystem {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой переходов и уровней лута");
+console.log("📦 MapSystem модуль загружен с исправленной системой перемещения");
