@@ -5,135 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tigrimion RPG</title>
     <!-- ТОЛЬКО СОЗДАННЫЕ ФАЙЛЫ: -->
-    <link rel="stylesheet" href="styles/core.css">
-    <link rel="stylesheet" href="styles/layout.css">
-    <link rel="stylesheet" href="styles/ui.css">
-    <link rel="stylesheet" href="styles/hero.css">
-    <link rel="stylesheet" href="styles/battle.css">
-    <link rel="stylesheet" href="styles/map.css">
-    <link rel="stylesheet" href="styles/animations.css">
-    <link rel="stylesheet" href="shop.css">
-    
-    <style>
-        /* Дополнительные стили для элементов управления масштабом */
-        .zoom-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin: 10px 0;
-        }
-        
-        .zoom-btn {
-            background: linear-gradient(45deg, #4ade80, #22c55e);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .zoom-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
-        }
-        
-        .zoom-info {
-            color: #00ffff;
-            font-weight: bold;
-            font-size: 14px;
-            min-width: 100px;
-        }
-    </style>
+<link rel="stylesheet" href="styles/core.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/ui.css">
+<link rel="stylesheet" href="styles/hero.css">
+<link rel="stylesheet" href="styles/battle.css">
+<link rel="stylesheet" href="styles/map.css">
+<link rel="stylesheet" href="styles/animations.css">
+<link rel="stylesheet" href="shop.css">
 </head>
 <body>
     <div id="app"><!-- Игра рендерится здесь --></div>
     <div id="overlay-container" class="overlay-container"></div>
     <script src="script.js"></script>
-    
-    <script>
-        // Временный код для демонстрации - в реальной игре это будет в MapSystem
-        document.addEventListener('DOMContentLoaded', function() {
-            // Этот код будет перенесен в MapSystem
-            setTimeout(function() {
-                const overlayContainer = document.getElementById('overlay-container');
-                if (overlayContainer) {
-                    // Демонстрация интерфейса с контролами масштаба
-                    overlayContainer.innerHTML = `
-                        <div class="overlay-content tactical-map-overlay">
-                            <div class="tactical-map-header">
-                                <h4>Тестовая карта</h4>
-                                <div class="map-type-badge">📍 Локальная</div>
-                                <button class="btn-close">✕</button>
-                            </div>
-                            
-                            <div class="tactical-map-controls">
-                                <div class="zoom-controls">
-                                    <button class="zoom-btn" onclick="demoZoomOut()">🔍 Уменьшить</button>
-                                    <button class="zoom-btn" onclick="demoZoomIn()">🔍 Увеличить</button>
-                                    <button class="zoom-btn" onclick="demoZoomReset()">🔍 Сбросить</button>
-                                    <div class="zoom-info">Масштаб: 100%</div>
-                                </div>
-                                <button class="btn-control">🔲 Скрыть сетку</button>
-                                <button class="btn-control">🐛 Отладка</button>
-                                <div class="position-info">
-                                    Позиция: [4, 4] (локальная)
-                                </div>
-                            </div>
-                            
-                            <div class="tactical-map-content">
-                                <div class="tactical-map-visual" style="background: #1a1a2e; border: 2px solid #00ffff; border-radius: 10px; height: 500px; display: flex; align-items: center; justify-content: center; color: #00ffff; font-size: 18px;">
-                                    🗺️ Область карты с возможностью масштабирования
-                                    <br>
-                                    <small>Используйте кнопки выше или колесико мыши</small>
-                                </div>
-                                
-                                <div class="tactical-map-info">
-                                    <div class="map-description">
-                                        Тестовая локация для демонстрации масштабирования карты
-                                    </div>
-                                    <div class="map-stats">
-                                        <span>Клеток: 25</span>
-                                        <span>Размер: 5x5</span>
-                                        <span>Доступных ходов: 4</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 1000);
-        });
-
-        // Демонстрационные функции - в реальной игре будут в MapSystem
-        let demoZoom = 1.0;
-        
-        function demoZoomIn() {
-            if (demoZoom < 3.0) {
-                demoZoom += 0.25;
-                updateDemoZoom();
-            }
-        }
-        
-        function demoZoomOut() {
-            if (demoZoom > 0.5) {
-                demoZoom -= 0.25;
-                updateDemoZoom();
-            }
-        }
-        
-        function demoZoomReset() {
-            demoZoom = 1.0;
-            updateDemoZoom();
-        }
-        
-        function updateDemoZoom() {
-            const zoomInfo = document.querySelector('.zoom-info');
-            if (zoomInfo) {
-                zoomInfo.textContent = `Масштаб: ${Math.round(demoZoom * 100)}%`;
-            }
-        }
-    </script>
 </body>
 </html>
