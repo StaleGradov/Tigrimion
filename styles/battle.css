@@ -493,119 +493,6 @@
     opacity: 1;
 }
 
-/* ========== НОВАЯ СЕКЦИЯ: ИСТОРИЯ ДЕЙСТВИЙ НА КАРТОЧКЕ ========== */
-.unit-action-history-compact {
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    height: 28px;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 6px;
-    padding: 4px 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    z-index: 9;
-}
-
-.action-history-symbols {
-    display: flex;
-    gap: 3px;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: nowrap;
-    max-width: 100%;
-    overflow: hidden;
-}
-
-.action-symbol {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    flex-shrink: 0;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* Стили для различных типов действий с правильными символами */
-.action-symbol.attack { 
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    content: "⚔️";
-}
-.action-symbol.strong-attack { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    content: "💥";
-}
-.action-symbol.crushing-attack { 
-    background: linear-gradient(135deg, #991b1b, #7f1d1d);
-    content: "💢";
-}
-.action-symbol.block { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    content: "🛡️";
-}
-.action-symbol.break-block { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    content: "⚡";
-}
-.action-symbol.rest { 
-    background: linear-gradient(135deg, #10b981, #059669);
-    content: "🌀";
-}
-.action-symbol.heal { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    content: "❤️";
-}
-.action-symbol.miss { 
-    background: linear-gradient(135deg, #6b7280, #4b5563);
-    content: "❌";
-}
-.action-symbol.critical { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    content: "💫";
-    animation: pulse 1s infinite;
-}
-
-/* Специальные стили для отображения эмодзи */
-.action-symbol::before {
-    content: attr(data-symbol);
-    font-size: 10px;
-    line-height: 1;
-}
-
-.action-symbol.new {
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-/* Остальная часть всплывающей информации */
 .overlay-unit-header {
     display: flex;
     justify-content: space-between;
@@ -911,55 +798,13 @@
     transform: none;
 }
 
-/* Стили кнопок с правильными символами */
-.tactical-btn.attack { 
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-.tactical-btn.attack::before {
-    content: "⚔️";
-}
-
-.tactical-btn.strong-attack { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-}
-.tactical-btn.strong-attack::before {
-    content: "💥";
-}
-
-.tactical-btn.crushing-attack { 
-    background: linear-gradient(135deg, #991b1b, #7f1d1d);
-}
-.tactical-btn.crushing-attack::before {
-    content: "💢";
-}
-
-.tactical-btn.block { 
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-.tactical-btn.block::before {
-    content: "🛡️";
-}
-
-.tactical-btn.break-block { 
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-.tactical-btn.break-block::before {
-    content: "⚡";
-}
-
-.tactical-btn.rest { 
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-.tactical-btn.rest::before {
-    content: "🌀";
-}
-
-.tactical-btn.heal { 
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-}
-.tactical-btn.heal::before {
-    content: "❤️";
-}
+.tactical-btn.attack { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.tactical-btn.strong-attack { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+.tactical-btn.crushing-attack { background: linear-gradient(135deg, #991b1b, #7f1d1d); }
+.tactical-btn.block { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.tactical-btn.break-block { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.tactical-btn.rest { background: linear-gradient(135deg, #10b981, #059669); }
+.tactical-btn.heal { background: linear-gradient(135deg, #dc2626, #b91c1c); }
 
 .btn-icon {
     font-size: 1rem;
@@ -1208,12 +1053,6 @@
         width: 300px;
         min-width: 300px;
     }
-    
-    .action-symbol {
-        width: 18px;
-        height: 18px;
-        font-size: 9px;
-    }
 }
 
 @media (max-width: 1400px) {
@@ -1269,17 +1108,6 @@
     .grid-cell-fullscreen {
         min-height: 200px;
     }
-    
-    .unit-action-history-compact {
-        height: 24px;
-        padding: 3px 6px;
-    }
-    
-    .action-symbol {
-        width: 16px;
-        height: 16px;
-        font-size: 8px;
-    }
 }
 
 @media (max-width: 1000px) {
@@ -1325,17 +1153,6 @@
     
     .grid-cell-fullscreen {
         min-height: 180px;
-    }
-    
-    .unit-action-history-compact {
-        height: 22px;
-        padding: 2px 4px;
-    }
-    
-    .action-symbol {
-        width: 14px;
-        height: 14px;
-        font-size: 7px;
     }
 }
 
