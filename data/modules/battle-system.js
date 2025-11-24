@@ -327,54 +327,59 @@ class BattleSystem {
         this.updateAvailableTargets();
     }
 
-    placeMonstersOnGrid(monsters) {
-        // Очищаем сетку врагов
-        this.battleGrid.enemies = [null, null, null, null, null, null];
+placeMonstersOnGrid(monsters) {
+    // Очищаем сетку врагов
+    this.battleGrid.enemies = [null, null, null, null, null, null];
+    
+    // Разделяем монстров по типу атаки
+    const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
+    const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
+    
+    console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
+    
+    // ПРИОРИТЕТЫ ДЛЯ ВРАГОВ:
+    // Ближний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+    // Дальний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+    
+    const priorityPositions = [2, 0, 4, 1, 3, 5]; // Позиции 3, 1, 5, 2, 4, 6
+    
+    // Сначала размещаем монстров ближнего боя по приоритету
+    meleeMonsters.forEach((monster, index) => {
+        let position;
+        if (index < priorityPositions.length) {
+            position = priorityPositions[index];
+        } else {
+            // Если монстров больше 6, размещаем в оставшихся позициях
+            position = this.findFirstEmptyPosition();
+        }
         
-        // Разделяем монстров по типу атаки
-        const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
-        const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
+        this.placeMonsterAtPosition(monster, position, 'front');
+    });
+    
+    // Затем размещаем монстров дальнего боя по приоритету
+    rangedMonsters.forEach((monster, index) => {
+        let position;
         
-        console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
-        
-        // Приоритеты позиций для врагов:
-        const enemyFrontPositions = [1, 3, 5]; // Позиции 2, 4, 6 - ближний бой (передний ряд)
-        const enemyBackPositions = [0, 2, 4];  // Позиции 1, 3, 5 - дальний бой (задний ряд)
-        
-        // Сначала размещаем монстров ближнего боя во фронт
-        meleeMonsters.forEach((monster, index) => {
-            let position;
-            if (index < enemyFrontPositions.length) {
-                position = enemyFrontPositions[index];
-            } else {
-                // Если ближних больше 3, размещаем в заднем ряду
-                const availableBack = enemyBackPositions.filter(pos => !this.battleGrid.enemies[pos]);
-                position = availableBack[0] || this.findFirstEmptyPosition();
+        // Ищем первую доступную позицию по приоритету
+        for (const pos of priorityPositions) {
+            if (!this.battleGrid.enemies[pos]) {
+                position = pos;
+                break;
             }
-            
-            this.placeMonsterAtPosition(monster, position, 'front');
-        });
+        }
         
-        // Затем размещаем монстров дальнего боя в задний ряд
-        rangedMonsters.forEach((monster, index) => {
-            let position;
-            const availableBack = enemyBackPositions.filter(pos => !this.battleGrid.enemies[pos]);
-            
-            if (availableBack.length > 0) {
-                position = availableBack[0];
-            } else {
-                // Если задний ряд заполнен, размещаем во фронт
-                const availableFront = enemyFrontPositions.filter(pos => !this.battleGrid.enemies[pos]);
-                position = availableFront[0] || this.findFirstEmptyPosition();
-            }
-            
-            this.placeMonsterAtPosition(monster, position, 'back');
-        });
+        // Если все приоритетные позиции заняты, берем первую свободную
+        if (position === undefined) {
+            position = this.findFirstEmptyPosition();
+        }
         
-        console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
-            u ? `${u.data.name} (${u.row})` : 'empty'
-        ));
-    }
+        this.placeMonsterAtPosition(monster, position, 'back');
+    });
+    
+    console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
+        u ? `${u.data.name} (${u.row})` : 'empty'
+    ));
+}
 
     placeMonsterAtPosition(monster, position, row) {
         this.battleGrid.enemies[position] = {
@@ -395,11 +400,20 @@ class BattleSystem {
         return 0;
     }
 
-    getRowByPosition(position) {
-        // Для врагов: позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
-        //             позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
-        return [0, 2, 4].includes(position) ? 'back' : 'front';
-    }
+ getRowByPosition(position) {
+    // Для врагов: 
+    // Позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
+    // Позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
+    const backRowPositions = [0, 2, 4];  // Позиции 1, 3, 5
+    const frontRowPositions = [1, 3, 5]; // Позиции 2, 4, 6
+    
+    // Если монстр ближнего боя стоит в заднем ряду или дальнего боя в переднем,
+    // определяем ряд по фактической позиции
+    if (frontRowPositions.includes(position)) return 'front';
+    if (backRowPositions.includes(position)) return 'back';
+    
+    return 'front'; // fallback
+}
 
     getAllyRowByPosition(position) {
         // Для союзников: позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
