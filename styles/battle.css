@@ -132,7 +132,7 @@
     flex: 1;
 }
 
-/* БОКОВАЯ ЧАСТЬ СЕТКИ - УВЕЛИЧЕНА ПО ВЫСОТЕ И ШИРИНЕ */
+/* БОКОВАЯ ЧАСТЬ СЕТКИ - УВЕЛИЧЕНА ПО ВЫСОТЕ И ШИРИНЕ (ОБА ОТРЯДА ОДИНАКОВЫЕ) */
 .grid-side-compact {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 12px;
@@ -144,6 +144,15 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+}
+
+/* Специфичные цвета для каждой стороны */
+.allies-side {
+    border-color: #3b82f6;
+}
+
+.enemies-side {
+    border-color: #ef4444;
 }
 
 .side-title {
@@ -231,28 +240,101 @@
     100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
 }
 
-/* ПРАВАЯ ОБЛАСТЬ - ТАКОЙ ЖЕ КАК ВАШ ОТРЯД (СЕТКА 6x6) */
+/* ПРАВАЯ ОБЛАСТЬ - ПАНЕЛИ ДЕЙСТВИЙ ПРОТИВНИКОВ (РАБОЧАЯ ВЕРСИЯ) */
 .enemy-panels-container {
-    width: 700px;
-    min-width: 700px;
+    width: 380px;
+    min-width: 380px;
     flex-shrink: 0;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.4);
+    padding: 0.7rem;
+    background: rgba(15, 23, 42, 0.95);
     border: 2px solid #ef4444;
-    border-radius: 12px;
+    border-radius: 8px;
     align-self: stretch;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-/* УБИРАЕМ СТАРЫЕ СТИЛИ ДЛЯ ПАНЕЛЕЙ МОНСТРОВ И ДЕЛАЕМ КАК У ОТРЯДА */
+/* СЕТКА ПАНЕЛЕЙ ВРАГОВ - ВОЗВРАЩАЕМ РАБОЧУЮ ВЕРСИЮ */
 .enemy-panels-grid {
-    display: none; /* Скрываем старые панели */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 15px;
+    height: 100%;
+    overflow-y: auto;
 }
 
 .enemy-panel-mini {
-    display: none; /* Скрываем мини-панели */
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 10px 15px;
+    flex-shrink: 0;
+    margin: 0 8px;
+}
+
+.enemy-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.enemy-name {
+    font-weight: bold;
+    color: #fca5a5;
+    font-size: 0.9rem;
+}
+
+.enemy-row {
+    font-size: 0.75rem;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.enemy-panel-stats {
+    margin-bottom: 6px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+}
+
+.enemy-action-history {
+    margin-top: 6px;
+}
+
+.enemy-action-history .history-title {
+    color: #fca5a5;
+    font-size: 0.8rem;
+    margin-bottom: 0.4rem;
+}
+
+.enemy-action-history .history-entries {
+    min-height: 50px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    padding: 0.3rem;
+    max-height: 70px;
+    overflow-y: auto;
+    font-size: 0.75rem;
+}
+
+.no-enemies {
+    text-align: center;
+    color: #9ca3af;
+    font-style: italic;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
 }
 
 /* ========== ОТОБРАЖЕНИЕ ЮНИТОВ В СЕТКЕ ========== */
@@ -394,7 +476,7 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 45%;
+    height: 50%;
     background: linear-gradient(
         to top,
         transparent 0%,
@@ -516,6 +598,32 @@
     padding: 3px 5px;
     border-radius: 4px;
     border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Стили для информации о действиях врагов в оверлее */
+.enemy-actions-info {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.enemy-current-action {
+    font-size: 0.75rem;
+    color: #f59e0b;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.enemy-combo {
+    font-size: 0.7rem;
+    color: #3b82f6;
+    margin-bottom: 2px;
+}
+
+.enemy-ap {
+    font-size: 0.7rem;
+    color: #10b981;
+    font-weight: bold;
 }
 
 /* ========== ТАКТИЧЕСКИЕ ПАНЕЛИ ========== */
@@ -839,13 +947,13 @@
         max-width: 1500px;
     }
     
-    .grid-side-compact,
-    .enemy-panels-container {
+    .grid-side-compact {
         min-width: 650px;
         max-width: 700px;
     }
     
-    .tactical-panel.player-panel {
+    .tactical-panel.player-panel,
+    .enemy-panels-container {
         width: 350px;
         min-width: 350px;
     }
@@ -861,13 +969,13 @@
         max-width: 1300px;
     }
     
-    .grid-side-compact,
-    .enemy-panels-container {
+    .grid-side-compact {
         min-width: 550px;
         max-width: 600px;
     }
     
-    .tactical-panel.player-panel {
+    .tactical-panel.player-panel,
+    .enemy-panels-container {
         width: 320px;
         min-width: 320px;
     }
@@ -883,8 +991,7 @@
         max-width: 1200px;
     }
     
-    .grid-side-compact,
-    .enemy-panels-container {
+    .grid-side-compact {
         min-width: 500px;
         max-width: 550px;
     }
@@ -893,7 +1000,8 @@
         min-height: 240px;
     }
     
-    .tactical-panel.player-panel {
+    .tactical-panel.player-panel,
+    .enemy-panels-container {
         width: 300px;
         min-width: 300px;
     }
@@ -920,12 +1028,18 @@
         height: auto;
     }
     
-    .grid-side-compact,
     .enemy-panels-container {
         order: 3;
         width: 45%;
         min-width: 300px;
         height: auto;
+    }
+    
+    .grid-side-compact {
+        width: 90%;
+        max-width: 800px;
+        min-width: auto;
+        margin-bottom: 12px;
     }
 }
 
@@ -935,8 +1049,7 @@
         gap: 12px;
     }
     
-    .grid-side-compact,
-    .enemy-panels-container {
+    .grid-side-compact {
         min-width: 430px;
     }
     
@@ -958,26 +1071,30 @@
     .battle-grid-compact {
         min-width: 800px;
         width: 100%;
+        flex-direction: column;
     }
     
     .tactical-panel.player-panel,
-    .grid-side-compact,
     .enemy-panels-container {
         width: 90%;
         max-width: 600px;
         min-width: auto;
+    }
+    
+    .grid-side-compact {
+        width: 90%;
+        max-width: 600px;
+        min-width: auto;
+        margin-bottom: 12px;
     }
 }
 
 @media (max-width: 850px) {
     .battle-grid-compact {
         min-width: 600px;
-        flex-direction: column;
-        gap: 12px;
     }
     
-    .grid-side-compact,
-    .enemy-panels-container {
+    .grid-side-compact {
         min-width: 550px;
         width: 100%;
     }
