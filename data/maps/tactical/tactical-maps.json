@@ -4751,6 +4751,9 @@
           "type": "village",
           "passable": true,
           "visible": true,
+          "tacticalMap": "data/maps/tactical/tavern1.json",
+          "tooltip": "🚪 Вход в таверну <Последний Глоток>\n(Кликните для входа)",
+          "targetPosition": {"x": 5, "y": 9},
           "originalData": {
             "editorX": 103.92304845413263,
             "editorY": 960,
