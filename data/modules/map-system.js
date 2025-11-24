@@ -27,8 +27,8 @@ class MapSystem {
         
         // Система масштабирования и перетаскивания
         this.zoomLevel = 1.0;
-        this.minZoom = 0.3;
-        this.maxZoom = 3.0;
+        this.minZoom = 0.1;
+        this.maxZoom = 5.0;
         this.zoomStep = 0.2;
         this.isDragging = false;
         this.dragStart = { x: 0, y: 0 };
@@ -135,7 +135,7 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с полной системой масштабирования");
+        console.log("✅ MapSystem инициализирован с расширенной системой масштабирования");
     }
 
     getLootItemById(itemId) {
@@ -996,12 +996,10 @@ class MapSystem {
     handlePeacefulMovement(targetX, targetY, cellData) {
         console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
         
-        // ВСЕГДА собираем лут при посещении клетки
         if (cellData.hasLoot) {
             console.log(`🎁 Найден лут на клетке [${targetX}, ${targetY}]`);
             this.collectLoot(cellData, targetX, targetY);
         } else {
-            // Если лута нет - просто перемещаемся
             console.log(`➡️ Перемещение без лута на [${targetX}, ${targetY}]`);
             this.completePeacefulMovement(targetX, targetY);
         }
@@ -1353,7 +1351,6 @@ class MapSystem {
 
         this.ctx = this.canvas.getContext('2d');
         
-        // Сбрасываем состояние масштабирования при каждой инициализации
         this.zoomLevel = 1.0;
         this.mapOffset = { x: 0, y: 0 };
         
@@ -1361,7 +1358,7 @@ class MapSystem {
         this.setupCanvasEventListeners();
         
         this.canvasInitialized = true;
-        console.log("✅ Canvas инициализирован с поддержкой масштабирования");
+        console.log("✅ Canvas инициализирован с поддержкой расширенного масштабирования");
         this.drawTacticalMap();
     }
 
@@ -1380,19 +1377,17 @@ class MapSystem {
         console.log(`📐 Container: ${rect.width}x${rect.height}`);
         console.log(`🔍 Zoom level: ${this.zoomLevel}`);
 
-        // Базовый масштаб для вписывания в контейнер
-        const baseScaleX = rect.width / editorWidth;
-        const baseScaleY = rect.height / editorHeight;
-        const baseScale = Math.min(baseScaleX, baseScaleY, 1.0);
+        // Убираем ограничение базового масштаба
+        const baseScale = 1.0;
 
-        // Применяем пользовательский зум
+        // Применяем только пользовательский зум
         const finalScale = baseScale * this.zoomLevel;
 
-        // Рассчитываем смещение с учетом зума и перетаскивания
+        // Рассчитываем размеры с учетом зума
         const scaledWidth = editorWidth * finalScale;
         const scaledHeight = editorHeight * finalScale;
 
-        // Центрируем карту, если она меньше контейнера
+        // Центрируем карту относительно контейнера
         let offsetX = (rect.width - scaledWidth) / 2;
         let offsetY = (rect.height - scaledHeight) / 2;
 
@@ -1401,8 +1396,8 @@ class MapSystem {
         offsetY += this.mapOffset.y;
 
         console.log(`📏 Final scale: ${finalScale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+        console.log(`📏 Scaled size: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
 
-        // Обновляем координаты отображения для всех клеток
         Object.values(this.currentTacticalMap.cells).forEach(cell => {
             const originalX = cell.originalX || cell.x;
             const originalY = cell.originalY || cell.y;
@@ -1410,7 +1405,6 @@ class MapSystem {
             cell.displayX = originalX * finalScale + offsetX;
             cell.displayY = originalY * finalScale + offsetY;
             
-            // Сохраняем масштабированный размер для отрисовки
             cell.scaledSize = (this.currentTacticalMap.cellSize || 40) * finalScale;
         });
 
@@ -1425,20 +1419,17 @@ class MapSystem {
         this.canvas.addEventListener('mousemove', (e) => this.handleCanvasHover(e));
         this.canvas.addEventListener('mouseleave', () => this.hideTooltip());
         
-        // События для перетаскивания
         this.canvas.addEventListener('mousedown', (e) => this.startDragging(e));
         this.canvas.addEventListener('mousemove', (e) => this.dragMap(e));
         this.canvas.addEventListener('mouseup', () => this.stopDragging());
         this.canvas.addEventListener('mouseleave', () => this.stopDragging());
         
-        // Зум колесиком мыши
         this.canvas.addEventListener('wheel', (e) => this.handleWheelZoom(e), { passive: false });
 
         window.addEventListener('resize', () => {
             setTimeout(() => {
                 if (this.canvasInitialized) {
-                    this.calculateMapPositioning();
-                    this.forceRedraw();
+                    this.handleResize();
                 }
             }, 100);
         });
@@ -1468,16 +1459,12 @@ class MapSystem {
     applyZoom() {
         if (!this.currentTacticalMap || !this.canvasInitialized) return;
         
-        // Обновляем отображение масштаба
         const zoomElement = document.getElementById('currentZoom');
         if (zoomElement) {
             zoomElement.textContent = `${Math.round(this.zoomLevel * 100)}%`;
         }
         
-        // Пересчитываем позиционирование с учетом масштаба
         this.calculateMapPositioning();
-        
-        // Перерисовываем ВСЁ (включая фон)
         this.redrawBackground();
         
         console.log(`🔍 Масштаб изменен: ${Math.round(this.zoomLevel * 100)}%`);
@@ -1485,7 +1472,7 @@ class MapSystem {
 
     // Обработчики перетаскивания
     startDragging(e) {
-        if (e.button !== 0) return; // Только левая кнопка мыши
+        if (e.button !== 0) return;
         
         this.isDragging = true;
         this.dragStart = {
@@ -1503,7 +1490,7 @@ class MapSystem {
         this.mapOffset.y = e.clientY - this.dragStart.y;
         
         this.calculateMapPositioning();
-        this.redrawBackground(); // Используем redrawBackground вместо drawTacticalMap
+        this.redrawBackground();
     }
 
     stopDragging() {
@@ -1520,8 +1507,31 @@ class MapSystem {
         
         if (newZoom >= this.minZoom && newZoom <= this.maxZoom) {
             this.zoomLevel = newZoom;
-            this.applyZoom(); // Используем applyZoom который перерисует фон
+            this.applyZoom();
         }
+    }
+
+    // Полноэкранный режим
+    toggleFullscreen() {
+        const overlay = document.querySelector('.tactical-map-overlay');
+        const visualContainer = document.querySelector('.tactical-map-visual');
+        
+        if (!overlay || !visualContainer) return;
+        
+        if (overlay.classList.contains('fullscreen')) {
+            overlay.classList.remove('fullscreen');
+            visualContainer.style.overflow = 'hidden';
+            console.log("📱 Выход из полноэкранного режима");
+        } else {
+            overlay.classList.add('fullscreen');
+            visualContainer.style.overflow = 'visible';
+            console.log("📱 Вход в полноэкранный режим");
+        }
+        
+        setTimeout(() => {
+            this.calculateMapPositioning();
+            this.redrawBackground();
+        }, 100);
     }
 
     drawTacticalMap() {
@@ -1533,17 +1543,12 @@ class MapSystem {
         const canvas = this.canvas;
         this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Всегда начинаем с отрисовки фона
         this.drawBackground();
-        
-        // Гексы и сетка рисуются внутри drawBackground после загрузки изображения
-        // или в случае ошибки загрузки
     }
 
     drawBackground() {
         const map = this.currentTacticalMap;
         
-        // Если нет фонового изображения, рисуем градиент
         if (!map.image) {
             const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
             gradient.addColorStop(0, '#1a1a2e');
@@ -1551,7 +1556,6 @@ class MapSystem {
             this.ctx.fillStyle = gradient;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // Рисуем гексы поверх градиента
             this.drawHexes();
             if (this.showGrid) {
                 this.drawHexGrid();
@@ -1568,34 +1572,25 @@ class MapSystem {
 
         console.log(`🎯 Background: Editor ${editorWidth}x${editorHeight}, Container ${rect.width}x${rect.height}, Zoom ${this.zoomLevel}`);
 
-        // Базовый масштаб для вписывания в контейнер (как в calculateMapPositioning)
-        const baseScaleX = rect.width / editorWidth;
-        const baseScaleY = rect.height / editorHeight;
-        const baseScale = Math.min(baseScaleX, baseScaleY, 1.0);
-
-        // Применяем пользовательский зум
+        const baseScale = 1.0;
         const finalScale = baseScale * this.zoomLevel;
 
-        // Рассчитываем смещение с учетом зума и перетаскивания
         const scaledWidth = editorWidth * finalScale;
         const scaledHeight = editorHeight * finalScale;
 
-        // Центрируем карту, если она меньше контейнера
         let offsetX = (rect.width - scaledWidth) / 2;
         let offsetY = (rect.height - scaledHeight) / 2;
 
-        // Применяем смещение от перетаскивания
         offsetX += this.mapOffset.x;
         offsetY += this.mapOffset.y;
 
         console.log(`📏 Background scale: ${finalScale.toFixed(3)}, offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
+        console.log(`📏 Background size: ${scaledWidth.toFixed(0)}x${scaledHeight.toFixed(0)}`);
 
         const img = new Image();
         img.onload = () => {
-            // Очищаем canvas
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // Рисуем фон с учетом масштаба и смещения
             this.ctx.drawImage(
                 img, 
                 offsetX, 
@@ -1604,26 +1599,23 @@ class MapSystem {
                 scaledHeight
             );
             
-            // Повторно рисуем гексы поверх фона
             this.drawHexes();
             
             if (this.showGrid) {
                 this.drawHexGrid();
             }
             
-            console.log("✅ Фон отрисован с масштабированием");
+            console.log("✅ Фон отрисован с масштабированием (может выходить за границы)");
         };
         
         img.onerror = () => {
             console.error("❌ Ошибка загрузки фона карты");
-            // Fallback на градиент
             const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
             gradient.addColorStop(0, '#1a1a2e');
             gradient.addColorStop(1, '#16213e');
             this.ctx.fillStyle = gradient;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // Все равно рисуем гексы
             this.drawHexes();
             if (this.showGrid) {
                 this.drawHexGrid();
@@ -1638,6 +1630,16 @@ class MapSystem {
         
         console.log("🔄 Принудительная перерисовка фона с текущим масштабом");
         this.drawBackground();
+    }
+
+    handleResize() {
+        if (!this.canvasInitialized) return;
+        
+        console.log("🔄 Адаптация к изменению размеров окна");
+        
+        this.calculateMapPositioning();
+        this.redrawBackground();
+        this.updateMovementInfo();
     }
 
     drawHexGrid() {
@@ -1720,7 +1722,6 @@ class MapSystem {
 
         this.ctx.save();
         
-        // Используем масштабированный размер
         const hexSize = cell.scaledSize || (this.currentTacticalMap.cellSize || 40) * this.zoomLevel;
         
         if (cell.isHighlighted) {
@@ -1746,7 +1747,6 @@ class MapSystem {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
-        // Масштабируем размер шрифта
         let fontSize = 16 * this.zoomLevel;
         let symbol = '·';
         let color = '#ffffff';
@@ -1830,7 +1830,6 @@ class MapSystem {
             }
         }
 
-        // Ограничиваем минимальный и максимальный размер шрифта
         fontSize = Math.max(8, Math.min(30, fontSize));
         
         this.ctx.font = `bold ${fontSize}px Arial`;
@@ -1985,7 +1984,6 @@ class MapSystem {
             }
         }
 
-        // Подсказки для клеток с лутом
         if (hex.hasLoot) {
             const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
             const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
@@ -2414,7 +2412,6 @@ class MapSystem {
                     <h4>${targetMap.name}</h4>
                     <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
                     
-                    <!-- Добавляем контролы масштабирования -->
                     <div class="zoom-controls">
                         <button class="btn-control" onclick="game.systems.map.zoomOut()" title="Уменьшить">
                             🔍−
@@ -2425,6 +2422,9 @@ class MapSystem {
                         </button>
                         <button class="btn-control" onclick="game.systems.map.resetZoom()" title="Сбросить масштаб">
                             🔄
+                        </button>
+                        <button class="btn-control" onclick="game.systems.map.toggleFullscreen()" title="Полноэкранный режим">
+                            📱
                         </button>
                     </div>
                     
@@ -2877,4 +2877,4 @@ class MapSystem {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой масштабирования фона и гексов");
+console.log("📦 MapSystem модуль загружен с расширенной системой масштабирования");
