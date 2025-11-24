@@ -11,7 +11,7 @@ class MapSystem {
         this.currentTacticalMap = null;
         
         this.playerGlobalPosition = {x: 0, y: 0};
-        this.playerLocalPosition = {x: 0, y: 0}; 
+        this.playerLocalPosition = {x: 0, y: 0};
         this.playerTacticalPosition = {x: 0, y: 0};
         
         this.currentHero = null;
@@ -34,17 +34,11 @@ class MapSystem {
         
         this.canvasInitialized = false;
         
-        // СИСТЕМА ПЕРЕХОДОВ
         this.mapStack = [];
         this.currentMapType = 'local';
         
-        // СИСТЕМА ИССЛЕДОВАНИЯ И ЛУТА
-        this.exploredCells = new Map(); // mapId -> Set("col,row")
-        this.collectedLoot = new Map(); // mapId -> Set("col,row")
-        
-        // СИСТЕМА УРОВНЕЙ ЛУТА
         this.lootTables = {
-            1: { // Деревня - базовые награды
+            1: {
                 gold: { weight: 60, min: 5, max: 20 },
                 common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'bread', 'torch'] },
                 information: { weight: 10, messages: [
@@ -53,7 +47,7 @@ class MapSystem {
                     "Надпись на стене: 'Остерегайтесь теней ночью'"
                 ]}
             },
-            2: { // Лес - немного лучше
+            2: {
                 gold: { weight: 50, min: 10, max: 35 },
                 common_items: { weight: 35, items: ['health_potion', 'mana_potion', 'antidote', 'torch'] },
                 rare_items: { weight: 5, items: ['iron_sword', 'leather_armor'] },
@@ -62,7 +56,7 @@ class MapSystem {
                     "Вы нашли дневник путешественника с полезными заметками"
                 ]}
             },
-            3: { // Руины - хорошие награды
+            3: {
                 gold: { weight: 40, min: 25, max: 60 },
                 common_items: { weight: 30, items: ['health_potion', 'mana_potion', 'antidote'] },
                 rare_items: { weight: 15, items: ['steel_sword', 'chain_armor', 'magic_ring'] },
@@ -71,7 +65,7 @@ class MapSystem {
                     "Карта с отметками скрытых проходов"
                 ]}
             },
-            4: { // Подземелье - отличные награды
+            4: {
                 gold: { weight: 30, min: 40, max: 100 },
                 common_items: { weight: 25, items: ['greater_health_potion', 'greater_mana_potion'] },
                 rare_items: { weight: 25, items: ['magic_sword', 'plate_armor', 'amulet_protection'] },
@@ -81,7 +75,7 @@ class MapSystem {
                     "Координаты легендарного сокровища"
                 ]}
             },
-            5: { // Замок вампиров - лучшие награды
+            5: {
                 gold: { weight: 20, min: 75, max: 200 },
                 common_items: { weight: 20, items: ['greater_health_potion', 'greater_mana_potion'] },
                 rare_items: { weight: 30, items: ['vampire_blade', 'shadow_armor', 'crystal_amulet'] },
@@ -94,7 +88,6 @@ class MapSystem {
             }
         };
         
-        // Словарь символов для всех типов объектов
         this.objectSymbols = {
             'player_start': '⭐',
             'monster': '👹',
@@ -131,15 +124,12 @@ class MapSystem {
             'mountain': '⛰️'
         };
         
-        // Подсказки
         this.tooltipElement = null;
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с системой переходов и уровней лута");
+        console.log("✅ MapSystem инициализирован с упрощенной системой лута");
     }
-
-    // ========== НОВЫЙ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРЕДМЕТА ПО ID ==========
 
     getLootItemById(itemId) {
         const itemSystem = window.game?.systems?.equipment;
@@ -157,27 +147,21 @@ class MapSystem {
         return item;
     }
 
-    // ========== СИНХРОНИЗАЦИЯ ГЕРОЯ МЕЖДУ СИСТЕМАМИ ==========
-
     syncHeroWithOtherSystems() {
         if (!this.currentHero) return;
         
-        // Синхронизируем с основной игрой
         if (window.game) {
             window.game.currentHero = this.currentHero;
             
-            // Синхронизируем с HeroSystem
             if (window.game.systems.hero) {
                 window.game.systems.hero.currentHero = this.currentHero;
                 console.log("✅ Герой синхронизирован с HeroSystem");
             }
             
-            // Синхронизируем с EquipmentSystem
             if (window.game.systems.equipment) {
                 window.game.systems.equipment.setCurrentHero(this.currentHero);
             }
             
-            // Синхронизируем с BattleSystem
             if (window.game.systems.battle) {
                 window.game.systems.battle.currentHero = this.currentHero;
             }
@@ -190,7 +174,6 @@ class MapSystem {
         
         if (hero) {
             this.updatePlayerPositionsFromHero(hero);
-            // ⭐ ВАЖНО: Синхронизируем с другими системами
             this.syncHeroWithOtherSystems();
         }
     }
@@ -210,9 +193,6 @@ class MapSystem {
             console.log("📥 Загружаем данные карт...");
             
             await this.loadJSONMaps();
-            
-            // ⭐ ВАЖНО: Загружаем состояние ДО установки карт
-            this.loadMapState();
             
             this.debugLoadedMaps();
             
@@ -415,8 +395,6 @@ class MapSystem {
             mapType: mapType
         };
     }
-
-    // ========== СИСТЕМА ПЕРЕХОДОВ МЕЖДУ КАРТАМИ ==========
 
     async handleMapTransition(transitionCell) {
         if (!transitionCell) return;
@@ -725,8 +703,6 @@ class MapSystem {
         return locationMap;
     }
 
-    // ========== ИСПРАВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ ==========
-
     handleCanvasClick(e) {
         if (!this.currentTacticalMap) return;
 
@@ -946,8 +922,6 @@ class MapSystem {
         this.updateMovementInfo();
     }
 
-    // ========== ИСПРАВЛЕННАЯ СИСТЕМА ПЕРЕМЕЩЕНИЯ ==========
-
     moveOnTacticalMap(x, y) {
         if (!this.currentHero) {
             console.error("❌ Герой не выбран!");
@@ -970,13 +944,11 @@ class MapSystem {
             return;
         }
 
-        // ПРОВЕРКА ПЕРЕХОДОВ - должна быть ПЕРВОЙ
         if (this.isTransitionCell(cellData)) {
             this.handleTransitionClick(cellData);
             return;
         }
 
-        // ПРОВЕРКА ДОСТУПНОСТИ КЛЕТКИ
         if (cellData.passable === false) {
             console.log("🚫 Клетка непроходима");
             if (window.game) {
@@ -985,7 +957,6 @@ class MapSystem {
             return;
         }
 
-        // ПРОВЕРКА СОСЕДСТВА
         const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
         const isReachable = neighbors.some(neighbor => 
             neighbor.row === y && neighbor.col === x
@@ -999,112 +970,48 @@ class MapSystem {
             return;
         }
 
-        // ОПРЕДЕЛЕНИЕ ТИПА КАРТЫ И ВЫБОР ЛОГИКИ ПЕРЕМЕЩЕНИЯ
         const mapType = this.currentTacticalMap.jsonData?.meta?.mapType || 'combat';
         
         console.log(`🎯 Начало перемещения на [${x}, ${y}], тип карты: ${mapType}`);
         
-        // ДЕБАГ ИНФОРМАЦИЯ
         this.debugMovementInfo(x, y, cellData);
         
         if (mapType === 'peaceful') {
-            // МИРНОЕ ПЕРЕМЕЩЕНИЕ - выполняем сразу ДЛЯ ЛЮБОЙ ПРОХОДИМОЙ КЛЕТКИ
             this.handlePeacefulMovement(x, y, cellData);
         } else {
-            // БОЕВОЕ ПЕРЕМЕЩЕНИЕ - запускаем бой
             setTimeout(() => {
                 this.startTacticalBattleForMovement(x, y, cellData);
             }, 50);
         }
     }
 
-    // ========== ДОРАБОТАННЫЙ МЕТОД МИРНОГО ПЕРЕМЕЩЕНИЯ ==========
-
     handlePeacefulMovement(targetX, targetY, cellData) {
         console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
         
-        const mapId = this.getCurrentMapId();
-        
-        // Помечаем клетку как исследованную (даже если уже исследована)
-        this.markCellExplored(mapId, targetX, targetY);
-        
-        // Проверяем и собираем лут (только если есть лут и он еще не собран)
-        if (cellData.hasLoot && !this.isLootCollected(mapId, targetX, targetY)) {
+        // ВСЕГДА собираем лут при посещении клетки
+        if (cellData.hasLoot) {
             console.log(`🎁 Найден лут на клетке [${targetX}, ${targetY}]`);
             this.collectLoot(cellData, targetX, targetY);
         } else {
-            // Если лута нет или он уже собран - просто перемещаемся
+            // Если лута нет - просто перемещаемся
             console.log(`➡️ Перемещение без лута на [${targetX}, ${targetY}]`);
             this.completePeacefulMovement(targetX, targetY);
         }
     }
 
-    // ========== СИСТЕМА ИССЛЕДОВАНИЯ И ЛУТА ==========
-
-    markCellExplored(mapId, col, row) {
-        const cellKey = `${col},${row}`;
-        
-        if (!this.exploredCells.has(mapId)) {
-            this.exploredCells.set(mapId, new Set());
-        }
-        this.exploredCells.get(mapId).add(cellKey);
-        
-        console.log(`📍 Клетка исследована: ${mapId} -> [${col},${row}]`);
-        
-        // ⭐ СОХРАНЯЕМ ПРИ ИССЛЕДОВАНИИ
-        this.saveMapState();
-    }
-
-    isCellExplored(mapId, col, row) {
-        const cellKey = `${col},${row}`;
-        return this.exploredCells.has(mapId) && 
-               this.exploredCells.get(mapId).has(cellKey);
-    }
-
-    markLootCollected(mapId, col, row) {
-        const cellKey = `${col},${row}`;
-        
-        if (!this.collectedLoot.has(mapId)) {
-            this.collectedLoot.set(mapId, new Set());
-        }
-        this.collectedLoot.get(mapId).add(cellKey);
-        
-        console.log(`🎁 Лут собран: ${mapId} -> [${col},${row}]`);
-        
-        // ⭐ СОХРАНЯЕМ ПРИ СБОРЕ ЛУТА
-        this.saveMapState();
-    }
-
-    isLootCollected(mapId, col, row) {
-        const cellKey = `${col},${row}`;
-        return this.collectedLoot.has(mapId) && 
-               this.collectedLoot.get(mapId).has(cellKey);
-    }
-
-    getCurrentMapId() {
-        return this.currentTacticalMap?.id || 'unknown';
-    }
-
-    // ========== ИСПРАВЛЕННЫЙ МЕТОД СБОРА ЛУТА ==========
-
     collectLoot(cellData, col, row) {
-        const mapId = this.getCurrentMapId();
         const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
         
         console.log(`🎲 Генерация лута уровня ${lootLevel} для клетки [${col},${row}]`);
         
-        // Генерируем случайную награду
         const reward = this.generateRandomReward(lootLevel);
         
-        // Обрабатываем награду и только ПОТОМ перемещаемся
         this.processRewardWithMovement(reward, col, row, cellData);
     }
 
-    // Генерация случайной награды по уровню
     generateRandomReward(lootLevel) {
         const lootTable = this.lootTables[lootLevel] || this.lootTables[1];
         
-        // Выбираем тип награды по весам
         const rewardType = this.selectRewardType(lootTable);
         const rewardData = lootTable[rewardType];
         
@@ -1148,18 +1055,14 @@ class MapSystem {
         }
     }
 
-    // Выбор типа награды по весам
     selectRewardType(lootTable) {
         const types = Object.keys(lootTable);
         const weights = types.map(type => lootTable[type].weight);
         
-        // Сумма всех весов
         const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
         
-        // Случайное число от 0 до totalWeight
         let random = Math.random() * totalWeight;
         
-        // Выбираем тип на основе весов
         for (let i = 0; i < types.length; i++) {
             random -= weights[i];
             if (random <= 0) {
@@ -1167,10 +1070,8 @@ class MapSystem {
             }
         }
         
-        return types[0]; // fallback
+        return types[0];
     }
-
-    // ========== НОВЫЙ МЕТОД ДЛЯ ОБРАБОТКИ НАГРАДЫ С ПЕРЕМЕЩЕНИЕМ ==========
 
     processRewardWithMovement(reward, col, row, cellData) {
         let showNotification = true;
@@ -1207,27 +1108,20 @@ class MapSystem {
                     if (this.isImportantInformation(reward.message)) {
                         this.showInformationDialog(reward.message);
                         showNotification = false;
-                        // Для диалогов завершаем перемещение после закрытия диалога
                         this.delayedMovementAfterDialog(col, row, reward.message);
-                        return; // Не завершаем сразу
+                        return;
                     }
                     completed = true;
                     break;
             }
             
             if (completed) {
-                // Помечаем лут как собранный и перемещаемся
-                this.markLootCollected(this.getCurrentMapId(), col, row);
-                
-                // Синхронизируем героя
                 this.syncHeroWithOtherSystems();
                 
-                // Показываем уведомление
                 if (showNotification && window.game) {
                     window.game.showNotification(reward.message, 'success');
                 }
                 
-                // Завершаем перемещение
                 this.completePeacefulMovement(col, row);
                 
                 console.log(`🎁 Награда обработана и перемещение завершено:`, reward);
@@ -1238,35 +1132,27 @@ class MapSystem {
             if (window.game) {
                 window.game.showNotification("Ошибка при получении награды", 'error');
             }
-            // Все равно перемещаемся даже при ошибке
             this.completePeacefulMovement(col, row);
         }
     }
 
-    // ========== НОВЫЙ МЕТОД ДЛЯ ОТЛОЖЕННОГО ПЕРЕМЕЩЕНИЯ ПОСЛЕ ДИАЛОГА ==========
-
     delayedMovementAfterDialog(col, row, message) {
-        // Ждем немного, чтобы диалог успел показаться
         setTimeout(() => {
-            this.markLootCollected(this.getCurrentMapId(), col, row);
             this.completePeacefulMovement(col, row);
             console.log(`💡 Перемещение после диалога: ${message}`);
         }, 100);
     }
 
-    // Получение имени предмета
     getItemName(itemId) {
         const lootItem = this.getLootItemById(itemId);
-        return lootItem ? lootItem.name : itemId; // fallback
+        return lootItem ? lootItem.name : itemId;
     }
 
-    // Проверка важности информации
     isImportantInformation(message) {
         const importantKeywords = ['артефакт', 'сокровищ', 'координат', 'секрет', 'тайн', 'легендарн'];
         return importantKeywords.some(keyword => message.toLowerCase().includes(keyword));
     }
 
-    // Показ диалога с информацией
     showInformationDialog(message) {
         if (window.game && window.game.showDialog) {
             window.game.showDialog({
@@ -1275,12 +1161,9 @@ class MapSystem {
                 type: "information"
             });
         } else {
-            // Fallback - показываем как обычное уведомление
             window.game.showNotification("💡 " + message, 'info');
         }
     }
-
-    // ========== УПРОЩЕННЫЙ МЕТОД ЗАВЕРШЕНИЯ ПЕРЕМЕЩЕНИЯ ==========
 
     completePeacefulMovement(targetX, targetY) {
         const oldPosition = {...this.playerTacticalPosition};
@@ -1288,16 +1171,12 @@ class MapSystem {
         
         console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
         
-        // Синхронизируем перед сохранением
         this.syncHeroWithOtherSystems();
-        this.saveMapState();
         
-        // Перерисовываем карту
         if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
             this.calculateMapPositioning();
             this.drawTacticalMap();
             
-            // Показываем уведомление о перемещении (только если не было других уведомлений)
             setTimeout(() => {
                 if (window.game) {
                     window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
@@ -1387,8 +1266,6 @@ class MapSystem {
             }
         }
         
-        this.saveMapState();
-        
         if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
             this.calculateMapPositioning();
             this.drawTacticalMap();
@@ -1408,14 +1285,10 @@ class MapSystem {
         return battleSystem.getMonsterById(cellData.monster_id);
     }
 
-    // Обновляем интерфейс героя
     updateHeroInterface() {
-        // ⭐ БЕЗОПАСНЫЙ ВЫЗОВ: Проверяем наличие системы и героя
         if (window.game?.systems?.hero) {
-            // Сначала синхронизируем, потом обновляем
             this.syncHeroWithOtherSystems();
             
-            // Ждем немного чтобы синхронизация завершилась
             setTimeout(() => {
                 if (window.game.systems.hero.currentHero) {
                     window.game.systems.hero.updateHeroDisplay();
@@ -1428,20 +1301,13 @@ class MapSystem {
         }
     }
 
-    // ========== ДОБАВИМ ДЕБАГ-ИНФОРМАЦИЮ В КОНСОЛЬ ==========
-
     debugMovementInfo(x, y, cellData) {
-        const mapId = this.getCurrentMapId();
-        const isExplored = this.isCellExplored(mapId, x, y);
         const hasLoot = cellData.hasLoot;
-        const lootCollected = this.isLootCollected(mapId, x, y);
         
         console.group(`🎯 ДЕБАГ ПЕРЕМЕЩЕНИЯ на [${x}, ${y}]`);
         console.log('Тип клетки:', cellData.type);
         console.log('Проходимость:', cellData.passable);
         console.log('Есть лут:', hasLoot);
-        console.log('Исследована:', isExplored);
-        console.log('Лут собран:', lootCollected);
         console.log('Тип карты:', this.currentTacticalMap.jsonData?.meta?.mapType || 'combat');
         console.log('Текущая позиция:', this.playerTacticalPosition);
         
@@ -1456,8 +1322,6 @@ class MapSystem {
         
         return isReachable;
     }
-
-    // ========== CANVAS И ОТОБРАЖЕНИЕ ==========
 
     initCanvas() {
         const container = document.querySelector('.tactical-map-visual');
@@ -1678,16 +1542,11 @@ class MapSystem {
             }
         }
 
-        // Новые подсказки для системы лута
-        const mapId = this.getCurrentMapId();
+        // Подсказки для клеток с лутом
         if (hex.hasLoot) {
-            if (this.isLootCollected(mapId, hex.col, hex.row)) {
-                return "✅ Награда уже собрана";
-            } else {
-                const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
-                const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
-                return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}`;
-            }
+            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+            const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
+            return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}\n(Кликните для исследования)`;
         }
 
         const defaultTooltips = {
@@ -1965,28 +1824,16 @@ class MapSystem {
         let color = '#ffffff';
         let fontSize = 16;
 
-        // Игрок
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
             fontSize = 20;
         } 
-        // Исследованная клетка с собранным лутом
-        else if (this.isCellExplored(this.getCurrentMapId(), cell.col, cell.row) && 
-                 cell.hasLoot && 
-                 this.isLootCollected(this.getCurrentMapId(), cell.col, cell.row)) {
-            symbol = '✅';
-            color = '#22c55e';
-            fontSize = 14;
-        }
-        // Клетка с доступным лутом
-        else if (cell.hasLoot && !this.isLootCollected(this.getCurrentMapId(), cell.col, cell.row)) {
-            // Разные символы в зависимости от уровня лута карты
+        else if (cell.hasLoot) {
             const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
             symbol = this.getLootSymbol(lootLevel);
             color = this.getLootColor(lootLevel);
             fontSize = 18;
         }
-        // Обычная логика
         else {
             if (cell.type === 'active' && !cell.objectType) {
                 symbol = '·';
@@ -2062,19 +1909,15 @@ class MapSystem {
         this.ctx.restore();
     }
 
-    // Символы для разных уровней лута
     getLootSymbol(lootLevel) {
         const symbols = ['💎', '⭐', '🔮', '👑', '🏆'];
         return symbols[lootLevel - 1] || symbols[0];
     }
 
-    // Цвета для разных уровней лута
     getLootColor(lootLevel) {
         const colors = ['#f59e0b', '#eab308', '#a855f7', '#ec4899', '#ef4444'];
         return colors[lootLevel - 1] || colors[0];
     }
-
-    // ========== СИСТЕМА НАВИГАЦИИ И СОСЕДЕЙ ==========
 
     getAvailableMoves() {
         if (!this.currentTacticalMap) return [];
@@ -2204,8 +2047,6 @@ class MapSystem {
         
         return 'неизвестно';
     }
-
-    // ========== СИСТЕМА КАРТ И ОТОБРАЖЕНИЯ ==========
 
     setStartPositions() {
         console.log("🎯 Устанавливаем стартовые позиции...");
@@ -2337,8 +2178,6 @@ class MapSystem {
             }
         }];
     }
-
-    // ========== УЛУЧШЕННАЯ СИСТЕМА ОТОБРАЖЕНИЯ КАРТ ==========
 
     showMapOverlay(overlayType, container) {
         console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
@@ -2561,99 +2400,14 @@ class MapSystem {
         }
     }
 
-    // ========== СИСТЕМА СОХРАНЕНИЯ И ЗАГРУЗКИ ==========
-
-    saveMapState() {
-        const state = {
-            playerGlobalPosition: this.playerGlobalPosition,
-            playerLocalPosition: this.playerLocalPosition,
-            playerTacticalPosition: this.playerTacticalPosition,
-            currentGlobalMapId: this.currentGlobalMap?.id,
-            currentLocalMapId: this.currentLocalMap?.id,
-            currentTacticalMapId: this.currentTacticalMap?.id,
-            mapStack: this.mapStack,
-            currentMapType: this.currentMapType,
-            
-            // ⭐ ИСПРАВЛЕНИЕ: Правильно сохраняем Set как массивы
-            exploredCells: Array.from(this.exploredCells.entries()).map(([mapId, cellsSet]) => ({
-                mapId,
-                cells: Array.from(cellsSet)
-            })),
-            collectedLoot: Array.from(this.collectedLoot.entries()).map(([mapId, cellsSet]) => ({
-                mapId, 
-                cells: Array.from(cellsSet)
-            }))
-        };
+    updateMovementInfo() {
+        const availableMoves = this.getAvailableMoves();
         
-        localStorage.setItem('mapSystemState', JSON.stringify(state));
-        console.log("💾 Состояние карт и исследования сохранено", {
-            explored: this.exploredCells.size,
-            loot: this.collectedLoot.size
-        });
-    }
-
-    loadMapState() {
-        try {
-            const saved = localStorage.getItem('mapSystemState');
-            if (!saved) return false;
-
-            const state = JSON.parse(saved);
-            
-            if (state.playerGlobalPosition) {
-                this.playerGlobalPosition = state.playerGlobalPosition;
-            }
-            if (state.playerLocalPosition) {
-                this.playerLocalPosition = state.playerLocalPosition;
-            }
-            if (state.playerTacticalPosition) {
-                this.playerTacticalPosition = state.playerTacticalPosition;
-            }
-            
-            if (state.currentGlobalMapId) {
-                this.currentGlobalMap = this.globalMaps.find(map => map.id === state.currentGlobalMapId);
-            }
-            if (state.currentLocalMapId) {
-                this.currentLocalMap = this.localMaps.find(map => map.id === state.currentLocalMapId);
-            }
-            if (state.currentTacticalMapId) {
-                this.currentTacticalMap = this.tacticalMaps.find(map => map.id === state.currentTacticalMapId);
-            }
-            
-            if (state.mapStack) {
-                this.mapStack = state.mapStack;
-            }
-            if (state.currentMapType) {
-                this.currentMapType = state.currentMapType;
-            }
-            
-            // ⭐ ИСПРАВЛЕНИЕ: Правильно загружаем исследованные клетки
-            if (state.exploredCells) {
-                this.exploredCells = new Map();
-                state.exploredCells.forEach(({mapId, cells}) => {
-                    this.exploredCells.set(mapId, new Set(cells));
-                });
-                console.log("✅ Загружены исследованные клетки:", this.exploredCells.size);
-            }
-            
-            // ⭐ ИСПРАВЛЕНИЕ: Правильно загружаем собранный лут
-            if (state.collectedLoot) {
-                this.collectedLoot = new Map();
-                state.collectedLoot.forEach(({mapId, cells}) => {
-                    this.collectedLoot.set(mapId, new Set(cells));
-                });
-                console.log("✅ Загружен собранный лут:", this.collectedLoot.size);
-            }
-            
-            console.log("💾 Состояние карт и исследования загружено");
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки состояния карт:", error);
-            return false;
+        const movesElement = document.getElementById('availableMoves');
+        if (movesElement) {
+            movesElement.textContent = `Доступных ходов: ${availableMoves.length}`;
         }
     }
-
-    // ========== ДЕБАГ И ТЕСТИРОВАНИЕ ==========
 
     debugInfo() {
         console.group("🗺️ MapSystem Debug Info");
@@ -2668,10 +2422,7 @@ class MapSystem {
         console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
         console.log("Canvas инициализирован:", this.canvasInitialized);
         console.log("Текущий герой:", this.currentHero?.name || 'нет');
-        console.log("Исследованные клетки:", this.exploredCells.size);
-        console.log("Собранный лут:", this.collectedLoot.size);
         
-        // Информация о доступных ходах
         const availableMoves = this.getAvailableMoves();
         console.log("Доступные ходы:", availableMoves.length);
         availableMoves.forEach(move => {
@@ -2681,8 +2432,6 @@ class MapSystem {
         console.groupEnd();
     }
 
-    // ========== ТЕСТИРОВАНИЕ МИРНОГО ПЕРЕМЕЩЕНИЯ ==========
-
     testPeacefulMovement() {
         if (!this.currentTacticalMap) {
             console.error("❌ Нет текущей карты");
@@ -2691,18 +2440,15 @@ class MapSystem {
         
         console.log("🧪 Тестирование мирного перемещения...");
         
-        // Находим доступные ходы
         const availableMoves = this.getAvailableMoves();
         console.log("Доступные ходы:", availableMoves);
         
         if (availableMoves.length > 0) {
-            // Выбираем первую доступную клетку
             const targetMove = availableMoves[0];
             console.log(`Пытаемся переместиться на: [${targetMove.col}, ${targetMove.row}]`);
             
             const cellData = this.currentTacticalMap.cells[`${targetMove.col},${targetMove.row}`];
             if (cellData) {
-                // Вызываем напрямую метод мирного перемещения
                 this.handlePeacefulMovement(targetMove.col, targetMove.row, cellData);
             } else {
                 console.error("❌ Клетка не найдена");
@@ -2711,8 +2457,6 @@ class MapSystem {
             console.log("❌ Нет доступных ходов для тестирования");
         }
     }
-
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОТРИСОВКИ ==========
 
     drawSingleHexWithHighlight(hex) {
         if (!this.ctx || !hex) return;
@@ -2742,15 +2486,6 @@ class MapSystem {
         this.ctx.restore();
         
         this.drawHexContent(hex);
-    }
-
-    updateMovementInfo() {
-        const availableMoves = this.getAvailableMoves();
-        
-        const movesElement = document.getElementById('availableMoves');
-        if (movesElement) {
-            movesElement.textContent = `Доступных ходов: ${availableMoves.length}`;
-        }
     }
 
     forceLoadLocalMap() {
@@ -2931,4 +2666,4 @@ class MapSystem {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с полной системой перемещения");
+console.log("📦 MapSystem модуль загружен с упрощенной системой лута");
