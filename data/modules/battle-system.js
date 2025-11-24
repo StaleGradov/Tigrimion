@@ -45,114 +45,114 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован с улучшенной групповой системой");
     }
 
-   async loadBattleData() {
-    try {
-        console.log("📥 Загружаем данные монстров...");
-        
-        const [enemiesResponse, monstersResponse] = await Promise.all([
-            fetch('data/enemies.json').catch(() => null),
-            fetch('data/monsters.json').catch(() => null)
-        ]);
-        
-        this.randomMonsters = [];
-        this.programmedMonsters = new Map();
-        
-        // ПЕРВОЕ: загружаем случайных монстров (enemies.json)
-        if (enemiesResponse && enemiesResponse.ok) {
-            this.randomMonsters = await enemiesResponse.json();
-            console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
-        } else {
-            console.error("❌ enemies.json не загружен!");
+    async loadBattleData() {
+        try {
+            console.log("📥 Загружаем данные монстров...");
+            
+            const [enemiesResponse, monstersResponse] = await Promise.all([
+                fetch('data/enemies.json').catch(() => null),
+                fetch('data/monsters.json').catch(() => null)
+            ]);
+            
             this.randomMonsters = [];
-        }
-        
-        // ВТОРОЕ: загружаем запрограммированных монстров (monsters.json)  
-        if (monstersResponse && monstersResponse.ok) {
-            const programmedMonsters = await monstersResponse.json();
-            programmedMonsters.forEach(monster => {
-                this.programmedMonsters.set(monster.id, monster);
-            });
-            console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
-        } else {
-            console.error("❌ monsters.json не загружен!");
-        }
-        
-        // ОБЪЕДИНЯЕМ: сначала случайные, потом запрограммированные
-        this.monsters = [...this.randomMonsters];
-        
-        // Добавляем запрограммированных только если они есть
-        if (this.programmedMonsters.size > 0) {
-            this.monsters.push(...Array.from(this.programmedMonsters.values()));
-        }
-        
-        console.log(`🎯 Всего монстров: ${this.monsters.length} (${this.randomMonsters.length} случайных, ${this.programmedMonsters.size} запрограммированных)`);
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Ошибка загрузки данных монстров:", error);
-        this.randomMonsters = [];
-        this.programmedMonsters = new Map();
-        this.monsters = [];
-        return false;
-    }
-}
-
-  getMonstersForCurrentMap() {
-    if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
-        console.log("🗺️ Карта не активна, используем случайных монстров");
-        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
-    }
-
-    const currentMap = window.game.systems.map.currentTacticalMap;
-    
-    // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
-    if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
-        console.log("🗺️ У карты нет своих монстров, используем случайных");
-        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
-    }
-
-    // ФИЛЬТРУЕМ: сначала ищем в запрограммированных, потом в случайных
-    const mapMonsters = currentMap.jsonData.meta.monsters
-        .map(monsterId => {
-            // Сначала ищем в запрограммированных монстрах
-            if (this.programmedMonsters.has(monsterId)) {
-                return this.programmedMonsters.get(monsterId);
+            this.programmedMonsters = new Map();
+            
+            // ПЕРВОЕ: загружаем случайных монстров (enemies.json)
+            if (enemiesResponse && enemiesResponse.ok) {
+                this.randomMonsters = await enemiesResponse.json();
+                console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
+            } else {
+                console.error("❌ enemies.json не загружен!");
+                this.randomMonsters = [];
             }
-            // Потом в случайных
-            const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
-            if (randomMonster) {
-                return randomMonster;
+            
+            // ВТОРОЕ: загружаем запрограммированных монстров (monsters.json)  
+            if (monstersResponse && monstersResponse.ok) {
+                const programmedMonsters = await monstersResponse.json();
+                programmedMonsters.forEach(monster => {
+                    this.programmedMonsters.set(monster.id, monster);
+                });
+                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
+            } else {
+                console.error("❌ monsters.json не загружен!");
             }
-            console.warn(`❌ Монстр с ID ${monsterId} не найден ни в запрограммированных, ни в случайных!`);
-            return null;
-        })
-        .filter(monster => monster !== null);
-
-    console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
-    
-    // Если для карты нет монстров, используем случайных
-    if (mapMonsters.length === 0) {
-        console.log("🗺️ Для карты нет валидных монстров, используем случайных");
-        return this.randomMonsters;
+            
+            // ОБЪЕДИНЯЕМ: сначала случайные, потом запрограммированные
+            this.monsters = [...this.randomMonsters];
+            
+            // Добавляем запрограммированных только если они есть
+            if (this.programmedMonsters.size > 0) {
+                this.monsters.push(...Array.from(this.programmedMonsters.values()));
+            }
+            
+            console.log(`🎯 Всего монстров: ${this.monsters.length} (${this.randomMonsters.length} случайных, ${this.programmedMonsters.size} запрограммированных)`);
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных монстров:", error);
+            this.randomMonsters = [];
+            this.programmedMonsters = new Map();
+            this.monsters = [];
+            return false;
+        }
     }
-    
-    return mapMonsters;
-}
 
-   getRandomMonsterForMovement() {
-    const mapMonsters = this.getMonstersForCurrentMap();
-    
-    if (mapMonsters.length === 0) {
-        console.error("❌ Нет монстров для текущей карты!");
-        // Возвращаем случайного монстра из общих
-        return this.randomMonsters[0] || null;
+    getMonstersForCurrentMap() {
+        if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
+            console.log("🗺️ Карта не активна, используем случайных монстров");
+            return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+        }
+
+        const currentMap = window.game.systems.map.currentTacticalMap;
+        
+        // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
+        if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
+            console.log("🗺️ У карты нет своих монстров, используем случайных");
+            return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+        }
+
+        // ФИЛЬТРУЕМ: сначала ищем в запрограммированных, потом в случайных
+        const mapMonsters = currentMap.jsonData.meta.monsters
+            .map(monsterId => {
+                // Сначала ищем в запрограммированных монстрах
+                if (this.programmedMonsters.has(monsterId)) {
+                    return this.programmedMonsters.get(monsterId);
+                }
+                // Потом в случайных
+                const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
+                if (randomMonster) {
+                    return randomMonster;
+                }
+                console.warn(`❌ Монстр с ID ${monsterId} не найден ни в запрограммированных, ни в случайных!`);
+                return null;
+            })
+            .filter(monster => monster !== null);
+
+        console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
+        
+        // Если для карты нет монстров, используем случайных
+        if (mapMonsters.length === 0) {
+            console.log("🗺️ Для карты нет валидных монстров, используем случайных");
+            return this.randomMonsters;
+        }
+        
+        return mapMonsters;
     }
-    
-    const randomIndex = Math.floor(Math.random() * mapMonsters.length);
-    const monster = mapMonsters[randomIndex];
-    console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
-    return monster;
-}
+
+    getRandomMonsterForMovement() {
+        const mapMonsters = this.getMonstersForCurrentMap();
+        
+        if (mapMonsters.length === 0) {
+            console.error("❌ Нет монстров для текущей карты!");
+            // Возвращаем случайного монстра из общих
+            return this.randomMonsters[0] || null;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+        const monster = mapMonsters[randomIndex];
+        console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
+        return monster;
+    }
 
     getMonsterById(monsterId) {
         if (this.programmedMonsters.has(monsterId)) {
@@ -175,6 +175,11 @@ class BattleSystem {
         }
         
         return window.game.systems.hero.calculateHeroStats(this.currentHero);
+    }
+
+    getRandomPersonality() {
+        const personalities = ['aggressive', 'defensive', 'tactical', 'healer', 'unpredictable'];
+        return personalities[Math.floor(Math.random() * personalities.length)];
     }
 
     generateMonsterGroup(baseMonsterId) {
@@ -222,7 +227,8 @@ class BattleSystem {
                 currentHealth: selectedMonster.health,
                 name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
                 source: 'map',
-                ai: new TacticalAI(this, selectedMonster),
+                ai: new AdvancedTacticalAI(this, selectedMonster),
+                personality: this.getRandomPersonality(),
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
@@ -231,7 +237,7 @@ class BattleSystem {
             monsterGroup.push(monsterCopy);
         }
 
-        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => m.name));
+        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => `${m.name} (${m.personality})`));
         return monsterGroup;
     }
 
@@ -323,7 +329,8 @@ class BattleSystem {
                 currentHealth: specificMonster.health,
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
                 source: 'programmed',
-                ai: new TacticalAI(this, specificMonster),
+                ai: new AdvancedTacticalAI(this, specificMonster),
+                personality: this.getRandomPersonality(),
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
@@ -358,59 +365,59 @@ class BattleSystem {
         this.updateAvailableTargets();
     }
 
-placeMonstersOnGrid(monsters) {
-    // Очищаем сетку врагов
-    this.battleGrid.enemies = [null, null, null, null, null, null];
-    
-    // Разделяем монстров по типу атаки
-    const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
-    const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
-    
-    console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
-    
-    // ПРИОРИТЕТЫ ДЛЯ ВРАГОВ:
-    // Ближний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
-    // Дальний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
-    
-    const priorityPositions = [2, 0, 4, 1, 3, 5]; // Позиции 3, 1, 5, 2, 4, 6
-    
-    // Сначала размещаем монстров ближнего боя по приоритету
-    meleeMonsters.forEach((monster, index) => {
-        let position;
-        if (index < priorityPositions.length) {
-            position = priorityPositions[index];
-        } else {
-            // Если монстров больше 6, размещаем в оставшихся позициях
-            position = this.findFirstEmptyPosition();
-        }
+    placeMonstersOnGrid(monsters) {
+        // Очищаем сетку врагов
+        this.battleGrid.enemies = [null, null, null, null, null, null];
         
-        this.placeMonsterAtPosition(monster, position, 'front');
-    });
-    
-    // Затем размещаем монстров дальнего боя по приоритету
-    rangedMonsters.forEach((monster, index) => {
-        let position;
+        // Разделяем монстров по типу атаки
+        const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
+        const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
         
-        // Ищем первую доступную позицию по приоритету
-        for (const pos of priorityPositions) {
-            if (!this.battleGrid.enemies[pos]) {
-                position = pos;
-                break;
+        console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
+        
+        // ПРИОРИТЕТЫ ДЛЯ ВРАГОВ:
+        // Ближний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+        // Дальний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+        
+        const priorityPositions = [2, 0, 4, 1, 3, 5]; // Позиции 3, 1, 5, 2, 4, 6
+        
+        // Сначала размещаем монстров ближнего боя по приоритету
+        meleeMonsters.forEach((monster, index) => {
+            let position;
+            if (index < priorityPositions.length) {
+                position = priorityPositions[index];
+            } else {
+                // Если монстров больше 6, размещаем в оставшихся позициях
+                position = this.findFirstEmptyPosition();
             }
-        }
+            
+            this.placeMonsterAtPosition(monster, position, 'front');
+        });
         
-        // Если все приоритетные позиции заняты, берем первую свободную
-        if (position === undefined) {
-            position = this.findFirstEmptyPosition();
-        }
+        // Затем размещаем монстров дальнего боя по приоритету
+        rangedMonsters.forEach((monster, index) => {
+            let position;
+            
+            // Ищем первую доступную позицию по приоритету
+            for (const pos of priorityPositions) {
+                if (!this.battleGrid.enemies[pos]) {
+                    position = pos;
+                    break;
+                }
+            }
+            
+            // Если все приоритетные позиции заняты, берем первую свободную
+            if (position === undefined) {
+                position = this.findFirstEmptyPosition();
+            }
+            
+            this.placeMonsterAtPosition(monster, position, 'back');
+        });
         
-        this.placeMonsterAtPosition(monster, position, 'back');
-    });
-    
-    console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
-        u ? `${u.data.name} (${u.row})` : 'empty'
-    ));
-}
+        console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
+            u ? `${u.data.name} (${u.row})` : 'empty'
+        ));
+    }
 
     placeMonsterAtPosition(monster, position, row) {
         this.battleGrid.enemies[position] = {
@@ -431,20 +438,20 @@ placeMonstersOnGrid(monsters) {
         return 0;
     }
 
- getRowByPosition(position) {
-    // Для врагов: 
-    // Позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
-    // Позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
-    const backRowPositions = [0, 2, 4];  // Позиции 1, 3, 5
-    const frontRowPositions = [1, 3, 5]; // Позиции 2, 4, 6
-    
-    // Если монстр ближнего боя стоит в заднем ряду или дальнего боя в переднем,
-    // определяем ряд по фактической позиции
-    if (frontRowPositions.includes(position)) return 'front';
-    if (backRowPositions.includes(position)) return 'back';
-    
-    return 'front'; // fallback
-}
+    getRowByPosition(position) {
+        // Для врагов: 
+        // Позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
+        // Позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
+        const backRowPositions = [0, 2, 4];  // Позиции 1, 3, 5
+        const frontRowPositions = [1, 3, 5]; // Позиции 2, 4, 6
+        
+        // Если монстр ближнего боя стоит в заднем ряду или дальнего боя в переднем,
+        // определяем ряд по фактической позиции
+        if (frontRowPositions.includes(position)) return 'front';
+        if (backRowPositions.includes(position)) return 'back';
+        
+        return 'front'; // fallback
+    }
 
     getAllyRowByPosition(position) {
         // Для союзников: позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
@@ -719,6 +726,7 @@ placeMonstersOnGrid(monsters) {
                 <div class="enemy-panel-header">
                     <span class="enemy-name">${monster.data.name}</span>
                     <span class="enemy-row">${monster.row === 'front' ? '🥊 Передний' : '🏹 Задний'}</span>
+                    <span class="enemy-personality">${this.getPersonalityIcon(monster.data.personality)}</span>
                 </div>
                 <div class="enemy-panel-stats">
                     <div class="stat-row">
@@ -737,6 +745,17 @@ placeMonstersOnGrid(monsters) {
                 </div>
             </div>
         `).join('');
+    }
+
+    getPersonalityIcon(personality) {
+        const icons = {
+            aggressive: '⚔️',
+            defensive: '🛡️',
+            tactical: '🎯',
+            healer: '❤️',
+            unpredictable: '🎲'
+        };
+        return icons[personality] || '❓';
     }
 
     handlePlayerAction(action) {
@@ -930,8 +949,8 @@ placeMonstersOnGrid(monsters) {
         const monsterUnit = monsters[index];
         const monster = monsterUnit.data;
         
-        const tacticalAI = new TacticalAI(this, monster);
-        const action = tacticalAI.decideAction();
+        // Используем продвинутый ИИ для принятия решения
+        const action = monster.ai.decideAction();
         
         monster.currentAction = action;
         monster.ap -= this.actionsCost[action];
@@ -1872,47 +1891,350 @@ placeMonstersOnGrid(monsters) {
     }
 }
 
-class TacticalAI {
+class AdvancedTacticalAI {
     constructor(battleSystem, monster) {
         this.bs = battleSystem;
         this.monster = monster;
+        this.personality = this.getMonsterPersonality();
+        this.lastPlayerAction = null;
+        this.playerComboCount = 0;
+        this.playerComboType = null;
+        this.consecutivePlayerBlocks = 0;
+        this.lastActions = [];
+    }
+
+    // 🎭 ТИПЫ ЛИЧНОСТИ МОНСТРОВ
+    getMonsterPersonality() {
+        const personalities = {
+            aggressive: { attack: 0.7, defense: 0.1, heal: 0.1, utility: 0.1 },
+            defensive: { attack: 0.3, defense: 0.5, heal: 0.1, utility: 0.1 },
+            tactical: { attack: 0.4, defense: 0.3, heal: 0.2, utility: 0.1 },
+            healer: { attack: 0.2, defense: 0.2, heal: 0.5, utility: 0.1 },
+            unpredictable: { attack: 0.4, defense: 0.2, heal: 0.2, utility: 0.2 }
+        };
+        
+        return personalities[this.monster.personality] || personalities.tactical;
+    }
+
+    decideAction() {
+        const context = this.analyzeBattleContext();
+        const availableActions = this.getAvailableActions();
+        
+        // 🎯 ОЦЕНКА КАЖДОГО ДЕЙСТВИЯ ПО 100-БАЛЛЬНОЙ ШКАЛЕ
+        const actionScores = {};
+        
+        availableActions.forEach(action => {
+            let score = 0;
+            
+            // БАЗОВЫЕ ПРЕДПОЧТЕНИЯ ПО ЛИЧНОСТИ
+            score += this.personality[this.getActionType(action)] * 40;
+            
+            // СТРАТЕГИЧЕСКИЕ ФАКТОРЫ
+            score += this.evaluateStrategicValue(action, context);
+            
+            // РЕАКЦИЯ НА ДЕЙСТВИЯ ИГРОКА
+            score += this.evaluateCounterPlay(action, context);
+            
+            // РИСКИ И ВОЗМОЖНОСТИ
+            score += this.evaluateRiskReward(action, context);
+            
+            // СЛУЧАЙНЫЙ ФАКТОР ДЛЯ НЕПРЕДСКАЗУЕМОСТИ
+            score += (Math.random() * 20) - 10;
+            
+            actionScores[action] = Math.max(0, Math.min(100, score));
+        });
+
+        console.log(`🧠 ${this.monster.name} (${this.monster.personality}) оценки действий:`, actionScores);
+        
+        const selectedAction = this.selectBestAction(actionScores, availableActions);
+        this.lastActions.push(selectedAction);
+        if (this.lastActions.length > 3) this.lastActions.shift();
+        
+        return selectedAction;
+    }
+
+    analyzeBattleContext() {
+        const hero = this.bs.battleGrid.allies[3];
+        const monsterUnit = this.bs.battleGrid.enemies.find(u => 
+            u && u.data.battleId === this.monster.battleId
+        );
+        
+        // ОБНОВЛЯЕМ ИНФОРМАЦИЮ О ИГРОКЕ
+        const player = this.bs.players[1];
+        this.lastPlayerAction = player.currentAction;
+        this.playerComboCount = player.combo.count;
+        this.playerComboType = player.combo.type;
+
+        // СЧИТАЕМ ПОСЛЕДОВАТЕЛЬНЫЕ БЛОКИ ИГРОКА
+        if (this.lastPlayerAction === 'block') {
+            this.consecutivePlayerBlocks++;
+        } else {
+            this.consecutivePlayerBlocks = 0;
+        }
+
+        return {
+            // 🩺 СОСТОЯНИЕ МОНСТРА
+            monsterHPPercent: this.monster.currentHealth / this.monster.health,
+            monsterAP: this.monster.ap,
+            monsterCombo: this.monster.combo,
+            
+            // 🎯 СОСТОЯНИЕ ГЕРОЯ
+            heroHPPercent: hero.currentHealth / hero.maxHealth,
+            heroStats: this.bs.getHeroStatsForBattle(),
+            
+            // ⚡ ТЕКУЩАЯ СИТУАЦИЯ
+            playerLastAction: this.lastPlayerAction,
+            playerComboCount: this.playerComboCount,
+            playerComboType: this.playerComboType,
+            consecutivePlayerBlocks: this.consecutivePlayerBlocks,
+            
+            // 📊 ОБЩАЯ СИТУАЦИЯ В БОЮ
+            totalEnemies: this.bs.battleGrid.enemies.filter(u => u && u.currentHealth > 0).length,
+            totalAllies: this.bs.battleGrid.allies.filter(u => u && u.currentHealth > 0).length,
+            
+            // 🎲 ДОПОЛНИТЕЛЬНЫЕ ФАКТОРЫ
+            battleRound: this.bs.battleRound,
+            canKillHero: this.canKillHero(hero),
+            isInDanger: this.monster.currentHealth < (this.monster.health * 0.3),
+            isVeryLowHealth: this.monster.currentHealth < (this.monster.health * 0.2)
+        };
+    }
+
+    evaluateStrategicValue(action, context) {
+        let score = 0;
+        
+        switch(action) {
+            case 'attack':
+                // 📈 Атака выгодна когда:
+                // - Мало ОД
+                // - Герой с низким HP
+                // - Нужно поддерживать комбо
+                score += (1 - context.monsterAP / 10) * 15;
+                score += (1 - context.heroHPPercent) * 20;
+                score += (context.monsterCombo.type === 'attack') ? 10 : 0;
+                break;
+                
+            case 'strongAttack':
+                // 💥 Силовая когда:
+                // - Достаточно ОД
+                // - Можно добить героя
+                // - Высокий комбо множитель
+                score += (context.monsterAP >= 3) ? 15 : -10;
+                score += context.canKillHero ? 25 : 0;
+                score += (context.monsterCombo.count >= 2 && context.monsterCombo.type === 'strongAttack') ? 15 : 0;
+                break;
+                
+            case 'crushingAttack':
+                // 💢 Сокрушительная когда:
+                // - Много ОД
+                // - Герой блокирует
+                // - Критическая ситуация
+                score += (context.monsterAP >= 4) ? 20 : -20;
+                score += (context.playerLastAction === 'block') ? 25 : 0;
+                score += (context.isInDanger && context.heroHPPercent < 0.5) ? 20 : 0;
+                break;
+                
+            case 'block':
+                // 🛡️ Блок когда:
+                // - Игрок в комбо атаки
+                // - Мало HP
+                // - Нужны дополнительные ОД
+                score += (this.isPlayerBuildingAttackCombo()) ? 30 : 0;
+                score += (context.monsterHPPercent < 0.5) ? 20 : 0;
+                score += (context.monsterAP <= 2) ? 15 : 0;
+                break;
+                
+            case 'breakBlock':
+                // ⚡ Пробитие когда:
+                // - Игрок часто блокирует
+                // - Есть комбо пробития
+                // - Герой с высоким блоком
+                score += (context.consecutivePlayerBlocks >= 2) ? 40 : 0; // КРИТИЧЕСКИ ВАЖНО: если игрок постоянно блокирует
+                score += (context.consecutivePlayerBlocks >= 1) ? 20 : 0;
+                score += (this.doesPlayerBlockOften()) ? 25 : -10;
+                score += (context.monsterCombo.type === 'breakBlock') ? 15 : 0;
+                score += (context.playerLastAction === 'block') ? 20 : 0;
+                break;
+                
+            case 'heal':
+                // ❤️ Лечение когда:
+                // - Очень мало HP
+                // - Есть комбо лечения
+                // - Герой не может убить в следующий ход
+                score += (context.monsterHPPercent < 0.4) ? 30 : -10;
+                score += (context.monsterHPPercent < 0.2) ? 40 : 0;
+                score += (context.isVeryLowHealth) ? 50 : 0; // КРИТИЧЕСКИ ВАЖНО: при очень низком HP
+                score += (context.monsterCombo.type === 'heal') ? 20 : 0;
+                score += (context.heroHPPercent < 0.3) ? -15 : 0; // Не лечиться если герой почти мертв
+                break;
+                
+            case 'rest':
+                // 🌀 Отдых когда:
+                // - Мало ОД для сильных действий
+                // - Среднее количество HP
+                // - Не критическая ситуация
+                score += (context.monsterAP <= 2) ? 25 : -10;
+                score += (context.monsterHPPercent > 0.3 && context.monsterHPPercent < 0.8) ? 15 : 0;
+                score += (context.heroHPPercent > 0.5) ? 10 : -10; // Не отдыхать если герой почти мертв
+                break;
+        }
+        
+        return score;
+    }
+
+    evaluateCounterPlay(action, context) {
+        let score = 0;
+        
+        // 🎯 РЕАКЦИЯ НА ПОСЛЕДНИЕ ДЕЙСТВИЯ ИГРОКА
+        if (context.playerLastAction === 'block') {
+            // Игрок блокирует - используем пробитие или сокрушительную
+            if (action === 'breakBlock') score += 25;
+            if (action === 'crushingAttack') score += 20;
+            if (action === 'attack') score -= 15;
+        }
+        
+        if (this.isPlayerBuildingAttackCombo()) {
+            // Игрок накапливает комбо атаки - блок или контратака
+            if (action === 'block') score += 20;
+            if (action === 'strongAttack') score += 15; // Убить быстрее чем игрок
+        }
+        
+        if (context.playerComboCount >= 3) {
+            // У игрока высокое комбо - приоритет защите или прерыванию
+            if (action === 'breakBlock') score += 10;
+            if (action === 'crushingAttack') score += 15; // Попытка закончить бой
+        }
+        
+        // 🔄 ПРЕДСКАЗАНИЕ СЛЕДУЮЩЕГО ДЕЙСТВИЯ ИГРОКА
+        const predictedPlayerAction = this.predictPlayerAction();
+        if (predictedPlayerAction === 'block' && action === 'breakBlock') score += 20;
+        if (predictedPlayerAction === 'attack' && action === 'block') score += 15;
+        
+        return score;
+    }
+
+    evaluateRiskReward(action, context) {
+        let score = 0;
+        
+        // 📊 ОЦЕНКА РИСКА/ВЫГОДЫ
+        const riskMultiplier = context.isInDanger ? 1.5 : 1.0;
+        
+        if (action === 'crushingAttack') {
+            // Высокий риск - много ОД, но может убить героя
+            score += context.canKillHero ? 30 * riskMultiplier : -15;
+        }
+        
+        if (action === 'heal') {
+            // Безопасное действие при низком HP
+            score += context.isInDanger ? 25 : -10;
+            score += context.isVeryLowHealth ? 35 : 0; // КРИТИЧЕСКИ ВАЖНО
+        }
+        
+        if (action === 'rest') {
+            // Умеренный риск - восстанавливаем ресурсы
+            score += (context.monsterAP <= 2 && !context.isInDanger) ? 20 : -5;
+        }
+        
+        // 🚨 КРИТИЧЕСКИЕ СИТУАЦИИ - избегать смерти от отраженного урона
+        if (context.consecutivePlayerBlocks >= 2 && context.monsterHPPercent < 0.4) {
+            // Игрок постоянно блокирует, а у монстра мало HP - НЕ АТАКОВАТЬ!
+            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) {
+                score -= 40; // Сильный штраф за атаку в опасной ситуации
+            }
+            if (['heal', 'rest', 'breakBlock'].includes(action)) {
+                score += 25; // Бонус за безопасные действия
+            }
+        }
+        
+        return score;
+    }
+
+    // 🎯 ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
+    
+    isPlayerBuildingAttackCombo() {
+        return ['attack', 'strongAttack', 'crushingAttack'].includes(this.playerComboType) && 
+               this.playerComboCount >= 2;
     }
     
-    decideAction() {
-        const availableActions = this.getAvailableActions();
-        if (availableActions.length === 0) return 'rest';
+    doesPlayerBlockOften() {
+        // Простая эвристика - если игрок блокировал последние 2 хода из 3
+        const recentActions = this.bs.players[1].previousActions.slice(0, 3);
+        const blockCount = recentActions.filter(a => a === 'Блок').length;
+        return blockCount >= 2;
+    }
+    
+    canKillHero(hero) {
+        const estimatedDamage = this.estimateDamage('strongAttack');
+        return estimatedDamage >= hero.currentHealth;
+    }
+    
+    estimateDamage(action) {
+        const baseDamage = this.monster.damage || 10;
+        let multiplier = 1.0;
         
-        const hero = this.bs.battleGrid.allies[3]; // Герой теперь в позиции 3
-        if (!hero) return 'rest';
-        
-        const heroHealthPercent = hero.currentHealth / hero.maxHealth;
-        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
-        
-        if (this.monster.ap >= 1 && Math.random() < 0.7) {
-            if (this.monster.ap >= 4 && Math.random() < 0.3) {
-                return 'crushingAttack';
-            }
-            if (this.monster.ap >= 2 && Math.random() < 0.4) {
-                return 'strongAttack';
-            }
-            return 'attack';
+        switch(action) {
+            case 'strongAttack': multiplier = 2.5; break;
+            case 'crushingAttack': multiplier = 7.5; break;
+            case 'breakBlock': multiplier = 0.5; break;
         }
         
-        if (monsterHealthPercent < 0.3 && Math.random() < 0.6 && availableActions.includes('heal')) {
-            return 'heal';
+        const comboMultiplier = this.bs.getComboMultiplier(action, this.monster.combo.count);
+        return Math.floor(baseDamage * multiplier * comboMultiplier);
+    }
+    
+    predictPlayerAction() {
+        // 🧠 ПРОСТОЙ AI ДЛЯ ПРЕДСКАЗАНИЯ ДЕЙСТВИЙ ИГРОКА
+        const player = this.bs.players[1];
+        const hero = this.bs.battleGrid.allies[3];
+        
+        if (hero.currentHealth < hero.maxHealth * 0.3) {
+            return 'heal'; // Игрок вероятно будет лечиться
         }
         
-        if (monsterHealthPercent < 0.5 && Math.random() < 0.4 && availableActions.includes('block')) {
+        if (player.combo.count >= 3 && player.combo.type === 'block') {
+            return 'block'; // Продолжает комбо блока
+        }
+        
+        if (player.ap >= 4 && this.monster.currentHealth > this.monster.health * 0.6) {
+            return 'crushingAttack'; // Попытка добить
+        }
+        
+        // Если игрок часто блокирует, вероятно продолжит
+        if (this.consecutivePlayerBlocks >= 1) {
             return 'block';
         }
         
-        if (this.monster.ap <= 1 && availableActions.includes('rest')) {
-            return 'rest';
-        }
-        
-        return availableActions.includes('attack') ? 'attack' : availableActions[0];
+        return 'attack'; // По умолчанию - обычная атака
     }
     
+    getActionType(action) {
+        const attackActions = ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'];
+        const defenseActions = ['block'];
+        const healActions = ['heal'];
+        const utilityActions = ['rest'];
+        
+        if (attackActions.includes(action)) return 'attack';
+        if (defenseActions.includes(action)) return 'defense';
+        if (healActions.includes(action)) return 'heal';
+        return 'utility';
+    }
+    
+    selectBestAction(actionScores, availableActions) {
+        // 🎲 ВЫБОР С ЭЛЕМЕНТОМ СЛУЧАЙНОСТИ
+        const totalScore = availableActions.reduce((sum, action) => sum + actionScores[action], 0);
+        
+        if (totalScore === 0) return availableActions[Math.floor(Math.random() * availableActions.length)]; // случайный fallback
+        
+        let random = Math.random() * totalScore;
+        
+        for (const action of availableActions) {
+            random -= actionScores[action];
+            if (random <= 0) return action;
+        }
+        
+        return availableActions[0];
+    }
+
     getAvailableActions() {
         const actions = [];
         
@@ -1925,4 +2247,4 @@ class TacticalAI {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с ИСПРАВЛЕННОЙ системой комбо и позициями");
+console.log("📦 BattleSystem полностью переписан с ПРОДВИНУТЫМ ИИ и исправленной логикой блоков");
