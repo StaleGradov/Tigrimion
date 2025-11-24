@@ -209,7 +209,7 @@
   },
   {
     "id": 17,
-    "name": "Гном-страж",
+    "name": "Гном-странник",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/dwarf_guard.jpg",
     "attackType": "melee",
     "preferredPosition": "front",
