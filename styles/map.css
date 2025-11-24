@@ -291,3 +291,46 @@
     z-index: 10;
     border: 1px solid #00ff00;
 }
+/* Стили для контролов масштабирования */
+.zoom-controls {
+    display: flex !important;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 20, 40, 0.9);
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.zoom-info {
+    color: #00ffff;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.btn-control {
+    background: rgba(0, 255, 255, 0.2);
+    border: 1px solid #00ffff;
+    color: #00ffff;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-control:hover {
+    background: rgba(0, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Курсоры для перетаскивания */
+.tactical-map-visual canvas {
+    cursor: grab;
+}
+
+.tactical-map-visual canvas:active {
+    cursor: grabbing;
+}
