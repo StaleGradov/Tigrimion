@@ -183,7 +183,7 @@
   },
   {
     "id": 15,
-    "name": "Молодой орк-воин",
+    "name": "Старый орк-воин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/young_orc_warrior.jpg",
     "attackType": "melee",
     "preferredPosition": "front",
