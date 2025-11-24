@@ -21,7 +21,7 @@ class MapSystem {
         
         this.canvas = null;
         this.ctx = null;
-        this.hexSize = 56; // Увеличено с 40 до 56 (40%)
+        this.hexSize = 40;
         this.showGrid = false;
         this.hoveredHex = null;
         
@@ -128,44 +128,7 @@ class MapSystem {
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с увеличенными размерами карты");
-    }
-
-    // МЕТОД ДЛЯ УВЕЛИЧЕНИЯ КАРТЫ
-    enlargeTacticalMap() {
-        console.log("🔄 Увеличиваем карту на 40%...");
-        
-        // Увеличиваем размер hex-ячеек
-        this.hexSize = 56; // 40 * 1.4 = 56
-        
-        // Увеличиваем размеры canvas
-        if (this.canvas) {
-            const container = document.querySelector('.tactical-map-visual');
-            if (container) {
-                const rect = container.getBoundingClientRect();
-                
-                // Увеличиваем размер canvas на 40%
-                this.canvas.width = Math.floor(rect.width * 1.4);
-                this.canvas.height = Math.floor(rect.height * 1.4);
-                
-                console.log(`📐 Новый размер canvas: ${this.canvas.width}x${this.canvas.height}`);
-            }
-        }
-        
-        // Увеличиваем размеры ячеек в текущей карте
-        if (this.currentTacticalMap) {
-            const originalCellSize = this.currentTacticalMap.cellSize || 40;
-            this.currentTacticalMap.cellSize = 56; // Увеличиваем на 40%
-            
-            console.log(`🔷 Размер ячеек увеличен: ${originalCellSize} -> ${this.currentTacticalMap.cellSize}`);
-        }
-        
-        // Пересчитываем позиционирование и перерисовываем
-        if (this.canvasInitialized) {
-            this.calculateMapPositioning();
-            this.drawTacticalMap();
-            console.log("✅ Карта увеличена на 40%");
-        }
+        console.log("✅ MapSystem инициализирован с упрощенной системой лута");
     }
 
     getLootItemById(itemId) {
@@ -426,7 +389,7 @@ class MapSystem {
             jsonData: jsonMap,
             gameData: jsonMap.game,
             renderType: 'hex',
-            cellSize: 56, // Увеличено с 40 до 56
+            cellSize: jsonMap.game.grid.cellSize || 40,
             originalCanvasWidth: originalCanvasWidth,
             originalCanvasHeight: originalCanvasHeight,
             mapType: mapType
@@ -685,7 +648,7 @@ class MapSystem {
                     tooltip: "🔥 Камин\n(Тепло и уют)"
                 }
             },
-            cellSize: 56, // Увеличено
+            cellSize: 40,
             originalCanvasWidth: 600,
             originalCanvasHeight: 600,
             mapType: 'tactical'
@@ -730,7 +693,7 @@ class MapSystem {
                     displayY: 150
                 }
             },
-            cellSize: 56, // Увеличено
+            cellSize: 40,
             originalCanvasWidth: 400,
             originalCanvasHeight: 400,
             mapType: 'local'
@@ -1322,7 +1285,7 @@ class MapSystem {
         return battleSystem.getMonsterById(cellData.monster_id);
     }
 
-      updateHeroInterface() {
+    updateHeroInterface() {
         if (window.game?.systems?.hero) {
             this.syncHeroWithOtherSystems();
             
@@ -1372,13 +1335,11 @@ class MapSystem {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // УВЕЛИЧЕННЫЕ РАЗМЕРЫ CANVAS
-        const rect = container.getBoundingClientRect();
-        this.canvas.style.width = '140%';
-        this.canvas.style.height = '140%';
+        this.canvas.style.width = '100%';
+        this.canvas.style.height = '100%';
         this.canvas.style.position = 'absolute';
-        this.canvas.style.top = '-20%';
-        this.canvas.style.left = '-20%';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
         this.canvas.style.cursor = 'pointer';
         container.appendChild(this.canvas);
 
@@ -1389,7 +1350,7 @@ class MapSystem {
         this.setupCanvasEventListeners();
         
         this.canvasInitialized = true;
-        console.log("✅ Canvas инициализирован с увеличенными размерами");
+        console.log("✅ Canvas инициализирован");
         this.drawTacticalMap();
     }
 
@@ -1401,22 +1362,18 @@ class MapSystem {
 
         const rect = container.getBoundingClientRect();
         
-        // УВЕЛИЧИВАЕМ РАЗМЕРЫ НА 40%
-        const enlargedWidth = Math.floor(rect.width * 1.4);
-        const enlargedHeight = Math.floor(rect.height * 1.4);
-        
         const editorWidth = this.currentTacticalMap.originalCanvasWidth || 1024;
         const editorHeight = this.currentTacticalMap.originalCanvasHeight || 1024;
 
         console.log(`🎯 Editor canvas: ${editorWidth}x${editorHeight}`);
-        console.log(`📐 Container: ${rect.width}x${rect.height} -> ${enlargedWidth}x${enlargedHeight}`);
+        console.log(`📐 Container: ${rect.width}x${rect.height}`);
 
-        const scaleX = enlargedWidth / editorWidth;
-        const scaleY = enlargedHeight / editorHeight;
-        const scale = Math.min(scaleX, scaleY, 1.4); // Увеличиваем максимальный scale
+        const scaleX = rect.width / editorWidth;
+        const scaleY = rect.height / editorHeight;
+        const scale = Math.min(scaleX, scaleY, 1.0);
 
-        const offsetX = (enlargedWidth - editorWidth * scale) / 2;
-        const offsetY = (enlargedHeight - editorHeight * scale) / 2;
+        const offsetX = (rect.width - editorWidth * scale) / 2;
+        const offsetY = (rect.height - editorHeight * scale) / 2;
 
         console.log(`📏 Scale: ${scale.toFixed(3)}, Offset: [${offsetX.toFixed(1)}, ${offsetY.toFixed(1)}]`);
 
@@ -1428,9 +1385,8 @@ class MapSystem {
             cell.displayY = originalY * scale + offsetY;
         });
 
-        // Устанавливаем увеличенные размеры canvas
-        this.canvas.width = enlargedWidth;
-        this.canvas.height = enlargedHeight;
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
     }
     
     setupCanvasEventListeners() {
@@ -1480,7 +1436,7 @@ class MapSystem {
     getHexAtCanvasPosition(canvasX, canvasY) {
         if (!this.currentTacticalMap) return null;
 
-        const hexSize = (this.currentTacticalMap.cellSize || 56) * 0.8; // Увеличено
+        const hexSize = (this.currentTacticalMap.cellSize || 40) * 0.8;
         
         if (this.lastHoveredHex) {
             const centerX = this.lastHoveredHex.displayX;
@@ -1729,7 +1685,7 @@ class MapSystem {
 
         const scaleX = this.canvas.width / editorWidth;
         const scaleY = this.canvas.height / editorHeight;
-        const scale = Math.min(scaleX, scaleY, 1.4); // Увеличено
+        const scale = Math.min(scaleX, scaleY, 1.0);
 
         const offsetX = (this.canvas.width - editorWidth * scale) / 2;
         const offsetY = (this.canvas.height - editorHeight * scale) / 2;
@@ -1763,7 +1719,7 @@ class MapSystem {
 
     drawHexGrid() {
         const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 56; // Увеличено
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         this.ctx.save();
         this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
@@ -1804,7 +1760,7 @@ class MapSystem {
     }
 
     drawSingleHex(cell) {
-        const hexSize = this.currentTacticalMap.cellSize || 56; // Увеличено
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         
         const centerX = cell.displayX;
         const centerY = cell.displayY;
@@ -1866,23 +1822,23 @@ class MapSystem {
 
         let symbol = '·';
         let color = '#ffffff';
-        let fontSize = 18; // Увеличено
+        let fontSize = 16;
 
         if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
             symbol = '🎯';
-            fontSize = 22; // Увеличено
+            fontSize = 20;
         } 
         else if (cell.hasLoot) {
             const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
             symbol = this.getLootSymbol(lootLevel);
             color = this.getLootColor(lootLevel);
-            fontSize = 20; // Увеличено
+            fontSize = 18;
         }
         else {
             if (cell.type === 'active' && !cell.objectType) {
                 symbol = '·';
                 color = '#ffffff';
-                fontSize = 28; // Увеличено
+                fontSize = 24;
             } else {
                 symbol = this.objectSymbols[cell.type] || '·';
                 
@@ -2002,7 +1958,7 @@ class MapSystem {
             return [];
         }
         
-        const hexSize = this.currentTacticalMap.cellSize || 56; // Увеличено
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         const geometry = this.getHexGeometry(hexSize);
         
         Object.values(this.currentTacticalMap.cells).forEach(potentialNeighbor => {
@@ -2184,8 +2140,7 @@ class MapSystem {
                 "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300},
                 "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300},
                 "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350}
-            },
-            cellSize: 56 // Увеличено
+            }
         }];
     }
 
@@ -2220,8 +2175,7 @@ class MapSystem {
             localPosition: {x: 2, y: 2},
             cells: {
                 "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100}
-            },
-            cellSize: 56 // Увеличено
+            }
         }];
     }
 
@@ -2283,26 +2237,23 @@ class MapSystem {
                 <div class="tactical-map-header">
                     <h4>${targetMap.name}</h4>
                     <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
-                    <div class="map-controls">
-                        <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                            ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                        </button>
-                        <button class="btn-control" onclick="game.systems.map.enlargeTacticalMap()">
-                            🔍 Увеличить карту
-                        </button>
-                        <button class="btn-control" onclick="game.systems.map.debugInfo()">
-                            🐛 Отладка
-                        </button>
-                        <button class="btn-control" onclick="game.systems.map.testPeacefulMovement()">
-                            🧪 Тест перемещения
-                        </button>
-                    </div>
                     <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                 </div>
                 
-                <div class="position-info">
-                    Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                    ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+                <div class="tactical-map-controls">
+                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.debugInfo()">
+                        🐛 Отладка
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.testPeacefulMovement()">
+                        🧪 Тест перемещения
+                    </button>
+                    <div class="position-info">
+                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                        ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+                    </div>
                 </div>
                 
                 <div class="tactical-map-content">
@@ -2337,9 +2288,6 @@ class MapSystem {
             try {
                 this.initCanvas();
                 this.updateMovementInfo();
-                
-                // АВТОМАТИЧЕСКОЕ УВЕЛИЧЕНИЕ КАРТЫ ПРИ ЗАГРУЗКЕ
-                setTimeout(() => this.enlargeTacticalMap(), 100);
                 
                 console.log("✅ Canvas успешно инициализирован", {
                     map: this.currentTacticalMap.name,
@@ -2513,7 +2461,7 @@ class MapSystem {
     drawSingleHexWithHighlight(hex) {
         if (!this.ctx || !hex) return;
         
-        const hexSize = this.currentTacticalMap.cellSize || 56; // Увеличено
+        const hexSize = this.currentTacticalMap.cellSize || 40;
         const centerX = hex.displayX;
         const centerY = hex.displayY;
         
@@ -2608,7 +2556,7 @@ class MapSystem {
                     displayY: 200
                 }
             },
-            cellSize: 56, // Увеличено
+            cellSize: 40,
             originalCanvasWidth: 400,
             originalCanvasHeight: 400,
             mapType: 'local'
@@ -2718,7 +2666,4 @@ class MapSystem {
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с увеличенными размерами карты");
-
-
-                         
+console.log("📦 MapSystem модуль загружен с упрощенной системой лута");
