@@ -45,114 +45,114 @@ class BattleSystem {
         console.log("✅ BattleSystem инициализирован с улучшенной групповой системой");
     }
 
-   async loadBattleData() {
-    try {
-        console.log("📥 Загружаем данные монстров...");
-        
-        const [enemiesResponse, monstersResponse] = await Promise.all([
-            fetch('data/enemies.json').catch(() => null),
-            fetch('data/monsters.json').catch(() => null)
-        ]);
-        
-        this.randomMonsters = [];
-        this.programmedMonsters = new Map();
-        
-        // ПЕРВОЕ: загружаем случайных монстров (enemies.json)
-        if (enemiesResponse && enemiesResponse.ok) {
-            this.randomMonsters = await enemiesResponse.json();
-            console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
-        } else {
-            console.error("❌ enemies.json не загружен!");
+    async loadBattleData() {
+        try {
+            console.log("📥 Загружаем данные монстров...");
+            
+            const [enemiesResponse, monstersResponse] = await Promise.all([
+                fetch('data/enemies.json').catch(() => null),
+                fetch('data/monsters.json').catch(() => null)
+            ]);
+            
             this.randomMonsters = [];
-        }
-        
-        // ВТОРОЕ: загружаем запрограммированных монстров (monsters.json)  
-        if (monstersResponse && monstersResponse.ok) {
-            const programmedMonsters = await monstersResponse.json();
-            programmedMonsters.forEach(monster => {
-                this.programmedMonsters.set(monster.id, monster);
-            });
-            console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
-        } else {
-            console.error("❌ monsters.json не загружен!");
-        }
-        
-        // ОБЪЕДИНЯЕМ: сначала случайные, потом запрограммированные
-        this.monsters = [...this.randomMonsters];
-        
-        // Добавляем запрограммированных только если они есть
-        if (this.programmedMonsters.size > 0) {
-            this.monsters.push(...Array.from(this.programmedMonsters.values()));
-        }
-        
-        console.log(`🎯 Всего монстров: ${this.monsters.length} (${this.randomMonsters.length} случайных, ${this.programmedMonsters.size} запрограммированных)`);
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Ошибка загрузки данных монстров:", error);
-        this.randomMonsters = [];
-        this.programmedMonsters = new Map();
-        this.monsters = [];
-        return false;
-    }
-}
-
-  getMonstersForCurrentMap() {
-    if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
-        console.log("🗺️ Карта не активна, используем случайных монстров");
-        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
-    }
-
-    const currentMap = window.game.systems.map.currentTacticalMap;
-    
-    // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
-    if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
-        console.log("🗺️ У карты нет своих монстров, используем случайных");
-        return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
-    }
-
-    // ФИЛЬТРУЕМ: сначала ищем в запрограммированных, потом в случайных
-    const mapMonsters = currentMap.jsonData.meta.monsters
-        .map(monsterId => {
-            // Сначала ищем в запрограммированных монстрах
-            if (this.programmedMonsters.has(monsterId)) {
-                return this.programmedMonsters.get(monsterId);
+            this.programmedMonsters = new Map();
+            
+            // ПЕРВОЕ: загружаем случайных монстров (enemies.json)
+            if (enemiesResponse && enemiesResponse.ok) {
+                this.randomMonsters = await enemiesResponse.json();
+                console.log(`✅ Загружено случайных монстров: ${this.randomMonsters.length}`);
+            } else {
+                console.error("❌ enemies.json не загружен!");
+                this.randomMonsters = [];
             }
-            // Потом в случайных
-            const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
-            if (randomMonster) {
-                return randomMonster;
+            
+            // ВТОРОЕ: загружаем запрограммированных монстров (monsters.json)  
+            if (monstersResponse && monstersResponse.ok) {
+                const programmedMonsters = await monstersResponse.json();
+                programmedMonsters.forEach(monster => {
+                    this.programmedMonsters.set(monster.id, monster);
+                });
+                console.log(`✅ Загружено запрограммированных монстров: ${programmedMonsters.length}`);
+            } else {
+                console.error("❌ monsters.json не загружен!");
             }
-            console.warn(`❌ Монстр с ID ${monsterId} не найден ни в запрограммированных, ни в случайных!`);
-            return null;
-        })
-        .filter(monster => monster !== null);
-
-    console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
-    
-    // Если для карты нет монстров, используем случайных
-    if (mapMonsters.length === 0) {
-        console.log("🗺️ Для карты нет валидных монстров, используем случайных");
-        return this.randomMonsters;
+            
+            // ОБЪЕДИНЯЕМ: сначала случайные, потом запрограммированные
+            this.monsters = [...this.randomMonsters];
+            
+            // Добавляем запрограммированных только если они есть
+            if (this.programmedMonsters.size > 0) {
+                this.monsters.push(...Array.from(this.programmedMonsters.values()));
+            }
+            
+            console.log(`🎯 Всего монстров: ${this.monsters.length} (${this.randomMonsters.length} случайных, ${this.programmedMonsters.size} запрограммированных)`);
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных монстров:", error);
+            this.randomMonsters = [];
+            this.programmedMonsters = new Map();
+            this.monsters = [];
+            return false;
+        }
     }
-    
-    return mapMonsters;
-}
 
-   getRandomMonsterForMovement() {
-    const mapMonsters = this.getMonstersForCurrentMap();
-    
-    if (mapMonsters.length === 0) {
-        console.error("❌ Нет монстров для текущей карты!");
-        // Возвращаем случайного монстра из общих
-        return this.randomMonsters[0] || null;
+    getMonstersForCurrentMap() {
+        if (!window.game.systems.map || !window.game.systems.map.currentTacticalMap) {
+            console.log("🗺️ Карта не активна, используем случайных монстров");
+            return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+        }
+
+        const currentMap = window.game.systems.map.currentTacticalMap;
+        
+        // ПРОВЕРЯЕМ ПРОСТОЙ МАССИВ В МЕТА
+        if (!currentMap.jsonData?.meta?.monsters || !Array.isArray(currentMap.jsonData.meta.monsters)) {
+            console.log("🗺️ У карты нет своих монстров, используем случайных");
+            return this.randomMonsters; // ВАЖНО: возвращаем только случайных!
+        }
+
+        // ФИЛЬТРУЕМ: сначала ищем в запрограммированных, потом в случайных
+        const mapMonsters = currentMap.jsonData.meta.monsters
+            .map(monsterId => {
+                // Сначала ищем в запрограммированных монстрах
+                if (this.programmedMonsters.has(monsterId)) {
+                    return this.programmedMonsters.get(monsterId);
+                }
+                // Потом в случайных
+                const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
+                if (randomMonster) {
+                    return randomMonster;
+                }
+                console.warn(`❌ Монстр с ID ${monsterId} не найден ни в запрограммированных, ни в случайных!`);
+                return null;
+            })
+            .filter(monster => monster !== null);
+
+        console.log(`🗺️ Загружено монстров для карты "${currentMap.name}": ${mapMonsters.length}`);
+        
+        // Если для карты нет монстров, используем случайных
+        if (mapMonsters.length === 0) {
+            console.log("🗺️ Для карты нет валидных монстров, используем случайных");
+            return this.randomMonsters;
+        }
+        
+        return mapMonsters;
     }
-    
-    const randomIndex = Math.floor(Math.random() * mapMonsters.length);
-    const monster = mapMonsters[randomIndex];
-    console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
-    return monster;
-}
+
+    getRandomMonsterForMovement() {
+        const mapMonsters = this.getMonstersForCurrentMap();
+        
+        if (mapMonsters.length === 0) {
+            console.error("❌ Нет монстров для текущей карты!");
+            // Возвращаем случайного монстра из общих
+            return this.randomMonsters[0] || null;
+        }
+        
+        const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+        const monster = mapMonsters[randomIndex];
+        console.log(`🎲 Выбран монстр для карты: ${monster.name} (шанс: ${(1/mapMonsters.length*100).toFixed(1)}%)`);
+        return monster;
+    }
 
     getMonsterById(monsterId) {
         if (this.programmedMonsters.has(monsterId)) {
@@ -358,59 +358,59 @@ class BattleSystem {
         this.updateAvailableTargets();
     }
 
-placeMonstersOnGrid(monsters) {
-    // Очищаем сетку врагов
-    this.battleGrid.enemies = [null, null, null, null, null, null];
-    
-    // Разделяем монстров по типу атаки
-    const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
-    const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
-    
-    console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
-    
-    // ПРИОРИТЕТЫ ДЛЯ ВРАГОВ:
-    // Ближний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
-    // Дальний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
-    
-    const priorityPositions = [2, 0, 4, 1, 3, 5]; // Позиции 3, 1, 5, 2, 4, 6
-    
-    // Сначала размещаем монстров ближнего боя по приоритету
-    meleeMonsters.forEach((monster, index) => {
-        let position;
-        if (index < priorityPositions.length) {
-            position = priorityPositions[index];
-        } else {
-            // Если монстров больше 6, размещаем в оставшихся позициях
-            position = this.findFirstEmptyPosition();
-        }
+    placeMonstersOnGrid(monsters) {
+        // Очищаем сетку врагов
+        this.battleGrid.enemies = [null, null, null, null, null, null];
         
-        this.placeMonsterAtPosition(monster, position, 'front');
-    });
-    
-    // Затем размещаем монстров дальнего боя по приоритету
-    rangedMonsters.forEach((monster, index) => {
-        let position;
+        // Разделяем монстров по типу атаки
+        const meleeMonsters = monsters.filter(m => m.attackType === 'melee');
+        const rangedMonsters = monsters.filter(m => m.attackType === 'ranged');
         
-        // Ищем первую доступную позицию по приоритету
-        for (const pos of priorityPositions) {
-            if (!this.battleGrid.enemies[pos]) {
-                position = pos;
-                break;
+        console.log(`🎯 Размещение: ${meleeMonsters.length} ближних, ${rangedMonsters.length} дальних`);
+        
+        // ПРИОРИТЕТЫ ДЛЯ ВРАГОВ:
+        // Ближний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+        // Дальний бой: 3 → 1 → 5 → 2 → 4 → 6 (индексы: 2 → 0 → 4 → 1 → 3 → 5)
+        
+        const priorityPositions = [2, 0, 4, 1, 3, 5]; // Позиции 3, 1, 5, 2, 4, 6
+        
+        // Сначала размещаем монстров ближнего боя по приоритету
+        meleeMonsters.forEach((monster, index) => {
+            let position;
+            if (index < priorityPositions.length) {
+                position = priorityPositions[index];
+            } else {
+                // Если монстров больше 6, размещаем в оставшихся позициях
+                position = this.findFirstEmptyPosition();
             }
-        }
+            
+            this.placeMonsterAtPosition(monster, position, 'front');
+        });
         
-        // Если все приоритетные позиции заняты, берем первую свободную
-        if (position === undefined) {
-            position = this.findFirstEmptyPosition();
-        }
+        // Затем размещаем монстров дальнего боя по приоритету
+        rangedMonsters.forEach((monster, index) => {
+            let position;
+            
+            // Ищем первую доступную позицию по приоритету
+            for (const pos of priorityPositions) {
+                if (!this.battleGrid.enemies[pos]) {
+                    position = pos;
+                    break;
+                }
+            }
+            
+            // Если все приоритетные позиции заняты, берем первую свободную
+            if (position === undefined) {
+                position = this.findFirstEmptyPosition();
+            }
+            
+            this.placeMonsterAtPosition(monster, position, 'back');
+        });
         
-        this.placeMonsterAtPosition(monster, position, 'back');
-    });
-    
-    console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
-        u ? `${u.data.name} (${u.row})` : 'empty'
-    ));
-}
+        console.log('🎯 Итоговое размещение монстров:', this.battleGrid.enemies.map((u, i) => 
+            u ? `${u.data.name} (${u.row})` : 'empty'
+        ));
+    }
 
     placeMonsterAtPosition(monster, position, row) {
         this.battleGrid.enemies[position] = {
@@ -431,20 +431,20 @@ placeMonstersOnGrid(monsters) {
         return 0;
     }
 
- getRowByPosition(position) {
-    // Для врагов: 
-    // Позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
-    // Позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
-    const backRowPositions = [0, 2, 4];  // Позиции 1, 3, 5
-    const frontRowPositions = [1, 3, 5]; // Позиции 2, 4, 6
-    
-    // Если монстр ближнего боя стоит в заднем ряду или дальнего боя в переднем,
-    // определяем ряд по фактической позиции
-    if (frontRowPositions.includes(position)) return 'front';
-    if (backRowPositions.includes(position)) return 'back';
-    
-    return 'front'; // fallback
-}
+    getRowByPosition(position) {
+        // Для врагов: 
+        // Позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
+        // Позиции 2,4,6 (индексы 1,3,5) - ПЕРЕДНИЙ ряд (ближний бой)
+        const backRowPositions = [0, 2, 4];  // Позиции 1, 3, 5
+        const frontRowPositions = [1, 3, 5]; // Позиции 2, 4, 6
+        
+        // Если монстр ближнего боя стоит в заднем ряду или дальнего боя в переднем,
+        // определяем ряд по фактической позиции
+        if (frontRowPositions.includes(position)) return 'front';
+        if (backRowPositions.includes(position)) return 'back';
+        
+        return 'front'; // fallback
+    }
 
     getAllyRowByPosition(position) {
         // Для союзников: позиции 1,3,5 (индексы 0,2,4) - ЗАДНИЙ ряд (дальний бой)
@@ -879,8 +879,19 @@ placeMonstersOnGrid(monsters) {
 
         this.addBattleLog(`🎯 Вы используете: ${this.getActionName(action)} (комбо x${player.combo.count})`);
         
+        // 🛡️ БЛОК - ДОБАВЛЯЕМ БОНУСНЫЕ ОД СРАЗУ
+        if (action === 'block') {
+            const blockAPBonus = this.getBlockAPBonus(player.combo.count);
+            player.ap += blockAPBonus;
+            this.addBattleLog(`🛡️ Блок дает +${blockAPBonus} ОД!`);
+        }
+        
         if (action === 'heal') {
             this.executeHealAction(player);
+        }
+        
+        if (action === 'rest') {
+            this.executeRestAction(player);
         }
         
         setTimeout(() => {
@@ -904,6 +915,33 @@ placeMonstersOnGrid(monsters) {
         
         // Обновляем полоску здоровья героя
         this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
+    }
+
+    // 🌀 ДОБАВЛЯЕМ МЕТОД ДЛЯ ОТДЫХА
+    executeRestAction(player) {
+        const hero = this.battleGrid.allies[3];
+        if (!hero) return;
+        
+        const restEfficiency = this.getRestEfficiency(player.combo.count);
+        
+        // Добавляем бонусные ОД
+        player.ap += restEfficiency.ap;
+        
+        // Лечение от отдыха
+        if (restEfficiency.healPercent > 0) {
+            const healAmount = Math.floor(hero.maxHealth * restEfficiency.healPercent);
+            const actualHeal = Math.min(healAmount, hero.maxHealth - hero.currentHealth);
+            
+            if (actualHeal > 0) {
+                hero.currentHealth += actualHeal;
+                this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
+                this.addBattleLog(`🌀 Вы отдыхаете (+${restEfficiency.ap} ОД) и восстанавливаете ${actualHeal} HP`);
+            } else {
+                this.addBattleLog(`🌀 Вы отдыхаете (+${restEfficiency.ap} ОД)`);
+            }
+        } else {
+            this.addBattleLog(`🌀 Вы отдыхаете (+${restEfficiency.ap} ОД)`);
+        }
     }
 
     executeEnemyTurns() {
@@ -976,7 +1014,12 @@ placeMonstersOnGrid(monsters) {
                 const isHeroBlocking = this.players[1].currentAction === 'block';
                 let finalDamage = damage;
                 
-                if (isHeroBlocking) {
+                // 🛡️ СОКРУШИТЕЛЬНАЯ АТАКА МОНСТРА ИГНОРИРУЕТ БЛОК
+                if (monster.currentAction === 'crushingAttack') {
+                    finalDamage = Math.max(1, damage - heroStats.armor);
+                    message = `💢 ${monster.name} использует сокрушительную атаку, игнорирующую защиту, и наносит ${finalDamage} урона!`;
+                }
+                else if (isHeroBlocking) {
                     const blockEfficiency = this.getBlockEfficiency(this.players[1].combo.count);
                     const blockedDamage = Math.floor(damage * blockEfficiency);
                     finalDamage = Math.max(1, damage - blockedDamage - heroStats.armor);
@@ -1305,15 +1348,16 @@ placeMonstersOnGrid(monsters) {
         }
     }
 
-    // 🎯 СИСТЕМА КОМБО
+    // 🎯 СИСТЕМА КОМБО - ИСПРАВЛЕННАЯ
     getComboMultiplier(action, comboCount) {
         const baseMultipliers = {
-            attack: [1.0, 2.0, 4.0, 8.0],
-            strongAttack: [2.5, 5.0, 10.0, 20.0],
-            crushingAttack: [7.5, 15.0, 30.0, 60.0],
-            breakBlock: [0.5, 1.0, 1.5, 2.0],
-            block: [0.5, 0.75, 1.0, 1.0],
-            heal: [0.10, 0.20, 0.40, 0.80]
+            attack: [1.0, 2.0, 4.0, 8.0],           // x1:100%, x2:200%, x3:400%, x4:800%
+            strongAttack: [2.5, 5.0, 10.0, 20.0],   // x1:250%, x2:500%, x3:1000%, x4:2000%
+            crushingAttack: [7.5, 15.0, 30.0, 60.0], // x1:750%, x2:1500%, x3:3000%, x4:6000%
+            breakBlock: [0.5, 1.0, 1.5, 2.0],       // Без блока: 50%, 100%, 150%, 200%
+            block: [0.5, 0.75, 1.0, 1.0],           // Снижение урона: 50%, 75%, 100%, 100%
+            heal: [0.10, 0.20, 0.40, 0.80],         // Лечение: 10%, 20%, 40%, 80%
+            rest: [0.05, 0.10, 0.15, 0.20]          // Отдых лечение: 5%, 10%, 15%, 20%
         };
         
         const index = Math.min(comboCount - 1, 3);
@@ -1322,31 +1366,38 @@ placeMonstersOnGrid(monsters) {
 
     getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
         if (!enemyHasBlock) {
+            // Без блока противника: 50%, 100%, 150%, 200%
             const multipliers = [0.5, 1.0, 1.5, 2.0];
             return multipliers[Math.min(comboCount - 1, 3)];
         } else {
+            // С блоком противника: 200%, 300%, 400%, 500%
             const multipliers = [2.0, 3.0, 4.0, 5.0];
             return multipliers[Math.min(comboCount - 1, 3)];
         }
     }
 
     getBlockEfficiency(comboCount) {
+        // Снижение урона: 50%, 75%, 100%, 100%
         const efficiencies = [0.5, 0.75, 1.0, 1.0];
         return efficiencies[Math.min(comboCount - 1, 3)];
     }
 
     getBlockReflectionPercent(comboCount) {
+        // Отражение урона: 25%, 50%, 75%, 100%
         const reflectionPercents = [0.25, 0.50, 0.75, 1.0];
         return reflectionPercents[Math.min(comboCount - 1, 3)];
     }
 
     getBlockAPBonus(comboCount) {
+        // Бонус ОД: +1, +2, +3, +4
         const apBonuses = [1, 2, 3, 4];
         return apBonuses[Math.min(comboCount - 1, 3)];
     }
 
     getRestEfficiency(comboCount) {
+        // Бонус ОД: +1, +2, +3, +4
         const apGain = [1, 2, 3, 4];
+        // Лечение: 5%, 10%, 15%, 20%
         const healPercent = [0.05, 0.10, 0.15, 0.20];
         
         return {
@@ -1356,6 +1407,7 @@ placeMonstersOnGrid(monsters) {
     }
 
     getHealEfficiency(comboCount) {
+        // Лечение: 10%, 20%, 40%, 80%
         const efficiencies = [0.10, 0.20, 0.40, 0.80];
         return efficiencies[Math.min(comboCount - 1, 3)];
     }
@@ -1436,11 +1488,22 @@ placeMonstersOnGrid(monsters) {
                 
                 const isMonsterBlocking = targetUnit.data.currentAction === 'block';
                 
-                if (playerAction === 'breakBlock' && isMonsterBlocking) {
-                    const breakMultiplier = this.getBreakBlockMultiplier(player.combo.count, true);
+                // 🛡️ СОКРУШИТЕЛЬНАЯ АТАКА ИГНОРИРУЕТ БЛОК
+                if (playerAction === 'crushingAttack') {
+                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                    this.addBattleLog(`💢 Сокрушительная атака игнорирует защиту ${targetUnit.data.name} и наносит ${finalDamage} урона!`);
+                }
+                else if (playerAction === 'breakBlock') {
+                    const breakMultiplier = this.getBreakBlockMultiplier(player.combo.count, isMonsterBlocking);
                     finalDamage = Math.floor(damage * breakMultiplier);
-                    this.addBattleLog(`🎯 Вы пробиваете защиту ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
-                } else if (isMonsterBlocking && playerAction !== 'breakBlock') {
+                    
+                    if (isMonsterBlocking) {
+                        this.addBattleLog(`⚡ Вы пробиваете защиту ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
+                    } else {
+                        this.addBattleLog(`⚡ Вы используете пробитие по ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
+                    }
+                }
+                else if (isMonsterBlocking) {
                     const blockEfficiency = this.getBlockEfficiency(targetUnit.data.combo.count);
                     const blockedDamage = Math.floor(damage * blockEfficiency);
                     finalDamage = Math.max(1, damage - blockedDamage - (targetUnit.data.armor || 0));
@@ -1449,7 +1512,7 @@ placeMonstersOnGrid(monsters) {
                     const reflectedDamage = Math.floor(damage * reflectionPercent);
                     
                     if (reflectedDamage > 0) {
-                        const hero = this.battleGrid.allies[3]; // Герой теперь в позиции 3
+                        const hero = this.battleGrid.allies[3];
                         const oldHeroHealth = hero.currentHealth;
                         hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
                         this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
@@ -1462,7 +1525,8 @@ placeMonstersOnGrid(monsters) {
                     } else {
                         this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона!`);
                     }
-                } else {
+                }
+                else {
                     finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
                     this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
                 }
