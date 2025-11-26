@@ -11,7 +11,8 @@ class ModuleLoader {
             'battle-system',
             'equipment-system',
             'hero-system',
-            'map-system'
+            'map-system',
+            'shop-system' // ← ДОБАВЛЕНА ShopSystem
         ];
     }
 
@@ -128,7 +129,8 @@ class ModuleLoader {
             'battle-system': 'BattleSystem',
             'equipment-system': 'EquipmentSystem',
             'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem'
+            'map-system': 'MapSystem',
+            'shop-system': 'ShopSystem' // ← ДОБАВЛЕНА ShopSystem
         };
         return typeof window[classMap[moduleName]] !== 'undefined';
     }
@@ -140,7 +142,8 @@ class ModuleLoader {
             'battle-system': 'BattleSystem',
             'equipment-system': 'EquipmentSystem',
             'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem'
+            'map-system': 'MapSystem',
+            'shop-system': 'ShopSystem' // ← ДОБАВЛЕНА ShopSystem
         };
         return classMap[moduleName] || moduleName;
     }
@@ -289,6 +292,7 @@ class SafeHeroGame {
             this.systems.equipment = new EquipmentSystem();
             this.systems.hero = new HeroSystem();
             this.systems.map = new MapSystem();
+            this.systems.shop = new ShopSystem(); // ← ДОБАВЛЕНА ShopSystem
             
             console.log("✅ Все системы инициализированы");
             
@@ -636,6 +640,11 @@ selectHero(heroId) {
         this.systems.map.setCurrentHero(hero);
     }
     
+    // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизируем с ShopSystem
+    if (this.systems.shop) {
+        this.systems.shop.setCurrentHero(hero);
+    }
+    
     console.log(`🎯 Выбран герой: ${hero.name}`);
     
     // ⭐ СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
@@ -925,13 +934,28 @@ fixHealthBarLayout() {
                 break;
 
             case 'shop':
-                // Показываем магазин через систему экипировки с сохранением текущей категории
-                const currentCategory = this.systems.equipment.currentCategory || 'all';
-                const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
-                container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
-                
-                // Добавляем обработчики для предметов магазина
-                setTimeout(() => this.attachShopItemHandlers(), 100);
+                // ⭐ ОБНОВЛЕННЫЙ КОД: Используем ShopSystem вместо EquipmentSystem
+                if (this.systems.shop) {
+                    // Создаем тестовую клетку магазина для демонстрации
+                    const testMerchantCell = {
+                        col: 4,
+                        row: 4,
+                        shopName: "Оружейная Борга",
+                        merchantName: "Борг Железный",
+                        shopItems: [1, 2, 3, 15, 22, 34], // ID предметов из твоего примера
+                        restockTimer: 86400000
+                    };
+                    this.systems.shop.openShop(testMerchantCell);
+                } else {
+                    // Fallback на старую систему если ShopSystem не доступна
+                    console.warn("ShopSystem не доступна, используем EquipmentSystem");
+                    const currentCategory = this.systems.equipment.currentCategory || 'all';
+                    const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+                    container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+                    
+                    // Добавляем обработчики для предметов магазина
+                    setTimeout(() => this.attachShopItemHandlers(), 100);
+                }
                 break;
         }
 
