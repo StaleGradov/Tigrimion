@@ -1146,36 +1146,20 @@ class BattleSystem {
         this.updateMonsterPanel(monster.battleId);
     }
 
-    calculateMonsterDamage(monster, monsterUnit) {
-        let baseDamage = monster.damage || 10;
-        let multiplier = 1.0;
-        
-        switch(monster.currentAction) {
-            case 'strongAttack':
-                multiplier = 2.5;
-                break;
-            case 'crushingAttack':
-                multiplier = 7.5;
-                break;
-            case 'breakBlock':
-                multiplier = 0.5;
-                break;
-            default:
-                multiplier = 1.0;
-        }
-        
-        const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
-        multiplier *= comboMultiplier;
-        
-        const variation = 0.9 + Math.random() * 0.2;
-        multiplier *= variation;
-        
-        const finalDamage = Math.floor(baseDamage * multiplier);
-        
-        console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, тип=${monster.currentAction}, комбо=${comboMultiplier}x, вариация=${variation.toFixed(2)}, итого=${finalDamage}`);
-        
-        return finalDamage;
-    }
+  calculateMonsterDamage(monster, monsterUnit) {
+    let baseDamage = monster.damage || 10;
+    
+    // ✅ ТЕПЕРЬ ПРАВИЛЬНО: используем ТОЛЬКО комбо-множитель
+    const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
+    let damage = Math.floor(baseDamage * comboMultiplier);
+    
+    const variation = 0.9 + Math.random() * 0.2;
+    damage = Math.floor(damage * variation);
+    
+    console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, комбо=${comboMultiplier}x, вариация=${variation.toFixed(2)}, итого=${damage}`);
+    
+    return damage;
+}
 
     updateHealthBar(side, position, currentHealth, maxHealth) {
         const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
@@ -1348,21 +1332,20 @@ class BattleSystem {
         }
     }
 
-    // 🎯 СИСТЕМА КОМБО - ИСПРАВЛЕННАЯ
-    getComboMultiplier(action, comboCount) {
-        const baseMultipliers = {
-            attack: [1.0, 2.0, 4.0, 8.0],           // x1:100%, x2:200%, x3:400%, x4:800%
-            strongAttack: [2.5, 5.0, 10.0, 20.0],   // x1:250%, x2:500%, x3:1000%, x4:2000%
-            crushingAttack: [7.5, 15.0, 30.0, 60.0], // x1:750%, x2:1500%, x3:3000%, x4:6000%
-            breakBlock: [0.5, 1.0, 1.5, 2.0],       // Без блока: 50%, 100%, 150%, 200%
-            block: [0.5, 0.75, 1.0, 1.0],           // Снижение урона: 50%, 75%, 100%, 100%
-            heal: [0.10, 0.20, 0.40, 0.80],         // Лечение: 10%, 20%, 40%, 80%
-            rest: [0.05, 0.10, 0.15, 0.20]          // Отдых лечение: 5%, 10%, 15%, 20%
-        };
-        
-        const index = Math.min(comboCount - 1, 3);
-        return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
-    }
+  getComboMultiplier(action, comboCount) {
+    const baseMultipliers = {
+        attack: [1.0, 2.0, 4.0, 8.0],           // x1:100%, x2:200%, x3:400%, x4:800%
+        strongAttack: [2.5, 5.0, 10.0, 20.0],   // x1:250%, x2:500%, x3:1000%, x4:2000%
+        crushingAttack: [7.5, 15.0, 30.0, 60.0], // x1:750%, x2:1500%, x3:3000%, x4:6000%
+        breakBlock: [0.5, 1.0, 1.5, 2.0],       // Без блока: 50%, 100%, 150%, 200%
+        block: [0.5, 0.75, 1.0, 1.0],           // Снижение урона: 50%, 75%, 100%, 100%
+        heal: [0.10, 0.20, 0.40, 0.80],         // Лечение: 10%, 20%, 40%, 80%
+        rest: [0.05, 0.10, 0.15, 0.20]          // Отдых лечение: 5%, 10%, 15%, 20%
+    };
+    
+    const index = Math.min(comboCount - 1, 3);
+    return baseMultipliers[action] ? baseMultipliers[action][index] : 1.0;
+}
 
     getBreakBlockMultiplier(comboCount, enemyHasBlock = false) {
         if (!enemyHasBlock) {
@@ -1467,90 +1450,87 @@ class BattleSystem {
         }, 300);
     }
 
-    executeTacticalDamage(playerAction) {
-        if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
-            const targetUnit = this.battleGrid.enemies[this.selectedTarget];
-            if (targetUnit && targetUnit.currentHealth > 0) {
-                const heroStats = this.getHeroStatsForBattle();
-                const player = this.players[1];
+   // ИСПРАВЛЕННЫЙ РАСЧЕТ УРОНА
+executeTacticalDamage(playerAction) {
+    if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
+        const targetUnit = this.battleGrid.enemies[this.selectedTarget];
+        if (targetUnit && targetUnit.currentHealth > 0) {
+            const heroStats = this.getHeroStatsForBattle();
+            const player = this.players[1];
+            
+            let damage = heroStats.damage;
+            
+            // ✅ ТЕПЕРЬ ПРАВИЛЬНО: используем ТОЛЬКО комбо-множитель
+            const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
+            damage = Math.floor(damage * comboMultiplier);
+            
+            let finalDamage = damage;
+            
+            const isMonsterBlocking = targetUnit.data.currentAction === 'block';
+            
+            // 🛡️ СОКРУШИТЕЛЬНАЯ АТАКА ИГНОРИРУЕТ БЛОК
+            if (playerAction === 'crushingAttack') {
+                finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                this.addBattleLog(`💢 Сокрушительная атака игнорирует защиту ${targetUnit.data.name} и наносит ${finalDamage} урона!`);
+            }
+            else if (playerAction === 'breakBlock') {
+                const breakMultiplier = this.getBreakBlockMultiplier(player.combo.count, isMonsterBlocking);
+                finalDamage = Math.floor(damage * breakMultiplier);
                 
-                let damage = heroStats.damage;
-                let baseMultiplier = 1.0;
-                
-                if (playerAction === 'strongAttack') baseMultiplier = 2.5;
-                if (playerAction === 'crushingAttack') baseMultiplier = 7.5;
-                if (playerAction === 'breakBlock') baseMultiplier = 0.5;
-                
-                const comboMultiplier = this.getComboMultiplier(playerAction, player.combo.count);
-                damage = Math.floor(damage * baseMultiplier * comboMultiplier);
-                
-                let finalDamage = damage;
-                
-                const isMonsterBlocking = targetUnit.data.currentAction === 'block';
-                
-                // 🛡️ СОКРУШИТЕЛЬНАЯ АТАКА ИГНОРИРУЕТ БЛОК
-                if (playerAction === 'crushingAttack') {
-                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
-                    this.addBattleLog(`💢 Сокрушительная атака игнорирует защиту ${targetUnit.data.name} и наносит ${finalDamage} урона!`);
+                if (isMonsterBlocking) {
+                    this.addBattleLog(`⚡ Вы пробиваете защиту ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
+                } else {
+                    this.addBattleLog(`⚡ Вы используете пробитие по ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
                 }
-                else if (playerAction === 'breakBlock') {
-                    const breakMultiplier = this.getBreakBlockMultiplier(player.combo.count, isMonsterBlocking);
-                    finalDamage = Math.floor(damage * breakMultiplier);
+            }
+            else if (isMonsterBlocking) {
+                const blockEfficiency = this.getBlockEfficiency(targetUnit.data.combo.count);
+                const blockedDamage = Math.floor(damage * blockEfficiency);
+                finalDamage = Math.max(1, damage - blockedDamage - (targetUnit.data.armor || 0));
+                
+                const reflectionPercent = this.getBlockReflectionPercent(targetUnit.data.combo.count);
+                const reflectedDamage = Math.floor(damage * reflectionPercent);
+                
+                if (reflectedDamage > 0) {
+                    const hero = this.battleGrid.allies[3];
+                    const oldHeroHealth = hero.currentHealth;
+                    hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
+                    this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
                     
-                    if (isMonsterBlocking) {
-                        this.addBattleLog(`⚡ Вы пробиваете защиту ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
-                    } else {
-                        this.addBattleLog(`⚡ Вы используете пробитие по ${targetUnit.data.name} и наносите ${finalDamage} урона!`);
+                    this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона и отражает ${reflectedDamage} урона!`);
+                    
+                    if (hero.currentHealth <= 0) {
+                        this.addBattleLog(`💀 Вы погибаете от отраженного урона!`);
                     }
+                } else {
+                    this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона!`);
                 }
-                else if (isMonsterBlocking) {
-                    const blockEfficiency = this.getBlockEfficiency(targetUnit.data.combo.count);
-                    const blockedDamage = Math.floor(damage * blockEfficiency);
-                    finalDamage = Math.max(1, damage - blockedDamage - (targetUnit.data.armor || 0));
-                    
-                    const reflectionPercent = this.getBlockReflectionPercent(targetUnit.data.combo.count);
-                    const reflectedDamage = Math.floor(damage * reflectionPercent);
-                    
-                    if (reflectedDamage > 0) {
-                        const hero = this.battleGrid.allies[3];
-                        const oldHeroHealth = hero.currentHealth;
-                        hero.currentHealth = Math.max(0, hero.currentHealth - reflectedDamage);
-                        this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
-                        
-                        this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона и отражает ${reflectedDamage} урона!`);
-                        
-                        if (hero.currentHealth <= 0) {
-                            this.addBattleLog(`💀 Вы погибаете от отраженного урона!`);
-                        }
-                    } else {
-                        this.addBattleLog(`🎯 Вы атакуете, но ${targetUnit.data.name} блокирует ${blockedDamage} урона!`);
-                    }
-                }
-                else {
-                    finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
-                    this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
-                }
-                
-                const oldHealth = targetUnit.currentHealth;
-                targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
-                
-                console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
-                console.log(`🎯 ДО атаки: ${oldHealth}, ПОСЛЕ: ${targetUnit.currentHealth}`);
-                
-                this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
-                
-                setTimeout(() => {
-                    this.debugHealthBars();
-                }, 100);
-                
-                if (targetUnit.currentHealth <= 0) {
-                    targetUnit.currentHealth = 0;
-                    this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
-                    this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
-                }
+            }
+            else {
+                finalDamage = Math.max(1, damage - (targetUnit.data.armor || 0));
+                this.addBattleLog(`🎯 Вы наносите ${finalDamage} урона ${targetUnit.data.name}!`);
+            }
+            
+            const oldHealth = targetUnit.currentHealth;
+            targetUnit.currentHealth = Math.max(0, targetUnit.currentHealth - finalDamage);
+            
+            console.log(`🎯 ИГРОК АТАКУЕТ: ${targetUnit.data.name}, урон: ${finalDamage}`);
+            console.log(`🎯 ДО атаки: ${oldHealth}, ПОСЛЕ: ${targetUnit.currentHealth}`);
+            
+            this.updateHealthBar('enemies', this.selectedTarget, targetUnit.currentHealth, targetUnit.maxHealth);
+            
+            setTimeout(() => {
+                this.debugHealthBars();
+            }, 100);
+            
+            if (targetUnit.currentHealth <= 0) {
+                targetUnit.currentHealth = 0;
+                this.addBattleLog(`💀 ${targetUnit.data.name} повержен!`);
+                this.updateHealthBar('enemies', this.selectedTarget, 0, targetUnit.maxHealth);
             }
         }
     }
+}
 
     updateTacticalUI() {
         const playerAP = document.getElementById('playerAP');
