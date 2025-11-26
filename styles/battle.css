@@ -31,12 +31,27 @@
 /* ========== ПОЛНОЭКРАННЫЙ ИНТЕРФЕЙС БОЯ С СЕТКОЙ 6x6 ========== */
 .battle-screen-fullscreen {
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: 
+        linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(22, 33, 62, 0.85) 100%),
+        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover fixed;
     padding: 0.5rem;
     color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+}
+
+/* Затемнение для читаемости */
+.battle-screen-fullscreen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: -1;
 }
 
 .battle-header {
@@ -50,6 +65,8 @@
     border: 1px solid #4b5563;
     width: 100%;
     max-width: 2400px;
+    position: relative;
+    z-index: 1;
 }
 
 .header-left {
@@ -102,6 +119,8 @@
     margin: 0 auto;
     padding: 0 10px;
     height: 85vh;
+    position: relative;
+    z-index: 1;
 }
 
 /* Левая панель - действия героя */
@@ -141,6 +160,28 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Фон для области отрядов */
+.grid-side-compact::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        rgba(0, 0, 0, 0.6),
+        url('/images/battle-backgrounds/unit-area-bg.jpg') center/cover;
+    z-index: 0;
+    border-radius: 10px;
+}
+
+.grid-side-compact > * {
+    position: relative;
+    z-index: 1;
 }
 
 /* Специфичные цвета для каждой стороны */
@@ -148,8 +189,20 @@
     border-color: #3b82f6;
 }
 
+.allies-side::before {
+    background: 
+        rgba(59, 130, 246, 0.1),
+        url('/images/battle-backgrounds/allies-area-bg.jpg') center/cover;
+}
+
 .enemies-side {
     border-color: #ef4444;
+}
+
+.enemies-side::before {
+    background: 
+        rgba(239, 68, 68, 0.1),
+        url('/images/battle-backgrounds/enemies-area-bg.jpg') center/cover;
 }
 
 .side-title {
@@ -174,14 +227,16 @@
     box-sizing: border-box;
 }
 
-/* УВЕЛИЧЕННЫЕ ЯЧЕЙКИ СЕТКИ */
+/* УВЕЛИЧЕННЫЕ ЯЧЕЙКИ СЕТКИ С ФОНАМИ */
 .grid-cell-fullscreen {
     min-height: 280px;
     padding: 0;
     border-width: 2px;
     position: relative;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.6);
+    background: 
+        rgba(0, 0, 0, 0.6),
+        url('/images/battle-backgrounds/occupied-cell-bg.jpg') center/cover;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -191,35 +246,48 @@
     box-sizing: border-box;
 }
 
+/* ФОНЫ ДЛЯ ПУСТЫХ ЯЧЕЕК */
 .grid-cell-fullscreen.empty {
-    opacity: 0.3;
+    opacity: 0.7;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: 
+        rgba(0, 0, 0, 0.4),
+        url('/images/battle-backgrounds/empty-cell-bg.jpg') center/cover;
 }
 
 .empty-slot {
     font-size: 3rem;
     opacity: 0.5;
+    color: rgba(255, 255, 255, 0.3);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .grid-cell-fullscreen.selectable {
     cursor: pointer;
     border-color: #00ff00 !important;
     animation: pulse-glow 2s infinite;
-    background: rgba(0, 255, 0, 0.15) !important;
+    background: 
+        rgba(0, 255, 0, 0.15),
+        url('/images/battle-backgrounds/occupied-cell-bg.jpg') center/cover !important;
 }
 
 .grid-cell-fullscreen.selectable:hover {
     transform: scale(1.03);
     box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
-    background: rgba(0, 255, 0, 0.2) !important;
+    background: 
+        rgba(0, 255, 0, 0.2),
+        url('/images/battle-backgrounds/occupied-cell-bg.jpg') center/cover !important;
 }
 
 .grid-cell-fullscreen.dead {
     opacity: 0.5;
     filter: grayscale(1);
     position: relative;
+    background: 
+        rgba(0, 0, 0, 0.7),
+        url('/images/battle-backgrounds/dead-cell-bg.jpg') center/cover;
 }
 
 .dead-overlay {
@@ -229,6 +297,7 @@
     transform: translate(-50%, -50%);
     font-size: 4rem;
     z-index: 10;
+    color: rgba(255, 0, 0, 0.7);
 }
 
 @keyframes pulse-glow {
@@ -341,6 +410,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 /* УВЕЛИЧЕННЫЙ КОНТЕЙНЕР ИЗОБРАЖЕНИЯ */
@@ -357,6 +427,7 @@
     justify-content: center;
     padding: 4px;
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* УВЕЛИЧЕННОЕ ИЗОБРАЖЕНИЕ ЮНИТА */
@@ -368,6 +439,8 @@
     object-fit: contain !important;
     border-radius: 6px 6px 0 0;
     transition: transform 0.3s ease;
+    z-index: 2;
+    position: relative;
 }
 
 .unit-image-container:hover .unit-image {
@@ -584,7 +657,7 @@
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* ========== СТИЛИ ДЛЯ ВСПЛЫВАЮЩИХ ПОДСКАЗОК ========== */
+/* ========== СТИЛИ ДЛЯ ВСПЫВАЮЩИХ ПОДСКАЗОК ========== */
 .tactical-btn {
     position: relative;
     cursor: help;
@@ -835,6 +908,8 @@
     border: 1px solid #4b5563;
     width: 100%;
     max-width: 2400px;
+    position: relative;
+    z-index: 1;
 }
 
 .battle-hint-fullscreen {
@@ -881,6 +956,8 @@
     width: 100%;
     max-width: 2400px;
     margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 1;
 }
 
 .battle-log-fullscreen h4 {
@@ -932,6 +1009,8 @@
     border: 3px solid #f59e0b;
     box-shadow: 0 0 40px rgba(245, 158, 11, 0.5);
     animation: modalAppear 0.5s ease-out;
+    position: relative;
+    z-index: 1001;
 }
 
 .battle-result-modal.defeat {
