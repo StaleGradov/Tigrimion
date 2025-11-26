@@ -1,11 +1,30 @@
+"use strict";
+
 class ShopSystem {
     constructor() {
         this.shops = new Map(); // shopId -> Shop
         this.currentShop = null;
+        this.currentHero = null;
+        
+        console.log("✅ ShopSystem инициализирована");
+    }
+
+    // Установка текущего героя
+    setCurrentHero(hero) {
+        this.currentHero = hero;
+        console.log(`🎯 Установлен герой для магазина: ${hero?.name || 'нет'}`);
     }
 
     // Открытие магазина при заходе на клетку
     openShop(merchantCell) {
+        if (!this.currentHero) {
+            console.error("❌ Герой не выбран для магазина!");
+            if (window.game) {
+                window.game.showNotification("❌ Сначала выберите героя!", 'error');
+            }
+            return;
+        }
+
         const shopId = merchantCell.shopId || `shop_${merchantCell.col}_${merchantCell.row}`;
         let shop = this.shops.get(shopId);
         
@@ -49,12 +68,16 @@ class ShopSystem {
         itemIds.forEach(itemId => {
             const item = equipmentSystem.getItemById(itemId);
             if (item) {
-                items.push({...item}); // Копируем предмет
+                items.push({
+                    ...item,
+                    originalId: item.id // Сохраняем оригинальный ID
+                });
             } else {
                 console.warn(`⚠️ Предмет с ID ${itemId} не найден`);
             }
         });
 
+        console.log(`🛒 Загружено ${items.length} предметов для магазина`);
         return items;
     }
 
@@ -67,8 +90,6 @@ class ShopSystem {
     }
 
     generateShopHTML(shop) {
-        const hero = window.game?.systems?.map?.currentHero || window.game?.currentHero;
-        
         return `
             <div class="shop-overlay">
                 <div class="shop-header">
@@ -90,11 +111,13 @@ class ShopSystem {
                     
                     <div class="player-section">
                         <div class="player-gold">
-                            💰 Золото: <strong>${hero?.gold || 0}</strong>
+                            💰 Золото: <strong>${this.currentHero?.gold || 0}</strong>
                         </div>
                         <div class="player-inventory-preview">
                             <h5>🎒 Ваш инвентарь</h5>
-                            <!-- Можно добавить превью инвентаря -->
+                            <div class="inventory-slots">
+                                ${this.generateInventoryPreview()}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -109,12 +132,11 @@ class ShopSystem {
     }
 
     generateItemHTML(item) {
-        const hero = window.game?.systems?.map?.currentHero || window.game?.currentHero;
-        const canAfford = hero && hero.gold >= item.price;
+        const canAfford = this.currentHero && this.currentHero.gold >= item.price;
         const itemClass = canAfford ? 'shop-item affordable' : 'shop-item expensive';
         
         return `
-            <div class="${itemClass}" onclick="game.systems.shop.buyItem(${item.id})" 
+            <div class="${itemClass}" onclick="game.systems.shop.buyItem(${item.originalId || item.id})" 
                  title="${item.description || ''}">
                 <img src="${item.image}" alt="${item.name}" class="item-image" 
                      onerror="this.src='https://via.placeholder.com/50x50/333/fff?text=?'">
@@ -124,6 +146,7 @@ class ShopSystem {
                     <div class="item-stats">
                         ${item.fixed_damage ? `⚔️ ${item.fixed_damage} ` : ''}
                         ${item.fixed_armor ? `🛡️ ${item.fixed_armor} ` : ''}
+                        ${item.fixed_health ? `❤️ ${item.fixed_health} ` : ''}
                     </div>
                     <div class="item-price ${canAfford ? 'can-buy' : 'no-money'}">
                         💰 ${item.price} 
@@ -133,6 +156,40 @@ class ShopSystem {
                 </div>
             </div>
         `;
+    }
+
+    generateInventoryPreview() {
+        if (!this.currentHero || !this.currentHero.inventory) {
+            return '<div class="empty-inventory">Инвентарь пуст</div>';
+        }
+
+        const equipmentSystem = window.game?.systems?.equipment;
+        if (!equipmentSystem) {
+            return '<div class="empty-inventory">Система инвентаря недоступна</div>';
+        }
+
+        let previewHTML = '';
+        const maxPreviewItems = 8;
+        
+        // Показываем первые несколько предметов
+        for (let i = 0; i < Math.min(this.currentHero.inventory.length, maxPreviewItems); i++) {
+            const itemId = this.currentHero.inventory[i];
+            const item = equipmentSystem.getItemById(itemId);
+            if (item) {
+                previewHTML += `
+                    <div class="inventory-slot" title="${item.name}">
+                        <img src="${item.image}" alt="${item.name}" class="slot-image">
+                    </div>
+                `;
+            }
+        }
+
+        // Заполняем пустые слоты
+        for (let i = this.currentHero.inventory.length; i < maxPreviewItems; i++) {
+            previewHTML += '<div class="inventory-slot empty"></div>';
+        }
+
+        return previewHTML;
     }
 
     getItemTypeName(type) {
@@ -159,36 +216,55 @@ class ShopSystem {
     }
 
     buyItem(itemId) {
-        const item = this.currentShop.inventory.find(i => i.id === itemId);
-        if (!item) return;
+        if (!this.currentShop) {
+            console.error("❌ Нет активного магазина");
+            return;
+        }
 
-        const hero = window.game?.systems?.map?.currentHero || window.game?.currentHero;
-        if (!hero) {
+        // Находим предмет в инвентаре магазина
+        const item = this.currentShop.inventory.find(i => 
+            (i.originalId || i.id) === itemId
+        );
+        
+        if (!item) {
+            console.error("❌ Предмет не найден в магазине");
+            return;
+        }
+
+        if (!this.currentHero) {
             window.game?.showNotification("❌ Герой не выбран!", 'error');
             return;
         }
 
-        if (hero.gold >= item.price) {
-            const equipmentSystem = window.game.systems.equipment;
+        if (this.currentHero.gold >= item.price) {
+            const equipmentSystem = window.game?.systems?.equipment;
             if (equipmentSystem && equipmentSystem.addItemToHero) {
-                const itemAdded = equipmentSystem.addItemToHero(hero, item.id);
+                const itemAdded = equipmentSystem.addItemToHero(this.currentHero, item.originalId || item.id);
                 if (itemAdded) {
-                    hero.gold -= item.price;
+                    // Вычитаем золото
+                    this.currentHero.gold -= item.price;
                     
-                    // Убираем предмет из магазина (или оставляем для перезаполнения)
-                    // this.currentShop.inventory = this.currentShop.inventory.filter(i => i.id !== itemId);
+                    // Обновляем героя в других системах
+                    if (window.game?.systems?.map) {
+                        window.game.systems.map.syncHeroWithOtherSystems();
+                    }
                     
+                    // Обновляем интерфейс
                     this.updateShopInterface();
                     
                     if (window.game) {
                         window.game.showNotification(`✅ Куплено: ${item.name}`, 'success');
                     }
+                    
+                    console.log(`🛒 Герой купил: ${item.name} за ${item.price} золота`);
                 } else {
-                    window.game.showNotification("🎒 Недостаточно места в инвентаре!", 'error');
+                    window.game?.showNotification("🎒 Недостаточно места в инвентаре!", 'error');
                 }
+            } else {
+                window.game?.showNotification("❌ Система инвентаря недоступна", 'error');
             }
         } else {
-            window.game.showNotification("💰 Недостаточно золота!", 'error');
+            window.game?.showNotification("💰 Недостаточно золота!", 'error');
         }
     }
 
@@ -208,4 +284,42 @@ class ShopSystem {
     leaveShop() {
         this.closeShop();
     }
+
+    // Перезаполнение магазина
+    restockShop(shopId) {
+        const shop = this.shops.get(shopId);
+        if (!shop) return;
+
+        // Проверяем, прошло ли достаточно времени для перезаполнения
+        const timeSinceLastRestock = Date.now() - shop.lastRestock;
+        if (timeSinceLastRestock < shop.restockTimer) {
+            console.log(`⏰ Магазин ${shop.name} еще не готов к перезаполнению`);
+            return;
+        }
+
+        // Здесь можно добавить логику перезаполнения
+        // Например, обновить список товаров
+        shop.lastRestock = Date.now();
+        console.log(`🔄 Магазин ${shop.name} перезаполнен`);
+    }
+
+    // Отладочная информация
+    debugInfo() {
+        console.group("🛒 ShopSystem Debug Info");
+        console.log("Текущий магазин:", this.currentShop?.name || 'нет');
+        console.log("Всего магазинов:", this.shops.size);
+        console.log("Текущий герой:", this.currentHero?.name || 'нет');
+        console.log("Золото героя:", this.currentHero?.gold || 0);
+        
+        if (this.currentShop) {
+            console.log("Товары в магазине:", this.currentShop.inventory.length);
+            this.currentShop.inventory.forEach(item => {
+                console.log(`  - ${item.name} (${item.price} золота)`);
+            });
+        }
+        console.groupEnd();
+    }
 }
+
+window.ShopSystem = ShopSystem;
+console.log("📦 ShopSystem модуль загружен");
