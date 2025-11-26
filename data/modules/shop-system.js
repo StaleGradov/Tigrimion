@@ -84,8 +84,11 @@ class ShopSystem {
     showShopInterface(shop) {
         const shopHTML = this.generateShopHTML(shop);
         
-        if (window.game) {
-            window.game.showOverlay('shop', shopHTML);
+        // ⭐ ИСПРАВЛЕНИЕ: Не вызываем game.showOverlay() чтобы избежать рекурсии
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.innerHTML = shopHTML;
+            container.style.display = 'block';
         }
     }
 
@@ -163,24 +166,28 @@ class ShopSystem {
             return '<div class="empty-inventory">Инвентарь пуст</div>';
         }
 
-        const equipmentSystem = window.game?.systems?.equipment;
-        if (!equipmentSystem) {
-            return '<div class="empty-inventory">Система инвентаря недоступна</div>';
-        }
-
+        // ⭐ ИСПРАВЛЕНИЕ: Простой превью без рекурсивных вызовов
         let previewHTML = '';
         const maxPreviewItems = 8;
         
         // Показываем первые несколько предметов
         for (let i = 0; i < Math.min(this.currentHero.inventory.length, maxPreviewItems); i++) {
             const itemId = this.currentHero.inventory[i];
-            const item = equipmentSystem.getItemById(itemId);
-            if (item) {
-                previewHTML += `
-                    <div class="inventory-slot" title="${item.name}">
-                        <img src="${item.image}" alt="${item.name}" class="slot-image">
-                    </div>
-                `;
+            const equipmentSystem = window.game?.systems?.equipment;
+            if (equipmentSystem) {
+                const item = equipmentSystem.getItemById(itemId);
+                if (item) {
+                    previewHTML += `
+                        <div class="inventory-slot" title="${item.name}">
+                            <img src="${item.image}" alt="${item.name}" class="slot-image"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    `;
+                } else {
+                    previewHTML += '<div class="inventory-slot unknown">?</div>';
+                }
+            } else {
+                previewHTML += '<div class="inventory-slot unknown">?</div>';
             }
         }
 
@@ -276,8 +283,10 @@ class ShopSystem {
 
     closeShop() {
         this.currentShop = null;
-        if (window.game) {
-            window.game.hideOverlay();
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.style.display = 'none';
+            container.innerHTML = '';
         }
     }
 
