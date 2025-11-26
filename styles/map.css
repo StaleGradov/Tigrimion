@@ -1,29 +1,9 @@
 /* ========== СТИЛИ ДЛЯ КАРТ ========== */
 .map-container {
-    background: 
-        rgba(30, 41, 59, 0.9),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
+    background: rgba(30, 41, 59, 0.9);
     border-radius: 10px;
     padding: 1.5rem;
     border: 1px solid #475569;
-    position: relative;
-    overflow: hidden;
-}
-
-.map-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(30, 41, 59, 0.85);
-    z-index: 0;
-}
-
-.map-container > * {
-    position: relative;
-    z-index: 1;
 }
 
 .map-grid {
@@ -43,28 +23,11 @@
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 1.2em;
-    position: relative;
-    overflow: hidden;
-}
-
-.map-cell::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        rgba(0, 0, 0, 0.3),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
-    z-index: -1;
-    opacity: 0.5;
 }
 
 .map-cell:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
 }
 
 .map-cell.player-cell {
@@ -73,40 +36,16 @@
     animation: pulse 2s infinite;
 }
 
-.map-cell.player-cell::before {
-    background: 
-        rgba(74, 222, 128, 0.2),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
-}
-
 .map-cell.global-cell {
     background: rgba(59, 130, 246, 0.2);
-}
-
-.map-cell.global-cell::before {
-    background: 
-        rgba(59, 130, 246, 0.1),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
 }
 
 .map-cell.local-cell {
     background: rgba(139, 92, 246, 0.2);
 }
 
-.map-cell.local-cell::before {
-    background: 
-        rgba(139, 92, 246, 0.1),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
-}
-
 .map-cell.tactical-cell {
     background: rgba(76, 201, 240, 0.2);
-}
-
-.map-cell.tactical-cell::before {
-    background: 
-        rgba(76, 201, 240, 0.1),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
 }
 
 .map-info {
@@ -114,9 +53,8 @@
     color: #cbd5e1;
     font-size: 0.9rem;
     padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .map-error {
@@ -133,26 +71,6 @@
     max-width: 1200px !important;
     width: 95vw !important;
     max-height: 90vh !important;
-    background: 
-        rgba(0, 0, 0, 0.9),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover fixed;
-    position: relative;
-}
-
-.tigrimion-tactical-map::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 0;
-}
-
-.tigrimion-tactical-map > * {
-    position: relative;
-    z-index: 1;
 }
 
 .tactical-map-header {
@@ -160,16 +78,14 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.95);
+    background: rgba(0, 20, 40, 0.9);
     border-bottom: 1px solid #00ffff;
-    backdrop-filter: blur(10px);
 }
 
 .tactical-map-header h4 {
     color: #00ffff;
     font-size: 1.4rem;
     margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .tactical-map-content {
@@ -181,9 +97,7 @@
 .tactical-map-visual {
     flex: 1;
     position: relative;
-    background: 
-        #000000,
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
+    background: #000000;
     border: 2px solid #00ffff;
     border-radius: 15px;
     overflow: hidden;
@@ -192,27 +106,10 @@
     min-height: 500px;
 }
 
-.tactical-map-visual::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 0;
-}
-
-.tactical-map-visual > * {
-    position: relative;
-    z-index: 1;
-}
-
 .tactical-map-info {
     padding: 1rem 1.5rem;
-    background: rgba(0, 20, 40, 0.95);
+    background: rgba(0, 20, 40, 0.9);
     border-top: 1px solid #00ffff;
-    backdrop-filter: blur(10px);
 }
 
 .map-description {
@@ -234,7 +131,6 @@
     border: 1px solid #ffff00;
     margin: 0.8rem 0;
     text-align: center;
-    backdrop-filter: blur(5px);
 }
 
 .movement-info span {
@@ -250,7 +146,6 @@
     border-radius: 8px;
     padding: 1rem;
     margin-top: 1rem;
-    backdrop-filter: blur(5px);
 }
 
 .map-editor-stats {
@@ -293,65 +188,33 @@
     max-height: 95vh !important;
     width: 95vw !important;
     height: 95vh !important;
-    background: 
-        #000000,
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover fixed !important;
+    background: #000000 !important;
     margin: 2vh auto !important;
     border-radius: 12px;
     border: 1px solid #00ffff;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    position: relative;
-}
-
-.overlay-content.tactical-map-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 0;
-    border-radius: 12px;
-}
-
-.overlay-content.tactical-map-overlay > * {
-    position: relative;
-    z-index: 1;
 }
 
 .tactical-map-content {
     display: flex;
     flex-direction: column;
     height: calc(95vh - 100px) !important;
-    background: transparent;
+    background: #000000;
 }
 
 .tactical-map-visual {
     flex: 1;
     position: relative;
-    background: 
-        #000000,
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover;
+    background: #000000;
     border: 2px solid #00ffff;
     border-radius: 15px;
     overflow: hidden;
     margin: 1rem;
     box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
     min-height: 500px;
-}
-
-.tactical-map-visual::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 0;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
 }
 
 /* Убедимся, что canvas занимает всю область */
@@ -360,8 +223,6 @@
     height: 100% !important;
     display: block;
     background: transparent;
-    position: relative;
-    z-index: 1;
 }
 
 /* Убираем любые трансформации и переходы */
@@ -393,7 +254,6 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
     font-size: 0.9rem;
-    backdrop-filter: blur(10px);
 }
 
 .player-position, .map-stats, .movement-info {
@@ -431,7 +291,6 @@
     z-index: 10;
     border: 1px solid #00ff00;
 }
-
 /* ========== CSS МАСШТАБИРОВАНИЕ КАРТЫ ========== */
 .tactical-map-visual {
     position: absolute !important;
@@ -444,18 +303,12 @@
     border: none !important;
     border-radius: 0 !important;
     overflow: visible !important;
-    background: 
-        #000000,
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover !important;
+    background: #000000 !important;
     
     /* Центрируем содержимое */
     display: flex !important;
     justify-content: center !important;
     align-items: center !important;
-}
-
-.tactical-map-visual::before {
-    background: rgba(0, 0, 0, 0.8) !important;
 }
 
 /* Canvas - фиксированный логический размер */
@@ -472,9 +325,7 @@
     max-width: none !important;
     max-height: none !important;
     border: 2px solid #00ffff !important;
-    background: 
-        rgba(26, 26, 46, 0.8),
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover !important;
+    background: #1a1a2e !important;
 }
 
 /* Перезаписываем оверлей чтобы дать больше места */
@@ -485,9 +336,7 @@
     height: 100vh !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    background: 
-        #000000,
-        url('https://github.com/StaleGradov/Tigrimion/blob/GAME/images/locations/69.jpg?raw=true') center/cover fixed !important;
+    background: #000000 !important;
 }
 
 /* Уменьшаем хедер чтобы освободить место */
@@ -497,10 +346,9 @@
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
-    background: rgba(0, 20, 40, 0.95) !important;
+    background: rgba(0, 20, 40, 0.9) !important;
     padding: 0.5rem 1rem !important;
     height: 50px !important;
-    backdrop-filter: blur(10px);
 }
 
 .tactical-map-controls {
@@ -509,10 +357,9 @@
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
-    background: rgba(0, 20, 40, 0.9) !important;
+    background: rgba(0, 20, 40, 0.7) !important;
     padding: 0.3rem 1rem !important;
     height: 40px !important;
-    backdrop-filter: blur(10px);
 }
 
 .tactical-map-info {
@@ -521,17 +368,16 @@
     left: 0 !important;
     right: 0 !important;
     z-index: 1000 !important;
-    background: rgba(0, 20, 40, 0.95) !important;
+    background: rgba(0, 20, 40, 0.9) !important;
     padding: 0.5rem 1rem !important;
     height: 60px !important;
-    backdrop-filter: blur(10px);
 }
 
 .tactical-map-content {
     display: flex !important;
     flex-direction: column !important;
     height: 100vh !important;
-    background: transparent !important;
+    background: #000000 !important;
 }
 
 /* Убираем все ограничивающие трансформации */
@@ -546,28 +392,4 @@
     border-radius: 4px;
     font-size: 0.8rem;
     border: 1px solid rgba(0, 255, 255, 0.3);
-    backdrop-filter: blur(5px);
-}
-
-/* Дополнительные стили для лучшей читаемости на фоне */
-.tactical-map-header h4,
-.map-description,
-.player-position,
-.map-stats,
-.movement-info,
-.map-editor-stat span {
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-/* Анимация пульсации для игровой клетки */
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(74, 222, 128, 0.8);
-    }
-    100% {
-        box-shadow: 0 0 5px rgba(74, 222, 128, 0.5);
-    }
 }
