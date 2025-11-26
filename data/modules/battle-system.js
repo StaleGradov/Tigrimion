@@ -560,39 +560,28 @@ class BattleSystem {
                             </div>
                         </div>
                         
-                        <!-- СИСТЕМА ФЛЯГИ -->
-                        <div class="flask-container" id="flaskContainer">
-                            <div class="flask-header">
-                                <span class="flask-title">💧 Фляга</span>
-                                <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
-                            </div>
-                            <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
-                            <div class="flask-bar">
-                                ${Array.from({length: this.flask.capacity}, (_, i) => 
-                                    `<div class="flask-charge ${i < this.flask.currentCharges ? 'active' : 'empty'}" 
-                                          style="background-color: ${flaskEffect.color}"></div>`
-                                ).join('')}
-                            </div>
-                            <div class="flask-actions">
-                                <button class="tactical-btn flask-btn" id="useFlaskBtn" 
-                                        onclick="game.systems.battle.useFlask(1)">
-                                    <span class="btn-icon">💧</span>
-                                    <span class="btn-text">Выпить 1 глоток</span>
-                                </button>
-                                <button class="tactical-btn flask-btn" 
-                                        onclick="game.systems.battle.useFlask(3)" 
-                                        ${this.flask.currentCharges < 3 ? 'disabled' : ''}>
-                                    <span class="btn-icon">💧💧💧</span>
-                                    <span class="btn-text">Выпить 3 глотка</span>
-                                </button>
-                                <button class="tactical-btn flask-btn" 
-                                        onclick="game.systems.battle.useFlask(10)" 
-                                        ${this.flask.currentCharges < 10 ? 'disabled' : ''}>
-                                    <span class="btn-icon">💧💧💧💧💧</span>
-                                    <span class="btn-text">Выпить всё</span>
-                                </button>
-                            </div>
-                        </div>
+<!-- СИСТЕМА ФЛЯГИ -->
+<div class="flask-container" id="flaskContainer">
+    <div class="flask-header">
+        <span class="flask-title">💧 Фляга</span>
+        <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
+    </div>
+    <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
+    <div class="flask-bar">
+        ${Array.from({length: this.flask.capacity}, (_, i) => 
+            `<div class="flask-charge ${i < this.flask.currentCharges ? 'active' : 'empty'}" 
+                  style="${i < this.flask.currentCharges ? `background-color: ${flaskEffect.color}` : ''}"></div>`
+        ).join('')}
+    </div>
+    <div class="flask-actions">
+        <button class="tactical-btn flask-btn" id="useFlaskBtn" 
+                onclick="game.systems.battle.useFlask(1)">
+            <span class="btn-icon">💧</span>
+            <span class="btn-text">Выпить глоток</span>
+        </button>
+    </div>
+</div>
+
                         
                         <div class="tactical-actions">
                             <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
