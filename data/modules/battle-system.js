@@ -443,39 +443,86 @@ class BattleSystem {
         return [0, 2, 4].includes(position) ? 'back' : 'front';
     }
 
-    // СИСТЕМА ФЛЯГИ
-    useFlask(sips = 1) {
-        if (this.flask.currentCharges <= 0) {
-            this.addBattleLog("❌ Фляга пуста!");
-            return false;
-        }
-
-        const hero = this.battleGrid.allies[3];
-        if (!hero || hero.currentHealth <= 0) {
-            this.addBattleLog("❌ Герой не может использовать флягу!");
-            return false;
-        }
-
-        const actualSips = Math.min(sips, this.flask.currentCharges);
-        const effect = this.flask.contentEffects[this.flask.content];
-        const healPerSip = Math.floor(hero.maxHealth * effect.healPercent);
-        const totalHeal = healPerSip * actualSips;
-        const actualHeal = Math.min(totalHeal, hero.maxHealth - hero.currentHealth);
-
-        if (actualHeal <= 0) {
-            this.addBattleLog("❌ Здоровье уже максимальное!");
-            return false;
-        }
-
-        hero.currentHealth += actualHeal;
-        this.flask.currentCharges -= actualSips;
-
-        this.addBattleLog(`💧 Использовано ${actualSips} глотков из фляги! +${actualHeal} HP`);
-        this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
-        this.updateFlaskUI();
-
-        return true;
+  useFlask() {
+    if (this.flask.currentCharges <= 0) {
+        this.addBattleLog("❌ Фляга пуста!");
+        return false;
     }
+
+    const hero = this.battleGrid.allies[3];
+    if (!hero || hero.currentHealth <= 0) {
+        this.addBattleLog("❌ Герой не может использовать флягу!");
+        return false;
+    }
+
+    const effect = this.flask.contentEffects[this.flask.content];
+    const healAmount = Math.floor(hero.maxHealth * effect.healPercent);
+    const actualHeal = Math.min(healAmount, hero.maxHealth - hero.currentHealth);
+
+    if (actualHeal <= 0) {
+        this.addBattleLog("❌ Здоровье уже максимальное!");
+        return false;
+    }
+
+    // Сохраняем старое значение для анимации
+    const oldCharges = this.flask.currentCharges;
+    
+    hero.currentHealth += actualHeal;
+    this.flask.currentCharges -= 1;
+
+    this.addBattleLog(`💧 Выпит глоток из фляги! +${actualHeal} HP`);
+    this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
+    
+    // ОБНОВЛЯЕМ ВИЗУАЛЬНОЕ ОТОБРАЖЕНИЕ ЗАРЯДОВ С ЗАДЕРЖКОЙ ДЛЯ АНИМАЦИИ
+    setTimeout(() => {
+        this.updateFlaskChargesDisplay();
+    }, 100);
+
+    console.log(`💧 Flask used: ${oldCharges} -> ${this.flask.currentCharges} charges`);
+    return true;
+}
+
+    // НОВЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ ВИЗУАЛЬНОГО ОТОБРАЖЕНИЯ ЗАРЯДОВ
+updateFlaskChargesDisplay() {
+    const flaskBar = document.querySelector('.flask-bar');
+    if (!flaskBar) {
+        console.log("❌ Flask bar not found in DOM");
+        return;
+    }
+
+    // Получаем все элементы зарядов
+    const charges = flaskBar.querySelectorAll('.flask-charge');
+    const effect = this.flask.contentEffects[this.flask.content];
+    
+    console.log(`🔄 Updating flask charges: ${this.flask.currentCharges}/${this.flask.capacity}`);
+    
+    // Обновляем каждый заряд
+    charges.forEach((charge, index) => {
+        if (index < this.flask.currentCharges) {
+            charge.classList.add('active');
+            charge.classList.remove('empty');
+            charge.style.backgroundColor = effect.color;
+            charge.style.opacity = '1';
+        } else {
+            charge.classList.remove('active');
+            charge.classList.add('empty');
+            charge.style.backgroundColor = '#4b5563';
+            charge.style.opacity = '0.3';
+        }
+    });
+
+    // Также обновляем текстовое отображение
+    const flaskChargesText = document.getElementById('flaskCharges');
+    if (flaskChargesText) {
+        flaskChargesText.textContent = `${this.flask.currentCharges}/${this.flask.capacity}`;
+    }
+    
+    // Обновляем состояние кнопки
+    const useFlaskBtn = document.getElementById('useFlaskBtn');
+    if (useFlaskBtn) {
+        useFlaskBtn.disabled = this.flask.currentCharges <= 0;
+    }
+}
 
     refillFlask(content = 'water') {
         this.flask.currentCharges = this.flask.capacity;
@@ -493,268 +540,308 @@ class BattleSystem {
         return names[content] || content;
     }
 
-    updateFlaskUI() {
-        const flaskContainer = document.getElementById('flaskContainer');
-        const flaskCharges = document.getElementById('flaskCharges');
-        const flaskContent = document.getElementById('flaskContent');
-        const useFlaskBtn = document.getElementById('useFlaskBtn');
+  updateFlaskUI() {
+    const flaskContainer = document.getElementById('flaskContainer');
+    const flaskContent = document.getElementById('flaskContent');
+    const useFlaskBtn = document.getElementById('useFlaskBtn');
 
-        if (flaskContainer) {
-            const effect = this.flask.contentEffects[this.flask.content];
-            flaskContainer.style.borderColor = effect.color;
-        }
-
-        if (flaskCharges) {
-            flaskCharges.textContent = `${this.flask.currentCharges}/${this.flask.capacity}`;
-        }
-
-        if (flaskContent) {
-            flaskContent.textContent = this.getContentName(this.flask.content);
-            flaskContent.style.color = this.flask.contentEffects[this.flask.content].color;
-        }
-
-        if (useFlaskBtn) {
-            useFlaskBtn.disabled = this.flask.currentCharges <= 0;
-        }
+    if (flaskContainer) {
+        const effect = this.flask.contentEffects[this.flask.content];
+        flaskContainer.style.borderColor = effect.color;
     }
 
-    showTacticalBattleInterface() {
-        const app = document.getElementById('app');
-        if (!app) return;
+    if (flaskContent) {
+        flaskContent.textContent = this.getContentName(this.flask.content);
+        flaskContent.style.color = this.flask.contentEffects[this.flask.content].color;
+    }
 
-        const heroStats = this.getHeroStatsForBattle();
-        const flaskEffect = this.flask.contentEffects[this.flask.content];
-        
-        app.innerHTML = `
-            <div class="battle-screen-fullscreen">
-                <header class="battle-header">
-                    <div class="header-left">
-                        <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                        <div class="battle-round">Раунд: ${this.battleRound}</div>
-                    </div>
-                    <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
-                        ← Назад к карте
-                    </button>
-                </header>
-                
-                <div class="battle-main-area-compact">
-                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                    <div class="tactical-panel player-panel">
-                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
-                        
-                        <div class="panel-stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Очки действий:</span>
-                                <span class="stat-value" id="playerAP">3/∞</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-label">Комбо:</span>
-                                <span class="stat-value" id="playerCombo">Нет</span>
-                            </div>
-                        </div>
-                        
-                        <div class="action-history">
-                            <div class="history-title">Последние действия:</div>
-                            <div class="history-entries" id="playerHistory">
-                                <div class="history-empty">Еще нет действий</div>
-                            </div>
-                        </div>
-                        
-<!-- СИСТЕМА ФЛЯГИ -->
-<div class="flask-container" id="flaskContainer">
-    <div class="flask-header">
-        <span class="flask-title">💧 Фляга</span>
-        <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
-    </div>
-    <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
-    <div class="flask-bar">
-        ${Array.from({length: this.flask.capacity}, (_, i) => 
-            `<div class="flask-charge ${i < this.flask.currentCharges ? 'active' : 'empty'}" 
-                  style="${i < this.flask.currentCharges ? `background-color: ${flaskEffect.color}` : ''}"></div>`
-        ).join('')}
-    </div>
-    <div class="flask-actions">
-        <button class="tactical-btn flask-btn" id="useFlaskBtn" 
-                onclick="game.systems.battle.useFlask(1)">
-            <span class="btn-icon">💧</span>
-            <span class="btn-text">Выпить глоток</span>
-        </button>
-    </div>
-</div>
+    if (useFlaskBtn) {
+        useFlaskBtn.disabled = this.flask.currentCharges <= 0;
+    }
 
-                        
-                        <div class="tactical-actions">
-                            <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
-                                <span class="btn-icon">⚔️</span>
-                                <span class="btn-text">Атака</span>
-                                <span class="btn-cost">(1 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">⚔️ Атака</div>
-                                    <div class="tooltip-desc">Базовая атака оружием</div>
-                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">100% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">200% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">400% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">800% урона</span></div>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
-                                <span class="btn-icon">💥</span>
-                                <span class="btn-text">Силовая</span>
-                                <span class="btn-cost">(2 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">💥 Силовая атака</div>
-                                    <div class="tooltip-desc">Мощный удар с повышенным уроном</div>
-                                    <div class="tooltip-cost">Стоимость: 2 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">250% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">500% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">1000% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">2000% урона</span></div>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
-                                <span class="btn-icon">💢</span>
-                                <span class="btn-text">Сокрушительная</span>
-                                <span class="btn-cost">(4 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">💢 Сокрушительная атака</div>
-                                    <div class="tooltip-desc">Сверхмощный удар, пробивающий любую защиту</div>
-                                    <div class="tooltip-cost">Стоимость: 4 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">750% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">1500% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">3000% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">6000% урона</span></div>
-                                    </div>
-                                    <div class="special-effect">Игнорирует блок противника</div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
-                                <span class="btn-icon">🛡️</span>
-                                <span class="btn-text">Блок</span>
-                                <span class="btn-cost">(1 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">🛡️ Блок</div>
-                                    <div class="tooltip-desc">Защитная стойка, снижает получаемый урон</div>
-                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50% блок +25% отражение +1ОД</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">75% блок +50% отражение +2ОД</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">100% блок +75% отражение +3ОД</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">100% блок +100% отражение +4ОД</span></div>
-                                    </div>
-                                    <div class="special-effect">Отраженный урон возвращается атакующему</div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
-                                <span class="btn-icon">⚡</span>
-                                <span class="btn-text">Пробитие</span>
-                                <span class="btn-cost">(1 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">⚡ Пробитие блока</div>
-                                    <div class="tooltip-desc">Специальная атака, эффективная против защиты</div>
-                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50%/200% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">100%/300% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">150%/400% урона</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">200%/500% урона</span></div>
-                                    </div>
-                                    <div class="special-effect">Без блока/С блоком противника</div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
-                                <span class="btn-icon">🌀</span>
-                                <span class="btn-text">Отдых</span>
-                                <span class="btn-cost">(1 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">🌀 Отдых</div>
-                                    <div class="tooltip-desc">Восстановление сил и здоровья</div>
-                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">+1 ОД +5% HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">+2 ОД +10% HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">+3 ОД +15% HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">+4 ОД +20% HP</span></div>
-                                    </div>
-                                </div>
-                            </button>
-                            
-                            <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
-                                <span class="btn-icon">❤️</span>
-                                <span class="btn-text">Лечение</span>
-                                <span class="btn-cost">(1 ОД)</span>
-                                <div class="tooltip">
-                                    <div class="tooltip-title">❤️ Лечение</div>
-                                    <div class="tooltip-desc">Восстановление здоровья</div>
-                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                    <div class="tooltip-combo">
-                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">10% от макс. HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">20% от макс. HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">40% от макс. HP</span></div>
-                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">80% от макс. HP</span></div>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
-                    <div class="battle-grid-compact">
-                        <div class="grid-side-compact allies-side">
-                            <h3 class="side-title">ВАШ ОТРЯД</h3>
-                            <div class="grid-container-6x6-compact">
-                                ${this.renderTacticalGrid('allies')}
-                            </div>
-                        </div>
-                        
-                        <div class="grid-side-compact enemies-side">
-                            <h3 class="side-title">ПРОТИВНИКИ</h3>
-                            <div class="grid-container-6x6-compact">
-                                ${this.renderTacticalGrid('enemies')}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
-                    <div class="enemy-panels-container">
-                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
-                        <div class="enemy-panels-grid" id="enemyPanelsGrid">
-                            ${this.renderEnemyPanels()}
-                        </div>
-                    </div>
+    // ОБНОВЛЯЕМ ВИЗУАЛЬНОЕ ОТОБРАЖЕНИЕ ЗАРЯДОВ - ДОБАВЛЕН ВЫЗОВ
+    this.updateFlaskChargesDisplay();
+}
+
+ showTacticalBattleInterface() {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    const heroStats = this.getHeroStatsForBattle();
+    const flaskEffect = this.flask.contentEffects[this.flask.content];
+    
+    app.innerHTML = `
+        <div class="battle-screen-fullscreen">
+            <header class="battle-header">
+                <div class="header-left">
+                    <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
+                    <div class="battle-round">Раунд: ${this.battleRound}</div>
                 </div>
-                
-                <!-- УПРАВЛЕНИЕ И ЛОГ -->
-                <div class="battle-controls-fullscreen">
-                    <div class="battle-hint-fullscreen" id="battleHint">
-                        ${this.getTacticalHint()}
+                <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
+                    ← Назад к карте
+                </button>
+            </header>
+            
+            <div class="battle-main-area-compact">
+                <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                <div class="tactical-panel player-panel">
+                    <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
+                    
+                    <div class="panel-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Очки действий:</span>
+                            <span class="stat-value" id="playerAP">3/∞</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Комбо:</span>
+                            <span class="stat-value" id="playerCombo">Нет</span>
+                        </div>
                     </div>
                     
-                    <div class="battle-actions-fullscreen">
-                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
-                            🏃 Попытаться сбежать
+                    <div class="action-history">
+                        <div class="history-title">Последние действия:</div>
+                        <div class="history-entries" id="playerHistory">
+                            <div class="history-empty">Еще нет действий</div>
+                        </div>
+                    </div>
+                    
+                    <!-- СИСТЕМА ФЛЯГИ -->
+                    <div class="flask-container" id="flaskContainer">
+                        <div class="flask-header">
+                            <span class="flask-title">💧 Фляга</span>
+                            <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
+                        </div>
+                        <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
+                        <div class="flask-bar" id="flaskBar">
+                            ${Array.from({length: this.flask.capacity}, (_, i) => {
+                                const isActive = i < this.flask.currentCharges;
+                                const color = isActive ? flaskEffect.color : '#4b5563';
+                                const opacity = isActive ? '1' : '0.3';
+                                return `<div class="flask-charge ${isActive ? 'active' : 'empty'}" 
+                                             style="background-color: ${color}; opacity: ${opacity}"></div>`;
+                            }).join('')}
+                        </div>
+                        <div class="flask-actions">
+                            <button class="tactical-btn flask-btn" id="useFlaskBtn" 
+                                    onclick="game.systems.battle.useFlask()"
+                                    ${this.flask.currentCharges <= 0 ? 'disabled' : ''}>
+                                <span class="btn-icon">💧</span>
+                                <span class="btn-text">Выпить глоток</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="tactical-actions">
+                        <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
+                            <span class="btn-icon">⚔️</span>
+                            <span class="btn-text">Атака</span>
+                            <span class="btn-cost">(1 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">⚔️ Атака</div>
+                                <div class="tooltip-desc">Базовая атака оружием</div>
+                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">100% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">200% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">400% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">800% урона</span></div>
+                                </div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
+                            <span class="btn-icon">💥</span>
+                            <span class="btn-text">Силовая</span>
+                            <span class="btn-cost">(2 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">💥 Силовая атака</div>
+                                <div class="tooltip-desc">Мощный удар с повышенным уроном</div>
+                                <div class="tooltip-cost">Стоимость: 2 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">250% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">500% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">1000% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">2000% урона</span></div>
+                                </div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
+                            <span class="btn-icon">💢</span>
+                            <span class="btn-text">Сокрушительная</span>
+                            <span class="btn-cost">(4 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">💢 Сокрушительная атака</div>
+                                <div class="tooltip-desc">Сверхмощный удар, пробивающий любую защиту</div>
+                                <div class="tooltip-cost">Стоимость: 4 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">750% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">1500% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">3000% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">6000% урона</span></div>
+                                </div>
+                                <div class="special-effect">Игнорирует блок противника</div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
+                            <span class="btn-icon">🛡️</span>
+                            <span class="btn-text">Блок</span>
+                            <span class="btn-cost">(1 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">🛡️ Блок</div>
+                                <div class="tooltip-desc">Защитная стойка, снижает получаемый урон</div>
+                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50% блок +25% отражение +1ОД</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">75% блок +50% отражение +2ОД</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">100% блок +75% отражение +3ОД</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">100% блок +100% отражение +4ОД</span></div>
+                                </div>
+                                <div class="special-effect">Отраженный урон возвращается атакующему</div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
+                            <span class="btn-icon">⚡</span>
+                            <span class="btn-text">Пробитие</span>
+                            <span class="btn-cost">(1 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">⚡ Пробитие блока</div>
+                                <div class="tooltip-desc">Специальная атака, эффективная против защиты</div>
+                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50%/200% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">100%/300% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">150%/400% урона</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">200%/500% урона</span></div>
+                                </div>
+                                <div class="special-effect">Без блока/С блоком противника</div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
+                            <span class="btn-icon">🌀</span>
+                            <span class="btn-text">Отдых</span>
+                            <span class="btn-cost">(1 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">🌀 Отдых</div>
+                                <div class="tooltip-desc">Восстановление сил и здоровья</div>
+                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">+1 ОД +5% HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">+2 ОД +10% HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">+3 ОД +15% HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">+4 ОД +20% HP</span></div>
+                                </div>
+                            </div>
+                        </button>
+                        
+                        <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
+                            <span class="btn-icon">❤️</span>
+                            <span class="btn-text">Лечение</span>
+                            <span class="btn-cost">(1 ОД)</span>
+                            <div class="tooltip">
+                                <div class="tooltip-title">❤️ Лечение</div>
+                                <div class="tooltip-desc">Восстановление здоровья</div>
+                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                <div class="tooltip-combo">
+                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">10% от макс. HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">20% от макс. HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">40% от макс. HP</span></div>
+                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">80% от макс. HP</span></div>
+                                </div>
+                            </div>
                         </button>
                     </div>
                 </div>
                 
-                <div class="battle-log-fullscreen">
-                    <h4>📜 Ход боя:</h4>
-                    <div class="battle-log-entries" id="battleLogEntries">
-                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
+                <div class="battle-grid-compact">
+                    <div class="grid-side-compact allies-side">
+                        <h3 class="side-title">ВАШ ОТРЯД</h3>
+                        <div class="grid-container-6x6-compact">
+                            ${this.renderTacticalGrid('allies')}
+                        </div>
+                    </div>
+                    
+                    <div class="grid-side-compact enemies-side">
+                        <h3 class="side-title">ПРОТИВНИКИ</h3>
+                        <div class="grid-container-6x6-compact">
+                            ${this.renderTacticalGrid('enemies')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
+                <div class="enemy-panels-container">
+                    <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
+                    <div class="enemy-panels-grid" id="enemyPanelsGrid">
+                        ${this.renderEnemyPanels()}
                     </div>
                 </div>
             </div>
-        `;
+            
+            <!-- УПРАВЛЕНИЕ И ЛОГ -->
+            <div class="battle-controls-fullscreen">
+                <div class="battle-hint-fullscreen" id="battleHint">
+                    ${this.getTacticalHint()}
+                </div>
+                
+                <div class="battle-actions-fullscreen">
+                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                        🏃 Попытаться сбежать
+                    </button>
+                </div>
+            </div>
+            
+            <div class="battle-log-fullscreen">
+                <h4>📜 Ход боя:</h4>
+                <div class="battle-log-entries" id="battleLogEntries">
+                    ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+    setTimeout(() => {
+        console.log("🔧 Применяем экстренное исправление полосок здоровья...");
+        
+        const healthContainers = document.querySelectorAll('.unit-health-container');
+        const healthBars = document.querySelectorAll('.health-bar-fullscreen');
+        const healthFills = document.querySelectorAll('.health-fill');
+        const healthTexts = document.querySelectorAll('.health-text');
+        
+        healthContainers.forEach(el => {
+            el.style.display = 'flex';
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+        });
+        
+        healthBars.forEach(el => {
+            el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+        });
+        
+        healthFills.forEach(el => {
+            el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+        });
+        
+        healthTexts.forEach(el => {
+            el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.style.opacity = '1';
+        });
+        
+        console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
+    }, 100);
+
+    this.updateTacticalUI();
+    this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ДЛЯ ПЕРВОНАЧАЛЬНОГО ОТОБРАЖЕНИЯ
+}
 
         setTimeout(() => {
             console.log("🔧 Применяем экстренное исправление полосок здоровья...");
@@ -1491,41 +1578,41 @@ class BattleSystem {
         }
     }
 
-    resolveTacticalTurn() {
-        const playerAction = this.players[1].currentAction;
+resolveTacticalTurn() {
+    const playerAction = this.players[1].currentAction;
+    
+    this.battleRound++;
+    this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
+    
+    this.executeTacticalDamage(playerAction);
+    
+    this.players[1].currentAction = null;
+    this.players[1].ap = Math.min(this.players[1].ap + 1, 10);
+    
+    this.currentMonsters.forEach(monster => {
+        if (monster.currentHealth > 0) {
+            monster.ap = Math.min(monster.ap + 1, 10);
+        }
+    });
+    
+    this.selectedTarget = null;
+    this.pendingAction = null;
+    
+    setTimeout(() => {
+        console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
+        this.updateAllHealthBars();
+        this.updateTacticalUI();
+        this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ОБНОВЛЕНИЯ ФЛЯГИ
         
-        this.battleRound++;
-        this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
+        this.debugHealthBars();
         
-        this.executeTacticalDamage(playerAction);
-        
-        this.players[1].currentAction = null;
-        this.players[1].ap = Math.min(this.players[1].ap + 1, 10);
-        
-        this.currentMonsters.forEach(monster => {
-            if (monster.currentHealth > 0) {
-                monster.ap = Math.min(monster.ap + 1, 10);
-            }
-        });
-        
-        this.selectedTarget = null;
-        this.pendingAction = null;
-        
-        setTimeout(() => {
-            console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
-            this.updateAllHealthBars();
-            this.updateTacticalUI();
-            this.updateFlaskUI();
-            
-            this.debugHealthBars();
-            
-            if (this.checkBattleEnd()) {
-                setTimeout(() => {
-                    this.endTacticalBattle(this.isPlayerVictory());
-                }, 1500);
-            }
-        }, 300);
-    }
+        if (this.checkBattleEnd()) {
+            setTimeout(() => {
+                this.endTacticalBattle(this.isPlayerVictory());
+            }, 1500);
+        }
+    }, 300);
+}
 
     executeTacticalDamage(playerAction) {
         if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
@@ -1606,53 +1693,56 @@ class BattleSystem {
         }
     }
 
-    updateTacticalUI() {
-        const playerAP = document.getElementById('playerAP');
-        const playerCombo = document.getElementById('playerCombo');
-        
-        if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
-        
-        if (playerCombo) {
-            if (this.players[1].combo.count > 0) {
-                const action = this.players[1].combo.type;
-                const count = this.players[1].combo.count;
-                let multiplierText = '';
-                
-                if (this.isAttackAction(action)) {
-                    const multiplier = this.getComboMultiplier(action, count);
-                    multiplierText = ` (x${multiplier})`;
-                } else if (action === 'breakBlock') {
-                    multiplierText = ` (${this.getBreakBlockMultiplier(count, false) * 100}%/${this.getBreakBlockMultiplier(count, true) * 100}% урона)`;
-                } else if (action === 'block') {
-                    const blockPercent = this.getBlockEfficiency(count) * 100;
-                    const reflectionPercent = this.getBlockReflectionPercent(count) * 100;
-                    const apBonus = this.getBlockAPBonus(count);
-                    multiplierText = ` (${blockPercent}% блок + ${reflectionPercent}% отражение +${apBonus}ОД)`;
-                } else if (action === 'rest') {
-                    const restEff = this.getRestEfficiency(count);
-                    multiplierText = ` (+${restEff.ap}ОД +${restEff.healPercent * 100}% HP)`;
-                } else if (action === 'heal') {
-                    const healPercent = this.getHealEfficiency(count) * 100;
-                    multiplierText = ` (${healPercent}% HP)`;
-                }
-                
-                playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
-            } else {
-                playerCombo.textContent = 'Нет';
+   updateTacticalUI() {
+    const playerAP = document.getElementById('playerAP');
+    const playerCombo = document.getElementById('playerCombo');
+    
+    if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
+    
+    if (playerCombo) {
+        if (this.players[1].combo.count > 0) {
+            const action = this.players[1].combo.type;
+            const count = this.players[1].combo.count;
+            let multiplierText = '';
+            
+            if (this.isAttackAction(action)) {
+                const multiplier = this.getComboMultiplier(action, count);
+                multiplierText = ` (x${multiplier})`;
+            } else if (action === 'breakBlock') {
+                multiplierText = ` (${this.getBreakBlockMultiplier(count, false) * 100}%/${this.getBreakBlockMultiplier(count, true) * 100}% урона)`;
+            } else if (action === 'block') {
+                const blockPercent = this.getBlockEfficiency(count) * 100;
+                const reflectionPercent = this.getBlockReflectionPercent(count) * 100;
+                const apBonus = this.getBlockAPBonus(count);
+                multiplierText = ` (${blockPercent}% блок + ${reflectionPercent}% отражение +${apBonus}ОД)`;
+            } else if (action === 'rest') {
+                const restEff = this.getRestEfficiency(count);
+                multiplierText = ` (+${restEff.ap}ОД +${restEff.healPercent * 100}% HP)`;
+            } else if (action === 'heal') {
+                const healPercent = this.getHealEfficiency(count) * 100;
+                multiplierText = ` (${healPercent}% HP)`;
             }
+            
+            playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
+        } else {
+            playerCombo.textContent = 'Нет';
         }
-        
-        this.updateActionHistory('playerHistory', this.players[1].previousActions);
-        
-        this.currentMonsters.forEach(monster => {
-            if (monster.currentHealth > 0) {
-                this.updateMonsterPanel(monster.battleId);
-            }
-        });
-        
-        this.updateTacticalGrid();
-        this.updateBattleLog();
     }
+    
+    this.updateActionHistory('playerHistory', this.players[1].previousActions);
+    
+    this.currentMonsters.forEach(monster => {
+        if (monster.currentHealth > 0) {
+            this.updateMonsterPanel(monster.battleId);
+        }
+    });
+    
+    this.updateTacticalGrid();
+    this.updateBattleLog();
+    
+    // ОБНОВЛЯЕМ ФЛЯГУ - ДОБАВЛЕН ВЫЗОВ
+    this.updateFlaskChargesDisplay();
+}
 
     getActionName(action) {
         const names = {
