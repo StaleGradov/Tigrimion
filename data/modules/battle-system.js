@@ -833,37 +833,40 @@ class BattleSystem {
         });
     }
 
-    updateAvailableTargets() {
-        const heroAttackType = this.getHeroAttackType(this.currentHero);
-        this.availableTargets = [];
-        
-        this.battleGrid.enemies.forEach((unit, position) => {
-            if (unit && unit.currentHealth > 0) {
-                const unitRow = this.getRowByPosition(position);
-                
-                if (heroAttackType === 'melee') {
-                    // Ближний бой: может атаковать только монстров ближнего ряда
-                    if (unitRow === 'front') {
-                        this.availableTargets.push(position);
-                    } else {
-                        // Может атаковать дальний ряд только если нет живых в ближнем
-                        const hasAliveFrontRow = this.battleGrid.enemies.some((u, pos) => 
-                            u && u.currentHealth > 0 && this.getRowByPosition(pos) === 'front'
-                        );
-                        if (!hasAliveFrontRow) {
-                            this.availableTargets.push(position);
-                        }
-                    }
-                } else {
-                    // Дальний бой: может атаковать всех
+  updateAvailableTargets() {
+    const heroAttackType = this.getHeroAttackType(this.currentHero);
+    this.availableTargets = [];
+    
+    // Считаем живых монстров в переднем ряду
+    const aliveFrontRowMonsters = this.battleGrid.enemies.filter((unit, position) => 
+        unit && unit.currentHealth > 0 && unit.row === 'front'
+    ).length;
+    
+    console.log(`🎯 Живых монстров в переднем ряду: ${aliveFrontRowMonsters}`);
+    
+    this.battleGrid.enemies.forEach((unit, position) => {
+        if (unit && unit.currentHealth > 0) {
+            if (heroAttackType === 'melee') {
+                // Ближний бой: может атаковать монстров переднего ряда
+                if (unit.row === 'front') {
                     this.availableTargets.push(position);
                 }
+                // Или может атаковать задний ряд, если в переднем нет живых
+                else if (aliveFrontRowMonsters === 0) {
+                    this.availableTargets.push(position);
+                }
+            } else {
+                // Дальний бой: может атаковать всех
+                this.availableTargets.push(position);
             }
-        });
-        
-        console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets);
-    }
-
+        }
+    });
+    
+    console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets.map(pos => {
+        const unit = this.battleGrid.enemies[pos];
+        return unit ? `${unit.data.name} (${unit.row})` : 'unknown';
+    }));
+}
     isAttackAction(action) {
         return ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(action);
     }
