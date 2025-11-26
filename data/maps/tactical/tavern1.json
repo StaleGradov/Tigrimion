@@ -31,6 +31,10 @@
           "type": "merchant",
           "passable": true,
           "visible": true,
+           "shopName": "Оружейная Борга",
+           "merchantName": "Борг Железный",
+           "shopItems": [1, 2, 3, 15, 22, 34],
+            "restockTimer": 86400000,
           "originalData": {
             "editorX": 505.75883581011215,
             "editorY": 438,
