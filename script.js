@@ -883,84 +883,91 @@ fixHealthBarLayout() {
         console.log("✅ Исправленный интерфейс героя отрендерен");
     }
 
-    // ========== СИСТЕМА УПРАВЛЕНИЯ ОКНАМИ ==========
-    showOverlay(overlayType) {
-        const container = document.getElementById('overlay-container');
-        if (!container) return;
+ showOverlay(overlayType) {
+    const container = document.getElementById('overlay-container');
+    if (!container) return;
 
-        this.activeOverlay = overlayType;
+    this.activeOverlay = overlayType;
 
-        switch(overlayType) {
-            case 'global-map':
-                container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>🗺️ Глобальная карта</h3>
-                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                        </div>
-                        <div class="overlay-body">
-                            ${this.systems.map ? this.systems.map.renderGlobalMap() : 'Карта загружается...'}
-                        </div>
+    switch(overlayType) {
+        case 'global-map':
+            container.innerHTML = `
+                <div class="overlay-content map-overlay">
+                    <div class="overlay-header">
+                        <h3>🗺️ Глобальная карта</h3>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
                     </div>
-                `;
-                break;
-
-            case 'local-map':
-                container.innerHTML = `
-                    <div class="overlay-content map-overlay">
-                        <div class="overlay-header">
-                            <h3>📍 Локальная карта</h3>
-                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                        </div>
-                        <div class="overlay-body">
-                            ${this.systems.map ? this.systems.map.renderLocalMap() : 'Карта загружается...'}
-                        </div>
+                    <div class="overlay-body">
+                        ${this.systems.map ? this.systems.map.renderGlobalMap() : 'Карта загружается...'}
                     </div>
-                `;
-                break;
+                </div>
+            `;
+            container.style.display = 'block';
+            break;
 
-            case 'tactical-map':
-                if (this.systems.map) {
-                    // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
-                    this.systems.map.setCurrentHero(this.currentHero);
-                    this.systems.map.showTacticalMapEditor();
-                } else {
-                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-                }
-                break;
+        case 'local-map':
+            container.innerHTML = `
+                <div class="overlay-content map-overlay">
+                    <div class="overlay-header">
+                        <h3>📍 Локальная карта</h3>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                    </div>
+                    <div class="overlay-body">
+                        ${this.systems.map ? this.systems.map.renderLocalMap() : 'Карта загружается...'}
+                    </div>
+                </div>
+            `;
+            container.style.display = 'block';
+            break;
 
-            case 'inventory':
-                container.innerHTML = this.systems.equipment.showInventory();
-                break;
+        case 'tactical-map':
+            if (this.systems.map) {
+                // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
+                this.systems.map.setCurrentHero(this.currentHero);
+                this.systems.map.showTacticalMapEditor();
+            } else {
+                container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+                container.style.display = 'block';
+            }
+            break;
 
-            case 'shop':
-                // ⭐ ОБНОВЛЕННЫЙ КОД: Используем ShopSystem вместо EquipmentSystem
-                if (this.systems.shop) {
-                    // Создаем тестовую клетку магазина для демонстрации
-                    const testMerchantCell = {
-                        col: 4,
-                        row: 4,
-                        shopName: "Оружейная Борга",
-                        merchantName: "Борг Железный",
-                        shopItems: [1, 2, 3, 15, 22, 34], // ID предметов из твоего примера
-                        restockTimer: 86400000
-                    };
-                    this.systems.shop.openShop(testMerchantCell);
-                } else {
-                    // Fallback на старую систему если ShopSystem не доступна
-                    console.warn("ShopSystem не доступна, используем EquipmentSystem");
-                    const currentCategory = this.systems.equipment.currentCategory || 'all';
-                    const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
-                    container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
-                    
-                    // Добавляем обработчики для предметов магазина
-                    setTimeout(() => this.attachShopItemHandlers(), 100);
-                }
-                break;
-        }
+        case 'inventory':
+            container.innerHTML = this.systems.equipment.showInventory();
+            container.style.display = 'block';
+            break;
 
-        container.style.display = 'block';
+        case 'shop':
+            // ⭐ ИСПРАВЛЕННЫЙ КОД: ShopSystem сам управляет отображением
+            if (this.systems.shop) {
+                // Создаем тестовую клетку магазина для демонстрации
+                const testMerchantCell = {
+                    col: 4,
+                    row: 4,
+                    shopName: "Оружейная Борга",
+                    merchantName: "Борг Железный",
+                    shopItems: [1, 2, 3, 15, 22, 34], // ID предметов из твоего примера
+                    restockTimer: 86400000
+                };
+                this.systems.shop.openShop(testMerchantCell);
+            } else {
+                // Fallback на старую систему если ShopSystem не доступна
+                console.warn("ShopSystem не доступна, используем EquipmentSystem");
+                const currentCategory = this.systems.equipment.currentCategory || 'all';
+                const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+                container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+                container.style.display = 'block';
+                
+                // Добавляем обработчики для предметов магазина
+                setTimeout(() => this.attachShopItemHandlers(), 100);
+            }
+            break;
+
+        default:
+            console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
+            container.innerHTML = `<div class="map-error">Неизвестный тип окна: ${overlayType}</div>`;
+            container.style.display = 'block';
     }
+}
 
     // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
     attachShopItemHandlers() {
