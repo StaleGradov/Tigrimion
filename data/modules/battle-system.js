@@ -187,18 +187,27 @@ class BattleSystem {
             return null;
         }
 
-        const minMonsters = mapSettings?.minMonsters || 1;
-        const maxMonsters = mapSettings?.maxMonsters || 3;
+        // 🎯 НОВЫЕ ВЕРОЯТНОСТИ КОЛИЧЕСТВА МОНСТРОВ
+        const monsterCountProbabilities = {
+            1: 90,   // 90% - 1 монстр
+            2: 5,    // 5% - 2 монстра  
+            3: 2,    // 2% - 3 монстра
+            4: 1.5,  // 1.5% - 4 монстра
+            5: 1,    // 1% - 5 монстров
+            6: 0.5   // 0.5% - 6 монстров
+        };
+
+        let monsterCount = 1; // по умолчанию 1 монстр
         
-        let monsterCount = minMonsters;
         const roll = Math.random() * 100;
+        let probabilitySum = 0;
         
-        if (maxMonsters > minMonsters) {
-            const range = maxMonsters - minMonsters;
-            if (roll <= 70) monsterCount = minMonsters;
-            else if (roll <= 85) monsterCount = minMonsters + 1;
-            else if (roll <= 95) monsterCount = minMonsters + 2;
-            else monsterCount = maxMonsters;
+        for (let count = 1; count <= 6; count++) {
+            probabilitySum += monsterCountProbabilities[count];
+            if (roll <= probabilitySum) {
+                monsterCount = count;
+                break;
+            }
         }
 
         const monsterGroup = [];
@@ -231,7 +240,7 @@ class BattleSystem {
             monsterGroup.push(monsterCopy);
         }
 
-        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => m.name));
+        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров (шанс: ${monsterCountProbabilities[monsterCount]}%):`, monsterGroup.map(m => m.name));
         return monsterGroup;
     }
 
@@ -1000,6 +1009,10 @@ class BattleSystem {
         const hero = this.battleGrid.allies[3]; // Герой теперь в позиции 3
         if (!hero || hero.currentHealth <= 0) return;
 
+        // 🔍 ЛОГИРОВАНИЕ РЕШЕНИЙ ИИ
+        const isHeroBlocking = this.players[1].currentAction === 'block';
+        console.log(`🤖 ИИ ${monster.name}: действие=${monster.currentAction}, герой блокирует=${isHeroBlocking}, комбо блока=${this.players[1].combo.count}`);
+        
         let damage = 0;
         let message = '';
         
@@ -1926,41 +1939,158 @@ class TacticalAI {
         const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
-        const hero = this.bs.battleGrid.allies[3]; // Герой теперь в позиции 3
-        if (!hero) return 'rest';
+        const hero = this.bs.battleGrid.allies[3];
+        if (!hero || hero.currentHealth <= 0) return 'rest';
         
         const heroHealthPercent = hero.currentHealth / hero.maxHealth;
         const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
+        const isHeroBlocking = this.bs.players[1].currentAction === 'block';
+        const heroBlockCombo = this.bs.players[1].combo.count;
         
-        if (this.monster.ap >= 1 && Math.random() < 0.7) {
-            if (this.monster.ap >= 4 && Math.random() < 0.3) {
-                return 'crushingAttack';
+        // 🎯 СТРАТЕГИЧЕСКИЕ ПРИОРИТЕТЫ
+        const strategy = this.analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo);
+        
+        // 🔥 УЛУЧШЕННАЯ ЛОГИКА ПРОБИТИЯ БЛОКА
+        if (isHeroBlocking && availableActions.includes('breakBlock')) {
+            let breakBlockChance = strategy.breakBlockChance;
+            
+            // ДОПОЛНИТЕЛЬНЫЕ ФАКТОРЫ ДЛЯ ПРОБИТИЯ
+            if (this.monster.ap <= 2) breakBlockChance += 0.15;
+            if (heroBlockCombo >= 2) breakBlockChance += 0.2;
+            if (monsterHealthPercent > 0.7) breakBlockChance += 0.1;
+            
+            if (Math.random() < Math.min(breakBlockChance, 0.95)) {
+                console.log(`🤖 ${this.monster.name} выбирает пробитие блока (шанс: ${breakBlockChance.toFixed(2)})`);
+                return 'breakBlock';
             }
-            if (this.monster.ap >= 2 && Math.random() < 0.4) {
+        }
+        
+        // 🩹 ВЫСОКИЙ ПРИОРИТЕТ ЛЕЧЕНИЯ В КРИТИЧЕСКОЙ СИТУАЦИИ
+        if (monsterHealthPercent < 0.25 && availableActions.includes('heal')) {
+            const healChance = 0.8 - (monsterHealthPercent * 0.5);
+            if (Math.random() < healChance) {
+                console.log(`🤖 ${this.monster.name} срочно лечится (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
+                return 'heal';
+            }
+        }
+        
+        // 💀 АГРЕССИВНЫЕ АТАКИ ПРОТИВ СЛАБОГО ГЕРОЯ
+        if (heroHealthPercent < 0.3 && availableActions.includes('strongAttack') && this.monster.ap >= 2) {
+            if (Math.random() < 0.6) {
+                console.log(`🤖 ${this.monster.name} добивает слабого героя`);
                 return 'strongAttack';
             }
-            return 'attack';
         }
         
-        if (monsterHealthPercent < 0.3 && Math.random() < 0.6 && availableActions.includes('heal')) {
-            return 'heal';
+        // 🛡️ ЗАЩИТА ПРИ СРЕДНЕМ УРОНЕ
+        if (monsterHealthPercent < 0.5 && availableActions.includes('block') && !isHeroBlocking) {
+            const blockChance = 0.5 - (monsterHealthPercent * 0.4);
+            if (Math.random() < blockChance) {
+                console.log(`🤖 ${this.monster.name} защищается (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
+                return 'block';
+            }
         }
         
-        if (monsterHealthPercent < 0.5 && Math.random() < 0.4 && availableActions.includes('block')) {
-            return 'block';
+        // ⚡ СТАНДАРТНЫЕ АТАКИ С УЧЕТОМ ОД
+        if (this.monster.ap >= 1) {
+            const attackRoll = Math.random();
+            
+            // СОКРУШИТЕЛЬНАЯ АТАКА - ВЫСОКИЙ УРОН, НО ДОРОГАЯ
+            if (this.monster.ap >= 4 && attackRoll < 0.25) {
+                console.log(`🤖 ${this.monster.name} использует сокрушительную атаку`);
+                return 'crushingAttack';
+            }
+            
+            // СИЛОВАЯ АТАКА - БАЛАНС МОЩНОСТИ И СТОИМОСТИ
+            if (this.monster.ap >= 2 && attackRoll < 0.45) {
+                console.log(`🤖 ${this.monster.name} использует силовую атаку`);
+                return 'strongAttack';
+            }
+            
+            // БАЗОВАЯ АТАКА - ОСНОВНОЕ ДЕЙСТВИЕ
+            if (attackRoll < 0.8) {
+                console.log(`🤖 ${this.monster.name} атакует`);
+                return 'attack';
+            }
         }
         
-        if (this.monster.ap <= 1 && availableActions.includes('rest')) {
-            return 'rest';
+        // 🌀 ВОССТАНОВЛЕНИЕ ПРИ НИЗКИХ ОД
+        if (this.monster.ap <= 2 && availableActions.includes('rest')) {
+            const restChance = 0.7 - (this.monster.ap * 0.2);
+            if (Math.random() < restChance) {
+                console.log(`🤖 ${this.monster.name} отдыхает для восстановления ОД`);
+                return 'rest';
+            }
         }
         
-        return availableActions.includes('attack') ? 'attack' : availableActions[0];
+        // 🎲 РЕЗЕРВНЫЕ ДЕЙСТВИЯ
+        const fallbackActions = availableActions.filter(action => 
+            ['attack', 'strongAttack', 'breakBlock', 'rest'].includes(action)
+        );
+        
+        const selectedAction = fallbackActions.length > 0 
+            ? fallbackActions[Math.floor(Math.random() * fallbackActions.length)]
+            : 'rest';
+            
+        console.log(`🤖 ${this.monster.name} выбирает резервное действие: ${selectedAction}`);
+        return selectedAction;
+    }
+    
+    analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo) {
+        // 🧠 АНАЛИЗ ТАКТИЧЕСКОЙ СИТУАЦИИ
+        const strategy = {
+            breakBlockChance: 0.3, // базовый шанс пробития
+            aggression: 0.5,       // уровень агрессии
+            defense: 0.5           // уровень защиты
+        };
+        
+        // 📊 ФАКТОРЫ ВЛИЯЮЩИЕ НА ПРОБИТИЕ БЛОКА
+        if (isHeroBlocking) {
+            // Герой блокирует - увеличиваем шанс пробития
+            strategy.breakBlockChance += 0.2;
+            
+            // Чем дольше герой блокирует, тем выше приоритет пробития
+            if (heroBlockCombo >= 2) strategy.breakBlockChance += 0.3;
+            if (heroBlockCombo >= 3) strategy.breakBlockChance += 0.4;
+            
+            // Если у монстра много ОД - чаще пробивает
+            if (this.monster.ap >= 3) strategy.breakBlockChance += 0.1;
+        }
+        
+        // 📈 АГРЕССИЯ ПРИ НИЗКОМ ЗДОРОВЬЕ ГЕРОЯ
+        if (heroHealthPercent < 0.4) {
+            strategy.aggression += 0.3;
+            strategy.breakBlockChance += 0.1;
+        }
+        
+        // 📉 ОСТОРОЖНОСТЬ ПРИ НИЗКОМ ЗДОРОВЬЕ МОНСТРА
+        if (monsterHealthPercent < 0.4) {
+            strategy.defense += 0.3;
+            strategy.aggression -= 0.2;
+        }
+        
+        // 💪 АГРЕССИЯ ПРИ ВЫСОКОМ ЗДОРОВЬЕ МОНСТРА
+        if (monsterHealthPercent > 0.7) {
+            strategy.aggression += 0.2;
+        }
+        
+        return strategy;
     }
     
     getAvailableActions() {
         const actions = [];
         
-        if (this.monster.ap >= 1) actions.push('attack', 'block', 'rest', 'heal');
+        // Всегда доступные базовые действия
+        if (this.monster.ap >= 1) {
+            actions.push('attack', 'block', 'breakBlock', 'rest');
+        }
+        
+        // Лечение доступно только если есть куда лечиться
+        if (this.monster.ap >= 1 && this.monster.currentHealth < this.monster.health) {
+            actions.push('heal');
+        }
+        
+        // Специальные атаки по стоимости ОД
         if (this.monster.ap >= 2) actions.push('strongAttack');
         if (this.monster.ap >= 4) actions.push('crushingAttack');
         
@@ -1969,4 +2099,4 @@ class TacticalAI {
 }
 
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с ИСПРАВЛЕННОЙ системой комбо и позициями");
+console.log("📦 BattleSystem полностью переписан с УЛУЧШЕННЫМ ИИ и сбалансированными группами монстров");
