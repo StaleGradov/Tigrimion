@@ -136,8 +136,39 @@ class MapSystem {
         this.tooltipTimeout = null;
         this.resizeTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с CSS масштабированием");
+        console.log("✅ MapSystem инициализирован с интеграцией магазинов");
     }
+
+    // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
+
+    handleMerchantClick(merchantCell) {
+        if (!this.isPlayerAdjacentToTransition(merchantCell)) {
+            this.showTransitionWarning(merchantCell);
+            return;
+        }
+
+        // Проверяем, есть ли предметы в магазине
+        if (!merchantCell.shopItems || merchantCell.shopItems.length === 0) {
+            console.warn("🛒 Магазин пуст - нет товаров в shopItems");
+            if (window.game) {
+                window.game.showNotification("🛒 Магазин пуст!", 'warning');
+            }
+            return;
+        }
+
+        const shopSystem = window.game?.systems?.shop;
+        if (shopSystem && shopSystem.openShop) {
+            console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}`);
+            shopSystem.openShop(merchantCell);
+        } else {
+            console.error("❌ ShopSystem не доступна или нет метода openShop");
+            if (window.game) {
+                window.game.showNotification("❌ Система магазинов недоступна", 'error');
+            }
+        }
+    }
+
+    // ========== ОСНОВНЫЕ МЕТОДЫ КАРТ ==========
 
     getLootItemById(itemId) {
         const itemSystem = window.game?.systems?.equipment;
@@ -172,6 +203,11 @@ class MapSystem {
             
             if (window.game.systems.battle) {
                 window.game.systems.battle.currentHero = this.currentHero;
+            }
+
+            if (window.game.systems.shop) {
+                // Синхронизируем героя с системой магазинов
+                window.game.systems.shop.currentHero = this.currentHero;
             }
         }
     }
@@ -368,6 +404,12 @@ class MapSystem {
                 returnY: cell.returnY,
                 tooltip: cell.tooltip,
                 hasLoot: cell.hasLoot || false,
+                // Новые поля для магазинов
+                shopName: cell.shopName,
+                merchantName: cell.merchantName,
+                shopItems: cell.shopItems || [],
+                shopId: cell.shopId,
+                restockTimer: cell.restockTimer,
                 originalData: cell
             };
         });
@@ -633,6 +675,9 @@ class MapSystem {
                     visible: true, 
                     x: 350, 
                     y: 300,
+                    shopName: "Таверный магазин",
+                    merchantName: "Бармен Грог",
+                    shopItems: [1, 2, 3], // Тестовые ID предметов
                     tooltip: "🛒 Бармен\n(Купить выпивку и еду)"
                 },
                 "3,4": {
@@ -652,7 +697,7 @@ class MapSystem {
             mapType: 'tactical'
         };
         
-        console.log("✅ Тестовая таверна создана");
+        console.log("✅ Тестовая таверна создана с магазином");
         return tavernMap;
     }
 
@@ -723,6 +768,12 @@ class MapSystem {
         if (!hex) return;
         
         console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+        
+        // Обработка магазина
+        if (hex.type === 'merchant') {
+            this.handleMerchantClick(hex);
+            return;
+        }
         
         if (this.isTransitionCell(hex)) {
             this.handleTransitionClick(hex);
@@ -1222,7 +1273,7 @@ class MapSystem {
         this.updateMovementInfo();
     }
 
-    startTacticalBattleForMovement(targetX, targetY, cellData) {
+    startTacticalBattleForMovement(x, y, cellData) {
         const battleSystem = window.game?.systems?.battle;
         if (!battleSystem) {
             console.error("❌ BattleSystem не доступна");
@@ -1234,7 +1285,7 @@ class MapSystem {
             return;
         }
 
-        this.pendingMovement = { x: targetX, y: targetY };
+        this.pendingMovement = { x: x, y: y };
         
         const specificMonster = this.getMonsterFromCell(cellData);
         
@@ -1841,6 +1892,14 @@ class MapSystem {
             return hex.tooltip;
         }
 
+        // Обновленная подсказка для магазинов
+        if (hex.type === 'merchant') {
+            const itemCount = hex.shopItems ? hex.shopItems.length : 0;
+            const shopName = hex.shopName || "Магазин";
+            const merchantName = hex.merchantName || "Торговец";
+            return `🛒 ${shopName}\nТорговец: ${merchantName}\nТоваров: ${itemCount}\n(Кликните для торговли)`;
+        }
+
         if (this.isTransitionCell(hex)) {
             const isAccessible = this.isPlayerAdjacentToTransition(hex);
             const accessibilityInfo = isAccessible ? "\n✅ Доступно для входа" : "\n❌ Подойдите ближе";
@@ -1891,7 +1950,6 @@ class MapSystem {
             'castle': '🏰 Замок\n(Резиденция правителя)',
             'water': '💧 Водная поверхность\n(Непроходимо)',
             'campfire': '🔥 Костер\n(Можно отдохнуть)',
-            'merchant': '🛒 Торговец\n(Можно купить предметы)',
             'cart': '🛒 Телега\n(Возможна торговля)',
             'traveler': '🚶 Путник\n(Может дать информацию)',
             'portal': '🌀 Магический портал\n(Телепортация)',
@@ -2746,7 +2804,31 @@ class MapSystem {
         console.log("Has background image:", !!map.image);
         console.groupEnd();
     }
+
+    // Новый метод для полноэкранного режима
+    toggleFullscreen() {
+        const canvas = this.canvas;
+        if (!canvas) return;
+
+        if (!document.fullscreenElement) {
+            if (canvas.requestFullscreen) {
+                canvas.requestFullscreen();
+            } else if (canvas.webkitRequestFullscreen) {
+                canvas.webkitRequestFullscreen();
+            } else if (canvas.msRequestFullscreen) {
+                canvas.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    }
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с CSS масштабированием");
+console.log("📦 MapSystem модуль загружен с интеграцией магазинов");
