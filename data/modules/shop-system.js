@@ -9,7 +9,7 @@ class ShopSystem {
         this.currentSubcategory = 'all';
         this.searchQuery = '';
         
-        // Полная система категорий
+        // СИСТЕМА КАТЕГОРИЙ СООТВЕТСТВУЮЩАЯ EQUIPMENT SYSTEM
         this.categories = {
             'all': { name: 'Все предметы', icon: '📦', subcategories: {} },
             'weapon': { 
@@ -17,70 +17,84 @@ class ShopSystem {
                 icon: '⚔️',
                 subcategories: {
                     'all': 'Всё оружие',
-                    'sword': 'Мечи',
-                    'axe': 'Топоры', 
-                    'mace': 'Булавы',
-                    'dagger': 'Кинжалы',
-                    'bow': 'Луки',
-                    'staff': 'Посохи',
-                    'wand': 'Жезлы',
-                    'spear': 'Копья'
+                    'one_handed': 'Одноручное',
+                    'two_handed': 'Двуручное',
+                    'shield': 'Щиты'
                 }
             },
-            'armor': {
+            'helmet': {
+                name: 'Шлемы',
+                icon: '⛑️',
+                subcategories: {
+                    'all': 'Все шлемы',
+                    'cloth': 'Ткань',
+                    'leather': 'Кожа',
+                    'hide': 'Шкура',
+                    'fur': 'Мех',
+                    'bone': 'Кости',
+                    'plate': 'Пластины',
+                    'chain': 'Кольчуга',
+                    'plate_mail': 'Латы'
+                }
+            },
+            'chest': {
                 name: 'Броня',
-                icon: '🛡️',
+                icon: '👕',
                 subcategories: {
                     'all': 'Вся броня',
-                    'helmet': 'Шлемы',
-                    'chest': 'Нагрудники',
-                    'gloves': 'Перчатки',
-                    'boots': 'Сапоги',
-                    'pants': 'Поножи',
-                    'shield': 'Щиты',
-                    'cloak': 'Плащи',
-                    'amulet': 'Амулеты',
-                    'ring': 'Кольца'
-                }
-            },
-            'potion': {
-                name: 'Зелья',
-                icon: '🧪', 
-                subcategories: {
-                    'all': 'Все зелья',
-                    'health': 'Здоровья',
-                    'mana': 'Маны',
-                    'stamina': 'Выносливости',
-                    'buff': 'Усиления',
-                    'debuff': 'Ослабления',
-                    'restoration': 'Восстановления'
-                }
-            },
-            'consumable': {
-                name: 'Расходники',
-                icon: '🍖',
-                subcategories: {
-                    'all': 'Все расходники',
-                    'food': 'Еда',
-                    'scroll': 'Свитки',
-                    'arrow': 'Стрелы',
-                    'throwable': 'Метательное',
-                    'reagent': 'Реагенты',
-                    'key': 'Ключи'
-                }
-            },
-            'material': {
-                name: 'Материалы',
-                icon: '⛏️',
-                subcategories: {
-                    'all': 'Все материалы',
-                    'ore': 'Руда',
-                    'herb': 'Травы',
-                    'leather': 'Кожа',
                     'cloth': 'Ткань',
-                    'gem': 'Самоцветы',
-                    'enchanted': 'Зачарованные',
-                    'wood': 'Древесина'
+                    'leather': 'Кожа',
+                    'hide': 'Шкура',
+                    'fur': 'Мех',
+                    'bone': 'Кости',
+                    'plate': 'Пластины',
+                    'chain': 'Кольчуга',
+                    'plate_mail': 'Латы'
+                }
+            },
+            'gloves': {
+                name: 'Перчатки',
+                icon: '🧤',
+                subcategories: {
+                    'all': 'Все перчатки',
+                    'cloth': 'Ткань',
+                    'leather': 'Кожа',
+                    'hide': 'Шкура',
+                    'fur': 'Мех',
+                    'bone': 'Кости',
+                    'plate': 'Пластины',
+                    'chain': 'Кольчуга',
+                    'plate_mail': 'Латы'
+                }
+            },
+            'legs': {
+                name: 'Поножи',
+                icon: '👖',
+                subcategories: {
+                    'all': 'Все поножи',
+                    'cloth': 'Ткань',
+                    'leather': 'Кожа',
+                    'hide': 'Шкура',
+                    'fur': 'Мех',
+                    'bone': 'Кости',
+                    'plate': 'Пластины',
+                    'chain': 'Кольчуга',
+                    'plate_mail': 'Латы'
+                }
+            },
+            'boots': {
+                name: 'Ботинки',
+                icon: '👢',
+                subcategories: {
+                    'all': 'Все ботинки',
+                    'cloth': 'Ткань',
+                    'leather': 'Кожа',
+                    'hide': 'Шкура',
+                    'fur': 'Мех',
+                    'bone': 'Кости',
+                    'plate': 'Пластины',
+                    'chain': 'Кольчуга',
+                    'plate_mail': 'Латы'
                 }
             },
             'set': {
@@ -88,57 +102,33 @@ class ShopSystem {
                 icon: '⭐',
                 subcategories: {
                     'all': 'Все сеты',
-                    'warrior': 'Воинские',
-                    'mage': 'Магические',
-                    'rogue': 'Разбойничьи',
-                    'archer': 'Лучников',
-                    'tank': 'Танков',
-                    'healer': 'Целителей',
-                    'hybrid': 'Гибридные'
+                    'damage': '⚔️ Урон',
+                    'crit': '🎯 Критический удар',
+                    'penetration': '💥 Игнор Брони',
+                    'rich': '💰 Богатство',
+                    'vampire': '🩸 Вампиризм',
+                    'regen': '❤️ Регенерация',
+                    'health': '💪 Здоровье',
+                    'armor': '🛡️ Броня'
                 }
             },
-            'special': {
-                name: 'Особые',
-                icon: '🎁',
+            'potion': {
+                name: 'Зелья',
+                icon: '🧪',
                 subcategories: {
-                    'all': 'Все особые',
-                    'quest': 'Квестовые',
-                    'unique': 'Уникальные',
-                    'artifact': 'Артефакты',
-                    'event': 'Ивентовые'
+                    'all': 'Все зелья'
+                }
+            },
+            'consumable': {
+                name: 'Расходники',
+                icon: '🍖',
+                subcategories: {
+                    'all': 'Все расходники'
                 }
             }
         };
 
-        // Конфигурация сетов
-        this.itemSets = {
-            'set_beginner': {
-                name: 'Набор новичка',
-                bonus: { type: 'health_mult', value: 0.1 },
-                pieces: 2,
-                description: '+10% к здоровью при экипировке 2 предметов'
-            },
-            'set_warrior': {
-                name: 'Воинский набор',
-                bonus: { type: 'damage_mult', value: 0.15 },
-                pieces: 3,
-                description: '+15% к урону при экипировке 3 предметов'
-            },
-            'set_guardian': {
-                name: 'Страж',
-                bonus: { type: 'armor_mult', value: 0.2 },
-                pieces: 4,
-                description: '+20% к броне при экипировке 4 предметов'
-            },
-            'set_mage': {
-                name: 'Магический набор',
-                bonus: { type: 'mana_mult', value: 0.25 },
-                pieces: 3,
-                description: '+25% к мане при экипировке 3 предметов'
-            }
-        };
-        
-        console.log("✅ ShopSystem инициализирована с полной системой категорий");
+        console.log("✅ ShopSystem инициализирована с совместимыми фильтрами");
     }
 
     // Установка текущего героя
@@ -180,12 +170,11 @@ class ShopSystem {
             inventory: inventory,
             position: { col: merchantCell.col, row: merchantCell.row },
             restockTimer: merchantCell.restockTimer || 24 * 60 * 60 * 1000,
-            lastRestock: Date.now(),
-            merchantType: merchantCell.merchantType || 'general'
+            lastRestock: Date.now()
         };
     }
 
-    // Загрузка предметов по ID
+    // Загрузка предметов по ID из EquipmentSystem
     loadItemsByIds(itemIds) {
         const equipmentSystem = window.game?.systems?.equipment;
         if (!equipmentSystem) {
@@ -197,11 +186,12 @@ class ShopSystem {
         itemIds.forEach(itemId => {
             const item = equipmentSystem.getItemById(itemId);
             if (item) {
+                // Определяем подкатегорию на основе типа и свойств предмета
+                const subcategory = this.determineItemSubcategory(item);
                 items.push({
                     ...item,
                     originalId: item.id,
-                    subcategory: this.determineItemSubcategory(item),
-                    setInfo: item.setName ? this.itemSets[item.setName] : null
+                    subcategory: subcategory
                 });
             } else {
                 console.warn(`⚠️ Предмет с ID ${itemId} не найден`);
@@ -212,71 +202,29 @@ class ShopSystem {
         return items;
     }
 
-    // Определение подкатегории предмета
+    // ОПРЕДЕЛЕНИЕ ПОДКАТЕГОРИИ ДЛЯ ФИЛЬТРАЦИИ
     determineItemSubcategory(item) {
         const type = item.type;
-        const name = item.name?.toLowerCase() || '';
-        const subtype = item.subtype || '';
-
+        
         switch(type) {
             case 'weapon':
-                if (name.includes('меч') || name.includes('sword') || subtype === 'sword') return 'sword';
-                if (name.includes('топор') || name.includes('axe') || subtype === 'axe') return 'axe';
-                if (name.includes('булава') || name.includes('mace') || subtype === 'mace') return 'mace';
-                if (name.includes('кинжал') || name.includes('dagger') || subtype === 'dagger') return 'dagger';
-                if (name.includes('лук') || name.includes('bow') || subtype === 'bow') return 'bow';
-                if (name.includes('посох') || name.includes('staff') || subtype === 'staff') return 'staff';
-                if (name.includes('жезл') || name.includes('wand') || subtype === 'wand') return 'wand';
-                if (name.includes('копь') || name.includes('spear') || subtype === 'spear') return 'spear';
-                return 'sword';
-
-            case 'armor':
-                if (name.includes('шлем') || name.includes('helmet') || name.includes('helm') || subtype === 'helmet') return 'helmet';
-                if (name.includes('нагрудник') || name.includes('chest') || name.includes('armor') || name.includes('кираса') || subtype === 'chest') return 'chest';
-                if (name.includes('перчат') || name.includes('glove') || subtype === 'gloves') return 'gloves';
-                if (name.includes('сапог') || name.includes('boot') || subtype === 'boots') return 'boots';
-                if (name.includes('понож') || name.includes('pant') || name.includes('legging') || subtype === 'pants') return 'pants';
-                if (name.includes('щит') || name.includes('shield') || subtype === 'shield') return 'shield';
-                if (name.includes('плащ') || name.includes('cloak') || name.includes('cape') || subtype === 'cloak') return 'cloak';
-                if (name.includes('амулет') || name.includes('amulet') || name.includes('necklace') || subtype === 'amulet') return 'amulet';
-                if (name.includes('кольцо') || name.includes('ring') || subtype === 'ring') return 'ring';
-                return 'chest';
-
+                // Для оружия используем weaponType
+                return item.weaponType || 'one_handed';
+            
+            case 'helmet':
+            case 'chest':
+            case 'gloves':
+            case 'legs':
+            case 'boots':
+                // Для брони используем material
+                return item.material || 'cloth';
+            
             case 'potion':
-                if (name.includes('здоров') || name.includes('health') || name.includes('хил') || subtype === 'health') return 'health';
-                if (name.includes('мана') || name.includes('mana') || subtype === 'mana') return 'mana';
-                if (name.includes('вынос') || name.includes('stamina') || name.includes('energy') || subtype === 'stamina') return 'stamina';
-                if (name.includes('усилен') || name.includes('buff') || name.includes('сила') || subtype === 'buff') return 'buff';
-                if (name.includes('ослаб') || name.includes('debuff') || name.includes('яд') || subtype === 'debuff') return 'debuff';
-                if (name.includes('восстан') || name.includes('restor') || subtype === 'restoration') return 'restoration';
-                return 'health';
-
+                return 'all';
+            
             case 'consumable':
-                if (name.includes('еда') || name.includes('food') || name.includes('хлеб') || name.includes('мясо') || subtype === 'food') return 'food';
-                if (name.includes('свиток') || name.includes('scroll') || subtype === 'scroll') return 'scroll';
-                if (name.includes('стрел') || name.includes('arrow') || name.includes('bolt') || subtype === 'arrow') return 'arrow';
-                if (name.includes('метатель') || name.includes('throw') || name.includes('нож') || name.includes('star') || subtype === 'throwable') return 'throwable';
-                if (name.includes('реагент') || name.includes('reagent') || name.includes('компонент') || subtype === 'reagent') return 'reagent';
-                if (name.includes('ключ') || name.includes('key') || subtype === 'key') return 'key';
-                return 'food';
-
-            case 'material':
-                if (name.includes('руда') || name.includes('ore') || name.includes('желез') || name.includes('сталь') || subtype === 'ore') return 'ore';
-                if (name.includes('трава') || name.includes('herb') || name.includes('цветок') || name.includes('корень') || subtype === 'herb') return 'herb';
-                if (name.includes('кож') || name.includes('leather') || name.includes('шкур') || subtype === 'leather') return 'leather';
-                if (name.includes('ткань') || name.includes('cloth') || name.includes('шелк') || name.includes('шерсть') || subtype === 'cloth') return 'cloth';
-                if (name.includes('самоцвет') || name.includes('gem') || name.includes('рубин') || name.includes('изумруд') || name.includes('алмаз') || subtype === 'gem') return 'gem';
-                if (name.includes('зачар') || name.includes('enchanted') || name.includes('магич') || name.includes('пылающ') || subtype === 'enchanted') return 'enchanted';
-                if (name.includes('дерево') || name.includes('wood') || name.includes('древес') || subtype === 'wood') return 'wood';
-                return 'ore';
-
-            case 'special':
-                if (name.includes('квест') || name.includes('quest') || subtype === 'quest') return 'quest';
-                if (name.includes('уникаль') || name.includes('unique') || name.includes('легенд') || subtype === 'unique') return 'unique';
-                if (name.includes('артефакт') || name.includes('artifact') || subtype === 'artifact') return 'artifact';
-                if (name.includes('ивент') || name.includes('event') || name.includes('празднич') || subtype === 'event') return 'event';
-                return 'unique';
-
+                return 'all';
+            
             default:
                 return 'all';
         }
@@ -308,10 +256,7 @@ class ShopSystem {
                 <div class="overlay-body">
                     <!-- Шапка магазина -->
                     <div class="merchant-header">
-                        <div class="merchant-info">
-                            <h4>🏪 ${shop.merchantName}</h4>
-                            <span class="merchant-type">${this.getMerchantTypeName(shop.merchantType)}</span>
-                        </div>
+                        <h4>🏪 ${shop.merchantName}</h4>
                         <div class="hero-merchant-info">
                             <div class="merchant-stats">
                                 <span class="gold-amount">💰 ${this.currentHero?.gold || 0} золота</span>
@@ -452,7 +397,7 @@ class ShopSystem {
         `;
     }
 
-    // Фильтрация предметов по категории, подкатегории и поиску
+    // ФИЛЬТРАЦИЯ ПРЕДМЕТОВ ПО КАТЕГОРИИ И ПОДКАТЕГОРИИ
     filterItemsByCategory(items) {
         let filtered = items;
 
@@ -469,22 +414,23 @@ class ShopSystem {
         // Фильтрация по основной категории
         if (this.currentCategory !== 'all') {
             if (this.currentCategory === 'set') {
+                // Для категории сетов фильтруем по наличию setName
                 filtered = filtered.filter(item => item.setName);
-            } else if (this.currentCategory === 'special') {
-                filtered = filtered.filter(item => 
-                    item.rarity === 'legendary' || 
-                    item.rarity === 'mythic' ||
-                    item.questItem ||
-                    item.unique
-                );
             } else {
+                // Для остальных категорий - по типу предмета
                 filtered = filtered.filter(item => item.type === this.currentCategory);
             }
         }
 
         // Фильтрация по подкатегории
         if (this.currentSubcategory !== 'all') {
-            filtered = filtered.filter(item => item.subcategory === this.currentSubcategory);
+            if (this.currentCategory === 'set') {
+                // Для сетов - специальная фильтрация
+                filtered = this.filterSetItemsBySubcategory(filtered, this.currentSubcategory);
+            } else {
+                // Для остальных категорий - по подкатегории
+                filtered = filtered.filter(item => item.subcategory === this.currentSubcategory);
+            }
         }
 
         return this.sortItems(filtered);
@@ -512,7 +458,28 @@ class ShopSystem {
         });
     }
 
-    // Получение доступных подкатегорий для текущей категории
+    // ФИЛЬТРАЦИЯ СЕТОВ ПО ПОДКАТЕГОРИЯМ (совместимо с EquipmentSystem)
+    filterSetItemsBySubcategory(items, subcategory) {
+        const setBonusMap = {
+            'damage': ['set_beginner', 'set_warrior', 'set_guardian', 'set_hunter', 'set_complete', 'set_king'],
+            'crit': ['set_crit1', 'set_crit2', 'set_crit3', 'set_crit4', 'set_crit5', 'set_crit6'],
+            'penetration': ['set_penetration1', 'set_penetration2', 'set_penetration3', 'set_penetration4', 'set_penetration5', 'set_penetration6'],
+            'rich': ['set_rich1', 'set_rich2', 'set_rich3', 'set_rich4', 'set_rich5', 'set_rich6'],
+            'vampire': ['set_vampire1', 'set_vampire2', 'set_vampire3', 'set_vampire4', 'set_vampire5', 'set_vampire6'],
+            'regen': ['set_regen1', 'set_regen2', 'set_regen3', 'set_regen4', 'set_regen5', 'set_regen6'],
+            'health': ['set_health1', 'set_health2', 'set_health3', 'set_health4', 'set_health5', 'set_health6'],
+            'armor': ['set_bron1', 'set_bron2', 'set_bron3', 'set_bron4', 'set_bron5', 'set_bron6']
+        };
+
+        if (subcategory === 'all') return items;
+        
+        const allowedSets = setBonusMap[subcategory] || [];
+        return items.filter(item => {
+            return item.setName && allowedSets.includes(item.setName);
+        });
+    }
+
+    // ПОЛУЧЕНИЕ ДОСТУПНЫХ ПОДКАТЕГОРИЙ
     getAvailableSubcategories(items) {
         if (this.currentCategory === 'all') {
             return [];
@@ -551,22 +518,7 @@ class ShopSystem {
         return subcategories;
     }
 
-    // Получение количества предметов в категории
-    getCategoryItemCount(items, category) {
-        if (category === 'all') return items.length;
-        if (category === 'set') return items.filter(item => item.setName).length;
-        if (category === 'special') {
-            return items.filter(item => 
-                item.rarity === 'legendary' || 
-                item.rarity === 'mythic' ||
-                item.questItem ||
-                item.unique
-            ).length;
-        }
-        return items.filter(item => item.type === category).length;
-    }
-
-    // Обработчики событий
+    // ОБРАБОТЧИКИ СОБЫТИЙ
     attachEventHandlers() {
         // Обработчики категорий
         const categoryTabs = document.querySelectorAll('.category-tab');
@@ -635,7 +587,7 @@ class ShopSystem {
         }
     }
 
-    // Покупка предмета
+    // ПОКУПКА ПРЕДМЕТА
     buyItem(itemId) {
         const item = this.currentShop.inventory.find(i => 
             (i.originalId || i.id) === itemId
@@ -692,7 +644,7 @@ class ShopSystem {
         }
     }
 
-    // Показ деталей предмета
+    // ПОКАЗ ДЕТАЛЕЙ ПРЕДМЕТА
     showItemDetailModal(itemId) {
         const item = this.currentShop.inventory.find(i => 
             (i.originalId || i.id) === itemId
@@ -765,13 +717,13 @@ class ShopSystem {
                                 ${item.durability ? `<div class="stat-line"><span>⚙️ Прочность:</span> <span class="stat-value">${item.durability.current || item.durability}/${item.durability.max || item.durability}</span></div>` : ''}
                             </div>
 
-                            ${item.setInfo ? `
+                            ${item.setName ? `
                                 <div class="item-set-details">
                                     <h5>⭐ Бонус набора</h5>
                                     <div class="set-info">
-                                        <div class="set-bonus">${this.formatBonus(item.setInfo.bonus)}</div>
-                                        <div class="set-description">${item.setInfo.description}</div>
-                                        <div class="set-requirements">Требуется предметов: ${item.setInfo.pieces}</div>
+                                        <div class="set-bonus">${this.formatSetBonus(item.setName)}</div>
+                                        <div class="set-description">${this.getSetDescription(item.setName)}</div>
+                                        <div class="set-requirements">Требуется предметов: ${this.getSetRequiredPieces(item.setName)}</div>
                                     </div>
                                 </div>
                             ` : ''}
@@ -819,7 +771,29 @@ class ShopSystem {
         }
     }
 
-    // Вспомогательные методы
+    closeItemDetailModal() {
+        if (this.currentShop) {
+            this.showShopInterface(this.currentShop);
+        }
+    }
+
+    closeShop() {
+        this.currentShop = null;
+        this.currentCategory = 'all';
+        this.currentSubcategory = 'all';
+        this.searchQuery = '';
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+        }
+    }
+
+    leaveShop() {
+        this.closeShop();
+    }
+
+    // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     getInventorySpace() {
         if (!this.currentHero || !this.currentHero.inventory) {
             return '0/0';
@@ -835,46 +809,10 @@ class ShopSystem {
         return this.currentHero.inventory.some(id => id === itemId || id === itemId.toString());
     }
 
-    formatBonus(bonus) {
-        if (!bonus || bonus.type === 'none') return '';
-        
-        const bonusTypes = {
-            'damage_mult': '📈 Урон +',
-            'armor_mult': '🛡️ Броня +',
-            'health_mult': '❤️ Здоровье +',
-            'speed_mult': '⚡ Скорость +',
-            'mana_mult': '🔵 Мана +',
-            'crit_chance': '💥 Шанс крита +',
-            'dodge_chance': '🌀 Уклонение +'
-        };
-        
-        const value = bonus.value * 100;
-        const formattedValue = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1);
-        return `${bonusTypes[bonus.type] || 'Бонус'} ${formattedValue}%`;
-    }
-
-    formatPrice(price) {
-        if (price >= 1000) {
-            return (price / 1000).toFixed(1) + 'k';
-        }
-        return price;
-    }
-
-    getSetName(setName) {
-        return this.itemSets[setName]?.name || setName;
-    }
-
-    getMerchantTypeName(type) {
-        const types = {
-            'general': 'Универсальный торговец',
-            'weapon': 'Оружейник',
-            'armor': 'Бронник',
-            'potion': 'Алхимик',
-            'magic': 'Магические товары',
-            'blacksmith': 'Кузнец',
-            'leatherworker': 'Кожевник'
-        };
-        return types[type] || 'Торговец';
+    getCategoryItemCount(items, category) {
+        if (category === 'all') return items.length;
+        if (category === 'set') return items.filter(item => item.setName).length;
+        return items.filter(item => item.type === category).length;
     }
 
     getCategoryTitle() {
@@ -897,64 +835,104 @@ class ShopSystem {
         return title;
     }
 
-    getSubcategoryName(subcategory) {
-        const names = {
-            // Оружие
-            'sword': 'Меч', 'axe': 'Топор', 'mace': 'Булава', 'dagger': 'Кинжал',
-            'bow': 'Лук', 'staff': 'Посох', 'wand': 'Жезл', 'spear': 'Копье',
-            // Броня
-            'helmet': 'Шлем', 'chest': 'Нагрудник', 'gloves': 'Перчатки', 'boots': 'Сапоги',
-            'pants': 'Поножи', 'shield': 'Щит', 'cloak': 'Плащ', 'amulet': 'Амулет', 'ring': 'Кольцо',
-            // Зелья
-            'health': 'Здоровье', 'mana': 'Мана', 'stamina': 'Выносливость', 'buff': 'Усиление', 
-            'debuff': 'Ослабление', 'restoration': 'Восстановление',
-            // Расходники
-            'food': 'Еда', 'scroll': 'Свиток', 'arrow': 'Стрелы', 'throwable': 'Метательное', 
-            'reagent': 'Реагент', 'key': 'Ключ',
-            // Материалы
-            'ore': 'Руда', 'herb': 'Трава', 'leather': 'Кожа', 'cloth': 'Ткань', 
-            'gem': 'Самоцвет', 'enchanted': 'Зачарованный', 'wood': 'Древесина',
-            // Особые
-            'quest': 'Квестовый', 'unique': 'Уникальный', 'artifact': 'Артефакт', 'event': 'Ивентовый'
+    formatPrice(price) {
+        if (price >= 1000) {
+            return (price / 1000).toFixed(1) + 'k';
+        }
+        return price;
+    }
+
+    formatBonus(bonus) {
+        if (!bonus || bonus.type === 'none') return '';
+        
+        const bonusTypes = {
+            'damage_mult': '📈 Урон +',
+            'armor_mult': '🛡️ Броня +',
+            'health_mult': '❤️ Здоровье +',
+            'speed_mult': '⚡ Скорость +',
+            'mana_mult': '🔵 Мана +',
+            'crit_chance': '💥 Шанс крита +',
+            'dodge_chance': '🌀 Уклонение +'
         };
         
-        return names[subcategory] || subcategory;
+        const value = bonus.value * 100;
+        const formattedValue = Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1);
+        return `${bonusTypes[bonus.type] || 'Бонус'} ${formattedValue}%`;
+    }
+
+    getSetName(setName) {
+        const equipmentSystem = window.game?.systems?.equipment;
+        if (equipmentSystem && equipmentSystem.itemSets && equipmentSystem.itemSets[setName]) {
+            return equipmentSystem.itemSets[setName].name || setName;
+        }
+        return setName;
+    }
+
+    formatSetBonus(setName) {
+        const equipmentSystem = window.game?.systems?.equipment;
+        if (equipmentSystem && equipmentSystem.itemSets && equipmentSystem.itemSets[setName]) {
+            const set = equipmentSystem.itemSets[setName];
+            return this.formatBonus(set.bonus);
+        }
+        return 'Бонус сета';
+    }
+
+    getSetDescription(setName) {
+        const equipmentSystem = window.game?.systems?.equipment;
+        if (equipmentSystem && equipmentSystem.itemSets && equipmentSystem.itemSets[setName]) {
+            return equipmentSystem.itemSets[setName].description || 'Описание сета';
+        }
+        return 'Описание сета';
+    }
+
+    getSetRequiredPieces(setName) {
+        const equipmentSystem = window.game?.systems?.equipment;
+        if (equipmentSystem && equipmentSystem.itemSets && equipmentSystem.itemSets[setName]) {
+            return equipmentSystem.itemSets[setName].requiredPieces || 6;
+        }
+        return 6;
     }
 
     getSubcategoryIcon(subcategory) {
         const icons = {
             // Оружие
-            'sword': '⚔️', 'axe': '🪓', 'mace': '🔨', 'dagger': '🗡️',
-            'bow': '🏹', 'staff': '🔮', 'wand': '✨', 'spear': '🔱',
-            // Броня
-            'helmet': '⛑️', 'chest': '👕', 'gloves': '🧤', 'boots': '👢',
-            'pants': '👖', 'shield': '🛡️', 'cloak': '🧥', 'amulet': '📿', 'ring': '💍',
-            // Зелья
-            'health': '❤️', 'mana': '🔵', 'stamina': '🟢', 'buff': '🔼', 
-            'debuff': '🔽', 'restoration': '🔄',
-            // Расходники
-            'food': '🍖', 'scroll': '📜', 'arrow': '🏹', 'throwable': '🎯', 
-            'reagent': '🧪', 'key': '🔑',
-            // Материалы
-            'ore': '⛏️', 'herb': '🌿', 'leather': '🐄', 'cloth': '🧵', 
-            'gem': '💎', 'enchanted': '✨', 'wood': '🪵',
-            // Особые
-            'quest': '❓', 'unique': '💫', 'artifact': '🏆', 'event': '🎉'
+            'one_handed': '⚔️', 'two_handed': '🪓', 'shield': '🛡️',
+            // Материалы брони
+            'cloth': '🧵', 'leather': '🐄', 'hide': '🦌', 'fur': '🐻', 
+            'bone': '💀', 'plate': '🔩', 'chain': '⛓️', 'plate_mail': '🛡️',
+            // Сеты
+            'damage': '⚔️', 'crit': '🎯', 'penetration': '💥', 'rich': '💰',
+            'vampire': '🩸', 'regen': '❤️', 'health': '💪', 'armor': '🛡️'
         };
         
         return icons[subcategory] || '📦';
     }
 
+    getSubcategoryName(subcategory) {
+        const names = {
+            // Оружие
+            'one_handed': 'Одноручное', 'two_handed': 'Двуручное', 'shield': 'Щит',
+            // Материалы брони
+            'cloth': 'Ткань', 'leather': 'Кожа', 'hide': 'Шкура', 'fur': 'Мех',
+            'bone': 'Кости', 'plate': 'Пластины', 'chain': 'Кольчуга', 'plate_mail': 'Латы',
+            // Сеты
+            'damage': 'Урон', 'crit': 'Криты', 'penetration': 'Пенетрация', 'rich': 'Богатство',
+            'vampire': 'Вампиризм', 'regen': 'Регенерация', 'health': 'Здоровье', 'armor': 'Броня'
+        };
+        
+        return names[subcategory] || subcategory;
+    }
+
     getItemIcon(itemType) {
         const icons = {
             'weapon': '⚔️',
-            'armor': '🛡️',
+            'helmet': '⛑️',
+            'chest': '👕',
+            'gloves': '🧤',
+            'legs': '👖',
+            'boots': '👢',
             'potion': '🧪',
-            'consumable': '🍖',
-            'material': '⛏️',
-            'special': '🎁',
-            'scroll': '📜',
-            'misc': '📦'
+            'consumable': '🍖'
         };
         return icons[itemType] || '📦';
     }
@@ -962,13 +940,13 @@ class ShopSystem {
     getItemTypeName(type) {
         const names = {
             'weapon': 'Оружие',
-            'armor': 'Броня',
+            'helmet': 'Шлем',
+            'chest': 'Броня',
+            'gloves': 'Перчатки',
+            'legs': 'Поножи',
+            'boots': 'Ботинки',
             'potion': 'Зелье',
-            'consumable': 'Расходник',
-            'material': 'Материал',
-            'special': 'Особый',
-            'scroll': 'Свиток',
-            'misc': 'Предмет'
+            'consumable': 'Расходник'
         };
         return names[type] || type;
     }
@@ -985,26 +963,6 @@ class ShopSystem {
         return names[rarity] || 'Обычный';
     }
 
-    closeItemDetailModal() {
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
-        }
-    }
-
-    closeShop() {
-        this.currentShop = null;
-        this.searchQuery = '';
-        const container = document.getElementById('overlay-container');
-        if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
-        }
-    }
-
-    leaveShop() {
-        this.closeShop();
-    }
-
     // Перезаполнение магазина
     restockShop(shopId) {
         const shop = this.shops.get(shopId);
@@ -1016,7 +974,6 @@ class ShopSystem {
             return;
         }
 
-        // Здесь можно добавить логику генерации новых предметов
         shop.lastRestock = Date.now();
         console.log(`🔄 Магазин ${shop.name} перезаполнен`);
     }
@@ -1043,4 +1000,4 @@ class ShopSystem {
 }
 
 window.ShopSystem = ShopSystem;
-console.log("📦 ShopSystem модуль загружен с полной функциональностью");
+console.log("📦 ShopSystem модуль загружен с полной функциональностью и совместимыми фильтрами");
