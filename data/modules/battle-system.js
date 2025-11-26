@@ -843,45 +843,7 @@ updateFlaskChargesDisplay() {
     this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ДЛЯ ПЕРВОНАЧАЛЬНОГО ОТОБРАЖЕНИЯ
 }
 
-        setTimeout(() => {
-            console.log("🔧 Применяем экстренное исправление полосок здоровья...");
-            
-            const healthContainers = document.querySelectorAll('.unit-health-container');
-            const healthBars = document.querySelectorAll('.health-bar-fullscreen');
-            const healthFills = document.querySelectorAll('.health-fill');
-            const healthTexts = document.querySelectorAll('.health-text');
-            
-            healthContainers.forEach(el => {
-                el.style.display = 'flex';
-                el.style.visibility = 'visible';
-                el.style.opacity = '1';
-            });
-            
-            healthBars.forEach(el => {
-                el.style.display = 'block';
-                el.style.visibility = 'visible';
-                el.style.opacity = '1';
-            });
-            
-            healthFills.forEach(el => {
-                el.style.display = 'block';
-                el.style.visibility = 'visible';
-                el.style.opacity = '1';
-            });
-            
-            healthTexts.forEach(el => {
-                el.style.display = 'block';
-                el.style.visibility = 'visible';
-                el.style.opacity = '1';
-            });
-            
-            console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
-        }, 100);
-
-        this.updateTacticalUI();
-        this.updateFlaskUI();
-    }
-
+  
     renderEnemyPanels() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => 
             unit && unit.currentHealth > 0
