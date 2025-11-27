@@ -439,12 +439,31 @@ class EquipmentSystem {
         return this.currentHero && this.currentHero.inventory.includes(itemId);
     }
 
-    addItemToInventory(itemId) {
-        if (this.currentHero && !this.currentHero.inventory.includes(itemId)) {
+     addItemToInventory(itemId) {
+        if (!this.currentHero) return false;
+
+        // ⭐ ИСПРАВЛЕНИЕ: Добавляем в ОБЩИЙ инвентарь
+        if (window.game && window.game.sharedResources) {
+            if (window.game.sharedResources.inventory.length >= 100) { // Лимит общего инвентаря
+                this.showNotification('❌ Общий инвентарь полон! Максимум 100 предметов');
+                return false;
+            }
+            window.game.sharedResources.inventory.push(itemId);
+            // Синхронизируем с текущим героем
+            this.currentHero.inventory = [...window.game.sharedResources.inventory];
+            console.log(`🎒 Предмет ${itemId} добавлен в общий инвентарь`);
+        } else {
+            // Резервный код (старая система)
+            if (this.currentHero.inventory.length >= 100) {
+                this.showNotification('❌ Инвентарь полон! Максимум 100 предметов');
+                return false;
+            }
             this.currentHero.inventory.push(itemId);
-            return true;
+            console.log(`🎒 Предмет ${itemId} добавлен в индивидуальный инвентарь`);
         }
-        return false;
+        
+        this.showNotification(`✅ Предмет добавлен в инвентарь`);
+        return true;
     }
 
   addItemToHero(hero, itemId) {
