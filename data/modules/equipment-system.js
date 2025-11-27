@@ -1277,7 +1277,6 @@ showInventoryItemDetails(itemId) {
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
-// ДОБАВЬТЕ этот метод в класс EquipmentSystem
 handleInventoryItemClick(itemId) {
     const item = this.getItemById(itemId);
     if (!item) {
@@ -1292,10 +1291,7 @@ handleInventoryItemClick(itemId) {
         const slot = this.getEquipmentSlot(item);
         if (slot) {
             this.unequipItem(slot);
-            if (window.game) {
-                window.game.showNotification(`📦 Снято: ${item.name}`, 'success');
-                window.game.saveGame();
-            }
+            // Уведомление показывается внутри unequipItem
         }
     } else {
         // Если предмет не надет - пытаемся экипировать
@@ -1313,29 +1309,43 @@ handleInventoryItemClick(itemId) {
             return;
         }
 
-        // Проверяем, свободен ли слот
-        const currentEquipped = this.currentHero.equipment[slot];
-        if (currentEquipped) {
-            // Слот занят - предлагаем заменить
-            const currentItem = this.getItemById(currentEquipped);
-            if (window.confirm(`Заменить ${currentItem?.name || 'предмет'} на ${item.name}?`)) {
-                this.unequipItem(slot);
-            } else {
-                return; // Пользователь отказался от замены
-            }
-        }
-
-        // Особые случаи для двуручного оружия
+        // ⭐ ОСОБАЯ ЛОГИКА ДЛЯ ДВУРУЧНОГО ОРУЖИЯ
         if (item.weaponType === 'two_handed') {
-            // Снимаем всё что было в руках
-            this.unequipToInventory('main_hand');
-            this.unequipToInventory('off_hand');
+            // Проверяем, есть ли что-то в слотах оружия
+            const mainHandItem = this.currentHero.equipment.main_hand;
+            const offHandItem = this.currentHero.equipment.off_hand;
+            
+            if (mainHandItem || offHandItem) {
+                const occupiedSlots = [];
+                if (mainHandItem) occupiedSlots.push('правой руке');
+                if (offHandItem) occupiedSlots.push('левой руке');
+                
+                if (!window.confirm(`Двуручное оружие займет обе руки. Освободить ${occupiedSlots.join(' и ')}?`)) {
+                    return; // Пользователь отказался
+                }
+                
+                // Снимаем всё что было в руках
+                if (mainHandItem) this.unequipToInventory('main_hand');
+                if (offHandItem) this.unequipToInventory('off_hand');
+            }
             
             // Экипируем в обе руки
             this.currentHero.equipment.main_hand = itemId;
             this.currentHero.equipment.off_hand = itemId;
+            
         } else {
-            // Стандартная экипировка
+            // Стандартная экипировка для одноручного оружия и брони
+            const currentEquipped = this.currentHero.equipment[slot];
+            if (currentEquipped) {
+                // Слот занят - предлагаем заменить
+                const currentItem = this.getItemById(currentEquipped);
+                if (window.confirm(`Заменить ${currentItem?.name || 'предмет'} на ${item.name}?`)) {
+                    this.unequipItem(slot);
+                } else {
+                    return; // Пользователь отказался от замены
+                }
+            }
+            
             this.currentHero.equipment[slot] = itemId;
         }
 
@@ -1345,20 +1355,18 @@ handleInventoryItemClick(itemId) {
         if (window.game) {
             window.game.showNotification(`🎯 Надето: ${item.name}`, 'success');
             window.game.saveGame();
-            
-            // Обновляем интерфейс
-            setTimeout(() => {
-                if (window.game.showHeroGameScreen) {
-                    window.game.showHeroGameScreen();
-                }
-            }, 100);
         }
     }
     
-    // Закрываем инвентарь после действия
-    if (window.game && window.game.hideOverlay) {
+    // Обновляем интерфейс и закрываем инвентарь
+    if (window.game) {
+        if (window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
         setTimeout(() => {
-            window.game.hideOverlay();
+            if (window.game.hideOverlay) {
+                window.game.hideOverlay();
+            }
         }, 500);
     }
 }
@@ -1418,76 +1426,92 @@ handleInventoryItemClick(itemId) {
         game.showHeroGameScreen();
     }
 
-    // ========== СНЯТИЕ ПРЕДМЕТА ==========
-    unequipItem(slot) {
-        if (!this.currentHero) return;
-        
-        const itemId = this.currentHero.equipment[slot];
-        if (!itemId) {
-            this.showNotification('❌ В этом слоте ничего не надето');
-            return;
-        }
-
-        const item = this.getItemById(itemId);
-        if (!item) return;
-
-        // Проверяем место в инвентаре
-        if (this.currentHero.inventory.length >= 10) {
-            this.showNotification('❌ Инвентарь полон! Максимум 10 предметов');
-            return;
-        }
-
-        // Особый случай: если снимаем двуручное оружие
-        if (item.weaponType === 'two_handed') {
-            this.currentHero.equipment.main_hand = null;
-            this.currentHero.equipment.off_hand = null;
-        } else {
-            this.currentHero.equipment[slot] = null;
-        }
-
-        // Добавляем предмет обратно в инвентарь
-        this.currentHero.inventory.push(itemId);
-        
-        // ⭐ СОХРАНЕНИЕ ПОСЛЕ СНЯТИЯ ⭐
-        if (window.game) window.game.saveGame();
-        
-        this.showNotification(`📦 Снято: ${item.name}`);
-        
-        // Обновляем интерфейс
+  // ЗАМЕНИТЕ метод unequipItem в EquipmentSystem
+unequipItem(slot) {
+    if (!this.currentHero) return;
+    
+    const itemId = this.currentHero.equipment[slot];
+    if (!itemId) {
         if (window.game) {
-            window.game.hideOverlay();
-            window.game.showHeroGameScreen();
+            window.game.showNotification('❌ В этом слоте ничего не надето');
         }
+        return;
     }
 
-    unequipToInventory(slot) {
-        const itemId = this.currentHero.equipment[slot];
-        if (!itemId) return false;
+    const item = this.getItemById(itemId);
+    if (!item) return;
 
-        const item = this.getItemById(itemId);
-        if (!item) return false;
-
-        // Проверяем место в инвентаре
-        if (this.currentHero.inventory.length >= 10) {
-            this.showNotification('❌ Инвентарь полон! Максимум 10 предметов');
-            return false;
+    // Проверяем место в инвентаре
+    if (this.currentHero.inventory.length >= 100) {
+        if (window.game) {
+            window.game.showNotification('❌ Инвентарь полон! Максимум 100 предметов');
         }
-
-        // Особый случай: если снимаем двуручное оружие
-        if (item.weaponType === 'two_handed') {
-            this.currentHero.equipment.main_hand = null;
-            this.currentHero.equipment.off_hand = null;
-        } else {
-            this.currentHero.equipment[slot] = null;
-        }
-
-        this.currentHero.inventory.push(itemId);
-        
-        // ⭐ СОХРАНЕНИЕ ПОСЛЕ СНЯТИЯ ⭐
-        if (window.game) window.game.saveGame();
-        
-        return true;
+        return;
     }
+
+    // ⭐ ИСПРАВЛЕНИЕ ДЛЯ ДВУРУЧНОГО ОРУЖИЯ
+    if (item.weaponType === 'two_handed') {
+        // Для двуручного оружия очищаем ОБА слота
+        this.currentHero.equipment.main_hand = null;
+        this.currentHero.equipment.off_hand = null;
+        console.log(`📦 Снято двуручное оружие: ${item.name}`);
+    } else {
+        // Стандартное снятие
+        this.currentHero.equipment[slot] = null;
+        console.log(`📦 Снято: ${item.name} со слота ${slot}`);
+    }
+
+    // Добавляем предмет обратно в инвентарь
+    this.currentHero.inventory.push(itemId);
+    
+    // ⭐ СОХРАНЕНИЕ ПОСЛЕ СНЯТИЯ
+    if (window.game) {
+        window.game.saveGame();
+        window.game.showNotification(`📦 Снято: ${item.name}`);
+    }
+    
+    // Обновляем интерфейс
+    if (window.game && window.game.showHeroGameScreen) {
+        window.game.showHeroGameScreen();
+    }
+    
+    return true;
+}
+
+ // Также обновите метод unequipToInventory для двуручного оружия
+unequipToInventory(slot) {
+    const itemId = this.currentHero.equipment[slot];
+    if (!itemId) return false;
+
+    const item = this.getItemById(itemId);
+    if (!item) return false;
+
+    // Проверяем место в инвентаре
+    if (this.currentHero.inventory.length >= 100) {
+        if (window.game) {
+            window.game.showNotification('❌ Инвентарь полон! Максимум 100 предметов');
+        }
+        return false;
+    }
+
+    // ⭐ ИСПРАВЛЕНИЕ ДЛЯ ДВУРУЧНОГО ОРУЖИЯ
+    if (item.weaponType === 'two_handed') {
+        // Для двуручного оружия очищаем ОБА слота
+        this.currentHero.equipment.main_hand = null;
+        this.currentHero.equipment.off_hand = null;
+    } else {
+        this.currentHero.equipment[slot] = null;
+    }
+
+    this.currentHero.inventory.push(itemId);
+    
+    // ⭐ СОХРАНЕНИЕ ПОСЛЕ СНЯТИЯ
+    if (window.game) {
+        window.game.saveGame();
+    }
+    
+    return true;
+}
 
     usePotion(item) {
         if (item.type !== 'potion') return;
