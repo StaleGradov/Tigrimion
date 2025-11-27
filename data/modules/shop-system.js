@@ -245,7 +245,7 @@ class ShopSystem {
 
     generateShopHTML(shop) {
         const filteredItems = this.filterItemsByCategory(shop.inventory);
-        const subcategories = this.getAvailableSubcategories(filteredItems);
+        const subcategories = this.getAvailableSubcategories(shop.inventory);
         
         return `
             <div class="shop-overlay">
@@ -335,7 +335,7 @@ class ShopSystem {
                         <div class="subcategory-tab ${this.currentSubcategory === subcat.key ? 'active' : ''}" 
                              data-subcategory="${subcat.key}">
                             ${subcat.icon || ''} ${subcat.name}
-                            ${subcat.count ? `<span class="subcategory-count">${subcat.count}</span>` : ''}
+                            <span class="subcategory-count">${subcat.count}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -478,7 +478,7 @@ class ShopSystem {
         });
     }
 
-    // ПОЛУЧЕНИЕ ДОСТУПНЫХ ПОДКАТЕГОРИЙ
+    // ПОЛУЧЕНИЕ ДОСТУПНЫХ ПОДКАТЕГОРИЙ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
     getAvailableSubcategories(items) {
         if (this.currentCategory === 'all') {
             return [];
@@ -491,30 +491,50 @@ class ShopSystem {
 
         const subcategories = [];
         
-        // Добавляем "Все" подкатегорию
+        // Добавляем "Все" подкатегорию ВСЕГДА
         subcategories.push({
             key: 'all',
             name: categoryConfig.subcategories.all,
-            count: items.length,
+            count: this.getSubcategoryItemCount(items, 'all'),
             icon: '📦'
         });
 
-        // Добавляем остальные подкатегории с подсчетом предметов
+        // Добавляем остальные подкатегории ВСЕГДА (даже если в них нет предметов)
         Object.entries(categoryConfig.subcategories).forEach(([key, name]) => {
             if (key !== 'all') {
-                const count = items.filter(item => item.subcategory === key).length;
-                if (count > 0 || this.currentSubcategory === key) {
-                    subcategories.push({
-                        key: key,
-                        name: name,
-                        count: count,
-                        icon: this.getSubcategoryIcon(key)
-                    });
-                }
+                const count = this.getSubcategoryItemCount(items, key);
+                subcategories.push({
+                    key: key,
+                    name: name,
+                    count: count,
+                    icon: this.getSubcategoryIcon(key)
+                });
             }
         });
 
         return subcategories;
+    }
+
+    // ВСПОМОГАТЕЛЬНЫЙ МЕТОД ДЛЯ ПОДСЧЕТА ПРЕДМЕТОВ В ПОДКАТЕГОРИИ
+    getSubcategoryItemCount(items, subcategory) {
+        if (this.currentCategory === 'all') return 0;
+        
+        if (subcategory === 'all') {
+            if (this.currentCategory === 'set') {
+                return items.filter(item => item.setName).length;
+            } else {
+                return items.filter(item => item.type === this.currentCategory).length;
+            }
+        }
+
+        if (this.currentCategory === 'set') {
+            return this.filterSetItemsBySubcategory(items, subcategory).length;
+        } else {
+            return items.filter(item => 
+                item.type === this.currentCategory && 
+                item.subcategory === subcategory
+            ).length;
+        }
     }
 
     // ОБРАБОТЧИКИ СОБЫТИЙ
@@ -633,7 +653,7 @@ class ShopSystem {
 
         setTimeout(() => {
             const filteredItems = this.filterItemsByCategory(this.currentShop.inventory);
-            const subcategories = this.getAvailableSubcategories(filteredItems);
+            const subcategories = this.getAvailableSubcategories(this.currentShop.inventory);
             
             // Обновляем только необходимые части
             this.updateCategoryTabs();
@@ -679,8 +699,8 @@ class ShopSystem {
         if (!subcategoriesContainer) {
             // Создаем контейнер если его нет
             const categoriesContainer = document.querySelector('.shop-categories');
-            if (categoriesContainer && categoriesContainer.nextElementSibling) {
-                categoriesContainer.nextElementSibling.insertAdjacentHTML('afterend', this.generateSubcategoriesHTML(subcategories));
+            if (categoriesContainer) {
+                categoriesContainer.insertAdjacentHTML('afterend', this.generateSubcategoriesHTML(subcategories));
             }
         } else {
             // Обновляем существующий контейнер
@@ -689,14 +709,16 @@ class ShopSystem {
         }
 
         // Привязываем обработчики для новых подкатегорий
-        const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
-        subcategoryTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const subcategory = tab.getAttribute('data-subcategory');
-                this.setSubcategory(subcategory);
+        setTimeout(() => {
+            const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+            subcategoryTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const subcategory = tab.getAttribute('data-subcategory');
+                    this.setSubcategory(subcategory);
+                });
             });
-        });
+        }, 0);
     }
 
     updateItemsGrid(filteredItems) {
@@ -1029,13 +1051,14 @@ class ShopSystem {
         if (!bonus || bonus.type === 'none') return '';
         
         const bonusTypes = {
-            'damage_mult': '📈 Урон +',
+            'health_mult': '💪 Здоровье +',
+            'damage_mult': '⚔️ Урон +',
             'armor_mult': '🛡️ Броня +',
-            'health_mult': '❤️ Здоровье +',
-            'speed_mult': '⚡ Скорость +',
-            'mana_mult': '🔵 Мана +',
-            'crit_chance': '💥 Шанс крита +',
-            'dodge_chance': '🌀 Уклонение +'
+            'gold_mult': '💰 Золото +',
+            'health_regen_mult': '❤️ Регенерация +',
+            'crit_chance': '🎯 Криты +',
+            'armor_penetration': '💥 Пенетрация +',
+            'vampirism': '🩸 Вампиризм +'
         };
         
         const value = bonus.value * 100;
