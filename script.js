@@ -222,6 +222,14 @@ class SafeHeroGame {
         this.currentScreen = 'loading';
         this.currentHero = null;
         this.activeOverlay = null;
+        
+        // ⭐ ДОБАВИТЬ ЭТО - ОБЩИЕ РЕСУРСЫ
+        this.sharedResources = {
+            gold: 0, // Временно 0, установится после загрузки героев
+            inventory: [], // Общий инвентарь
+            unlockedHeroes: [1] // Разблокированные герои
+        };
+        
         this.isSaveLoaded = false;
         this.init();
     }
@@ -301,7 +309,7 @@ class SafeHeroGame {
         }
     }
 
-    async loadGameData() {
+      async loadGameData() {
         console.log("📂 Загрузка игровых данных...");
         
         try {
@@ -314,6 +322,13 @@ class SafeHeroGame {
                 this.systems.level.loadLevelData()
             ]);
             
+            // ⭐ ИСПРАВЛЕНИЕ: Устанавливаем начальное золото из первого героя
+            if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
+                const firstHero = this.systems.hero.heroes[0];
+                this.sharedResources.gold = firstHero.gold;
+                console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
+            }
+            
             console.log("✅ Все игровые данные загружены");
             
         } catch (error) {
@@ -322,44 +337,40 @@ class SafeHeroGame {
     }
 
     // ========== УЛУЧШЕННАЯ СИСТЕМА СОХРАНЕНИЯ ==========
-    saveGame() {
+      saveGame() {
         try {
             if (this.currentHero && this.systems.equipment && this.systems.hero) {
                 const saveData = {
                     currentHeroId: this.currentHero.id,
-                    // Сохраняем ВСЕХ героев с их прогрессом
+                    // ⭐ ИСПРАВЛЕНИЕ: Сохраняем индивидуальный прогресс каждого героя
                     heroes: this.systems.hero.heroes.map(hero => ({
                         id: hero.id,
-                        name: hero.name,
-                        image: hero.image,
-                        race: hero.race,
-                        class: hero.class,
-                        saga: hero.saga,
-                        baseHealth: hero.baseHealth,
-                        baseDamage: hero.baseDamage,
-                        baseArmor: hero.baseArmor,
-                        gold: hero.gold,
+                        // ИНДИВИДУАЛЬНЫЕ данные:
                         level: hero.level,
                         experience: hero.experience,
                         monstersKilled: hero.monstersKilled || 0,
                         deaths: hero.deaths || 0,
                         healthRegen: hero.healthRegen || 1.0,
-                        inventory: [...hero.inventory],
+                        currentHealth: hero.currentHealth || hero.baseHealth,
+                        // Экипировка индивидуальна для каждого героя:
                         equipment: {...hero.equipment},
-                        unlocked: hero.unlocked,
-                        currentHealth: hero.currentHealth || hero.baseHealth // ⭐ СОХРАНЯЕМ ТЕКУЩЕЕ ЗДОРОВЬЕ
+                        unlocked: hero.unlocked
                     })),
+                    // ⭐ ОБЩИЕ РЕСУРСЫ:
+                    sharedResources: {
+                        gold: this.sharedResources.gold,
+                        inventory: [...this.sharedResources.inventory],
+                        unlockedHeroes: [...this.sharedResources.unlockedHeroes]
+                    },
                     timestamp: Date.now(),
-                    version: "1.0"
+                    version: "2.0" // Увеличиваем версию для новой системы
                 };
                 
                 localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-                console.log("💾 Игра сохранена", {
-                    hero: this.currentHero.name,
-                    gold: this.currentHero.gold,
-                    inventory: this.currentHero.inventory.length,
-                    equipment: Object.values(this.currentHero.equipment).filter(Boolean).length,
-                    currentHealth: this.currentHero.currentHealth // ⭐ ЛОГИРУЕМ ЗДОРОВЬЕ
+                console.log("💾 Игра сохранена с общей системой ресурсов", {
+                    gold: this.sharedResources.gold,
+                    inventory: this.sharedResources.inventory.length,
+                    heroes: this.systems.hero.heroes.length
                 });
                 return true;
             }
@@ -369,67 +380,86 @@ class SafeHeroGame {
         return false;
     }
 
-   loadSave() {
-    try {
-        const save = localStorage.getItem('tigrimionSave');
-        if (save) {
-            const data = JSON.parse(save);
-            console.log("📂 Загружаем сохранение:", data);
-            
-            if (data.heroes && this.systems.hero) {
-                // ⭐ ВАРИАНТ 2: Сохраняем оригинальный порядок из JSON, но обновляем прогресс
-                const savedHeroesMap = new Map();
-                data.heroes.forEach(hero => savedHeroesMap.set(hero.id, hero));
+      loadSave() {
+        try {
+            const save = localStorage.getItem('tigrimionSave');
+            if (save) {
+                const data = JSON.parse(save);
+                console.log("📂 Загружаем сохранение:", data);
                 
-                // Обновляем прогресс каждого героя в ИСХОДНОМ порядке из JSON
-                this.systems.hero.heroes.forEach(hero => {
-                    const savedHero = savedHeroesMap.get(hero.id);
-                    if (savedHero) {
-                        // Обновляем только прогресс, сохраняя оригинальную позицию
-                        hero.gold = savedHero.gold || hero.gold;
-                        hero.level = savedHero.level || hero.level;
-                        hero.experience = savedHero.experience || hero.experience;
-                        hero.monstersKilled = savedHero.monstersKilled || hero.monstersKilled || 0;
-                        hero.deaths = savedHero.deaths || hero.deaths || 0;
-                        hero.healthRegen = savedHero.healthRegen || hero.healthRegen || 1.0;
-                        hero.currentHealth = savedHero.currentHealth || savedHero.baseHealth || hero.baseHealth;
-                        hero.inventory = savedHero.inventory || [];
-                        hero.equipment = savedHero.equipment || {
-                            main_hand: null, off_hand: null, helmet: null,
-                            chest: null, gloves: null, legs: null, boots: null
-                        };
-                        hero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : hero.unlocked;
-                        
-                        console.log(`✅ Обновлен герой: ${hero.name}`, {
-                            level: hero.level,
-                            gold: hero.gold,
-                            position: this.systems.hero.heroes.indexOf(hero)
-                        });
-                    }
-                });
-                
-                console.log("✅ Прогресс героев загружен с сохранением порядка из JSON");
-            }
-            
-            // Восстанавливаем текущего героя (остается без изменений)
-            if (data.currentHeroId && this.systems.hero) {
-                this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
-                if (this.currentHero && this.systems.equipment) {
-                    this.systems.equipment.setCurrentHero(this.currentHero);
+                if (data.heroes && this.systems.hero) {
+                    // Загружаем ИНДИВИДУАЛЬНЫЙ прогресс героев
+                    data.heroes.forEach(savedHero => {
+                        const existingHero = this.systems.hero.heroes.find(h => h.id === savedHero.id);
+                        if (existingHero) {
+                            // Обновляем только индивидуальный прогресс
+                            existingHero.level = savedHero.level || existingHero.level;
+                            existingHero.experience = savedHero.experience || existingHero.experience;
+                            existingHero.monstersKilled = savedHero.monstersKilled || existingHero.monstersKilled || 0;
+                            existingHero.deaths = savedHero.deaths || existingHero.deaths || 0;
+                            existingHero.healthRegen = savedHero.healthRegen || existingHero.healthRegen || 1.0;
+                            existingHero.currentHealth = savedHero.currentHealth || existingHero.baseHealth;
+                            existingHero.equipment = savedHero.equipment || {...existingHero.equipment};
+                            existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
+                            
+                            console.log(`✅ Загружен прогресс героя: ${existingHero.name}`, {
+                                level: existingHero.level,
+                                experience: existingHero.experience
+                            });
+                        }
+                    });
                 }
-                this.systems.hero.currentHero = this.currentHero;
-                console.log("✅ Текущий герой восстановлен:", this.currentHero?.name);
+                
+                // ⭐ ЗАГРУЖАЕМ ОБЩИЕ РЕСУРСЫ
+                if (data.sharedResources) {
+                    this.sharedResources = {
+                        gold: data.sharedResources.gold || 0,
+                        inventory: data.sharedResources.inventory || [],
+                        unlockedHeroes: data.sharedResources.unlockedHeroes || [1]
+                    };
+                    console.log("✅ Общие ресурсы загружены:", this.sharedResources);
+                } else {
+                    // ⭐ Если сохранение старое - берем золото из первого героя
+                    if (this.systems.hero.heroes.length > 0) {
+                        const firstHero = this.systems.hero.heroes[0];
+                        this.sharedResources.gold = firstHero.gold || 0;
+                        console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
+                    }
+                }
+                
+                // Восстанавливаем текущего героя
+                if (data.currentHeroId && this.systems.hero) {
+                    this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
+                    if (this.currentHero) {
+                        // ⭐ СИНХРОНИЗИРУЕМ: Устанавливаем общие ресурсы для текущего героя
+                        this.currentHero.gold = this.sharedResources.gold;
+                        this.currentHero.inventory = [...this.sharedResources.inventory];
+                        
+                        if (this.systems.equipment) {
+                            this.systems.equipment.setCurrentHero(this.currentHero);
+                        }
+                        this.systems.hero.currentHero = this.currentHero;
+                        
+                        console.log("✅ Текущий герой восстановлен с общими ресурсами:", this.currentHero.name);
+                    }
+                }
+                
+                return true;
+            } else {
+                // ⭐ НОВАЯ ИГРА: Устанавливаем золото из первого героя
+                if (this.systems.hero.heroes.length > 0) {
+                    const firstHero = this.systems.hero.heroes[0];
+                    this.sharedResources.gold = firstHero.gold || 0;
+                    console.log(`💰 Начальное золото для новой игры: ${firstHero.gold}`);
+                }
             }
-            
-            return true;
+        } catch (error) {
+            console.error("❌ Ошибка загрузки сохранения:", error);
+            localStorage.removeItem('tigrimionSave');
+            console.log("🗑️ Битое сохранение удалено");
         }
-    } catch (error) {
-        console.error("❌ Ошибка загрузки сохранения:", error);
-        localStorage.removeItem('tigrimionSave');
-        console.log("🗑️ Битое сохранение удалено");
+        return false;
     }
-    return false;
-}
 
     // ========== УЛУЧШЕННОЕ АВТОСОХРАНЕНИЕ ==========
     startAutosave() {
