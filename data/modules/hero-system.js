@@ -927,9 +927,6 @@ updateHeroDisplay(stats) {
                     <button class="btn-top" onclick="game.showOverlay('global-map')">
                         🗺️ Глобальная карта
                     </button>
-                    <button class="btn-top" onclick="game.showOverlay('local-map')">
-                        📍 Локальная карта
-                    </button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">
                         🎲 Тактическая карта
                     </button>
@@ -941,6 +938,9 @@ updateHeroDisplay(stats) {
                     </button>
                     <button class="btn-top" onclick="game.systems.hero.showHeroSelection()">
                         🔁 Сменить героя
+                    </button>
+                     <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">
+                    🔄 Сбросить героя
                     </button>
                 </div>
 
@@ -1226,6 +1226,56 @@ updateHeroDisplay(stats) {
         // СОХРАНЯЕМ ПРИ СБРОСЕ
         if (window.game) window.game.saveGame();
     }
+
+    resetCurrentHero() {
+    const hero = this.currentHero || window.game?.currentHero;
+    if (!hero) return;
+    
+    if (!confirm(`⚠️ Сбросить героя ${hero.name}?\n\nУровень, опыт, экипировка и прогресс будут сброшены к начальным значениям. Общее золото и инвентарь сохранятся.`)) {
+        return;
+    }
+    
+    const originalData = this.heroes.find(h => h.id === hero.id);
+    if (!originalData) return;
+    
+    // Сохраняем разблокировку
+    const wasUnlocked = hero.unlocked;
+    
+    // Восстанавливаем характеристики из JSON
+    Object.assign(hero, {
+        baseHealth: originalData.baseHealth,
+        baseDamage: originalData.baseDamage,
+        baseArmor: originalData.baseArmor,
+        level: 1,
+        experience: 0,
+        currentHealth: originalData.baseHealth,
+        inventory: [],
+        equipment: {
+            main_hand: null,
+            off_hand: null,
+            helmet: null,
+            chest: null,
+            gloves: null,
+            legs: null,
+            boots: null
+        },
+        unlocked: wasUnlocked
+    });
+    
+    // Синхронизируем с общими ресурсами
+    if (window.game && window.game.sharedResources) {
+        hero.gold = window.game.sharedResources.gold;
+        hero.inventory = [...window.game.sharedResources.inventory];
+    }
+    
+    this.showNotification(`🔄 ${hero.name} сброшен к начальным значениям`);
+    
+    // Сохраняем и обновляем интерфейс
+    if (window.game) {
+        window.game.saveGame();
+        this.showHeroGameScreen();
+    }
+}
     // ========== МЕТОДЫ ДЛЯ РАБОТЫ С ОБЩИМИ РЕСУРСАМИ ==========
     getGold() {
         if (window.game && window.game.sharedResources) {
