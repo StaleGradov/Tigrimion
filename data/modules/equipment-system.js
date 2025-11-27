@@ -447,34 +447,34 @@ class EquipmentSystem {
         return false;
     }
 
-    addItemToHero(hero, itemId) {
-        if (!hero || !itemId) return false;
-        
-        // Проверяем существование предмета
-        const item = this.getItemById(itemId);
-        if (!item) {
-            console.error(`❌ Предмет с ID ${itemId} не существует`);
-            return false;
-        }
-        
-        // Проверяем место в инвентаре
-        if (hero.inventory.length >= 10) {
-            console.warn(`❌ Инвентарь героя ${hero.name} полон`);
-            return false;
-        }
-        
-        // Проверяем, нет ли уже этого предмета
-        if (hero.inventory.includes(itemId)) {
-            console.warn(`⚠️ У героя ${hero.name} уже есть предмет ${item.name}`);
-            return false;
-        }
-        
-        // Добавляем предмет в инвентарь
-        hero.inventory.push(itemId);
-        
-        console.log(`✅ Предмет добавлен герою: ${item.name} (ID: ${itemId})`);
-        return true;
+  addItemToHero(hero, itemId) {
+    if (!hero || !itemId) return false;
+    
+    // Проверяем существование предмета
+    const item = this.getItemById(itemId);
+    if (!item) {
+        console.error(`❌ Предмет с ID ${itemId} не существует`);
+        return false;
     }
+    
+    // ИЗМЕНЕНИЕ: 100 слотов вместо 10
+    if (hero.inventory.length >= 100) {
+        console.warn(`❌ Инвентарь героя ${hero.name} полон`);
+        return false;
+    }
+    
+    // Проверяем, нет ли уже этого предмета
+    if (hero.inventory.includes(itemId)) {
+        console.warn(`⚠️ У героя ${hero.name} уже есть предмет ${item.name}`);
+        return false;
+    }
+    
+    // Добавляем предмет в инвентарь
+    hero.inventory.push(itemId);
+    
+    console.log(`✅ Предмет добавлен герою: ${item.name} (ID: ${itemId})`);
+    return true;
+}
 
     debugItems() {
         // Отладочный метод - можно оставить для разработки, но убрать вызовы
@@ -1121,179 +1121,249 @@ class EquipmentSystem {
         }
     }
 
-    // ========== ИНВЕНТАРЬ И ЭКИПИРОВКА ==========
-    showInventory(targetSlot = null) {
-        if (!this.currentHero) return '';
+  // УПРОЩЕННЫЙ ИНВЕНТАРЬ - клик для экипировки, без кнопок
+showInventory(targetSlot = null) {
+    if (!this.currentHero) return '';
 
-        let filteredItems = this.currentHero.inventory;
-        let filterInfo = '';
-        
-        if (targetSlot && targetSlot !== 'inventory') {
-            filteredItems = this.getItemsForSlot(targetSlot);
-            filterInfo = `
-                <div class="filter-info">
-                    <strong>🎯 Выбор предмета для: ${this.getSlotName(targetSlot)}</strong>
-                    <div>Показано: ${filteredItems.length} подходящих предметов</div>
-                </div>
-            `;
-        }
-
-        const inventoryHTML = filteredItems.map(itemId => {
-            const item = this.getItemById(itemId);
-            if (!item) return '';
-            
-            const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
-            const frameColor = this.getItemFrameColor(item.rarity);
-            const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
-            
-            return `
-                <div class="inventory-item" data-rarity="${item.rarity}" style="border-color: ${frameColor};">
-                    <div class="inventory-item-image" onclick="game.systems.equipment.showInventoryItemDetails(${itemId})">
-                        <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
-                    </div>
-                    <div class="inventory-item-info">
-                        <strong style="color: ${frameColor};" onclick="game.systems.equipment.showInventoryItemDetails(${itemId})">${item.name}</strong>
-                        <div class="item-stats">
-                            ${item.fixed_damage ? `<span>⚔️ +${item.fixed_damage}</span>` : ''}
-                            ${item.fixed_armor ? `<span>🛡️ +${item.fixed_armor}</span>` : ''}
-                            ${item.fixed_health ? `<span>❤️ +${item.fixed_health}</span>` : ''}
-                        </div>
-                        <small>${item.description}</small>
-                        <div class="inventory-item-actions">
-                            ${isEquipped ? 
-                                '<span style="color: #4ade80;">✓ Надето</span>' : 
-                                `<button class="btn-small" onclick="game.systems.equipment.equipItem(${itemId})">🎯 Надеть</button>`
-                            }
-                            <button class="btn-small btn-sell" onclick="game.systems.equipment.sellItemFromInventory(${itemId})">
-                                💰 Продать (${sellPrice})
-                            </button>
-                        </div>
-                        ${targetSlot && targetSlot !== 'inventory' ? 
-                            `<small style="color: #ffd700;">🎯 Подходит для: ${this.getSlotName(targetSlot)}</small>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        return `
-            <div class="overlay-content inventory-overlay">
-                <div class="overlay-header">
-                    <h3>🎒 Инвентарь</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div class="inventory-stats">
-                        <span>💰 Золото: ${this.currentHero.gold.toFixed(2)}</span>
-                        <span>📦 Предметы: ${this.currentHero.inventory.length}/10</span>
-                    </div>
-                    ${filterInfo}
-                    <div class="inventory-grid">
-                        ${inventoryHTML || '<div class="empty-inventory">📭 Инвентарь пуст</div>'}
-                    </div>
-                    ${targetSlot ? `
-                        <div class="inventory-actions">
-                            <button class="btn-secondary" onclick="game.showOverlay(\'inventory\')">
-                                📦 Показать все предметы
-                            </button>
-                        </div>
-                    ` : ''}
-                </div>
+    let filteredItems = this.currentHero.inventory;
+    let filterInfo = '';
+    
+    if (targetSlot && targetSlot !== 'inventory') {
+        filteredItems = this.getItemsForSlot(targetSlot);
+        filterInfo = `
+            <div class="filter-info">
+                <strong>🎯 Выбор предмета для: ${this.getSlotName(targetSlot)}</strong>
+                <div>Показано: ${filteredItems.length} подходящих предметов</div>
             </div>
         `;
     }
 
-    // ========== ДЕТАЛИ ПРЕДМЕТА В ИНВЕНТАРЕ ==========
-    showInventoryItemDetails(itemId) {
+    const inventoryHTML = filteredItems.map(itemId => {
         const item = this.getItemById(itemId);
-        if (!item) return;
-
-        const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
-        const canSell = !isEquipped;
-        const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
-        const frameColor = this.getItemFrameColor(item.rarity);
+        if (!item) return '';
         
-        const modalHTML = `
-            <div class="item-detail-modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 style="color: ${frameColor};">${item.name}</h4>
-                        <button class="close-modal" onclick="game.systems.equipment.closeItemModal()">×</button>
+        const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
+        const frameColor = this.getItemFrameColor(item.rarity);
+        const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
+        
+        // УПРОЩЕННОЕ ОТОБРАЖЕНИЕ - только иконка, параметры и цена
+        return `
+            <div class="inventory-item-simple" 
+                 data-item-id="${itemId}" 
+                 data-rarity="${item.rarity}" 
+                 onclick="game.systems.equipment.handleInventoryItemClick(${itemId})"
+                 style="border-color: ${frameColor};">
+                <div class="item-icon-simple">
+                    <img src="${item.image}" alt="${item.name}" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                    <div class="item-fallback-simple" style="display: none;">
+                        <span>${this.getItemTypeIcon(item.type)}</span>
+                    </div>
+                    ${isEquipped ? '<div class="equipped-indicator">✓</div>' : ''}
+                </div>
+                <div class="item-info-simple">
+                    <div class="item-name-simple" style="color: ${frameColor};">${item.name}</div>
+                    <div class="item-stats-simple">
+                        ${item.fixed_damage ? `<span>⚔️${item.fixed_damage}</span>` : ''}
+                        ${item.fixed_armor ? `<span>🛡️${item.fixed_armor}</span>` : ''}
+                        ${item.fixed_health ? `<span>❤️${item.fixed_health}</span>` : ''}
+                    </div>
+                    <div class="item-price-simple">
+                        💰 ${sellPrice}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+        <div class="overlay-content inventory-overlay-wide">
+            <div class="overlay-header">
+                <h3>🎒 Инвентарь (${this.currentHero.inventory.length}/100)</h3>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            <div class="overlay-body-wide">
+                <div class="inventory-stats-simple">
+                    <span>💰 Золото: ${this.currentHero.gold.toFixed(2)}</span>
+                    <span>📦 Слотов занято: ${this.currentHero.inventory.length}/100</span>
+                </div>
+                ${filterInfo}
+                <div class="inventory-grid-wide">
+                    ${inventoryHTML || '<div class="empty-inventory">📭 Инвентарь пуст</div>'}
+                </div>
+                ${targetSlot ? `
+                    <div class="inventory-actions">
+                        <button class="btn-secondary" onclick="game.showOverlay('inventory')">
+                            📦 Показать все предметы
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+}
+
+// УПРОЩЕННОЕ МОДАЛЬНОЕ ОКНО ПРЕДМЕТА
+showInventoryItemDetails(itemId) {
+    const item = this.getItemById(itemId);
+    if (!item) return;
+
+    const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
+    const sellPrice = item.sellPrice || Math.floor(item.price * 0.5);
+    const frameColor = this.getItemFrameColor(item.rarity);
+    
+    const modalHTML = `
+        <div class="item-detail-modal-simple">
+            <div class="modal-content-simple">
+                <div class="modal-header-simple">
+                    <h4 style="color: ${frameColor};">${item.name}</h4>
+                    <button class="close-modal" onclick="game.systems.equipment.closeItemModal()">×</button>
+                </div>
+                
+                <div class="item-detail-content-simple">
+                    <div class="item-detail-image-simple">
+                        <div class="detail-item-background-simple" style="border-color: ${frameColor};">
+                            <img src="${item.image}" alt="${item.name}" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                                 class="item-detail-image-zoom">
+                            <div class="item-fallback-large" style="display: none;">
+                                <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
+                            </div>
+                        </div>
+                        <div class="item-rarity ${item.rarity}" style="background: ${frameColor};">
+                            ${this.getRarityName(item.rarity)}
+                        </div>
                     </div>
                     
-                    <div class="item-detail-content">
-                        <div class="item-detail-image">
-                            <div class="detail-item-background" style="border-color: ${frameColor};">
-                                <img src="${item.image}" alt="${item.name}" 
-                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                                     class="item-detail-image-zoom">
-                                <div class="item-fallback-large" style="display: none;">
-                                    <span class="item-icon-large">${this.getItemTypeIcon(item.type)}</span>
-                                </div>
-                            </div>
-                            <div class="item-rarity ${item.rarity}" style="background: ${frameColor};">
-                                ${this.getRarityName(item.rarity)}
-                            </div>
+                    <div class="item-detail-info-simple">
+                        <div class="item-stats-detailed-simple">
+                            <h5>📊 Характеристики</h5>
+                            ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span>+${item.fixed_damage}</span></div>` : ''}
+                            ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
+                            ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
                         </div>
                         
-                        <div class="item-detail-info">
-                            <div class="item-description">${item.description}</div>
-                            
-                            <!-- ИНФОРМАЦИЯ О БОНУСЕ ПРЕДМЕТА -->
-                            ${item.bonus && item.bonus.type !== 'none' ? `
-                                <div class="item-bonus-info">
-                                    <h5>🎯 Бонус предмета:</h5>
-                                    <div class="bonus-display" style="color: #4cc9f0; font-weight: bold;">
-                                        ${this.formatBonus(item.bonus)}
-                                    </div>
+                        ${item.bonus && item.bonus.type !== 'none' ? `
+                            <div class="item-bonus-info-simple">
+                                <h5>🎯 Бонус:</h5>
+                                <div class="bonus-display-simple">
+                                    ${this.formatBonus(item.bonus)}
                                 </div>
-                            ` : ''}
-                            
-                            <div class="item-stats-detailed">
-                                <h5>Характеристики:</h5>
-                                ${item.fixed_damage ? `<div class="stat-line"><span>⚔️ Урон:</span> <span>+${item.fixed_damage}</span></div>` : ''}
-                                ${item.fixed_armor ? `<div class="stat-line"><span>🛡️ Броня:</span> <span>+${item.fixed_armor}</span></div>` : ''}
-                                ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span>+${item.fixed_health}</span></div>` : ''}
+                            </div>
+                        ` : ''}
+
+                        <div class="item-actions-simple">
+                            <div class="price-section-simple">
+                                <span class="sell-price">💸 Продать: ${sellPrice.toFixed(2)} золота</span>
+                                ${isEquipped ? '<span style="color: #4ade80;">✓ Надето</span>' : ''}
                             </div>
                             
-                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
-                            ${item.setName && this.itemSets[item.setName] ? `
-                                <div class="item-set-details">
-                                    <h5>✨ Бонус сета:</h5>
-                                    <div class="set-info">
-                                        <strong>${this.itemSets[item.setName].name}</strong>
-                                        <div class="set-bonus">${this.formatBonus(this.itemSets[item.setName].bonus)}</div>
-                                        <div class="set-description">${this.itemSets[item.setName].description}</div>
-                                        <div class="set-requirements">Требуется предметов: ${this.itemSets[item.setName].requiredPieces}/6</div>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <div class="item-actions">
-                                <div class="price-section">
-                                    <span class="sell-price">💸 Продать: ${sellPrice.toFixed(2)} золота</span>
-                                    ${isEquipped ? '<span style="color: #4ade80;">✓ Надето</span>' : ''}
-                                </div>
-                                
-                                <div class="action-buttons">
-                                    ${!isEquipped ? 
-                                        `<button class="btn-primary" onclick="game.systems.equipment.equipItem(${item.id})">🎯 Надеть</button>` : 
-                                        `<button class="btn-secondary" onclick="game.systems.equipment.unequipItem('${this.getEquipmentSlot(item)}')">📦 Снять</button>`
-                                    }
-                                    ${canSell ? 
-                                        `<button class="btn-sell" onclick="game.systems.equipment.sellItemFromInventory(${item.id})">💰 Продать</button>` : 
-                                        `<button class="btn-secondary disabled" disabled>❌ Нельзя продать надетый предмет</button>`
-                                    }
-                                </div>
+                            <div class="action-buttons-simple">
+                                ${!isEquipped ? 
+                                    `<button class="btn-primary-simple" onclick="game.systems.equipment.equipItem(${item.id})">🎯 Надеть</button>` : 
+                                    `<button class="btn-secondary-simple" onclick="game.systems.equipment.unequipItem('${this.getEquipmentSlot(item)}')">📦 Снять</button>`
+                                }
+                                <button class="btn-sell-simple" onclick="game.systems.equipment.sellItemFromInventory(${item.id})">
+                                    💰 Продать
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// ДОБАВЬТЕ этот метод в класс EquipmentSystem
+handleInventoryItemClick(itemId) {
+    const item = this.getItemById(itemId);
+    if (!item) {
+        console.error(`❌ Предмет с ID ${itemId} не найден`);
+        return;
     }
 
+    const isEquipped = Object.values(this.currentHero.equipment).includes(itemId);
+    
+    if (isEquipped) {
+        // Если предмет надет - снимаем его
+        const slot = this.getEquipmentSlot(item);
+        if (slot) {
+            this.unequipItem(slot);
+            if (window.game) {
+                window.game.showNotification(`📦 Снято: ${item.name}`, 'success');
+                window.game.saveGame();
+            }
+        }
+    } else {
+        // Если предмет не надет - пытаемся экипировать
+        const slot = this.getEquipmentSlot(item);
+        if (!slot) {
+            console.error(`❌ Неизвестный тип предмета: ${item.type}`);
+            return;
+        }
+
+        // Проверяем совместимость оружия
+        if (!this.canEquipWeapon(item, this.currentHero.equipment)) {
+            if (window.game) {
+                window.game.showNotification(`❌ Нельзя экипировать ${item.name} - несовместимо с текущим оружием`, 'error');
+            }
+            return;
+        }
+
+        // Проверяем, свободен ли слот
+        const currentEquipped = this.currentHero.equipment[slot];
+        if (currentEquipped) {
+            // Слот занят - предлагаем заменить
+            const currentItem = this.getItemById(currentEquipped);
+            if (window.confirm(`Заменить ${currentItem?.name || 'предмет'} на ${item.name}?`)) {
+                this.unequipItem(slot);
+            } else {
+                return; // Пользователь отказался от замены
+            }
+        }
+
+        // Особые случаи для двуручного оружия
+        if (item.weaponType === 'two_handed') {
+            // Снимаем всё что было в руках
+            this.unequipToInventory('main_hand');
+            this.unequipToInventory('off_hand');
+            
+            // Экипируем в обе руки
+            this.currentHero.equipment.main_hand = itemId;
+            this.currentHero.equipment.off_hand = itemId;
+        } else {
+            // Стандартная экипировка
+            this.currentHero.equipment[slot] = itemId;
+        }
+
+        // Убираем из инвентаря
+        this.currentHero.inventory = this.currentHero.inventory.filter(id => id !== itemId);
+
+        if (window.game) {
+            window.game.showNotification(`🎯 Надето: ${item.name}`, 'success');
+            window.game.saveGame();
+            
+            // Обновляем интерфейс
+            setTimeout(() => {
+                if (window.game.showHeroGameScreen) {
+                    window.game.showHeroGameScreen();
+                }
+            }, 100);
+        }
+    }
+    
+    // Закрываем инвентарь после действия
+    if (window.game && window.game.hideOverlay) {
+        setTimeout(() => {
+            window.game.hideOverlay();
+        }, 500);
+    }
+}
+
+    
     equipItem(itemId) {
         const item = this.getItemById(itemId);
         if (!item) return;
