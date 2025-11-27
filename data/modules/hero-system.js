@@ -82,40 +82,49 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
-     selectHero(heroId) {
-    const hero = this.heroes.find(h => h.id === heroId);
-    if (!hero) {
-        console.error('Герой не найден:', heroId);
-        return;
-    }
-
-    const isUnlocked = hero.unlocked;
-    if (!isUnlocked) {
-        this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
-        return;
-    }
-
-    this.currentHero = hero;
-    
-    // Сохраняем в основной игре
-    if (window.game) {
-        window.game.currentHero = hero;
-        window.game.systems.equipment.setCurrentHero(hero);
-        
-        // СИНХРОНИЗАЦИЯ С ДРУГИМИ СИСТЕМАМИ
-        if (window.game.systems.battle) {
-            window.game.systems.battle.currentHero = hero;
+        selectHero(heroId) {
+        const hero = this.heroes.find(h => h.id === heroId);
+        if (!hero) {
+            console.error('Герой не найден:', heroId);
+            return;
         }
-        if (window.game.systems.shop) {
-            window.game.systems.shop.currentHero = hero;
+
+        const isUnlocked = hero.unlocked;
+        if (!isUnlocked) {
+            this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
+            return;
+        }
+
+        this.currentHero = hero;
+        
+        // Сохраняем в основной игре
+        if (window.game) {
+            window.game.currentHero = hero;
+            window.game.systems.equipment.setCurrentHero(hero);
+            
+            // ⭐ ИСПРАВЛЕНИЕ: Синхронизируем с общими ресурсами
+            if (window.game.sharedResources) {
+                // У героя отображается ОБЩЕЕ золото, но его индивидуальные характеристики сохраняются
+                hero.gold = window.game.sharedResources.gold;
+                hero.inventory = [...window.game.sharedResources.inventory];
+                
+                console.log(`🎯 Выбран герой ${hero.name} с общим золотом: ${hero.gold}`);
+            }
+            
+            // ⭐ СИНХРОНИЗАЦИЯ С ДРУГИМИ СИСТЕМАМИ
+            if (window.game.systems.battle) {
+                window.game.systems.battle.currentHero = hero;
+            }
+            if (window.game.systems.shop) {
+                window.game.systems.shop.currentHero = hero;
+            }
+            
+            // СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
+            window.game.saveGame();
         }
         
-        // СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
-        window.game.saveGame();
+        this.showHeroGameScreen();
     }
-    
-    this.showHeroGameScreen();
-}
 
     unlockHero(heroId) {
         const hero = this.heroes.find(h => h.id === heroId);
@@ -1217,7 +1226,6 @@ updateHeroDisplay(stats) {
         // СОХРАНЯЕМ ПРИ СБРОСЕ
         if (window.game) window.game.saveGame();
     }
-}
     // ========== МЕТОДЫ ДЛЯ РАБОТЫ С ОБЩИМИ РЕСУРСАМИ ==========
     getGold() {
         if (window.game && window.game.sharedResources) {
@@ -1262,6 +1270,7 @@ updateHeroDisplay(stats) {
         }
         return false;
     }
+   }  
 // Регистрируем систему в глобальной области
 window.HeroSystem = HeroSystem;
 console.log("📦 HeroSystem модуль загружен");
