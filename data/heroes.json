@@ -1,6 +1,266 @@
 [
   {
     "id": 1,
+    "name": "Берти Берри",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Berty.jpg",
+    "race": "halfling",
+    "class": "healer",
+    "saga": "vampire_crown",
+    "baseHealth": 85,
+    "baseDamage": 29,
+    "baseArmor": 9,
+    "gold": 2.7,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 7.5
+  },
+  {
+    "id": 2,
+    "name": "Родерик Феттербат",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Roderick.jpg",
+    "race": "halfling",
+    "class": "warrior",
+    "saga": "vampire_crown",
+    "baseHealth": 125,
+    "baseDamage": 21,
+    "baseArmor": 9,
+    "gold": 2.2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 8.0
+  },
+  {
+    "id": 3,
+    "name": "Урзак",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Urzak.jpg",
+    "race": "ork",
+    "class": "antiquarian",
+    "saga": "vampire_crown",
+    "baseHealth": 150,
+    "baseDamage": 16,
+    "baseArmor": 5,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 8.5
+  },
+  {
+    "id": 4,
+    "name": "Кайден",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kaiden.jpg",
+    "race": "human",
+    "class": "thief",
+    "saga": "vampire_crown",
+    "baseHealth": 105,
+    "baseDamage": 25,
+    "baseArmor": 3,
+    "gold": 8.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 9.0
+  },
+  {
+    "id": 5,
+    "name": "Зугар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Zugar.jpg",
+    "race": "ork",
+    "class": "hunter",
+    "saga": "vampire_crown",
+    "baseHealth": 170,
+    "baseDamage": 12,
+    "baseArmor": 9,
+    "gold": 2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 9.5
+  },
+  {
+    "id": 6,
+    "name": "Люминея",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lyminea.jpg",
+    "race": "fairy",
+    "class": "sorcerer",
+    "saga": "vampire_crown",
+    "baseHealth": 70,
+    "baseDamage": 32,
+    "baseArmor": 11,
+    "gold": 1,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 10.0
+  },
+  {
+    "id": 7,
+    "name": "Рагнар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ragnar.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 180,
+    "baseDamage": 10,
+    "baseArmor": 7,
+    "gold": 4,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 10.5
+  },
+    {
+    "id": 8,
+    "name": "Рекс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Reks.jpg",
+    "race": "laitar",
+    "class": "bounty_hunter",
+    "saga": "vampire_crown",
+    "baseHealth": 95,
+    "baseDamage": 27,
+    "baseArmor": 5,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 11
+  },
+    {
+    "id": 9,
+    "name": "Хаггард",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Haggard.jpg",
+    "race": "human",
+    "class": "death_mage",
+    "saga": "vampire_crown",
+    "baseHealth": 110,
+    "baseDamage": 24,
+    "baseArmor": 10,
+    "gold": 2,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 11.5
+  },
+    {
+    "id": 10,
+    "name": "Хельякар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Heliakar.jpg",
+    "race": "elf",
+    "class": "blacksmith",
+    "saga": "vampire_crown",
+    "baseHealth": 130,
+    "baseDamage": 20,
+    "baseArmor": 4,
+    "gold": 7,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 12
+  },
+    {
+    "id": 11,
+    "name": "Рафаэль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Rafael.jpg",
+    "race": "dragon",
+    "class": "merchant",
+    "saga": "vampire_crown",
+    "baseHealth": 120,
+    "baseDamage": 22,
+    "baseArmor": 1,
+    "gold": 10.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 12.5
+  },
+    {
+    "id": 12,
+    "name": "Карнок",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Karnoc.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 185,
+    "baseDamage": 9,
+    "baseArmor": 6,
+    "gold": 5.5,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 13
+  },
+      {
+    "id": 13,
+    "name": "АрвенДил",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/ArvenDil.jpg",
+    "race": "dwarf",
+    "class": "archer",
+    "saga": "vampire_crown",
+    "baseHealth": 150,
+    "baseDamage": 16,
+    "baseArmor": 5,
+    "gold": 6,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 13.5
+  },
+  {
+    "id": 14,
     "name": "Йормунд",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Yormund.jpg",
     "race": "dwarf",
@@ -21,7 +281,7 @@
     "healthRegen": 1.0
   },
   {
-    "id": 2,
+    "id": 15,
     "name": "Торин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torin.jpg",
     "race": "dwarf",
@@ -41,7 +301,7 @@
     "healthRegen": 1.5
   },
   {
-    "id": 3,
+    "id": 16,
     "name": "Талмир",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Talmir.jpg",
     "race": "elf",
@@ -61,7 +321,7 @@
     "healthRegen": 2.0
   },
   {
-    "id": 4,
+    "id": 17,
     "name": "Калинор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Calinor.jpg",
     "race": "elf",
@@ -81,7 +341,7 @@
     "healthRegen": 2.5
   },
   {
-    "id": 5,
+    "id": 18,
     "name": "Малихор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Malixor.jpg",
     "race": "dragon",
@@ -101,7 +361,7 @@
     "healthRegen": 3.0
   },
   {
-    "id": 6,
+    "id": 19,
     "name": "Бреакс",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Breaks.jpg",
     "race": "laitar",
@@ -121,7 +381,7 @@
     "healthRegen": 3.5
   },
   {
-    "id": 7,
+    "id": 20,
     "name": "Джейк",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Jeik.jpg",
     "race": "laitar",
@@ -141,7 +401,7 @@
     "healthRegen": 4.0
   },
   {
-    "id": 8,
+    "id": 21,
     "name": "Торгул",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torgul.jpg",
     "race": "ork",
@@ -161,7 +421,7 @@
     "healthRegen": 4.5
   },
   {
-    "id": 9,
+    "id": 22,
     "name": "Краггар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kraggar.jpg",
     "race": "ork",
@@ -181,7 +441,7 @@
     "healthRegen": 5.0
   },
   {
-    "id": 10,
+    "id": 23,
     "name": "Серена",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Serena.jpg",
     "race": "fairy",
@@ -201,7 +461,7 @@
     "healthRegen": 5.5
   },
   {
-    "id": 11,
+    "id": 24,
     "name": "Азами",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Azami.jpg",
     "race": "fairy",
@@ -221,7 +481,7 @@
     "healthRegen": 6.0
   },
   {
-    "id": 12,
+    "id": 25,
     "name": "Аргонат",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Argonat.jpg",
     "race": "human",
@@ -241,7 +501,7 @@
     "healthRegen": 6.5
   },
   {
-    "id": 13,
+    "id": 26,
     "name": "Персиваль",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
     "race": "halfling",
@@ -259,265 +519,5 @@
       "chest": null
     },
     "healthRegen": 7.0
-  },
-  {
-    "id": 14,
-    "name": "Берти Берри",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Berty.jpg",
-    "race": "halfling",
-    "class": "healer",
-    "saga": "vampire_crown",
-    "baseHealth": 85,
-    "baseDamage": 29,
-    "baseArmor": 9,
-    "gold": 2.7,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 7.5
-  },
-  {
-    "id": 15,
-    "name": "Родерик Феттербат",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Roderick.jpg",
-    "race": "halfling",
-    "class": "warrior",
-    "saga": "vampire_crown",
-    "baseHealth": 125,
-    "baseDamage": 21,
-    "baseArmor": 9,
-    "gold": 2.2,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 8.0
-  },
-  {
-    "id": 16,
-    "name": "Урзак",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Urzak.jpg",
-    "race": "ork",
-    "class": "antiquarian",
-    "saga": "vampire_crown",
-    "baseHealth": 150,
-    "baseDamage": 16,
-    "baseArmor": 5,
-    "gold": 6,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 8.5
-  },
-  {
-    "id": 17,
-    "name": "Кайден",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Kaiden.jpg",
-    "race": "human",
-    "class": "thief",
-    "saga": "vampire_crown",
-    "baseHealth": 105,
-    "baseDamage": 25,
-    "baseArmor": 3,
-    "gold": 8.5,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 9.0
-  },
-  {
-    "id": 18,
-    "name": "Зугар",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Zugar.jpg",
-    "race": "ork",
-    "class": "hunter",
-    "saga": "vampire_crown",
-    "baseHealth": 170,
-    "baseDamage": 12,
-    "baseArmor": 9,
-    "gold": 2,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 9.5
-  },
-  {
-    "id": 19,
-    "name": "Люминея",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lyminea.jpg",
-    "race": "fairy",
-    "class": "sorcerer",
-    "saga": "vampire_crown",
-    "baseHealth": 70,
-    "baseDamage": 32,
-    "baseArmor": 11,
-    "gold": 1,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 10.0
-  },
-  {
-    "id": 20,
-    "name": "Рагнар",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ragnar.jpg",
-    "race": "dwarf",
-    "class": "archer",
-    "saga": "vampire_crown",
-    "baseHealth": 180,
-    "baseDamage": 10,
-    "baseArmor": 7,
-    "gold": 4,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 10.5
-  },
-    {
-    "id": 21,
-    "name": "Рекс",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Reks.jpg",
-    "race": "laitar",
-    "class": "bounty_hunter",
-    "saga": "vampire_crown",
-    "baseHealth": 95,
-    "baseDamage": 27,
-    "baseArmor": 5,
-    "gold": 6,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 11
-  },
-    {
-    "id": 22,
-    "name": "Хаггард",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Haggard.jpg",
-    "race": "human",
-    "class": "death_mage",
-    "saga": "vampire_crown",
-    "baseHealth": 110,
-    "baseDamage": 24,
-    "baseArmor": 10,
-    "gold": 2,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 11.5
-  },
-    {
-    "id": 23,
-    "name": "Хельякар",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Heliakar.jpg",
-    "race": "elf",
-    "class": "blacksmith",
-    "saga": "vampire_crown",
-    "baseHealth": 130,
-    "baseDamage": 20,
-    "baseArmor": 4,
-    "gold": 7,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 12
-  },
-    {
-    "id": 24,
-    "name": "Рафаэль",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Rafael.jpg",
-    "race": "dragon",
-    "class": "merchant",
-    "saga": "vampire_crown",
-    "baseHealth": 120,
-    "baseDamage": 22,
-    "baseArmor": 1,
-    "gold": 10.5,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 12.5
-  },
-    {
-    "id": 25,
-    "name": "Карнок",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Karnoc.jpg",
-    "race": "dwarf",
-    "class": "archer",
-    "saga": "vampire_crown",
-    "baseHealth": 185,
-    "baseDamage": 9,
-    "baseArmor": 6,
-    "gold": 5.5,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 13
-  },
-      {
-    "id": 26,
-    "name": "АрвенДил",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/ArvenDil.jpg",
-    "race": "dwarf",
-    "class": "archer",
-    "saga": "vampire_crown",
-    "baseHealth": 150,
-    "baseDamage": 16,
-    "baseArmor": 5,
-    "gold": 6,
-    "level": 1,
-    "experience": 0,
-    "inventory": [],
-    "equipment": {
-      "main_hand": null,
-      "chest": null
-    },
-    "healthRegen": 13.5
   }
 ]
