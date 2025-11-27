@@ -8,6 +8,7 @@ class ShopSystem {
         this.currentCategory = 'all';
         this.currentSubcategory = 'all';
         this.searchQuery = '';
+        this.currentSort = 'name';
         
         // СИСТЕМА КАТЕГОРИЙ СООТВЕТСТВУЮЩАЯ EQUIPMENT SYSTEM
         this.categories = {
@@ -268,7 +269,7 @@ class ShopSystem {
                     <!-- Поиск -->
                     <div class="shop-search">
                         <input type="text" id="shop-search-input" placeholder="🔍 Поиск предметов..." 
-                               value="${this.searchQuery}" oninput="game.systems.shop.handleSearch(this.value)">
+                               value="${this.searchQuery}">
                         <button class="clear-search" onclick="game.systems.shop.clearSearch()">✕</button>
                     </div>
 
@@ -288,12 +289,12 @@ class ShopSystem {
 
                     <!-- Сортировка -->
                     <div class="shop-sorting">
-                        <select id="shop-sort" onchange="game.systems.shop.handleSortChange(this.value)">
-                            <option value="name">По названию</option>
-                            <option value="price-asc">Цена (по возрастанию)</option>
-                            <option value="price-desc">Цена (по убыванию)</option>
-                            <option value="rarity">По редкости</option>
-                            <option value="type">По типу</option>
+                        <select id="shop-sort">
+                            <option value="name" ${this.currentSort === 'name' ? 'selected' : ''}>По названию</option>
+                            <option value="price-asc" ${this.currentSort === 'price-asc' ? 'selected' : ''}>Цена (по возрастанию)</option>
+                            <option value="price-desc" ${this.currentSort === 'price-desc' ? 'selected' : ''}>Цена (по убыванию)</option>
+                            <option value="rarity" ${this.currentSort === 'rarity' ? 'selected' : ''}>По редкости</option>
+                            <option value="type" ${this.currentSort === 'type' ? 'selected' : ''}>По типу</option>
                         </select>
                     </div>
 
@@ -438,10 +439,8 @@ class ShopSystem {
 
     // Сортировка предметов
     sortItems(items) {
-        const sortBy = document.getElementById('shop-sort')?.value || 'name';
-        
         return items.sort((a, b) => {
-            switch(sortBy) {
+            switch(this.currentSort) {
                 case 'price-asc':
                     return a.price - b.price;
                 case 'price-desc':
@@ -544,6 +543,63 @@ class ShopSystem {
         const searchInput = document.getElementById('shop-search-input');
         if (searchInput) {
             searchInput.focus();
+            searchInput.addEventListener('input', (e) => {
+                this.handleSearch(e.target.value);
+            });
+        }
+
+        // Обработчик сортировки
+        const sortSelect = document.getElementById('shop-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => {
+                this.handleSortChange(e.target.value);
+            });
+        }
+
+        // Обработчики для увеличения картинок
+        this.attachImageZoomHandlers();
+    }
+
+    // ДОБАВЬТЕ новый метод для обработки увеличения картинок
+    attachImageZoomHandlers() {
+        // Обработчик для картинок в сетке предметов
+        const itemImages = document.querySelectorAll('.shop-item .item-image-container img');
+        itemImages.forEach(img => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showImageZoom(e.target.src, e.target.alt);
+            });
+        });
+
+        // Обработчик для картинки в деталях предмета
+        const detailImage = document.querySelector('.item-detail-image-zoom');
+        if (detailImage) {
+            detailImage.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showImageZoom(e.target.src, e.target.alt);
+            });
+        }
+    }
+
+    // ДОБАВЬТЕ метод для показа увеличенной картинки
+    showImageZoom(imageSrc, imageAlt) {
+        const zoomHTML = `
+            <div class="item-image-zoom-overlay" onclick="game.systems.shop.closeImageZoom()">
+                <div class="zoom-content" onclick="event.stopPropagation()">
+                    <img src="${imageSrc}" alt="${imageAlt}" class="item-image-zoomed">
+                    <button class="close-zoom" onclick="game.systems.shop.closeImageZoom()">✕</button>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', zoomHTML);
+    }
+
+    // ДОБАВЬТЕ метод для закрытия увеличенной картинки
+    closeImageZoom() {
+        const zoomOverlay = document.querySelector('.item-image-zoom-overlay');
+        if (zoomOverlay) {
+            zoomOverlay.remove();
         }
     }
 
@@ -551,40 +607,152 @@ class ShopSystem {
     setCategory(category) {
         this.currentCategory = category;
         this.currentSubcategory = 'all';
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
-        }
+        
+        // Плавное обновление контента
+        this.updateShopContent();
     }
 
     // Установка подкатегории
     setSubcategory(subcategory) {
         this.currentSubcategory = subcategory;
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
+        
+        // Плавное обновление контента
+        this.updateShopContent();
+    }
+
+    // ДОБАВЬТЕ метод для плавного обновления контента
+    updateShopContent() {
+        if (!this.currentShop) return;
+
+        const container = document.querySelector('.merchant-items-container');
+        if (!container) return;
+
+        // Добавляем анимацию исчезновения
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            const filteredItems = this.filterItemsByCategory(this.currentShop.inventory);
+            const subcategories = this.getAvailableSubcategories(filteredItems);
+            
+            // Обновляем только необходимые части
+            this.updateCategoryTabs();
+            this.updateSubcategoryTabs(subcategories);
+            this.updateItemsGrid(filteredItems);
+            this.updateCategoryTitle(filteredItems.length);
+
+            // Возвращаем анимацию появления
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
+
+            // Перепривязываем обработчики
+            this.attachImageZoomHandlers();
+        }, 200);
+    }
+
+    // ДОБАВЬТЕ вспомогательные методы для обновления частей интерфейса
+    updateCategoryTabs() {
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        categoryTabs.forEach(tab => {
+            const category = tab.getAttribute('data-category');
+            tab.classList.toggle('active', this.currentCategory === category);
+            
+            // Обновляем счетчик
+            const countElement = tab.querySelector('.category-count');
+            if (countElement) {
+                const count = this.getCategoryItemCount(this.currentShop.inventory, category);
+                countElement.textContent = count;
+            }
+        });
+    }
+
+    updateSubcategoryTabs(subcategories) {
+        const subcategoriesContainer = document.querySelector('.shop-subcategories');
+        
+        if (this.currentCategory === 'all' || subcategories.length <= 1) {
+            if (subcategoriesContainer) {
+                subcategoriesContainer.style.display = 'none';
+            }
+            return;
+        }
+
+        if (!subcategoriesContainer) {
+            // Создаем контейнер если его нет
+            const categoriesContainer = document.querySelector('.shop-categories');
+            if (categoriesContainer && categoriesContainer.nextElementSibling) {
+                categoriesContainer.nextElementSibling.insertAdjacentHTML('afterend', this.generateSubcategoriesHTML(subcategories));
+            }
+        } else {
+            // Обновляем существующий контейнер
+            subcategoriesContainer.innerHTML = this.generateSubcategoriesHTML(subcategories);
+            subcategoriesContainer.style.display = 'block';
+        }
+
+        // Привязываем обработчики для новых подкатегорий
+        const subcategoryTabs = document.querySelectorAll('.subcategory-tab');
+        subcategoryTabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const subcategory = tab.getAttribute('data-subcategory');
+                this.setSubcategory(subcategory);
+            });
+        });
+    }
+
+    updateItemsGrid(filteredItems) {
+        const itemsGrid = document.querySelector('.items-grid');
+        const categoryTitle = document.querySelector('.category-title');
+        
+        if (!itemsGrid) return;
+
+        if (filteredItems.length > 0) {
+            itemsGrid.innerHTML = filteredItems.map(item => this.generateItemHTML(item)).join('');
+            if (categoryTitle) {
+                categoryTitle.style.display = 'block';
+            }
+        } else {
+            itemsGrid.innerHTML = `
+                <div class="empty-category">
+                    🚫 В этой категории пока нет товаров
+                </div>
+            `;
+        }
+    }
+
+    updateCategoryTitle(itemsCount) {
+        const categoryTitle = document.querySelector('.category-title');
+        if (categoryTitle) {
+            const itemsCountElement = categoryTitle.querySelector('.items-count');
+            if (itemsCountElement) {
+                itemsCountElement.textContent = `(${itemsCount})`;
+            } else if (itemsCount > 0) {
+                categoryTitle.innerHTML = `${this.getCategoryTitle()} <span class="items-count">(${itemsCount})</span>`;
+            } else {
+                categoryTitle.textContent = this.getCategoryTitle();
+            }
         }
     }
 
     // Обработка поиска
     handleSearch(query) {
         this.searchQuery = query;
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
-        }
+        this.updateShopContent();
     }
 
     // Очистка поиска
     clearSearch() {
         this.searchQuery = '';
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
+        const searchInput = document.getElementById('shop-search-input');
+        if (searchInput) {
+            searchInput.value = '';
         }
+        this.updateShopContent();
     }
 
     // Обработка сортировки
     handleSortChange(sortBy) {
-        if (this.currentShop) {
-            this.showShopInterface(this.currentShop);
-        }
+        this.currentSort = sortBy;
+        this.updateShopContent();
     }
 
     // ПОКУПКА ПРЕДМЕТА
@@ -627,9 +795,8 @@ class ShopSystem {
                 
                 // Обновляем интерфейс
                 this.closeItemDetailModal();
-                if (this.currentShop) {
-                    this.showShopInterface(this.currentShop);
-                }
+                this.updateShopContent();
+                this.updateMerchantStats();
                 
                 if (window.game) {
                     window.game.showNotification(`✅ Куплено: ${item.name}`, 'success');
@@ -641,6 +808,19 @@ class ShopSystem {
             }
         } else {
             window.game?.showNotification("❌ Система инвентаря недоступна", 'error');
+        }
+    }
+
+    // Обновление статистики торговца
+    updateMerchantStats() {
+        const goldAmount = document.querySelector('.gold-amount');
+        const inventorySpace = document.querySelector('.inventory-space');
+        
+        if (goldAmount) {
+            goldAmount.textContent = `💰 ${this.currentHero?.gold || 0} золота`;
+        }
+        if (inventorySpace) {
+            inventorySpace.textContent = `🎒 ${this.getInventorySpace()}`;
         }
     }
 
@@ -768,6 +948,8 @@ class ShopSystem {
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
+            // Привязываем обработчики для модального окна
+            this.attachImageZoomHandlers();
         }
     }
 
@@ -782,6 +964,7 @@ class ShopSystem {
         this.currentCategory = 'all';
         this.currentSubcategory = 'all';
         this.searchQuery = '';
+        this.currentSort = 'name';
         const container = document.getElementById('overlay-container');
         if (container) {
             container.style.display = 'none';
@@ -988,6 +1171,7 @@ class ShopSystem {
         console.log("Текущая категория:", this.currentCategory);
         console.log("Текущая подкатегория:", this.currentSubcategory);
         console.log("Поисковый запрос:", this.searchQuery);
+        console.log("Текущая сортировка:", this.currentSort);
         
         if (this.currentShop) {
             console.log("Товары в магазине:", this.currentShop.inventory.length);
