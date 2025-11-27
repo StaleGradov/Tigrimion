@@ -82,8 +82,7 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
-    // ========== ВЫБОР И УПРАВЛЕНИЕ ГЕРОЯМИ ==========
-    selectHero(heroId) {
+      selectHero(heroId) {
         const hero = this.heroes.find(h => h.id === heroId);
         if (!hero) {
             console.error('Герой не найден:', heroId);
@@ -102,6 +101,15 @@ class HeroSystem {
         if (window.game) {
             window.game.currentHero = hero;
             window.game.systems.equipment.setCurrentHero(hero);
+            
+            // ⭐ ИСПРАВЛЕНИЕ: Синхронизируем с общими ресурсами
+            if (window.game.sharedResources) {
+                // У героя отображается ОБЩЕЕ золото, но его индивидуальные характеристики сохраняются
+                hero.gold = window.game.sharedResources.gold;
+                hero.inventory = [...window.game.sharedResources.inventory];
+                
+                console.log(`🎯 Выбран герой ${hero.name} с общим золотом: ${hero.gold}`);
+            }
             
             // ⭐ СИНХРОНИЗАЦИЯ С ДРУГИМИ СИСТЕМАМИ
             if (window.game.systems.battle) {
@@ -1219,7 +1227,50 @@ updateHeroDisplay(stats) {
         if (window.game) window.game.saveGame();
     }
 }
+    // ========== МЕТОДЫ ДЛЯ РАБОТЫ С ОБЩИМИ РЕСУРСАМИ ==========
+    getGold() {
+        if (window.game && window.game.sharedResources) {
+            return window.game.sharedResources.gold;
+        }
+        return this.currentHero ? this.currentHero.gold : 0;
+    }
 
+    addGold(amount) {
+        if (window.game && window.game.sharedResources) {
+            window.game.sharedResources.gold += amount;
+            // Синхронизируем с текущим героем для отображения
+            if (this.currentHero) {
+                this.currentHero.gold = window.game.sharedResources.gold;
+            }
+            console.log(`💰 Добавлено золото: +${amount} (Всего: ${window.game.sharedResources.gold})`);
+            return window.game.sharedResources.gold;
+        }
+        return 0;
+    }
+
+    spendGold(amount) {
+        if (window.game && window.game.sharedResources) {
+            if (window.game.sharedResources.gold >= amount) {
+                window.game.sharedResources.gold -= amount;
+                // Синхронизируем с текущим героем для отображения
+                if (this.currentHero) {
+                    this.currentHero.gold = window.game.sharedResources.gold;
+                }
+                console.log(`💰 Потрачено золото: -${amount} (Осталось: ${window.game.sharedResources.gold})`);
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    // Проверка достаточно ли золота
+    hasEnoughGold(amount) {
+        if (window.game && window.game.sharedResources) {
+            return window.game.sharedResources.gold >= amount;
+        }
+        return false;
+    }
 // Регистрируем систему в глобальной области
 window.HeroSystem = HeroSystem;
 console.log("📦 HeroSystem модуль загружен");
