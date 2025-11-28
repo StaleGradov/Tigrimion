@@ -2006,6 +2006,7 @@ endTacticalBattle(victory, escape = false) {
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
     }
     
+    // ⭐ ВАЖНО: ВСЕГДА показываем результат боя и возвращаем в игру
     this.showBattleResult(victory, escape);
 }
 
@@ -2085,6 +2086,7 @@ showBattleResult(victory, escape = false) {
 closeBattleResult() {
     console.log("🚪 Закрытие результата боя");
     
+    // Удаляем оверлей результата
     const overlay = document.querySelector('.battle-result-overlay');
     if (overlay) overlay.remove();
     
@@ -2092,7 +2094,7 @@ closeBattleResult() {
     const battleScreen = document.querySelector('.battle-screen-fullscreen');
     if (battleScreen) battleScreen.remove();
     
-    // Возвращаемся к игре - ВЫЗЫВАЕМ ТОЛЬКО ОДИН МЕТОД
+    // Возвращаемся к игре
     this.returnToGameAfterBattle();
 }
 
@@ -2101,26 +2103,28 @@ returnToGameAfterBattle() {
     
     // Полностью очищаем ВСЕ элементы боя
     const battleElements = document.querySelectorAll('.battle-screen-fullscreen, .battle-result-overlay');
-    battleElements.forEach(el => el.remove());
+    battleElements.forEach(el => {
+        if (el && el.parentElement) {
+            el.parentElement.removeChild(el);
+        }
+    });
     
-    // Показываем основной экран игры
+    // ⭐ ВАЖНО: Проверяем что HeroSystem доступен
     if (window.game && window.game.systems.hero) {
+        // Проверяем что есть текущий герой
+        if (!window.game.systems.hero.currentHero && window.game.currentHero) {
+            window.game.systems.hero.currentHero = window.game.currentHero;
+            console.log("✅ Восстановлен текущий герой в HeroSystem");
+        }
+        
+        // Показываем основной экран игры
         window.game.systems.hero.showHeroGameScreen();
-    }
-    
-    // Обновляем состояние героя
-    if (this.currentHero && window.game.systems.hero) {
-        window.game.systems.hero.updateHeroDisplay();
-    }
-    
-    // Обновляем карту если нужно
-    if (this.battleContext === 'movement' && window.game.systems.map) {
-        setTimeout(() => {
-            if (window.game.systems.map.activeOverlay === 'tactical-map') {
-                window.game.systems.map.drawTacticalMap();
-                window.game.systems.map.updateMovementInfo();
-            }
-        }, 500);
+        console.log("✅ Экран героя показан");
+        
+    } else {
+        console.error("❌ HeroSystem не доступен для возврата в игру");
+        // Fallback: перезагружаем страницу
+        location.reload();
     }
 }
 
