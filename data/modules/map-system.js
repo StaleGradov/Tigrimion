@@ -168,7 +168,6 @@ class MapSystem {
         }
     }
 
-// В класс MapSystem добавить методы:
 handleTavernVisit(cell) {
     console.log("🍻 Начало обработки посещения таверны:", cell);
     
@@ -205,7 +204,9 @@ handleTavernVisit(cell) {
         battleSystem.flask.currentCharges = battleSystem.flask.capacity;
         battleSystem.flask.content = 'water';
         
-        // ОБНОВЛЯЕМ интерфейс фляги
+        console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Принудительно обновляем интерфейс фляги
         if (battleSystem.updateFlaskUI) {
             battleSystem.updateFlaskUI();
         }
@@ -213,7 +214,13 @@ handleTavernVisit(cell) {
             battleSystem.updateFlaskChargesDisplay();
         }
         
-        console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
+        // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Обновляем через setTimeout
+        setTimeout(() => {
+            if (battleSystem.updateFlaskChargesDisplay) {
+                battleSystem.updateFlaskChargesDisplay();
+                console.log("💧 Интерфейс фляги обновлен после таверны");
+            }
+        }, 100);
     }
     
     // Сохранение игры
