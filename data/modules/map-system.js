@@ -247,6 +247,7 @@ handleCanvasClick(e) {
         const matrix = new DOMMatrix(transform);
         scale = matrix.a;
     }
+
     
     const logicalX = (e.clientX - canvasRect.left) / scale;
     const logicalY = (e.clientY - canvasRect.top) / scale;
