@@ -1976,27 +1976,45 @@ endTacticalBattle(victory, escape = false) {
     }
     
     this.battleActive = false;
-    this.showBattleResult(victory);
+    this.showBattleResult(victory, escape);
 }
 
-    showBattleResult(victory) {
-        const app = document.getElementById('app');
-        if (!app) return;
+ showBattleResult(victory, escape = false) {
+    const app = document.getElementById('app');
+    if (!app) return;
 
-        let resultHTML = '';
+    let resultHTML = '';
+    
+    if (victory) {
+        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
-        if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
+        resultHTML = `
+            <div class="battle-result-overlay">
+                <div class="battle-result-modal victory">
+                    <h3>🎉 ПОБЕДА!</h3>
+                    <div class="result-details">
+                        <p>Убито монстров: ${this.currentMonsters.length}</p>
+                        <p>💰 +${totalReward} золота</p>
+                        <p>🌟 +${totalExperience} опыта</p>
+                        <p>Раундов: ${this.battleRound}</p>
+                    </div>
+                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        Продолжить
+                    </button>
+                </div>
+            </div>
+        `;
+    } else {
+        if (escape) {
             resultHTML = `
                 <div class="battle-result-overlay">
-                    <div class="battle-result-modal victory">
-                        <h3>🎉 ПОБЕДА!</h3>
+                    <div class="battle-result-modal escape">
+                        <h3>🏃 УСПЕШНЫЙ ПОБЕГ</h3>
                         <div class="result-details">
-                            <p>Убито монстров: ${this.currentMonsters.length}</p>
-                            <p>💰 +${totalReward} золота</p>
-                            <p>🌟 +${totalExperience} опыта</p>
+                            <p>Герой успешно сбежал с поля боя</p>
+                            <p>Потеряно 50% здоровья</p>
+                            <p>Герой остался на своей позиции</p>
                             <p>Раундов: ${this.battleRound}</p>
                         </div>
                         <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
@@ -2013,6 +2031,7 @@ endTacticalBattle(victory, escape = false) {
                         <div class="result-details">
                             <p>Герой повержен в бою</p>
                             <p>Здоровье восстановлено до 1</p>
+                            <p>Возврат на стартовую позицию</p>
                             <p>Раундов: ${this.battleRound}</p>
                         </div>
                         <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
@@ -2022,12 +2041,13 @@ endTacticalBattle(victory, escape = false) {
                 </div>
             `;
         }
-        
-        const existingOverlay = document.querySelector('.battle-result-overlay');
-        if (existingOverlay) existingOverlay.remove();
-        
-        app.insertAdjacentHTML('beforeend', resultHTML);
     }
+    
+    const existingOverlay = document.querySelector('.battle-result-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    
+    app.insertAdjacentHTML('beforeend', resultHTML);
+}
 
     closeBattleResult() {
         const overlay = document.querySelector('.battle-result-overlay');
