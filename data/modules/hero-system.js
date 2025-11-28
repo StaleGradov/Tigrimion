@@ -1259,46 +1259,67 @@ setTimeout(() => {
         if (window.game) window.game.saveGame();
     }
     // ========== ИСТОРИЯ ГЕРОЯ ==========
+// ========== УЛУЧШЕННЫЙ МЕТОД ДЛЯ ИСТОРИИ ГЕРОЯ ==========
 showHeroStory() {
     const currentHero = this.currentHero || window.game?.currentHero;
-    if (!currentHero) return;
+    if (!currentHero) {
+        this.showNotification("❌ Герой не выбран");
+        return;
+    }
 
-    // YouTube ID видео (замените на реальный ID вашего видео)
-    // Например: https://www.youtube.com/watch?v=VIDEO_ID_HERE
-    const videoId = "RMSFR6cbb9c"; // Это пример, замените на ваш ID
+    // РЕАЛЬНЫЕ YouTube ID для разных героев (замените на свои)
+    const videoIds = {
+        1: "dQw4w9WgXcQ", // Пример ID - замените
+        2: "другой_id",
+        // добавьте ID для всех героев
+    };
+    
+    const videoId = videoIds[currentHero.id] || "dQw4w9WgXcQ"; // Запасной ID
     
     const app = document.getElementById('app');
     if (!app) return;
 
     app.innerHTML = `
         <div class="hero-story-screen">
-            <!-- Верхняя панель кнопок -->
             <div class="top-action-bar">
-                <button class="btn-top" onclick="game.systems.hero.showHeroGameScreen()">
+                <button class="btn-top" onclick="game.systems.hero.returnToHeroGame()">
                     ← Назад к герою
                 </button>
                 <button class="btn-top" onclick="game.showHeroSelection()">
                     🔁 Сменить героя
                 </button>
+                <button class="btn-top" onclick="game.systems.hero.reloadVideo()">
+                    🔄 Перезагрузить видео
+                </button>
             </div>
 
-            <!-- Основное окно с видео -->
             <div class="hero-story-container">
                 <div class="story-header">
                     <h1>📖 История Героя: ${currentHero.name}</h1>
                     <p class="hero-description">${currentHero.story || 'История этого героя пока не написана...'}</p>
                 </div>
                 
-                <div class="video-container">
+                <div class="video-container" id="videoContainer">
                     <iframe 
+                        id="heroVideo"
                         width="100%" 
                         height="100%" 
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1"
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&controls=1&rel=0"
                         title="История ${currentHero.name}"
                         frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
                     </iframe>
+                </div>
+                
+                <div class="video-fallback" id="videoFallback" style="display: none;">
+                    <div class="fallback-message">
+                        <h3>🎬 Видео временно недоступно</h3>
+                        <p>Попробуйте перезагрузить видео или вернуться позже</p>
+                        <button class="btn-primary" onclick="game.systems.hero.reloadVideo()">
+                            🔄 Перезагрузить видео
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="story-info">
@@ -1314,11 +1335,70 @@ showHeroStory() {
                         <p><strong>Уровень:</strong> ${currentHero.level}</p>
                         <p><strong>Убито монстров:</strong> ${currentHero.monstersKilled || 0}</p>
                         <p><strong>Смертей:</strong> ${currentHero.deaths || 0}</p>
+                        <p><strong>Сила:</strong> ${this.calculateHeroStats(currentHero).power}</p>
                     </div>
                 </div>
             </div>
         </div>
     `;
+
+    // Добавляем обработчик ошибок видео
+    this.setupVideoErrorHandling();
+}
+
+// ========== ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ВИДЕО ==========
+
+returnToHeroGame() {
+    this.showHeroGameScreen();
+}
+
+reloadVideo() {
+    const video = document.getElementById('heroVideo');
+    const fallback = document.getElementById('videoFallback');
+    
+    if (video) {
+        const currentSrc = video.src;
+        video.src = '';
+        setTimeout(() => {
+            video.src = currentSrc;
+            fallback.style.display = 'none';
+            video.style.display = 'block';
+        }, 100);
+    }
+}
+
+setupVideoErrorHandling() {
+    const video = document.getElementById('heroVideo');
+    const fallback = document.getElementById('videoFallback');
+    
+    if (video && fallback) {
+        video.onload = () => {
+            console.log("✅ Видео загружено успешно");
+            fallback.style.display = 'none';
+        };
+        
+        video.onerror = () => {
+            console.error("❌ Ошибка загрузки видео");
+            fallback.style.display = 'block';
+            video.style.display = 'none';
+        };
+        
+        // Проверяем через 5 секунд, загрузилось ли видео
+        setTimeout(() => {
+            if (video && video.contentWindow && video.contentWindow.document) {
+                try {
+                    const doc = video.contentWindow.document;
+                    if (doc.body.innerHTML.includes('error') || doc.body.innerHTML.includes('недоступно')) {
+                        fallback.style.display = 'block';
+                        video.style.display = 'none';
+                    }
+                } catch (e) {
+                    // Cross-origin ограничение, не можем проверить содержимое
+                    console.log("⚠️ Не могу проверить содержимое видео из-за CORS");
+                }
+            }
+        }, 5000);
+    }
 }
 
 }
