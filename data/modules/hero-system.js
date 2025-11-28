@@ -957,32 +957,34 @@ app.innerHTML = `
                                 <div class="hero-overlay-level">⚡ Ур. ${currentHero.level}</div>
                             </div>
                             
-                            <!-- ⭐ БОЛЬШАЯ КРАСНАЯ ПОЛОСКА ЗДОРОВЬЯ -->
-                            <div class="health-display-section">
-                                <h4>❤️ Здоровье</h4>
-                                <div class="health-bar-container">
-                                    <div class="health-bar" id="heroHealthBar" 
-                                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                                        ${stats.currentHealth}/${stats.maxHealth}
-                                    </div>
-                                </div>
-                            </div>
+                     <!-- Полоска здоровья -->
+<div class="health-display-section">
+    <h4>❤️ Здоровье</h4>
+    <div class="health-bar-container">
+        <div class="health-bar" id="heroHealthBar" 
+             style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%; 
+                    background: linear-gradient(90deg, #ef4444, #f59e0b);">
+            ${stats.currentHealth}/${stats.maxHealth}
+        </div>
+    </div>
+</div>
 
-                            <!-- ⭐ ИСПРАВЛЕННАЯ ПОЛОСКА ОПЫТА -->
-                            <div class="experience-display-section">
-                                <h4>🌟 Опыт</h4>
-                                <div class="experience-bar-container">
-                                    <div class="experience-bar" id="heroExperienceBar" 
-                                         style="width: ${this.getExperiencePercent(currentHero)}%">
-                                        ${(() => {
-                                            const expProgress = this.getExperienceProgress(currentHero);
-                                            return expProgress.next === 'MAX' ? 
-                                                'MAX Уровень' : 
-                                                `${expProgress.current}/${expProgress.next}`;
-                                        })()}
-                                    </div>
-                                </div>
-                            </div>
+<!-- Полоска опыта -->
+<div class="experience-display-section">
+    <h4>🌟 Опыт</h4>
+    <div class="experience-bar-container">
+        <div class="experience-bar" id="heroExperienceBar" 
+             style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%; 
+                    background: linear-gradient(90deg, #3b82f6, #8b5cf6);">
+            ${(() => {
+                const expProgress = this.systems.hero.getExperienceProgress(this.currentHero);
+                return expProgress.next === 'MAX' ? 
+                    'MAX Уровень' : 
+                    `${expProgress.current}/${expProgress.next}`;
+            })()}
+        </div>
+    </div>
+</div>
 
                             <!-- ⭐ ИНФОРМАЦИЯ О РАСЕ, ПРОФЕССИИ И САГЕ -->
                             <div class="hero-origins-section">
