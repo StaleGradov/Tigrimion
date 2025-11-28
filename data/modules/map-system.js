@@ -168,6 +168,97 @@ class MapSystem {
         }
     }
 
+// В класс MapSystem добавить методы:
+
+handleTavernVisit(cell) {
+    if (!this.currentHero) return;
+    
+    const heroSystem = window.game?.systems?.hero;
+    if (!heroSystem) return;
+    
+    const stats = heroSystem.calculateHeroStats(this.currentHero);
+    
+    // Полное восстановление здоровья
+    this.currentHero.currentHealth = stats.maxHealth;
+    
+    // Пополнение фляги
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem && battleSystem.flask) {
+        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
+        battleSystem.flask.content = 'water';
+        battleSystem.updateFlaskUI();
+    }
+    
+    // Сохранение игры
+    if (window.game) {
+        window.game.saveGame();
+        window.game.showNotification("🍻 Таверна: здоровье восстановлено, фляга наполнена!", 'success');
+    }
+    
+    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну`);
+}
+
+handleWaterCell(cell) {
+    if (!this.currentHero) return;
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem && battleSystem.flask) {
+        // Пополнение фляги водой
+        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
+        battleSystem.flask.content = 'water';
+        battleSystem.updateFlaskUI();
+        
+        if (window.game) {
+            window.game.showNotification("💧 Фляга наполнена водой из источника!", 'success');
+            window.game.saveGame();
+        }
+    }
+    
+    console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды`);
+}
+
+// Обновить метод handleCanvasClick():
+handleCanvasClick(e) {
+    if (!this.currentTacticalMap) return;
+
+    const canvasRect = this.canvas.getBoundingClientRect();
+    const computedStyle = getComputedStyle(this.canvas);
+    const transform = computedStyle.transform;
+    let scale = 1;
+    
+    if (transform && transform !== 'none') {
+        const matrix = new DOMMatrix(transform);
+        scale = matrix.a;
+    }
+    
+    const logicalX = (e.clientX - canvasRect.left) / scale;
+    const logicalY = (e.clientY - canvasRect.top) / scale;
+    
+    const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
+    if (!hex) return;
+    
+    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+    
+    // Обработка специальных клеток
+    if (hex.type === 'tavern') {
+        this.handleTavernVisit(hex);
+        return;
+    }
+    
+    if (hex.type === 'water') {
+        this.handleWaterCell(hex);
+        return;
+    }
+    
+    // Остальная существующая логика...
+    if (hex.type === 'merchant') {
+        this.handleMerchantClick(hex);
+        return;
+    }
+    
+    // ... остальной код
+}
+    
     // ========== ОСНОВНЫЕ МЕТОДЫ КАРТ ==========
 
     getLootItemById(itemId) {
