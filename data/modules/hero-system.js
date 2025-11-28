@@ -928,10 +928,6 @@ app.innerHTML = `
             <button class="btn-top" onclick="game.showOverlay('inventory')">
                 🎒 Инвентарь
             </button>
-            <button class="btn-top" onclick="game.showOverlay('shop')">
-                🏪 Магазин
-            </button>
-            <!-- ДОБАВЬТЕ ЭТУ КНОПКУ -->
             <button class="btn-top" onclick="game.systems.hero.showHeroStory()">
                 📖 История Героя
             </button>
@@ -1223,64 +1219,159 @@ app.innerHTML = `
         if (window.game) window.game.saveGame();
     }
     // ========== ИСТОРИЯ ГЕРОЯ ==========
+// ========== ИСТОРИЯ ГЕРОЯ ==========
 showHeroStory() {
     const currentHero = this.currentHero || window.game?.currentHero;
     if (!currentHero) return;
 
-    // YouTube ID видео (замените на реальный ID вашего видео)
-    // Например: https://www.youtube.com/watch?v=VIDEO_ID_HERE
-    const videoId = "RMSFR6cbb9c"; // Это пример, замените на ваш ID
+    const videoId = "RMSFR6cbb9c"; // Ваш YouTube ID
     
     const app = document.getElementById('app');
     if (!app) return;
 
     app.innerHTML = `
-        <div class="hero-story-screen">
+        <div class="hero-game-screen">
             <!-- Верхняя панель кнопок -->
             <div class="top-action-bar">
+                <button class="btn-top" onclick="game.showOverlay('global-map')">
+                    🗺️ Глобальная карта
+                </button>
+                <button class="btn-top" onclick="game.showOverlay('tactical-map')">
+                    🎲 Тактическая карта
+                </button>
+                <button class="btn-top" onclick="game.showOverlay('inventory')">
+                    🎒 Инвентарь
+                </button>
+                <button class="btn-top" onclick="game.showOverlay('shop')">
+                    🏪 Магазин
+                </button>
+                <!-- КНОПКА ДЛЯ ВОЗВРАТА К ОБЫЧНОМУ ВИДУ -->
                 <button class="btn-top" onclick="game.systems.hero.showHeroGameScreen()">
-                    ← Назад к герою
+                    🎮 Обычный вид
                 </button>
                 <button class="btn-top" onclick="game.showHeroSelection()">
                     🔁 Сменить героя
                 </button>
             </div>
 
-            <!-- Основное окно с видео -->
-            <div class="hero-story-container">
-                <div class="story-header">
-                    <h1>📖 История Героя: ${currentHero.name}</h1>
-                    <p class="hero-description">${currentHero.story || 'История этого героя пока не написана...'}</p>
+            <!-- Основное окно с видео вместо картинки героя -->
+            <div class="hero-main-window-v2">
+                <!-- Левый столбец экипировки -->
+                <div class="equipment-column-v2 left-column">
+                    ${['main_hand', 'off_hand', 'helmet'].map(slot => {
+                        const itemId = currentHero.equipment[slot];
+                        const item = itemId && window.game.systems.equipment ? 
+                            window.game.systems.equipment.getItemById(itemId) : null;
+                        return `
+                            <div class="equipment-slot-column-v2 ${item ? 'equipped' : 'empty'}"
+                                 onclick="game.handleEquipmentSlotClick('${slot}')"
+                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
+                                <div class="slot-icon-column-v2">
+                                    ${item ? 
+                                        `<img src="${item.image}" alt="${item.name}" 
+                                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                         <div class="item-fallback" style="display: none;">
+                                             <span>${this.getSlotIcon(slot)}</span>
+                                         </div>` : 
+                                        this.getSlotIcon(slot)
+                                    }
+                                </div>
+                                <div class="slot-label-column-v2">${this.getSlotName(slot)}</div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
-                
-                <div class="video-container">
-                    <iframe 
-                        width="100%" 
-                        height="100%" 
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1"
-                        title="История ${currentHero.name}"
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
+
+                <!-- Центральная область с видео -->
+                <div class="hero-center-area-v2">
+                    <div class="hero-video-container">
+                        <div class="video-header">
+                            <h2>📖 История Героя: ${currentHero.name}</h2>
+                            <p class="hero-description">${currentHero.story || 'История этого героя пока не написана...'}</p>
+                        </div>
+                        
+                        <div class="video-wrapper">
+                            <iframe 
+                                width="100%" 
+                                height="100%" 
+                                src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0"
+                                title="История ${currentHero.name}"
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+
+                        <!-- Информация о герое под видео -->
+                        <div class="hero-info-under-video">
+                            <div class="info-section">
+                                <h4>🧬 Происхождение</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Раса:</span>
+                                        <span class="info-value">${this.getRaceName(currentHero.race)}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Профессия:</span>
+                                        <span class="info-value">${this.getClassName(currentHero.class)}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Сага:</span>
+                                        <span class="info-value">${this.getSagaName(currentHero.saga)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-section">
+                                <h4>📊 Статистика</h4>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <span class="info-label">Уровень:</span>
+                                        <span class="info-value">${currentHero.level}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Убито монстров:</span>
+                                        <span class="info-value">${currentHero.monstersKilled || 0}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Смертей:</span>
+                                        <span class="info-value">${currentHero.deaths || 0}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="story-info">
-                    <div class="info-card">
-                        <h3>🧬 Происхождение</h3>
-                        <p><strong>Раса:</strong> ${this.getRaceName(currentHero.race)}</p>
-                        <p><strong>Профессия:</strong> ${this.getClassName(currentHero.class)}</p>
-                        <p><strong>Сага:</strong> ${this.getSagaName(currentHero.saga)}</p>
-                    </div>
-                    
-                    <div class="info-card">
-                        <h3>📊 Статистика</h3>
-                        <p><strong>Уровень:</strong> ${currentHero.level}</p>
-                        <p><strong>Убито монстров:</strong> ${currentHero.monstersKilled || 0}</p>
-                        <p><strong>Смертей:</strong> ${currentHero.deaths || 0}</p>
-                    </div>
+
+                <!-- Правый столбец экипировки -->
+                <div class="equipment-column-v2 right-column">
+                    ${['chest', 'gloves', 'legs', 'boots'].map(slot => {
+                        const itemId = currentHero.equipment[slot];
+                        const item = itemId && window.game.systems.equipment ? 
+                            window.game.systems.equipment.getItemById(itemId) : null;
+                        return `
+                            <div class="equipment-slot-column-v2 ${item ? 'equipped' : 'empty'}"
+                                 onclick="game.handleEquipmentSlotClick('${slot}')"
+                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
+                                <div class="slot-icon-column-v2">
+                                    ${item ? 
+                                        `<img src="${item.image}" alt="${item.name}" 
+                                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+                                         <div class="item-fallback" style="display: none;">
+                                             <span>${this.getSlotIcon(slot)}</span>
+                                         </div>` : 
+                                        this.getSlotIcon(slot)
+                                    }
+                                </div>
+                                <div class="slot-label-column-v2">${this.getSlotName(slot)}</div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             </div>
+
+            <!-- Область для оверлеев -->
+            <div id="overlay-container" class="overlay-container"></div>
         </div>
     `;
 }
