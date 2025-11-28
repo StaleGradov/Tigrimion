@@ -1107,6 +1107,30 @@ app.innerHTML = `
         
         // Запускаем обновление полосок в реальном времени
         this.startHealthBarUpdates();
+            // Принудительное обновление полосок
+setTimeout(() => {
+    this.updateHealthAndExperienceBars();
+    
+    // Дополнительная проверка через секунду
+    setTimeout(() => {
+        const healthBar = document.getElementById('heroHealthBar');
+        const expBar = document.getElementById('heroExperienceBar');
+        if (healthBar) {
+            console.log("✅ Health bar found:", {
+                width: healthBar.style.width,
+                text: healthBar.textContent,
+                computedStyle: window.getComputedStyle(healthBar).width
+            });
+        }
+        if (expBar) {
+            console.log("✅ Exp bar found:", {
+                width: expBar.style.width, 
+                text: expBar.textContent
+            });
+        }
+    }, 1000);
+}, 100);
+
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
@@ -1296,30 +1320,6 @@ showHeroStory() {
         </div>
     `;
 }
-    // Принудительное обновление полосок
-setTimeout(() => {
-    this.updateHealthAndExperienceBars();
-    
-    // Дополнительная проверка через секунду
-    setTimeout(() => {
-        const healthBar = document.getElementById('heroHealthBar');
-        const expBar = document.getElementById('heroExperienceBar');
-        if (healthBar) {
-            console.log("✅ Health bar found:", {
-                width: healthBar.style.width,
-                text: healthBar.textContent,
-                computedStyle: window.getComputedStyle(healthBar).width
-            });
-        }
-        if (expBar) {
-            console.log("✅ Exp bar found:", {
-                width: expBar.style.width, 
-                text: expBar.textContent
-            });
-        }
-    }, 1000);
-}, 100);
-
 
 }
 
