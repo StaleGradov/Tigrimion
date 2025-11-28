@@ -359,7 +359,12 @@ saveGame() {
                     currentHealth: hero.currentHealth || hero.baseHealth,
                     // Экипировка индивидуальна для каждого героя:
                     equipment: {...hero.equipment},
-                    unlocked: hero.unlocked
+                    unlocked: hero.unlocked,
+                    // ⭐ ДОБАВЛЯЕМ: Состояние фляги для каждого героя
+                    flaskState: {
+                        currentCharges: this.systems.battle?.flask?.currentCharges || 10,
+                        content: this.systems.battle?.flask?.content || 'water'
+                    }
                 })),
                 // ⭐ ОБЩИЕ РЕСУРСЫ:
                 sharedResources: {
@@ -368,13 +373,14 @@ saveGame() {
                     unlockedHeroes: [...this.sharedResources.unlockedHeroes]
                 },
                 timestamp: Date.now(),
-                version: "2.0"
+                version: "2.1" // ⭐ ОБНОВЛЯЕМ ВЕРСИЮ
             };
             
             localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-            console.log("💾 Игра сохранена с прогрессом всех героев", {
+            console.log("💾 Игра сохранена с прогрессом всех героев и состоянием фляги", {
                 gold: this.sharedResources.gold,
-                heroes: this.systems.hero.heroes.map(h => `${h.name}: ур.${h.level}, опыт:${h.experience}`)
+                heroes: this.systems.hero.heroes.map(h => `${h.name}: ур.${h.level}, опыт:${h.experience}`),
+                flaskCharges: this.systems.battle?.flask?.currentCharges || 'N/A'
             });
             return true;
         }
@@ -415,10 +421,19 @@ loadSave() {
                             existingHero.equipment = {...savedHero.equipment};
                         }
                         
+                        // ⭐ ДОБАВЛЯЕМ: Загрузка состояния фляги для текущего героя
+                        if (this.currentHero && this.currentHero.id === existingHero.id && 
+                            savedHero.flaskState && this.systems.battle && this.systems.battle.flask) {
+                            this.systems.battle.flask.currentCharges = savedHero.flaskState.currentCharges;
+                            this.systems.battle.flask.content = savedHero.flaskState.content;
+                            console.log(`💧 Загружено состояние фляги для ${existingHero.name}: ${savedHero.flaskState.currentCharges}/${this.systems.battle.flask.capacity}`);
+                        }
+                        
                         console.log(`🎯 Загружен прогресс героя: ${existingHero.name}`, {
                             level: existingHero.level,
                             experience: existingHero.experience,
-                            health: existingHero.currentHealth
+                            health: existingHero.currentHealth,
+                            flaskCharges: savedHero.flaskState?.currentCharges || 'N/A'
                         });
                     }
                 });
@@ -450,6 +465,16 @@ loadSave() {
                     // ⭐ СИНХРОНИЗИРУЕМ: Устанавливаем общие ресурсы для текущего героя
                     this.currentHero.gold = this.sharedResources.gold;
                     this.currentHero.inventory = [...this.sharedResources.inventory];
+                    
+                    // ⭐ ДОБАВЛЯЕМ: Загрузка состояния фляги для текущего героя (если не загрузилось выше)
+                    if (this.systems.battle && this.systems.battle.flask) {
+                        const savedHero = data.heroes?.find(h => h.id === this.currentHero.id);
+                        if (savedHero?.flaskState) {
+                            this.systems.battle.flask.currentCharges = savedHero.flaskState.currentCharges;
+                            this.systems.battle.flask.content = savedHero.flaskState.content;
+                            console.log(`💧 Фляга восстановлена для ${this.currentHero.name}: ${savedHero.flaskState.currentCharges} зарядов`);
+                        }
+                    }
                     
                     if (this.systems.equipment) {
                         this.systems.equipment.setCurrentHero(this.currentHero);
