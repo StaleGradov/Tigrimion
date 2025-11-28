@@ -551,14 +551,14 @@ showHeroStory() {
     
     // YouTube ID для каждого героя (замени на реальные ID)
     const heroVideos = {
-        1: 'dQw4w9WgXcQ', // Герой 1 - замени на реальный ID
-        2: 'dQw4w9WgXcQ', // Герой 2
-        3: 'dQw4w9WgXcQ', // Герой 3
-        4: 'dQw4w9WgXcQ', // Герой 4
-        5: 'dQw4w9WgXcQ', // Герой 5
-        6: 'dQw4w9WgXcQ', // Герой 6
-        7: 'dQw4w9WgXcQ', // Герой 7
-        8: 'dQw4w9WgXcQ'  // Герой 8
+        1: 'RMSFR6cbb9c', // Герой 1 - замени на реальный ID
+        2: 'RMSFR6cbb9c', // Герой 2
+        3: 'RMSFR6cbb9c', // Герой 3
+        4: 'RMSFR6cbb9c', // Герой 4
+        5: 'RMSFR6cbb9c', // Герой 5
+        6: 'RMSFR6cbb9c', // Герой 6
+        7: 'RMSFR6cbb9c', // Герой 7
+        8: 'RMSFR6cbb9c'  // Герой 8
     };
     
     const videoId = heroVideos[this.currentHero.id] || 'dQw4w9WgXcQ';
