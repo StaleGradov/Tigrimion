@@ -1993,19 +1993,36 @@ resolveTacticalTurn() {
         this.returnToGame();
     }
 
-    tryToFlee() {
-        const fleeChance = 0.4;
+// ЗАМЕНИТЬ существующий tryToFlee() на:
+tryToFlee() {
+    if (!this.currentHero) return false;
+
+    const heroStats = this.getHeroStatsForBattle();
+    const halfHealth = Math.floor(heroStats.maxHealth / 2);
+    
+    // Проверяем, достаточно ли здоровья для побега
+    if (this.currentHero.currentHealth <= halfHealth) {
+        this.addBattleLog("💀 Недостаточно здоровья для побега! Герой погибает при попытке бегства.");
         
-        if (Math.random() < fleeChance) {
-            this.addBattleLog("🏃 Вам удалось сбежать с поля боя!");
-            this.endTacticalBattle(false);
-        } else {
-            this.addBattleLog("❌ Попытка сбежать не удалась! Противники атакуют.");
-            this.executeEnemyTurns();
+        // Обработка смерти героя
+        this.currentHero.currentHealth = 0;
+        this.endTacticalBattle(false);
+        
+        if (window.game && window.game.handleHeroDeath) {
+            window.game.handleHeroDeath();
         }
         
-        this.updateTacticalUI();
+        return false;
     }
+    
+    // Успешный побег с потерей здоровья
+    this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth - halfHealth);
+    this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья.`);
+    
+    // Завершаем бой с поражением (но герой жив)
+    this.endTacticalBattle(false);
+    return true;
+}
 
     returnToGame() {
         this.resultShown = false;
