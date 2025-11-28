@@ -1273,7 +1273,7 @@ showHeroStory() {
     // Сохраняем контекст this для использования в обработчиках
     const self = this;
     
-    const videoId = "dQw4w9WgXcQ"; // Замените на реальный ID
+    const videoId = "RMSFR6cbb9c"; // Замените на реальный ID
     
     const app = document.getElementById('app');
     if (!app) return;
