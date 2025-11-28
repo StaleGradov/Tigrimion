@@ -1957,6 +1957,8 @@ endTacticalBattle(victory, escape = false) {
     this.battleActive = false;
 
     console.log(`🎲 Завершение боя: победа=${victory}, побег=${escape}`);
+    console.log(`❤️ Текущее здоровье героя: ${this.currentHero?.currentHealth}`);
+    console.log(`🗺️ Контекст боя: ${this.battleContext}`);
 
     // ⭐ СНИМАЕМ ОТМЕТКУ АКТИВНОГО БОЯ И ОЧИЩАЕМ СОСТОЯНИЕ
     if (window.game) {
@@ -2109,23 +2111,26 @@ returnToGameAfterBattle() {
         }
     });
     
-    // ⭐ ВАЖНО: Проверяем что HeroSystem доступен
-    if (window.game && window.game.systems.hero) {
-        // Проверяем что есть текущий герой
-        if (!window.game.systems.hero.currentHero && window.game.currentHero) {
-            window.game.systems.hero.currentHero = window.game.currentHero;
-            console.log("✅ Восстановлен текущий герой в HeroSystem");
+    // ⭐ ВАЖНОЕ ИЗМЕНЕНИЕ: Если бой был в контексте перемещения - возвращаем на карту
+    if (this.battleContext === 'movement' && window.game?.systems?.map) {
+        console.log("🗺️ Возвращаем на тактическую карту после боя");
+        
+        // Восстанавливаем текущего героя в системе карт
+        if (this.currentHero) {
+            window.game.systems.map.setCurrentHero(this.currentHero);
         }
         
-        // Показываем основной экран игры
-        window.game.systems.hero.showHeroGameScreen();
-        console.log("✅ Экран героя показан");
+        // Показываем тактическую карту
+        window.game.systems.map.showOverlay('tactical-map');
         
     } else {
-        console.error("❌ HeroSystem не доступен для возврата в игру");
-        // Fallback: перезагружаем страницу
-        location.reload();
+        // Иначе показываем экран героя
+        if (window.game && window.game.systems.hero) {
+            window.game.systems.hero.showHeroGameScreen();
+        }
     }
+    
+    console.log("✅ Возврат в игру завершен");
 }
 
 
@@ -2215,7 +2220,6 @@ tryToFlee() {
         this.currentHero.currentHealth = 0;
         this.battleEnding = true;
         
-        // ⭐ ОЧИЩАЕМ СОСТОЯНИЕ БОЯ ПРИ ПОРАЖЕНИИ
         setTimeout(() => {
             this.endTacticalBattle(false, false); // Поражение, не побег
         }, 1000);
@@ -2223,14 +2227,25 @@ tryToFlee() {
         return false;
     }
     
-    // Успешный побег с потерей здоровья
+    // ⭐ ИСПРАВЛЕНИЕ: Убедимся что здоровье действительно уменьшается
     const oldHealth = this.currentHero.currentHealth;
+    
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Уменьшаем здоровье СРАЗУ
     this.currentHero.currentHealth = Math.max(1, oldHealth - halfHealth);
+    
+    console.log(`🏃 Здоровье уменьшено: ${oldHealth} → ${this.currentHero.currentHealth}`);
+    
+    // Обновляем полоску здоровья в бою
+    const heroUnit = this.battleGrid.allies[3];
+    if (heroUnit) {
+        heroUnit.currentHealth = this.currentHero.currentHealth;
+        this.updateHealthBar('allies', 3, this.currentHero.currentHealth, heroStats.maxHealth);
+    }
+    
     this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья (${oldHealth} → ${this.currentHero.currentHealth}).`);
     
     this.battleEnding = true;
     
-    // ⭐ ОЧИЩАЕМ СОСТОЯНИЕ БОЯ ПРИ ПОБЕГЕ
     setTimeout(() => {
         this.endTacticalBattle(false, true); // Поражение, но побег
     }, 1000);
