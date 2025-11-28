@@ -1258,8 +1258,11 @@ setTimeout(() => {
         // СОХРАНЯЕМ ПРИ СБРОСЕ
         if (window.game) window.game.saveGame();
     }
-    // ========== ИСТОРИЯ ГЕРОЯ ==========
-// ========== УЛУЧШЕННЫЙ МЕТОД ДЛЯ ИСТОРИИ ГЕРОЯ ==========
+
+
+
+    
+// ========== ИСТОРИЯ ГЕРОЯ ==========
 showHeroStory() {
     const currentHero = this.currentHero || window.game?.currentHero;
     if (!currentHero) {
@@ -1267,14 +1270,10 @@ showHeroStory() {
         return;
     }
 
-    // РЕАЛЬНЫЕ YouTube ID для разных героев (замените на свои)
-    const videoIds = {
-        1: "dQw4w9WgXcQ", // Пример ID - замените
-        2: "другой_id",
-        // добавьте ID для всех героев
-    };
+    // Сохраняем контекст this для использования в обработчиках
+    const self = this;
     
-    const videoId = videoIds[currentHero.id] || "dQw4w9WgXcQ"; // Запасной ID
+    const videoId = "dQw4w9WgXcQ"; // Замените на реальный ID
     
     const app = document.getElementById('app');
     if (!app) return;
@@ -1282,13 +1281,14 @@ showHeroStory() {
     app.innerHTML = `
         <div class="hero-story-screen">
             <div class="top-action-bar">
-                <button class="btn-top" onclick="game.systems.hero.returnToHeroGame()">
+                <!-- ИСПРАВЛЕННАЯ КНОПКА - используем прямой вызов -->
+                <button class="btn-top" id="backToHeroBtn">
                     ← Назад к герою
                 </button>
-                <button class="btn-top" onclick="game.showHeroSelection()">
+                <button class="btn-top" id="changeHeroBtn">
                     🔁 Сменить героя
                 </button>
-                <button class="btn-top" onclick="game.systems.hero.reloadVideo()">
+                <button class="btn-top" id="reloadVideoBtn">
                     🔄 Перезагрузить видео
                 </button>
             </div>
@@ -1299,7 +1299,7 @@ showHeroStory() {
                     <p class="hero-description">${currentHero.story || 'История этого героя пока не написана...'}</p>
                 </div>
                 
-                <div class="video-container" id="videoContainer">
+                <div class="video-container">
                     <iframe 
                         id="heroVideo"
                         width="100%" 
@@ -1310,16 +1310,6 @@ showHeroStory() {
                         allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
                     </iframe>
-                </div>
-                
-                <div class="video-fallback" id="videoFallback" style="display: none;">
-                    <div class="fallback-message">
-                        <h3>🎬 Видео временно недоступно</h3>
-                        <p>Попробуйте перезагрузить видео или вернуться позже</p>
-                        <button class="btn-primary" onclick="game.systems.hero.reloadVideo()">
-                            🔄 Перезагрузить видео
-                        </button>
-                    </div>
                 </div>
                 
                 <div class="story-info">
@@ -1335,69 +1325,54 @@ showHeroStory() {
                         <p><strong>Уровень:</strong> ${currentHero.level}</p>
                         <p><strong>Убито монстров:</strong> ${currentHero.monstersKilled || 0}</p>
                         <p><strong>Смертей:</strong> ${currentHero.deaths || 0}</p>
-                        <p><strong>Сила:</strong> ${this.calculateHeroStats(currentHero).power}</p>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    // Добавляем обработчик ошибок видео
-    this.setupVideoErrorHandling();
+    // Добавляем обработчики событий после рендера
+    this.setupStoryEventHandlers();
 }
 
-// ========== ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ВИДЕО ==========
-
-returnToHeroGame() {
-    this.showHeroGameScreen();
+// ========== НАСТРОЙКА ОБРАБОТЧИКОВ СОБЫТИЙ ==========
+setupStoryEventHandlers() {
+    const backBtn = document.getElementById('backToHeroBtn');
+    const changeHeroBtn = document.getElementById('changeHeroBtn');
+    const reloadBtn = document.getElementById('reloadVideoBtn');
+    
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            console.log("🎯 Кнопка 'Назад к герою' нажата");
+            this.showHeroGameScreen();
+        });
+    }
+    
+    if (changeHeroBtn) {
+        changeHeroBtn.addEventListener('click', () => {
+            console.log("🎯 Кнопка 'Сменить героя' нажата");
+            this.showHeroSelection();
+        });
+    }
+    
+    if (reloadBtn) {
+        reloadBtn.addEventListener('click', () => {
+            console.log("🎯 Кнопка 'Перезагрузить видео' нажата");
+            this.reloadVideo();
+        });
+    }
 }
 
+// ========== МЕТОД ПЕРЕЗАГРУЗКИ ВИДЕО ==========
 reloadVideo() {
     const video = document.getElementById('heroVideo');
-    const fallback = document.getElementById('videoFallback');
-    
     if (video) {
         const currentSrc = video.src;
         video.src = '';
         setTimeout(() => {
             video.src = currentSrc;
-            fallback.style.display = 'none';
-            video.style.display = 'block';
+            this.showNotification("🔄 Видео перезагружено");
         }, 100);
-    }
-}
-
-setupVideoErrorHandling() {
-    const video = document.getElementById('heroVideo');
-    const fallback = document.getElementById('videoFallback');
-    
-    if (video && fallback) {
-        video.onload = () => {
-            console.log("✅ Видео загружено успешно");
-            fallback.style.display = 'none';
-        };
-        
-        video.onerror = () => {
-            console.error("❌ Ошибка загрузки видео");
-            fallback.style.display = 'block';
-            video.style.display = 'none';
-        };
-        
-        // Проверяем через 5 секунд, загрузилось ли видео
-        setTimeout(() => {
-            if (video && video.contentWindow && video.contentWindow.document) {
-                try {
-                    const doc = video.contentWindow.document;
-                    if (doc.body.innerHTML.includes('error') || doc.body.innerHTML.includes('недоступно')) {
-                        fallback.style.display = 'block';
-                        video.style.display = 'none';
-                    }
-                } catch (e) {
-                    // Cross-origin ограничение, не можем проверить содержимое
-                    console.log("⚠️ Не могу проверить содержимое видео из-за CORS");
-                }
-            }
-        }, 5000);
     }
 }
 
