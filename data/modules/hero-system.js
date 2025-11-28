@@ -951,14 +951,14 @@ showHeroGameScreen() {
                     <div class="hero-background">
                         <img src="${currentHero.image}" alt="${currentHero.name}" 
                              onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-                        
-                        <!-- КНОПКА ИСТОРИИ ГЕРОЯ -->
-                        <div class="hero-story-button-container">
-                            <button class="btn-hero-story" onclick="game.showHeroStory()">
-                                <span class="story-icon">📖</span>
-                                <span class="story-text">История героя</span>
-                            </button>
-                        </div>
+                    </div>
+                    
+                    <!-- КНОПКА ИСТОРИИ ГЕРОЯ - ДОБАВЛЕНА ЗДЕСЬ -->
+                    <div class="hero-story-button-container">
+                        <button class="btn-hero-story" onclick="game.showHeroStory()">
+                            <span class="story-icon">📖</span>
+                            <span class="story-text">История героя</span>
+                        </button>
                     </div>
                     
                     <!-- Панель параметров поверх картинки -->
