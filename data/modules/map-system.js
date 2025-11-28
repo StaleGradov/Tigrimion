@@ -1422,39 +1422,40 @@ handleCanvasClick(e) {
         this.updateMovementInfo();
     }
 
-    startTacticalBattleForMovement(x, y, cellData) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
-
-        if (!this.currentHero) {
-            console.error("❌ Не могу начать бой: герой не выбран");
-            return;
-        }
-
-        this.pendingMovement = { x: x, y: y };
-        
-        const specificMonster = this.getMonsterFromCell(cellData);
-        
-        if (specificMonster && cellData.monster_id) {
-            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
-            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-        } else {
-            const randomMonster = this.getRandomMonster();
-            if (!randomMonster) {
-                console.error("❌ Не удалось начать бой: нет случайных монстров");
-                if (window.game) {
-                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
-                }
-                return;
-            }
-            
-            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
-            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
-        }
+ startTacticalBattleForMovement(x, y, cellData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
     }
+
+    if (!this.currentHero) {
+        console.error("❌ Не могу начать бой: герой не выбран");
+        return;
+    }
+
+    this.pendingMovement = { x: x, y: y };
+    
+    const specificMonster = this.getMonsterFromCell(cellData);
+    
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Явно указываем контекст 'movement'
+    if (specificMonster && cellData.monster_id) {
+        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement'); // ⭐ Явно указываем 'movement'
+    } else {
+        const randomMonster = this.getRandomMonster();
+        if (!randomMonster) {
+            console.error("❌ Не удалось начать бой: нет случайных монстров");
+            if (window.game) {
+                window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
+            }
+            return;
+        }
+        
+        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
+        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement'); // ⭐ Явно указываем 'movement'
+    }
+}
 
     getRandomMonster() {
         const battleSystem = window.game?.systems?.battle;
