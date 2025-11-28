@@ -179,23 +179,34 @@ handleTavernVisit(cell) {
     const stats = heroSystem.calculateHeroStats(this.currentHero);
     
     // Полное восстановление здоровья
+    const oldHealth = this.currentHero.currentHealth;
     this.currentHero.currentHealth = stats.maxHealth;
     
     // Пополнение фляги
     const battleSystem = window.game?.systems?.battle;
     if (battleSystem && battleSystem.flask) {
+        const oldCharges = battleSystem.flask.currentCharges;
         battleSystem.flask.currentCharges = battleSystem.flask.capacity;
         battleSystem.flask.content = 'water';
-        battleSystem.updateFlaskUI();
+        
+        // ОБНОВЛЯЕМ интерфейс фляги
+        if (battleSystem.updateFlaskUI) {
+            battleSystem.updateFlaskUI();
+        }
+        if (battleSystem.updateFlaskChargesDisplay) {
+            battleSystem.updateFlaskChargesDisplay();
+        }
+        
+        console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
     }
     
     // Сохранение игры
     if (window.game) {
         window.game.saveGame();
-        window.game.showNotification("🍻 Таверна: здоровье восстановлено, фляга наполнена!", 'success');
+        window.game.showNotification(`🍻 Таверна: здоровье ${oldHealth}→${stats.maxHealth}, фляга пополнена!`, 'success');
     }
     
-    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну`);
+    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну, здоровье восстановлено`);
 }
 
 handleWaterCell(cell) {
@@ -204,20 +215,27 @@ handleWaterCell(cell) {
     const battleSystem = window.game?.systems?.battle;
     if (battleSystem && battleSystem.flask) {
         // Пополнение фляги водой
+        const oldCharges = battleSystem.flask.currentCharges;
         battleSystem.flask.currentCharges = battleSystem.flask.capacity;
         battleSystem.flask.content = 'water';
-        battleSystem.updateFlaskUI();
+        
+        // ОБНОВЛЯЕМ интерфейс фляги
+        if (battleSystem.updateFlaskUI) {
+            battleSystem.updateFlaskUI();
+        }
+        if (battleSystem.updateFlaskChargesDisplay) {
+            battleSystem.updateFlaskChargesDisplay();
+        }
         
         if (window.game) {
-            window.game.showNotification("💧 Фляга наполнена водой из источника!", 'success');
+            window.game.showNotification(`💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов!`, 'success');
             window.game.saveGame();
         }
+        
+        console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды: ${oldCharges}→${battleSystem.flask.capacity}`);
     }
-    
-    console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды`);
 }
 
-// Обновить метод handleCanvasClick():
 handleCanvasClick(e) {
     if (!this.currentTacticalMap) return;
 
@@ -239,24 +257,32 @@ handleCanvasClick(e) {
     
     console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
     
-    // Обработка специальных клеток
-    if (hex.type === 'tavern') {
+    // Обработка ТАВЕРНЫ (тип village с tacticalMap)
+    if (hex.type === 'village' && hex.tacticalMap) {
         this.handleTavernVisit(hex);
         return;
     }
     
+    // Обработка специальных клеток
     if (hex.type === 'water') {
         this.handleWaterCell(hex);
         return;
     }
     
-    // Остальная существующая логика...
+    // Обработка магазина
     if (hex.type === 'merchant') {
         this.handleMerchantClick(hex);
         return;
     }
     
-    // ... остальной код
+    if (this.isTransitionCell(hex)) {
+        this.handleTransitionClick(hex);
+        return;
+    }
+    
+    if (hex.passable !== false || hex.type === 'monster') {
+        this.moveOnTacticalMap(hex.col, hex.row);
+    }
 }
     
     // ========== ОСНОВНЫЕ МЕТОДЫ КАРТ ==========
@@ -1976,86 +2002,91 @@ handleCanvasClick(e) {
         this.drawTacticalMap();
     }
     
-    getTooltipTextForHex(hex) {
-        if (!hex.visible) return null;
+  getTooltipTextForHex(hex) {
+    if (!hex.visible) return null;
 
-        if (hex.tooltip) {
-            return hex.tooltip;
-        }
-
-        // Обновленная подсказка для магазинов
-        if (hex.type === 'merchant') {
-            const itemCount = hex.shopItems ? hex.shopItems.length : 0;
-            const shopName = hex.shopName || "Магазин";
-            const merchantName = hex.merchantName || "Торговец";
-            return `🛒 ${shopName}\nТорговец: ${merchantName}\nТоваров: ${itemCount}\n(Кликните для торговли)`;
-        }
-
-        if (this.isTransitionCell(hex)) {
-            const isAccessible = this.isPlayerAdjacentToTransition(hex);
-            const accessibilityInfo = isAccessible ? "\n✅ Доступно для входа" : "\n❌ Подойдите ближе";
-            
-            if (hex.tacticalMap) {
-                const locationName = this.getLocationNameFromPath(hex.tacticalMap);
-                return `🚪 Вход в ${locationName}\n(Кликните для входа)${accessibilityInfo}`;
-            }
-            if (hex.localMap) {
-                const locationName = this.getLocationNameFromPath(hex.localMap);
-                return `🌍 Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
-            }
-            if (hex.globalMap) {
-                const locationName = this.getLocationNameFromPath(hex.globalMap);
-                return `🗺️ Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
-            }
-            if (hex.type === 'exit') {
-                return `🚪 Выход\n(Кликните для возврата)${accessibilityInfo}`;
-            }
-        }
-
-        if (hex.hasLoot) {
-            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
-            const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
-            return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}\n(Кликните для исследования)`;
-        }
-
-        const defaultTooltips = {
-            'player_start': '⭐ Стартовая позиция',
-            'monster': '👹 Враждебная территория\n(Возможен бой)',
-            'chest': '📦 Тайный сундук\n(Может содержать сокровища)',
-            'npc': '🧙 Таинственный незнакомец\n(Возможно, даст задание)',
-            'exit': '🚪 Выход с карты\n(Вернуться на предыдущую карту)',
-            'obstacle': '🪨 Препятствие\n(Непроходимо)',
-            'active': '🟢 Проходимая местность',
-            'inactive': '🔴 Непроходимая местность',
-            'tree': '🌲 Дерево\n(Непроходимо)',
-            'elegant_tree': '🎄 Изящное дерево\n(Непроходимо)',
-            'cave': '🕳️ Пещера\n(Возможен вход)',
-            'lava_crack': '🌋 Лавовый разлом\n(Опасно)',
-            'graveyard_cross': '⚰️ Кладбищенский крест\n(Место силы)',
-            'bandit_camp': '⚔️ Лагерь разбойников\n(Опасно)',
-            'orc_camp': '👹 Лагерь орков\n(Очень опасно)',
-            'black_monolith': '⬛ Черный монолит\n(Загадочный артефакт)',
-            'weapon': '⚔️ Оружие\n(Можно найти)',
-            'armor': '🛡️ Доспех\n(Можно найти)',
-            'village': '🏘️ Деревня\n(Мирное поселение)',
-            'castle': '🏰 Замок\n(Резиденция правителя)',
-            'water': '💧 Водная поверхность\n(Непроходимо)',
-            'campfire': '🔥 Костер\n(Можно отдохнуть)',
-            'cart': '🛒 Телега\n(Возможна торговля)',
-            'traveler': '🚶 Путник\n(Может дать информацию)',
-            'portal': '🌀 Магический портал\n(Телепортация)',
-            'ancient_rune': '🔰 Древняя руна\n(Магический символ)',
-            'magic_crystal': '💎 Магический кристалл\n(Источник магии)',
-            'tavern': '🍻 Таверна\n(Место отдыха и слухов)',
-            'shop': '🏪 Магазин\n(Торговля предметами)',
-            'dungeon': '🏰 Подземелье\n(Опасное место)',
-            'temple': '⛪ Храм\n(Священное место)',
-            'bridge': '🌉 Мост\n(Переправа через препятствие)',
-            'mountain': '⛰️ Гора\n(Непроходимо)'
-        };
-
-        return defaultTooltips[hex.type] || null;
+    if (hex.tooltip) {
+        return hex.tooltip;
     }
+
+    // Обработка ТАВЕРНЫ
+    if (hex.type === 'village' && hex.tacticalMap) {
+        return `🍻 Таверна "${hex.tooltip || 'Уютное заведение'}"\n(Кликните для отдыха и пополнения фляги)`;
+    }
+
+    // Обновленная подсказка для магазинов
+    if (hex.type === 'merchant') {
+        const itemCount = hex.shopItems ? hex.shopItems.length : 0;
+        const shopName = hex.shopName || "Магазин";
+        const merchantName = hex.merchantName || "Торговец";
+        return `🛒 ${shopName}\nТорговец: ${merchantName}\nТоваров: ${itemCount}\n(Кликните для торговли)`;
+    }
+
+    if (this.isTransitionCell(hex)) {
+        const isAccessible = this.isPlayerAdjacentToTransition(hex);
+        const accessibilityInfo = isAccessible ? "\n✅ Доступно для входа" : "\n❌ Подойдите ближе";
+        
+        if (hex.tacticalMap) {
+            const locationName = this.getLocationNameFromPath(hex.tacticalMap);
+            return `🚪 Вход в ${locationName}\n(Кликните для входа)${accessibilityInfo}`;
+        }
+        if (hex.localMap) {
+            const locationName = this.getLocationNameFromPath(hex.localMap);
+            return `🌍 Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
+        }
+        if (hex.globalMap) {
+            const locationName = this.getLocationNameFromPath(hex.globalMap);
+            return `🗺️ Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
+        }
+        if (hex.type === 'exit') {
+            return `🚪 Выход\n(Кликните для возврата)${accessibilityInfo}`;
+        }
+    }
+
+    if (hex.hasLoot) {
+        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+        const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
+        return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}\n(Кликните для исследования)`;
+    }
+
+    const defaultTooltips = {
+        'player_start': '⭐ Стартовая позиция',
+        'monster': '👹 Враждебная территория\n(Возможен бой)',
+        'chest': '📦 Тайный сундук\n(Может содержать сокровища)',
+        'npc': '🧙 Таинственный незнакомец\n(Возможно, даст задание)',
+        'exit': '🚪 Выход с карты\n(Вернуться на предыдущую карту)',
+        'obstacle': '🪨 Препятствие\n(Непроходимо)',
+        'active': '🟢 Проходимая местность',
+        'inactive': '🔴 Непроходимая местность',
+        'tree': '🌲 Дерево\n(Непроходимо)',
+        'elegant_tree': '🎄 Изящное дерево\n(Непроходимо)',
+        'cave': '🕳️ Пещера\n(Возможен вход)',
+        'lava_crack': '🌋 Лавовый разлом\n(Опасно)',
+        'graveyard_cross': '⚰️ Кладбищенский крест\n(Место силы)',
+        'bandit_camp': '⚔️ Лагерь разбойников\n(Опасно)',
+        'orc_camp': '👹 Лагерь орков\n(Очень опасно)',
+        'black_monolith': '⬛ Черный монолит\n(Загадочный артефакт)',
+        'weapon': '⚔️ Оружие\n(Можно найти)',
+        'armor': '🛡️ Доспех\n(Можно найти)',
+        'village': '🏘️ Деревня\n(Мирное поселение)',
+        'castle': '🏰 Замок\n(Резиденция правителя)',
+        'water': '💧 Водная поверхность\n(Непроходимо, но можно пополнить флягу)',
+        'campfire': '🔥 Костер\n(Можно отдохнуть)',
+        'cart': '🛒 Телега\n(Возможна торговля)',
+        'traveler': '🚶 Путник\n(Может дать информацию)',
+        'portal': '🌀 Магический портал\n(Телепортация)',
+        'ancient_rune': '🔰 Древняя руна\n(Магический символ)',
+        'magic_crystal': '💎 Магический кристалл\n(Источник магии)',
+        'tavern': '🍻 Таверна\n(Место отдыха и слухов)',
+        'shop': '🏪 Магазин\n(Торговля предметами)',
+        'dungeon': '🏰 Подземелье\n(Опасное место)',
+        'temple': '⛪ Храм\n(Священное место)',
+        'bridge': '🌉 Мост\n(Переправа через препятствие)',
+        'mountain': '⛰️ Гора\n(Непроходимо)'
+    };
+
+    return defaultTooltips[hex.type] || null;
+}
 
     createTooltipElement() {
         this.tooltipElement = document.createElement('div');
