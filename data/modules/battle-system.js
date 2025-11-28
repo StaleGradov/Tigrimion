@@ -248,7 +248,7 @@ class BattleSystem {
         return monsterGroup;
     }
 
-startBattleWithMonster(hero, monsterId, context = 'normal') {
+startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
     if (!hero) {
         console.error("❌ Не могу начать бой: герой не передан");
         return;
@@ -279,9 +279,11 @@ startBattleWithMonster(hero, monsterId, context = 'normal') {
     this.battleActive = true;
     this.battleRound = 0;
     this.battleLog = [];
-    this.battleContext = context;
+    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
     this.selectedTarget = null;
     this.pendingAction = null;
+    
+    console.log(`🎲 Контекст боя установлен: ${this.battleContext}`);
     
     // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
     if (window.game) {
@@ -297,7 +299,7 @@ startBattleWithMonster(hero, monsterId, context = 'normal') {
 }
 
 
- startBattleWithSpecificMonster(hero, specificMonster, context = 'normal') {
+startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
     if (!hero) {
         console.error("❌ Не могу начать бой: герой не передан");
         return;
@@ -325,9 +327,11 @@ startBattleWithMonster(hero, monsterId, context = 'normal') {
     this.battleActive = true;
     this.battleRound = 0;
     this.battleLog = [];
-    this.battleContext = context;
+    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
     this.selectedTarget = null;
     this.pendingAction = null;
+    
+    console.log(`🎲 Контекст боя с конкретным монстром: ${this.battleContext}`);
     
     // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
     if (window.game) {
@@ -2102,6 +2106,8 @@ closeBattleResult() {
 
 returnToGameAfterBattle() {
     console.log("🔄 Возврат к игре после боя");
+    console.log(`🎲 Контекст боя: ${this.battleContext}`);
+    console.log(`🗺️ MapSystem доступен: ${!!window.game?.systems?.map}`);
     
     // Полностью очищаем ВСЕ элементы боя
     const battleElements = document.querySelectorAll('.battle-screen-fullscreen, .battle-result-overlay');
@@ -2111,19 +2117,22 @@ returnToGameAfterBattle() {
         }
     });
     
-    // ⭐ ВАЖНОЕ ИЗМЕНЕНИЕ: Если бой был в контексте перемещения - возвращаем на карту
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Если бой был в контексте перемещения - возвращаем на карту
     if (this.battleContext === 'movement' && window.game?.systems?.map) {
         console.log("🗺️ Возвращаем на тактическую карту после боя");
         
         // Восстанавливаем текущего героя в системе карт
         if (this.currentHero) {
             window.game.systems.map.setCurrentHero(this.currentHero);
+            console.log(`🎯 Герой ${this.currentHero.name} установлен в MapSystem`);
         }
         
         // Показываем тактическую карту
         window.game.systems.map.showOverlay('tactical-map');
+        console.log("✅ Тактическая карта показана");
         
     } else {
+        console.log("🎮 Возвращаем на экран героя (не movement контекст)");
         // Иначе показываем экран героя
         if (window.game && window.game.systems.hero) {
             window.game.systems.hero.showHeroGameScreen();
