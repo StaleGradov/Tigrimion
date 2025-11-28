@@ -1933,16 +1933,12 @@ endTacticalBattle(victory, escape = false) {
     if (this.resultShown) return;
     this.resultShown = true;
 
-    console.log(`🎯 Завершение боя: победа=${victory}, побег=${escape}, контекст=${this.battleContext}`);
-
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
         this.currentHero.gold += totalReward;
-        if (window.game.systems.level) {
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-        }
+        window.game.systems.level.addExperience(this.currentHero, totalExperience);
         this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
         
         this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
@@ -1950,32 +1946,29 @@ endTacticalBattle(victory, escape = false) {
         // Поражение - проверяем причину
         if (escape) {
             // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0;
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0; // Не увеличиваем счетчик смертей при побеге
             this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
         } else {
-            // Смерть в бою - возвращаем на стартовую точку
-            this.currentHero.currentHealth = 1;
+            // Смерть в бою - перемещаем на стартовую точку
+            this.currentHero.currentHealth = 1; // Восстанавливаем до 1 HP вместо 0
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
             
+            // Вызываем обработку смерти
             if (window.game && window.game.handleHeroDeath) {
                 window.game.handleHeroDeath();
             }
         }
     }
     
-    // Синхронизируем здоровье
     if (this.currentHero && window.game.systems.hero) {
         this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
         window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
     
-    // Сохраняем игру
     if (window.game) window.game.saveGame();
     
-    // ВАЖНО: Завершаем перемещение на карте
     if (this.battleContext === 'movement' && window.game.systems.map) {
-        console.log("🗺️ Вызываем completeMovementAfterBattle с параметрами:", victory, escape);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
     }
     
@@ -2053,32 +2046,12 @@ endTacticalBattle(victory, escape = false) {
     app.insertAdjacentHTML('beforeend', resultHTML);
 }
 
-closeBattleResult() {
-    const overlay = document.querySelector('.battle-result-overlay');
-    if (overlay) overlay.remove();
-    
-    console.log("🚪 Закрытие результата боя, возврат к игре");
-    
-    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Всегда возвращаемся к экрану героя
-    if (window.game) {
-        window.game.showHeroGameScreen();
+    closeBattleResult() {
+        const overlay = document.querySelector('.battle-result-overlay');
+        if (overlay) overlay.remove();
         
-        // Если бой был в контексте перемещения, показываем карту
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            setTimeout(() => {
-                console.log("🗺️ Показываем тактическую карту после боя");
-                window.game.systems.map.showOverlay('tactical-map');
-            }, 100);
-        }
+        this.returnToGame();
     }
-    
-    // Сбрасываем состояние боя
-    this.battleActive = false;
-    this.currentMonsters = [];
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    this.battleContext = 'normal';
-}
 
 tryToFlee() {
     if (!this.currentHero) return false;
