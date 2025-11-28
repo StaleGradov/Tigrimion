@@ -577,9 +577,6 @@ updateFlaskChargesDisplay() {
                     <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
                     <div class="battle-round">Раунд: ${this.battleRound}</div>
                 </div>
-                <button class="btn-battle-back" onclick="game.systems.battle.returnToGame()">
-                    ← Назад к карте
-                </button>
             </header>
             
             <div class="battle-main-area-compact">
@@ -2089,22 +2086,7 @@ tryToFlee() {
     return true;
 }
 
-    returnToGame() {
-        this.resultShown = false;
-        this.battleEnding = false;
-        
-        if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
-            window.game.showHeroGameScreen();
-            setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
-        } else if (window.game) {
-            window.game.showHeroGameScreen();
-        }
-        
-        this.battleActive = false;
-        this.currentMonsters = [];
-        this.selectedTarget = null;
-        this.pendingAction = null;
-    }
+
 
     showTacticalBattleScreen() {
         this.showTacticalBattleInterface();
