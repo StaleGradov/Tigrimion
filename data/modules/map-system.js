@@ -1481,7 +1481,7 @@ completeMovementAfterBattle(victory, escape = false) {
         const oldPosition = {...this.playerTacticalPosition};
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        console.log(`✅ Успешное перемещение героя ${this.currentHero?.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
         
         if (window.game) {
             window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
@@ -1489,7 +1489,7 @@ completeMovementAfterBattle(victory, escape = false) {
     } else {
         if (escape) {
             // Побег - остаемся на текущей позиции
-            console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+            console.log(`🏃 Герой ${this.currentHero?.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
             
             if (window.game) {
                 window.game.showNotification("🏃 Успешный побег! Герой остался на месте.", 'warning');
@@ -1500,7 +1500,7 @@ completeMovementAfterBattle(victory, escape = false) {
             const oldPosition = {...this.playerTacticalPosition};
             this.playerTacticalPosition = {...startPosition};
             
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero?.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
             
             if (window.game) {
                 window.game.showNotification("💀 Поражение! Возврат на стартовую позицию.", 'error');
@@ -1518,28 +1518,8 @@ completeMovementAfterBattle(victory, escape = false) {
     
     this.pendingMovement = null;
     
-    // Возвращаемся к игре
-    this.returnToGameAfterBattle();
-}
-
-returnToGameAfterBattle() {
-    console.log("🔄 Возврат к игре после боя");
-    
-    // Закрываем экран боя
-    const battleScreen = document.querySelector('.battle-screen-fullscreen');
-    if (battleScreen) {
-        battleScreen.remove();
-    }
-    
-    const resultOverlay = document.querySelector('.battle-result-overlay');
-    if (resultOverlay) {
-        resultOverlay.remove();
-    }
-    
-    // Показываем основной экран игры
-    if (window.game && window.game.systems.hero) {
-        window.game.systems.hero.showHeroGameScreen();
-    }
+    // НЕ ВЫЗЫВАЕМ returnToGameAfterBattle здесь - это делает BattleSystem
+    console.log("✅ MapSystem завершил обработку перемещения после боя");
 }
     
     getMonsterFromCell(cellData) {
