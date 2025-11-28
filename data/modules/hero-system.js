@@ -902,7 +902,7 @@ updateHeroDisplay(stats) {
         `;
     }
 
-   showHeroGameScreen() {
+showHeroGameScreen() {
     // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Синхронизируем currentHero если он undefined
     if (!this.currentHero && window.game?.currentHero) {
         this.currentHero = window.game.currentHero;
