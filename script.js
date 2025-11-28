@@ -270,6 +270,9 @@ class SafeHeroGame {
             
             // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ
             this.startHealthRegeneration();
+                  
+            // ⭐ ЗАПУСКАЕМ ЗАЩИТУ ОТ ПЕРЕЗАГРУЗКИ ВО ВРЕМЯ БОЯ
+            this.setupBattleCrashProtection();
             
             // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизация HeroSystem после загрузки
             setTimeout(() => {
