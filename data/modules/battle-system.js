@@ -2105,41 +2105,20 @@ closeBattleResult() {
 }
 
 returnToGameAfterBattle() {
-    console.log("🔄 Возврат к игре после боя");
-    console.log(`🎲 Контекст боя: ${this.battleContext}`);
-    console.log(`🗺️ MapSystem доступен: ${!!window.game?.systems?.map}`);
+    this.resultShown = false;
+    this.battleEnding = false;
     
-    // Полностью очищаем ВСЕ элементы боя
-    const battleElements = document.querySelectorAll('.battle-screen-fullscreen, .battle-result-overlay');
-    battleElements.forEach(el => {
-        if (el && el.parentElement) {
-            el.parentElement.removeChild(el);
-        }
-    });
-    
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Если бой был в контексте перемещения - возвращаем на карту
-    if (this.battleContext === 'movement' && window.game?.systems?.map) {
-        console.log("🗺️ Возвращаем на тактическую карту после боя");
-        
-        // Восстанавливаем текущего героя в системе карт
-        if (this.currentHero) {
-            window.game.systems.map.setCurrentHero(this.currentHero);
-            console.log(`🎯 Герой ${this.currentHero.name} установлен в MapSystem`);
-        }
-        
-        // Показываем тактическую карту
-        window.game.systems.map.showOverlay('tactical-map');
-        console.log("✅ Тактическая карта показана");
-        
-    } else {
-        console.log("🎮 Возвращаем на экран героя (не movement контекст)");
-        // Иначе показываем экран героя
-        if (window.game && window.game.systems.hero) {
-            window.game.systems.hero.showHeroGameScreen();
-        }
+    if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
+        window.game.showHeroGameScreen();
+        setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
+    } else if (window.game) {
+        window.game.showHeroGameScreen();
     }
     
-    console.log("✅ Возврат в игру завершен");
+    this.battleActive = false;
+    this.currentMonsters = [];
+    this.selectedTarget = null;
+    this.pendingAction = null;
 }
 
 
