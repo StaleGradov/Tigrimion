@@ -9,7 +9,10 @@ class BattleSystem {
         this.battleLog = [];
         this.battleRound = 0;
         this.battleContext = 'normal';
-        
+            // ⭐ ПРОВЕРЯЕМ ВОССТАНОВЛЕНИЕ ПРИ СОЗДАНИИ
+    setTimeout(() => {
+        this.recoverFromCrash();
+    }, 2000);
         // Тактическая система
         this.currentPlayer = 1;
         this.players = {
@@ -245,80 +248,99 @@ class BattleSystem {
         return monsterGroup;
     }
 
-    startBattleWithMonster(hero, monsterId, context = 'normal') {
-        if (!hero) {
-            console.error("❌ Не могу начать бой: герой не передан");
-            return;
-        }
-
-        this.resultShown = false;
-        this.battleEnding = false;
-
-        const monsterGroup = this.generateMonsterGroup(monsterId);
-        if (!monsterGroup || monsterGroup.length === 0) {
-            console.error("❌ Не удалось сгенерировать группу монстров!");
-            return;
-        }
-
-        this.currentHero = hero;
-        this.currentMonsters = monsterGroup;
-        
-        this.players[1] = { 
-            ap: 3, 
-            currentAction: null, 
-            combo: { type: null, count: 0 }, 
-            previousActions: [] 
-        };
-        
-        const heroStats = this.getHeroStatsForBattle();
-        this.setupTacticalGrid(hero, monsterGroup, heroStats);
-        
-        this.battleActive = true;
-        this.battleRound = 0;
-        this.battleLog = [];
-        this.battleContext = context;
-        this.selectedTarget = null;
-        this.pendingAction = null;
-        
-        console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
-        this.showTacticalBattleInterface();
+startBattleWithMonster(hero, monsterId, context = 'normal') {
+    if (!hero) {
+        console.error("❌ Не могу начать бой: герой не передан");
+        return;
     }
 
-    startBattleWithSpecificMonster(hero, specificMonster, context = 'normal') {
-        if (!hero) {
-            console.error("❌ Не могу начать бой: герой не передан");
-            return;
-        }
+    this.resultShown = false;
+    this.battleEnding = false;
 
-        this.resultShown = false;
-        this.battleEnding = false;
-
-        const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
-        if (!monsterGroup) return;
-
-        this.currentHero = hero;
-        this.currentMonsters = monsterGroup;
-        
-        this.players[1] = { 
-            ap: 3, 
-            currentAction: null, 
-            combo: { type: null, count: 0 }, 
-            previousActions: [] 
-        };
-        
-        const heroStats = this.getHeroStatsForBattle();
-        this.setupTacticalGrid(hero, monsterGroup, heroStats);
-        
-        this.battleActive = true;
-        this.battleRound = 0;
-        this.battleLog = [];
-        this.battleContext = context;
-        this.selectedTarget = null;
-        this.pendingAction = null;
-        
-        console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
-        this.showTacticalBattleInterface();
+    const monsterGroup = this.generateMonsterGroup(monsterId);
+    if (!monsterGroup || monsterGroup.length === 0) {
+        console.error("❌ Не удалось сгенерировать группу монстров!");
+        return;
     }
+
+    this.currentHero = hero;
+    this.currentMonsters = monsterGroup;
+    
+    this.players[1] = { 
+        ap: 3, 
+        currentAction: null, 
+        combo: { type: null, count: 0 }, 
+        previousActions: [] 
+    };
+    
+    const heroStats = this.getHeroStatsForBattle();
+    this.setupTacticalGrid(hero, monsterGroup, heroStats);
+    
+    this.battleActive = true;
+    this.battleRound = 0;
+    this.battleLog = [];
+    this.battleContext = context;
+    this.selectedTarget = null;
+    this.pendingAction = null;
+    
+    // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
+    if (window.game) {
+        window.game.markBattleAsActive();
+        console.log("🎲 Бой отмечен как активный для защиты от перезагрузки");
+    }
+    
+    // Сохраняем в sessionStorage на случай аварийного закрытия
+    this.saveBattleState();
+    
+    console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
+    this.showTacticalBattleInterface();
+}
+
+
+ startBattleWithSpecificMonster(hero, specificMonster, context = 'normal') {
+    if (!hero) {
+        console.error("❌ Не могу начать бой: герой не передан");
+        return;
+    }
+
+    this.resultShown = false;
+    this.battleEnding = false;
+
+    const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
+    if (!monsterGroup) return;
+
+    this.currentHero = hero;
+    this.currentMonsters = monsterGroup;
+    
+    this.players[1] = { 
+        ap: 3, 
+        currentAction: null, 
+        combo: { type: null, count: 0 }, 
+        previousActions: [] 
+    };
+    
+    const heroStats = this.getHeroStatsForBattle();
+    this.setupTacticalGrid(hero, monsterGroup, heroStats);
+    
+    this.battleActive = true;
+    this.battleRound = 0;
+    this.battleLog = [];
+    this.battleContext = context;
+    this.selectedTarget = null;
+    this.pendingAction = null;
+    
+    // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
+    if (window.game) {
+        window.game.markBattleAsActive();
+        console.log("🎲 Бой с конкретным монстром отмечен как активный");
+    }
+    
+    // Сохраняем в sessionStorage на случай аварийного закрытия
+    this.saveBattleState();
+    
+    console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
+    this.showTacticalBattleInterface();
+}
 
     generateSpecificMonsterGroup(specificMonster) {
         if (!specificMonster) return null;
@@ -1936,6 +1958,15 @@ endTacticalBattle(victory, escape = false) {
 
     console.log(`🎲 Завершение боя: победа=${victory}, побег=${escape}`);
 
+    // ⭐ СНИМАЕМ ОТМЕТКУ АКТИВНОГО БОЯ И ОЧИЩАЕМ СОСТОЯНИЕ
+    if (window.game) {
+        window.game.markBattleAsInactive();
+        console.log("🎲 Бой отмечен как завершенный");
+    }
+    
+    // Очищаем состояние боя из sessionStorage
+    this.clearBattleState();
+
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
@@ -2076,6 +2107,75 @@ closeBattleResult() {
     }
 }
 
+
+// ⭐ НОВЫЙ МЕТОД: Сохранение состояния боя
+saveBattleState() {
+    try {
+        const battleState = {
+            active: true,
+            heroId: this.currentHero?.id,
+            monsterCount: this.currentMonsters?.length || 0,
+            round: this.battleRound,
+            context: this.battleContext,
+            timestamp: Date.now()
+        };
+        
+        sessionStorage.setItem('battleState', JSON.stringify(battleState));
+        console.log("💾 Состояние боя сохранено:", battleState);
+    } catch (error) {
+        console.error("❌ Ошибка сохранения состояния боя:", error);
+    }
+}
+
+// ⭐ НОВЫЙ МЕТОД: Очистка состояния боя
+clearBattleState() {
+    try {
+        sessionStorage.removeItem('battleState');
+        console.log("🗑️ Состояние боя очищено");
+    } catch (error) {
+        console.error("❌ Ошибка очистки состояния боя:", error);
+    }
+}
+
+// ⭐ НОВЫЙ МЕТОД: Восстановление после аварийного завершения
+recoverFromCrash() {
+    try {
+        const battleState = sessionStorage.getItem('battleState');
+        if (battleState) {
+            const state = JSON.parse(battleState);
+            console.log("🎲 Обнаружено незавершенное состояние боя:", state);
+            
+            if (state.active && window.game && window.game.currentHero) {
+                // Восстанавливаем героя
+                this.currentHero = window.game.currentHero;
+                
+                // Считаем это поражением
+                this.currentHero.currentHealth = 1;
+                this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+                
+                // Уведомляем систему карт
+                if (window.game.systems.map) {
+                    window.game.systems.map.completeMovementAfterBattle(false, false);
+                }
+                
+                // Сохраняем игру
+                window.game.saveGame();
+                
+                // Очищаем состояние
+                this.clearBattleState();
+                
+                console.log("✅ Восстановление после аварийного завершения боя выполнено");
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error("❌ Ошибка восстановления после аварийного завершения:", error);
+        this.clearBattleState();
+    }
+    return false;
+}
+
+    
 tryToFlee() {
     if (!this.currentHero || this.battleEnding) return false;
 
@@ -2094,6 +2194,7 @@ tryToFlee() {
         this.currentHero.currentHealth = 0;
         this.battleEnding = true;
         
+        // ⭐ ОЧИЩАЕМ СОСТОЯНИЕ БОЯ ПРИ ПОРАЖЕНИИ
         setTimeout(() => {
             this.endTacticalBattle(false, false); // Поражение, не побег
         }, 1000);
@@ -2108,6 +2209,7 @@ tryToFlee() {
     
     this.battleEnding = true;
     
+    // ⭐ ОЧИЩАЕМ СОСТОЯНИЕ БОЯ ПРИ ПОБЕГЕ
     setTimeout(() => {
         this.endTacticalBattle(false, true); // Поражение, но побег
     }, 1000);
