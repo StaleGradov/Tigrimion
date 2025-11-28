@@ -1564,7 +1564,7 @@ resolveTacticalTurn() {
         console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
         this.updateAllHealthBars();
         this.updateTacticalUI();
-        this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ОБНОВЛЕНИЯ ФЛЯГИ
+        this.updateFlaskChargesDisplay();
         
         this.debugHealthBars();
         
@@ -1655,6 +1655,40 @@ resolveTacticalTurn() {
         }
     }
 
+completeMovementAfterBattle(victory, escape = false) {
+    if (!this.pendingMovement) return;
+
+    if (victory) {
+        // Победа - перемещаем на целевую клетку
+        const targetX = this.pendingMovement.x;
+        const targetY = this.pendingMovement.y;
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x: targetX, y: targetY};
+        
+        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+    } else {
+        if (escape) {
+            // Побег - остаемся на текущей позиции
+            console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+        } else {
+            // Смерть в бою - возвращаем на стартовую точку
+            const startPosition = this.currentTacticalMap.startPosition;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {...startPosition};
+            
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+        }
+    }
+    
+    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+        this.calculateCSSScale();
+        this.drawTacticalMap();
+    }
+    
+    this.pendingMovement = null;
+}
+
+    
    updateTacticalUI() {
     const playerAP = document.getElementById('playerAP');
     const playerCombo = document.getElementById('playerCombo');
@@ -1898,43 +1932,52 @@ resolveTacticalTurn() {
         return hero && hero.currentHealth > 0 && aliveMonsters.length === 0;
     }
 
-    endTacticalBattle(victory) {
-        if (this.resultShown) return;
-        this.resultShown = true;
+endTacticalBattle(victory, escape = false) {
+    if (this.resultShown) return;
+    this.resultShown = true;
 
-        if (victory) {
-            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-            
-            this.currentHero.gold += totalReward;
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-            
-            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+    if (victory) {
+        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+        
+        this.currentHero.gold += totalReward;
+        window.game.systems.level.addExperience(this.currentHero, totalExperience);
+        this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+        
+        this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+    } else {
+        // Поражение - проверяем причину
+        if (escape) {
+            // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0; // Не увеличиваем счетчик смертей при побеге
+            this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
         } else {
-            this.currentHero.currentHealth = 1;
+            // Смерть в бою - перемещаем на стартовую точку
+            this.currentHero.currentHealth = 1; // Восстанавливаем до 1 HP вместо 0
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addBattleLog("💀 ПОРАЖЕНИЕ! Герой повержен. Здоровье восстановится до 1.");
+            this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
             
+            // Вызываем обработку смерти
             if (window.game && window.game.handleHeroDeath) {
                 window.game.handleHeroDeath();
             }
         }
-        
-        if (this.currentHero && window.game.systems.hero) {
-            this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
-            window.game.systems.hero.calculateHeroStats(this.currentHero);
-        }
-        
-        if (window.game) window.game.saveGame();
-        
-        if (this.battleContext === 'movement' && window.game.systems.map) {
-            window.game.systems.map.completeMovementAfterBattle(victory);
-        }
-        
-        this.battleActive = false;
-        this.showBattleResult(victory);
     }
+    
+    if (this.currentHero && window.game.systems.hero) {
+        this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
+        window.game.systems.hero.calculateHeroStats(this.currentHero);
+    }
+    
+    if (window.game) window.game.saveGame();
+    
+    if (this.battleContext === 'movement' && window.game.systems.map) {
+        window.game.systems.map.completeMovementAfterBattle(victory, escape);
+    }
+    
+    this.battleActive = false;
+    this.showBattleResult(victory);
+}
 
     showBattleResult(victory) {
         const app = document.getElementById('app');
@@ -1993,20 +2036,21 @@ resolveTacticalTurn() {
         this.returnToGame();
     }
 
-// ЗАМЕНИТЬ существующий tryToFlee() на:
 tryToFlee() {
     if (!this.currentHero) return false;
 
     const heroStats = this.getHeroStatsForBattle();
     const halfHealth = Math.floor(heroStats.maxHealth / 2);
     
+    console.log(`🏃 Попытка побега: текущее здоровье ${this.currentHero.currentHealth}, половина макс. здоровья: ${halfHealth}`);
+    
     // Проверяем, достаточно ли здоровья для побега
     if (this.currentHero.currentHealth <= halfHealth) {
         this.addBattleLog("💀 Недостаточно здоровья для побега! Герой погибает при попытке бегства.");
         
-        // Обработка смерти героя
+        // Смерть при попытке побега - перемещаем на стартовую точку
         this.currentHero.currentHealth = 0;
-        this.endTacticalBattle(false);
+        this.endTacticalBattle(false, false); // false, false - поражение, не побег
         
         if (window.game && window.game.handleHeroDeath) {
             window.game.handleHeroDeath();
@@ -2016,11 +2060,12 @@ tryToFlee() {
     }
     
     // Успешный побег с потерей здоровья
-    this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth - halfHealth);
-    this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья.`);
+    const oldHealth = this.currentHero.currentHealth;
+    this.currentHero.currentHealth = Math.max(1, oldHealth - halfHealth);
+    this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья (${oldHealth} → ${this.currentHero.currentHealth}).`);
     
-    // Завершаем бой с поражением (но герой жив)
-    this.endTacticalBattle(false);
+    // Завершаем бой с поражением, но отмечаем что это побег
+    this.endTacticalBattle(false, true); // false, true - поражение, но побег
     return true;
 }
 
