@@ -362,3 +362,380 @@
     border: 2px solid #475569;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
+/* ========== СТИЛИ ДЛЯ ИСТОРИИ ГЕРОЯ ========== */
+
+/* Контейнер для кнопки истории */
+.hero-story-button-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+}
+
+/* Кнопка истории героя */
+.btn-hero-story {
+    background: linear-gradient(135deg, #8B4513, #A0522D);
+    color: white;
+    border: 2px solid #D2691E;
+    border-radius: 25px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(139, 69, 19, 0.4);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+    justify-content: center;
+}
+
+.btn-hero-story:hover {
+    background: linear-gradient(135deg, #A0522D, #8B4513);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 69, 19, 0.6);
+    border-color: #FFD700;
+}
+
+.btn-hero-story:active {
+    transform: translateY(0);
+}
+
+.story-icon {
+    font-size: 1.2rem;
+}
+
+.story-text {
+    white-space: nowrap;
+}
+
+/* Оверлей для истории героя */
+.hero-story-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(15px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: storyFadeIn 0.4s ease;
+}
+
+.hero-story-modal {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 3px solid #334155;
+    border-radius: 20px;
+    width: 95%;
+    max-width: 1200px;
+    height: 85%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.8);
+    animation: storySlideUp 0.4s ease;
+    overflow: hidden;
+}
+
+.story-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: rgba(15, 23, 42, 0.98);
+    border-bottom: 2px solid #334155;
+    border-radius: 17px 17px 0 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.story-modal-header h3 {
+    color: white;
+    margin: 0;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hero-story-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.hero-class, .hero-race {
+    background: rgba(59, 130, 246, 0.3);
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    border: 1px solid #3b82f6;
+    color: #bfdbfe;
+}
+
+.btn-close-story {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.btn-close-story:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.close-text {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+/* Контейнер для видео */
+.video-container {
+    flex: 1;
+    padding: 0;
+    position: relative;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    z-index: 10;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #334155;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.error-message {
+    text-align: center;
+    color: #ef4444;
+}
+
+.error-message p {
+    margin: 1rem 0;
+    font-size: 1.1rem;
+}
+
+/* Панель управления */
+.story-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 2rem;
+    background: rgba(15, 23, 42, 0.98);
+    border-top: 2px solid #334155;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.control-group {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-control {
+    background: rgba(59, 130, 246, 0.2);
+    color: white;
+    border: 1px solid #3b82f6;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-control:hover {
+    background: rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+.volume-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.volume-controls label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.volume-controls input[type="range"] {
+    width: 100px;
+    background: #334155;
+    border-radius: 5px;
+    height: 6px;
+    outline: none;
+}
+
+.volume-controls input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    cursor: pointer;
+}
+
+#volumeValue {
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Описание истории */
+.story-description {
+    padding: 1rem 2rem;
+    background: rgba(255, 215, 0, 0.1);
+    border-top: 1px solid rgba(255, 215, 0, 0.3);
+    text-align: center;
+}
+
+.story-description p {
+    color: #fef3c7;
+    font-style: italic;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+/* Анимации */
+@keyframes storyFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes storySlideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(60px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .hero-story-modal {
+        width: 98%;
+        height: 90%;
+    }
+    
+    .story-modal-header {
+        padding: 1rem 1.5rem;
+    }
+    
+    .story-controls {
+        padding: 1rem 1.5rem;
+        justify-content: center;
+    }
+    
+    .control-group {
+        order: 2;
+    }
+    
+    .volume-controls {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-story-modal {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        border: none;
+    }
+    
+    .story-modal-header {
+        border-radius: 0;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.8rem;
+    }
+    
+    .story-modal-header h3 {
+        font-size: 1.3rem;
+    }
+    
+    .btn-close-story .close-text {
+        display: none;
+    }
+    
+    .story-controls {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    
+    .volume-controls {
+        order: -1;
+    }
+    
+    .btn-hero-story {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+        min-width: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-story-info {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .story-description {
+        padding: 0.8rem 1rem;
+    }
+    
+    .story-description p {
+        font-size: 0.85rem;
+    }
+}
