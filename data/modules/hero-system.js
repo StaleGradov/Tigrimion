@@ -451,40 +451,50 @@ updateHeroDisplay(stats) {
         }, 1000);
     }
 
-    updateHealthAndExperienceBars() {
-        const currentHero = this.currentHero || window.game?.currentHero;
-        if (!currentHero) return;
+  updateHealthAndExperienceBars() {
+    const currentHero = this.currentHero || window.game?.currentHero;
+    if (!currentHero) return;
 
-        const stats = this.calculateHeroStats(currentHero);
+    const stats = this.calculateHeroStats(currentHero);
+    
+    // Обновляем полоску здоровья
+    const healthBar = document.getElementById('heroHealthBar');
+    if (healthBar) {
+        const healthPercent = Math.max(1, (stats.currentHealth / stats.maxHealth) * 100);
+        healthBar.style.width = `${healthPercent}%`;
+        healthBar.textContent = `${Math.floor(stats.currentHealth)}/${Math.floor(stats.maxHealth)}`;
         
-        // Обновляем полоску здоровья
-        const healthBar = document.getElementById('heroHealthBar');
-        if (healthBar) {
-            const healthPercent = (stats.currentHealth / stats.maxHealth) * 100;
-            healthBar.style.width = `${healthPercent}%`;
-            healthBar.textContent = `${stats.currentHealth}/${stats.maxHealth}`;
-            
-            // Добавляем анимацию регенерации
-            if (currentHero.currentHealth < stats.maxHealth) {
-                healthBar.classList.add('regening');
-            } else {
-                healthBar.classList.remove('regening');
-            }
+        // Динамические цвета в зависимости от уровня здоровья
+        healthBar.classList.remove('health-high', 'health-medium', 'health-low');
+        if (healthPercent > 70) {
+            healthBar.classList.add('health-high');
+        } else if (healthPercent > 30) {
+            healthBar.classList.add('health-medium');
+        } else {
+            healthBar.classList.add('health-low');
         }
         
-        // ⭐ ИСПРАВЛЕННЫЙ КОД: Используем LevelSystem для опыта
-        const expBar = document.getElementById('heroExperienceBar');
-        if (expBar) {
-            const expProgress = this.getExperienceProgress(currentHero);
-            expBar.style.width = `${expProgress.percent}%`;
-            
-            if (expProgress.next === 'MAX') {
-                expBar.textContent = `MAX Уровень`;
-            } else {
-                expBar.textContent = `${expProgress.current}/${expProgress.next}`;
-            }
+        // Анимация регенерации
+        if (currentHero.currentHealth < stats.maxHealth) {
+            healthBar.classList.add('regening');
+        } else {
+            healthBar.classList.remove('regening');
         }
     }
+    
+    // Обновляем полоску опыта
+    const expBar = document.getElementById('heroExperienceBar');
+    if (expBar) {
+        const expProgress = this.getExperienceProgress(currentHero);
+        expBar.style.width = `${expProgress.percent}%`;
+        
+        if (expProgress.next === 'MAX') {
+            expBar.textContent = `MAX Уровень`;
+        } else {
+            expBar.textContent = `${expProgress.current}/${expProgress.next}`;
+        }
+    }
+}
 
     // ========== ОТОБРАЖЕНИЕ ИНФОРМАЦИИ О РАСЕ, ПРОФЕССИИ И САГЕ ==========
     getRaceBonusDescription(race) {
@@ -1286,6 +1296,31 @@ showHeroStory() {
         </div>
     `;
 }
+    // Принудительное обновление полосок
+setTimeout(() => {
+    this.updateHealthAndExperienceBars();
+    
+    // Дополнительная проверка через секунду
+    setTimeout(() => {
+        const healthBar = document.getElementById('heroHealthBar');
+        const expBar = document.getElementById('heroExperienceBar');
+        if (healthBar) {
+            console.log("✅ Health bar found:", {
+                width: healthBar.style.width,
+                text: healthBar.textContent,
+                computedStyle: window.getComputedStyle(healthBar).width
+            });
+        }
+        if (expBar) {
+            console.log("✅ Exp bar found:", {
+                width: expBar.style.width, 
+                text: expBar.textContent
+            });
+        }
+    }, 1000);
+}, 100);
+
+
 }
 
 // Регистрируем систему в глобальной области
