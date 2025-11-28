@@ -1101,108 +1101,64 @@ fixHealthBarLayout() {
                         ${renderEquipmentColumn(['main_hand', 'off_hand', 'helmet', 'relic'])}
                     </div>
 
-                    <!-- Центральная область с героем -->
-                    <div class="hero-center-area-v2">
-                   <div class="hero-image-container-v2">
-    <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-    
-    <!-- КНОПКА ИСТОРИИ ГЕРОЯ -->
-    <div class="hero-story-button-container">
-        <button class="btn-hero-story" onclick="game.showHeroStory()">
-            <span class="story-icon">📖</span>
-            <span class="story-text">История героя</span>
-        </button>
-    </div>
-    
-    <!-- Полоски поверх картинки -->
-    <div class="hero-overlay-stats-v2">
-        <!-- Полоска здоровья -->
-        <div class="health-display-section">
-            <div class="health-bar-container">
-                <div class="health-bar" id="heroHealthBar" 
-                     style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                    ${stats.currentHealth}/${stats.maxHealth}
+<!-- Центральная область с героем -->
+<div class="hero-center-area-v2">
+    <div class="hero-image-container-v2">
+        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
+             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
+           
+                <!-- КНОПКА ИСТОРИИ ГЕРОЯ -->
+        <div class="hero-story-button-container">
+            <button class="btn-hero-story" onclick="game.showHeroStory()">
+                <span class="story-icon">📖</span>
+                <span class="story-text">История героя</span>
+            </button>
+        </div>
+        
+        <!-- Полоски поверх картинки -->
+        <div class="hero-overlay-stats-v2">
+            <!-- Полоска здоровья -->
+            <div class="health-display-section">
+                <div class="health-bar-container">
+                    <div class="health-bar" id="heroHealthBar" 
+                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
+                        ${stats.currentHealth}/${stats.maxHealth}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Полоска опыта -->
-        <div class="experience-display-section">
-            <div class="experience-bar-container">
-                <div class="experience-bar" id="heroExperienceBar" 
-                     style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
-                    ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
+            <!-- Полоска опыта -->
+            <div class="experience-display-section">
+                <div class="experience-bar-container">
+                    <div class="experience-bar" id="heroExperienceBar" 
+                         style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
+                        ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Компактные параметры -->
-        <div class="compact-stats-v2">
-            <div class="compact-stat-v2">
-                <span class="stat-label-v2">⚔️ Урон</span>
-                <span class="stat-value-v2">${stats.damage}</span>
-            </div>
-            <div class="compact-stat-v2">
-                <span class="stat-label-v2">🛡️ Броня</span>
-                <span class="stat-value-v2">${stats.armor}</span>
-            </div>
-            <div class="compact-stat-v2">
-                <span class="stat-label-v2">💰 Золото</span>
-                <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
-            </div>
-            <div class="compact-stat-v2">
-                <span class="stat-label-v2">🌟 Сила</span>
-                <span class="stat-value-v2">${stats.power}</span>
+            <!-- Компактные параметры -->
+            <div class="compact-stats-v2">
+                <div class="compact-stat-v2">
+                    <span class="stat-label-v2">⚔️ Урон</span>
+                    <span class="stat-value-v2">${stats.damage}</span>
+                </div>
+                <div class="compact-stat-v2">
+                    <span class="stat-label-v2">🛡️ Броня</span>
+                    <span class="stat-value-v2">${stats.armor}</span>
+                </div>
+                <div class="compact-stat-v2">
+                    <span class="stat-label-v2">💰 Золото</span>
+                    <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
+                </div>
+                <div class="compact-stat-v2">
+                    <span class="stat-label-v2">🌟 Сила</span>
+                    <span class="stat-value-v2">${stats.power}</span>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-                            <!-- Полоски поверх картинки -->
-                            <div class="hero-overlay-stats-v2">
-                                <!-- Полоска здоровья -->
-                                <div class="health-display-section">
-                                    <div class="health-bar-container">
-                                        <div class="health-bar" id="heroHealthBar" 
-                                             style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                                            ${stats.currentHealth}/${stats.maxHealth}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Полоска опыта -->
-                                <div class="experience-display-section">
-                                    <div class="experience-bar-container">
-                                        <div class="experience-bar" id="heroExperienceBar" 
-                                             style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
-                                            ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Компактные параметры -->
-                                <div class="compact-stats-v2">
-                                    <div class="compact-stat-v2">
-                                        <span class="stat-label-v2">⚔️ Урон</span>
-                                        <span class="stat-value-v2">${stats.damage}</span>
-                                    </div>
-                                    <div class="compact-stat-v2">
-                                        <span class="stat-label-v2">🛡️ Броня</span>
-                                        <span class="stat-value-v2">${stats.armor}</span>
-                                    </div>
-                                    <div class="compact-stat-v2">
-                                        <span class="stat-label-v2">💰 Золото</span>
-                                        <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
-                                    </div>
-                                    <div class="compact-stat-v2">
-                                        <span class="stat-label-v2">🌟 Сила</span>
-                                        <span class="stat-value-v2">${stats.power}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- ВСЕ параметры и бонусы под картинкой -->
                         <div class="hero-full-info-v2">
                             <!-- Происхождение -->
