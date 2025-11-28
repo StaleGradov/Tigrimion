@@ -555,13 +555,12 @@ startHealthRegeneration() {
     }, 1000);
 }
 
-// ========== ОБРАБОТКА СМЕРТИ ГЕРОЯ ==========
 handleHeroDeath() {
     if (!this.currentHero) return;
     
     console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
     
-    // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1
+    // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1 (вместо 0)
     this.currentHero.currentHealth = 1;
     
     // ⭐ ПОМЕЧАЕМ ЧТО ГЕРОЙ В РЕЖИМЕ ПОСЛЕСМЕРТНОЙ РЕГЕНЕРАЦИИ
