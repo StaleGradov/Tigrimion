@@ -1438,10 +1438,12 @@ handleCanvasClick(e) {
     
     const specificMonster = this.getMonsterFromCell(cellData);
     
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Явно указываем контекст 'movement'
+    // ⭐ ВАЖНО: НЕ закрываем карту перед боем!
+    console.log("🎲 Начинаем бой поверх тактической карты...");
+    
     if (specificMonster && cellData.monster_id) {
-        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name} (ID: ${cellData.monster_id})`);
-        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement'); // ⭐ Явно указываем 'movement'
+        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
     } else {
         const randomMonster = this.getRandomMonster();
         if (!randomMonster) {
@@ -1452,8 +1454,8 @@ handleCanvasClick(e) {
             return;
         }
         
-        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name} (из enemies.json)`);
-        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement'); // ⭐ Явно указываем 'movement'
+        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
     }
 }
 
