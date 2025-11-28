@@ -248,7 +248,6 @@ handleCanvasClick(e) {
         scale = matrix.a;
     }
 
-    
     const logicalX = (e.clientX - canvasRect.left) / scale;
     const logicalY = (e.clientY - canvasRect.top) / scale;
     
@@ -259,28 +258,33 @@ handleCanvasClick(e) {
     
     // Обработка ТАВЕРНЫ (тип village с tacticalMap)
     if (hex.type === 'village' && hex.tacticalMap) {
+        console.log("🍻 Клик по таверне");
         this.handleTavernVisit(hex);
         return;
     }
     
     // Обработка специальных клеток
     if (hex.type === 'water') {
+        console.log("💧 Клик по воде");
         this.handleWaterCell(hex);
         return;
     }
     
     // Обработка магазина
     if (hex.type === 'merchant') {
+        console.log("🛒 Клик по магазину");
         this.handleMerchantClick(hex);
         return;
     }
     
     if (this.isTransitionCell(hex)) {
+        console.log("🚪 Клик по переходу");
         this.handleTransitionClick(hex);
         return;
     }
     
     if (hex.passable !== false || hex.type === 'monster') {
+        console.log("🎯 Клик для перемещения");
         this.moveOnTacticalMap(hex.col, hex.row);
     }
 }
@@ -1442,7 +1446,12 @@ handleCanvasClick(e) {
     }
 
 completeMovementAfterBattle(victory, escape = false) {
-    if (!this.pendingMovement) return;
+    console.log(`🗺️ Обработка завершения боя: победа=${victory}, побег=${escape}`);
+    
+    if (!this.pendingMovement) {
+        console.log("⚠️ Нет ожидающего перемещения");
+        return;
+    }
 
     if (victory) {
         // Победа - перемещаем на целевую клетку
@@ -1452,10 +1461,18 @@ completeMovementAfterBattle(victory, escape = false) {
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
         console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        
+        if (window.game) {
+            window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
+        }
     } else {
         if (escape) {
             // Побег - остаемся на текущей позиции
             console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+            
+            if (window.game) {
+                window.game.showNotification("🏃 Успешный побег! Герой остался на месте.", 'warning');
+            }
         } else {
             // Смерть в бою - возвращаем на стартовую точку
             const startPosition = this.currentTacticalMap.startPosition;
@@ -1463,17 +1480,47 @@ completeMovementAfterBattle(victory, escape = false) {
             this.playerTacticalPosition = {...startPosition};
             
             console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+            
+            if (window.game) {
+                window.game.showNotification("💀 Поражение! Возврат на стартовую позицию.", 'error');
+            }
         }
     }
     
+    // Обновляем отображение карты
     if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+        console.log("🔄 Обновляем отображение карты после боя");
         this.calculateCSSScale();
         this.drawTacticalMap();
+        this.updateMovementInfo();
     }
     
     this.pendingMovement = null;
+    
+    // Возвращаемся к игре
+    this.returnToGameAfterBattle();
 }
 
+returnToGameAfterBattle() {
+    console.log("🔄 Возврат к игре после боя");
+    
+    // Закрываем экран боя
+    const battleScreen = document.querySelector('.battle-screen-fullscreen');
+    if (battleScreen) {
+        battleScreen.remove();
+    }
+    
+    const resultOverlay = document.querySelector('.battle-result-overlay');
+    if (resultOverlay) {
+        resultOverlay.remove();
+    }
+    
+    // Показываем основной экран игры
+    if (window.game && window.game.systems.hero) {
+        window.game.systems.hero.showHeroGameScreen();
+    }
+}
+    
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
             return null;
