@@ -82,41 +82,38 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
-    // ========== ВЫБОР И УПРАВЛЕНИЕ ГЕРОЯМИ ==========
-    selectHero(heroId) {
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) {
-            console.error('Герой не найден:', heroId);
-            return;
-        }
+  selectHero(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) return;
 
-        const isUnlocked = hero.unlocked;
-        if (!isUnlocked) {
-            this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
-            return;
-        }
-
-        this.currentHero = hero;
-        
-        // Сохраняем в основной игре
-        if (window.game) {
-            window.game.currentHero = hero;
-            window.game.systems.equipment.setCurrentHero(hero);
-            
-            // ⭐ СИНХРОНИЗАЦИЯ С ДРУГИМИ СИСТЕМАМИ
-            if (window.game.systems.battle) {
-                window.game.systems.battle.currentHero = hero;
-            }
-            if (window.game.systems.shop) {
-                window.game.systems.shop.currentHero = hero;
-            }
-            
-            // СОХРАНЯЕМ ПРИ СМЕНЕ ГЕРОЯ
-            window.game.saveGame();
-        }
-        
-        this.showHeroGameScreen();
+    // ⭐ ВАЖНО: Устанавливаем общее золото при смене героя
+    if (window.game && window.game.sharedResources) {
+        hero.gold = window.game.sharedResources.gold;
     }
+
+    this.currentHero = hero;
+    this.systems.hero.currentHero = hero;
+    
+    // Устанавливаем текущего героя в системе экипировки
+    if (this.systems.equipment) {
+        this.systems.equipment.setCurrentHero(hero);
+    }
+    
+    // Синхронизируем с другими системами
+    if (window.game.systems.map) {
+        window.game.systems.map.setCurrentHero(hero);
+    }
+    if (window.game.systems.shop) {
+        window.game.systems.shop.setCurrentHero(hero);
+    }
+    
+    console.log(`🎯 Выбран герой: ${hero.name}, золото: ${hero.gold}`);
+    
+    // Сохраняем при смене героя
+    window.game.saveGame();
+    
+    this.showHeroGameScreen();
+}
 
     unlockHero(heroId) {
         const hero = this.heroes.find(h => h.id === heroId);
