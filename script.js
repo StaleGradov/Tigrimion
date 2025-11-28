@@ -555,6 +555,66 @@ startHealthRegeneration() {
     }, 1000);
 }
 
+// ========== ОБРАБОТКА ПЕРЕЗАПУСКА ВО ВРЕМЯ БОЯ ==========
+setupBattleCrashProtection() {
+    // Обработка перезагрузки страницы во время боя
+    window.addEventListener('beforeunload', (e) => {
+        if (this.systems?.battle?.battleActive) {
+            console.log("💀 Перезагрузка во время боя - поражение");
+            
+            // Если бой активен, считаем это поражением
+            if (this.currentHero) {
+                // Возвращаем героя на стартовую позицию
+                this.currentHero.currentHealth = 1;
+                this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+                
+                // Уведомляем систему карт о поражении
+                if (this.systems.map) {
+                    this.systems.map.completeMovementAfterBattle(false, false);
+                }
+                
+                // Сохраняем состояние
+                this.saveGame();
+                console.log("💾 Сохранено состояние после поражения при перезагрузке");
+            }
+        }
+    });
+
+    // Обработка обновления страницы (F5)
+    window.addEventListener('unload', () => {
+        if (this.systems?.battle?.battleActive) {
+            console.log("🔄 Страница обновляется во время боя");
+            // Состояние уже сохранено в beforeunload
+        }
+    });
+
+    // Проверка при загрузке - был ли бой активен до перезагрузки
+    window.addEventListener('load', () => {
+        const wasBattleActive = sessionStorage.getItem('battleWasActive');
+        if (wasBattleActive === 'true') {
+            console.log("🎲 Восстановление после перезагрузки во время боя");
+            sessionStorage.removeItem('battleWasActive');
+            
+            // Показываем уведомление о поражении
+            setTimeout(() => {
+                this.showNotification("💀 Бой прерван перезагрузкой! Герой возвращен на стартовую позицию.", 'error');
+            }, 1000);
+        }
+    });
+}
+
+// Сохраняем состояние боя при начале
+markBattleAsActive() {
+    if (this.systems?.battle?.battleActive) {
+        sessionStorage.setItem('battleWasActive', 'true');
+    }
+}
+
+// Очищаем состояние при завершении боя
+markBattleAsInactive() {
+    sessionStorage.removeItem('battleWasActive');
+}
+    
 handleHeroDeath() {
     if (!this.currentHero) return;
     
