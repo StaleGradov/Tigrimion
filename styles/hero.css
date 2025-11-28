@@ -459,3 +459,78 @@
         padding: 1rem;
     }
 }
+/* ========== ИСПРАВЛЕНИЕ КОНФЛИКТА ПОЛОСОК ЗДОРОВЬЯ ========== */
+/* Добавьте это в КОНЕЦ файла стилей героя */
+
+/* Стили для полосок в режиме героя (приоритет выше) */
+.hero-game-screen .health-bar-container,
+.hero-game-screen .experience-bar-container {
+    margin: 4px 0 !important;
+    padding: 0 !important;
+    height: 24px !important;
+    position: relative !important;
+    background: rgba(0, 0, 0, 0.3) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    overflow: hidden !important;
+}
+
+.hero-game-screen .health-bar,
+.hero-game-screen .experience-bar {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 10px !important;
+    transition: width 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+.hero-game-screen .health-bar {
+    background: linear-gradient(90deg, #ef4444, #f59e0b) !important;
+}
+
+.hero-game-screen .health-bar.regening {
+    animation: healthPulse 2s infinite;
+}
+
+.hero-game-screen .experience-bar {
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6) !important;
+}
+
+/* Отключаем стили боя для экрана героя */
+.hero-game-screen .health-display-section,
+.hero-game-screen .experience-display-section {
+    margin: 8px 0 !important;
+    padding: 0 !important;
+}
+
+.hero-game-screen .health-display-section h4,
+.hero-game-screen .experience-display-section h4 {
+    margin-bottom: 4px !important;
+    font-size: 0.9rem !important;
+    color: #cbd5e1 !important;
+}
+
+/* Анимация пульсации для регенерации здоровья */
+@keyframes healthPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* Защита от переопределения стилями боя */
+.hero-game-screen .health-bar-container *,
+.hero-game-screen .experience-bar-container * {
+    all: unset !important;
+}
+
+.hero-game-screen .health-bar-container div,
+.hero-game-screen .experience-bar-container div {
+    all: unset !important;
+}
