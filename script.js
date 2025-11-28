@@ -336,49 +336,47 @@ class SafeHeroGame {
         }
     }
 
-    // ========== УЛУЧШЕННАЯ СИСТЕМА СОХРАНЕНИЯ ==========
-      saveGame() {
-        try {
-            if (this.currentHero && this.systems.equipment && this.systems.hero) {
-                const saveData = {
-                    currentHeroId: this.currentHero.id,
-                    // ⭐ ИСПРАВЛЕНИЕ: Сохраняем индивидуальный прогресс каждого героя
-                    heroes: this.systems.hero.heroes.map(hero => ({
-                        id: hero.id,
-                        // ИНДИВИДУАЛЬНЫЕ данные:
-                        level: hero.level,
-                        experience: hero.experience,
-                        monstersKilled: hero.monstersKilled || 0,
-                        deaths: hero.deaths || 0,
-                        healthRegen: hero.healthRegen || 1.0,
-                        currentHealth: hero.currentHealth || hero.baseHealth,
-                        // Экипировка индивидуальна для каждого героя:
-                        equipment: {...hero.equipment},
-                        unlocked: hero.unlocked
-                    })),
-                    // ⭐ ОБЩИЕ РЕСУРСЫ:
-                    sharedResources: {
-                        gold: this.sharedResources.gold,
-                        inventory: [...this.sharedResources.inventory],
-                        unlockedHeroes: [...this.sharedResources.unlockedHeroes]
-                    },
-                    timestamp: Date.now(),
-                    version: "2.0" // Увеличиваем версию для новой системы
-                };
-                
-                localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-                console.log("💾 Игра сохранена с общей системой ресурсов", {
-                    gold: this.sharedResources.gold,
-                    inventory: this.sharedResources.inventory.length,
-                    heroes: this.systems.hero.heroes.length
-                });
-                return true;
+ saveGame() {
+    try {
+        if (this.currentHero && this.systems.equipment && this.systems.hero) {
+            // ⭐ ВАЖНО: Перед сохранением синхронизируем золото
+            if (this.currentHero.gold !== this.sharedResources.gold) {
+                console.log(`🔄 Синхронизация золота: герой ${this.currentHero.gold} → общее ${this.sharedResources.gold}`);
+                this.sharedResources.gold = this.currentHero.gold;
             }
-        } catch (error) {
-            console.error("❌ Ошибка сохранения:", error);
+            
+            const saveData = {
+                currentHeroId: this.currentHero.id,
+                heroes: this.systems.hero.heroes.map(hero => ({
+                    id: hero.id,
+                    level: hero.level,
+                    experience: hero.experience,
+                    monstersKilled: hero.monstersKilled || 0,
+                    deaths: hero.deaths || 0,
+                    healthRegen: hero.healthRegen || 1.0,
+                    currentHealth: hero.currentHealth || hero.baseHealth,
+                    equipment: {...hero.equipment},
+                    unlocked: hero.unlocked
+                })),
+                // ⭐ СОХРАНЯЕМ ОБЩИЕ РЕСУРСЫ
+                sharedResources: {
+                    gold: this.sharedResources.gold,
+                    inventory: [...this.sharedResources.inventory],
+                    unlockedHeroes: [...this.sharedResources.unlockedHeroes]
+                },
+                timestamp: Date.now(),
+                version: "2.0"
+            };
+            
+            localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
+            console.log("💾 Игра сохранена с общим золотом:", this.sharedResources.gold);
+            return true;
         }
-        return false;
+    } catch (error) {
+        console.error("❌ Ошибка сохранения:", error);
     }
+    return false;
+}
 
   loadSave() {
     try {
