@@ -536,299 +536,7 @@ startHealthRegeneration() {
         }
     }, 1000);
 }
-// ========== СИСТЕМА ИСТОРИИ ГЕРОЯ ==========
-showHeroStory() {
-    if (!this.currentHero) {
-        this.showNotification('❌ Герой не выбран', 'error');
-        return;
-    }
 
-    console.log(`🎬 Запуск истории героя: ${this.currentHero.name}`);
-
-    // Создаем оверлей для видео
-    const videoOverlay = document.createElement('div');
-    videoOverlay.className = 'hero-story-overlay';
-    
-    // YouTube ID для каждого героя (замени на реальные ID)
-    const heroVideos = {
-        1: 'RMSFR6cbb9c', // Герой 1 - замени на реальный ID
-        2: 'RMSFR6cbb9c', // Герой 2
-        3: 'RMSFR6cbb9c', // Герой 3
-        4: 'RMSFR6cbb9c', // Герой 4
-        5: 'RMSFR6cbb9c', // Герой 5
-        6: 'RMSFR6cbb9c', // Герой 6
-        7: 'RMSFR6cbb9c', // Герой 7
-        8: 'RMSFR6cbb9c'  // Герой 8
-    };
-    
-    const videoId = heroVideos[this.currentHero.id] || 'dQw4w9WgXcQ';
-    const videoUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
-    
-    videoOverlay.innerHTML = `
-        <div class="hero-story-modal">
-            <div class="story-modal-header">
-                <h3>🎬 История героя: ${this.currentHero.name}</h3>
-                <div class="hero-story-info">
-                    <span class="hero-class">${this.getClassName(this.currentHero.class)}</span>
-                    <span class="hero-race">${this.getRaceName(this.currentHero.race)}</span>
-                </div>
-                <button class="btn-close-story" onclick="game.closeHeroStory()">
-                    <span class="close-icon">✕</span>
-                    <span class="close-text">Закрыть (ESC)</span>
-                </button>
-            </div>
-            
-            <div class="video-container" id="heroVideoContainer">
-                <div class="video-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Загрузка видео...</p>
-                </div>
-                <iframe 
-                    id="heroStoryVideo"
-                    width="100%" 
-                    height="100%" 
-                    src="${videoUrl}" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen
-                    onload="game.onVideoLoaded()">
-                </iframe>
-            </div>
-            
-            <div class="story-controls">
-                <div class="control-group">
-                    <button class="btn-control" onclick="game.togglePlayPause()" id="playPauseBtn">
-                        ⏸️ Пауза
-                    </button>
-                    <button class="btn-control" onclick="game.restartVideo()">
-                        🔄 Заново
-                    </button>
-                </div>
-                
-                <div class="volume-controls">
-                    <label for="storyVolume">🔊 Громкость:</label>
-                    <input type="range" id="storyVolume" min="0" max="100" value="80" 
-                           oninput="game.setStoryVolume(this.value)">
-                    <span id="volumeValue">80%</span>
-                </div>
-                
-                <div class="control-group">
-                    <button class="btn-secondary" onclick="game.closeHeroStory()">
-                        ✅ Закрыть историю
-                    </button>
-                </div>
-            </div>
-            
-            <div class="story-description">
-                <p>«${this.getHeroStoryDescription(this.currentHero)}»</p>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(videoOverlay);
-    
-    // Сохраняем ссылку на оверлей
-    this.heroStoryOverlay = videoOverlay;
-    
-    // Блокируем прокрутку фона
-    document.body.style.overflow = 'hidden';
-    
-    // Добавляем обработчик клавиши ESC
-    this.heroStoryEscHandler = (e) => {
-        if (e.key === 'Escape') {
-            this.closeHeroStory();
-        }
-    };
-    document.addEventListener('keydown', this.heroStoryEscHandler);
-    
-    // Инициализируем YouTube API
-    this.initializeYouTubeAPI();
-}
-
-closeHeroStory() {
-    console.log('🎬 Закрытие истории героя');
-    
-    // Останавливаем видео если возможно
-    this.stopVideo();
-    
-    if (this.heroStoryOverlay) {
-        this.heroStoryOverlay.remove();
-        this.heroStoryOverlay = null;
-    }
-    
-    // Убираем обработчик ESC
-    if (this.heroStoryEscHandler) {
-        document.removeEventListener('keydown', this.heroStoryEscHandler);
-        this.heroStoryEscHandler = null;
-    }
-    
-    // Восстанавливаем прокрутку
-    document.body.style.overflow = '';
-    
-    // Очищаем YouTube player
-    this.youTubePlayer = null;
-}
-
-initializeYouTubeAPI() {
-    // Загружаем YouTube IFrame API если еще не загружена
-    if (!window.YT) {
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        
-        // Создаем глобальную функцию для YouTube API
-        window.onYouTubeIframeAPIReady = () => {
-            this.onYouTubeAPIReady();
-        };
-    } else {
-        // API уже загружена
-        setTimeout(() => this.onYouTubeAPIReady(), 100);
-    }
-}
-
-onYouTubeAPIReady() {
-    const videoIframe = document.getElementById('heroStoryVideo');
-    if (!videoIframe) return;
-    
-    try {
-        this.youTubePlayer = new YT.Player('heroStoryVideo', {
-            events: {
-                'onReady': this.onPlayerReady.bind(this),
-                'onStateChange': this.onPlayerStateChange.bind(this),
-                'onError': this.onPlayerError.bind(this)
-            }
-        });
-    } catch (error) {
-        console.error('❌ Ошибка инициализации YouTube player:', error);
-    }
-}
-
-onPlayerReady(event) {
-    console.log('✅ YouTube player готов');
-    // Скрываем индикатор загрузки
-    const loadingElement = document.querySelector('.video-loading');
-    if (loadingElement) {
-        loadingElement.style.display = 'none';
-    }
-    
-    // Устанавливаем начальную громкость
-    this.setStoryVolume(80);
-}
-
-onPlayerStateChange(event) {
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    if (!playPauseBtn) return;
-    
-    switch(event.data) {
-        case YT.PlayerState.PLAYING:
-            playPauseBtn.innerHTML = '⏸️ Пауза';
-            break;
-        case YT.PlayerState.PAUSED:
-            playPauseBtn.innerHTML = '▶️ Воспроизвести';
-            break;
-        case YT.PlayerState.ENDED:
-            playPauseBtn.innerHTML = '▶️ Воспроизвести';
-            break;
-    }
-}
-
-onPlayerError(event) {
-    console.error('❌ Ошибка YouTube player:', event);
-    this.showNotification('❌ Ошибка загрузки видео', 'error');
-    
-    const loadingElement = document.querySelector('.video-loading');
-    if (loadingElement) {
-        loadingElement.innerHTML = `
-            <div class="error-message">
-                <span style="font-size: 3rem;">❌</span>
-                <p>Не удалось загрузить видео</p>
-                <button class="btn-secondary" onclick="game.closeHeroStory()">
-                    Закрыть
-                </button>
-            </div>
-        `;
-    }
-}
-
-onVideoLoaded() {
-    console.log('✅ YouTube iframe загружен');
-    // Показываем что видео загружается
-    const loadingElement = document.querySelector('.video-loading');
-    if (loadingElement) {
-        loadingElement.innerHTML = `
-            <div class="loading-spinner"></div>
-            <p>Подготовка видео...</p>
-        `;
-    }
-}
-
-togglePlayPause() {
-    if (!this.youTubePlayer) return;
-    
-    try {
-        const playerState = this.youTubePlayer.getPlayerState();
-        if (playerState === YT.PlayerState.PLAYING) {
-            this.youTubePlayer.pauseVideo();
-        } else {
-            this.youTubePlayer.playVideo();
-        }
-    } catch (error) {
-        console.error('❌ Ошибка управления воспроизведением:', error);
-    }
-}
-
-restartVideo() {
-    if (!this.youTubePlayer) return;
-    
-    try {
-        this.youTubePlayer.seekTo(0);
-        this.youTubePlayer.playVideo();
-        this.showNotification('🔄 Видео перезапущено', 'info');
-    } catch (error) {
-        console.error('❌ Ошибка перезапуска видео:', error);
-    }
-}
-
-setStoryVolume(volume) {
-    const volumeValue = document.getElementById('volumeValue');
-    if (volumeValue) {
-        volumeValue.textContent = volume + '%';
-    }
-    
-    if (this.youTubePlayer) {
-        try {
-            this.youTubePlayer.setVolume(volume);
-        } catch (error) {
-            console.error('❌ Ошибка установки громкости:', error);
-        }
-    }
-}
-
-stopVideo() {
-    if (this.youTubePlayer) {
-        try {
-            this.youTubePlayer.stopVideo();
-        } catch (error) {
-            console.error('❌ Ошибка остановки видео:', error);
-        }
-    }
-}
-
-getHeroStoryDescription(hero) {
-    const stories = {
-        1: "Отважный воин, вступивший на путь приключений чтобы найти свою пропавшую семью и восстановить честь рода.",
-        2: "Мудрый маг, ищущий древние знания чтобы предотвратить надвигающуюся катастрофу и спасти королевство.",
-        3: "Ловкий охотник, преследующий легендарного зверя через опасные земли и темные леса.",
-        4: "Таинственный незнакомец с прошлым, полным секретов, ищущий искупления за старые грехи.",
-        5: "Благородный рыцарь, сражающийся за справедливость и защищающий слабых от сил тьмы.",
-        6: "Хитрый вор с золотым сердцем, использующий свои навыки чтобы помогать нуждающимся.",
-        7: "Могущий колдун, балансирующий на грани между светом и тьмой в поисках ultimate силы.",
-        8: "Великий исследователь, открывающий забытые цивилизации и древние артефакты."
-    };
-    
-    return stories[hero.id] || "Этот герой имеет увлекательную историю, полную приключений, битв и открытий. Его путь только начинается...";
-}
 // ========== ОБРАБОТКА СМЕРТИ ГЕРОЯ ==========
 handleHeroDeath() {
     if (!this.currentHero) return;
@@ -1101,64 +809,56 @@ fixHealthBarLayout() {
                         ${renderEquipmentColumn(['main_hand', 'off_hand', 'helmet', 'relic'])}
                     </div>
 
-<!-- Центральная область с героем -->
-<div class="hero-center-area-v2">
-    <div class="hero-image-container-v2">
-        <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
-             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-           
-                <!-- КНОПКА ИСТОРИИ ГЕРОЯ -->
-        <div class="hero-story-button-container">
-            <button class="btn-hero-story" onclick="game.showHeroStory()">
-                <span class="story-icon">📖</span>
-                <span class="story-text">История героя</span>
-            </button>
-        </div>
-        
-        <!-- Полоски поверх картинки -->
-        <div class="hero-overlay-stats-v2">
-            <!-- Полоска здоровья -->
-            <div class="health-display-section">
-                <div class="health-bar-container">
-                    <div class="health-bar" id="heroHealthBar" 
-                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
-                        ${stats.currentHealth}/${stats.maxHealth}
-                    </div>
-                </div>
-            </div>
+                    <!-- Центральная область с героем -->
+                    <div class="hero-center-area-v2">
+                        <div class="hero-image-container-v2">
+                            <img src="${this.currentHero.image}" alt="${this.currentHero.name}" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
+                            
+                            <!-- Полоски поверх картинки -->
+                            <div class="hero-overlay-stats-v2">
+                                <!-- Полоска здоровья -->
+                                <div class="health-display-section">
+                                    <div class="health-bar-container">
+                                        <div class="health-bar" id="heroHealthBar" 
+                                             style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%">
+                                            ${stats.currentHealth}/${stats.maxHealth}
+                                        </div>
+                                    </div>
+                                </div>
 
-            <!-- Полоска опыта -->
-            <div class="experience-display-section">
-                <div class="experience-bar-container">
-                    <div class="experience-bar" id="heroExperienceBar" 
-                         style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
-                        ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
-                    </div>
-                </div>
-            </div>
+                                <!-- Полоска опыта -->
+                                <div class="experience-display-section">
+                                    <div class="experience-bar-container">
+                                        <div class="experience-bar" id="heroExperienceBar" 
+                                             style="width: ${this.systems.hero.getExperiencePercent(this.currentHero)}%">
+                                            ${this.currentHero.experience}/${this.systems.hero.getExperienceForNextLevel(this.currentHero.level)}
+                                        </div>
+                                    </div>
+                                </div>
 
-            <!-- Компактные параметры -->
-            <div class="compact-stats-v2">
-                <div class="compact-stat-v2">
-                    <span class="stat-label-v2">⚔️ Урон</span>
-                    <span class="stat-value-v2">${stats.damage}</span>
-                </div>
-                <div class="compact-stat-v2">
-                    <span class="stat-label-v2">🛡️ Броня</span>
-                    <span class="stat-value-v2">${stats.armor}</span>
-                </div>
-                <div class="compact-stat-v2">
-                    <span class="stat-label-v2">💰 Золото</span>
-                    <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
-                </div>
-                <div class="compact-stat-v2">
-                    <span class="stat-label-v2">🌟 Сила</span>
-                    <span class="stat-value-v2">${stats.power}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                <!-- Компактные параметры -->
+                                <div class="compact-stats-v2">
+                                    <div class="compact-stat-v2">
+                                        <span class="stat-label-v2">⚔️ Урон</span>
+                                        <span class="stat-value-v2">${stats.damage}</span>
+                                    </div>
+                                    <div class="compact-stat-v2">
+                                        <span class="stat-label-v2">🛡️ Броня</span>
+                                        <span class="stat-value-v2">${stats.armor}</span>
+                                    </div>
+                                    <div class="compact-stat-v2">
+                                        <span class="stat-label-v2">💰 Золото</span>
+                                        <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
+                                    </div>
+                                    <div class="compact-stat-v2">
+                                        <span class="stat-label-v2">🌟 Сила</span>
+                                        <span class="stat-value-v2">${stats.power}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- ВСЕ параметры и бонусы под картинкой -->
                         <div class="hero-full-info-v2">
                             <!-- Происхождение -->
