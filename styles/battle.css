@@ -1328,24 +1328,3 @@
     }
 }
 
-/* ========== ЗАЩИТА ОТ КОНФЛИКТОВ С ИНТЕРФЕЙСОМ ГЕРОЯ ========== */
-.hero-game-screen .health-bar-container,
-.hero-game-screen .health-bar,
-.hero-game-screen .experience-bar-container,
-.hero-game-screen .experience-bar {
-    margin: 4px 0 !important;
-    padding: 0 !important;
-    height: 24px !important;
-}
-
-.battle-screen-fullscreen .health-display-section,
-.battle-screen-fullscreen .experience-display-section,
-.battle-screen-fullscreen .health-bar-container,
-.battle-screen-fullscreen .experience-bar-container {
-    all: unset !important;
-}
-
-.battle-screen-fullscreen .health-bar,
-.battle-screen-fullscreen .experience-bar {
-    all: unset !important;
-}
