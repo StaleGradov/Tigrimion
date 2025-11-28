@@ -912,29 +912,33 @@ updateHeroDisplay(stats) {
         // ⭐ ВАЖНО: Сначала рассчитываем статы, ПОТОМ рендерим
         const stats = this.calculateHeroStats(currentHero);
         
-        app.innerHTML = `
-            <div class="hero-game-screen">
-                <!-- Верхняя панель кнопок -->
-                <div class="top-action-bar">
-                    <button class="btn-top" onclick="game.showOverlay('global-map')">
-                        🗺️ Глобальная карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('local-map')">
-                        📍 Локальная карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('tactical-map')">
-                        🎲 Тактическая карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('inventory')">
-                        🎒 Инвентарь
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('shop')">
-                        🏪 Магазин
-                    </button>
-                    <button class="btn-top" onclick="game.systems.hero.showHeroSelection()">
-                        🔁 Сменить героя
-                    </button>
-                </div>
+app.innerHTML = `
+    <div class="hero-game-screen">
+        <!-- Верхняя панель кнопок -->
+        <div class="top-action-bar">
+            <button class="btn-top" onclick="game.showOverlay('global-map')">
+                🗺️ Глобальная карта
+            </button>
+            <button class="btn-top" onclick="game.showOverlay('local-map')">
+                📍 Локальная карта
+            </button>
+            <button class="btn-top" onclick="game.showOverlay('tactical-map')">
+                🎲 Тактическая карта
+            </button>
+            <button class="btn-top" onclick="game.showOverlay('inventory')">
+                🎒 Инвентарь
+            </button>
+            <button class="btn-top" onclick="game.showOverlay('shop')">
+                🏪 Магазин
+            </button>
+            <!-- ДОБАВЬТЕ ЭТУ КНОПКУ -->
+            <button class="btn-top" onclick="game.systems.hero.showHeroStory()">
+                📖 История Героя
+            </button>
+            <button class="btn-top" onclick="game.systems.hero.showHeroSelection()">
+                🔁 Сменить героя
+            </button>
+        </div>
 
                 <!-- Основное окно героя -->
                 <div class="hero-main-window">
@@ -1218,6 +1222,68 @@ updateHeroDisplay(stats) {
         // СОХРАНЯЕМ ПРИ СБРОСЕ
         if (window.game) window.game.saveGame();
     }
+    // ========== ИСТОРИЯ ГЕРОЯ ==========
+showHeroStory() {
+    const currentHero = this.currentHero || window.game?.currentHero;
+    if (!currentHero) return;
+
+    // YouTube ID видео (замените на реальный ID вашего видео)
+    // Например: https://www.youtube.com/watch?v=VIDEO_ID_HERE
+    const videoId = "dQw4w9WgXcQ"; // Это пример, замените на ваш ID
+    
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    app.innerHTML = `
+        <div class="hero-story-screen">
+            <!-- Верхняя панель кнопок -->
+            <div class="top-action-bar">
+                <button class="btn-top" onclick="game.systems.hero.showHeroGameScreen()">
+                    ← Назад к герою
+                </button>
+                <button class="btn-top" onclick="game.showHeroSelection()">
+                    🔁 Сменить героя
+                </button>
+            </div>
+
+            <!-- Основное окно с видео -->
+            <div class="hero-story-container">
+                <div class="story-header">
+                    <h1>📖 История Героя: ${currentHero.name}</h1>
+                    <p class="hero-description">${currentHero.story || 'История этого героя пока не написана...'}</p>
+                </div>
+                
+                <div class="video-container">
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1"
+                        title="История ${currentHero.name}"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                
+                <div class="story-info">
+                    <div class="info-card">
+                        <h3>🧬 Происхождение</h3>
+                        <p><strong>Раса:</strong> ${this.getRaceName(currentHero.race)}</p>
+                        <p><strong>Профессия:</strong> ${this.getClassName(currentHero.class)}</p>
+                        <p><strong>Сага:</strong> ${this.getSagaName(currentHero.saga)}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>📊 Статистика</h3>
+                        <p><strong>Уровень:</strong> ${currentHero.level}</p>
+                        <p><strong>Убито монстров:</strong> ${currentHero.monstersKilled || 0}</p>
+                        <p><strong>Смертей:</strong> ${currentHero.deaths || 0}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
 }
 
 // Регистрируем систему в глобальной области
