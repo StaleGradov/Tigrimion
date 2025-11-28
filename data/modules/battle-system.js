@@ -2009,7 +2009,7 @@ endTacticalBattle(victory, escape = false) {
     this.showBattleResult(victory, escape);
 }
 
- showBattleResult(victory, escape = false) {
+showBattleResult(victory, escape = false) {
     const app = document.getElementById('app');
     if (!app) return;
 
@@ -2020,16 +2020,17 @@ endTacticalBattle(victory, escape = false) {
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
         resultHTML = `
-            <div class="battle-result-overlay">
-                <div class="battle-result-modal victory">
-                    <h3>🎉 ПОБЕДА!</h3>
-                    <div class="result-details">
-                        <p>Убито монстров: ${this.currentMonsters.length}</p>
-                        <p>💰 +${totalReward} золота</p>
-                        <p>🌟 +${totalExperience} опыта</p>
-                        <p>Раундов: ${this.battleRound}</p>
+            <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
+                    <h3 style="color: #00ff00; margin-bottom: 20px; font-size: 28px;">🎉 ПОБЕДА!</h3>
+                    <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                        <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
+                        <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
+                        <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
+                        <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
                     </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                            style="padding: 12px 30px; font-size: 18px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer;">
                         Продолжить
                     </button>
                 </div>
@@ -2038,16 +2039,17 @@ endTacticalBattle(victory, escape = false) {
     } else {
         if (escape) {
             resultHTML = `
-                <div class="battle-result-overlay">
-                    <div class="battle-result-modal escape">
-                        <h3>🏃 УСПЕШНЫЙ ПОБЕГ</h3>
-                        <div class="result-details">
-                            <p>Герой успешно сбежал с поля боя</p>
-                            <p>Потеряно 50% здоровья</p>
-                            <p>Герой остался на своей позиции</p>
-                            <p>Раундов: ${this.battleRound}</p>
+                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                    <div class="battle-result-modal escape" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ffaa00; text-align: center; max-width: 500px; width: 90%;">
+                        <h3 style="color: #ffaa00; margin-bottom: 20px; font-size: 28px;">🏃 УСПЕШНЫЙ ПОБЕГ</h3>
+                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                            <p style="font-size: 18px;">Герой успешно сбежал с поля боя</p>
+                            <p style="font-size: 18px; color: #ef4444;">Потеряно 50% здоровья</p>
+                            <p style="font-size: 18px;">Герой остался на своей позиции</p>
+                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
                         </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                                style="padding: 12px 30px; font-size: 18px; background: #ffaa00; color: black; border: none; border-radius: 8px; cursor: pointer;">
                             Продолжить
                         </button>
                     </div>
@@ -2055,16 +2057,17 @@ endTacticalBattle(victory, escape = false) {
             `;
         } else {
             resultHTML = `
-                <div class="battle-result-overlay">
-                    <div class="battle-result-modal defeat">
-                        <h3>💀 ПОРАЖЕНИЕ</h3>
-                        <div class="result-details">
-                            <p>Герой повержен в бою</p>
-                            <p>Здоровье восстановлено до 1</p>
-                            <p>Возврат на стартовую позицию</p>
-                            <p>Раундов: ${this.battleRound}</p>
+                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                    <div class="battle-result-modal defeat" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ef4444; text-align: center; max-width: 500px; width: 90%;">
+                        <h3 style="color: #ef4444; margin-bottom: 20px; font-size: 28px;">💀 ПОРАЖЕНИЕ</h3>
+                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                            <p style="font-size: 18px;">Герой повержен в бою</p>
+                            <p style="font-size: 18px; color: #00ff00;">Здоровье восстановлено до 1</p>
+                            <p style="font-size: 18px;">Возврат на стартовую позицию</p>
+                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
                         </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                                style="padding: 12px 30px; font-size: 18px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
                             Продолжить
                         </button>
                     </div>
@@ -2089,12 +2092,16 @@ closeBattleResult() {
     const battleScreen = document.querySelector('.battle-screen-fullscreen');
     if (battleScreen) battleScreen.remove();
     
-    // Возвращаемся к игре
+    // Возвращаемся к игре - ВЫЗЫВАЕМ ТОЛЬКО ОДИН МЕТОД
     this.returnToGameAfterBattle();
 }
 
-    returnToGameAfterBattle() {
+returnToGameAfterBattle() {
     console.log("🔄 Возврат к игре после боя");
+    
+    // Полностью очищаем ВСЕ элементы боя
+    const battleElements = document.querySelectorAll('.battle-screen-fullscreen, .battle-result-overlay');
+    battleElements.forEach(el => el.remove());
     
     // Показываем основной экран игры
     if (window.game && window.game.systems.hero) {
@@ -2104,6 +2111,16 @@ closeBattleResult() {
     // Обновляем состояние героя
     if (this.currentHero && window.game.systems.hero) {
         window.game.systems.hero.updateHeroDisplay();
+    }
+    
+    // Обновляем карту если нужно
+    if (this.battleContext === 'movement' && window.game.systems.map) {
+        setTimeout(() => {
+            if (window.game.systems.map.activeOverlay === 'tactical-map') {
+                window.game.systems.map.drawTacticalMap();
+                window.game.systems.map.updateMovementInfo();
+            }
+        }, 500);
     }
 }
 
