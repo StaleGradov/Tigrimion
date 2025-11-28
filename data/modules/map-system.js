@@ -1440,41 +1440,38 @@ handleCanvasClick(e) {
         return randomMonster;
     }
 
-    completeMovementAfterBattle(victory) {
-        if (!this.pendingMovement) return;
+completeMovementAfterBattle(victory, escape = false) {
+    if (!this.pendingMovement) return;
 
+    if (victory) {
+        // Победа - перемещаем на целевую клетку
         const targetX = this.pendingMovement.x;
         const targetY = this.pendingMovement.y;
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x: targetX, y: targetY};
         
-        if (!this.currentHero) {
-            console.error("❌ Не могу завершить перемещение: герой не выбран");
-            return;
-        }
-        
-        if (victory) {
-            const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {x: targetX, y: targetY};
-            
-            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-            
+        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+    } else {
+        if (escape) {
+            // Побег - остаемся на текущей позиции
+            console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
         } else {
+            // Смерть в бою - возвращаем на стартовую точку
             const startPosition = this.currentTacticalMap.startPosition;
+            const oldPosition = {...this.playerTacticalPosition};
             this.playerTacticalPosition = {...startPosition};
             
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
-            
-            if (window.game) {
-                window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
-            }
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
         }
-        
-        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-            this.calculateCSSScale();
-            this.drawTacticalMap();
-        }
-        
-        this.pendingMovement = null;
     }
+    
+    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+        this.calculateCSSScale();
+        this.drawTacticalMap();
+    }
+    
+    this.pendingMovement = null;
+}
 
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
