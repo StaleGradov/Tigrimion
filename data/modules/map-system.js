@@ -170,16 +170,25 @@ class MapSystem {
 
 // В класс MapSystem добавить методы:
 handleTavernVisit(cell) {
-    if (!this.currentHero) return;
+    console.log("🍻 handleTavernVisit вызван", cell);
+    
+    if (!this.currentHero) {
+        console.log("❌ Герой не выбран");
+        return;
+    }
     
     const heroSystem = window.game?.systems?.hero;
-    if (!heroSystem) return;
+    if (!heroSystem) {
+        console.log("❌ HeroSystem не доступна");
+        return;
+    }
     
     const stats = heroSystem.calculateHeroStats(this.currentHero);
     
     // Полное восстановление здоровья
     const oldHealth = this.currentHero.currentHealth;
     this.currentHero.currentHealth = stats.maxHealth;
+    console.log(`❤️ Здоровье восстановлено: ${oldHealth} → ${stats.maxHealth}`);
     
     // Пополнение фляги
     const battleSystem = window.game?.systems?.battle;
@@ -188,6 +197,8 @@ handleTavernVisit(cell) {
         battleSystem.flask.currentCharges = battleSystem.flask.capacity;
         battleSystem.flask.content = 'water';
         
+        console.log(`💧 Фляга пополнена: ${oldCharges} → ${battleSystem.flask.capacity}`);
+        
         // ОБНОВЛЯЕМ интерфейс фляги
         if (battleSystem.updateFlaskUI) {
             battleSystem.updateFlaskUI();
@@ -195,17 +206,18 @@ handleTavernVisit(cell) {
         if (battleSystem.updateFlaskChargesDisplay) {
             battleSystem.updateFlaskChargesDisplay();
         }
-        
-        console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
+    } else {
+        console.log("❌ BattleSystem или фляга не доступны");
     }
     
     // Сохранение игры
     if (window.game) {
         window.game.saveGame();
         window.game.showNotification(`🍻 Таверна: здоровье ${oldHealth}→${stats.maxHealth}, фляга пополнена!`, 'success');
+        console.log("💾 Игра сохранена");
     }
     
-    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну, здоровье восстановлено`);
+    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну`);
 }
 
 handleWaterCell(cell) {
@@ -247,7 +259,6 @@ handleCanvasClick(e) {
         const matrix = new DOMMatrix(transform);
         scale = matrix.a;
     }
-
     
     const logicalX = (e.clientX - canvasRect.left) / scale;
     const logicalY = (e.clientY - canvasRect.top) / scale;
@@ -255,32 +266,37 @@ handleCanvasClick(e) {
     const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
     if (!hex) return;
     
-    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`, hex);
     
-    // Обработка ТАВЕРНЫ (тип village с tacticalMap)
-    if (hex.type === 'village' && hex.tacticalMap) {
+    // Обработка ТАВЕРНЫ (тип village)
+    if (hex.type === 'village') {
+        console.log("🍻 Обработка таверны...");
         this.handleTavernVisit(hex);
         return;
     }
     
     // Обработка специальных клеток
     if (hex.type === 'water') {
+        console.log("💧 Обработка воды...");
         this.handleWaterCell(hex);
         return;
     }
     
     // Обработка магазина
     if (hex.type === 'merchant') {
+        console.log("🛒 Обработка магазина...");
         this.handleMerchantClick(hex);
         return;
     }
     
     if (this.isTransitionCell(hex)) {
+        console.log("🚪 Обработка перехода...");
         this.handleTransitionClick(hex);
         return;
     }
     
     if (hex.passable !== false || hex.type === 'monster') {
+        console.log("🎯 Обработка перемещения...");
         this.moveOnTacticalMap(hex.col, hex.row);
     }
 }
@@ -1442,7 +1458,12 @@ handleCanvasClick(e) {
     }
 
 completeMovementAfterBattle(victory, escape = false) {
-    if (!this.pendingMovement) return;
+    if (!this.pendingMovement) {
+        console.log("❌ Нет ожидающего перемещения");
+        return;
+    }
+
+    console.log(`🗺️ completeMovementAfterBattle: победа=${victory}, побег=${escape}`);
 
     if (victory) {
         // Победа - перемещаем на целевую клетку
@@ -1451,7 +1472,7 @@ completeMovementAfterBattle(victory, escape = false) {
         const oldPosition = {...this.playerTacticalPosition};
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
     } else {
         if (escape) {
             // Побег - остаемся на текущей позиции
@@ -1466,24 +1487,16 @@ completeMovementAfterBattle(victory, escape = false) {
         }
     }
     
+    // Обновляем карту
     if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+        console.log("🔄 Обновление отображения карты...");
         this.calculateCSSScale();
         this.drawTacticalMap();
     }
     
     this.pendingMovement = null;
+    console.log("✅ Перемещение завершено");
 }
-
-    getMonsterFromCell(cellData) {
-        if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
-            return null;
-        }
-        
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) return null;
-        
-        return battleSystem.getMonsterById(cellData.monster_id);
-    }
 
     updateHeroInterface() {
         if (window.game?.systems?.hero) {
