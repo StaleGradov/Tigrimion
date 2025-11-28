@@ -1932,6 +1932,9 @@ completeMovementAfterBattle(victory, escape = false) {
 endTacticalBattle(victory, escape = false) {
     if (this.resultShown) return;
     this.resultShown = true;
+    this.battleActive = false;
+
+    console.log(`🎲 Завершение боя: победа=${victory}, побег=${escape}`);
 
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
@@ -1943,36 +1946,35 @@ endTacticalBattle(victory, escape = false) {
         
         this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
     } else {
-        // Поражение - проверяем причину
         if (escape) {
             // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0; // Не увеличиваем счетчик смертей при побеге
+            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0;
             this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
         } else {
             // Смерть в бою - перемещаем на стартовую точку
-            this.currentHero.currentHealth = 1; // Восстанавливаем до 1 HP вместо 0
+            this.currentHero.currentHealth = 1;
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
             this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
-            
-            // Вызываем обработку смерти
-            if (window.game && window.game.handleHeroDeath) {
-                window.game.handleHeroDeath();
-            }
         }
     }
     
+    // Сохраняем состояние героя
     if (this.currentHero && window.game.systems.hero) {
         this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
         window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
     
-    if (window.game) window.game.saveGame();
+    // Сохраняем игру
+    if (window.game) {
+        window.game.saveGame();
+    }
     
+    // Уведомляем систему карт о завершении боя
     if (this.battleContext === 'movement' && window.game.systems.map) {
+        console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
     }
     
-    this.battleActive = false;
     this.showBattleResult(victory, escape);
 }
 
@@ -2054,24 +2056,26 @@ endTacticalBattle(victory, escape = false) {
     }
 
 tryToFlee() {
-    if (!this.currentHero) return false;
+    if (!this.currentHero || this.battleEnding) return false;
 
+    console.log("🏃 Попытка побега...");
+    
     const heroStats = this.getHeroStatsForBattle();
     const halfHealth = Math.floor(heroStats.maxHealth / 2);
     
-    console.log(`🏃 Попытка побега: текущее здоровье ${this.currentHero.currentHealth}, половина макс. здоровья: ${halfHealth}`);
+    console.log(`🏃 Здоровье: ${this.currentHero.currentHealth}/${heroStats.maxHealth}, половина: ${halfHealth}`);
     
     // Проверяем, достаточно ли здоровья для побега
     if (this.currentHero.currentHealth <= halfHealth) {
         this.addBattleLog("💀 Недостаточно здоровья для побега! Герой погибает при попытке бегства.");
         
-        // Смерть при попытке побега - перемещаем на стартовую точку
+        // Смерть при попытке побега
         this.currentHero.currentHealth = 0;
-        this.endTacticalBattle(false, false); // false, false - поражение, не побег
+        this.battleEnding = true;
         
-        if (window.game && window.game.handleHeroDeath) {
-            window.game.handleHeroDeath();
-        }
+        setTimeout(() => {
+            this.endTacticalBattle(false, false); // Поражение, не побег
+        }, 1000);
         
         return false;
     }
@@ -2081,8 +2085,12 @@ tryToFlee() {
     this.currentHero.currentHealth = Math.max(1, oldHealth - halfHealth);
     this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья (${oldHealth} → ${this.currentHero.currentHealth}).`);
     
-    // Завершаем бой с поражением, но отмечаем что это побег
-    this.endTacticalBattle(false, true); // false, true - поражение, но побег
+    this.battleEnding = true;
+    
+    setTimeout(() => {
+        this.endTacticalBattle(false, true); // Поражение, но побег
+    }, 1000);
+    
     return true;
 }
 
