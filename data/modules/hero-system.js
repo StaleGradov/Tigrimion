@@ -1229,7 +1229,7 @@ showHeroStory() {
 
     // YouTube ID видео (замените на реальный ID вашего видео)
     // Например: https://www.youtube.com/watch?v=VIDEO_ID_HERE
-    const videoId = "dQw4w9WgXcQ"; // Это пример, замените на ваш ID
+    const videoId = "RMSFR6cbb9c"; // Это пример, замените на ваш ID
     
     const app = document.getElementById('app');
     if (!app) return;
