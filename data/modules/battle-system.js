@@ -2090,20 +2090,11 @@ showBattleResult(victory, escape = false) {
 }
 
 closeBattleResult() {
-    console.log("🚪 Закрытие результата боя");
-    
-    // Удаляем оверлей результата
     const overlay = document.querySelector('.battle-result-overlay');
     if (overlay) overlay.remove();
     
-    // Полностью очищаем экран боя
-    const battleScreen = document.querySelector('.battle-screen-fullscreen');
-    if (battleScreen) battleScreen.remove();
-    
-    // Возвращаемся к игре
-    this.returnToGameAfterBattle();
+    this.returnToGameAfterBattle(); // ← Вызываем тот же метод
 }
-
 returnToGameAfterBattle() {
     this.resultShown = false;
     this.battleEnding = false;
