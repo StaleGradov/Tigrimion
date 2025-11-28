@@ -169,7 +169,6 @@ class MapSystem {
     }
 
 // В класс MapSystem добавить методы:
-
 handleTavernVisit(cell) {
     if (!this.currentHero) return;
     
