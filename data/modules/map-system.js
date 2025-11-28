@@ -170,10 +170,27 @@ class MapSystem {
 
 // В класс MapSystem добавить методы:
 handleTavernVisit(cell) {
-    if (!this.currentHero) return;
+    console.log("🍻 Начало обработки посещения таверны:", cell);
+    
+    if (!this.currentHero) {
+        console.error("❌ Нет текущего героя для посещения таверны");
+        return;
+    }
+    
+    // Проверяем доступность
+    if (!this.isPlayerAdjacentToTransition(cell)) {
+        console.log("❌ Герой не рядом с таверной");
+        this.showTransitionWarning(cell);
+        return;
+    }
+    
+    console.log("✅ Герой рядом с таверной, начинаем обработку...");
     
     const heroSystem = window.game?.systems?.hero;
-    if (!heroSystem) return;
+    if (!heroSystem) {
+        console.error("❌ HeroSystem не доступна");
+        return;
+    }
     
     const stats = heroSystem.calculateHeroStats(this.currentHero);
     
@@ -206,7 +223,11 @@ handleTavernVisit(cell) {
     }
     
     console.log(`🍻 Герой ${this.currentHero.name} посетил таверну, здоровье восстановлено`);
+    
+    // Обновляем интерфейс карты
+    this.drawTacticalMap();
 }
+
 
 handleWaterCell(cell) {
     if (!this.currentHero) return;
@@ -258,7 +279,7 @@ handleCanvasClick(e) {
     
     // Обработка ТАВЕРНЫ (тип village с tacticalMap)
     if (hex.type === 'village' && hex.tacticalMap) {
-        console.log("🍻 Клик по таверне");
+        console.log("🍻 Клик по таверне - обработка посещения");
         this.handleTavernVisit(hex);
         return;
     }
