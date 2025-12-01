@@ -194,6 +194,22 @@ class BattleSystem {
         return window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
 
+getHeroAttackType(hero) {
+    if (!hero || !hero.equipment?.main_hand || !window.game?.systems?.equipment) {
+        return 'melee';
+    }
+    
+    const weapon = window.game.systems.equipment.getItemById(hero.equipment.main_hand);
+    
+    // Возвращаем attackType из оружия, если оно есть и это оружие
+    if (weapon && weapon.type === 'weapon') {
+        return weapon.attackType || 'melee';
+    }
+    
+    return 'melee';
+}
+
+    
     generateMonsterGroup(baseMonsterId) {
         const currentMap = window.game.systems.map?.currentMap;
         const mapSettings = currentMap?.monsters;
@@ -1035,36 +1051,41 @@ class BattleSystem {
         });
     }
 
-    updateAvailableTargets() {
-        const heroAttackType = this.getHeroAttackType(this.currentHero);
-        this.availableTargets = [];
-        
-        const aliveFrontRowMonsters = this.battleGrid.enemies.filter((unit, position) => 
-            unit && unit.currentHealth > 0 && unit.row === 'front'
-        ).length;
-        
-        console.log(`🎯 Живых монстров в переднем ряду: ${aliveFrontRowMonsters}`);
-        
-        this.battleGrid.enemies.forEach((unit, position) => {
-            if (unit && unit.currentHealth > 0) {
-                if (heroAttackType === 'melee') {
-                    if (unit.row === 'front') {
-                        this.availableTargets.push(position);
-                    }
-                    else if (aliveFrontRowMonsters === 0) {
-                        this.availableTargets.push(position);
-                    }
-                } else {
+  updateAvailableTargets() {
+    const heroAttackType = this.getHeroAttackType(this.currentHero);
+    this.availableTargets = [];
+    
+    const aliveFrontRowMonsters = this.battleGrid.enemies.filter((unit, position) => 
+        unit && unit.currentHealth > 0 && unit.row === 'front'
+    ).length;
+    
+    console.log(`🎯 Герой атакует типом: ${heroAttackType}`);
+    console.log(`🎯 Живых монстров в переднем ряду: ${aliveFrontRowMonsters}`);
+    
+    this.battleGrid.enemies.forEach((unit, position) => {
+        if (unit && unit.currentHealth > 0) {
+            if (heroAttackType === 'melee') {
+                // Ближний бой: атакует только передний ряд
+                // ИЛИ задний ряд, если переднего нет
+                if (unit.row === 'front') {
                     this.availableTargets.push(position);
                 }
+                else if (aliveFrontRowMonsters === 0) {
+                    // Если нет живых монстров в переднем ряду - можно атаковать задний
+                    this.availableTargets.push(position);
+                }
+            } else {
+                // Дальний бой: может атаковать любого
+                this.availableTargets.push(position);
             }
-        });
-        
-        console.log(`🎯 Доступные цели для ${heroAttackType} атаки:`, this.availableTargets.map(pos => {
-            const unit = this.battleGrid.enemies[pos];
-            return unit ? `${unit.data.name} (${unit.row})` : 'unknown';
-        }));
-    }
+        }
+    });
+    
+    console.log(`🎯 Доступные цели:`, this.availableTargets.map(pos => {
+        const unit = this.battleGrid.enemies[pos];
+        return unit ? `${unit.data.name} (${unit.row})` : 'unknown';
+    }));
+}
 
     isAttackAction(action) {
         return ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(action);
