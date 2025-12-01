@@ -3681,7 +3681,7 @@ setTimeout(() => {
         console.error("❌ Ошибка инициализации Canvas:", error);
     }
 }, 50);
-
+}
     showOverlay(overlayType) {
         console.log(`🎯 MapSystem: Показываем оверлей: ${overlayType}`);
         
