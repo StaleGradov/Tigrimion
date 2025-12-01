@@ -663,25 +663,6 @@ getBaseCellDescription(cellType) {
     return descriptions[cellType] || 'Неизвестная местность';
 }
 
-// Метод для получения названия шансов
-getChanceName(chance) {
-    const names = {
-        'items': 'Предметы',
-        'gold': 'Золото',
-        'nothing': 'Ничего',
-        'ores': 'Руда',
-        'stones': 'Камни',
-        'berries': 'Ягоды',
-        'herbs': 'Травы',
-        'rare_herbs': 'Редкие травы',
-        'mushrooms': 'Грибы',
-        'woods': 'Древесина',
-        'rare_ores': 'Редкая руда'
-    };
-    return names[chance] || chance;
-}
-
-
 
     
 getChanceName(chance) {
@@ -3494,7 +3475,7 @@ async forceMapUpdate(newMap) {
         }];
     }
 
-    showMapOverlay(overlayType, container) {
+      showMapOverlay(overlayType, container) {
         console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
         
         let targetMap = null;
@@ -3631,43 +3612,45 @@ async forceMapUpdate(newMap) {
             </div>
         `;
         
-       container.style.display = 'block';
-    
+        container.style.display = 'block';
+        
+        // Инициализация Canvas после отрисовки HTML
+        setTimeout(() => {
+            console.log("🎨 Инициализируем Canvas для карты...");
+            
+            if (!this.currentTacticalMap) {
+                console.error("❌ currentTacticalMap не установлена для Canvas");
+                return;
+            }
+            
+            try {
+                this.initCanvas();
+                this.updateMovementInfo();
+                this.updateHeroResourcesUI();
+                
+                // ВАЖНО: Автоматически показываем описание текущей клетки
+                const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+                const currentCell = this.currentTacticalMap.cells[cellKey];
+                
+                if (currentCell) {
+                    console.log(`📍 Автоматически показываем описание текущей клетки [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+                    // Небольшая задержка для гарантии что DOM готов
+                    setTimeout(() => {
+                        this.updateCellActionsUI(currentCell);
+                        this.highlightSelectedCell(currentCell);
+                    }, 100);
+                }
+                
+                console.log("✅ Canvas успешно инициализирован");
+                
+            } catch (error) {
+                console.error("❌ Ошибка инициализации Canvas:", error);
+            }
+        }, 50);
+    }
 
-setTimeout(() => {
-    console.log("🎨 Инициализируем Canvas для карты...");
     
-    if (!this.currentTacticalMap) {
-        console.error("❌ currentTacticalMap не установлена для Canvas");
-        return;
-    }
-    
-    try {
-        this.initCanvas();
-        this.updateMovementInfo();
-        this.updateHeroResourcesUI();
-        
-        // ВАЖНО: Автоматически показываем описание текущей клетки
-        const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
-        const currentCell = this.currentTacticalMap.cells[cellKey];
-        
-        if (currentCell) {
-            console.log(`📍 Автоматически показываем описание текущей клетки [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
-            // Небольшая задержка для гарантии что DOM готов
-            setTimeout(() => {
-                this.updateCellActionsUI(currentCell);
-                this.highlightSelectedCell(currentCell);
-            }, 100);
-        }
-        
-        console.log("✅ Canvas успешно инициализирован");
-        
-    } catch (error) {
-        console.error("❌ Ошибка инициализации Canvas:", error);
-    }
-}, 50);
-}
-    showOverlay(overlayType) {
+     showOverlay(overlayType) {
         console.log(`🎯 MapSystem: Показываем оверлей: ${overlayType}`);
         
         const container = document.getElementById('overlay-container');
