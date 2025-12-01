@@ -25,7 +25,6 @@ class MapSystem {
         this.showGrid = false;
         this.hoveredHex = null;
         
-        // Система масштабирования и перетаскивания
         this.zoomLevel = 1.0;
         this.minZoom = 0.1;
         this.maxZoom = 5.0;
@@ -43,6 +42,12 @@ class MapSystem {
         
         this.mapStack = [];
         this.currentMapType = 'local';
+        
+        this.cellTypes = {};
+        this.resources = {};
+        this.currentCellType = null;
+        this.selectedCell = null;
+        this.currentCellActions = [];
         
         this.lootTables = {
             1: {
@@ -136,7 +141,7 @@ class MapSystem {
         this.tooltipTimeout = null;
         this.resizeTimeout = null;
         
-        console.log("✅ MapSystem инициализирован с интеграцией магазинов");
+        console.log("✅ MapSystem инициализирован с интеграцией магазинов и системой действий на клетках");
     }
 
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
@@ -147,7 +152,6 @@ class MapSystem {
             return;
         }
 
-        // Проверяем, есть ли предметы в магазине
         if (!merchantCell.shopItems || merchantCell.shopItems.length === 0) {
             console.warn("🛒 Магазин пуст - нет товаров в shopItems");
             if (window.game) {
@@ -168,240 +172,773 @@ class MapSystem {
         }
     }
 
-handleTavernVisit(cell) {
-    console.log("🍻 Начало обработки посещения таверны:", cell);
-    
-    if (!this.currentHero) {
-        console.error("❌ Нет текущего героя для посещения таверны");
-        return;
-    }
-    
-    // Проверяем доступность
-    if (!this.isPlayerAdjacentToTransition(cell)) {
-        console.log("❌ Герой не рядом с таверной");
-        this.showTransitionWarning(cell);
-        return;
-    }
-    
-    console.log("✅ Герой рядом с таверной, начинаем обработку...");
-    
-    const heroSystem = window.game?.systems?.hero;
-    if (!heroSystem) {
-        console.error("❌ HeroSystem не доступна");
-        return;
-    }
-    
-    const stats = heroSystem.calculateHeroStats(this.currentHero);
-    
-    // Полное восстановление здоровья
-    const oldHealth = this.currentHero.currentHealth;
-    this.currentHero.currentHealth = stats.maxHealth;
-    
-    // Пополнение фляги
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem && battleSystem.flask) {
-        const oldCharges = battleSystem.flask.currentCharges;
-        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
-        battleSystem.flask.content = 'water';
+    handleTavernVisit(cell) {
+        console.log("🍻 Начало обработки посещения таверны:", cell);
         
-        console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
-        
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Принудительно обновляем интерфейс фляги
-        if (battleSystem.updateFlaskUI) {
-            battleSystem.updateFlaskUI();
-        }
-        if (battleSystem.updateFlaskChargesDisplay) {
-            battleSystem.updateFlaskChargesDisplay();
+        if (!this.currentHero) {
+            console.error("❌ Нет текущего героя для посещения таверны");
+            return;
         }
         
-        // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Обновляем через setTimeout
-        setTimeout(() => {
+        if (!this.isPlayerAdjacentToTransition(cell)) {
+            console.log("❌ Герой не рядом с таверной");
+            this.showTransitionWarning(cell);
+            return;
+        }
+        
+        console.log("✅ Герой рядом с таверной, начинаем обработку...");
+        
+        const heroSystem = window.game?.systems?.hero;
+        if (!heroSystem) {
+            console.error("❌ HeroSystem не доступна");
+            return;
+        }
+        
+        const stats = heroSystem.calculateHeroStats(this.currentHero);
+        
+        const oldHealth = this.currentHero.currentHealth;
+        this.currentHero.currentHealth = stats.maxHealth;
+        
+        const battleSystem = window.game?.systems?.battle;
+        if (battleSystem && battleSystem.flask) {
+            const oldCharges = battleSystem.flask.currentCharges;
+            battleSystem.flask.currentCharges = battleSystem.flask.capacity;
+            battleSystem.flask.content = 'water';
+            
+            console.log(`💧 Фляга пополнена: ${oldCharges} -> ${battleSystem.flask.currentCharges}`);
+            
+            if (battleSystem.updateFlaskUI) {
+                battleSystem.updateFlaskUI();
+            }
             if (battleSystem.updateFlaskChargesDisplay) {
                 battleSystem.updateFlaskChargesDisplay();
-                console.log("💧 Интерфейс фляги обновлен после таверны");
             }
-        }, 100);
-    }
-    
-    // Сохранение игры
-    if (window.game) {
-        window.game.saveGame();
-        window.game.showNotification(`🍻 Таверна: здоровье ${oldHealth}→${stats.maxHealth}, фляга пополнена!`, 'success');
-    }
-    
-    console.log(`🍻 Герой ${this.currentHero.name} посетил таверну, здоровье восстановлено`);
-    
-    // Обновляем интерфейс карты
-    this.drawTacticalMap();
-}
-
-
-    
-    
-
-handleWaterCell(cell) {
-    if (!this.currentHero) return;
-    
-    // Проверяем, находится ли герой рядом с водой
-    if (!this.isPlayerAdjacentToWater(cell)) {
-        this.showTransitionWarning(cell);
-        return;
-    }
-    
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem && battleSystem.flask) {
-        // Полное восстановление здоровья героя
-        const heroSystem = window.game?.systems?.hero;
-        if (heroSystem) {
-            const stats = heroSystem.calculateHeroStats(this.currentHero);
-            const oldHealth = this.currentHero.currentHealth;
-            this.currentHero.currentHealth = stats.maxHealth;
-            console.log(`❤️ Здоровье восстановлено: ${oldHealth} → ${stats.maxHealth}`);
-        }
-        
-        // Пополнение фляги водой
-        const oldCharges = battleSystem.flask.currentCharges;
-        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
-        battleSystem.flask.content = 'water';
-        
-        // Обновляем интерфейс фляги
-        if (battleSystem.updateFlaskUI) {
-            battleSystem.updateFlaskUI();
-        }
-        if (battleSystem.updateFlaskChargesDisplay) {
-            battleSystem.updateFlaskChargesDisplay();
+            
+            setTimeout(() => {
+                if (battleSystem.updateFlaskChargesDisplay) {
+                    battleSystem.updateFlaskChargesDisplay();
+                    console.log("💧 Интерфейс фляги обновлен после таверны");
+                }
+            }, 100);
         }
         
         if (window.game) {
-            window.game.showNotification(
-                `💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов! ` +
-                `Здоровье восстановлено до максимума.`, 
-                'success'
-            );
             window.game.saveGame();
+            window.game.showNotification(`🍻 Таверна: здоровье ${oldHealth}→${stats.maxHealth}, фляга пополнена!`, 'success');
         }
         
-        console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды: ${oldCharges}→${battleSystem.flask.capacity}`);
+        console.log(`🍻 Герой ${this.currentHero.name} посетил таверну, здоровье восстановлено`);
         
-        // Обновляем карту
         this.drawTacticalMap();
     }
-}
 
-isPlayerAdjacentToWater(waterCell) {
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    
-    return neighbors.some(neighbor => 
-        neighbor.row === waterCell.row && 
-        neighbor.col === waterCell.col
-    );
-}
-
-showTransitionWarning(transitionCell) {
-    const transitionName = this.getTransitionName(transitionCell);
-    let message = `Чтобы использовать ${transitionName}, нужно подойти вплотную!`;
-    
-    // Кастомное сообщение для воды
-    if (transitionCell.type === 'water') {
-        message = "💧 Чтобы использовать источник воды, нужно подойти к нему вплотную!";
-    }
-    
-    console.log(`🚫 ${message}`);
-    
-    if (window.game) {
-        window.game.showNotification(message, 'warning');
-    }
-    
-    this.highlightTransition(transitionCell);
-}
-
-getTransitionName(transitionCell) {
-    if (transitionCell.tacticalMap) {
-        return this.getLocationNameFromPath(transitionCell.tacticalMap) || "помещение";
-    }
-    if (transitionCell.localMap) {
-        return this.getLocationNameFromPath(transitionCell.localMap) || "локацию";
-    }
-    if (transitionCell.globalMap) {
-        return this.getLocationNameFromPath(transitionCell.globalMap) || "регион";
-    }
-    if (transitionCell.type === 'exit') {
-        return "выход";
-    }
-    if (transitionCell.type === 'water') {
-        return "источник воды";
-    }
-    
-    return "переход";
-}
-
-    
-
-handleCanvasClick(e) {
-    if (!this.currentTacticalMap) return;
-
-    const canvasRect = this.canvas.getBoundingClientRect();
-    
-    // Получаем масштаб из CSS
-    const computedStyle = getComputedStyle(this.canvas);
-    const transform = computedStyle.transform;
-    let scale = 1;
-    
-    if (transform && transform !== 'none') {
-        const matrix = new DOMMatrix(transform);
-        scale = matrix.a; // Масштаб по X (должен быть одинаковый по X и Y)
-    }
-    
-    // Рассчитываем координаты относительно оригинального canvas (1024x1024)
-    const logicalX = (e.clientX - canvasRect.left) / scale;
-    const logicalY = (e.clientY - canvasRect.top) / scale;
-    
-    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
-    
-    // Ищем клетку по логическим координатам
-    const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
-    if (!hex) return;
-    
-    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-    
-    // Обработка ТАВЕРНЫ (тип village с tacticalMap)
-    if (hex.type === 'village' && hex.tacticalMap) {
-        console.log("🍻 Клик по таверне - обработка посещения");
-        this.handleTavernVisit(hex);
-        return;
-    }
-    
-    // Обработка воды
-    if (hex.type === 'water') {
-        console.log("💧 Клик по воде");
-        // Проверяем доступность
-        if (!this.isPlayerAdjacentToWater(hex)) {
-            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+    handleWaterCell(cell) {
+        if (!this.currentHero) return;
+        
+        if (!this.isPlayerAdjacentToWater(cell)) {
+            this.showTransitionWarning(cell);
             return;
         }
-        this.handleWaterCell(hex);
-        return;
+        
+        const battleSystem = window.game?.systems?.battle;
+        if (battleSystem && battleSystem.flask) {
+            const heroSystem = window.game?.systems?.hero;
+            if (heroSystem) {
+                const stats = heroSystem.calculateHeroStats(this.currentHero);
+                const oldHealth = this.currentHero.currentHealth;
+                this.currentHero.currentHealth = stats.maxHealth;
+                console.log(`❤️ Здоровье восстановлено: ${oldHealth} → ${stats.maxHealth}`);
+            }
+            
+            const oldCharges = battleSystem.flask.currentCharges;
+            battleSystem.flask.currentCharges = battleSystem.flask.capacity;
+            battleSystem.flask.content = 'water';
+            
+            if (battleSystem.updateFlaskUI) {
+                battleSystem.updateFlaskUI();
+            }
+            if (battleSystem.updateFlaskChargesDisplay) {
+                battleSystem.updateFlaskChargesDisplay();
+            }
+            
+            if (window.game) {
+                window.game.showNotification(
+                    `💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов! ` +
+                    `Здоровье восстановлено до максимума.`, 
+                    'success'
+                );
+                window.game.saveGame();
+            }
+            
+            console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды: ${oldCharges}→${battleSystem.flask.capacity}`);
+            
+            this.drawTacticalMap();
+        }
     }
-    
-    // Обработка магазина
-    if (hex.type === 'merchant') {
-        console.log("🛒 Клик по магазину");
-        this.handleMerchantClick(hex);
-        return;
+
+    isPlayerAdjacentToWater(waterCell) {
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        
+        return neighbors.some(neighbor => 
+            neighbor.row === waterCell.row && 
+            neighbor.col === waterCell.col
+        );
     }
-    
-    if (this.isTransitionCell(hex)) {
-        console.log("🚪 Клик по переходу");
-        this.handleTransitionClick(hex);
-        return;
+
+    showTransitionWarning(transitionCell) {
+        const transitionName = this.getTransitionName(transitionCell);
+        let message = `Чтобы использовать ${transitionName}, нужно подойти вплотную!`;
+        
+        if (transitionCell.type === 'water') {
+            message = "💧 Чтобы использовать источник воды, нужно подойти к нему вплотную!";
+        }
+        
+        console.log(`🚫 ${message}`);
+        
+        if (window.game) {
+            window.game.showNotification(message, 'warning');
+        }
+        
+        this.highlightTransition(transitionCell);
     }
-    
-    if (hex.passable !== false || hex.type === 'monster') {
-        console.log("🎯 Клик для перемещения");
-        this.moveOnTacticalMap(hex.col, hex.row);
+
+    getTransitionName(transitionCell) {
+        if (transitionCell.tacticalMap) {
+            return this.getLocationNameFromPath(transitionCell.tacticalMap) || "помещение";
+        }
+        if (transitionCell.localMap) {
+            return this.getLocationNameFromPath(transitionCell.localMap) || "локацию";
+        }
+        if (transitionCell.globalMap) {
+            return this.getLocationNameFromPath(transitionCell.globalMap) || "регион";
+        }
+        if (transitionCell.type === 'exit') {
+            return "выход";
+        }
+        if (transitionCell.type === 'water') {
+            return "источник воды";
+        }
+        
+        return "переход";
     }
-}
-    
+
+    // ========== СИСТЕМА ДЕЙСТВИЙ НА КЛЕТКАХ ==========
+
+    async loadCellData() {
+        try {
+            console.log("📥 Загружаем данные типов клеток и ресурсов...");
+            
+            const [cellTypesResponse, resourcesResponse] = await Promise.all([
+                fetch('data/cell_types.json').catch(() => null),
+                fetch('data/resources.json').catch(() => null)
+            ]);
+            
+            if (cellTypesResponse && cellTypesResponse.ok) {
+                const cellData = await cellTypesResponse.json();
+                this.cellTypes = cellData.cell_types || {};
+                console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
+            } else {
+                console.warn("❌ cell_types.json не загружен, создаем базовые типы");
+                this.createDefaultCellTypes();
+            }
+            
+            if (resourcesResponse && resourcesResponse.ok) {
+                const resourcesData = await resourcesResponse.json();
+                this.resources = resourcesData;
+                console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
+            } else {
+                console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
+                this.createDefaultResources();
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных клеток:", error);
+            this.createDefaultCellTypes();
+            this.createDefaultResources();
+            return false;
+        }
+    }
+
+    createDefaultCellTypes() {
+        this.cellTypes = {
+            'grave': {
+                name: "Могила крестьянина",
+                description: "Старая могила, возможно, здесь что-то закопано...",
+                actions: ['search_treasure'],
+                icon: '⚰️',
+                loot_chances: { items: 70, gold: 25, nothing: 5 }
+            },
+            'small_stream': {
+                name: "Небольшой ручей",
+                description: "Чистый источник воды, можно пополнить флягу",
+                actions: ['refill_flask'],
+                icon: '💧',
+                flask_refill: { min: 3, max: 10, chance: 100 }
+            },
+            'shallow_burrow': {
+                name: "Неглубокая нора",
+                description: "Нора какого-то животного, может содержать ресурсы",
+                actions: ['search_ore', 'search_stone'],
+                icon: '🕳️',
+                resource_chances: { ores: 40, stones: 40, nothing: 20 }
+            },
+            'berry_clearing': {
+                name: "Поляна с ягодами",
+                description: "Поляна, усыпанная различными ягодами",
+                actions: ['search_berries', 'search_herbs'],
+                icon: '🫐',
+                resource_chances: { berries: 60, herbs: 30, nothing: 10 }
+            },
+            'mushroom_grove': {
+                name: "Грибная роща",
+                description: "Тенистая местность, богатая грибами",
+                actions: ['search_mushrooms', 'search_herbs'],
+                icon: '🍄',
+                resource_chances: { mushrooms: 70, herbs: 20, nothing: 10 }
+            },
+            'ancient_tree': {
+                name: "Древнее дерево",
+                description: "Огромное старое дерево, возможно, содержит ценные ресурсы",
+                actions: ['search_wood', 'search_herbs'],
+                icon: '🌳',
+                resource_chances: { woods: 50, herbs: 30, rare_herbs: 10, nothing: 10 }
+            },
+            'rocky_outcrop': {
+                name: "Скальный выступ",
+                description: "Каменное образование, богатое минералами",
+                actions: ['search_ore', 'search_stone'],
+                icon: '⛰️',
+                resource_chances: { ores: 50, stones: 40, rare_ores: 5, nothing: 5 }
+            }
+        };
+    }
+
+    createDefaultResources() {
+        this.resources = {
+            herbs: [
+                { id: 'arnica', name: '🌿 Арника', type: 'herb', rarity: 'common', description: 'Известна своими заживляющими свойствами' },
+                { id: 'willow_bark', name: '🍂 Кора Ивы', type: 'herb', rarity: 'common', description: 'Содержит природные обезболивающие' },
+                { id: 'coffee_beans', name: '☕️ Кофейные зерна', type: 'herb', rarity: 'uncommon', description: 'Для бодрящих отваров' }
+            ],
+            berries: [
+                { id: 'elderberry', name: '🫐 Бузина', type: 'berry', rarity: 'common', description: 'Укрепляет иммунитет и бодрит' },
+                { id: 'rosehip', name: '🌰 Шиповник', type: 'berry', rarity: 'common', description: 'Богат витаминами, тонизирует' }
+            ],
+            mushrooms: [
+                { id: 'tea_mushroom', name: '🍄 Чайный гриб', type: 'mushroom', rarity: 'uncommon', description: 'Основа для ферментированных целебных напитков' }
+            ],
+            ores: [
+                { id: 'iron_ore', name: '⛏️ Железная руда', type: 'ore', rarity: 'common', description: 'Базовая руда для изготовления оружия и доспехов' },
+                { id: 'copper_ore', name: '⛏️ Медная руда', type: 'ore', rarity: 'common', description: 'Используется для украшений и инструментов' }
+            ],
+            stones: [
+                { id: 'flint', name: '🪨 Кремень', type: 'stone', rarity: 'common', description: 'Для розжига огня и создания инструментов' },
+                { id: 'quartz', name: '🪨 Кварц', type: 'stone', rarity: 'uncommon', description: 'Полупрозрачный кристалл с магическими свойствами' }
+            ],
+            woods: [
+                { id: 'oak_wood', name: '🪵 Дубовая древесина', type: 'wood', rarity: 'common', description: 'Прочная древесина для строительства и оружия' },
+                { id: 'pine_wood', name: '🪵 Сосновая древесина', type: 'wood', rarity: 'common', description: 'Легкая и ароматная древесина' }
+            ]
+        };
+    }
+
+    determineCellType(cell) {
+        if (cell.type === 'water') {
+            return 'small_stream';
+        }
+        
+        if (cell.type === 'graveyard_cross') {
+            return 'grave';
+        }
+        
+        if (cell.type === 'cave') {
+            return 'shallow_burrow';
+        }
+        
+        if (cell.type === 'tree' || cell.type === 'elegant_tree') {
+            return Math.random() > 0.5 ? 'ancient_tree' : 'berry_clearing';
+        }
+        
+        if (cell.type === 'mountain') {
+            return 'rocky_outcrop';
+        }
+        
+        if (cell.type === 'campfire') {
+            return Math.random() > 0.5 ? 'mushroom_grove' : 'berry_clearing';
+        }
+        
+        if (cell.hasLoot) {
+            return 'grave';
+        }
+        
+        const availableTypes = Object.keys(this.cellTypes);
+        return availableTypes[Math.floor(Math.random() * availableTypes.length)];
+    }
+
+    updateCellActionsUI(cell) {
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (!actionsContainer) return;
+        
+        this.selectedCell = cell;
+        this.currentCellType = this.determineCellType(cell);
+        const cellTypeData = this.cellTypes[this.currentCellType];
+        
+        if (!cellTypeData) {
+            actionsContainer.innerHTML = '<div class="no-actions">Нет доступных действий</div>';
+            return;
+        }
+        
+        let actionsHTML = `
+            <div class="cell-info-header">
+                <div class="cell-icon">${cellTypeData.icon}</div>
+                <h4>${cellTypeData.name}</h4>
+                <p class="cell-description">${cellTypeData.description}</p>
+            </div>
+            <div class="available-actions-list">
+        `;
+        
+        this.currentCellActions = cellTypeData.actions;
+        this.currentCellActions.forEach(action => {
+            actionsHTML += this.getActionButtonHTML(action, cell);
+        });
+        
+        actionsHTML += '</div>';
+        actionsContainer.innerHTML = actionsHTML;
+        
+        this.setupActionEventListeners();
+        
+        this.updateHeroResourcesUI();
+    }
+
+    getActionButtonHTML(action, cell) {
+        const actionConfigs = {
+            'search_treasure': {
+                icon: '💰',
+                name: 'Искать сокровища',
+                description: 'Попытаться найти что-то ценное',
+                class: 'action-treasure'
+            },
+            'refill_flask': {
+                icon: '💧',
+                name: 'Наполнить флягу',
+                description: 'Пополнить запасы воды',
+                class: 'action-flask'
+            },
+            'search_ore': {
+                icon: '⛏️',
+                name: 'Искать руду',
+                description: 'Поиск полезных ископаемых',
+                class: 'action-ore'
+            },
+            'search_stone': {
+                icon: '🪨',
+                name: 'Искать камни',
+                description: 'Собрать строительные материалы',
+                class: 'action-stone'
+            },
+            'search_berries': {
+                icon: '🫐',
+                name: 'Собрать ягоды',
+                description: 'Набрать съедобных ягод',
+                class: 'action-berries'
+            },
+            'search_herbs': {
+                icon: '🌿',
+                name: 'Собрать травы',
+                description: 'Найти лекарственные растения',
+                class: 'action-herbs'
+            },
+            'search_mushrooms': {
+                icon: '🍄',
+                name: 'Собрать грибы',
+                description: 'Найти съедобные грибы',
+                class: 'action-mushrooms'
+            },
+            'search_wood': {
+                icon: '🪵',
+                name: 'Заготовить древесину',
+                description: 'Срубить дерево для получения древесины',
+                class: 'action-wood'
+            }
+        };
+        
+        const config = actionConfigs[action] || {
+            icon: '❓',
+            name: action,
+            description: 'Неизвестное действие',
+            class: 'action-unknown'
+        };
+        
+        const isCellExplored = cell.explored || cell.hasAction === false;
+        const isDisabled = isCellExplored || !this.isCellReachable(cell);
+        
+        return `
+            <button class="cell-action-btn ${config.class} ${isDisabled ? 'disabled' : ''}" 
+                    data-action="${action}"
+                    data-cell-row="${cell.row}"
+                    data-cell-col="${cell.col}"
+                    ${isDisabled ? 'disabled' : ''}>
+                <span class="action-icon">${config.icon}</span>
+                <div class="action-info">
+                    <div class="action-name">${config.name}</div>
+                    <div class="action-description">${config.description}</div>
+                    ${isDisabled ? '<div class="action-unavailable">✗ Недоступно</div>' : ''}
+                </div>
+            </button>
+        `;
+    }
+
+    setupActionEventListeners() {
+        const actionButtons = document.querySelectorAll('.cell-action-btn:not(.disabled)');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const action = e.currentTarget.dataset.action;
+                const row = parseInt(e.currentTarget.dataset.cellRow);
+                const col = parseInt(e.currentTarget.dataset.cellCol);
+                
+                this.performCellAction(action, row, col);
+            });
+        });
+    }
+
+    performCellAction(action, row, col) {
+        if (!this.currentHero) {
+            this.showNotification("❌ Нужен герой для совершения действий!", 'error');
+            return;
+        }
+        
+        const cellKey = `${col},${row}`;
+        const cell = this.currentTacticalMap?.cells[cellKey];
+        
+        if (!cell) {
+            this.showNotification("❌ Клетка не найдена!", 'error');
+            return;
+        }
+        
+        if (cell.explored || cell.hasAction === false) {
+            this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+            return;
+        }
+        
+        if (!this.isCellReachable(cell)) {
+            this.showNotification("❌ Клетка недоступна для исследования!", 'warning');
+            return;
+        }
+        
+        console.log(`🎯 Выполняем действие: ${action} на клетке [${col}, ${row}]`);
+        
+        switch(action) {
+            case 'search_treasure':
+                this.searchTreasure(row, col);
+                break;
+            case 'refill_flask':
+                this.refillFlaskFromStream(row, col);
+                break;
+            case 'search_ore':
+                this.searchForResource('ores', row, col);
+                break;
+            case 'search_stone':
+                this.searchForResource('stones', row, col);
+                break;
+            case 'search_berries':
+                this.searchForResource('berries', row, col);
+                break;
+            case 'search_herbs':
+                this.searchForResource('herbs', row, col);
+                break;
+            case 'search_mushrooms':
+                this.searchForResource('mushrooms', row, col);
+                break;
+            case 'search_wood':
+                this.searchForResource('woods', row, col);
+                break;
+            default:
+                console.warn(`Неизвестное действие: ${action}`);
+                this.showNotification("❌ Неизвестное действие", 'error');
+        }
+    }
+
+    searchTreasure(row, col) {
+        const cellTypeData = this.cellTypes[this.currentCellType];
+        if (!cellTypeData) return;
+        
+        const roll = Math.random() * 100;
+        let cumulative = 0;
+        
+        for (const [result, chance] of Object.entries(cellTypeData.loot_chances)) {
+            cumulative += chance;
+            if (roll <= cumulative) {
+                this.handleTreasureResult(result, row, col);
+                return;
+            }
+        }
+    }
+
+    handleTreasureResult(result, row, col) {
+        switch(result) {
+            case 'items':
+                this.giveRandomItem(row, col);
+                break;
+            case 'gold':
+                const goldAmount = Math.floor(Math.random() * 21) + 5;
+                this.currentHero.gold += goldAmount;
+                this.showNotification(`💰 Найдено ${goldAmount} золотых монет!`, 'success');
+                break;
+            case 'nothing':
+                this.showNotification("❌ Ничего не найдено...", 'warning');
+                break;
+        }
+        
+        this.markCellAsExplored(row, col);
+    }
+
+    giveRandomItem(row, col) {
+        const itemSystem = window.game?.systems?.equipment;
+        if (!itemSystem) {
+            this.showNotification("❌ Система предметов недоступна", 'error');
+            return;
+        }
+        
+        const possibleItems = [
+            'health_potion', 'mana_potion', 'rusty_sword', 'leather_armor',
+            'iron_sword', 'steel_helmet', 'silver_ring', 'bronze_amulet',
+            'torch', 'bread', 'antidote', 'bandage'
+        ];
+        
+        const randomItemId = possibleItems[Math.floor(Math.random() * possibleItems.length)];
+        const itemAdded = itemSystem.addItemToHero(this.currentHero, randomItemId);
+        
+        if (itemAdded) {
+            const item = itemSystem.getItemById(randomItemId);
+            this.showNotification(`🎁 Найден предмет: ${item?.name || randomItemId}!`, 'success');
+        } else {
+            this.showNotification("📦 Инвентарь полен! Предмет потерян.", 'warning');
+        }
+    }
+
+    refillFlaskFromStream(row, col) {
+        const cellTypeData = this.cellTypes[this.currentCellType];
+        if (!cellTypeData || !cellTypeData.flask_refill) return;
+        
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem || !battleSystem.flask) {
+            this.showNotification("❌ Система фляги недоступна", 'error');
+            return;
+        }
+        
+        const refillConfig = cellTypeData.flask_refill;
+        if (Math.random() * 100 > refillConfig.chance) {
+            this.showNotification("💧 Источник пересох или загрязнен", 'warning');
+            this.markCellAsExplored(row, col);
+            return;
+        }
+        
+        const refillAmount = Math.floor(
+            Math.random() * (refillConfig.max - refillConfig.min + 1)
+        ) + refillConfig.min;
+        
+        const oldCharges = battleSystem.flask.currentCharges;
+        battleSystem.flask.currentCharges = Math.min(
+            battleSystem.flask.capacity,
+            oldCharges + refillAmount
+        );
+        
+        battleSystem.flask.content = 'water';
+        
+        if (battleSystem.updateFlaskUI) battleSystem.updateFlaskUI();
+        if (battleSystem.updateFlaskChargesDisplay) battleSystem.updateFlaskChargesDisplay();
+        
+        this.showNotification(
+            `💧 Фляга пополнена на ${refillAmount} зарядов! (${oldCharges}→${battleSystem.flask.currentCharges})`,
+            'success'
+        );
+        
+        this.markCellAsExplored(row, col);
+    }
+
+    searchForResource(resourceType, row, col) {
+        const cellTypeData = this.cellTypes[this.currentCellType];
+        if (!cellTypeData || !cellTypeData.resource_chances) return;
+        
+        const roll = Math.random() * 100;
+        let cumulative = 0;
+        
+        for (const [result, chance] of Object.entries(cellTypeData.resource_chances)) {
+            cumulative += chance;
+            if (roll <= cumulative) {
+                if (result === 'nothing') {
+                    this.showNotification("❌ Ничего не найдено...", 'warning');
+                    this.markCellAsExplored(row, col);
+                } else if (result === resourceType || result.includes(resourceType)) {
+                    this.giveResource(resourceType, row, col);
+                } else {
+                    this.showNotification(`Найдено что-то другое... (${result})`, 'info');
+                    this.markCellAsExplored(row, col);
+                }
+                return;
+            }
+        }
+    }
+
+    giveResource(resourceType, row, col) {
+        const resources = this.resources[resourceType];
+        if (!resources || resources.length === 0) {
+            this.showNotification("❌ Ресурсы этого типа не найдены", 'error');
+            this.markCellAsExplored(row, col);
+            return;
+        }
+        
+        const randomResource = resources[Math.floor(Math.random() * resources.length)];
+        const quantity = this.getResourceQuantity(randomResource.rarity);
+        
+        this.addResourceToHero(randomResource.id, randomResource.name, quantity);
+        
+        this.showNotification(
+            `✅ Найдено: ${randomResource.name} x${quantity}`,
+            'success'
+        );
+        
+        this.markCellAsExplored(row, col);
+    }
+
+    getResourceQuantity(rarity) {
+        const quantities = {
+            'common': { min: 1, max: 3 },
+            'uncommon': { min: 1, max: 2 },
+            'rare': { min: 1, max: 1 },
+            'epic': { min: 1, max: 1 }
+        };
+        
+        const range = quantities[rarity] || quantities.common;
+        return Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+    }
+
+    addResourceToHero(resourceId, resourceName, quantity) {
+        if (!this.currentHero.resources) {
+            this.currentHero.resources = {};
+        }
+        
+        if (!this.currentHero.resources[resourceId]) {
+            this.currentHero.resources[resourceId] = {
+                id: resourceId,
+                name: resourceName,
+                count: 0,
+                type: this.getResourceType(resourceId)
+            };
+        }
+        
+        this.currentHero.resources[resourceId].count += quantity;
+        
+        console.log(`📦 Добавлен ресурс ${resourceId}: ${quantity} шт. Всего: ${this.currentHero.resources[resourceId].count}`);
+        
+        this.updateHeroResourcesUI();
+        
+        if (window.game) {
+            window.game.saveGame();
+        }
+    }
+
+    getResourceType(resourceId) {
+        for (const [type, resources] of Object.entries(this.resources)) {
+            if (resources.some(r => r.id === resourceId)) {
+                return type;
+            }
+        }
+        return 'unknown';
+    }
+
+    updateHeroResourcesUI() {
+        const resourcesList = document.getElementById('heroResourcesList');
+        if (!resourcesList || !this.currentHero) return;
+        
+        if (!this.currentHero.resources || Object.keys(this.currentHero.resources).length === 0) {
+            resourcesList.innerHTML = '<div class="no-resources">Ресурсов пока нет</div>';
+            return;
+        }
+        
+        let resourcesHTML = '';
+        Object.values(this.currentHero.resources).forEach(resource => {
+            const resourceData = this.getResourceDataById(resource.id);
+            const icon = this.getResourceIcon(resource.type);
+            
+            resourcesHTML += `
+                <div class="resource-item">
+                    <span class="resource-icon">${icon}</span>
+                    <span class="resource-name">${resource.name}</span>
+                    <span class="resource-count">x${resource.count}</span>
+                </div>
+            `;
+        });
+        
+        resourcesList.innerHTML = resourcesHTML;
+    }
+
+    getResourceDataById(resourceId) {
+        for (const category of Object.values(this.resources)) {
+            const resource = category.find(r => r.id === resourceId);
+            if (resource) return resource;
+        }
+        return { name: resourceId, type: 'unknown' };
+    }
+
+    getResourceIcon(resourceType) {
+        const icons = {
+            'herbs': '🌿',
+            'berries': '🫐',
+            'mushrooms': '🍄',
+            'ores': '⛏️',
+            'stones': '🪨',
+            'woods': '🪵',
+            'unknown': '❓'
+        };
+        return icons[resourceType] || icons.unknown;
+    }
+
+    markCellAsExplored(row, col) {
+        const cellKey = `${col},${row}`;
+        if (this.currentTacticalMap && this.currentTacticalMap.cells[cellKey]) {
+            this.currentTacticalMap.cells[cellKey].explored = true;
+            this.currentTacticalMap.cells[cellKey].hasAction = false;
+            this.currentTacticalMap.cells[cellKey].isSelected = false;
+            
+            this.drawTacticalMap();
+            this.clearCellActionsUI();
+            
+            setTimeout(() => {
+                if (this.selectedCell && this.selectedCell.row === row && this.selectedCell.col === col) {
+                    this.selectedCell = null;
+                }
+            }, 100);
+        }
+    }
+
+    clearCellActionsUI() {
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (actionsContainer) {
+            actionsContainer.innerHTML = '<div class="actions-placeholder">Выберите клетку для просмотра доступных действий</div>';
+        }
+    }
+
+    isCellReachable(cell) {
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        return neighbors.some(neighbor => 
+            neighbor.row === cell.row && neighbor.col === cell.col
+        );
+    }
+
+    highlightSelectedCell(cell) {
+        if (!this.currentTacticalMap) return;
+        
+        Object.values(this.currentTacticalMap.cells).forEach(c => {
+            c.isSelected = false;
+        });
+        
+        cell.isSelected = true;
+        this.drawTacticalMap();
+    }
+
     // ========== ОСНОВНЫЕ МЕТОДЫ КАРТ ==========
 
     getLootItemById(itemId) {
@@ -440,7 +977,6 @@ handleCanvasClick(e) {
             }
 
             if (window.game.systems.shop) {
-                // Синхронизируем героя с системой магазинов
                 window.game.systems.shop.currentHero = this.currentHero;
             }
         }
@@ -471,6 +1007,7 @@ handleCanvasClick(e) {
             console.log("📥 Загружаем данные карт...");
             
             await this.loadJSONMaps();
+            await this.loadCellData();
             
             this.debugLoadedMaps();
             
@@ -638,12 +1175,14 @@ handleCanvasClick(e) {
                 returnY: cell.returnY,
                 tooltip: cell.tooltip,
                 hasLoot: cell.hasLoot || false,
-                // Новые поля для магазинов
                 shopName: cell.shopName,
                 merchantName: cell.merchantName,
                 shopItems: cell.shopItems || [],
                 shopId: cell.shopId,
                 restockTimer: cell.restockTimer,
+                explored: false,
+                hasAction: true,
+                isSelected: false,
                 originalData: cell
             };
         });
@@ -879,7 +1418,9 @@ handleCanvasClick(e) {
                     col: 3, 
                     visible: true, 
                     x: 300, 
-                    y: 300
+                    y: 300,
+                    explored: false,
+                    hasAction: true
                 },
                 "3,2": {
                     type: "exit", 
@@ -889,7 +1430,9 @@ handleCanvasClick(e) {
                     visible: true, 
                     x: 300, 
                     y: 250,
-                    tooltip: "🚪 Выход из таверны\n(Вернуться на улицу)"
+                    tooltip: "🚪 Выход из таверны\n(Вернуться на улицу)",
+                    explored: false,
+                    hasAction: true
                 },
                 "2,3": {
                     type: "npc", 
@@ -899,7 +1442,9 @@ handleCanvasClick(e) {
                     visible: true, 
                     x: 250, 
                     y: 300,
-                    tooltip: "🧙 Хозяин таверны\n(Может рассказать новости)"
+                    tooltip: "🧙 Хозяин таверны\n(Может рассказать новости)",
+                    explored: false,
+                    hasAction: true
                 },
                 "4,3": {
                     type: "merchant", 
@@ -911,8 +1456,10 @@ handleCanvasClick(e) {
                     y: 300,
                     shopName: "Таверный магазин",
                     merchantName: "Бармен Грог",
-                    shopItems: [1, 2, 3], // Тестовые ID предметов
-                    tooltip: "🛒 Бармен\n(Купить выпивку и еду)"
+                    shopItems: [1, 2, 3],
+                    tooltip: "🛒 Бармен\n(Купить выпивку и еду)",
+                    explored: false,
+                    hasAction: true
                 },
                 "3,4": {
                     type: "campfire", 
@@ -922,7 +1469,9 @@ handleCanvasClick(e) {
                     visible: true, 
                     x: 300, 
                     y: 350,
-                    tooltip: "🔥 Камин\n(Тепло и уют)"
+                    tooltip: "🔥 Камин\n(Тепло и уют)",
+                    explored: false,
+                    hasAction: true
                 }
             },
             cellSize: 40,
@@ -954,7 +1503,9 @@ handleCanvasClick(e) {
                     col: 4, 
                     visible: true, 
                     x: 200, 
-                    y: 200
+                    y: 200,
+                    explored: false,
+                    hasAction: true
                 },
                 "4,3": {
                     type: "exit", 
@@ -963,7 +1514,9 @@ handleCanvasClick(e) {
                     col: 4, 
                     visible: true, 
                     x: 200, 
-                    y: 150
+                    y: 150,
+                    explored: false,
+                    hasAction: true
                 }
             },
             cellSize: 40,
@@ -981,49 +1534,66 @@ handleCanvasClick(e) {
 
         const canvasRect = this.canvas.getBoundingClientRect();
         
-        // Получаем масштаб из CSS
         const computedStyle = getComputedStyle(this.canvas);
         const transform = computedStyle.transform;
         let scale = 1;
         
         if (transform && transform !== 'none') {
             const matrix = new DOMMatrix(transform);
-            scale = matrix.a; // Масштаб по X (должен быть одинаковый по X и Y)
+            scale = matrix.a;
         }
         
-        // Рассчитываем координаты относительно оригинального canvas (1024x1024)
         const logicalX = (e.clientX - canvasRect.left) / scale;
         const logicalY = (e.clientY - canvasRect.top) / scale;
         
         console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
         
-        // Ищем клетку по логическим координатам
         const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
         if (!hex) return;
         
         console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
         
-        // Обработка магазина
+        if (hex.type === 'village' && hex.tacticalMap) {
+            console.log("🍻 Клик по таверне - обработка посещения");
+            this.handleTavernVisit(hex);
+            return;
+        }
+        
+        if (hex.type === 'water') {
+            console.log("💧 Клик по воде");
+            if (!this.isPlayerAdjacentToWater(hex)) {
+                this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+                return;
+            }
+            this.handleWaterCell(hex);
+            return;
+        }
+        
         if (hex.type === 'merchant') {
+            console.log("🛒 Клик по магазину");
             this.handleMerchantClick(hex);
             return;
         }
         
         if (this.isTransitionCell(hex)) {
+            console.log("🚪 Клик по переходу");
             this.handleTransitionClick(hex);
             return;
         }
         
         if (hex.passable !== false || hex.type === 'monster') {
+            console.log("🎯 Клик для перемещения");
             this.moveOnTacticalMap(hex.col, hex.row);
         }
+        
+        this.updateCellActionsUI(hex);
+        this.highlightSelectedCell(hex);
     }
 
     getHexAtLogicalPosition(x, y) {
         let closestHex = null;
         let minDistance = Infinity;
 
-        // Ищем по оригинальным координатам из редактора
         for (const cell of Object.values(this.currentTacticalMap.cells)) {
             const cellX = cell.x || cell.originalX || 0;
             const cellY = cell.y || cell.originalY || 0;
@@ -1033,7 +1603,6 @@ handleCanvasClick(e) {
                 Math.pow(y - cellY, 2)
             );
             
-            // Радиус клетки в логических координатах
             if (distance <= 40 && distance < minDistance) {
                 minDistance = distance;
                 closestHex = cell;
@@ -1066,36 +1635,6 @@ handleCanvasClick(e) {
             neighbor.row === transitionCell.row && 
             neighbor.col === transitionCell.col
         );
-    }
-
-    showTransitionWarning(transitionCell) {
-        const transitionName = this.getTransitionName(transitionCell);
-        const message = `Чтобы войти в ${transitionName}, нужно подойти к входу вплотную!`;
-        
-        console.log(`🚫 ${message}`);
-        
-        if (window.game) {
-            window.game.showNotification(message, 'warning');
-        }
-        
-        this.highlightTransition(transitionCell);
-    }
-
-    getTransitionName(transitionCell) {
-        if (transitionCell.tacticalMap) {
-            return this.getLocationNameFromPath(transitionCell.tacticalMap) || "помещение";
-        }
-        if (transitionCell.localMap) {
-            return this.getLocationNameFromPath(transitionCell.localMap) || "локацию";
-        }
-        if (transitionCell.globalMap) {
-            return this.getLocationNameFromPath(transitionCell.globalMap) || "регион";
-        }
-        if (transitionCell.type === 'exit') {
-            return "выход";
-        }
-        
-        return "переход";
     }
 
     getLocationNameFromPath(filePath) {
@@ -1507,42 +2046,41 @@ handleCanvasClick(e) {
         this.updateMovementInfo();
     }
 
- startTacticalBattleForMovement(x, y, cellData) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) {
-        console.error("❌ BattleSystem не доступна");
-        return;
-    }
-
-    if (!this.currentHero) {
-        console.error("❌ Не могу начать бой: герой не выбран");
-        return;
-    }
-
-    this.pendingMovement = { x: x, y: y };
-    
-    const specificMonster = this.getMonsterFromCell(cellData);
-    
-    // ⭐ ВАЖНО: НЕ закрываем карту перед боем!
-    console.log("🎲 Начинаем бой поверх тактической карты...");
-    
-    if (specificMonster && cellData.monster_id) {
-        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
-        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-    } else {
-        const randomMonster = this.getRandomMonster();
-        if (!randomMonster) {
-            console.error("❌ Не удалось начать бой: нет случайных монстров");
-            if (window.game) {
-                window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
-            }
+    startTacticalBattleForMovement(x, y, cellData) {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) {
+            console.error("❌ BattleSystem не доступна");
             return;
         }
+
+        if (!this.currentHero) {
+            console.error("❌ Не могу начать бой: герой не выбран");
+            return;
+        }
+
+        this.pendingMovement = { x: x, y: y };
         
-        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
-        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
+        const specificMonster = this.getMonsterFromCell(cellData);
+        
+        console.log("🎲 Начинаем бой поверх тактической карты...");
+        
+        if (specificMonster && cellData.monster_id) {
+            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
+            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
+        } else {
+            const randomMonster = this.getRandomMonster();
+            if (!randomMonster) {
+                console.error("❌ Не удалось начать бой: нет случайных монстров");
+                if (window.game) {
+                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
+                }
+                return;
+            }
+            
+            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
+        }
     }
-}
 
     getRandomMonster() {
         const battleSystem = window.game?.systems?.battle;
@@ -1561,62 +2099,55 @@ handleCanvasClick(e) {
         return randomMonster;
     }
 
-completeMovementAfterBattle(victory, escape = false) {
-    if (!this.pendingMovement) return;
+    completeMovementAfterBattle(victory, escape = false) {
+        if (!this.pendingMovement) return;
 
-    console.log(`🎲 Завершение движения после боя: победа=${victory}, побег=${escape}`);
+        console.log(`🎲 Завершение движения после боя: победа=${victory}, побег=${escape}`);
 
-    if (victory) {
-        // Победа - перемещаем на целевую клетку
-        const targetX = this.pendingMovement.x;
-        const targetY = this.pendingMovement.y;
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x: targetX, y: targetY};
-        
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
-        
-        if (window.game) {
-            window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
-        }
-    } else {
-        if (escape) {
-            // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: При побеге остаемся на текущей клетке
-            console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
-            // Не меняем позицию героя
+        if (victory) {
+            const targetX = this.pendingMovement.x;
+            const targetY = this.pendingMovement.y;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
             
             if (window.game) {
-                window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
             }
         } else {
-            // Смерть в бою - возвращаем на стартовую точку
-            const startPosition = this.currentTacticalMap.startPosition;
-            const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {...startPosition};
-            
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
-            
-            if (window.game) {
-                window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+            if (escape) {
+                console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                }
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                const oldPosition = {...this.playerTacticalPosition};
+                this.playerTacticalPosition = {...startPosition};
+                
+                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                }
             }
         }
+        
+        this.pendingMovement = null;
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
+        }
+        
+        if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+            window.game.systems.hero.currentHero = this.currentHero;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
     }
-    
-    // Сбрасываем ожидаемое перемещение
-    this.pendingMovement = null;
-    
-    // Обновляем карту если она активна
-    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-        this.calculateCSSScale();
-        this.drawTacticalMap();
-        this.updateMovementInfo();
-    }
-    
-    // Синхронизируем состояние героя
-    if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
-        window.game.systems.hero.currentHero = this.currentHero;
-        window.game.systems.hero.calculateHeroStats(this.currentHero);
-    }
-}
     
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
@@ -1641,7 +2172,7 @@ completeMovementAfterBattle(victory, escape = false) {
                 }
             }, 10);
         } else {
-            console.warn("⚠️ HeroSystem не доступен для обновления интерфейса");
+            console.warn("⚠️ HeroSystem не доступен для обновления интерфейс");
         }
     }
 
@@ -1679,7 +2210,6 @@ completeMovementAfterBattle(victory, escape = false) {
         this.canvas = document.createElement('canvas');
         this.canvas.id = 'tacticalMapCanvas';
         
-        // Фиксированный логический размер
         this.canvas.width = 1024;
         this.canvas.height = 1024;
         
@@ -1710,16 +2240,13 @@ completeMovementAfterBattle(victory, escape = false) {
 
         const rect = container.getBoundingClientRect();
         
-        // Рассчитываем масштаб для 1024px карты
         const scaleX = rect.width / 1024;
         const scaleY = rect.height / 1024;
         
-        // Берем меньший масштаб чтобы влезло полностью
-        const scale = Math.min(scaleX, scaleY) * 0.85; // 85% от доступного
+        const scale = Math.min(scaleX, scaleY) * 0.85;
         
         console.log(`📏 CSS Scale: ${scale.toFixed(3)} (container: ${rect.width}x${rect.height})`);
         
-        // Применяем масштаб через transform
         this.canvas.style.transform = `scale(${scale})`;
         this.canvas.style.transformOrigin = 'center center';
         
@@ -1742,7 +2269,6 @@ completeMovementAfterBattle(victory, escape = false) {
         });
     }
 
-    // Функции масштабирования
     zoomIn() {
         if (this.zoomLevel < this.maxZoom) {
             this.zoomLevel += this.zoomStep;
@@ -1848,7 +2374,6 @@ completeMovementAfterBattle(victory, escape = false) {
         
         console.log("🔄 Адаптация к изменению размеров окна");
         
-        // Используем debounce чтобы избежать множественных вызовов
         if (this.resizeTimeout) {
             clearTimeout(this.resizeTimeout);
         }
@@ -1961,7 +2486,29 @@ completeMovementAfterBattle(victory, escape = false) {
             }
             this.ctx.fill();
         }
-
+        
+        if (cell.isSelected) {
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i + Math.PI / 6;
+                const x = centerX + hexSize * Math.cos(angle);
+                const y = centerY + hexSize * Math.sin(angle);
+                
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+            
+            this.ctx.strokeStyle = '#00ffff';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+            
+            this.ctx.shadowColor = '#00ffff';
+            this.ctx.shadowBlur = 15;
+            this.ctx.stroke();
+            this.ctx.shadowBlur = 0;
+        }
+        
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
@@ -2053,6 +2600,13 @@ completeMovementAfterBattle(victory, escape = false) {
         this.ctx.font = `bold ${fontSize}px Arial`;
         this.ctx.fillStyle = color;
         this.ctx.fillText(symbol, centerX, centerY);
+        
+        if (cell.explored) {
+            this.ctx.font = 'bold 14px Arial';
+            this.ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+            this.ctx.fillText('✓', centerX + hexSize * 0.6, centerY - hexSize * 0.6);
+        }
+        
         this.ctx.restore();
     }
 
@@ -2071,7 +2625,6 @@ completeMovementAfterBattle(victory, escape = false) {
 
         const canvasRect = this.canvas.getBoundingClientRect();
         
-        // Получаем масштаб из CSS
         const computedStyle = getComputedStyle(this.canvas);
         const transform = computedStyle.transform;
         let scale = 1;
@@ -2143,98 +2696,110 @@ completeMovementAfterBattle(victory, escape = false) {
         this.drawTacticalMap();
     }
     
- getTooltipTextForHex(hex) {
-    if (!hex.visible) return null;
+    getTooltipTextForHex(hex) {
+        if (!hex.visible) return null;
 
-    if (hex.tooltip) {
-        return hex.tooltip;
-    }
+        if (hex.tooltip) {
+            return hex.tooltip;
+        }
 
-    // Обработка ТАВЕРНЫ
-    if (hex.type === 'village' && hex.tacticalMap) {
-        return `🍻 Таверна "${hex.tooltip || 'Уютное заведение'}"\n(Кликните для отдыха и пополнения фляги)`;
-    }
+        if (hex.type === 'village' && hex.tacticalMap) {
+            return `🍻 Таверна "${hex.tooltip || 'Уютное заведение'}"\n(Кликните для отдыха и пополнения фляги)`;
+        }
 
-    // Обработка воды
-    if (hex.type === 'water') {
-        const isAccessible = this.isPlayerAdjacentToWater(hex);
-        const accessibilityInfo = isAccessible ? "\n✅ Кликните для использования" : "\n❌ Подойдите ближе";
-        return `💧 Источник воды\n(Восстановление здоровья и пополнение фляги)${accessibilityInfo}`;
-    }
+        if (hex.type === 'water') {
+            const isAccessible = this.isPlayerAdjacentToWater(hex);
+            const accessibilityInfo = isAccessible ? "\n✅ Кликните для использования" : "\n❌ Подойдите ближе";
+            return `💧 Источник воды\n(Восстановление здоровья и пополнение фляги)${accessibilityInfo}`;
+        }
 
-    // Обновленная подсказка для магазинов
-    if (hex.type === 'merchant') {
-        const itemCount = hex.shopItems ? hex.shopItems.length : 0;
-        const shopName = hex.shopName || "Магазин";
-        const merchantName = hex.merchantName || "Торговец";
-        return `🛒 ${shopName}\nТорговец: ${merchantName}\nТоваров: ${itemCount}\n(Кликните для торговли)`;
-    }
+        if (hex.type === 'merchant') {
+            const itemCount = hex.shopItems ? hex.shopItems.length : 0;
+            const shopName = hex.shopName || "Магазин";
+            const merchantName = hex.merchantName || "Торговец";
+            return `🛒 ${shopName}\nТорговец: ${merchantName}\nТоваров: ${itemCount}\n(Кликните для торговли)`;
+        }
 
-    if (this.isTransitionCell(hex)) {
-        const isAccessible = this.isPlayerAdjacentToTransition(hex);
-        const accessibilityInfo = isAccessible ? "\n✅ Доступно для входа" : "\n❌ Подойдите ближе";
+        if (this.isTransitionCell(hex)) {
+            const isAccessible = this.isPlayerAdjacentToTransition(hex);
+            const accessibilityInfo = isAccessible ? "\n✅ Доступно для входа" : "\n❌ Подойдите ближе";
+            
+            if (hex.tacticalMap) {
+                const locationName = this.getLocationNameFromPath(hex.tacticalMap);
+                return `🚪 Вход в ${locationName}\n(Кликните для входа)${accessibilityInfo}`;
+            }
+            if (hex.localMap) {
+                const locationName = this.getLocationNameFromPath(hex.localMap);
+                return `🌍 Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
+            }
+            if (hex.globalMap) {
+                const locationName = this.getLocationNameFromPath(hex.globalMap);
+                return `🗺️ Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
+            }
+            if (hex.type === 'exit') {
+                return `🚪 Выход\n(Кликните для возврата)${accessibilityInfo}`;
+            }
+        }
+
+        if (hex.hasLoot) {
+            const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+            const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
+            return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}\n(Кликните для исследования)`;
+        }
+
+        if (hex.explored) {
+            return `✓ Исследованная клетка\n(Действия уже выполнены)`;
+        }
+
+        const defaultTooltips = {
+            'player_start': '⭐ Стартовая позиция',
+            'monster': '👹 Враждебная территория\n(Возможен бой)',
+            'chest': '📦 Тайный сундук\n(Может содержать сокровища)',
+            'npc': '🧙 Таинственный незнакомец\n(Возможно, даст задание)',
+            'exit': '🚪 Выход с карты\n(Вернуться на предыдущую карту)',
+            'obstacle': '🪨 Препятствие\n(Непроходимо)',
+            'active': '🟢 Проходимая местность',
+            'inactive': '🔴 Непроходимая местность',
+            'tree': '🌲 Дерево\n(Непроходимо)',
+            'elegant_tree': '🎄 Изящное дерево\n(Непроходимо)',
+            'cave': '🕳️ Пещера\n(Возможен вход)',
+            'lava_crack': '🌋 Лавовый разлом\n(Опасно)',
+            'graveyard_cross': '⚰️ Кладбищенский крест\n(Место силы)',
+            'bandit_camp': '⚔️ Лагерь разбойников\n(Опасно)',
+            'orc_camp': '👹 Лагерь орков\n(Очень опасно)',
+            'black_monolith': '⬛ Черный монолит\n(Загадочный артефакт)',
+            'weapon': '⚔️ Оружие\n(Можно найти)',
+            'armor': '🛡️ Доспех\n(Можно найти)',
+            'village': '🏘️ Деревня\n(Мирное поселение)',
+            'castle': '🏰 Замок\n(Резиденция правителя)',
+            'water': '💧 Водная поверхность\n(Непроходимо, но можно пополнить флягу)',
+            'campfire': '🔥 Костер\n(Можно отдохнуть)',
+            'cart': '🛒 Телега\n(Возможна торговля)',
+            'traveler': '🚶 Путник\n(Может дать информацию)',
+            'portal': '🌀 Магический портал\n(Телепортация)',
+            'ancient_rune': '🔰 Древняя руна\n(Магический символ)',
+            'magic_crystal': '💎 Магический кристалл\n(Источник магии)',
+            'tavern': '🍻 Таверна\n(Место отдыха и слухов)',
+            'shop': '🏪 Магазин\n(Торговля предметами)',
+            'dungeon': '🏰 Подземелье\n(Опасно место)',
+            'temple': '⛪ Храм\n(Священное место)',
+            'bridge': '🌉 Мост\n(Переправа через препятствие)',
+            'mountain': '⛰️ Гора\n(Непроходимо)'
+        };
+
+        const baseTooltip = defaultTooltips[hex.type] || null;
         
-        if (hex.tacticalMap) {
-            const locationName = this.getLocationNameFromPath(hex.tacticalMap);
-            return `🚪 Вход в ${locationName}\n(Кликните для входа)${accessibilityInfo}`;
+        if (baseTooltip) {
+            const cellType = this.determineCellType(hex);
+            const cellTypeData = this.cellTypes[cellType];
+            
+            if (cellTypeData && !hex.explored) {
+                return `${baseTooltip}\n\n🔍 ${cellTypeData.name}\n${cellTypeData.description}\n\n⚡ Доступны действия (кликните для просмотра)`;
+            }
         }
-        if (hex.localMap) {
-            const locationName = this.getLocationNameFromPath(hex.localMap);
-            return `🌍 Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
-        }
-        if (hex.globalMap) {
-            const locationName = this.getLocationNameFromPath(hex.globalMap);
-            return `🗺️ Переход в ${locationName}\n(Кликните для перехода)${accessibilityInfo}`;
-        }
-        if (hex.type === 'exit') {
-            return `🚪 Выход\n(Кликните для возврата)${accessibilityInfo}`;
-        }
+        
+        return baseTooltip;
     }
-
-    if (hex.hasLoot) {
-        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
-        const levelNames = ['Обычный', 'Хороший', 'Редкий', 'Эпический', 'Легендарный'];
-        return `💎 Возможная награда\nУровень: ${levelNames[lootLevel - 1] || 'Обычный'}\n(Кликните для исследования)`;
-    }
-
-    const defaultTooltips = {
-        'player_start': '⭐ Стартовая позиция',
-        'monster': '👹 Враждебная территория\n(Возможен бой)',
-        'chest': '📦 Тайный сундук\n(Может содержать сокровища)',
-        'npc': '🧙 Таинственный незнакомец\n(Возможно, даст задание)',
-        'exit': '🚪 Выход с карты\n(Вернуться на предыдущую карту)',
-        'obstacle': '🪨 Препятствие\n(Непроходимо)',
-        'active': '🟢 Проходимая местность',
-        'inactive': '🔴 Непроходимая местность',
-        'tree': '🌲 Дерево\n(Непроходимо)',
-        'elegant_tree': '🎄 Изящное дерево\n(Непроходимо)',
-        'cave': '🕳️ Пещера\n(Возможен вход)',
-        'lava_crack': '🌋 Лавовый разлом\n(Опасно)',
-        'graveyard_cross': '⚰️ Кладбищенский крест\n(Место силы)',
-        'bandit_camp': '⚔️ Лагерь разбойников\n(Опасно)',
-        'orc_camp': '👹 Лагерь орков\n(Очень опасно)',
-        'black_monolith': '⬛ Черный монолит\n(Загадочный артефакт)',
-        'weapon': '⚔️ Оружие\n(Можно найти)',
-        'armor': '🛡️ Доспех\n(Можно найти)',
-        'village': '🏘️ Деревня\n(Мирное поселение)',
-        'castle': '🏰 Замок\n(Резиденция правителя)',
-        'water': '💧 Водная поверхность\n(Непроходимо, но можно пополнить флягу)',
-        'campfire': '🔥 Костер\n(Можно отдохнуть)',
-        'cart': '🛒 Телега\n(Возможна торговля)',
-        'traveler': '🚶 Путник\n(Может дать информацию)',
-        'portal': '🌀 Магический портал\n(Телепортация)',
-        'ancient_rune': '🔰 Древняя руна\n(Магический символ)',
-        'magic_crystal': '💎 Магический кристалл\n(Источник магии)',
-        'tavern': '🍻 Таверна\n(Место отдыха и слухов)',
-        'shop': '🏪 Магазин\n(Торговля предметами)',
-        'dungeon': '🏰 Подземелье\n(Опасно место)',
-        'temple': '⛪ Храм\n(Священное место)',
-        'bridge': '🌉 Мост\n(Переправа через препятствие)',
-        'mountain': '⛰️ Гора\n(Непроходимо)'
-    };
-
-    return defaultTooltips[hex.type] || null;
-}
 
     createTooltipElement() {
         this.tooltipElement = document.createElement('div');
@@ -2515,11 +3080,11 @@ completeMovementAfterBattle(victory, escape = false) {
             localPosition: {x: 4, y: 4},
             description: "Извилистая тропа через древний лес",
             cells: {
-                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300},
-                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250},
-                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300},
-                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300},
-                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350}
+                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300, explored: false, hasAction: true},
+                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250, explored: false, hasAction: true},
+                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300, explored: false, hasAction: true},
+                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300, explored: false, hasAction: true},
+                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350, explored: false, hasAction: true}
             }
         }];
     }
@@ -2554,7 +3119,7 @@ completeMovementAfterBattle(victory, escape = false) {
             startPosition: {x: 1, y: 1},
             localPosition: {x: 2, y: 2},
             cells: {
-                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100}
+                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100, explored: false, hasAction: true}
             }
         }];
     }
@@ -2653,21 +3218,44 @@ completeMovementAfterBattle(victory, escape = false) {
                     </div>
                 </div>
                 
-                <div class="tactical-map-content">
-                    <div class="tactical-map-visual">
-                        <!-- Canvas будет добавлен автоматически -->
+                <div class="tactical-map-content-with-actions">
+                    <div class="map-main-area">
+                        <div class="tactical-map-visual">
+                            <!-- Canvas будет добавлен автоматически -->
+                        </div>
                     </div>
                     
-                    <div class="tactical-map-info">
-                        <div class="map-description">
-                            ${targetMap.description || 'Описание отсутствует'}
+                    <div class="cell-actions-panel">
+                        <h4 class="actions-panel-title">⚡ Действия на клетке</h4>
+                        <div class="cell-actions-container" id="cellActionsContainer">
+                            <div class="actions-placeholder">
+                                Выберите клетку для просмотра доступных действий
+                            </div>
                         </div>
-                        <div class="map-stats">
-                            <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
-                            <span>Размер: ${targetMap.width}x${targetMap.height}</span>
-                            <span>Масштаб: <span id="currentZoom">${Math.round(this.zoomLevel * 100)}%</span></span>
-                            <span id="availableMoves">Доступных ходов: 0</span>
+                        
+                        <div class="cell-info-footer">
+                            <div class="action-hint">
+                                ℹ️ Каждая клетка позволяет совершить одно действие
+                            </div>
+                            <div class="resource-info">
+                                <h5>📦 Ресурсы героя:</h5>
+                                <div class="resource-list" id="heroResourcesList">
+                                    <!-- Ресурсы будут загружены динамически -->
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
+                
+                <div class="tactical-map-info">
+                    <div class="map-description">
+                        ${targetMap.description || 'Описание отсутствует'}
+                    </div>
+                    <div class="map-stats">
+                        <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
+                        <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                        <span>Масштаб: <span id="currentZoom">${Math.round(this.zoomLevel * 100)}%</span></span>
+                        <span id="availableMoves">Доступных ходов: 0</span>
                     </div>
                 </div>
             </div>
@@ -2686,6 +3274,7 @@ completeMovementAfterBattle(victory, escape = false) {
             try {
                 this.initCanvas();
                 this.updateMovementInfo();
+                this.updateHeroResourcesUI();
                 
                 console.log("✅ Canvas успешно инициализирован", {
                     map: this.currentTacticalMap.name,
@@ -2929,7 +3518,9 @@ completeMovementAfterBattle(victory, escape = false) {
                     col: 4, 
                     visible: true, 
                     x: 200, 
-                    y: 200
+                    y: 200,
+                    explored: false,
+                    hasAction: true
                 },
                 "4,3": {
                     type: "exit", 
@@ -2938,7 +3529,9 @@ completeMovementAfterBattle(victory, escape = false) {
                     col: 4, 
                     visible: true, 
                     x: 200, 
-                    y: 150
+                    y: 150,
+                    explored: false,
+                    hasAction: true
                 },
                 "3,4": {
                     type: "monster", 
@@ -2947,7 +3540,9 @@ completeMovementAfterBattle(victory, escape = false) {
                     col: 3, 
                     visible: true, 
                     x: 150, 
-                    y: 200
+                    y: 200,
+                    explored: false,
+                    hasAction: true
                 }
             },
             cellSize: 40,
@@ -3075,7 +3670,6 @@ completeMovementAfterBattle(victory, escape = false) {
         console.groupEnd();
     }
 
-    // Новый метод для полноэкранного режима
     toggleFullscreen() {
         const canvas = this.canvas;
         if (!canvas) return;
@@ -3098,7 +3692,15 @@ completeMovementAfterBattle(victory, escape = false) {
             }
         }
     }
+
+    showNotification(message, type = 'info') {
+        if (window.game && window.game.showNotification) {
+            window.game.showNotification(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+    }
 }
 
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен с интеграцией магазинов");
+console.log("📦 MapSystem модуль загружен с интеграцией магазинов и системой действий на клетках");
