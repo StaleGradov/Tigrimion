@@ -1964,14 +1964,19 @@ endTacticalBattle(victory, escape = false) {
     console.log(`❤️ Текущее здоровье героя: ${this.currentHero?.currentHealth}`);
     console.log(`🗺️ Контекст боя: ${this.battleContext}`);
 
-    // ⭐ СНИМАЕМ ОТМЕТКУ АКТИВНОГО БОЯ И ОЧИЩАЕМ СОСТОЯНИЕ
+    // Снимаем отметку активного боя
     if (window.game) {
         window.game.markBattleAsInactive();
         console.log("🎲 Бой отмечен как завершенный");
     }
     
-    // Очищаем состояние боя из sessionStorage
-    this.clearBattleState();
+    // Сохраняем состояние боя при побеге или победе
+    if (victory || escape) {
+        this.saveBattleState();
+    } else {
+        // При поражении очищаем
+        this.clearBattleState();
+    }
 
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
@@ -1991,6 +1996,12 @@ endTacticalBattle(victory, escape = false) {
             // Смерть в бою - перемещаем на стартовую точку
             this.currentHero.currentHealth = 1;
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+            
+            // ⭐ СБРАСЫВАЕМ ФЛЯГУ ПРИ СМЕРТИ
+            if (this.flask) {
+                this.resetFlaskOnHeroDeath();
+            }
+            
             this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
         }
     }
@@ -2001,21 +2012,43 @@ endTacticalBattle(victory, escape = false) {
         window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
     
-    // Сохраняем игру
-    if (window.game) {
-        window.game.saveGame();
-    }
-    
-    // Уведомляем систему карт о завершении боя
+    // ⭐ ВАЖНО: Уведомляем систему карт с правильными параметрами
     if (this.battleContext === 'movement' && window.game.systems.map) {
         console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
     }
     
-    // ⭐ ВАЖНО: ВСЕГДА показываем результат боя и возвращаем в игру
+    // Сохраняем игру
+    if (window.game) {
+        window.game.saveGame();
+        console.log("💾 Состояние сохранено после боя");
+    }
+    
+    // Показываем результат боя
     this.showBattleResult(victory, escape);
 }
 
+
+resetFlaskOnHeroDeath() {
+    // При смерти сбрасываем флягу к значениям по умолчанию
+    this.flask.currentCharges = 10;
+    this.flask.content = 'water';
+    
+    // Обновляем интерфейс
+    if (this.updateFlaskUI) {
+        this.updateFlaskUI();
+    }
+    if (this.updateFlaskChargesDisplay) {
+        this.updateFlaskChargesDisplay();
+    }
+    
+    // Добавляем сообщение в лог боя
+    this.addBattleLog("💧 Фляга опустела после смерти героя!");
+    
+    console.log("💧 Фляга сброшена после смерти героя");
+}
+
+    
 showBattleResult(victory, escape = false) {
     const app = document.getElementById('app');
     if (!app) return;
