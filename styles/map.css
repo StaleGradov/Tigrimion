@@ -993,3 +993,57 @@
     color: #ef4444;
     font-size: 0.9rem;
 }
+/* Дополнительные стили для улучшенного отображения */
+.cell-position-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cell-coords {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    font-family: monospace;
+}
+
+.current-position-badge {
+    background: rgba(0, 255, 255, 0.2);
+    color: #00ffff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+.cell-detailed-description {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border-left: 3px solid #00ffff;
+    white-space: pre-line;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.cell-detailed-description::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cell-detailed-description::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.cell-detailed-description::-webkit-scrollbar-thumb {
+    background: #475569;
+    border-radius: 3px;
+}
