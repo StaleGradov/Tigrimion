@@ -139,6 +139,7 @@
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/items/long_copper_spear.jpg",
     "type": "weapon",
     "weaponType": "two_handed",
+    "attackType": "melee",
     "slot": "main_hand",
     "rarity": "common",
     "fixed_damage": 10,
