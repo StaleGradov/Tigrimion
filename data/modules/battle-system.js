@@ -229,6 +229,12 @@ class BattleSystem {
             
             usedMonsters.add(selectedMonster.id);
             
+            // Определяем тип ИИ для монстра
+            let aiType = 'trickster';
+            if (selectedMonster.health > 80 && selectedMonster.damage > 15) aiType = 'aggressor';
+            else if (selectedMonster.armor > 5) aiType = 'defender';
+            else if (selectedMonster.damage > 12 && selectedMonster.health < 50) aiType = 'berserker';
+            
             const monsterCopy = {
                 ...selectedMonster,
                 battleId: i + 1,
@@ -236,6 +242,7 @@ class BattleSystem {
                 name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
                 source: 'map',
                 ai: new TacticalAI(this, selectedMonster),
+                aiType: aiType,
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
@@ -244,11 +251,11 @@ class BattleSystem {
             monsterGroup.push(monsterCopy);
         }
 
-        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров (шанс: ${monsterCountProbabilities[monsterCount]}%):`, monsterGroup.map(m => m.name));
+        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => `${m.name} [${m.aiType}]`));
         return monsterGroup;
     }
 
-startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
+startBattleWithMonster(hero, monsterId, context = 'movement') {
     if (!hero) {
         console.error("❌ Не могу начать бой: герой не передан");
         return;
@@ -279,7 +286,7 @@ startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕ�
     this.battleActive = true;
     this.battleRound = 0;
     this.battleLog = [];
-    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
+    this.battleContext = context;
     this.selectedTarget = null;
     this.pendingAction = null;
     
@@ -299,7 +306,7 @@ startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕ�
 }
 
 
-startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
+startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') {
     if (!hero) {
         console.error("❌ Не могу начать бой: герой не передан");
         return;
@@ -327,7 +334,7 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
     this.battleActive = true;
     this.battleRound = 0;
     this.battleLog = [];
-    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
+    this.battleContext = context;
     this.selectedTarget = null;
     this.pendingAction = null;
     
@@ -352,6 +359,12 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
         const monsterCount = 1;
         const monsterGroup = [];
         
+        // Определяем тип ИИ для конкретного монстра
+        let aiType = 'trickster';
+        if (specificMonster.health > 80 && specificMonster.damage > 15) aiType = 'aggressor';
+        else if (specificMonster.armor > 5) aiType = 'defender';
+        else if (specificMonster.damage > 12 && specificMonster.health < 50) aiType = 'berserker';
+        
         for (let i = 0; i < monsterCount; i++) {
             const monsterCopy = {
                 ...specificMonster,
@@ -360,6 +373,7 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
                 source: 'programmed',
                 ai: new TacticalAI(this, specificMonster),
+                aiType: aiType,
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
@@ -508,7 +522,7 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
     return true;
 }
 
-    // НОВЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ ВИЗУАЛЬНОГО ОТОБРАЖЕНИЯ ЗАРЯДОВ
+    // НОВЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ ВИЗУАЛЬНОГО ОТОБРАЖЕНИЕ ЗАРЯДОВ
 updateFlaskChargesDisplay() {
     const flaskBar = document.querySelector('.flask-bar');
     if (!flaskBar) {
@@ -863,7 +877,7 @@ updateFlaskChargesDisplay() {
     }, 100);
 
     this.updateTacticalUI();
-    this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ДЛЯ ПЕРВОНАЧАЛЬНОГО ОТОБРАЖЕНИЯ
+    this.updateFlaskChargesDisplay();
 }
 
   
@@ -1125,8 +1139,7 @@ updateFlaskChargesDisplay() {
         const monsterUnit = monsters[index];
         const monster = monsterUnit.data;
         
-        const tacticalAI = new TacticalAI(this, monster);
-        const action = tacticalAI.decideAction();
+        const action = monster.ai.decideAction();
         
         monster.currentAction = action;
         monster.ap -= this.actionsCost[action];
@@ -2093,8 +2106,9 @@ closeBattleResult() {
     const overlay = document.querySelector('.battle-result-overlay');
     if (overlay) overlay.remove();
     
-    this.returnToGameAfterBattle(); // ← Вызываем тот же метод
+    this.returnToGameAfterBattle();
 }
+
 returnToGameAfterBattle() {
     this.resultShown = false;
     this.battleEnding = false;
@@ -2497,113 +2511,6 @@ class TacticalAI {
         
         return reasons.length > 0 ? reasons.join(', ') : `оценка: ${score.toFixed(1)}`;
     }
-}
-
-// Обновленный метод generateMonsterGroup в классе BattleSystem
-generateMonsterGroup(baseMonsterId) {
-    const currentMap = window.game.systems.map?.currentMap;
-    const mapSettings = currentMap?.monsters;
-    const mapMonsters = this.getMonstersForCurrentMap();
-    
-    if (mapMonsters.length === 0) {
-        console.error("❌ Нет доступных монстров для генерации группы!");
-        return null;
-    }
-
-    const monsterCountProbabilities = {
-        1: 90,
-        2: 5,
-        3: 2,
-        4: 1.5,
-        5: 1,
-        6: 0.5
-    };
-
-    let monsterCount = 1;
-    
-    const roll = Math.random() * 100;
-    let probabilitySum = 0;
-    
-    for (let count = 1; count <= 6; count++) {
-        probabilitySum += monsterCountProbabilities[count];
-        if (roll <= probabilitySum) {
-            monsterCount = count;
-            break;
-        }
-    }
-
-    const monsterGroup = [];
-    const usedMonsters = new Set();
-    
-    for (let i = 0; i < monsterCount; i++) {
-        let selectedMonster;
-        let attempts = 0;
-        
-        do {
-            const randomIndex = Math.floor(Math.random() * mapMonsters.length);
-            selectedMonster = mapMonsters[randomIndex];
-            attempts++;
-        } while (usedMonsters.has(selectedMonster.id) && attempts < 5 && mapMonsters.length > 1);
-        
-        usedMonsters.add(selectedMonster.id);
-        
-        // Определяем тип ИИ для монстра
-        let aiType = 'trickster';
-        if (selectedMonster.health > 80 && selectedMonster.damage > 15) aiType = 'aggressor';
-        else if (selectedMonster.armor > 5) aiType = 'defender';
-        else if (selectedMonster.damage > 12 && selectedMonster.health < 50) aiType = 'berserker';
-        
-        const monsterCopy = {
-            ...selectedMonster,
-            battleId: i + 1,
-            currentHealth: selectedMonster.health,
-            name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
-            source: 'map',
-            ai: new TacticalAI(this, selectedMonster),
-            aiType: aiType,
-            ap: 3,
-            currentAction: null,
-            combo: { type: null, count: 0 },
-            previousActions: []
-        };
-        monsterGroup.push(monsterCopy);
-    }
-
-    console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => `${m.name} [${m.aiType}]`));
-    return monsterGroup;
-}
-
-// Также нужно обновить метод generateSpecificMonsterGroup для согласованности
-generateSpecificMonsterGroup(specificMonster) {
-    if (!specificMonster) return null;
-
-    const monsterCount = 1;
-    const monsterGroup = [];
-    
-    // Определяем тип ИИ для конкретного монстра
-    let aiType = 'trickster';
-    if (specificMonster.health > 80 && specificMonster.damage > 15) aiType = 'aggressor';
-    else if (specificMonster.armor > 5) aiType = 'defender';
-    else if (specificMonster.damage > 12 && specificMonster.health < 50) aiType = 'berserker';
-    
-    for (let i = 0; i < monsterCount; i++) {
-        const monsterCopy = {
-            ...specificMonster,
-            battleId: i + 1,
-            currentHealth: specificMonster.health,
-            name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
-            source: 'programmed',
-            ai: new TacticalAI(this, specificMonster),
-            aiType: aiType,
-            ap: 3,
-            currentAction: null,
-            combo: { type: null, count: 0 },
-            previousActions: []
-        };
-        monsterGroup.push(monsterCopy);
-    }
-
-    return monsterGroup;
 }
 
 window.BattleSystem = BattleSystem;
