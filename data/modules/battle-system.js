@@ -9,10 +9,12 @@ class BattleSystem {
         this.battleLog = [];
         this.battleRound = 0;
         this.battleContext = 'normal';
-            // ⭐ ПРОВЕРЯЕМ ВОССТАНОВЛЕНИЕ ПРИ СОЗДАНИИ
-    setTimeout(() => {
-        this.recoverFromCrash();
-    }, 2000);
+        
+        // Проверяем восстановление при создании
+        setTimeout(() => {
+            this.recoverFromCrash();
+        }, 2000);
+        
         // Тактическая система
         this.currentPlayer = 1;
         this.players = {
@@ -20,7 +22,8 @@ class BattleSystem {
                 ap: 3, 
                 currentAction: null,
                 combo: { type: null, count: 0 },
-                previousActions: []
+                previousActions: [],
+                patterns: []
             }
         };
         
@@ -28,7 +31,7 @@ class BattleSystem {
         this.flask = {
             capacity: 10,
             currentCharges: 10,
-            content: 'water', // water, potion, elixir, etc.
+            content: 'water',
             contentEffects: {
                 water: { healPercent: 0.25, color: '#3b82f6' },
                 potion: { healPercent: 0.50, color: '#ef4444' },
@@ -57,7 +60,16 @@ class BattleSystem {
         this.battleEnding = false;
         this.pendingAction = null;
         
-        console.log("✅ BattleSystem инициализирован с системой фляги");
+        // Новая система ИИ
+        this.aiMemory = {
+            playerPatterns: [],
+            successfulCombos: [],
+            failedTactics: [],
+            heroWeaknesses: new Map(),
+            roundAnalysis: []
+        };
+        
+        console.log("✅ BattleSystem инициализирован с продвинутым ИИ");
     }
 
     async loadBattleData() {
@@ -235,116 +247,156 @@ class BattleSystem {
                 currentHealth: selectedMonster.health,
                 name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
                 source: 'map',
-                ai: new TacticalAI(this, selectedMonster),
+                ai: new AdvancedTacticalAI(this, selectedMonster, this.aiMemory),
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
-                previousActions: []
+                previousActions: [],
+                role: this.determineMonsterRole(selectedMonster),
+                coordination: {
+                    leader: i === 0,
+                    groupId: Math.floor(Math.random() * 2),
+                    lastCoordinationRound: -1
+                }
             };
             monsterGroup.push(monsterCopy);
         }
 
-        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров (шанс: ${monsterCountProbabilities[monsterCount]}%):`, monsterGroup.map(m => m.name));
+        console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров (шанс: ${monsterCountProbabilities[monsterCount]}%):`, 
+                    monsterGroup.map(m => `${m.name} [${m.role}]`));
         return monsterGroup;
     }
 
-startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
-    if (!hero) {
-        console.error("❌ Не могу начать бой: герой не передан");
-        return;
+    determineMonsterRole(monster) {
+        const damageRatio = monster.damage / (monster.health || 10);
+        const defenseRatio = (monster.armor || 0) / 10;
+        
+        if (damageRatio > 1.5 && monster.health < 30) {
+            return 'assassin';
+        } else if (defenseRatio > 0.5 && monster.health > 40) {
+            return 'tank';
+        } else if (monster.attackType === 'ranged') {
+            return 'sniper';
+        } else if (damageRatio > 1.0) {
+            return 'bruiser';
+        } else {
+            return 'support';
+        }
     }
 
-    this.resultShown = false;
-    this.battleEnding = false;
+    startBattleWithMonster(hero, monsterId, context = 'movement') {
+        if (!hero) {
+            console.error("❌ Не могу начать бой: герой не передан");
+            return;
+        }
 
-    const monsterGroup = this.generateMonsterGroup(monsterId);
-    if (!monsterGroup || monsterGroup.length === 0) {
-        console.error("❌ Не удалось сгенерировать группу монстров!");
-        return;
+        this.resultShown = false;
+        this.battleEnding = false;
+
+        const monsterGroup = this.generateMonsterGroup(monsterId);
+        if (!monsterGroup || monsterGroup.length === 0) {
+            console.error("❌ Не удалось сгенерировать группу монстров!");
+            return;
+        }
+
+        this.currentHero = hero;
+        this.currentMonsters = monsterGroup;
+        
+        this.players[1] = { 
+            ap: 3, 
+            currentAction: null, 
+            combo: { type: null, count: 0 }, 
+            previousActions: [],
+            patterns: []
+        };
+        
+        this.initializeAIMemory();
+        
+        const heroStats = this.getHeroStatsForBattle();
+        this.setupTacticalGrid(hero, monsterGroup, heroStats);
+        
+        this.battleActive = true;
+        this.battleRound = 0;
+        this.battleLog = [];
+        this.battleContext = context;
+        this.selectedTarget = null;
+        this.pendingAction = null;
+        
+        console.log(`🎲 Контекст боя установлен: ${this.battleContext}`);
+        
+        if (window.game) {
+            window.game.markBattleAsActive();
+            console.log("🎲 Бой отмечен как активный для защиты от перезагрузки");
+        }
+        
+        this.saveBattleState();
+        
+        console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
+        this.showTacticalBattleInterface();
     }
 
-    this.currentHero = hero;
-    this.currentMonsters = monsterGroup;
-    
-    this.players[1] = { 
-        ap: 3, 
-        currentAction: null, 
-        combo: { type: null, count: 0 }, 
-        previousActions: [] 
-    };
-    
-    const heroStats = this.getHeroStatsForBattle();
-    this.setupTacticalGrid(hero, monsterGroup, heroStats);
-    
-    this.battleActive = true;
-    this.battleRound = 0;
-    this.battleLog = [];
-    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    
-    console.log(`🎲 Контекст боя установлен: ${this.battleContext}`);
-    
-    // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
-    if (window.game) {
-        window.game.markBattleAsActive();
-        console.log("🎲 Бой отмечен как активный для защиты от перезагрузки");
-    }
-    
-    // Сохраняем в sessionStorage на случай аварийного закрытия
-    this.saveBattleState();
-    
-    console.log(`⚔️ Начинаем тактический бой с ${monsterGroup.length} монстрами`);
-    this.showTacticalBattleInterface();
-}
-
-
-startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
-    if (!hero) {
-        console.error("❌ Не могу начать бой: герой не передан");
-        return;
+    initializeAIMemory() {
+        this.aiMemory = {
+            playerPatterns: [],
+            successfulCombos: [],
+            failedTactics: [],
+            heroWeaknesses: new Map(),
+            roundAnalysis: [],
+            teamCoordination: {
+                lastSynchronizedRound: -1,
+                plannedCombos: [],
+                assignedTargets: new Map()
+            }
+        };
     }
 
-    this.resultShown = false;
-    this.battleEnding = false;
+    startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') {
+        if (!hero) {
+            console.error("❌ Не могу начать бой: герой не передан");
+            return;
+        }
 
-    const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
-    if (!monsterGroup) return;
+        this.resultShown = false;
+        this.battleEnding = false;
 
-    this.currentHero = hero;
-    this.currentMonsters = monsterGroup;
-    
-    this.players[1] = { 
-        ap: 3, 
-        currentAction: null, 
-        combo: { type: null, count: 0 }, 
-        previousActions: [] 
-    };
-    
-    const heroStats = this.getHeroStatsForBattle();
-    this.setupTacticalGrid(hero, monsterGroup, heroStats);
-    
-    this.battleActive = true;
-    this.battleRound = 0;
-    this.battleLog = [];
-    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    
-    console.log(`🎲 Контекст боя с конкретным монстром: ${this.battleContext}`);
-    
-    // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
-    if (window.game) {
-        window.game.markBattleAsActive();
-        console.log("🎲 Бой с конкретным монстром отмечен как активный");
+        const monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
+        if (!monsterGroup) return;
+
+        this.currentHero = hero;
+        this.currentMonsters = monsterGroup;
+        
+        this.players[1] = { 
+            ap: 3, 
+            currentAction: null, 
+            combo: { type: null, count: 0 }, 
+            previousActions: [],
+            patterns: []
+        };
+        
+        this.initializeAIMemory();
+        
+        const heroStats = this.getHeroStatsForBattle();
+        this.setupTacticalGrid(hero, monsterGroup, heroStats);
+        
+        this.battleActive = true;
+        this.battleRound = 0;
+        this.battleLog = [];
+        this.battleContext = context;
+        this.selectedTarget = null;
+        this.pendingAction = null;
+        
+        console.log(`🎲 Контекст боя с конкретным монстром: ${this.battleContext}`);
+        
+        if (window.game) {
+            window.game.markBattleAsActive();
+            console.log("🎲 Бой с конкретным монстром отмечен как активный");
+        }
+        
+        this.saveBattleState();
+        
+        console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
+        this.showTacticalBattleInterface();
     }
-    
-    // Сохраняем в sessionStorage на случай аварийного закрытия
-    this.saveBattleState();
-    
-    console.log(`⚔️ Начинаем бой с конкретным монстром: ${specificMonster.name}`);
-    this.showTacticalBattleInterface();
-}
 
     generateSpecificMonsterGroup(specificMonster) {
         if (!specificMonster) return null;
@@ -359,11 +411,17 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
                 currentHealth: specificMonster.health,
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
                 source: 'programmed',
-                ai: new TacticalAI(this, specificMonster),
+                ai: new AdvancedTacticalAI(this, specificMonster, this.aiMemory),
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
-                previousActions: []
+                previousActions: [],
+                role: this.determineMonsterRole(specificMonster),
+                coordination: {
+                    leader: i === 0,
+                    groupId: 0,
+                    lastCoordinationRound: -1
+                }
             };
             monsterGroup.push(monsterCopy);
         }
@@ -469,86 +527,79 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') { //
         return [0, 2, 4].includes(position) ? 'back' : 'front';
     }
 
-  useFlask() {
-    if (this.flask.currentCharges <= 0) {
-        this.addBattleLog("❌ Фляга пуста!");
-        return false;
-    }
-
-    const hero = this.battleGrid.allies[3];
-    if (!hero || hero.currentHealth <= 0) {
-        this.addBattleLog("❌ Герой не может использовать флягу!");
-        return false;
-    }
-
-    const effect = this.flask.contentEffects[this.flask.content];
-    const healAmount = Math.floor(hero.maxHealth * effect.healPercent);
-    const actualHeal = Math.min(healAmount, hero.maxHealth - hero.currentHealth);
-
-    if (actualHeal <= 0) {
-        this.addBattleLog("❌ Здоровье уже максимальное!");
-        return false;
-    }
-
-    // Сохраняем старое значение для анимации
-    const oldCharges = this.flask.currentCharges;
-    
-    hero.currentHealth += actualHeal;
-    this.flask.currentCharges -= 1;
-
-    this.addBattleLog(`💧 Выпит глоток из фляги! +${actualHeal} HP`);
-    this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
-    
-    // ОБНОВЛЯЕМ ВИЗУАЛЬНОЕ ОТОБРАЖЕНИЕ ЗАРЯДОВ С ЗАДЕРЖКОЙ ДЛЯ АНИМАЦИИ
-    setTimeout(() => {
-        this.updateFlaskChargesDisplay();
-    }, 100);
-
-    console.log(`💧 Flask used: ${oldCharges} -> ${this.flask.currentCharges} charges`);
-    return true;
-}
-
-    // НОВЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ ВИЗУАЛЬНОГО ОТОБРАЖЕНИЯ ЗАРЯДОВ
-updateFlaskChargesDisplay() {
-    const flaskBar = document.querySelector('.flask-bar');
-    if (!flaskBar) {
-        console.log("❌ Flask bar not found in DOM");
-        return;
-    }
-
-    // Получаем все элементы зарядов
-    const charges = flaskBar.querySelectorAll('.flask-charge');
-    const effect = this.flask.contentEffects[this.flask.content];
-    
-    console.log(`🔄 Updating flask charges: ${this.flask.currentCharges}/${this.flask.capacity}`);
-    
-    // Обновляем каждый заряд
-    charges.forEach((charge, index) => {
-        if (index < this.flask.currentCharges) {
-            charge.classList.add('active');
-            charge.classList.remove('empty');
-            charge.style.backgroundColor = effect.color;
-            charge.style.opacity = '1';
-        } else {
-            charge.classList.remove('active');
-            charge.classList.add('empty');
-            charge.style.backgroundColor = '#4b5563';
-            charge.style.opacity = '0.3';
+    useFlask() {
+        if (this.flask.currentCharges <= 0) {
+            this.addBattleLog("❌ Фляга пуста!");
+            return false;
         }
-    });
 
-    // Также обновляем текстовое отображение
-    const flaskChargesText = document.getElementById('flaskCharges');
-    if (flaskChargesText) {
-        flaskChargesText.textContent = `${this.flask.currentCharges}/${this.flask.capacity}`;
+        const hero = this.battleGrid.allies[3];
+        if (!hero || hero.currentHealth <= 0) {
+            this.addBattleLog("❌ Герой не может использовать флягу!");
+            return false;
+        }
+
+        const effect = this.flask.contentEffects[this.flask.content];
+        const healAmount = Math.floor(hero.maxHealth * effect.healPercent);
+        const actualHeal = Math.min(healAmount, hero.maxHealth - hero.currentHealth);
+
+        if (actualHeal <= 0) {
+            this.addBattleLog("❌ Здоровье уже максимальное!");
+            return false;
+        }
+
+        const oldCharges = this.flask.currentCharges;
+        
+        hero.currentHealth += actualHeal;
+        this.flask.currentCharges -= 1;
+
+        this.addBattleLog(`💧 Выпит глоток из фляги! +${actualHeal} HP`);
+        this.updateHealthBar('allies', 3, hero.currentHealth, hero.maxHealth);
+        
+        setTimeout(() => {
+            this.updateFlaskChargesDisplay();
+        }, 100);
+
+        console.log(`💧 Flask used: ${oldCharges} -> ${this.flask.currentCharges} charges`);
+        return true;
     }
-    
-    // Обновляем состояние кнопки
-    const useFlaskBtn = document.getElementById('useFlaskBtn');
-    if (useFlaskBtn) {
-        useFlaskBtn.disabled = this.flask.currentCharges <= 0;
+
+    updateFlaskChargesDisplay() {
+        const flaskBar = document.querySelector('.flask-bar');
+        if (!flaskBar) {
+            console.log("❌ Flask bar not found in DOM");
+            return;
+        }
+
+        const charges = flaskBar.querySelectorAll('.flask-charge');
+        const effect = this.flask.contentEffects[this.flask.content];
+        
+        console.log(`🔄 Updating flask charges: ${this.flask.currentCharges}/${this.flask.capacity}`);
+        
+        charges.forEach((charge, index) => {
+            if (index < this.flask.currentCharges) {
+                charge.classList.add('active');
+                charge.classList.remove('empty');
+                charge.style.backgroundColor = effect.color;
+                charge.style.opacity = '1';
+            } else {
+                charge.classList.remove('active');
+                charge.classList.add('empty');
+                charge.style.backgroundColor = '#4b5563';
+                charge.style.opacity = '0.3';
+            }
+        });
+
+        const flaskChargesText = document.getElementById('flaskCharges');
+        if (flaskChargesText) {
+            flaskChargesText.textContent = `${this.flask.currentCharges}/${this.flask.capacity}`;
+        }
+        
+        const useFlaskBtn = document.getElementById('useFlaskBtn');
+        if (useFlaskBtn) {
+            useFlaskBtn.disabled = this.flask.currentCharges <= 0;
+        }
     }
-}
 
     refillFlask(content = 'water') {
         this.flask.currentCharges = this.flask.capacity;
@@ -566,307 +617,305 @@ updateFlaskChargesDisplay() {
         return names[content] || content;
     }
 
-  updateFlaskUI() {
-    const flaskContainer = document.getElementById('flaskContainer');
-    const flaskContent = document.getElementById('flaskContent');
-    const useFlaskBtn = document.getElementById('useFlaskBtn');
+    updateFlaskUI() {
+        const flaskContainer = document.getElementById('flaskContainer');
+        const flaskContent = document.getElementById('flaskContent');
+        const useFlaskBtn = document.getElementById('useFlaskBtn');
 
-    if (flaskContainer) {
-        const effect = this.flask.contentEffects[this.flask.content];
-        flaskContainer.style.borderColor = effect.color;
+        if (flaskContainer) {
+            const effect = this.flask.contentEffects[this.flask.content];
+            flaskContainer.style.borderColor = effect.color;
+        }
+
+        if (flaskContent) {
+            flaskContent.textContent = this.getContentName(this.flask.content);
+            flaskContent.style.color = this.flask.contentEffects[this.flask.content].color;
+        }
+
+        if (useFlaskBtn) {
+            useFlaskBtn.disabled = this.flask.currentCharges <= 0;
+        }
+
+        this.updateFlaskChargesDisplay();
     }
 
-    if (flaskContent) {
-        flaskContent.textContent = this.getContentName(this.flask.content);
-        flaskContent.style.color = this.flask.contentEffects[this.flask.content].color;
-    }
+    showTacticalBattleInterface() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    if (useFlaskBtn) {
-        useFlaskBtn.disabled = this.flask.currentCharges <= 0;
-    }
-
-    // ОБНОВЛЯЕМ ВИЗУАЛЬНОЕ ОТОБРАЖЕНИЕ ЗАРЯДОВ - ДОБАВЛЕН ВЫЗОВ
-    this.updateFlaskChargesDisplay();
-}
-
- showTacticalBattleInterface() {
-    const app = document.getElementById('app');
-    if (!app) return;
-
-    const heroStats = this.getHeroStatsForBattle();
-    const flaskEffect = this.flask.contentEffects[this.flask.content];
-    
-    app.innerHTML = `
-        <div class="battle-screen-fullscreen">
-            <header class="battle-header">
-                <div class="header-left">
-                    <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
-                    <div class="battle-round">Раунд: ${this.battleRound}</div>
-                </div>
-            </header>
-            
-            <div class="battle-main-area-compact">
-                <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
-                <div class="tactical-panel player-panel">
-                    <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
-                    
-                    <div class="panel-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Очки действий:</span>
-                            <span class="stat-value" id="playerAP">3/∞</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Комбо:</span>
-                            <span class="stat-value" id="playerCombo">Нет</span>
-                        </div>
+        const heroStats = this.getHeroStatsForBattle();
+        const flaskEffect = this.flask.contentEffects[this.flask.content];
+        
+        app.innerHTML = `
+            <div class="battle-screen-fullscreen">
+                <header class="battle-header">
+                    <div class="header-left">
+                        <h2>⚔️ ТАКТИЧЕСКАЯ ДУЭЛЬ</h2>
+                        <div class="battle-round">Раунд: ${this.battleRound}</div>
                     </div>
-                    
-                    <div class="action-history">
-                        <div class="history-title">Последние действия:</div>
-                        <div class="history-entries" id="playerHistory">
-                            <div class="history-empty">Еще нет действий</div>
+                </header>
+                
+                <div class="battle-main-area-compact">
+                    <!-- ЛЕВАЯ ПАНЕЛЬ - ИГРОК -->
+                    <div class="tactical-panel player-panel">
+                        <h3 class="panel-title">ВАШИ ДЕЙСТВИЯ</h3>
+                        
+                        <div class="panel-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Очки действий:</span>
+                                <span class="stat-value" id="playerAP">3/∞</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Комбо:</span>
+                                <span class="stat-value" id="playerCombo">Нет</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- СИСТЕМА ФЛЯГИ -->
-                    <div class="flask-container" id="flaskContainer">
-                        <div class="flask-header">
-                            <span class="flask-title">💧 Фляга</span>
-                            <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
+                        
+                        <div class="action-history">
+                            <div class="history-title">Последние действия:</div>
+                            <div class="history-entries" id="playerHistory">
+                                <div class="history-empty">Еще нет действий</div>
+                            </div>
                         </div>
-                        <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
-                        <div class="flask-bar" id="flaskBar">
-                            ${Array.from({length: this.flask.capacity}, (_, i) => {
-                                const isActive = i < this.flask.currentCharges;
-                                const color = isActive ? flaskEffect.color : '#4b5563';
-                                const opacity = isActive ? '1' : '0.3';
-                                return `<div class="flask-charge ${isActive ? 'active' : 'empty'}" 
-                                             style="background-color: ${color}; opacity: ${opacity}"></div>`;
-                            }).join('')}
+                        
+                        <!-- СИСТЕМА ФЛЯГИ -->
+                        <div class="flask-container" id="flaskContainer">
+                            <div class="flask-header">
+                                <span class="flask-title">💧 Фляга</span>
+                                <span class="flask-content" id="flaskContent">${this.getContentName(this.flask.content)}</span>
+                            </div>
+                            <div class="flask-charges" id="flaskCharges">${this.flask.currentCharges}/${this.flask.capacity}</div>
+                            <div class="flask-bar" id="flaskBar">
+                                ${Array.from({length: this.flask.capacity}, (_, i) => {
+                                    const isActive = i < this.flask.currentCharges;
+                                    const color = isActive ? flaskEffect.color : '#4b5563';
+                                    const opacity = isActive ? '1' : '0.3';
+                                    return `<div class="flask-charge ${isActive ? 'active' : 'empty'}" 
+                                                 style="background-color: ${color}; opacity: ${opacity}"></div>`;
+                                }).join('')}
+                            </div>
+                            <div class="flask-actions">
+                                <button class="tactical-btn flask-btn" id="useFlaskBtn" 
+                                        onclick="game.systems.battle.useFlask()"
+                                        ${this.flask.currentCharges <= 0 ? 'disabled' : ''}>
+                                    <span class="btn-icon">💧</span>
+                                    <span class="btn-text">Выпить глоток</span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="flask-actions">
-                            <button class="tactical-btn flask-btn" id="useFlaskBtn" 
-                                    onclick="game.systems.battle.useFlask()"
-                                    ${this.flask.currentCharges <= 0 ? 'disabled' : ''}>
-                                <span class="btn-icon">💧</span>
-                                <span class="btn-text">Выпить глоток</span>
+                        
+                        <div class="tactical-actions">
+                            <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
+                                <span class="btn-icon">⚔️</span>
+                                <span class="btn-text">Атака</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">⚔️ Атака</div>
+                                    <div class="tooltip-desc">Базовая атака оружием</div>
+                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">100% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">200% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">400% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">800% урона</span></div>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
+                                <span class="btn-icon">💥</span>
+                                <span class="btn-text">Силовая</span>
+                                <span class="btn-cost">(2 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">💥 Силовая атака</div>
+                                    <div class="tooltip-desc">Мощный удар с повышенным уроном</div>
+                                    <div class="tooltip-cost">Стоимость: 2 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">250% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">500% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">1000% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">2000% урона</span></div>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
+                                <span class="btn-icon">💢</span>
+                                <span class="btn-text">Сокрушительная</span>
+                                <span class="btn-cost">(4 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">💢 Сокрушительная атака</div>
+                                    <div class="tooltip-desc">Сверхмощный удар, пробивающий любую защиту</div>
+                                    <div class="tooltip-cost">Стоимость: 4 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">750% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">1500% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">3000% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">6000% урона</span></div>
+                                    </div>
+                                    <div class="special-effect">Игнорирует блок противника</div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
+                                <span class="btn-icon">🛡️</span>
+                                <span class="btn-text">Блок</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">🛡️ Блок</div>
+                                    <div class="tooltip-desc">Защитная стойка, снижает получаемый урон</div>
+                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50% блок +25% отражение +1ОД</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">75% блок +50% отражение +2ОД</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">100% блок +75% отражение +3ОД</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">100% блок +100% отражение +4ОД</span></div>
+                                    </div>
+                                    <div class="special-effect">Отраженный урон возвращается атакующему</div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Пробитие</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">⚡ Пробитие блока</div>
+                                    <div class="tooltip-desc">Специальная атака, эффективная против защиты</div>
+                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50%/200% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">100%/300% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">150%/400% урона</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">200%/500% урона</span></div>
+                                    </div>
+                                    <div class="special-effect">Без блока/С блоком противника</div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
+                                <span class="btn-icon">🌀</span>
+                                <span class="btn-text">Отдых</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">🌀 Отдых</div>
+                                    <div class="tooltip-desc">Восстановление сил и здоровья</div>
+                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">+1 ОД +5% HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">+2 ОД +10% HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">+3 ОД +15% HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">+4 ОД +20% HP</span></div>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
+                                <span class="btn-icon">❤️</span>
+                                <span class="btn-text">Лечение</span>
+                                <span class="btn-cost">(1 ОД)</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">❤️ Лечение</div>
+                                    <div class="tooltip-desc">Восстановление здоровья</div>
+                                    <div class="tooltip-cost">Стоимость: 1 ОД</div>
+                                    <div class="tooltip-combo">
+                                        <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">10% от макс. HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">20% от макс. HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">40% от макс. HP</span></div>
+                                        <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">80% от макс. HP</span></div>
+                                    </div>
+                                </div>
                             </button>
                         </div>
                     </div>
                     
-                    <div class="tactical-actions">
-                        <button class="tactical-btn attack" onclick="game.systems.battle.handlePlayerAction('attack')">
-                            <span class="btn-icon">⚔️</span>
-                            <span class="btn-text">Атака</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">⚔️ Атака</div>
-                                <div class="tooltip-desc">Базовая атака оружием</div>
-                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">100% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">200% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">400% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">800% урона</span></div>
-                                </div>
+                    <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
+                    <div class="battle-grid-compact">
+                        <div class="grid-side-compact allies-side">
+                            <h3 class="side-title">ВАШ ОТРЯД</h3>
+                            <div class="grid-container-6x6-compact">
+                                ${this.renderTacticalGrid('allies')}
                             </div>
-                        </button>
+                        </div>
                         
-                        <button class="tactical-btn strong-attack" onclick="game.systems.battle.handlePlayerAction('strongAttack')">
-                            <span class="btn-icon">💥</span>
-                            <span class="btn-text">Силовая</span>
-                            <span class="btn-cost">(2 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">💥 Силовая атака</div>
-                                <div class="tooltip-desc">Мощный удар с повышенным уроном</div>
-                                <div class="tooltip-cost">Стоимость: 2 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">250% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">500% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">1000% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">2000% урона</span></div>
-                                </div>
+                        <div class="grid-side-compact enemies-side">
+                            <h3 class="side-title">ПРОТИВНИКИ</h3>
+                            <div class="grid-container-6x6-compact">
+                                ${this.renderTacticalGrid('enemies')}
                             </div>
-                        </button>
-                        
-                        <button class="tactical-btn crushing-attack" onclick="game.systems.battle.handlePlayerAction('crushingAttack')">
-                            <span class="btn-icon">💢</span>
-                            <span class="btn-text">Сокрушительная</span>
-                            <span class="btn-cost">(4 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">💢 Сокрушительная атака</div>
-                                <div class="tooltip-desc">Сверхмощный удар, пробивающий любую защиту</div>
-                                <div class="tooltip-cost">Стоимость: 4 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">750% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">1500% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">3000% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">6000% урона</span></div>
-                                </div>
-                                <div class="special-effect">Игнорирует блок противника</div>
-                            </div>
-                        </button>
-                        
-                        <button class="tactical-btn block" onclick="game.systems.battle.handlePlayerAction('block')">
-                            <span class="btn-icon">🛡️</span>
-                            <span class="btn-text">Блок</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">🛡️ Блок</div>
-                                <div class="tooltip-desc">Защитная стойка, снижает получаемый урон</div>
-                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50% блок +25% отражение +1ОД</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">75% блок +50% отражение +2ОД</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">100% блок +75% отражение +3ОД</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">100% блок +100% отражение +4ОД</span></div>
-                                </div>
-                                <div class="special-effect">Отраженный урон возвращается атакующему</div>
-                            </div>
-                        </button>
-                        
-                        <button class="tactical-btn break-block" onclick="game.systems.battle.handlePlayerAction('breakBlock')">
-                            <span class="btn-icon">⚡</span>
-                            <span class="btn-text">Пробитие</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">⚡ Пробитие блока</div>
-                                <div class="tooltip-desc">Специальная атака, эффективная против защиты</div>
-                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">50%/200% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">100%/300% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">150%/400% урона</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">200%/500% урона</span></div>
-                                </div>
-                                <div class="special-effect">Без блока/С блоком противника</div>
-                            </div>
-                        </button>
-                        
-                        <button class="tactical-btn rest" onclick="game.systems.battle.handlePlayerAction('rest')">
-                            <span class="btn-icon">🌀</span>
-                            <span class="btn-text">Отдых</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">🌀 Отдых</div>
-                                <div class="tooltip-desc">Восстановление сил и здоровья</div>
-                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">+1 ОД +5% HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">+2 ОД +10% HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">+3 ОД +15% HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">+4 ОД +20% HP</span></div>
-                                </div>
-                            </div>
-                        </button>
-                        
-                        <button class="tactical-btn heal" onclick="game.systems.battle.handlePlayerAction('heal')">
-                            <span class="btn-icon">❤️</span>
-                            <span class="btn-text">Лечение</span>
-                            <span class="btn-cost">(1 ОД)</span>
-                            <div class="tooltip">
-                                <div class="tooltip-title">❤️ Лечение</div>
-                                <div class="tooltip-desc">Восстановление здоровья</div>
-                                <div class="tooltip-cost">Стоимость: 1 ОД</div>
-                                <div class="tooltip-combo">
-                                    <div class="combo-stage"><span class="combo-count">x1:</span><span class="combo-effect">10% от макс. HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x2:</span><span class="combo-effect">20% от макс. HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x3:</span><span class="combo-effect">40% от макс. HP</span></div>
-                                    <div class="combo-stage"><span class="combo-count">x4:</span><span class="combo-effect">80% от макс. HP</span></div>
-                                </div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- ЦЕНТР - КОМПАКТНАЯ СЕТКА БЕЗ VS -->
-                <div class="battle-grid-compact">
-                    <div class="grid-side-compact allies-side">
-                        <h3 class="side-title">ВАШ ОТРЯД</h3>
-                        <div class="grid-container-6x6-compact">
-                            ${this.renderTacticalGrid('allies')}
                         </div>
                     </div>
                     
-                    <div class="grid-side-compact enemies-side">
-                        <h3 class="side-title">ПРОТИВНИКИ</h3>
-                        <div class="grid-container-6x6-compact">
-                            ${this.renderTacticalGrid('enemies')}
+                    <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
+                    <div class="enemy-panels-container">
+                        <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
+                        <div class="enemy-panels-grid" id="enemyPanelsGrid">
+                            ${this.renderEnemyPanels()}
                         </div>
                     </div>
                 </div>
                 
-                <!-- ПРАВАЯ ПАНЕЛЬ - ГРУППОВЫЕ ПАНЕЛИ МОНСТРОВ -->
-                <div class="enemy-panels-container">
-                    <h3 class="panel-title">ДЕЙСТВИЯ ПРОТИВНИКОВ</h3>
-                    <div class="enemy-panels-grid" id="enemyPanelsGrid">
-                        ${this.renderEnemyPanels()}
+                <!-- УПРАВЛЕНИЕ И ЛОГ -->
+                <div class="battle-controls-fullscreen">
+                    <div class="battle-hint-fullscreen" id="battleHint">
+                        ${this.getTacticalHint()}
+                    </div>
+                    
+                    <div class="battle-actions-fullscreen">
+                        <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
+                            🏃 Попытаться сбежать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="battle-log-fullscreen">
+                    <h4>📜 Ход боя:</h4>
+                    <div class="battle-log-entries" id="battleLogEntries">
+                        ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
                     </div>
                 </div>
             </div>
+        `;
+
+        setTimeout(() => {
+            console.log("🔧 Применяем экстренное исправление полосок здоровья...");
             
-            <!-- УПРАВЛЕНИЕ И ЛОГ -->
-            <div class="battle-controls-fullscreen">
-                <div class="battle-hint-fullscreen" id="battleHint">
-                    ${this.getTacticalHint()}
-                </div>
-                
-                <div class="battle-actions-fullscreen">
-                    <button class="btn-battle-flee" onclick="game.systems.battle.tryToFlee()">
-                        🏃 Попытаться сбежать
-                    </button>
-                </div>
-            </div>
+            const healthContainers = document.querySelectorAll('.unit-health-container');
+            const healthBars = document.querySelectorAll('.health-bar-fullscreen');
+            const healthFills = document.querySelectorAll('.health-fill');
+            const healthTexts = document.querySelectorAll('.health-text');
             
-            <div class="battle-log-fullscreen">
-                <h4>📜 Ход боя:</h4>
-                <div class="battle-log-entries" id="battleLogEntries">
-                    ${this.battleLog.map(entry => `<div class="log-entry">${entry}</div>`).join('')}
-                </div>
-            </div>
-        </div>
-    `;
+            healthContainers.forEach(el => {
+                el.style.display = 'flex';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthBars.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthFills.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            healthTexts.forEach(el => {
+                el.style.display = 'block';
+                el.style.visibility = 'visible';
+                el.style.opacity = '1';
+            });
+            
+            console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
+        }, 100);
 
-    setTimeout(() => {
-        console.log("🔧 Применяем экстренное исправление полосок здоровья...");
-        
-        const healthContainers = document.querySelectorAll('.unit-health-container');
-        const healthBars = document.querySelectorAll('.health-bar-fullscreen');
-        const healthFills = document.querySelectorAll('.health-fill');
-        const healthTexts = document.querySelectorAll('.health-text');
-        
-        healthContainers.forEach(el => {
-            el.style.display = 'flex';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthBars.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthFills.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        healthTexts.forEach(el => {
-            el.style.display = 'block';
-            el.style.visibility = 'visible';
-            el.style.opacity = '1';
-        });
-        
-        console.log(`🔧 Исправлено: ${healthContainers.length} контейнеров, ${healthFills.length} полосок`);
-    }, 100);
-
-    this.updateTacticalUI();
-    this.updateFlaskChargesDisplay(); // ДОБАВЛЕН ВЫЗОВ ДЛЯ ПЕРВОНАЧАЛЬНОГО ОТОБРАЖЕНИЯ
-}
-
-  
+        this.updateTacticalUI();
+        this.updateFlaskChargesDisplay();
+    }
+    
     renderEnemyPanels() {
         const aliveMonsters = this.battleGrid.enemies.filter(unit => 
             unit && unit.currentHealth > 0
@@ -1111,10 +1160,211 @@ updateFlaskChargesDisplay() {
             return;
         }
         
-        this.executeNextMonsterTurn(0, aliveMonsters);
+        this.analyzeBattleSituation();
+        this.coordinateMonsterActions(aliveMonsters);
+        this.executeCoordinatedMonsterTurns(aliveMonsters);
     }
 
-    executeNextMonsterTurn(index, monsters) {
+    analyzeBattleSituation() {
+        const hero = this.battleGrid.allies[3];
+        if (!hero) return;
+        
+        const analysis = {
+            round: this.battleRound,
+            heroHealthPercent: hero.currentHealth / hero.maxHealth,
+            heroAction: this.players[1].currentAction,
+            heroCombo: this.players[1].combo,
+            heroAP: this.players[1].ap,
+            monsterCount: this.currentMonsters.filter(m => m.currentHealth > 0).length,
+            threats: [],
+            opportunities: []
+        };
+        
+        const heroCombo = this.players[1].combo;
+        if (heroCombo.count >= 2) {
+            analysis.threats.push({
+                type: 'player_combo',
+                severity: heroCombo.count / 4,
+                action: heroCombo.type
+            });
+        }
+        
+        if (this.players[1].ap >= 3) {
+            analysis.threats.push({
+                type: 'player_high_ap',
+                severity: this.players[1].ap / 10
+            });
+        }
+        
+        if (hero.currentHealth / hero.maxHealth < 0.4) {
+            analysis.opportunities.push({
+                type: 'hero_low_health',
+                value: 1 - (hero.currentHealth / hero.maxHealth)
+            });
+        }
+        
+        if (hero.currentHealth / hero.maxHealth > 0.8 && this.players[1].ap <= 2) {
+            analysis.opportunities.push({
+                type: 'hero_resting',
+                value: 0.7
+            });
+        }
+        
+        this.aiMemory.roundAnalysis.push(analysis);
+        if (this.aiMemory.roundAnalysis.length > 3) {
+            this.aiMemory.roundAnalysis.shift();
+        }
+        
+        return analysis;
+    }
+
+    coordinateMonsterActions(aliveMonsters) {
+        if (aliveMonsters.length <= 1) return;
+        
+        const currentRound = this.battleRound;
+        const lastSync = this.aiMemory.teamCoordination.lastSynchronizedRound;
+        
+        if (currentRound - lastSync >= 2 || 
+            aliveMonsters.length < this.currentMonsters.length) {
+            
+            console.log(`🤝 Координация действий монстров (раунд ${currentRound})`);
+            
+            const tanks = aliveMonsters.filter(m => m.data.role === 'tank');
+            const assassins = aliveMonsters.filter(m => m.data.role === 'assassin');
+            const snipers = aliveMonsters.filter(m => m.data.role === 'sniper');
+            const supporters = aliveMonsters.filter(m => m.data.role === 'support');
+            
+            const plannedCombo = this.planTeamCombo(tanks, assassins, snipers, supporters);
+            this.aiMemory.teamCoordination.plannedCombos = plannedCombo;
+            
+            this.assignTargets(aliveMonsters);
+            
+            this.aiMemory.teamCoordination.lastSynchronizedRound = currentRound;
+        }
+    }
+
+    planTeamCombo(tanks, assassins, snipers, supporters) {
+        const combos = [];
+        const hero = this.battleGrid.allies[3];
+        
+        if (!hero) return combos;
+        
+        if (tanks.length > 0 && assassins.length > 0) {
+            combos.push({
+                type: 'tank_assassin',
+                tank: tanks[0].data.battleId,
+                assassin: assassins[0].data.battleId,
+                sequence: ['block', 'strongAttack']
+            });
+        }
+        
+        if (supporters.length > 0 && snipers.length > 0) {
+            combos.push({
+                type: 'support_sniper',
+                support: supporters[0].data.battleId,
+                sniper: snipers[0].data.battleId,
+                sequence: ['heal', 'crushingAttack']
+            });
+        }
+        
+        if (this.players[1].currentAction === 'block') {
+            const breakers = [...assassins, ...snipers].slice(0, 2);
+            if (breakers.length >= 2) {
+                combos.push({
+                    type: 'double_break',
+                    breakers: breakers.map(m => m.data.battleId),
+                    sequence: ['breakBlock', 'breakBlock']
+                });
+            }
+        }
+        
+        return combos;
+    }
+
+    assignTargets(aliveMonsters) {
+        const hero = this.battleGrid.allies[3];
+        if (!hero) return;
+        
+        this.aiMemory.teamCoordination.assignedTargets.clear();
+        
+        aliveMonsters.forEach(monsterUnit => {
+            const monster = monsterUnit.data;
+            let targetStrategy;
+            
+            switch(monster.role) {
+                case 'assassin':
+                    targetStrategy = 'finish_low_health';
+                    break;
+                case 'tank':
+                    const weakestAlly = this.findWeakestMonster(aliveMonsters);
+                    targetStrategy = weakestAlly ? 'protect_ally' : 'draw_attention';
+                    break;
+                case 'sniper':
+                    targetStrategy = 'safe_damage';
+                    break;
+                case 'support':
+                    targetStrategy = 'heal_ally';
+                    break;
+                default:
+                    targetStrategy = 'default_attack';
+            }
+            
+            this.aiMemory.teamCoordination.assignedTargets.set(
+                monster.battleId,
+                targetStrategy
+            );
+        });
+    }
+
+    findWeakestMonster(aliveMonsters) {
+        let weakest = null;
+        let lowestHealth = Infinity;
+        
+        aliveMonsters.forEach(monsterUnit => {
+            const healthPercent = monsterUnit.currentHealth / monsterUnit.maxHealth;
+            if (healthPercent < lowestHealth && healthPercent < 0.5) {
+                lowestHealth = healthPercent;
+                weakest = monsterUnit.data;
+            }
+        });
+        
+        return weakest;
+    }
+
+    executeCoordinatedMonsterTurns(aliveMonsters) {
+        const executionOrder = this.determineExecutionOrder(aliveMonsters);
+        this.executeNextMonsterInOrder(executionOrder, 0);
+    }
+
+    determineExecutionOrder(aliveMonsters) {
+        const order = [...aliveMonsters];
+        
+        order.sort((a, b) => {
+            const rolePriority = {
+                'support': 0,
+                'tank': 1,
+                'assassin': 2,
+                'sniper': 3,
+                'bruiser': 4
+            };
+            
+            const priorityA = rolePriority[a.data.role] || 5;
+            const priorityB = rolePriority[b.data.role] || 5;
+            
+            if (priorityA !== priorityB) {
+                return priorityA - priorityB;
+            }
+            
+            const healthPercentA = a.currentHealth / a.maxHealth;
+            const healthPercentB = b.currentHealth / b.maxHealth;
+            
+            return healthPercentA - healthPercentB;
+        });
+        
+        return order;
+    }
+
+    executeNextMonsterInOrder(monsters, index) {
         if (index >= monsters.length) {
             setTimeout(() => {
                 this.resolveTacticalTurn();
@@ -1125,32 +1375,101 @@ updateFlaskChargesDisplay() {
         const monsterUnit = monsters[index];
         const monster = monsterUnit.data;
         
-        const tacticalAI = new TacticalAI(this, monster);
-        const action = tacticalAI.decideAction();
+        const coordinatedAction = this.getCoordinatedAction(monster, monsters);
         
-        monster.currentAction = action;
-        monster.ap -= this.actionsCost[action];
+        monster.currentAction = coordinatedAction;
+        monster.ap -= this.actionsCost[coordinatedAction];
         
-        if (monster.combo.type === action && monster.combo.count < 4) {
+        if (monster.combo.type === coordinatedAction && monster.combo.count < 4) {
             monster.combo.count++;
         } else {
-            monster.combo.type = action;
+            monster.combo.type = coordinatedAction;
             monster.combo.count = 1;
         }
 
-        monster.previousActions.unshift(this.getActionName(action));
-        if (monster.previousActions.length > 1) {
+        monster.previousActions.unshift(this.getActionName(coordinatedAction));
+        if (monster.previousActions.length > 2) {
             monster.previousActions.pop();
         }
 
-        this.addBattleLog(`👹 ${monster.name} использует: ${this.getActionName(action)}`);
+        this.addBattleLog(`👹 ${monster.name} использует: ${this.getActionName(coordinatedAction)}`);
         
         this.executeMonsterAction(monster, monsterUnit);
         this.updateMonsterPanel(monster.battleId);
+        this.analyzeActionResult(monster, coordinatedAction);
         
         setTimeout(() => {
-            this.executeNextMonsterTurn(index + 1, monsters);
+            this.executeNextMonsterInOrder(monsters, index + 1);
         }, 800);
+    }
+
+    getCoordinatedAction(monster, allMonsters) {
+        const hero = this.battleGrid.allies[3];
+        const heroHealthPercent = hero ? hero.currentHealth / hero.maxHealth : 1;
+        
+        const plannedCombo = this.aiMemory.teamCoordination.plannedCombos.find(
+            combo => combo.tank === monster.battleId || 
+                    combo.assassin === monster.battleId ||
+                    combo.support === monster.battleId ||
+                    combo.sniper === monster.battleId ||
+                    (combo.breakers && combo.breakers.includes(monster.battleId))
+        );
+        
+        if (plannedCombo) {
+            let actionIndex = 0;
+            if (plannedCombo.tank === monster.battleId) actionIndex = 0;
+            else if (plannedCombo.assassin === monster.battleId) actionIndex = 1;
+            else if (plannedCombo.support === monster.battleId) actionIndex = 0;
+            else if (plannedCombo.sniper === monster.battleId) actionIndex = 1;
+            else if (plannedCombo.breakers && plannedCombo.breakers.includes(monster.battleId)) {
+                actionIndex = plannedCombo.breakers.indexOf(monster.battleId);
+            }
+            
+            if (actionIndex < plannedCombo.sequence.length) {
+                console.log(`🤝 ${monster.name} выполняет координированное действие: ${plannedCombo.sequence[actionIndex]}`);
+                return plannedCombo.sequence[actionIndex];
+            }
+        }
+        
+        const advancedAI = new AdvancedTacticalAI(this, monster, this.aiMemory);
+        return advancedAI.decideOptimalAction(allMonsters);
+    }
+
+    analyzeActionResult(monster, action) {
+        const hero = this.battleGrid.allies[3];
+        if (!hero) return;
+        
+        const heroHealthBefore = this.aiMemory.lastHeroHealth || hero.currentHealth;
+        const damageDealt = heroHealthBefore - hero.currentHealth;
+        
+        if (damageDealt > 0) {
+            this.aiMemory.successfulCombos.push({
+                monsterId: monster.battleId,
+                action: action,
+                damage: damageDealt,
+                round: this.battleRound
+            });
+            
+            if (this.aiMemory.successfulCombos.length > 10) {
+                this.aiMemory.successfulCombos.shift();
+            }
+            
+            const heroStats = this.getHeroStatsForBattle();
+            if (damageDealt > heroStats.armor * 2) {
+                const weaknessKey = `high_damage_${action}`;
+                const current = this.aiMemory.heroWeaknesses.get(weaknessKey) || 0;
+                this.aiMemory.heroWeaknesses.set(weaknessKey, current + 1);
+            }
+        } else if (action === 'block' && monster.currentHealth === monster.health) {
+            this.aiMemory.successfulCombos.push({
+                monsterId: monster.battleId,
+                action: action,
+                result: 'perfect_block',
+                round: this.battleRound
+            });
+        }
+        
+        this.aiMemory.lastHeroHealth = hero.currentHealth;
     }
 
     executeMonsterAction(monster, monsterUnit) {
@@ -1563,41 +1882,41 @@ updateFlaskChargesDisplay() {
         }
     }
 
-resolveTacticalTurn() {
-    const playerAction = this.players[1].currentAction;
-    
-    this.battleRound++;
-    this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
-    
-    this.executeTacticalDamage(playerAction);
-    
-    this.players[1].currentAction = null;
-    this.players[1].ap = Math.min(this.players[1].ap + 1, 10);
-    
-    this.currentMonsters.forEach(monster => {
-        if (monster.currentHealth > 0) {
-            monster.ap = Math.min(monster.ap + 1, 10);
-        }
-    });
-    
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    
-    setTimeout(() => {
-        console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
-        this.updateAllHealthBars();
-        this.updateTacticalUI();
-        this.updateFlaskChargesDisplay();
+    resolveTacticalTurn() {
+        const playerAction = this.players[1].currentAction;
         
-        this.debugHealthBars();
+        this.battleRound++;
+        this.addBattleLog(`--- РАУНД ${this.battleRound} ЗАВЕРШЕН ---`);
         
-        if (this.checkBattleEnd()) {
-            setTimeout(() => {
-                this.endTacticalBattle(this.isPlayerVictory());
-            }, 1500);
-        }
-    }, 300);
-}
+        this.executeTacticalDamage(playerAction);
+        
+        this.players[1].currentAction = null;
+        this.players[1].ap = Math.min(this.players[1].ap + 1, 10);
+        
+        this.currentMonsters.forEach(monster => {
+            if (monster.currentHealth > 0) {
+                monster.ap = Math.min(monster.ap + 1, 10);
+            }
+        });
+        
+        this.selectedTarget = null;
+        this.pendingAction = null;
+        
+        setTimeout(() => {
+            console.log("🔄 ОБНОВЛЕНИЕ ПОСЛЕ ХОДА");
+            this.updateAllHealthBars();
+            this.updateTacticalUI();
+            this.updateFlaskChargesDisplay();
+            
+            this.debugHealthBars();
+            
+            if (this.checkBattleEnd()) {
+                setTimeout(() => {
+                    this.endTacticalBattle(this.isPlayerVictory());
+                }, 1500);
+            }
+        }, 300);
+    }
 
     executeTacticalDamage(playerAction) {
         if (this.isAttackAction(playerAction) && this.selectedTarget !== null) {
@@ -1678,90 +1997,84 @@ resolveTacticalTurn() {
         }
     }
 
-completeMovementAfterBattle(victory, escape = false) {
-    if (!this.pendingMovement) return;
+    completeMovementAfterBattle(victory, escape = false) {
+        if (!this.pendingMovement) return;
 
-    if (victory) {
-        // Победа - перемещаем на целевую клетку
-        const targetX = this.pendingMovement.x;
-        const targetY = this.pendingMovement.y;
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x: targetX, y: targetY};
-        
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-    } else {
-        if (escape) {
-            // Побег - остаемся на текущей позиции
-            console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
-        } else {
-            // Смерть в бою - возвращаем на стартовую точку
-            const startPosition = this.currentTacticalMap.startPosition;
+        if (victory) {
+            const targetX = this.pendingMovement.x;
+            const targetY = this.pendingMovement.y;
             const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {...startPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
             
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
-        }
-    }
-    
-    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-        this.calculateCSSScale();
-        this.drawTacticalMap();
-    }
-    
-    this.pendingMovement = null;
-}
-
-    
-   updateTacticalUI() {
-    const playerAP = document.getElementById('playerAP');
-    const playerCombo = document.getElementById('playerCombo');
-    
-    if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
-    
-    if (playerCombo) {
-        if (this.players[1].combo.count > 0) {
-            const action = this.players[1].combo.type;
-            const count = this.players[1].combo.count;
-            let multiplierText = '';
-            
-            if (this.isAttackAction(action)) {
-                const multiplier = this.getComboMultiplier(action, count);
-                multiplierText = ` (x${multiplier})`;
-            } else if (action === 'breakBlock') {
-                multiplierText = ` (${this.getBreakBlockMultiplier(count, false) * 100}%/${this.getBreakBlockMultiplier(count, true) * 100}% урона)`;
-            } else if (action === 'block') {
-                const blockPercent = this.getBlockEfficiency(count) * 100;
-                const reflectionPercent = this.getBlockReflectionPercent(count) * 100;
-                const apBonus = this.getBlockAPBonus(count);
-                multiplierText = ` (${blockPercent}% блок + ${reflectionPercent}% отражение +${apBonus}ОД)`;
-            } else if (action === 'rest') {
-                const restEff = this.getRestEfficiency(count);
-                multiplierText = ` (+${restEff.ap}ОД +${restEff.healPercent * 100}% HP)`;
-            } else if (action === 'heal') {
-                const healPercent = this.getHealEfficiency(count) * 100;
-                multiplierText = ` (${healPercent}% HP)`;
-            }
-            
-            playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
         } else {
-            playerCombo.textContent = 'Нет';
+            if (escape) {
+                console.log(`🏃 Герой ${this.currentHero.name} остался на своей позиции после побега: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                const oldPosition = {...this.playerTacticalPosition};
+                this.playerTacticalPosition = {...startPosition};
+                
+                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+            }
         }
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+        }
+        
+        this.pendingMovement = null;
     }
     
-    this.updateActionHistory('playerHistory', this.players[1].previousActions);
-    
-    this.currentMonsters.forEach(monster => {
-        if (monster.currentHealth > 0) {
-            this.updateMonsterPanel(monster.battleId);
+    updateTacticalUI() {
+        const playerAP = document.getElementById('playerAP');
+        const playerCombo = document.getElementById('playerCombo');
+        
+        if (playerAP) playerAP.textContent = `${this.players[1].ap}/∞`;
+        
+        if (playerCombo) {
+            if (this.players[1].combo.count > 0) {
+                const action = this.players[1].combo.type;
+                const count = this.players[1].combo.count;
+                let multiplierText = '';
+                
+                if (this.isAttackAction(action)) {
+                    const multiplier = this.getComboMultiplier(action, count);
+                    multiplierText = ` (x${multiplier})`;
+                } else if (action === 'breakBlock') {
+                    multiplierText = ` (${this.getBreakBlockMultiplier(count, false) * 100}%/${this.getBreakBlockMultiplier(count, true) * 100}% урона)`;
+                } else if (action === 'block') {
+                    const blockPercent = this.getBlockEfficiency(count) * 100;
+                    const reflectionPercent = this.getBlockReflectionPercent(count) * 100;
+                    const apBonus = this.getBlockAPBonus(count);
+                    multiplierText = ` (${blockPercent}% блок + ${reflectionPercent}% отражение +${apBonus}ОД)`;
+                } else if (action === 'rest') {
+                    const restEff = this.getRestEfficiency(count);
+                    multiplierText = ` (+${restEff.ap}ОД +${restEff.healPercent * 100}% HP)`;
+                } else if (action === 'heal') {
+                    const healPercent = this.getHealEfficiency(count) * 100;
+                    multiplierText = ` (${healPercent}% HP)`;
+                }
+                
+                playerCombo.textContent = `${this.getActionName(action)} x${count}${multiplierText}`;
+            } else {
+                playerCombo.textContent = 'Нет';
+            }
         }
-    });
-    
-    this.updateTacticalGrid();
-    this.updateBattleLog();
-    
-    // ОБНОВЛЯЕМ ФЛЯГУ - ДОБАВЛЕН ВЫЗОВ
-    this.updateFlaskChargesDisplay();
-}
+        
+        this.updateActionHistory('playerHistory', this.players[1].previousActions);
+        
+        this.currentMonsters.forEach(monster => {
+            if (monster.currentHealth > 0) {
+                this.updateMonsterPanel(monster.battleId);
+            }
+        });
+        
+        this.updateTacticalGrid();
+        this.updateBattleLog();
+        this.updateFlaskChargesDisplay();
+    }
 
     getActionName(action) {
         const names = {
@@ -1955,284 +2268,260 @@ completeMovementAfterBattle(victory, escape = false) {
         return hero && hero.currentHealth > 0 && aliveMonsters.length === 0;
     }
 
-endTacticalBattle(victory, escape = false) {
-    if (this.resultShown) return;
-    this.resultShown = true;
-    this.battleActive = false;
+    endTacticalBattle(victory, escape = false) {
+        if (this.resultShown) return;
+        this.resultShown = true;
+        this.battleActive = false;
 
-    console.log(`🎲 Завершение боя: победа=${victory}, побег=${escape}`);
-    console.log(`❤️ Текущее здоровье героя: ${this.currentHero?.currentHealth}`);
-    console.log(`🗺️ Контекст боя: ${this.battleContext}`);
+        console.log(`🎲 Завершение боя: победа=${victory}, побег=${escape}`);
+        console.log(`❤️ Текущее здоровье героя: ${this.currentHero?.currentHealth}`);
+        console.log(`🗺️ Контекст боя: ${this.battleContext}`);
 
-    // ⭐ СНИМАЕМ ОТМЕТКУ АКТИВНОГО БОЯ И ОЧИЩАЕМ СОСТОЯНИЕ
-    if (window.game) {
-        window.game.markBattleAsInactive();
-        console.log("🎲 Бой отмечен как завершенный");
-    }
-    
-    // Очищаем состояние боя из sessionStorage
-    this.clearBattleState();
-
-    if (victory) {
-        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-        
-        this.currentHero.gold += totalReward;
-        window.game.systems.level.addExperience(this.currentHero, totalExperience);
-        this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
-        
-        this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
-    } else {
-        if (escape) {
-            // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 0;
-            this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
-        } else {
-            // Смерть в бою - перемещаем на стартовую точку
-            this.currentHero.currentHealth = 1;
-            this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-            this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
+        if (window.game) {
+            window.game.markBattleAsInactive();
+            console.log("🎲 Бой отмечен как завершенный");
         }
-    }
-    
-    // Сохраняем состояние героя
-    if (this.currentHero && window.game.systems.hero) {
-        this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
-        window.game.systems.hero.calculateHeroStats(this.currentHero);
-    }
-    
-    // Сохраняем игру
-    if (window.game) {
-        window.game.saveGame();
-    }
-    
-    // Уведомляем систему карт о завершении боя
-    if (this.battleContext === 'movement' && window.game.systems.map) {
-        console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
-        window.game.systems.map.completeMovementAfterBattle(victory, escape);
-    }
-    
-    // ⭐ ВАЖНО: ВСЕГДА показываем результат боя и возвращаем в игру
-    this.showBattleResult(victory, escape);
-}
-
-showBattleResult(victory, escape = false) {
-    const app = document.getElementById('app');
-    if (!app) return;
-
-    let resultHTML = '';
-    
-    if (victory) {
-        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
-        resultHTML = `
-            <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
-                    <h3 style="color: #00ff00; margin-bottom: 20px; font-size: 28px;">🎉 ПОБЕДА!</h3>
-                    <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                        <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
-                        <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
-                        <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
-                        <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
-                    </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                            style="padding: 12px 30px; font-size: 18px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer;">
-                        Продолжить
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        if (escape) {
-            resultHTML = `
-                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                    <div class="battle-result-modal escape" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ffaa00; text-align: center; max-width: 500px; width: 90%;">
-                        <h3 style="color: #ffaa00; margin-bottom: 20px; font-size: 28px;">🏃 УСПЕШНЫЙ ПОБЕГ</h3>
-                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                            <p style="font-size: 18px;">Герой успешно сбежал с поля боя</p>
-                            <p style="font-size: 18px; color: #ef4444;">Потеряно 50% здоровья</p>
-                            <p style="font-size: 18px;">Герой остался на своей позиции</p>
-                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
-                        </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                                style="padding: 12px 30px; font-size: 18px; background: #ffaa00; color: black; border: none; border-radius: 8px; cursor: pointer;">
-                            Продолжить
-                        </button>
-                    </div>
-                </div>
-            `;
-        } else {
-            resultHTML = `
-                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                    <div class="battle-result-modal defeat" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ef4444; text-align: center; max-width: 500px; width: 90%;">
-                        <h3 style="color: #ef4444; margin-bottom: 20px; font-size: 28px;">💀 ПОРАЖЕНИЕ</h3>
-                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                            <p style="font-size: 18px;">Герой повержен в бою</p>
-                            <p style="font-size: 18px; color: #00ff00;">Здоровье восстановлено до 1</p>
-                            <p style="font-size: 18px;">Возврат на стартовую позицию</p>
-                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
-                        </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                                style="padding: 12px 30px; font-size: 18px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                            Продолжить
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-    }
-    
-    const existingOverlay = document.querySelector('.battle-result-overlay');
-    if (existingOverlay) existingOverlay.remove();
-    
-    app.insertAdjacentHTML('beforeend', resultHTML);
-}
+        this.clearBattleState();
 
-closeBattleResult() {
-    const overlay = document.querySelector('.battle-result-overlay');
-    if (overlay) overlay.remove();
-    
-    this.returnToGameAfterBattle(); // ← Вызываем тот же метод
-}
-returnToGameAfterBattle() {
-    this.resultShown = false;
-    this.battleEnding = false;
-    
-    if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
-        window.game.showHeroGameScreen();
-        setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
-    } else if (window.game) {
-        window.game.showHeroGameScreen();
-    }
-    
-    this.battleActive = false;
-    this.currentMonsters = [];
-    this.selectedTarget = null;
-    this.pendingAction = null;
-}
-
-
-// ⭐ НОВЫЙ МЕТОД: Сохранение состояния боя
-saveBattleState() {
-    try {
-        const battleState = {
-            active: true,
-            heroId: this.currentHero?.id,
-            monsterCount: this.currentMonsters?.length || 0,
-            round: this.battleRound,
-            context: this.battleContext,
-            timestamp: Date.now()
-        };
-        
-        sessionStorage.setItem('battleState', JSON.stringify(battleState));
-        console.log("💾 Состояние боя сохранено:", battleState);
-    } catch (error) {
-        console.error("❌ Ошибка сохранения состояния боя:", error);
-    }
-}
-
-// ⭐ НОВЫЙ МЕТОД: Очистка состояния боя
-clearBattleState() {
-    try {
-        sessionStorage.removeItem('battleState');
-        console.log("🗑️ Состояние боя очищено");
-    } catch (error) {
-        console.error("❌ Ошибка очистки состояния боя:", error);
-    }
-}
-
-// ⭐ НОВЫЙ МЕТОД: Восстановление после аварийного завершения
-recoverFromCrash() {
-    try {
-        const battleState = sessionStorage.getItem('battleState');
-        if (battleState) {
-            const state = JSON.parse(battleState);
-            console.log("🎲 Обнаружено незавершенное состояние боя:", state);
+        if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
             
-            if (state.active && window.game && window.game.currentHero) {
-                // Восстанавливаем героя
-                this.currentHero = window.game.currentHero;
-                
-                // Считаем это поражением
+            this.currentHero.gold += totalReward;
+            window.game.systems.level.addExperience(this.currentHero, totalExperience);
+            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+            
+            this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+        } else {
+            if (escape) {
+                this.currentHero.deaths = (this.currentHero.deaths || 0) + 0;
+                this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
+            } else {
                 this.currentHero.currentHealth = 1;
                 this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-                
-                // Уведомляем систему карт
-                if (window.game.systems.map) {
-                    window.game.systems.map.completeMovementAfterBattle(false, false);
-                }
-                
-                // Сохраняем игру
-                window.game.saveGame();
-                
-                // Очищаем состояние
-                this.clearBattleState();
-                
-                console.log("✅ Восстановление после аварийного завершения боя выполнено");
-                return true;
+                this.addBattleLog("💀 Поражение! Герой повержен и возвращен на стартовую позицию.");
             }
         }
-    } catch (error) {
-        console.error("❌ Ошибка восстановления после аварийного завершения:", error);
-        this.clearBattleState();
+        
+        if (this.currentHero && window.game.systems.hero) {
+            this.currentHero.currentHealth = this.battleGrid.allies[3]?.currentHealth || this.currentHero.currentHealth;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
+        
+        if (window.game) {
+            window.game.saveGame();
+        }
+        
+        if (this.battleContext === 'movement' && window.game.systems.map) {
+            console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
+            window.game.systems.map.completeMovementAfterBattle(victory, escape);
+        }
+        
+        this.showBattleResult(victory, escape);
     }
-    return false;
-}
 
-    
-tryToFlee() {
-    if (!this.currentHero || this.battleEnding) return false;
+    showBattleResult(victory, escape = false) {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    console.log("🏃 Попытка побега...");
-    
-    const heroStats = this.getHeroStatsForBattle();
-    const halfHealth = Math.floor(heroStats.maxHealth / 2);
-    
-    console.log(`🏃 Здоровье: ${this.currentHero.currentHealth}/${heroStats.maxHealth}, половина: ${halfHealth}`);
-    
-    // Проверяем, достаточно ли здоровья для побега
-    if (this.currentHero.currentHealth <= halfHealth) {
-        this.addBattleLog("💀 Недостаточно здоровья для побега! Герой погибает при попытке бегства.");
+        let resultHTML = '';
         
-        // Смерть при попытке побега
-        this.currentHero.currentHealth = 0;
-        this.battleEnding = true;
+        if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            resultHTML = `
+                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                    <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
+                        <h3 style="color: #00ff00; margin-bottom: 20px; font-size: 28px;">🎉 ПОБЕДА!</h3>
+                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                            <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
+                            <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
+                            <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
+                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                                style="padding: 12px 30px; font-size: 18px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer;">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            if (escape) {
+                resultHTML = `
+                    <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                        <div class="battle-result-modal escape" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ffaa00; text-align: center; max-width: 500px; width: 90%;">
+                            <h3 style="color: #ffaa00; margin-bottom: 20px; font-size: 28px;">🏃 УСПЕШНЫЙ ПОБЕГ</h3>
+                            <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                                <p style="font-size: 18px;">Герой успешно сбежал с поля боя</p>
+                                <p style="font-size: 18px; color: #ef4444;">Потеряно 50% здоровья</p>
+                                <p style="font-size: 18px;">Герой остался на своей позиции</p>
+                                <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
+                            </div>
+                            <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                                    style="padding: 12px 30px; font-size: 18px; background: #ffaa00; color: black; border: none; border-radius: 8px; cursor: pointer;">
+                                Продолжить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultHTML = `
+                    <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
+                        <div class="battle-result-modal defeat" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ef4444; text-align: center; max-width: 500px; width: 90%;">
+                            <h3 style="color: #ef4444; margin-bottom: 20px; font-size: 28px;">💀 ПОРАЖЕНИЕ</h3>
+                            <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                                <p style="font-size: 18px;">Герой повержен в бою</p>
+                                <p style="font-size: 18px; color: #00ff00;">Здоровье восстановлено до 1</p>
+                                <p style="font-size: 18px;">Возврат на стартовую позицию</p>
+                                <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
+                            </div>
+                            <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
+                                    style="padding: 12px 30px; font-size: 18px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                                Продолжить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
         
-        setTimeout(() => {
-            this.endTacticalBattle(false, false); // Поражение, не побег
-        }, 1000);
+        const existingOverlay = document.querySelector('.battle-result-overlay');
+        if (existingOverlay) existingOverlay.remove();
         
+        app.insertAdjacentHTML('beforeend', resultHTML);
+    }
+
+    closeBattleResult() {
+        const overlay = document.querySelector('.battle-result-overlay');
+        if (overlay) overlay.remove();
+        
+        this.returnToGameAfterBattle();
+    }
+    
+    returnToGameAfterBattle() {
+        this.resultShown = false;
+        this.battleEnding = false;
+        
+        if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
+            window.game.showHeroGameScreen();
+            setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
+        } else if (window.game) {
+            window.game.showHeroGameScreen();
+        }
+        
+        this.battleActive = false;
+        this.currentMonsters = [];
+        this.selectedTarget = null;
+        this.pendingAction = null;
+    }
+
+    saveBattleState() {
+        try {
+            const battleState = {
+                active: true,
+                heroId: this.currentHero?.id,
+                monsterCount: this.currentMonsters?.length || 0,
+                round: this.battleRound,
+                context: this.battleContext,
+                timestamp: Date.now()
+            };
+            
+            sessionStorage.setItem('battleState', JSON.stringify(battleState));
+            console.log("💾 Состояние боя сохранено:", battleState);
+        } catch (error) {
+            console.error("❌ Ошибка сохранения состояния боя:", error);
+        }
+    }
+
+    clearBattleState() {
+        try {
+            sessionStorage.removeItem('battleState');
+            console.log("🗑️ Состояние боя очищено");
+        } catch (error) {
+            console.error("❌ Ошибка очистки состояния боя:", error);
+        }
+    }
+
+    recoverFromCrash() {
+        try {
+            const battleState = sessionStorage.getItem('battleState');
+            if (battleState) {
+                const state = JSON.parse(battleState);
+                console.log("🎲 Обнаружено незавершенное состояние боя:", state);
+                
+                if (state.active && window.game && window.game.currentHero) {
+                    this.currentHero = window.game.currentHero;
+                    
+                    this.currentHero.currentHealth = 1;
+                    this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+                    
+                    if (window.game.systems.map) {
+                        window.game.systems.map.completeMovementAfterBattle(false, false);
+                    }
+                    
+                    window.game.saveGame();
+                    
+                    this.clearBattleState();
+                    
+                    console.log("✅ Восстановление после аварийного завершения боя выполнено");
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error("❌ Ошибка восстановления после аварийного завершения:", error);
+            this.clearBattleState();
+        }
         return false;
     }
     
-    // ⭐ ИСПРАВЛЕНИЕ: Убедимся что здоровье действительно уменьшается
-    const oldHealth = this.currentHero.currentHealth;
-    
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Уменьшаем здоровье СРАЗУ
-    this.currentHero.currentHealth = Math.max(1, oldHealth - halfHealth);
-    
-    console.log(`🏃 Здоровье уменьшено: ${oldHealth} → ${this.currentHero.currentHealth}`);
-    
-    // Обновляем полоску здоровья в бою
-    const heroUnit = this.battleGrid.allies[3];
-    if (heroUnit) {
-        heroUnit.currentHealth = this.currentHero.currentHealth;
-        this.updateHealthBar('allies', 3, this.currentHero.currentHealth, heroStats.maxHealth);
+    tryToFlee() {
+        if (!this.currentHero || this.battleEnding) return false;
+
+        console.log("🏃 Попытка побега...");
+        
+        const heroStats = this.getHeroStatsForBattle();
+        const halfHealth = Math.floor(heroStats.maxHealth / 2);
+        
+        console.log(`🏃 Здоровье: ${this.currentHero.currentHealth}/${heroStats.maxHealth}, половина: ${halfHealth}`);
+        
+        if (this.currentHero.currentHealth <= halfHealth) {
+            this.addBattleLog("💀 Недостаточно здоровья для побега! Герой погибает при попытке бегства.");
+            
+            this.currentHero.currentHealth = 0;
+            this.battleEnding = true;
+            
+            setTimeout(() => {
+                this.endTacticalBattle(false, false);
+            }, 1000);
+            
+            return false;
+        }
+        
+        const oldHealth = this.currentHero.currentHealth;
+        
+        this.currentHero.currentHealth = Math.max(1, oldHealth - halfHealth);
+        
+        console.log(`🏃 Здоровье уменьшено: ${oldHealth} → ${this.currentHero.currentHealth}`);
+        
+        const heroUnit = this.battleGrid.allies[3];
+        if (heroUnit) {
+            heroUnit.currentHealth = this.currentHero.currentHealth;
+            this.updateHealthBar('allies', 3, this.currentHero.currentHealth, heroStats.maxHealth);
+        }
+        
+        this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья (${oldHealth} → ${this.currentHero.currentHealth}).`);
+        
+        this.battleEnding = true;
+        
+        setTimeout(() => {
+            this.endTacticalBattle(false, true);
+        }, 1000);
+        
+        return true;
     }
-    
-    this.addBattleLog(`🏃 Побег успешен! Потеряно ${halfHealth} здоровья (${oldHealth} → ${this.currentHero.currentHealth}).`);
-    
-    this.battleEnding = true;
-    
-    setTimeout(() => {
-        this.endTacticalBattle(false, true); // Поражение, но побег
-    }, 1000);
-    
-    return true;
-}
-
-
 
     showTacticalBattleScreen() {
         this.showTacticalBattleInterface();
@@ -2252,132 +2541,545 @@ tryToFlee() {
     }
 }
 
-class TacticalAI {
-    constructor(battleSystem, monster) {
+// ============================================================================
+// ПРОДВИНУТАЯ СИСТЕМА ИИ
+// ============================================================================
+
+class AdvancedTacticalAI {
+    constructor(battleSystem, monster, aiMemory) {
         this.bs = battleSystem;
         this.monster = monster;
+        this.aiMemory = aiMemory;
+        this.personality = this.definePersonality();
+        this.decisionHistory = [];
+        this.predictionModel = new PredictionModel();
     }
     
-    decideAction() {
-        const availableActions = this.getAvailableActions();
-        if (availableActions.length === 0) return 'rest';
-        
-        const hero = this.bs.battleGrid.allies[3];
-        if (!hero || hero.currentHealth <= 0) return 'rest';
-        
-        const heroHealthPercent = hero.currentHealth / hero.maxHealth;
-        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
-        const isHeroBlocking = this.bs.players[1].currentAction === 'block';
-        const heroBlockCombo = this.bs.players[1].combo.count;
-        
-        const strategy = this.analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo);
-        
-        if (isHeroBlocking && availableActions.includes('breakBlock')) {
-            let breakBlockChance = strategy.breakBlockChance;
-            
-            if (this.monster.ap <= 2) breakBlockChance += 0.15;
-            if (heroBlockCombo >= 2) breakBlockChance += 0.2;
-            if (monsterHealthPercent > 0.7) breakBlockChance += 0.1;
-            
-            if (Math.random() < Math.min(breakBlockChance, 0.95)) {
-                console.log(`🤖 ${this.monster.name} выбирает пробитие блока (шанс: ${breakBlockChance.toFixed(2)})`);
-                return 'breakBlock';
-            }
-        }
-        
-        if (monsterHealthPercent < 0.25 && availableActions.includes('heal')) {
-            const healChance = 0.8 - (monsterHealthPercent * 0.5);
-            if (Math.random() < healChance) {
-                console.log(`🤖 ${this.monster.name} срочно лечится (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
-                return 'heal';
-            }
-        }
-        
-        if (heroHealthPercent < 0.3 && availableActions.includes('strongAttack') && this.monster.ap >= 2) {
-            if (Math.random() < 0.6) {
-                console.log(`🤖 ${this.monster.name} добивает слабого героя`);
-                return 'strongAttack';
-            }
-        }
-        
-        if (monsterHealthPercent < 0.5 && availableActions.includes('block') && !isHeroBlocking) {
-            const blockChance = 0.5 - (monsterHealthPercent * 0.4);
-            if (Math.random() < blockChance) {
-                console.log(`🤖 ${this.monster.name} защищается (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
-                return 'block';
-            }
-        }
-        
-        if (this.monster.ap >= 1) {
-            const attackRoll = Math.random();
-            
-            if (this.monster.ap >= 4 && attackRoll < 0.25) {
-                console.log(`🤖 ${this.monster.name} использует сокрушительную атаку`);
-                return 'crushingAttack';
-            }
-            
-            if (this.monster.ap >= 2 && attackRoll < 0.45) {
-                console.log(`🤖 ${this.monster.name} использует силовую атаку`);
-                return 'strongAttack';
-            }
-            
-            if (attackRoll < 0.8) {
-                console.log(`🤖 ${this.monster.name} атакует`);
-                return 'attack';
-            }
-        }
-        
-        if (this.monster.ap <= 2 && availableActions.includes('rest')) {
-            const restChance = 0.7 - (this.monster.ap * 0.2);
-            if (Math.random() < restChance) {
-                console.log(`🤖 ${this.monster.name} отдыхает для восстановления ОД`);
-                return 'rest';
-            }
-        }
-        
-        const fallbackActions = availableActions.filter(action => 
-            ['attack', 'strongAttack', 'breakBlock', 'rest'].includes(action)
-        );
-        
-        const selectedAction = fallbackActions.length > 0 
-            ? fallbackActions[Math.floor(Math.random() * fallbackActions.length)]
-            : 'rest';
-            
-        console.log(`🤖 ${this.monster.name} выбирает резервное действие: ${selectedAction}`);
-        return selectedAction;
-    }
-    
-    analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo) {
-        const strategy = {
-            breakBlockChance: 0.3,
-            aggression: 0.5,
-            defense: 0.5
+    definePersonality() {
+        const basePersonality = {
+            aggressive: this.monster.damage / 20,
+            defensive: (this.monster.armor || 0) / 10 + (this.monster.health / 100),
+            tactical: 0.5,
+            adaptive: 0.3
         };
         
-        if (isHeroBlocking) {
-            strategy.breakBlockChance += 0.2;
+        const total = Object.values(basePersonality).reduce((a, b) => a + b, 0);
+        const normalized = {};
+        Object.keys(basePersonality).forEach(key => {
+            normalized[key] = basePersonality[key] / total;
+        });
+        
+        let dominant = 'tactical';
+        let maxValue = 0;
+        
+        Object.keys(normalized).forEach(key => {
+            if (normalized[key] > maxValue) {
+                maxValue = normalized[key];
+                dominant = key;
+            }
+        });
+        
+        this.personalityProfile = {
+            type: dominant,
+            traits: normalized,
+            aggression: Math.min(1, this.monster.damage / 30),
+            caution: Math.min(1, (this.monster.health / 80) + ((this.monster.armor || 0) / 20)),
+            learningRate: 0.7
+        };
+        
+        return this.personalityProfile;
+    }
+    
+    decideOptimalAction(allMonsters = null) {
+        const gameState = this.analyzeGameState(allMonsters);
+        const availableActions = this.getAvailableActions();
+        
+        if (availableActions.length === 0) return 'rest';
+        
+        const actionScores = {};
+        availableActions.forEach(action => {
+            let score = this.evaluateAction(action, gameState);
             
-            if (heroBlockCombo >= 2) strategy.breakBlockChance += 0.3;
-            if (heroBlockCombo >= 3) strategy.breakBlockChance += 0.4;
+            score = this.applyPersonalityModifiers(score, action, gameState);
             
-            if (this.monster.ap >= 3) strategy.breakBlockChance += 0.1;
+            score = this.applyAntiPatternPenalty(score, action);
+            
+            if (allMonsters && allMonsters.length > 1) {
+                score = this.applyTeamSynergy(score, action, allMonsters);
+            }
+            
+            actionScores[action] = score;
+        });
+        
+        const bestAction = this.selectBestAction(actionScores, gameState);
+        
+        this.recordDecision(bestAction, gameState, actionScores[bestAction]);
+        
+        return bestAction;
+    }
+    
+    analyzeGameState(allMonsters) {
+        const hero = this.bs.battleGrid.allies[3];
+        const heroStats = this.bs.getHeroStatsForBattle();
+        
+        const state = {
+            hero: {
+                health: hero?.currentHealth || 0,
+                maxHealth: hero?.maxHealth || 1,
+                healthPercent: hero ? hero.currentHealth / hero.maxHealth : 1,
+                action: this.bs.players[1].currentAction,
+                combo: this.bs.players[1].combo,
+                ap: this.bs.players[1].ap,
+                stats: heroStats,
+                attackType: this.bs.getHeroAttackType(this.bs.currentHero),
+                isBlocking: this.bs.players[1].currentAction === 'block',
+                blockCombo: this.bs.players[1].combo.count
+            },
+            
+            self: {
+                health: this.monster.currentHealth,
+                maxHealth: this.monster.health,
+                healthPercent: this.monster.currentHealth / this.monster.health,
+                ap: this.monster.ap,
+                combo: this.monster.combo,
+                role: this.monster.role,
+                position: this.getMonsterPosition(),
+                damage: this.monster.damage || 10,
+                armor: this.monster.armor || 0
+            },
+            
+            team: {
+                aliveCount: allMonsters ? allMonsters.length : 1,
+                totalHealth: 0,
+                averageHealth: 0,
+                weakestAlly: null,
+                strongestAlly: null
+            },
+            
+            tactical: {
+                round: this.bs.battleRound,
+                threatLevel: this.calculateThreatLevel(),
+                opportunityLevel: this.calculateOpportunityLevel(),
+                predictedPlayerAction: this.predictPlayerAction()
+            },
+            
+            memory: {
+                playerPatterns: this.aiMemory.playerPatterns.slice(-3),
+                successfulActions: this.getSuccessfulActions(),
+                heroWeaknesses: this.getHeroWeaknesses(),
+                recentAnalysis: this.aiMemory.roundAnalysis.slice(-2)
+            }
+        };
+        
+        if (allMonsters && allMonsters.length > 0) {
+            let totalHealth = 0;
+            let minHealth = Infinity;
+            let maxHealth = 0;
+            let weakest = null;
+            let strongest = null;
+            
+            allMonsters.forEach(monsterUnit => {
+                const health = monsterUnit.currentHealth;
+                totalHealth += health;
+                
+                if (health < minHealth && monsterUnit.data.battleId !== this.monster.battleId) {
+                    minHealth = health;
+                    weakest = monsterUnit.data;
+                }
+                
+                if (health > maxHealth && monsterUnit.data.battleId !== this.monster.battleId) {
+                    maxHealth = health;
+                    strongest = monsterUnit.data;
+                }
+            });
+            
+            state.team.totalHealth = totalHealth;
+            state.team.averageHealth = totalHealth / allMonsters.length;
+            state.team.weakestAlly = weakest;
+            state.team.strongestAlly = strongest;
         }
         
-        if (heroHealthPercent < 0.4) {
-            strategy.aggression += 0.3;
-            strategy.breakBlockChance += 0.1;
+        return state;
+    }
+    
+    getMonsterPosition() {
+        for (let i = 0; i < this.bs.battleGrid.enemies.length; i++) {
+            const unit = this.bs.battleGrid.enemies[i];
+            if (unit && unit.data.battleId === this.monster.battleId) {
+                return {
+                    index: i,
+                    row: unit.row,
+                    isFrontline: unit.row === 'front'
+                };
+            }
+        }
+        return { index: -1, row: 'back', isFrontline: false };
+    }
+    
+    calculateThreatLevel() {
+        const hero = this.bs.battleGrid.allies[3];
+        if (!hero) return 0;
+        
+        let threat = 0;
+        
+        const playerCombo = this.bs.players[1].combo;
+        if (playerCombo.count >= 2) {
+            threat += playerCombo.count * 0.2;
+            
+            if (playerCombo.type === 'crushingAttack') threat += 0.3;
+            if (playerCombo.type === 'strongAttack') threat += 0.2;
         }
         
-        if (monsterHealthPercent < 0.4) {
-            strategy.defense += 0.3;
-            strategy.aggression -= 0.2;
+        if (this.bs.players[1].ap >= 4) threat += 0.3;
+        else if (this.bs.players[1].ap >= 2) threat += 0.15;
+        
+        const healthPercent = this.monster.currentHealth / this.monster.health;
+        if (healthPercent < 0.3) threat += 0.4;
+        else if (healthPercent < 0.5) threat += 0.2;
+        
+        return Math.min(threat, 1);
+    }
+    
+    calculateOpportunityLevel() {
+        const hero = this.bs.battleGrid.allies[3];
+        if (!hero) return 0;
+        
+        let opportunity = 0;
+        
+        const heroHealthPercent = hero.currentHealth / hero.maxHealth;
+        if (heroHealthPercent < 0.3) opportunity += 0.5;
+        else if (heroHealthPercent < 0.5) opportunity += 0.3;
+        
+        if (this.bs.players[1].currentAction === 'block') {
+            opportunity += 0.2;
         }
         
-        if (monsterHealthPercent > 0.7) {
-            strategy.aggression += 0.2;
+        if (this.bs.players[1].ap <= 1) opportunity += 0.2;
+        
+        return Math.min(opportunity, 1);
+    }
+    
+    predictPlayerAction() {
+        const player = this.bs.players[1];
+        const history = player.previousActions;
+        
+        if (history.length < 2) return { action: 'attack', confidence: 0.3 };
+        
+        const lastAction = history[0];
+        const secondLastAction = history[1];
+        
+        if (lastAction === 'Блок' && secondLastAction === 'Блок') {
+            return { action: 'block', confidence: 0.7 };
         }
         
-        return strategy;
+        if (lastAction === 'Атака' && secondLastAction === 'Атака') {
+            return { action: 'attack', confidence: 0.6 };
+        }
+        
+        if (lastAction === 'Отдых') {
+            return { action: 'attack', confidence: 0.5 };
+        }
+        
+        if (player.ap >= 4) {
+            return { action: 'crushingAttack', confidence: 0.4 };
+        }
+        
+        if (player.ap >= 2 && player.ap < 4) {
+            return { action: 'strongAttack', confidence: 0.5 };
+        }
+        
+        return { action: 'attack', confidence: 0.3 };
+    }
+    
+    getSuccessfulActions() {
+        return this.aiMemory.successfulCombos
+            .filter(combo => combo.monsterId === this.monster.battleId)
+            .map(combo => combo.action);
+    }
+    
+    getHeroWeaknesses() {
+        const weaknesses = [];
+        
+        this.aiMemory.heroWeaknesses.forEach((count, key) => {
+            if (count >= 2) {
+                weaknesses.push({
+                    type: key,
+                    severity: Math.min(1, count / 5)
+                });
+            }
+        });
+        
+        return weaknesses;
+    }
+    
+    evaluateAction(action, gameState) {
+        let score = 0;
+        
+        switch(action) {
+            case 'attack':
+                score = this.evaluateAttackAction(gameState);
+                break;
+            case 'strongAttack':
+                score = this.evaluateStrongAttackAction(gameState);
+                break;
+            case 'crushingAttack':
+                score = this.evaluateCrushingAttackAction(gameState);
+                break;
+            case 'block':
+                score = this.evaluateBlockAction(gameState);
+                break;
+            case 'breakBlock':
+                score = this.evaluateBreakBlockAction(gameState);
+                break;
+            case 'rest':
+                score = this.evaluateRestAction(gameState);
+                break;
+            case 'heal':
+                score = this.evaluateHealAction(gameState);
+                break;
+            default:
+                score = 0.1;
+        }
+        
+        return score;
+    }
+    
+    evaluateAttackAction(state) {
+        let score = 0.5;
+        
+        if (state.self.ap >= 1) score += 0.1;
+        
+        if (state.hero.healthPercent < 0.4) score += 0.2;
+        if (state.tactic.threatLevel < 0.3) score += 0.15;
+        if (state.self.combo.type === 'attack' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.1;
+        }
+        
+        if (state.hero.isBlocking && state.hero.blockCombo >= 2) score -= 0.3;
+        if (state.self.healthPercent < 0.3) score -= 0.2;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateStrongAttackAction(state) {
+        let score = 0.4;
+        
+        if (state.self.ap >= 2) score += 0.2;
+        
+        if (state.hero.healthPercent < 0.5 && !state.hero.isBlocking) score += 0.3;
+        if (state.tactic.opportunityLevel > 0.6) score += 0.2;
+        
+        if (state.self.combo.type === 'strongAttack' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.15;
+        }
+        
+        if (state.hero.isBlocking) score -= 0.2;
+        if (state.self.healthPercent < 0.4) score -= 0.15;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateCrushingAttackAction(state) {
+        let score = 0.3;
+        
+        if (state.self.ap >= 4) score += 0.3;
+        
+        if (state.hero.isBlocking && state.hero.blockCombo >= 2) score += 0.4;
+        
+        if (state.hero.healthPercent < 0.3) score += 0.3;
+        
+        if (state.self.combo.type === 'crushingAttack' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.2;
+        }
+        
+        if (state.self.ap <= 3) score = 0;
+        if (state.self.healthPercent < 0.5) score -= 0.2;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateBlockAction(state) {
+        let score = 0.4;
+        
+        if (state.tactic.threatLevel > 0.5) score += 0.3;
+        if (state.self.healthPercent < 0.6) score += 0.2;
+        
+        const predictedAction = state.tactic.predictedPlayerAction.action;
+        if (['attack', 'strongAttack', 'crushingAttack'].includes(predictedAction)) {
+            score += 0.25;
+        }
+        
+        if (state.self.combo.type === 'block' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.15;
+        }
+        
+        if (state.hero.isBlocking) score -= 0.2;
+        if (state.tactic.opportunityLevel > 0.7) score -= 0.3;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateBreakBlockAction(state) {
+        let score = 0.3;
+        
+        if (state.hero.isBlocking) {
+            score += 0.4;
+            
+            if (state.hero.blockCombo >= 2) score += 0.2;
+            if (state.hero.blockCombo >= 3) score += 0.3;
+        }
+        
+        if (state.hero.action === 'rest') score += 0.2;
+        
+        if (state.self.combo.type === 'breakBlock' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.15;
+        }
+        
+        if (!state.hero.isBlocking && state.hero.action !== 'rest') score -= 0.2;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateRestAction(state) {
+        let score = 0.3;
+        
+        if (state.self.ap <= 2) score += 0.3;
+        if (state.self.healthPercent < 0.7) score += 0.2;
+        if (state.tactic.threatLevel < 0.4) score += 0.15;
+        
+        if (state.tactic.opportunityLevel > 0.6) score -= 0.3;
+        if (state.hero.healthPercent < 0.4) score -= 0.2;
+        
+        return Math.max(0, score);
+    }
+    
+    evaluateHealAction(state) {
+        let score = 0.2;
+        
+        if (state.self.healthPercent < 0.3) score += 0.5;
+        if (state.self.healthPercent < 0.5) score += 0.3;
+        
+        if (this.monster.role === 'support' && state.team.weakestAlly) {
+            const allyHealthPercent = state.team.weakestAlly.currentHealth / state.team.weakestAlly.health;
+            if (allyHealthPercent < 0.4) score += 0.4;
+        }
+        
+        if (state.self.combo.type === 'heal' && state.self.combo.count < 4) {
+            score += state.self.combo.count * 0.2;
+        }
+        
+        if (state.self.healthPercent > 0.8) score -= 0.3;
+        if (state.tactic.threatLevel > 0.7) score -= 0.2;
+        
+        return Math.max(0, score);
+    }
+    
+    applyPersonalityModifiers(baseScore, action, state) {
+        let modifiedScore = baseScore;
+        const personality = this.personalityProfile;
+        
+        switch(personality.type) {
+            case 'aggressive':
+                if (['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(action)) {
+                    modifiedScore *= (1 + personality.aggression * 0.5);
+                } else {
+                    modifiedScore *= (1 - personality.aggression * 0.3);
+                }
+                break;
+                
+            case 'defensive':
+                if (['block', 'heal', 'rest'].includes(action)) {
+                    modifiedScore *= (1 + personality.caution * 0.5);
+                } else if (['crushingAttack', 'breakBlock'].includes(action)) {
+                    modifiedScore *= (1 - personality.caution * 0.4);
+                }
+                break;
+                
+            case 'tactical':
+                const predictedAction = state.tactic.predictedPlayerAction.action;
+                if ((predictedAction === 'block' && action === 'breakBlock') ||
+                    (predictedAction === 'attack' && action === 'block') ||
+                    (predictedAction === 'rest' && action === 'attack')) {
+                    modifiedScore *= 1.4;
+                }
+                break;
+                
+            case 'adaptive':
+                const successfulActions = this.getSuccessfulActions();
+                if (successfulActions.includes(action)) {
+                    modifiedScore *= (1 + personality.learningRate * 0.3);
+                }
+                break;
+        }
+        
+        return modifiedScore;
+    }
+    
+    applyAntiPatternPenalty(score, action) {
+        const recentDecisions = this.decisionHistory.slice(-3);
+        const sameActionCount = recentDecisions.filter(d => d.action === action).length;
+        
+        if (sameActionCount >= 2) {
+            return score * Math.pow(0.7, sameActionCount - 1);
+        }
+        
+        return score;
+    }
+    
+    applyTeamSynergy(score, action, allMonsters) {
+        const otherMonsters = allMonsters.filter(m => 
+            m.data.battleId !== this.monster.battleId
+        );
+        
+        if (otherMonsters.length === 0) return score;
+        
+        const allyActions = otherMonsters.map(m => m.data.currentAction);
+        
+        const synergies = {
+            'block': ['strongAttack', 'crushingAttack'],
+            'breakBlock': ['breakBlock', 'attack'],
+            'heal': ['block', 'rest']
+        };
+        
+        for (const [key, compatibleActions] of Object.entries(synergies)) {
+            if (allyActions.includes(key) && compatibleActions.includes(action)) {
+                return score * 1.3;
+            }
+        }
+        
+        return score;
+    }
+    
+    selectBestAction(actionScores, gameState) {
+        const scoredActions = Object.entries(actionScores)
+            .map(([action, score]) => ({ action, score }));
+        
+        scoredActions.sort((a, b) => b.score - a.score);
+        
+        const topScore = scoredActions[0].score;
+        const topActions = scoredActions.filter(a => a.score >= topScore * 0.9);
+        
+        if (topActions.length > 1 && Math.random() < 0.3) {
+            const randomIndex = Math.floor(Math.random() * topActions.length);
+            return topActions[randomIndex].action;
+        }
+        
+        return scoredActions[0].action;
+    }
+    
+    recordDecision(action, gameState, score) {
+        this.decisionHistory.push({
+            round: gameState.tactic.round,
+            action: action,
+            score: score,
+            heroHealth: gameState.hero.healthPercent,
+            selfHealth: gameState.self.healthPercent,
+            threatLevel: gameState.tactic.threatLevel
+        });
+        
+        if (this.decisionHistory.length > 10) {
+            this.decisionHistory.shift();
+        }
     }
     
     getAvailableActions() {
@@ -2398,5 +3100,79 @@ class TacticalAI {
     }
 }
 
+class PredictionModel {
+    constructor() {
+        this.patterns = new Map();
+        this.actionChains = new Map();
+        this.learningRate = 0.8;
+    }
+    
+    predictNextAction(history, currentState) {
+        if (history.length < 2) return { action: 'attack', confidence: 0.3 };
+        
+        const recentPattern = history.slice(0, 2).join('_');
+        
+        if (this.patterns.has(recentPattern)) {
+            const predictions = this.patterns.get(recentPattern);
+            let bestPrediction = null;
+            let bestConfidence = 0;
+            
+            predictions.forEach((count, action) => {
+                const confidence = count / predictions.total;
+                if (confidence > bestConfidence) {
+                    bestConfidence = confidence;
+                    bestPrediction = action;
+                }
+            });
+            
+            if (bestPrediction && bestConfidence > 0.4) {
+                return { action: bestPrediction, confidence: bestConfidence };
+            }
+        }
+        
+        return this.heuristicPrediction(currentState);
+    }
+    
+    heuristicPrediction(state) {
+        const { ap, healthPercent, lastAction } = state;
+        
+        if (healthPercent < 0.3) {
+            return { action: 'heal', confidence: 0.6 };
+        }
+        
+        if (ap >= 4) {
+            return { action: 'crushingAttack', confidence: 0.5 };
+        }
+        
+        if (ap <= 2 && healthPercent > 0.6) {
+            return { action: 'rest', confidence: 0.5 };
+        }
+        
+        if (lastAction === 'attack') {
+            return { action: 'strongAttack', confidence: 0.4 };
+        }
+        
+        return { action: 'attack', confidence: 0.3 };
+    }
+    
+    learnPattern(action, previousActions) {
+        if (previousActions.length < 2) return;
+        
+        const pattern = previousActions.slice(0, 2).join('_');
+        
+        if (!this.patterns.has(pattern)) {
+            this.patterns.set(pattern, new Map());
+            this.patterns.get(pattern).total = 0;
+        }
+        
+        const patternData = this.patterns.get(pattern);
+        patternData.set(action, (patternData.get(action) || 0) + 1);
+        patternData.total += 1;
+    }
+}
+
 window.BattleSystem = BattleSystem;
-console.log("📦 BattleSystem полностью переписан с системой фляги и улучшенным ИИ");
+window.AdvancedTacticalAI = AdvancedTacticalAI;
+window.PredictionModel = PredictionModel;
+
+console.log("🧠 BattleSystem с продвинутым ИИ загружен!");
