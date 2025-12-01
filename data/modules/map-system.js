@@ -341,18 +341,24 @@ handleCanvasClick(e) {
     if (!this.currentTacticalMap) return;
 
     const canvasRect = this.canvas.getBoundingClientRect();
+    
+    // Получаем масштаб из CSS
     const computedStyle = getComputedStyle(this.canvas);
     const transform = computedStyle.transform;
     let scale = 1;
     
     if (transform && transform !== 'none') {
         const matrix = new DOMMatrix(transform);
-        scale = matrix.a;
+        scale = matrix.a; // Масштаб по X (должен быть одинаковый по X и Y)
     }
-
+    
+    // Рассчитываем координаты относительно оригинального canvas (1024x1024)
     const logicalX = (e.clientX - canvasRect.left) / scale;
     const logicalY = (e.clientY - canvasRect.top) / scale;
     
+    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
+    
+    // Ищем клетку по логическим координатам
     const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
     if (!hex) return;
     
@@ -365,9 +371,14 @@ handleCanvasClick(e) {
         return;
     }
     
-    // Обработка специальных клеток
+    // Обработка воды
     if (hex.type === 'water') {
         console.log("💧 Клик по воде");
+        // Проверяем доступность
+        if (!this.isPlayerAdjacentToWater(hex)) {
+            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+            return;
+        }
         this.handleWaterCell(hex);
         return;
     }
