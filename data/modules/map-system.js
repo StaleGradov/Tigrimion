@@ -1147,21 +1147,6 @@ performCellAction(action, row, col) {
         return icons[resourceType] || icons.unknown;
     }
 
-    // Добавьте этот метод в любое место класса MapSystem, например после метода getResourceIcon()
-getActionName(action) {
-    const actionNames = {
-        'search_treasure': 'Поиск сокровищ',
-        'refill_flask': 'Наполнение фляги',
-        'search_ore': 'Поиск руды',
-        'search_stone': 'Поиск камней',
-        'search_berries': 'Сбор ягод',
-        'search_herbs': 'Сбор трав',
-        'search_mushrooms': 'Сбор грибов',
-        'search_wood': 'Заготовка древесины'
-    };
-    
-    return actionNames[action] || action;
-}
 
 getActionName(action) {
     const actionNames = {
