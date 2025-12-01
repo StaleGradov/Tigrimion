@@ -2280,7 +2280,7 @@ class TacticalAI {
             blockCount: 0,
             attackCount: 0,
             healCount: 0,
-            lastRestTurn: -3
+            lastRestTurn: -5  // Увеличиваем начальное значение
         };
     }
     
@@ -2288,7 +2288,10 @@ class TacticalAI {
         this.updatePlayerMemory();
         
         const availableActions = this.getAvailableActions();
-        if (availableActions.length === 0) return 'rest';
+        if (availableActions.length === 0) {
+            console.log(`🤖 ${this.monster.name} - нет доступных действий!`);
+            return 'rest';
+        }
         
         const actionWeights = this.calculateActionWeights(availableActions);
         const selectedAction = this.selectActionByWeights(actionWeights);
@@ -2296,10 +2299,13 @@ class TacticalAI {
         // Запоминаем когда последний раз отдыхали
         if (selectedAction === 'rest') {
             this.monster.lastRestTurn = this.bs.battleRound;
+            console.log(`🤖 ${this.monster.name} отдыхает, следующий отдых возможен через 2 хода`);
         }
         
         console.log(`🤖 ${this.monster.name} [${this.monster.aiType}] выбрал: ${selectedAction}`);
+        console.log(`   Доступные действия: ${availableActions.join(', ')}`);
         console.log(`   Веса:`, actionWeights);
+        console.log(`   AP: ${this.monster.ap}, Здоровье: ${Math.round((this.monster.currentHealth / this.monster.maxHealth) * 100)}%`);
         
         return selectedAction;
     }
@@ -2307,7 +2313,7 @@ class TacticalAI {
     updatePlayerMemory() {
         const player = this.bs.players[1];
         
-        // Запоминаем последние действия игрока (только завершенные)
+        // Запоминаем последние действия игрока
         if (player.previousActions && player.previousActions.length > 0) {
             const lastAction = player.previousActions[0];
             this.playerMemory.lastActions.unshift(lastAction);
@@ -2338,21 +2344,28 @@ class TacticalAI {
         const actions = [];
         const ap = this.monster.ap;
         
-        if (ap >= 1) actions.push('attack', 'block', 'breakBlock');
+        // Всегда доступны основные действия
+        if (ap >= 1) {
+            actions.push('attack');
+            actions.push('block');
+            actions.push('breakBlock');
+        }
         
-        // Отдых доступен только если прошло минимум 2 хода с последнего отдыха
-        if (ap >= 1 && (this.bs.battleRound - this.monster.lastRestTurn >= 2)) {
+        // Отдых доступен всегда, но с ограничениями
+        if (ap >= 1) {
             actions.push('rest');
         }
         
-        // Лечение доступно только если здоровье не полное и ниже 70%
-        if (ap >= 1 && this.monster.currentHealth < this.monster.maxHealth * 0.7) {
+        // Лечение доступно только если здоровье ниже 70% и не полное
+        if (ap >= 1 && this.monster.currentHealth < this.monster.maxHealth * 0.9) {
             actions.push('heal');
         }
         
+        // Сильные атаки доступны если достаточно AP
         if (ap >= 2) actions.push('strongAttack');
         if (ap >= 4) actions.push('crushingAttack');
         
+        // Фильтруем действия, которые действительно можно выполнить
         return actions.filter(action => ap >= this.bs.actionsCost[action]);
     }
     
@@ -2366,7 +2379,7 @@ class TacticalAI {
         availableActions.forEach(action => {
             let weight = 0;
             
-            // Базовый вес по типу монстра
+            // Базовый вес по типу монстра (УВЕЛИЧИЛИ веса атак!)
             weight += this.getBaseWeight(action);
             
             // Модификаторы по ситуации
@@ -2374,9 +2387,11 @@ class TacticalAI {
             weight += this.getAPModifier(action);
             weight += this.getPredictionModifier(action);
             weight += this.getComboModifier(action);
+            weight += this.getRestrictionModifier(action);
             weight += this.getRandomModifier();
             
-            weights[action] = Math.max(0, Math.min(100, weight));
+            // Убеждаемся, что вес положительный
+            weights[action] = Math.max(5, Math.min(100, weight)); // Минимум 5 вес
         });
         
         return weights;
@@ -2385,45 +2400,45 @@ class TacticalAI {
     getBaseWeight(action) {
         const baseWeights = {
             aggressor: {
-                attack: 60,
-                strongAttack: 50,
-                crushingAttack: 40,
-                breakBlock: 30,
-                block: 10,
-                rest: 15,
-                heal: 5
+                attack: 80,        // Увеличен с 60
+                strongAttack: 70,  // Увеличен с 50
+                crushingAttack: 60, // Увеличен с 40
+                breakBlock: 50,    // Увеличен с 30
+                block: 20,         // Увеличен с 10
+                rest: 10,          // Уменьшен с 15
+                heal: 10           // Увеличен с 5
             },
             defender: {
-                block: 60,
-                attack: 30,
-                strongAttack: 25,
-                crushingAttack: 15,
-                breakBlock: 35,
-                rest: 20,
-                heal: 25
+                block: 70,         // Увеличен с 60
+                attack: 50,        // Увеличен с 30
+                strongAttack: 40,  // Увеличен с 25
+                crushingAttack: 30, // Увеличен с 15
+                breakBlock: 50,    // Увеличен с 35
+                rest: 15,          // Уменьшен с 20
+                heal: 30           // Увеличен с 25
             },
             trickster: {
-                breakBlock: 50,
-                strongAttack: 40,
-                attack: 35,
-                rest: 25,
-                block: 30,
-                heal: 20,
-                crushingAttack: 30
+                breakBlock: 60,    // Увеличен с 50
+                strongAttack: 50,  // Увеличен с 40
+                attack: 45,        // Увеличен с 35
+                rest: 20,          // Уменьшен с 25
+                block: 40,         // Увеличен с 30
+                heal: 25,          // Увеличен с 20
+                crushingAttack: 40 // Увеличен с 30
             },
             berserker: {
-                attack: 70,
-                strongAttack: 60,
-                crushingAttack: 50,
-                breakBlock: 20,
-                block: 5,
-                rest: 10,
-                heal: 0
+                attack: 90,        // Увеличен с 70
+                strongAttack: 80,  // Увеличен с 60
+                crushingAttack: 70, // Увеличен с 50
+                breakBlock: 30,    // Увеличен с 20
+                block: 10,         // Увеличен с 5
+                rest: 5,           // Уменьшен с 10
+                heal: 5            // Увеличен с 0
             }
         };
         
         const aiType = this.monster.aiType || 'trickster';
-        return baseWeights[aiType][action] || 20;
+        return baseWeights[aiType][action] || 30; // Увеличен дефолтный вес
     }
     
     getHealthModifier(action, monsterHealth, heroHealth) {
@@ -2432,26 +2447,27 @@ class TacticalAI {
         // Модификаторы своего здоровья
         if (monsterHealth < 0.3) {
             // Критически низкое здоровье
-            if (action === 'heal') modifier += 40;
+            if (action === 'heal') modifier += 50;
             if (action === 'block') modifier += 30;
-            if (action === 'rest') modifier -= 20; // Не отдыхать при критическом здоровье
+            if (action === 'rest') modifier += 10; // Можно отдохнуть
         } else if (monsterHealth < 0.6) {
             // Среднее здоровье
-            if (action === 'heal') modifier += 20;
+            if (action === 'heal') modifier += 25;
             if (action === 'block') modifier += 15;
         } else if (monsterHealth > 0.9) {
-            // Полное здоровье
-            if (action === 'heal') modifier -= 30; // Не лечиться при полном здоровье
+            // Полное здоровье - не лечиться
+            if (action === 'heal') modifier -= 40;
         }
         
         // Модификаторы здоровья героя
         if (heroHealth < 0.3) {
-            // Герой слаб - добиваем
-            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 25;
-            if (action === 'rest') modifier -= 30; // Не отдыхать при добивании
+            // Герой слаб - добиваем!
+            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 40;
+            if (action === 'rest') modifier -= 50; // Не отдыхать при добивании!
         } else if (heroHealth > 0.8) {
             // Герой здоров - осторожничаем
-            if (action === 'block') modifier += 15;
+            if (action === 'block') modifier += 20;
+            if (['attack', 'strongAttack'].includes(action)) modifier += 10;
         }
         
         return modifier;
@@ -2463,19 +2479,21 @@ class TacticalAI {
         
         if (this.monster.ap <= 2) {
             // Мало ОД - приоритет отдыху
-            if (action === 'rest') modifier += 20;
-            if (apCost === 1) modifier += 10;
+            if (action === 'rest') modifier += 15;
+            if (apCost === 1) modifier += 5;
         } else if (this.monster.ap >= 4) {
-            // Много ОД - можно тратить
-            if (action === 'crushingAttack') modifier += 15;
-            if (action === 'strongAttack') modifier += 10;
+            // Много ОД - можно тратить на сильные атаки
+            if (action === 'crushingAttack') modifier += 20;
+            if (action === 'strongAttack') modifier += 15;
+            if (action === 'attack') modifier += 10;
         }
         
-        // Штраф за избыточные ОД
+        // Если очень много ОД (>=6) - не отдыхать
         if (this.monster.ap >= 6 && action === 'rest') {
-            modifier -= 25; // Не отдыхать при куче ОД
+            modifier -= 30;
         }
         
+        // Если мало ОД для дорогих действий - снижаем вес
         if (this.monster.ap < apCost) modifier -= 100;
         
         return modifier;
@@ -2488,24 +2506,30 @@ class TacticalAI {
         // Если игрок часто блокирует
         if (memory.consecutiveBlocks >= 2) {
             // Игрок блокирует подряд - используем пробитие
-            if (action === 'breakBlock') modifier += 40;
-            if (action === 'crushingAttack') modifier += 30; // Сокрушительная тоже пробивает
-            if (action === 'rest') modifier += 15; // Можно отдохнуть пока игрок защищается
+            if (action === 'breakBlock') modifier += 50;
+            if (action === 'crushingAttack') modifier += 40;
         } else if (memory.blockCount >= 2) {
             // Игрок часто блокирует
-            if (action === 'breakBlock') modifier += 20;
+            if (action === 'breakBlock') modifier += 30;
         }
         
         // Если игрок агрессивен
-        if (memory.attackCount >= 2) {
+        if (memory.attackCount >= 3) {
             // Игрок часто атакует - защищаемся
-            if (action === 'block') modifier += 25;
+            if (action === 'block') modifier += 30;
+            if (action === 'rest') modifier -= 20; // Не отдыхать под атакой
         }
         
         // Если игрок только что лечился
         if (memory.lastActions[0] === 'Лечение') {
             // Давим агрессией
-            if (['attack', 'strongAttack'].includes(action)) modifier += 15;
+            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 25;
+        }
+        
+        // Если игрок отдыхает
+        if (memory.lastActions[0] === 'Отдых') {
+            // Атакуем пока он отдыхает
+            if (['attack', 'strongAttack'].includes(action)) modifier += 20;
         }
         
         return modifier;
@@ -2514,23 +2538,57 @@ class TacticalAI {
     getComboModifier(action) {
         if (this.monster.combo.type === action && this.monster.combo.count > 0) {
             // Поощряем продолжение комбо
-            return this.monster.combo.count * 5;
+            return this.monster.combo.count * 8; // Увеличен множитель
         }
         return 0;
     }
     
+    getRestrictionModifier(action) {
+        let modifier = 0;
+        
+        // Ограничение на частый отдых - если недавно отдыхали, снижаем вес отдыха
+        const turnsSinceLastRest = this.bs.battleRound - this.monster.lastRestTurn;
+        
+        if (action === 'rest') {
+            if (turnsSinceLastRest < 2) {
+                // Недавно отдыхали - сильно снижаем вес
+                modifier -= 40;
+            } else if (turnsSinceLastRest < 3) {
+                // Отдыхали 2 хода назад - немного снижаем
+                modifier -= 20;
+            } else {
+                // Давно не отдыхали - повышаем вес
+                modifier += 10;
+            }
+        } else {
+            // Для не-отдыха действий повышаем вес если недавно отдыхали
+            if (turnsSinceLastRest < 2) {
+                modifier += 15;
+            }
+        }
+        
+        return modifier;
+    }
+    
     getRandomModifier() {
-        // Добавляем элемент случайности (от -10 до +10)
-        return (Math.random() * 20) - 10;
+        // Добавляем элемент случайности (от -15 до +15)
+        return (Math.random() * 30) - 15;
     }
     
     selectActionByWeights(actionWeights) {
         const totalWeight = Object.values(actionWeights).reduce((sum, weight) => sum + weight, 0);
         
         if (totalWeight === 0) {
-            // Если все веса нулевые, выбираем случайное действие
+            // Если все веса нулевые, выбираем атаку по умолчанию
             const actions = Object.keys(actionWeights);
-            return actions[Math.floor(Math.random() * actions.length)] || 'rest';
+            const attackActions = actions.filter(a => 
+                ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(a)
+            );
+            
+            if (attackActions.length > 0) {
+                return attackActions[0];
+            }
+            return actions[0] || 'attack';
         }
         
         const rand = Math.random() * totalWeight;
@@ -2543,7 +2601,13 @@ class TacticalAI {
             }
         }
         
-        return 'rest';
+        // Fallback - выбираем первую доступную атаку
+        const actions = Object.keys(actionWeights);
+        const attackActions = actions.filter(a => 
+            ['attack', 'strongAttack', 'crushingAttack', 'breakBlock'].includes(a)
+        );
+        
+        return attackActions[0] || actions[0] || 'attack';
     }
 }
 
