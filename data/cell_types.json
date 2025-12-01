@@ -1,0 +1,83 @@
+{
+  "cell_types": {
+    "grave": {
+      "name": "Могила крестьянина",
+      "description": "Старая могила, возможно, здесь что-то закопано...",
+      "actions": ["search_treasure"],
+      "icon": "⚰️",
+      "loot_chances": {
+        "items": 70,
+        "gold": 25,
+        "nothing": 5
+      }
+    },
+    "small_stream": {
+      "name": "Небольшой ручей",
+      "description": "Чистый источник воды, можно пополнить флягу",
+      "actions": ["refill_flask"],
+      "icon": "💧",
+      "flask_refill": {
+        "min": 3,
+        "max": 10,
+        "chance": 100
+      }
+    },
+    "shallow_burrow": {
+      "name": "Неглубокая нора",
+      "description": "Нора какого-то животного, может содержать ресурсы",
+      "actions": ["search_ore", "search_stone"],
+      "icon": "🕳️",
+      "resource_chances": {
+        "ores": 40,
+        "stones": 40,
+        "nothing": 20
+      }
+    },
+    "berry_clearing": {
+      "name": "Поляна с ягодами",
+      "description": "Поляна, усыпанная различными ягодами",
+      "actions": ["search_berries", "search_herbs"],
+      "icon": "🫐",
+      "resource_chances": {
+        "berries": 60,
+        "herbs": 30,
+        "nothing": 10
+      }
+    },
+    "mushroom_grove": {
+      "name": "Грибная роща",
+      "description": "Тенистая местность, богатая грибами",
+      "actions": ["search_mushrooms", "search_herbs"],
+      "icon": "🍄",
+      "resource_chances": {
+        "mushrooms": 70,
+        "herbs": 20,
+        "nothing": 10
+      }
+    },
+    "ancient_tree": {
+      "name": "Древнее дерево",
+      "description": "Огромное старое дерево, возможно, содержит ценные ресурсы",
+      "actions": ["search_wood", "search_herbs"],
+      "icon": "🌳",
+      "resource_chances": {
+        "woods": 50,
+        "herbs": 30,
+        "rare_herbs": 10,
+        "nothing": 10
+      }
+    },
+    "rocky_outcrop": {
+      "name": "Скальный выступ",
+      "description": "Каменное образование, богатое минералами",
+      "actions": ["search_ore", "search_stone"],
+      "icon": "⛰️",
+      "resource_chances": {
+        "ores": 50,
+        "stones": 40,
+        "rare_ores": 5,
+        "nothing": 5
+      }
+    }
+  }
+}
