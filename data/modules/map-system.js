@@ -477,118 +477,217 @@ class MapSystem {
         return availableTypes[Math.floor(Math.random() * availableTypes.length)];
     }
 
-    updateCellActionsUI(cell) {
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) return;
-        
-        this.selectedCell = cell;
-        this.currentCellType = this.determineCellType(cell);
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        if (!cellTypeData) {
-            actionsContainer.innerHTML = '<div class="no-actions">Нет доступных действий</div>';
-            return;
-        }
-        
-        let actionsHTML = `
-            <div class="cell-info-header">
-                <div class="cell-icon">${cellTypeData.icon}</div>
-                <h4>${cellTypeData.name}</h4>
-                <p class="cell-description">${cellTypeData.description}</p>
+ updateCellActionsUI(cell) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден! ID: cellActionsContainer");
+        return;
+    }
+    
+    console.log(`📋 Обновляем UI действий для клетки [${cell.col}, ${cell.row}] тип: ${cell.type}`);
+    
+    this.selectedCell = cell;
+    this.currentCellType = this.determineCellType(cell);
+    console.log(`🔍 Определен тип клетки: ${this.currentCellType}`);
+    
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    if (!cellTypeData) {
+        console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
+        actionsContainer.innerHTML = '<div class="no-actions">❌ Тип клетки не определен</div>';
+        return;
+    }
+    
+    console.log(`✅ Найдены данные типа клетки: ${cellTypeData.name}`);
+    
+    // Проверяем, исследована ли клетка
+    const isExplored = cell.explored || cell.hasAction === false;
+    console.log(`📊 Клетка исследована: ${isExplored}, hasAction: ${cell.hasAction}`);
+    
+    let actionsHTML = `
+        <div class="cell-info-header">
+            <div class="cell-icon">${cellTypeData.icon}</div>
+            <h4>${cellTypeData.name}</h4>
+            <p class="cell-description">${cellTypeData.description}</p>
+            <div class="cell-position">
+                Позиция: [${cell.col}, ${cell.row}]
             </div>
-            <div class="available-actions-list">
-        `;
-        
+    `;
+    
+    if (isExplored) {
+        actionsHTML += '<div class="cell-status">✓ Исследовано</div>';
+    }
+    
+    actionsHTML += '</div>';
+    
+    if (!isExplored) {
         this.currentCellActions = cellTypeData.actions;
-        this.currentCellActions.forEach(action => {
-            actionsHTML += this.getActionButtonHTML(action, cell);
-        });
+        console.log(`⚡ Доступные действия: ${this.currentCellActions.join(', ')}`);
         
-        actionsHTML += '</div>';
-        actionsContainer.innerHTML = actionsHTML;
+        // Проверяем, достижима ли клетка для действий
+        const isReachable = this.isCellReachable(cell);
+        console.log(`🎯 Клетка достижима для действий: ${isReachable}`);
         
-        this.setupActionEventListeners();
-        
-        this.updateHeroResourcesUI();
-    }
-
-    getActionButtonHTML(action, cell) {
-        const actionConfigs = {
-            'search_treasure': {
-                icon: '💰',
-                name: 'Искать сокровища',
-                description: 'Попытаться найти что-то ценное',
-                class: 'action-treasure'
-            },
-            'refill_flask': {
-                icon: '💧',
-                name: 'Наполнить флягу',
-                description: 'Пополнить запасы воды',
-                class: 'action-flask'
-            },
-            'search_ore': {
-                icon: '⛏️',
-                name: 'Искать руду',
-                description: 'Поиск полезных ископаемых',
-                class: 'action-ore'
-            },
-            'search_stone': {
-                icon: '🪨',
-                name: 'Искать камни',
-                description: 'Собрать строительные материалы',
-                class: 'action-stone'
-            },
-            'search_berries': {
-                icon: '🫐',
-                name: 'Собрать ягоды',
-                description: 'Набрать съедобных ягод',
-                class: 'action-berries'
-            },
-            'search_herbs': {
-                icon: '🌿',
-                name: 'Собрать травы',
-                description: 'Найти лекарственные растения',
-                class: 'action-herbs'
-            },
-            'search_mushrooms': {
-                icon: '🍄',
-                name: 'Собрать грибы',
-                description: 'Найти съедобные грибы',
-                class: 'action-mushrooms'
-            },
-            'search_wood': {
-                icon: '🪵',
-                name: 'Заготовить древесину',
-                description: 'Срубить дерево для получения древесины',
-                class: 'action-wood'
+        if (this.currentCellActions.length > 0) {
+            actionsHTML += `
+                <div class="available-actions-list">
+                    <div class="actions-header">
+                        <span class="actions-title">Доступные действия:</span>
+            `;
+            
+            if (!isReachable) {
+                actionsHTML += '<span class="reachability-warning">❌ Недоступно (нужно подойти ближе)</span>';
             }
-        };
-        
-        const config = actionConfigs[action] || {
-            icon: '❓',
-            name: action,
-            description: 'Неизвестное действие',
-            class: 'action-unknown'
-        };
-        
-        const isCellExplored = cell.explored || cell.hasAction === false;
-        const isDisabled = isCellExplored || !this.isCellReachable(cell);
-        
-        return `
-            <button class="cell-action-btn ${config.class} ${isDisabled ? 'disabled' : ''}" 
-                    data-action="${action}"
-                    data-cell-row="${cell.row}"
-                    data-cell-col="${cell.col}"
-                    ${isDisabled ? 'disabled' : ''}>
-                <span class="action-icon">${config.icon}</span>
-                <div class="action-info">
-                    <div class="action-name">${config.name}</div>
-                    <div class="action-description">${config.description}</div>
-                    ${isDisabled ? '<div class="action-unavailable">✗ Недоступно</div>' : ''}
-                </div>
-            </button>
+            
+            actionsHTML += '</div>';
+            
+            this.currentCellActions.forEach(action => {
+                const buttonHTML = this.getActionButtonHTML(action, cell);
+                actionsHTML += buttonHTML;
+            });
+            
+            actionsHTML += '</div>';
+        } else {
+            actionsHTML += '<div class="no-actions">❌ Нет доступных действий</div>';
+        }
+    } else {
+        actionsHTML += `
+            <div class="cell-explored">
+                <div class="explored-icon">✓</div>
+                <h5>Клетка исследована</h5>
+                <p>Эта клетка уже исследована. Двиньтесь на другую клетку для новых действий.</p>
+            </div>
         `;
     }
+    
+    console.log(`✅ Устанавливаем HTML в контейнер действий`);
+    actionsContainer.innerHTML = actionsHTML;
+    
+    if (!isExplored && this.currentCellActions.length > 0) {
+        console.log(`🎯 Настраиваем обработчики событий для кнопок действий`);
+        this.setupActionEventListeners();
+    }
+    
+    // Обновляем список ресурсов героя
+    this.updateHeroResourcesUI();
+}
+
+getActionButtonHTML(action, cell) {
+    console.log(`🔧 Создаем HTML кнопки для действия: ${action}`);
+    
+    const actionConfigs = {
+        'search_treasure': {
+            icon: '💰',
+            name: 'Искать сокровища',
+            description: 'Попытаться найти что-то ценное (золото или предметы)',
+            class: 'action-treasure',
+            successChance: '70% шанс на находку',
+            details: '70% предметы, 25% золото, 5% ничего'
+        },
+        'refill_flask': {
+            icon: '💧',
+            name: 'Наполнить флягу',
+            description: 'Пополнить запасы воды из источника',
+            class: 'action-flask',
+            successChance: '100% успех',
+            details: 'Восстанавливает 3-10 зарядов фляги'
+        },
+        'search_ore': {
+            icon: '⛏️',
+            name: 'Искать руду',
+            description: 'Поиск полезных ископаемых в скалах',
+            class: 'action-ore',
+            successChance: '40% шанс найти руду',
+            details: '40% руда, 40% камни, 20% ничего'
+        },
+        'search_stone': {
+            icon: '🪨',
+            name: 'Искать камни',
+            description: 'Собрать строительные материалы',
+            class: 'action-stone',
+            successChance: '40% шанс найти камни',
+            details: '40% руда, 40% камни, 20% ничего'
+        },
+        'search_berries': {
+            icon: '🫐',
+            name: 'Собрать ягоды',
+            description: 'Набрать съедобных ягод с кустов',
+            class: 'action-berries',
+            successChance: '60% шанс найти ягоды',
+            details: '60% ягоды, 30% травы, 10% ничего'
+        },
+        'search_herbs': {
+            icon: '🌿',
+            name: 'Собрать травы',
+            description: 'Найти лекарственные растения',
+            class: 'action-herbs',
+            successChance: '30% шанс найти травы',
+            details: '60% ягоды, 30% травы, 10% ничего'
+        },
+        'search_mushrooms': {
+            icon: '🍄',
+            name: 'Собрать грибы',
+            description: 'Найти съедобные грибы в роще',
+            class: 'action-mushrooms',
+            successChance: '70% шанс найти грибы',
+            details: '70% грибы, 20% травы, 10% ничего'
+        },
+        'search_wood': {
+            icon: '🪵',
+            name: 'Заготовить древесину',
+            description: 'Срубить дерево для получения древесины',
+            class: 'action-wood',
+            successChance: '50% шанс получить древесину',
+            details: '50% древесина, 30% травы, 10% редкие травы, 10% ничего'
+        }
+    };
+    
+    const config = actionConfigs[action] || {
+        icon: '❓',
+        name: action,
+        description: 'Неизвестное действие',
+        class: 'action-unknown',
+        successChance: 'Неизвестно',
+        details: 'Нет информации'
+    };
+    
+    const isCellExplored = cell.explored || cell.hasAction === false;
+    const isReachable = this.isCellReachable(cell);
+    const isDisabled = isCellExplored || !isReachable;
+    
+    console.log(`📊 Статус кнопки: исследовано=${isCellExplored}, достижимо=${isReachable}, отключено=${isDisabled}`);
+    
+    let buttonHTML = `
+        <button class="cell-action-btn ${config.class} ${isDisabled ? 'disabled' : ''}" 
+                data-action="${action}"
+                data-cell-row="${cell.row}"
+                data-cell-col="${cell.col}"
+                ${isDisabled ? 'disabled' : ''}
+                title="${config.details}">
+            <span class="action-icon">${config.icon}</span>
+            <div class="action-info">
+                <div class="action-name">${config.name}</div>
+                <div class="action-description">${config.description}</div>
+                <div class="action-chance">${config.successChance}</div>
+    `;
+    
+    if (isDisabled) {
+        if (isCellExplored) {
+            buttonHTML += '<div class="action-unavailable">✗ Клетка исследована</div>';
+        } else if (!isReachable) {
+            buttonHTML += '<div class="action-unavailable">✗ Недоступно (подойдите ближе)</div>';
+        }
+    } else {
+        buttonHTML += '<div class="action-available">✓ Доступно</div>';
+    }
+    
+    buttonHTML += `
+            </div>
+        </button>
+    `;
+    
+    return buttonHTML;
+}
 
     setupActionEventListeners() {
         const actionButtons = document.querySelectorAll('.cell-action-btn:not(.disabled)');
@@ -603,31 +702,75 @@ class MapSystem {
         });
     }
 
-    performCellAction(action, row, col) {
-        if (!this.currentHero) {
-            this.showNotification("❌ Нужен герой для совершения действий!", 'error');
-            return;
-        }
+  performCellAction(action, row, col) {
+    console.log(`🎯 Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
+    
+    if (!this.currentHero) {
+        console.error("❌ Нет текущего героя для совершения действий!");
+        this.showNotification("❌ Нужен герой для совершения действий!", 'error');
+        return;
+    }
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    console.log(`📊 Проверка клетки: исследовано=${cell.explored}, hasAction=${cell.hasAction}`);
+    
+    if (cell.explored || cell.hasAction === false) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+        return;
+    }
+    
+    const isReachable = this.isCellReachable(cell);
+    console.log(`🎯 Клетка достижима: ${isReachable}`);
+    
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недоступна для исследования`);
+        this.showNotification("❌ Клетка недоступна для исследования! Подойдите ближе.", 'warning');
+        return;
+    }
+    
+    console.log(`✅ Все проверки пройдены, выполняем действие: ${action}`);
+    
+    // Анимация выполнения действия
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (actionsContainer) {
+        console.log(`🎨 Показываем анимацию выполнения действия`);
+        actionsContainer.innerHTML = `
+            <div class="action-processing">
+                <div class="processing-icon">⚡</div>
+                <h4>Выполняется действие...</h4>
+                <p>${this.getActionName(action)} на клетке [${col}, ${row}]</p>
+                <div class="processing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        `;
         
-        const cellKey = `${col},${row}`;
-        const cell = this.currentTacticalMap?.cells[cellKey];
+        // Запускаем анимацию прогресса
+        setTimeout(() => {
+            const progressFill = actionsContainer.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
+        }, 50);
+    }
+    
+    // Задержка для имитации выполнения действия
+    setTimeout(() => {
+        console.log(`⚡ Выполняем действие: ${action}`);
         
-        if (!cell) {
-            this.showNotification("❌ Клетка не найдена!", 'error');
-            return;
-        }
-        
-        if (cell.explored || cell.hasAction === false) {
-            this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-            return;
-        }
-        
-        if (!this.isCellReachable(cell)) {
-            this.showNotification("❌ Клетка недоступна для исследования!", 'warning');
-            return;
-        }
-        
-        console.log(`🎯 Выполняем действие: ${action} на клетке [${col}, ${row}]`);
+        let resultMessage = '';
+        let resultType = 'info';
         
         switch(action) {
             case 'search_treasure':
@@ -655,10 +798,17 @@ class MapSystem {
                 this.searchForResource('woods', row, col);
                 break;
             default:
-                console.warn(`Неизвестное действие: ${action}`);
-                this.showNotification("❌ Неизвестное действие", 'error');
+                console.warn(`❌ Неизвестное действие: ${action}`);
+                resultMessage = "❌ Неизвестное действие";
+                resultType = 'error';
+                this.showNotification(resultMessage, resultType);
         }
-    }
+        
+        console.log(`✅ Действие ${action} выполнено, помечаем клетку как исследованную`);
+        this.markCellAsExplored(row, col);
+        
+    }, 800); // 800ms для анимации
+}
 
     searchTreasure(row, col) {
         const cellTypeData = this.cellTypes[this.currentCellType];
@@ -1529,66 +1679,110 @@ class MapSystem {
         return locationMap;
     }
 
-    handleCanvasClick(e) {
-        if (!this.currentTacticalMap) return;
+   handleCanvasClick(e) {
+    if (!this.currentTacticalMap) {
+        console.error("❌ Нет текущей тактической карты");
+        return;
+    }
 
-        const canvasRect = this.canvas.getBoundingClientRect();
+    const canvasRect = this.canvas.getBoundingClientRect();
+    
+    const computedStyle = getComputedStyle(this.canvas);
+    const transform = computedStyle.transform;
+    let scale = 1;
+    
+    if (transform && transform !== 'none') {
+        const matrix = new DOMMatrix(transform);
+        scale = matrix.a;
+    }
+    
+    const logicalX = (e.clientX - canvasRect.left) / scale;
+    const logicalY = (e.clientY - canvasRect.top) / scale;
+    
+    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
+    
+    const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
+    if (!hex) {
+        console.log("❌ Клетка не найдена по координатам");
+        return;
+    }
+    
+    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
+    
+    // Обработка ТАВЕРНЫ (тип village с tacticalMap)
+    if (hex.type === 'village' && hex.tacticalMap) {
+        console.log("🍻 Клик по таверне - проверяем доступность...");
         
-        const computedStyle = getComputedStyle(this.canvas);
-        const transform = computedStyle.transform;
-        let scale = 1;
-        
-        if (transform && transform !== 'none') {
-            const matrix = new DOMMatrix(transform);
-            scale = matrix.a;
-        }
-        
-        const logicalX = (e.clientX - canvasRect.left) / scale;
-        const logicalY = (e.clientY - canvasRect.top) / scale;
-        
-        console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
-        
-        const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
-        if (!hex) return;
-        
-        console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
-        
-        if (hex.type === 'village' && hex.tacticalMap) {
-            console.log("🍻 Клик по таверне - обработка посещения");
-            this.handleTavernVisit(hex);
+        // Проверяем, находится ли герой рядом с таверной
+        const isAdjacent = this.isPlayerAdjacentToTransition(hex);
+        if (!isAdjacent) {
+            console.log("❌ Герой не рядом с таверной");
+            this.showTransitionWarning(hex);
             return;
         }
         
-        if (hex.type === 'water') {
-            console.log("💧 Клик по воде");
-            if (!this.isPlayerAdjacentToWater(hex)) {
-                this.showNotification("❌ Подойдите ближе к воде!", 'warning');
-                return;
-            }
-            this.handleWaterCell(hex);
+        // Если рядом - активируем переход
+        console.log("✅ Герой рядом с таверной, активируем переход...");
+        this.activateTransition(hex);
+        return;
+    }
+    
+    // Обработка воды
+    if (hex.type === 'water') {
+        console.log("💧 Клик по воде");
+        // Проверяем доступность
+        if (!this.isPlayerAdjacentToWater(hex)) {
+            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
             return;
         }
+        this.handleWaterCell(hex);
+        return;
+    }
+    
+    // Обработка магазина
+    if (hex.type === 'merchant') {
+        console.log("🛒 Клик по магазину");
+        this.handleMerchantClick(hex);
+        return;
+    }
+    
+    // Проверяем, является ли клетка переходом
+    if (this.isTransitionCell(hex)) {
+        console.log("🚪 Клик по переходу");
+        this.handleTransitionClick(hex);
+        return;
+    }
+    
+    // Если клик на клетку с монстром или проходимую
+    if (hex.passable !== false || hex.type === 'monster') {
+        console.log("🎯 Клик для перемещения или действий");
         
-        if (hex.type === 'merchant') {
-            console.log("🛒 Клик по магазину");
-            this.handleMerchantClick(hex);
-            return;
-        }
+        // Проверяем, можно ли переместиться на эту клетку
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
         
-        if (this.isTransitionCell(hex)) {
-            console.log("🚪 Клик по переходу");
-            this.handleTransitionClick(hex);
-            return;
-        }
-        
-        if (hex.passable !== false || hex.type === 'monster') {
-            console.log("🎯 Клик для перемещения");
+        if (isReachable) {
+            console.log(`✅ Клетка достижима, начинаем перемещение`);
             this.moveOnTacticalMap(hex.col, hex.row);
+        } else {
+            console.log(`❌ Клетка недостижима для перемещения`);
+            // Не перемещаемся, но показываем действия
         }
-        
+    } else {
+        console.log(`❌ Клетка непроходима: ${hex.type}`);
+    }
+    
+    // ВСЕГДА показываем панель действий при клике на любую клетку (кроме переходов)
+    if (!this.isTransitionCell(hex)) {
+        console.log(`📋 Показываем панель действий для клетки [${hex.col}, ${hex.row}]`);
         this.updateCellActionsUI(hex);
         this.highlightSelectedCell(hex);
+    } else {
+        console.log(`⏭️ Пропускаем показ действий для перехода`);
     }
+}
 
     getHexAtLogicalPosition(x, y) {
         let closestHex = null;
