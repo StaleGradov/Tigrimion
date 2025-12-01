@@ -236,17 +236,35 @@ handleTavernVisit(cell) {
 }
 
 
+    
+    
+
 handleWaterCell(cell) {
     if (!this.currentHero) return;
     
+    // Проверяем, находится ли герой рядом с водой
+    if (!this.isPlayerAdjacentToWater(cell)) {
+        this.showTransitionWarning(cell);
+        return;
+    }
+    
     const battleSystem = window.game?.systems?.battle;
     if (battleSystem && battleSystem.flask) {
+        // Полное восстановление здоровья героя
+        const heroSystem = window.game?.systems?.hero;
+        if (heroSystem) {
+            const stats = heroSystem.calculateHeroStats(this.currentHero);
+            const oldHealth = this.currentHero.currentHealth;
+            this.currentHero.currentHealth = stats.maxHealth;
+            console.log(`❤️ Здоровье восстановлено: ${oldHealth} → ${stats.maxHealth}`);
+        }
+        
         // Пополнение фляги водой
         const oldCharges = battleSystem.flask.currentCharges;
         battleSystem.flask.currentCharges = battleSystem.flask.capacity;
         battleSystem.flask.content = 'water';
         
-        // ОБНОВЛЯЕМ интерфейс фляги
+        // Обновляем интерфейс фляги
         if (battleSystem.updateFlaskUI) {
             battleSystem.updateFlaskUI();
         }
@@ -255,13 +273,69 @@ handleWaterCell(cell) {
         }
         
         if (window.game) {
-            window.game.showNotification(`💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов!`, 'success');
+            window.game.showNotification(
+                `💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов! ` +
+                `Здоровье восстановлено до максимума.`, 
+                'success'
+            );
             window.game.saveGame();
         }
         
         console.log(`💧 Герой ${this.currentHero.name} пополнил флягу у воды: ${oldCharges}→${battleSystem.flask.capacity}`);
+        
+        // Обновляем карту
+        this.drawTacticalMap();
     }
 }
+
+isPlayerAdjacentToWater(waterCell) {
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    return neighbors.some(neighbor => 
+        neighbor.row === waterCell.row && 
+        neighbor.col === waterCell.col
+    );
+}
+
+showTransitionWarning(transitionCell) {
+    const transitionName = this.getTransitionName(transitionCell);
+    let message = `Чтобы использовать ${transitionName}, нужно подойти вплотную!`;
+    
+    // Кастомное сообщение для воды
+    if (transitionCell.type === 'water') {
+        message = "💧 Чтобы использовать источник воды, нужно подойти к нему вплотную!";
+    }
+    
+    console.log(`🚫 ${message}`);
+    
+    if (window.game) {
+        window.game.showNotification(message, 'warning');
+    }
+    
+    this.highlightTransition(transitionCell);
+}
+
+getTransitionName(transitionCell) {
+    if (transitionCell.tacticalMap) {
+        return this.getLocationNameFromPath(transitionCell.tacticalMap) || "помещение";
+    }
+    if (transitionCell.localMap) {
+        return this.getLocationNameFromPath(transitionCell.localMap) || "локацию";
+    }
+    if (transitionCell.globalMap) {
+        return this.getLocationNameFromPath(transitionCell.globalMap) || "регион";
+    }
+    if (transitionCell.type === 'exit') {
+        return "выход";
+    }
+    if (transitionCell.type === 'water') {
+        return "источник воды";
+    }
+    
+    return "переход";
+}
+
+    
 
 handleCanvasClick(e) {
     if (!this.currentTacticalMap) return;
@@ -1476,40 +1550,61 @@ handleCanvasClick(e) {
         return randomMonster;
     }
 
-completeMovementAfterBattle(victory) {
+completeMovementAfterBattle(victory, escape = false) {
     if (!this.pendingMovement) return;
 
-    const targetX = this.pendingMovement.x;
-    const targetY = this.pendingMovement.y;
-    
-    if (!this.currentHero) {
-        console.error("❌ Не могу завершить перемещение: герой не выбран");
-        return;
-    }
-    
+    console.log(`🎲 Завершение движения после боя: победа=${victory}, побег=${escape}`);
+
     if (victory) {
+        // Победа - перемещаем на целевую клетку
+        const targetX = this.pendingMovement.x;
+        const targetY = this.pendingMovement.y;
         const oldPosition = {...this.playerTacticalPosition};
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-        
-    } else {
-        const startPosition = this.currentTacticalMap.startPosition;
-        this.playerTacticalPosition = {...startPosition};
-        
-        console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${startPosition.x}, ${startPosition.y}]`);
+        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
         
         if (window.game) {
-            window.game.showNotification("Поражение! Возврат на стартовую позицию.", 'error');
+            window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+        }
+    } else {
+        if (escape) {
+            // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: При побеге остаемся на текущей клетке
+            console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+            // Не меняем позицию героя
+            
+            if (window.game) {
+                window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+            }
+        } else {
+            // Смерть в бою - возвращаем на стартовую точку
+            const startPosition = this.currentTacticalMap.startPosition;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {...startPosition};
+            
+            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${startPosition.x}, ${startPosition.y}]`);
+            
+            if (window.game) {
+                window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+            }
         }
     }
     
+    // Сбрасываем ожидаемое перемещение
+    this.pendingMovement = null;
+    
+    // Обновляем карту если она активна
     if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
         this.calculateCSSScale();
         this.drawTacticalMap();
+        this.updateMovementInfo();
     }
     
-    this.pendingMovement = null;
+    // Синхронизируем состояние героя
+    if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+        window.game.systems.hero.currentHero = this.currentHero;
+        window.game.systems.hero.calculateHeroStats(this.currentHero);
+    }
 }
     
     getMonsterFromCell(cellData) {
@@ -2037,7 +2132,7 @@ completeMovementAfterBattle(victory) {
         this.drawTacticalMap();
     }
     
-  getTooltipTextForHex(hex) {
+ getTooltipTextForHex(hex) {
     if (!hex.visible) return null;
 
     if (hex.tooltip) {
@@ -2047,6 +2142,13 @@ completeMovementAfterBattle(victory) {
     // Обработка ТАВЕРНЫ
     if (hex.type === 'village' && hex.tacticalMap) {
         return `🍻 Таверна "${hex.tooltip || 'Уютное заведение'}"\n(Кликните для отдыха и пополнения фляги)`;
+    }
+
+    // Обработка воды
+    if (hex.type === 'water') {
+        const isAccessible = this.isPlayerAdjacentToWater(hex);
+        const accessibilityInfo = isAccessible ? "\n✅ Кликните для использования" : "\n❌ Подойдите ближе";
+        return `💧 Источник воды\n(Восстановление здоровья и пополнение фляги)${accessibilityInfo}`;
     }
 
     // Обновленная подсказка для магазинов
@@ -2114,7 +2216,7 @@ completeMovementAfterBattle(victory) {
         'magic_crystal': '💎 Магический кристалл\n(Источник магии)',
         'tavern': '🍻 Таверна\n(Место отдыха и слухов)',
         'shop': '🏪 Магазин\n(Торговля предметами)',
-        'dungeon': '🏰 Подземелье\n(Опасное место)',
+        'dungeon': '🏰 Подземелье\n(Опасно место)',
         'temple': '⛪ Храм\n(Священное место)',
         'bridge': '🌉 Мост\n(Переправа через препятствие)',
         'mountain': '⛰️ Гора\n(Непроходимо)'
