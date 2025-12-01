@@ -411,3 +411,230 @@
     transform: translate(-50%, -50%);
     font-size: 24px;
 }
+/* ========== СТИЛИ ДЛЯ ПАНЕЛИ ДЕЙСТВИЙ НА КЛЕТКАХ ========== */
+.tactical-map-content-with-actions {
+    display: flex;
+    height: calc(95vh - 160px);
+    gap: 20px;
+    padding: 0 20px;
+}
+
+.map-main-area {
+    flex: 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.cell-actions-panel {
+    flex: 1;
+    min-width: 300px;
+    background: rgba(30, 41, 59, 0.9);
+    border: 2px solid #475569;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.actions-panel-title {
+    color: #00ffff;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #475569;
+    padding-bottom: 10px;
+}
+
+.cell-actions-container {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.actions-placeholder {
+    color: #94a3b8;
+    text-align: center;
+    padding: 40px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 2px dashed #475569;
+}
+
+.cell-info-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #475569;
+}
+
+.cell-icon {
+    font-size: 48px;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.cell-description {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.available-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cell-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.cell-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+}
+
+.cell-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.action-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.action-info {
+    flex: 1;
+}
+
+.action-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: white;
+}
+
+.action-description {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    opacity: 0.8;
+}
+
+/* Цвета для разных типов действий */
+.action-treasure {
+    border-left: 4px solid #f59e0b;
+}
+
+.action-flask {
+    border-left: 4px solid #3b82f6;
+}
+
+.action-ore {
+    border-left: 4px solid #ef4444;
+}
+
+.action-stone {
+    border-left: 4px solid #6b7280;
+}
+
+.action-berries {
+    border-left: 4px solid #8b5cf6;
+}
+
+.action-herbs {
+    border-left: 4px solid #10b981;
+}
+
+.action-mushrooms {
+    border-left: 4px solid #f97316;
+}
+
+.action-wood {
+    border-left: 4px solid #78350f;
+}
+
+.cell-info-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #475569;
+}
+
+.action-hint {
+    color: #fbbf24;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 8px;
+    background: rgba(251, 191, 36, 0.1);
+    border-radius: 5px;
+}
+
+.resource-info h5 {
+    color: #00ffff;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+
+.resource-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.resource-icon {
+    font-size: 16px;
+}
+
+.resource-name {
+    color: #cbd5e1;
+    flex: 1;
+}
+
+.resource-count {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.no-actions {
+    text-align: center;
+    color: #94a3b8;
+    padding: 40px 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+/* Подсветка выбранной клетки на карте */
+.hex-selected {
+    filter: drop-shadow(0 0 10px #00ffff);
+    animation: selected-pulse 2s infinite;
+}
+
+@keyframes selected-pulse {
+    0% { filter: drop-shadow(0 0 5px #00ffff); }
+    50% { filter: drop-shadow(0 0 15px #00ffff); }
+    100% { filter: drop-shadow(0 0 5px #00ffff); }
+}
