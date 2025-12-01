@@ -2638,9 +2638,9 @@ class StrategicAI {
         this.monster = monster;
         this.aiType = aiType || monster.aiType || 'aggressive';
         
-        // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убедимся что lastRestTurn инициализирован
+        // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Правильная инициализация lastRestTurn
         if (typeof this.monster.lastRestTurn === 'undefined') {
-            this.monster.lastRestTurn = -10;
+            this.monster.lastRestTurn = 0; // ✅ ИСПРАВЛЕНО: было -10
         }
         
         // ⭐ ПАМЯТЬ И АНАЛИЗ ПАТТЕРНОВ
@@ -2676,7 +2676,7 @@ class StrategicAI {
         };
         
         console.log(`🤖 Создан StrategicAI для ${monster.name} [${this.aiType}]`);
-        console.log(`   Начальный lastRestTurn: ${this.monster.lastRestTurn}`);
+        console.log(`   Начальный lastRestTurn: ${this.monster.lastRestTurn} (round: ${this.bs.battleRound || 0})`);
     }
     
     // ⭐ ОБНОВЛЕНИЕ ПАМЯТИ О ДЕЙСТВИЯХ ГЕРОЯ
@@ -2759,16 +2759,26 @@ class StrategicAI {
     decideAction() {
         this.stats.turnsAlive++;
         
+        console.log(`\n🤖 ===== ${this.monster.name} [${this.aiType}] РАУНД ${this.bs.battleRound || 0} =====`);
+        console.log(`🤖 Здоровье: ${this.monster.currentHealth}/${this.monster.maxHealth} (${Math.round((this.monster.currentHealth / this.monster.maxHealth) * 100)}%)`);
+        console.log(`🤖 AP: ${this.monster.ap}`);
+        console.log(`🤖 lastRestTurn: ${this.monster.lastRestTurn}, turnsSinceLastRest: ${(this.bs.battleRound || 0) - this.monster.lastRestTurn}`);
+        
         // Получаем доступные действия
         const availableActions = this.getAvailableActions();
         
-        // ⭐ ДЕБАГ: Выведем что доступно
         console.log(`🤖 ${this.monster.name} доступные действия:`, availableActions);
-        console.log(`🤖 AP: ${this.monster.ap}, lastRestTurn: ${this.monster.lastRestTurn}, round: ${this.bs.battleRound}`);
         
         if (availableActions.length === 0) {
-            console.log(`🤖 ${this.monster.name} - нет доступных действий!`);
+            console.log(`🤖 ${this.monster.name} - нет доступных действий! Возвращаем 'rest'`);
             return 'rest';
+        }
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Если доступен только отдых, добавим другие действия
+        if (availableActions.length === 1 && availableActions[0] === 'rest' && this.monster.ap >= 1) {
+            console.log(`🤖 ДОБАВЛЯЕМ АЛЬТЕРНАТИВЫ: был только отдых`);
+            availableActions.push('attack');
+            availableActions.push('block');
         }
         
         // Рассчитываем веса для каждого действия
@@ -2782,7 +2792,7 @@ class StrategicAI {
         
         // Запоминаем когда последний раз отдыхали
         if (selectedAction === 'rest') {
-            this.monster.lastRestTurn = this.bs.battleRound;
+            this.monster.lastRestTurn = this.bs.battleRound || 0;
             console.log(`🤖 ${this.monster.name} отдыхает, следующий отдых возможен через 3 хода`);
         }
         
@@ -2799,9 +2809,13 @@ class StrategicAI {
         const actions = [];
         const ap = this.monster.ap;
         const healthPercent = this.monster.currentHealth / this.monster.maxHealth;
+        const currentRound = this.bs.battleRound || 0;
         
-        // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Правильное ограничение на отдых
-        const turnsSinceLastRest = this.bs.battleRound - this.monster.lastRestTurn;
+        // ✅ ИСПРАВЛЕНО: Правильный расчет разницы в раундах
+        const turnsSinceLastRest = currentRound - this.monster.lastRestTurn;
+        
+        console.log(`🤖 Расчет отдыха: battleRound=${currentRound}, lastRestTurn=${this.monster.lastRestTurn}, turnsSinceLastRest=${turnsSinceLastRest}`);
+        
         const canRest = turnsSinceLastRest >= 3 && ap >= 1;
         
         // Всегда доступны основные действия если есть ОД
@@ -2809,8 +2823,13 @@ class StrategicAI {
             actions.push('attack');
             actions.push('block');
             actions.push('breakBlock');
+            
+            // ✅ ОТДЫХ ТОЛЬКО ЕСЛИ МОЖНО
             if (canRest) {
                 actions.push('rest');
+                console.log(`🤖 Отдых доступен (прошло ${turnsSinceLastRest} раундов)`);
+            } else {
+                console.log(`🤖 Отдых НЕ доступен (прошло ${turnsSinceLastRest} раундов, нужно >=3)`);
             }
         }
         
@@ -2826,12 +2845,10 @@ class StrategicAI {
         // Фильтруем действия, которые действительно можно выполнить
         const filteredActions = actions.filter(action => ap >= this.bs.actionsCost[action]);
         
-        // ⭐ ДЕБАГ: Если остался только отдых, добавим атаку
-        if (filteredActions.length === 1 && filteredActions[0] === 'rest') {
-            if (ap >= 1) {
-                filteredActions.push('attack');
-                console.log(`🤖 ДОБАВЛЕНА АТАКА: был только отдых`);
-            }
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Если все действия слишком дорогие
+        if (filteredActions.length === 0 && ap >= 1) {
+            console.log(`🤖 ВСЕ ДЕЙСТВИЯ ДОРОГИЕ! Добавляем базовую атаку`);
+            filteredActions.push('attack');
         }
         
         return filteredActions;
@@ -2842,7 +2859,13 @@ class StrategicAI {
         const hero = this.bs.battleGrid.allies[3];
         const heroHealthPercent = hero ? hero.currentHealth / hero.maxHealth : 1;
         const monsterHealthPercent = this.monster.currentHealth / this.monster.maxHealth;
-        const heroArmor = this.bs.getHeroStatsForBattle().armor;
+        const heroArmor = hero ? this.bs.getHeroStatsForBattle().armor : 0;
+        const currentRound = this.bs.battleRound || 0;
+        const turnsSinceLastRest = currentRound - this.monster.lastRestTurn;
+        
+        console.log(`🤖 Расчет весов: доступно ${availableActions.length} действий`);
+        console.log(`🤖 Здоровье монстра: ${Math.round(monsterHealthPercent * 100)}%, героя: ${Math.round(heroHealthPercent * 100)}%`);
+        console.log(`🤖 Броня героя: ${heroArmor}, turnsSinceLastRest: ${turnsSinceLastRest}`);
         
         const weights = {};
         
@@ -2851,33 +2874,83 @@ class StrategicAI {
             
             // 1. Базовый вес по типу ИИ
             weight += this.getBaseWeight(action);
+            console.log(`   ${action}: базовый вес = ${this.getBaseWeight(action)}`);
             
             // 2. Модификатор здоровья (свой и героя)
-            weight += this.getHealthModifier(action, monsterHealthPercent, heroHealthPercent);
+            const healthMod = this.getHealthModifier(action, monsterHealthPercent, heroHealthPercent);
+            weight += healthMod;
+            console.log(`   ${action}: здоровье = +${healthMod}`);
             
             // 3. Модификатор брони и урона
-            weight += this.getArmorDamageModifier(action, heroArmor);
+            const armorMod = this.getArmorDamageModifier(action, heroArmor);
+            weight += armorMod;
+            console.log(`   ${action}: броня = +${armorMod}`);
             
             // 4. Модификатор контр-действий (АНТИ-ДЕЙСТВИЯ!)
-            weight += this.getCounterModifier(action);
+            const counterMod = this.getCounterModifier(action);
+            weight += counterMod;
+            console.log(`   ${action}: контр-действия = +${counterMod}`);
             
             // 5. Модификатор комбо
-            weight += this.getComboModifier(action);
+            const comboMod = this.getComboModifier(action);
+            weight += comboMod;
+            console.log(`   ${action}: комбо = +${comboMod}`);
             
             // 6. Модификатор эффективности (формулы)
-            weight += this.getEffectivenessModifier(action, hero);
+            const effectMod = this.getEffectivenessModifier(action, hero);
+            weight += effectMod;
+            console.log(`   ${action}: эффективность = +${effectMod}`);
             
             // 7. Ситуационные модификаторы
-            weight += this.getSituationalModifier(action);
+            const situMod = this.getSituationalModifier(action);
+            weight += situMod;
+            console.log(`   ${action}: ситуация = +${situMod}`);
             
             // 8. Ограничения (отрицательные модификаторы)
-            weight += this.applyRestrictions(action);
+            const restrictMod = this.applyRestrictions(action);
+            weight += restrictMod;
+            console.log(`   ${action}: ограничения = +${restrictMod}`);
+            
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Специальная обработка отдыха
+            if (action === 'rest') {
+                // Если недавно уже отдыхали - сильно уменьшаем вес
+                if (turnsSinceLastRest < 2) {
+                    weight -= 70;
+                    console.log(`   ${action}: НЕДАВНО ОТДЫХАЛИ = -70`);
+                }
+                // Если много AP - уменьшаем вес отдыха
+                if (this.monster.ap >= 5) {
+                    weight -= 40;
+                    console.log(`   ${action}: МНОГО AP = -40`);
+                }
+                // Если здоровье почти полное - уменьшаем вес отдыха
+                if (monsterHealthPercent > 0.9) {
+                    weight -= 50;
+                    console.log(`   ${action}: ПОЛНОЕ ЗДОРОВЬЕ = -50`);
+                }
+            }
+            
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем вес атакующих действий
+            if (this.isAttackAction(action)) {
+                weight += 25; // Всегда немного повышаем вес атак
+                console.log(`   ${action}: АТАКА БОНУС = +25`);
+                
+                // Особенно если у героя мало здоровья
+                if (heroHealthPercent < 0.4) {
+                    weight += 35;
+                    console.log(`   ${action}: ДОБИВАНИЕ = +35`);
+                }
+            }
             
             // 9. Случайность (небольшая)
-            weight += (Math.random() * 20) - 10;
+            const randomMod = (Math.random() * 20) - 10;
+            weight += randomMod;
+            console.log(`   ${action}: случайность = +${Math.round(randomMod)}`);
             
             // Убеждаемся, что вес положительный
-            weights[action] = Math.max(5, Math.min(100, Math.floor(weight)));
+            weights[action] = Math.max(1, Math.min(200, Math.floor(weight)));
+            
+            console.log(`   ${action}: ИТОГО вес = ${weights[action]}\n`);
         });
         
         return weights;
@@ -2888,7 +2961,57 @@ class StrategicAI {
         const profile = this.bs.aiProfiles[this.aiType];
         if (!profile) return 30;
         
-        return profile.baseWeights[action] || 25;
+        // ✅ ИСПРАВЛЕНО: Увеличены базовые веса атакующих действий
+        const enhancedWeights = {
+            aggressive: {
+                attack: 85,          // Было 70
+                strongAttack: 75,    // Было 60
+                crushingAttack: 65,  // Было 50
+                breakBlock: 55,      // Было 40
+                block: 15,           // Было 20
+                heal: 5,             // Было 5
+                rest: 10             // Было 10
+            },
+            tank_armor: {
+                attack: 35,          // Было 30
+                strongAttack: 30,    // Было 25
+                crushingAttack: 25,  // Было 20
+                breakBlock: 40,      // Было 35
+                block: 65,           // Было 60
+                heal: 45,            // Было 40
+                rest: 30             // Было 25
+            },
+            ranged_support: {
+                attack: 45,          // Было 40
+                strongAttack: 40,    // Было 35
+                crushingAttack: 35,  // Было 30
+                breakBlock: 55,      // Было 50
+                block: 35,           // Было 30
+                heal: 25,            // Было 20
+                rest: 20             // Было 15
+            },
+            universal: {
+                attack: 55,          // Было 50
+                strongAttack: 50,    // Было 45
+                crushingAttack: 45,  // Было 40
+                breakBlock: 50,      // Было 45
+                block: 50,           // Было 45
+                heal: 35,            // Было 30
+                rest: 25             // Было 20
+            },
+            tank_health: {
+                attack: 40,          // Было 35
+                strongAttack: 35,    // Было 30
+                crushingAttack: 30,  // Было 25
+                breakBlock: 45,      // Было 40
+                block: 60,           // Было 55
+                heal: 50,            // Было 45
+                rest: 35             // Было 30
+            }
+        };
+        
+        const weights = enhancedWeights[this.aiType] || profile.baseWeights;
+        return weights[action] || 25;
     }
     
     // ⭐ МОДИФИКАТОР ЗДОРОВЬЯ
@@ -3010,12 +3133,12 @@ class StrategicAI {
         const profile = this.bs.aiProfiles[this.aiType];
         
         // Первый раунд
-        if (this.bs.battleRound === 0) {
+        if ((this.bs.battleRound || 0) === 0) {
             if (this.isAttackAction(action)) modifier += 15; // Начать с атаки
         }
         
         // Поздние раунды
-        if (this.bs.battleRound > 5) {
+        if ((this.bs.battleRound || 0) > 5) {
             if (action === 'block') modifier += 10; // Становиться осторожнее
         }
         
@@ -3048,33 +3171,40 @@ class StrategicAI {
     // ⭐ ОГРАНИЧЕНИЯ
     applyRestrictions(action) {
         let modifier = 0;
-        const turnsSinceLastRest = this.bs.battleRound - this.monster.lastRestTurn;
+        const currentRound = this.bs.battleRound || 0;
+        const turnsSinceLastRest = currentRound - this.monster.lastRestTurn;
         
         if (action === 'rest') {
+            // ✅ ИСПРАВЛЕНО: Убраны слишком жесткие ограничения
             if (turnsSinceLastRest < 3) {
-                // ⭐ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Нельзя отдыхать чаще чем раз в 3 хода
-                modifier -= 100;
-                console.log(`🤖 ОГРАНИЧЕНИЕ: отдых запрещен (прошло ${turnsSinceLastRest} ходов)`);
+                modifier -= 40;  // Было -100
+                console.log(`🤖 Ограничение на отдых: -40 (прошло ${turnsSinceLastRest} ходов)`);
             } else if (turnsSinceLastRest < 4) {
-                modifier -= 30;
+                modifier -= 15;  // Было -30
             } else if (turnsSinceLastRest > 5) {
-                modifier += 15;
+                modifier += 20;  // Увеличиваем если давно не отдыхали
             }
         }
         
         // Если очень много ОД (>=6) - не отдыхать
         if (this.monster.ap >= 6 && action === 'rest') {
-            modifier -= 40;
+            modifier -= 30;  // Было -40
         }
         
         // Если мало ОД (<=1) - отдых полезен
         if (this.monster.ap <= 1 && action === 'rest') {
-            modifier += 20;
+            modifier += 15;  // Было +20
         }
         
-        // ⭐ ДОПОЛНИТЕЛЬНОЕ ИСПРАВЛЕНИЕ: Атаки должны иметь преимущество
-        if (this.isAttackAction(action)) {
-            modifier += 15; // Всегда немного повышаем вес атак
+        // Если здоровье почти полное - не лечиться
+        const healthPercent = this.monster.currentHealth / this.monster.maxHealth;
+        if (action === 'heal' && healthPercent > 0.9) {
+            modifier -= 50;
+        }
+        
+        // Если здоровье почти полное - не отдыхать
+        if (action === 'rest' && healthPercent > 0.95) {
+            modifier -= 30;
         }
         
         return modifier;
@@ -3089,40 +3219,58 @@ class StrategicAI {
     selectActionByWeights(actionWeights) {
         const totalWeight = Object.values(actionWeights).reduce((sum, weight) => sum + weight, 0);
         
-        if (totalWeight === 0) {
-            console.log(`🤖 ВСЕ ВЕСА НУЛЕВЫЕ! Доступные: ${Object.keys(actionWeights)}`);
-            // Если все веса нулевые, выбираем атаку по умолчанию
-            const actions = Object.keys(actionWeights);
-            const attackActions = actions.filter(a => this.isAttackAction(a));
+        console.log(`🤖 Выбор действия из весов:`, actionWeights);
+        console.log(`🤖 Общий вес: ${totalWeight}`);
+        
+        if (totalWeight === 0 || Object.keys(actionWeights).length === 0) {
+            console.log(`🤖 ВСЕ ВЕСА НУЛЕВЫЕ ИЛИ НЕТ ДЕЙСТВИЙ!`);
             
-            if (attackActions.length > 0) {
-                console.log(`🤖 Выбрана атака по умолчанию: ${attackActions[0]}`);
-                return attackActions[0];
+            // Аварийный выбор
+            if (this.monster.ap >= 1) {
+                console.log(`🤖 Аварийный выбор: 'attack'`);
+                return 'attack';
+            } else {
+                console.log(`🤖 Аварийный выбор: 'rest'`);
+                return 'rest';
             }
-            
-            const fallback = actions[0] || 'attack';
-            console.log(`🤖 Fallback выбор: ${fallback}`);
-            return fallback;
         }
         
         const rand = Math.random() * totalWeight;
         let cumulative = 0;
         
-        console.log(`🤖 Выбор действия из весов:`, actionWeights);
-        console.log(`🤖 Общий вес: ${totalWeight}, случайное число: ${rand}`);
+        console.log(`🤖 Случайное число: ${rand.toFixed(2)}`);
         
         for (const [action, weight] of Object.entries(actionWeights)) {
             cumulative += weight;
+            console.log(`🤖 Проверка ${action}: вес=${weight}, cumulative=${cumulative.toFixed(2)}`);
+            
             if (rand <= cumulative) {
-                console.log(`🤖 Выбрано действие: ${action} (вес: ${weight}, cumulative: ${cumulative})`);
+                console.log(`🤖 Выбрано действие: ${action} (вес: ${weight}, cumulative: ${cumulative.toFixed(2)})`);
+                
+                // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Не выбирать отдых слишком часто
+                if (action === 'rest') {
+                    const currentRound = this.bs.battleRound || 0;
+                    const turnsSinceLastRest = currentRound - this.monster.lastRestRest;
+                    
+                    if (turnsSinceLastRest < 2) {
+                        console.log(`🤖 ОТДЫХ ОТМЕНЕН! Слишком часто. Выбираем атаку вместо этого.`);
+                        // Выбираем другое действие (не отдых)
+                        const otherActions = Object.keys(actionWeights).filter(a => a !== 'rest');
+                        if (otherActions.length > 0) {
+                            return otherActions[0];
+                        }
+                    }
+                }
+                
                 return action;
             }
         }
         
-        // Fallback
+        // Fallback - выбираем первое доступное действие
         const actions = Object.keys(actionWeights);
-        console.log(`🤖 Fallback выбор: ${actions[0]}`);
-        return actions[0] || 'attack';
+        const fallback = actions[0] || 'attack';
+        console.log(`🤖 Fallback выбор: ${fallback}`);
+        return fallback;
     }
     
     // ⭐ ОБНОВЛЕНИЕ СТАТИСТИКИ
@@ -3137,7 +3285,11 @@ class StrategicAI {
             this.stats.restsUsed++;
         }
     }
+    
 }
 
 window.BattleSystem = BattleSystem;
+window.StrategicAI = StrategicAI; // ⭐ ДОБАВЛЯЕМ ЭТУ СТРОКУ!
+
 console.log("📦 BattleSystem полностью переписан с продвинутым стратегическим ИИ");
+console.log("🤖 StrategicAI добавлен в глобальную область видимости");
