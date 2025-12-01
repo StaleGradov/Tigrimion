@@ -2251,6 +2251,7 @@ tryToFlee() {
         this.showTacticalBattleInterface();
     }
 }
+}
 
 class TacticalAI {
     constructor(battleSystem, monster) {
@@ -2605,7 +2606,7 @@ generateSpecificMonsterGroup(specificMonster) {
 
     return monsterGroup;
 }
-}
+
 
 window.BattleSystem = BattleSystem;
 console.log("📦 BattleSystem полностью переписан с системой фляги и улучшенным ИИ");
