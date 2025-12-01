@@ -2256,128 +2256,208 @@ class TacticalAI {
     constructor(battleSystem, monster) {
         this.bs = battleSystem;
         this.monster = monster;
+        this.playerPatternMemory = []; // Память о действиях игрока (последние 3 хода)
+        this.myStrategy = null; // Текущая стратегия монстра
+        this.roundCounter = 0;
     }
     
     decideAction() {
+        this.roundCounter++;
         const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
         const hero = this.bs.battleGrid.allies[3];
         if (!hero || hero.currentHealth <= 0) return 'rest';
         
+        // Обновляем память о действиях игрока
+        this.updatePlayerMemory();
+        
         const heroHealthPercent = hero.currentHealth / hero.maxHealth;
         const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
-        const isHeroBlocking = this.bs.players[1].currentAction === 'block';
-        const heroBlockCombo = this.bs.players[1].combo.count;
         
-        const strategy = this.analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo);
-        
-        if (isHeroBlocking && availableActions.includes('breakBlock')) {
-            let breakBlockChance = strategy.breakBlockChance;
-            
-            if (this.monster.ap <= 2) breakBlockChance += 0.15;
-            if (heroBlockCombo >= 2) breakBlockChance += 0.2;
-            if (monsterHealthPercent > 0.7) breakBlockChance += 0.1;
-            
-            if (Math.random() < Math.min(breakBlockChance, 0.95)) {
-                console.log(`🤖 ${this.monster.name} выбирает пробитие блока (шанс: ${breakBlockChance.toFixed(2)})`);
-                return 'breakBlock';
-            }
-        }
-        
+        // ЭКСТРЕННЫЕ СИТУАЦИИ (приоритет 1)
         if (monsterHealthPercent < 0.25 && availableActions.includes('heal')) {
-            const healChance = 0.8 - (monsterHealthPercent * 0.5);
+            const healChance = 0.7 - (monsterHealthPercent * 0.3);
             if (Math.random() < healChance) {
                 console.log(`🤖 ${this.monster.name} срочно лечится (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
                 return 'heal';
             }
         }
         
-        if (heroHealthPercent < 0.3 && availableActions.includes('strongAttack') && this.monster.ap >= 2) {
-            if (Math.random() < 0.6) {
-                console.log(`🤖 ${this.monster.name} добивает слабого героя`);
-                return 'strongAttack';
-            }
-        }
-        
-        if (monsterHealthPercent < 0.5 && availableActions.includes('block') && !isHeroBlocking) {
-            const blockChance = 0.5 - (monsterHealthPercent * 0.4);
+        if (monsterHealthPercent < 0.1 && availableActions.includes('block')) {
+            const blockChance = 0.9;
             if (Math.random() < blockChance) {
-                console.log(`🤖 ${this.monster.name} защищается (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
+                console.log(`🤖 ${this.monster.name} отчаянно защищается (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
                 return 'block';
             }
         }
         
-        if (this.monster.ap >= 1) {
-            const attackRoll = Math.random();
-            
-            if (this.monster.ap >= 4 && attackRoll < 0.25) {
-                console.log(`🤖 ${this.monster.name} использует сокрушительную атаку`);
-                return 'crushingAttack';
-            }
-            
-            if (this.monster.ap >= 2 && attackRoll < 0.45) {
-                console.log(`🤖 ${this.monster.name} использует силовую атаку`);
-                return 'strongAttack';
-            }
-            
-            if (attackRoll < 0.8) {
-                console.log(`🤖 ${this.monster.name} атакует`);
-                return 'attack';
-            }
+        // СЛУЧАЙНОЕ ОТКРЫТИЕ (первые 1-2 раунда)
+        if (this.roundCounter <= 2) {
+            const openingAction = this.getOpeningAction(availableActions);
+            console.log(`🤖 ${this.monster.name} начинает с: ${openingAction}`);
+            return openingAction;
         }
         
-        if (this.monster.ap <= 2 && availableActions.includes('rest')) {
-            const restChance = 0.7 - (this.monster.ap * 0.2);
-            if (Math.random() < restChance) {
-                console.log(`🤖 ${this.monster.name} отдыхает для восстановления ОД`);
-                return 'rest';
-            }
+        // ОПРЕДЕЛЯЕМ СТРАТЕГИЮ НА ОСНОВЕ ПАМЯТИ
+        this.determineStrategy();
+        
+        // ВЫБОР ДЕЙСТВИЯ ПО СТРАТЕГИИ
+        const strategyAction = this.getStrategyAction(availableActions, heroHealthPercent, monsterHealthPercent);
+        if (strategyAction && availableActions.includes(strategyAction)) {
+            return strategyAction;
         }
         
-        const fallbackActions = availableActions.filter(action => 
-            ['attack', 'strongAttack', 'breakBlock', 'rest'].includes(action)
-        );
-        
-        const selectedAction = fallbackActions.length > 0 
-            ? fallbackActions[Math.floor(Math.random() * fallbackActions.length)]
-            : 'rest';
-            
-        console.log(`🤖 ${this.monster.name} выбирает резервное действие: ${selectedAction}`);
-        return selectedAction;
+        // ФОЛБЭК: случайное доступное действие
+        const randomAction = availableActions[Math.floor(Math.random() * availableActions.length)];
+        return randomAction;
     }
     
-    analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo) {
-        const strategy = {
-            breakBlockChance: 0.3,
-            aggression: 0.5,
-            defense: 0.5
+    updatePlayerMemory() {
+        // Запоминаем последние действия игрока
+        const player = this.bs.players[1];
+        if (player.previousActions.length > 0) {
+            const lastAction = player.previousActions[0];
+            this.playerPatternMemory.unshift(lastAction);
+            if (this.playerPatternMemory.length > 3) {
+                this.playerPatternMemory.pop();
+            }
+        }
+    }
+    
+    getOpeningAction(availableActions) {
+        // Весовые вероятности для первых ходов
+        const weightedActions = [
+            { action: 'attack', weight: 50 },
+            { action: 'block', weight: 20 },
+            { action: 'rest', weight: 15 },
+            { action: 'strongAttack', weight: 10 },
+            { action: 'breakBlock', weight: 5 }
+        ];
+        
+        // Фильтруем доступные действия
+        const availableWeighted = weightedActions.filter(item => 
+            availableActions.includes(item.action)
+        );
+        
+        if (availableWeighted.length === 0) return 'rest';
+        
+        // Взвешенный случайный выбор
+        const totalWeight = availableWeighted.reduce((sum, item) => sum + item.weight, 0);
+        let random = Math.random() * totalWeight;
+        
+        for (const item of availableWeighted) {
+            if (random < item.weight) return item.action;
+            random -= item.weight;
+        }
+        
+        return availableWeighted[0].action;
+    }
+    
+    determineStrategy() {
+        if (this.playerPatternMemory.length < 2) {
+            this.myStrategy = 'balanced';
+            return;
+        }
+        
+        const recentActions = this.playerPatternMemory.slice(0, 2);
+        const attackCount = recentActions.filter(a => 
+            a === 'Атака' || a === 'Силовая атака' || a === 'Сокрушительная атака'
+        ).length;
+        
+        const blockCount = recentActions.filter(a => a === 'Блок').length;
+        const healCount = recentActions.filter(a => a === 'Лечение' || a === 'Отдых').length;
+        
+        // Определяем стратегию на основе паттернов игрока
+        if (blockCount >= 2) {
+            this.myStrategy = 'counter_block'; // Игрок часто блокирует
+        } else if (attackCount >= 2) {
+            this.myStrategy = 'counter_attack'; // Игрок часто атакует
+        } else if (healCount >= 1) {
+            this.myStrategy = 'pressure'; // Игрок лечится/отдыхает
+        } else {
+            // Случайная смена стратегии для непредсказуемости
+            const strategies = ['aggressive', 'defensive', 'balanced', 'pressure'];
+            if (Math.random() < 0.3) { // 30% шанс сменить стратегию
+                this.myStrategy = strategies[Math.floor(Math.random() * strategies.length)];
+            } else {
+                this.myStrategy = this.myStrategy || 'balanced';
+            }
+        }
+        
+        console.log(`🎭 ${this.monster.name} стратегия: ${this.myStrategy} (память: ${this.playerPatternMemory.join(', ')})`);
+    }
+    
+    getStrategyAction(availableActions, heroHealthPercent, monsterHealthPercent) {
+        const strategyMap = {
+            'counter_block': { // Против часто блокирующего игрока
+                options: [
+                    { action: 'breakBlock', weight: 50, condition: () => availableActions.includes('breakBlock') },
+                    { action: 'rest', weight: 20, condition: () => this.monster.ap <= 2 },
+                    { action: 'crushingAttack', weight: 15, condition: () => this.monster.ap >= 4 },
+                    { action: 'strongAttack', weight: 15, condition: () => this.monster.ap >= 2 }
+                ]
+            },
+            'counter_attack': { // Против часто атакующего игрока
+                options: [
+                    { action: 'block', weight: 60, condition: () => availableActions.includes('block') },
+                    { action: 'attack', weight: 25, condition: () => true },
+                    { action: 'rest', weight: 15, condition: () => this.monster.ap <= 2 }
+                ]
+            },
+            'pressure': { // Давление на лечащегося/отдыхающего
+                options: [
+                    { action: 'strongAttack', weight: 40, condition: () => this.monster.ap >= 2 },
+                    { action: 'attack', weight: 30, condition: () => true },
+                    { action: 'crushingAttack', weight: 20, condition: () => this.monster.ap >= 4 },
+                    { action: 'breakBlock', weight: 10, condition: () => availableActions.includes('breakBlock') }
+                ]
+            },
+            'aggressive': {
+                options: [
+                    { action: 'attack', weight: 40, condition: () => true },
+                    { action: 'strongAttack', weight: 30, condition: () => this.monster.ap >= 2 },
+                    { action: 'crushingAttack', weight: 20, condition: () => this.monster.ap >= 4 },
+                    { action: 'breakBlock', weight: 10, condition: () => availableActions.includes('breakBlock') }
+                ]
+            },
+            'defensive': {
+                options: [
+                    { action: 'block', weight: 50, condition: () => availableActions.includes('block') },
+                    { action: 'rest', weight: 30, condition: () => true },
+                    { action: 'heal', weight: 20, condition: () => availableActions.includes('heal') && monsterHealthPercent < 0.8 }
+                ]
+            },
+            'balanced': {
+                options: [
+                    { action: 'attack', weight: 35, condition: () => true },
+                    { action: 'rest', weight: 25, condition: () => this.monster.ap <= 3 },
+                    { action: 'block', weight: 20, condition: () => availableActions.includes('block') },
+                    { action: 'strongAttack', weight: 15, condition: () => this.monster.ap >= 2 },
+                    { action: 'breakBlock', weight: 5, condition: () => availableActions.includes('breakBlock') }
+                ]
+            }
         };
         
-        if (isHeroBlocking) {
-            strategy.breakBlockChance += 0.2;
-            
-            if (heroBlockCombo >= 2) strategy.breakBlockChance += 0.3;
-            if (heroBlockCombo >= 3) strategy.breakBlockChance += 0.4;
-            
-            if (this.monster.ap >= 3) strategy.breakBlockChance += 0.1;
+        const strategy = strategyMap[this.myStrategy] || strategyMap.balanced;
+        
+        // Фильтруем доступные опции
+        const availableOptions = strategy.options.filter(option => 
+            option.condition() && availableActions.includes(option.action)
+        );
+        
+        if (availableOptions.length === 0) return null;
+        
+        // Взвешенный случайный выбор
+        const totalWeight = availableOptions.reduce((sum, opt) => sum + opt.weight, 0);
+        let random = Math.random() * totalWeight;
+        
+        for (const option of availableOptions) {
+            if (random < option.weight) return option.action;
+            random -= option.weight;
         }
         
-        if (heroHealthPercent < 0.4) {
-            strategy.aggression += 0.3;
-            strategy.breakBlockChance += 0.1;
-        }
-        
-        if (monsterHealthPercent < 0.4) {
-            strategy.defense += 0.3;
-            strategy.aggression -= 0.2;
-        }
-        
-        if (monsterHealthPercent > 0.7) {
-            strategy.aggression += 0.2;
-        }
-        
-        return strategy;
+        return availableOptions[0].action;
     }
     
     getAvailableActions() {
