@@ -957,3 +957,39 @@
         min-height: 500px;
     }
 }
+.current-position {
+    color: #00ff00;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.cell-status.current {
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.reachability-success {
+    color: #00ff00;
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+.no-available-actions {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(239, 68, 68, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.no-actions-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    color: #ef4444;
+}
+
+.no-available-actions p {
+    color: #ef4444;
+    font-size: 0.9rem;
+}
