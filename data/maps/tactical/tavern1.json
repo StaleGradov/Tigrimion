@@ -256,7 +256,7 @@
           "col": 4,
           "x": 569,
           "y": 767,
-          "type": "npc",
+          "type": "water",
           "passable": true,
           "visible": true,
           "originalData": {
@@ -304,7 +304,7 @@
           "col": 6,
           "x": 759,
           "y": 876,
-          "type": "water",
+          "type": "active",
           "passable": true,
           "visible": true,
           "originalData": {
