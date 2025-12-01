@@ -2256,146 +2256,355 @@ class TacticalAI {
     constructor(battleSystem, monster) {
         this.bs = battleSystem;
         this.monster = monster;
+        this.playerPatternMemory = {
+            blockCount: 0,
+            attackCount: 0,
+            healCount: 0,
+            lastActions: [],
+            consecutiveBlocks: 0
+        };
     }
     
     decideAction() {
+        this.updatePlayerPatternMemory();
+        
         const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
-        const hero = this.bs.battleGrid.allies[3];
-        if (!hero || hero.currentHealth <= 0) return 'rest';
+        const actionScores = this.calculateActionScores(availableActions);
+        const selectedAction = this.selectActionByScores(actionScores);
         
-        const heroHealthPercent = hero.currentHealth / hero.maxHealth;
-        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
-        const isHeroBlocking = this.bs.players[1].currentAction === 'block';
-        const heroBlockCombo = this.bs.players[1].combo.count;
+        console.log(`🤖 ${this.monster.name} [${this.monster.aiType}] выбрал: ${selectedAction} (${this.getActionReason(selectedAction, actionScores)})`);
         
-        const strategy = this.analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo);
-        
-        if (isHeroBlocking && availableActions.includes('breakBlock')) {
-            let breakBlockChance = strategy.breakBlockChance;
-            
-            if (this.monster.ap <= 2) breakBlockChance += 0.15;
-            if (heroBlockCombo >= 2) breakBlockChance += 0.2;
-            if (monsterHealthPercent > 0.7) breakBlockChance += 0.1;
-            
-            if (Math.random() < Math.min(breakBlockChance, 0.95)) {
-                console.log(`🤖 ${this.monster.name} выбирает пробитие блока (шанс: ${breakBlockChance.toFixed(2)})`);
-                return 'breakBlock';
-            }
-        }
-        
-        if (monsterHealthPercent < 0.25 && availableActions.includes('heal')) {
-            const healChance = 0.8 - (monsterHealthPercent * 0.5);
-            if (Math.random() < healChance) {
-                console.log(`🤖 ${this.monster.name} срочно лечится (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
-                return 'heal';
-            }
-        }
-        
-        if (heroHealthPercent < 0.3 && availableActions.includes('strongAttack') && this.monster.ap >= 2) {
-            if (Math.random() < 0.6) {
-                console.log(`🤖 ${this.monster.name} добивает слабого героя`);
-                return 'strongAttack';
-            }
-        }
-        
-        if (monsterHealthPercent < 0.5 && availableActions.includes('block') && !isHeroBlocking) {
-            const blockChance = 0.5 - (monsterHealthPercent * 0.4);
-            if (Math.random() < blockChance) {
-                console.log(`🤖 ${this.monster.name} защищается (HP: ${(monsterHealthPercent*100).toFixed(0)}%)`);
-                return 'block';
-            }
-        }
-        
-        if (this.monster.ap >= 1) {
-            const attackRoll = Math.random();
-            
-            if (this.monster.ap >= 4 && attackRoll < 0.25) {
-                console.log(`🤖 ${this.monster.name} использует сокрушительную атаку`);
-                return 'crushingAttack';
-            }
-            
-            if (this.monster.ap >= 2 && attackRoll < 0.45) {
-                console.log(`🤖 ${this.monster.name} использует силовую атаку`);
-                return 'strongAttack';
-            }
-            
-            if (attackRoll < 0.8) {
-                console.log(`🤖 ${this.monster.name} атакует`);
-                return 'attack';
-            }
-        }
-        
-        if (this.monster.ap <= 2 && availableActions.includes('rest')) {
-            const restChance = 0.7 - (this.monster.ap * 0.2);
-            if (Math.random() < restChance) {
-                console.log(`🤖 ${this.monster.name} отдыхает для восстановления ОД`);
-                return 'rest';
-            }
-        }
-        
-        const fallbackActions = availableActions.filter(action => 
-            ['attack', 'strongAttack', 'breakBlock', 'rest'].includes(action)
-        );
-        
-        const selectedAction = fallbackActions.length > 0 
-            ? fallbackActions[Math.floor(Math.random() * fallbackActions.length)]
-            : 'rest';
-            
-        console.log(`🤖 ${this.monster.name} выбирает резервное действие: ${selectedAction}`);
         return selectedAction;
     }
     
-    analyzeSituation(heroHealthPercent, monsterHealthPercent, isHeroBlocking, heroBlockCombo) {
-        const strategy = {
-            breakBlockChance: 0.3,
-            aggression: 0.5,
-            defense: 0.5
+    updatePlayerPatternMemory() {
+        const player = this.bs.players[1];
+        
+        // Сохраняем последние действия игрока
+        if (player.currentAction && this.playerPatternMemory.lastActions.length < 5) {
+            this.playerPatternMemory.lastActions.unshift(player.currentAction);
+            if (this.playerPatternMemory.lastActions.length > 5) {
+                this.playerPatternMemory.lastActions.pop();
+            }
+        }
+        
+        // Считаем статистику
+        this.playerPatternMemory.blockCount = this.playerPatternMemory.lastActions.filter(a => a === 'block').length;
+        this.playerPatternMemory.attackCount = this.playerPatternMemory.lastActions.filter(a => 
+            ['attack', 'strongAttack', 'crushingAttack'].includes(a)
+        ).length;
+        this.playerPatternMemory.healCount = this.playerPatternMemory.lastActions.filter(a => a === 'heal').length;
+        
+        // Считаем последовательные блоки
+        if (player.currentAction === 'block') {
+            this.playerPatternMemory.consecutiveBlocks++;
+        } else {
+            this.playerPatternMemory.consecutiveBlocks = 0;
+        }
+    }
+    
+    calculateActionScores(availableActions) {
+        const hero = this.bs.battleGrid.allies[3];
+        const heroHealthPercent = hero ? hero.currentHealth / hero.maxHealth : 1;
+        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
+        
+        const scores = {};
+        
+        availableActions.forEach(action => {
+            let score = 0;
+            
+            // Базовые приоритеты по типу монстра
+            score += this.getBasePriority(action);
+            
+            // Модификаторы по ситуации
+            score += this.getHealthModifiers(action, monsterHealthPercent, heroHealthPercent);
+            score += this.getAPModifiers(action);
+            score += this.getPredictionModifiers(action);
+            score += this.getComboModifiers(action);
+            score += this.getRandomVariation();
+            
+            scores[action] = Math.max(0, score);
+        });
+        
+        return scores;
+    }
+    
+    getBasePriority(action) {
+        const basePriorities = {
+            aggressor: {
+                attack: 8, strongAttack: 7, crushingAttack: 6,
+                breakBlock: 5, rest: 3, block: 2, heal: 1
+            },
+            defender: {
+                block: 8, breakBlock: 6, attack: 5, strongAttack: 4,
+                rest: 5, heal: 4, crushingAttack: 2
+            },
+            trickster: {
+                breakBlock: 7, strongAttack: 6, attack: 5, rest: 5,
+                block: 4, heal: 4, crushingAttack: 3
+            },
+            berserker: {
+                attack: 9, strongAttack: 8, crushingAttack: 7,
+                breakBlock: 4, rest: 2, block: 1, heal: 0
+            }
         };
         
-        if (isHeroBlocking) {
-            strategy.breakBlockChance += 0.2;
-            
-            if (heroBlockCombo >= 2) strategy.breakBlockChance += 0.3;
-            if (heroBlockCombo >= 3) strategy.breakBlockChance += 0.4;
-            
-            if (this.monster.ap >= 3) strategy.breakBlockChance += 0.1;
+        const aiType = this.monster.aiType || this.determineAItype();
+        return basePriorities[aiType][action] || 3;
+    }
+    
+    determineAItype() {
+        if (this.monster.health > 80 && this.monster.damage > 15) {
+            return 'aggressor';
+        } else if (this.monster.armor > 5) {
+            return 'defender';
+        } else if (this.monster.damage > 12 && this.monster.health < 50) {
+            return 'berserker';
+        } else {
+            return 'trickster';
+        }
+    }
+    
+    getHealthModifiers(action, monsterHealth, heroHealth) {
+        let modifier = 0;
+        
+        if (monsterHealth < 0.3) {
+            if (action === 'heal') modifier += 6;
+            if (action === 'block') modifier += 4;
+            if (this.monster.aiType === 'berserker' && action === 'attack') modifier += 3;
+        } else if (monsterHealth < 0.6) {
+            if (action === 'heal') modifier += 3;
+            if (action === 'block') modifier += 2;
         }
         
-        if (heroHealthPercent < 0.4) {
-            strategy.aggression += 0.3;
-            strategy.breakBlockChance += 0.1;
+        if (heroHealth < 0.3) {
+            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 3;
+        } else if (heroHealth > 0.8) {
+            if (action === 'block') modifier += 2;
         }
         
-        if (monsterHealthPercent < 0.4) {
-            strategy.defense += 0.3;
-            strategy.aggression -= 0.2;
+        return modifier;
+    }
+    
+    getAPModifiers(action) {
+        const apCost = this.bs.actionsCost[action];
+        let modifier = 0;
+        
+        if (this.monster.ap <= 2) {
+            if (action === 'rest') modifier += 4;
+            if (apCost === 1) modifier += 2;
+        } else if (this.monster.ap >= 4) {
+            if (action === 'crushingAttack') modifier += 3;
+            if (action === 'strongAttack') modifier += 2;
         }
         
-        if (monsterHealthPercent > 0.7) {
-            strategy.aggression += 0.2;
+        if (this.monster.ap < apCost) modifier -= 10;
+        
+        return modifier;
+    }
+    
+    getPredictionModifiers(action) {
+        let modifier = 0;
+        const memory = this.playerPatternMemory;
+        
+        if (memory.consecutiveBlocks >= 2) {
+            if (action === 'breakBlock') modifier += 8;
+            if (action === 'crushingAttack') modifier += 6;
+            if (action === 'rest') modifier += 3;
+        } else if (memory.blockCount >= 2) {
+            if (action === 'breakBlock') modifier += 5;
         }
         
-        return strategy;
+        if (memory.attackCount >= 2) {
+            if (action === 'block') modifier += 4;
+        }
+        
+        if (memory.healCount >= 1 && memory.lastActions[0] === 'heal') {
+            if (['attack', 'strongAttack'].includes(action)) modifier += 3;
+        }
+        
+        return modifier;
+    }
+    
+    getComboModifiers(action) {
+        if (this.monster.combo.type === action && this.monster.combo.count > 0) {
+            return this.monster.combo.count * 2;
+        }
+        return 0;
+    }
+    
+    getRandomVariation() {
+        const aiType = this.monster.aiType || 'trickster';
+        const variationRanges = {
+            aggressor: 3,
+            defender: 2,
+            trickster: 4,
+            berserker: 5
+        };
+        
+        const range = variationRanges[aiType] || 3;
+        return (Math.random() * range * 2) - range;
+    }
+    
+    selectActionByScores(actionScores) {
+        const totalScore = Object.values(actionScores).reduce((sum, score) => sum + score, 0);
+        
+        if (totalScore === 0) return 'rest';
+        
+        const rand = Math.random() * totalScore;
+        let cumulative = 0;
+        
+        for (const [action, score] of Object.entries(actionScores)) {
+            cumulative += score;
+            if (rand <= cumulative) {
+                return action;
+            }
+        }
+        
+        return 'rest';
     }
     
     getAvailableActions() {
         const actions = [];
+        const ap = this.monster.ap;
         
-        if (this.monster.ap >= 1) {
-            actions.push('attack', 'block', 'breakBlock', 'rest');
-        }
+        if (ap >= 1) actions.push('attack', 'block', 'breakBlock', 'rest');
+        if (ap >= 1) actions.push('heal');
+        if (ap >= 2) actions.push('strongAttack');
+        if (ap >= 4) actions.push('crushingAttack');
         
-        if (this.monster.ap >= 1 && this.monster.currentHealth < this.monster.health) {
-            actions.push('heal');
-        }
-        
-        if (this.monster.ap >= 2) actions.push('strongAttack');
-        if (this.monster.ap >= 4) actions.push('crushingAttack');
-        
-        return actions;
+        return actions.filter(action => ap >= this.bs.actionsCost[action]);
     }
+    
+    getActionReason(action, scores) {
+        const reasons = [];
+        const score = scores[action];
+        
+        if (this.playerPatternMemory.consecutiveBlocks >= 2 && action === 'breakBlock') {
+            reasons.push('предсказал блок');
+        }
+        if (this.monster.combo.type === action) {
+            reasons.push(`комбо x${this.monster.combo.count + 1}`);
+        }
+        if (this.monster.currentHealth < 0.3 && action === 'heal') {
+            reasons.push('критическое здоровье');
+        }
+        if (this.monster.ap <= 2 && action === 'rest') {
+            reasons.push('мало ОД');
+        }
+        
+        return reasons.length > 0 ? reasons.join(', ') : `оценка: ${score.toFixed(1)}`;
+    }
+}
+
+// Обновленный метод generateMonsterGroup в классе BattleSystem
+generateMonsterGroup(baseMonsterId) {
+    const currentMap = window.game.systems.map?.currentMap;
+    const mapSettings = currentMap?.monsters;
+    const mapMonsters = this.getMonstersForCurrentMap();
+    
+    if (mapMonsters.length === 0) {
+        console.error("❌ Нет доступных монстров для генерации группы!");
+        return null;
+    }
+
+    const monsterCountProbabilities = {
+        1: 90,
+        2: 5,
+        3: 2,
+        4: 1.5,
+        5: 1,
+        6: 0.5
+    };
+
+    let monsterCount = 1;
+    
+    const roll = Math.random() * 100;
+    let probabilitySum = 0;
+    
+    for (let count = 1; count <= 6; count++) {
+        probabilitySum += monsterCountProbabilities[count];
+        if (roll <= probabilitySum) {
+            monsterCount = count;
+            break;
+        }
+    }
+
+    const monsterGroup = [];
+    const usedMonsters = new Set();
+    
+    for (let i = 0; i < monsterCount; i++) {
+        let selectedMonster;
+        let attempts = 0;
+        
+        do {
+            const randomIndex = Math.floor(Math.random() * mapMonsters.length);
+            selectedMonster = mapMonsters[randomIndex];
+            attempts++;
+        } while (usedMonsters.has(selectedMonster.id) && attempts < 5 && mapMonsters.length > 1);
+        
+        usedMonsters.add(selectedMonster.id);
+        
+        // Определяем тип ИИ для монстра
+        let aiType = 'trickster';
+        if (selectedMonster.health > 80 && selectedMonster.damage > 15) aiType = 'aggressor';
+        else if (selectedMonster.armor > 5) aiType = 'defender';
+        else if (selectedMonster.damage > 12 && selectedMonster.health < 50) aiType = 'berserker';
+        
+        const monsterCopy = {
+            ...selectedMonster,
+            battleId: i + 1,
+            currentHealth: selectedMonster.health,
+            name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
+            source: 'map',
+            ai: new TacticalAI(this, selectedMonster),
+            aiType: aiType,
+            ap: 3,
+            currentAction: null,
+            combo: { type: null, count: 0 },
+            previousActions: []
+        };
+        monsterGroup.push(monsterCopy);
+    }
+
+    console.log(`🎲 Сгенерирована группа из ${monsterCount} монстров:`, monsterGroup.map(m => `${m.name} [${m.aiType}]`));
+    return monsterGroup;
+}
+
+// Также нужно обновить метод generateSpecificMonsterGroup для согласованности
+generateSpecificMonsterGroup(specificMonster) {
+    if (!specificMonster) return null;
+
+    const monsterCount = 1;
+    const monsterGroup = [];
+    
+    // Определяем тип ИИ для конкретного монстра
+    let aiType = 'trickster';
+    if (specificMonster.health > 80 && specificMonster.damage > 15) aiType = 'aggressor';
+    else if (specificMonster.armor > 5) aiType = 'defender';
+    else if (specificMonster.damage > 12 && specificMonster.health < 50) aiType = 'berserker';
+    
+    for (let i = 0; i < monsterCount; i++) {
+        const monsterCopy = {
+            ...specificMonster,
+            battleId: i + 1,
+            currentHealth: specificMonster.health,
+            name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
+            source: 'programmed',
+            ai: new TacticalAI(this, specificMonster),
+            aiType: aiType,
+            ap: 3,
+            currentAction: null,
+            combo: { type: null, count: 0 },
+            previousActions: []
+        };
+        monsterGroup.push(monsterCopy);
+    }
+
+    return monsterGroup;
+}
 }
 
 window.BattleSystem = BattleSystem;
