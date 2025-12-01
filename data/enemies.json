@@ -7,11 +7,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 100,
     "armor": 10,
     "damage": 30,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "frenzy": 0.15
+    }
   },
   {
     "id": 2,
@@ -21,11 +25,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 270,
     "armor": 9,
     "damage": 9,
     "reward": 0.3,
-    "experience": 3
+    "experience": 3,
+    "abilities": {
+      "endurance": 0.2
+    }
   },
   {
     "id": 3,
@@ -35,11 +43,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 60,
     "armor": 6,
     "damage": 36,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "shadow_strike": 0.25
+    }
   },
   {
     "id": 4,
@@ -49,11 +61,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 113,
     "armor": 30,
     "damage": 11,
     "reward": 0.32,
-    "experience": 3.2
+    "experience": 3.2,
+    "abilities": {
+      "armored_skin": 0.3
+    }
   },
   {
     "id": 5,
@@ -63,11 +79,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 600,
     "armor": 20,
     "damage": 20,
     "reward": 0.4,
-    "experience": 4
+    "experience": 4,
+    "abilities": {
+      "berserk": 0.15
+    }
   },
   {
     "id": 6,
@@ -77,11 +97,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 188,
     "armor": 50,
     "damage": 19,
     "reward": 0.38,
-    "experience": 3.8
+    "experience": 3.8,
+    "abilities": {
+      "shield_bash": 0.2
+    }
   },
   {
     "id": 7,
@@ -91,11 +115,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 175,
     "armor": 14,
     "damage": 53,
     "reward": 0.35,
-    "experience": 3.5
+    "experience": 3.5,
+    "abilities": {
+      "bone_crush": 0.25
+    }
   },
   {
     "id": 8,
@@ -105,11 +133,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 113,
     "armor": 9,
     "damage": 42,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "bleed": 0.2
+    }
   },
   {
     "id": 9,
@@ -119,11 +151,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 72,
     "armor": 7,
     "damage": 62,
     "reward": 0.27,
-    "experience": 2.7
+    "experience": 2.7,
+    "abilities": {
+      "poison_spit": 0.3
+    }
   },
   {
     "id": 10,
@@ -133,11 +169,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 188,
     "armor": 15,
     "damage": 89,
     "reward": 0.4,
-    "experience": 4
+    "experience": 4,
+    "abilities": {
+      "assassinate": 0.2
+    }
   },
   {
     "id": 11,
@@ -147,11 +187,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 120,
     "armor": 12,
     "damage": 100,
     "reward": 0.38,
-    "experience": 3.8
+    "experience": 3.8,
+    "abilities": {
+      "ghost_strike": 0.25
+    }
   },
   {
     "id": 12,
@@ -161,11 +205,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 450,
     "armor": 15,
     "damage": 15,
     "reward": 0.35,
-    "experience": 3.5
+    "experience": 3.5,
+    "abilities": {
+      "charge": 0.15
+    }
   },
   {
     "id": 13,
@@ -175,11 +223,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 188,
     "armor": 50,
     "damage": 19,
     "reward": 0.36,
-    "experience": 3.6
+    "experience": 3.6,
+    "abilities": {
+      "spike_armor": 0.25
+    }
   },
   {
     "id": 14,
@@ -189,11 +241,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 175,
     "armor": 14,
     "damage": 70,
     "reward": 0.3,
-    "experience": 3
+    "experience": 3,
+    "abilities": {
+      "rampage": 0.2
+    }
   },
   {
     "id": 15,
@@ -203,11 +259,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 96,
     "armor": 10,
     "damage": 80,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "spike_volley": 0.25
+    }
   },
   {
     "id": 16,
@@ -217,11 +277,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 60,
     "armor": 6,
     "damage": 48,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "fire_breath": 0.2
+    }
   },
   {
     "id": 17,
@@ -231,11 +295,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 88,
     "armor": 9,
     "damage": 58,
     "reward": 0.24,
-    "experience": 2.4
+    "experience": 2.4,
+    "abilities": {
+      "strangle": 0.15
+    }
   },
   {
     "id": 18,
@@ -245,11 +313,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 150,
     "armor": 40,
     "damage": 15,
     "reward": 0.33,
-    "experience": 3.3
+    "experience": 3.3,
+    "abilities": {
+      "antler_bash": 0.2
+    }
   },
   {
     "id": 19,
@@ -259,11 +331,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 138,
     "armor": 11,
     "damage": 55,
     "reward": 0.29,
-    "experience": 2.9
+    "experience": 2.9,
+    "abilities": {
+      "stomp": 0.15
+    }
   },
   {
     "id": 20,
@@ -273,11 +349,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 84,
     "armor": 8,
     "damage": 60,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "thorn_shot": 0.25
+    }
   },
   {
     "id": 21,
@@ -287,11 +367,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 125,
     "armor": 10,
     "damage": 52,
     "reward": 0.27,
-    "experience": 2.7
+    "experience": 2.7,
+    "abilities": {
+      "horn_gore": 0.2
+    }
   },
   {
     "id": 22,
@@ -301,11 +385,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 750,
     "armor": 25,
     "damage": 25,
     "reward": 0.45,
-    "experience": 4.5
+    "experience": 4.5,
+    "abilities": {
+      "earthquake": 0.1
+    }
   },
   {
     "id": 23,
@@ -315,11 +403,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 225,
     "armor": 60,
     "damage": 23,
     "reward": 0.37,
-    "experience": 3.7
+    "experience": 3.7,
+    "abilities": {
+      "iron_skin": 0.3
+    }
   },
   {
     "id": 24,
@@ -329,11 +421,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 213,
     "armor": 17,
     "damage": 82,
     "reward": 0.34,
-    "experience": 3.4
+    "experience": 3.4,
+    "abilities": {
+      "battering_ram": 0.25
+    }
   },
   {
     "id": 25,
@@ -343,11 +439,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 100,
     "armor": 8,
     "damage": 65,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "whirlwind": 0.2
+    }
   },
   {
     "id": 26,
@@ -357,11 +457,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 360,
     "armor": 12,
     "damage": 12,
     "reward": 0.22,
-    "experience": 2.2
+    "experience": 2.2,
+    "abilities": {
+      "timber": 0.15
+    }
   },
   {
     "id": 27,
@@ -371,11 +475,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 150,
     "armor": 40,
     "damage": 15,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "heavy_strike": 0.2
+    }
   },
   {
     "id": 28,
@@ -385,11 +493,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 138,
     "armor": 11,
     "damage": 53,
     "reward": 0.24,
-    "experience": 2.4
+    "experience": 2.4,
+    "abilities": {
+      "bloodlust": 0.2
+    }
   },
   {
     "id": 29,
@@ -399,11 +511,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 96,
     "armor": 10,
     "damage": 62,
     "reward": 0.23,
-    "experience": 2.3
+    "experience": 2.3,
+    "abilities": {
+      "axe_throw": 0.3
+    }
   },
   {
     "id": 30,
@@ -413,11 +529,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 163,
     "armor": 43,
     "damage": 16,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "mining_strike": 0.15
+    }
   },
   {
     "id": 31,
@@ -427,11 +547,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 440,
     "armor": 15,
     "damage": 15,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "sturdy": 0.2
+    }
   },
   {
     "id": 32,
@@ -441,11 +565,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 163,
     "armor": 13,
     "damage": 62,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "pickaxe_smash": 0.25
+    }
   },
   {
     "id": 33,
@@ -455,11 +583,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 108,
     "armor": 11,
     "damage": 72,
     "reward": 0.27,
-    "experience": 2.7
+    "experience": 2.7,
+    "abilities": {
+      "dynamite_throw": 0.3
+    }
   },
   {
     "id": 34,
@@ -469,11 +601,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 113,
     "armor": 9,
     "damage": 42,
     "reward": 0.2,
-    "experience": 2
+    "experience": 2,
+    "abilities": {
+      "pitchfork_jab": 0.2
+    }
   },
   {
     "id": 35,
@@ -483,11 +619,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 72,
     "armor": 7,
     "damage": 48,
     "reward": 0.19,
-    "experience": 1.9
+    "experience": 1.9,
+    "abilities": {
+      "sling_shot": 0.25
+    }
   },
   {
     "id": 36,
@@ -497,11 +637,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 320,
     "armor": 11,
     "damage": 11,
     "reward": 0.21,
-    "experience": 2.1
+    "experience": 2.1,
+    "abilities": {
+      "peasant_rage": 0.15
+    }
   },
   {
     "id": 37,
@@ -511,11 +655,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 138,
     "armor": 36,
     "damage": 14,
     "reward": 0.23,
-    "experience": 2.3
+    "experience": 2.3,
+    "abilities": {
+      "improvised_armor": 0.2
+    }
   },
   {
     "id": 38,
@@ -525,11 +673,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 380,
     "armor": 13,
     "damage": 13,
     "reward": 0.24,
-    "experience": 2.4
+    "experience": 2.4,
+    "abilities": {
+      "worker_strength": 0.15
+    }
   },
   {
     "id": 39,
@@ -539,11 +691,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 150,
     "armor": 40,
     "damage": 15,
     "reward": 0.22,
-    "experience": 2.2
+    "experience": 2.2,
+    "abilities": {
+      "tough_cloth": 0.2
+    }
   },
   {
     "id": 40,
@@ -553,11 +709,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 138,
     "armor": 11,
     "damage": 53,
     "reward": 0.21,
-    "experience": 2.1
+    "experience": 2.1,
+    "abilities": {
+      "hammer_smash": 0.25
+    }
   },
   {
     "id": 41,
@@ -567,11 +727,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 96,
     "armor": 10,
     "damage": 60,
     "reward": 0.2,
-    "experience": 2
+    "experience": 2,
+    "abilities": {
+      "stone_throw": 0.25
+    }
   },
   {
     "id": 42,
@@ -581,11 +745,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 125,
     "armor": 10,
     "damage": 63,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "backstab": 0.3
+    }
   },
   {
     "id": 43,
@@ -595,11 +763,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 84,
     "armor": 8,
     "damage": 74,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "snipe": 0.25
+    }
   },
   {
     "id": 44,
@@ -609,11 +781,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 400,
     "armor": 13,
     "damage": 13,
     "reward": 0.23,
-    "experience": 2.3
+    "experience": 2.3,
+    "abilities": {
+      "bandit_toughness": 0.2
+    }
   },
   {
     "id": 45,
@@ -623,11 +799,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 163,
     "armor": 43,
     "damage": 16,
     "reward": 0.24,
-    "experience": 2.4
+    "experience": 2.4,
+    "abilities": {
+      "bandit_armor": 0.25
+    }
   },
   {
     "id": 46,
@@ -637,11 +817,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "aggressive",
     "health": 138,
     "armor": 11,
     "damage": 68,
     "reward": 0.27,
-    "experience": 2.7
+    "experience": 2.7,
+    "abilities": {
+      "murderous_intent": 0.25
+    }
   },
   {
     "id": 47,
@@ -651,11 +835,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 96,
     "armor": 10,
     "damage": 80,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "crossbow_bolt": 0.3
+    }
   },
   {
     "id": 48,
@@ -665,11 +853,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_health",
     "health": 420,
     "armor": 14,
     "damage": 14,
     "reward": 0.25,
-    "experience": 2.5
+    "experience": 2.5,
+    "abilities": {
+      "bouncer_strength": 0.2
+    }
   },
   {
     "id": 49,
@@ -679,11 +871,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
     "health": 175,
     "armor": 47,
     "damage": 18,
     "reward": 0.24,
-    "experience": 2.4
+    "experience": 2.4,
+    "abilities": {
+      "shield_wall": 0.25
+    }
   },
   {
     "id": 50,
@@ -693,11 +889,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
     "health": 120,
     "armor": 12,
     "damage": 95,
     "reward": 0.35,
-    "experience": 3.5
+    "experience": 3.5,
+    "abilities": {
+      "wealth_strike": 0.2
+    }
   },
   {
     "id": 51,
@@ -707,11 +907,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "universal",
     "health": 160,
     "armor": 16,
     "damage": 53,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "hunter_mark": 0.25
+    }
   },
   {
     "id": 52,
@@ -721,11 +925,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "universal",
     "health": 152,
     "armor": 15,
     "damage": 56,
     "reward": 0.27,
-    "experience": 2.7
+    "experience": 2.7,
+    "abilities": {
+      "forest_walk": 0.2
+    }
   },
   {
     "id": 53,
@@ -735,11 +943,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 200,
     "armor": 20,
     "damage": 47,
     "reward": 0.3,
-    "experience": 3
+    "experience": 3,
+    "abilities": {
+      "veteran_skill": 0.2
+    }
   },
   {
     "id": 54,
@@ -749,11 +961,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 220,
     "armor": 22,
     "damage": 43,
     "reward": 0.32,
-    "experience": 3.2
+    "experience": 3.2,
+    "abilities": {
+      "guard_duty": 0.2
+    }
   },
   {
     "id": 55,
@@ -763,11 +979,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 188,
     "armor": 19,
     "damage": 50,
     "reward": 0.29,
-    "experience": 2.9
+    "experience": 2.9,
+    "abilities": {
+      "wanderer_strike": 0.2
+    }
   },
   {
     "id": 56,
@@ -777,11 +997,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "universal",
     "health": 168,
     "armor": 17,
     "damage": 55,
     "reward": 0.31,
-    "experience": 3.1
+    "experience": 3.1,
+    "abilities": {
+      "ranger_precision": 0.25
+    }
   },
   {
     "id": 57,
@@ -791,11 +1015,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 208,
     "armor": 21,
     "damage": 48,
     "reward": 0.33,
-    "experience": 3.3
+    "experience": 3.3,
+    "abilities": {
+      "keeper_wrath": 0.2
+    }
   },
   {
     "id": 58,
@@ -805,11 +1033,15 @@
     "attackType": "ranged",
     "preferredPosition": "back",
     "aiBehavior": "ranged_support",
+    "aiType": "universal",
     "health": 156,
     "armor": 16,
     "damage": 58,
     "reward": 0.28,
-    "experience": 2.8
+    "experience": 2.8,
+    "abilities": {
+      "tracking_shot": 0.25
+    }
   },
   {
     "id": 59,
@@ -819,11 +1051,15 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 180,
     "armor": 18,
     "damage": 50,
     "reward": 0.26,
-    "experience": 2.6
+    "experience": 2.6,
+    "abilities": {
+      "militia_charge": 0.2
+    }
   },
   {
     "id": 60,
@@ -833,10 +1069,14 @@
     "attackType": "melee",
     "preferredPosition": "front",
     "aiBehavior": "aggressive",
+    "aiType": "universal",
     "health": 196,
     "armor": 20,
     "damage": 52,
     "reward": 0.3,
-    "experience": 3
+    "experience": 3,
+    "abilities": {
+      "border_defense": 0.2
+    }
   }
 ]
