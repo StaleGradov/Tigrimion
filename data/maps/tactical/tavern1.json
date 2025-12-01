@@ -305,7 +305,7 @@
           "x": 759,
           "y": 876,
           "type": "water",
-          "passable": true,
+          "passable": false,
           "visible": true,
           "originalData": {
             "editorX": 758.6382537151683,
