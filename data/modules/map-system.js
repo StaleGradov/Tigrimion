@@ -514,21 +514,39 @@ updateCellActionsUI(cell) {
     
     console.log(`📊 Статус: исследовано=${isExplored}, текущая позиция=${isCurrentPosition}, достижимо=${isReachable}`);
     
+    // Получаем расширенное описание из tooltip или создаем свое
+    let detailedDescription = cell.tooltip || cellTypeData.description;
+    
+    // Если есть оригинальные данные, добавляем больше информации
+    if (cell.originalData && cell.originalData.description) {
+        detailedDescription = cell.originalData.description;
+    }
+    
+    // Добавляем информацию о вероятностях
+    if (cellTypeData.loot_chances) {
+        detailedDescription += '\n\n📊 Шансы:';
+        for (const [result, chance] of Object.entries(cellTypeData.loot_chances)) {
+            detailedDescription += `\n• ${this.getChanceName(result)}: ${chance}%`;
+        }
+    }
+    
     let actionsHTML = `
         <div class="cell-info-header">
             <div class="cell-icon">${cellTypeData.icon}</div>
             <h4>${cellTypeData.name}</h4>
-            <p class="cell-description">${cellTypeData.description}</p>
-            <div class="cell-position">
-                Позиция: [${cell.col}, ${cell.row}]
-                ${isCurrentPosition ? '<span class="current-position">(вы здесь)</span>' : ''}
+            <div class="cell-position-info">
+                <span class="cell-coords">Позиция: [${cell.col}, ${cell.row}]</span>
+                ${isCurrentPosition ? '<span class="current-position-badge">📍 Вы здесь</span>' : ''}
+            </div>
+            <div class="cell-detailed-description">
+                ${detailedDescription}
             </div>
     `;
     
     if (isExplored) {
         actionsHTML += '<div class="cell-status">✓ Исследовано</div>';
     } else if (isCurrentPosition) {
-        actionsHTML += '<div class="cell-status current">📍 Вы здесь</div>';
+        actionsHTML += '<div class="cell-status current">📍 Вы находитесь здесь</div>';
     }
     
     actionsHTML += '</div>';
@@ -594,6 +612,23 @@ updateCellActionsUI(cell) {
     }
     
     this.updateHeroResourcesUI();
+}
+
+getChanceName(chance) {
+    const names = {
+        'items': 'Находка предметов',
+        'gold': 'Находка золота',
+        'nothing': 'Ничего не найдено',
+        'ores': 'Руда',
+        'stones': 'Камни',
+        'berries': 'Ягоды',
+        'herbs': 'Травы',
+        'rare_herbs': 'Редкие травы',
+        'mushrooms': 'Грибы',
+        'woods': 'Древесина',
+        'rare_ores': 'Редкая руда'
+    };
+    return names[chance] || chance;
 }
 
 getActionButtonHTML(action, cell, isAvailable = true) {
@@ -694,7 +729,7 @@ setupActionEventListeners() {
     });
 }
 
-  performCellAction(action, row, col) {
+performCellAction(action, row, col) {
     console.log(`🎯 Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
     
     if (!this.currentHero) {
@@ -735,11 +770,15 @@ setupActionEventListeners() {
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (actionsContainer) {
         console.log(`🎨 Показываем анимацию выполнения действия`);
+        
+        // Используем this.getActionName() вместо this.getActionName
+        const actionName = this.getActionName(action);
+        
         actionsContainer.innerHTML = `
             <div class="action-processing">
                 <div class="processing-icon">⚡</div>
                 <h4>Выполняется действие...</h4>
-                <p>${this.getActionName(action)} на клетке [${col}, ${row}]</p>
+                <p>${actionName} на клетке [${col}, ${row}]</p>
                 <div class="processing-progress">
                     <div class="progress-bar">
                         <div class="progress-fill"></div>
@@ -1038,6 +1077,22 @@ setupActionEventListeners() {
         return icons[resourceType] || icons.unknown;
     }
 
+getActionName(action) {
+    const actionNames = {
+        'search_treasure': 'Поиск сокровищ',
+        'refill_flask': 'Наполнение фляги',
+        'search_ore': 'Поиск руды',
+        'search_stone': 'Поиск камней',
+        'search_berries': 'Сбор ягод',
+        'search_herbs': 'Сбор трав',
+        'search_mushrooms': 'Сбор грибов',
+        'search_wood': 'Заготовка древесины'
+    };
+    
+    return actionNames[action] || action;
+}
+
+    
     markCellAsExplored(row, col) {
         const cellKey = `${col},${row}`;
         if (this.currentTacticalMap && this.currentTacticalMap.cells[cellKey]) {
@@ -1921,27 +1976,39 @@ setupActionEventListeners() {
         }
     }
 
-    async forceMapUpdate(newMap) {
-        console.log("🔄 Принудительное обновление карты...");
-        
-        if (this.currentMapType === 'local') {
-            this.currentLocalMap = newMap;
-        }
-        this.currentTacticalMap = newMap;
-        
-        if (this.canvasInitialized) {
-            this.calculateCSSScale();
-            this.drawTacticalMap();
-            this.updateMovementInfo();
-            console.log("✅ Карта немедленно обновлена");
-        } else {
-            setTimeout(() => {
-                this.initCanvas();
-            }, 100);
-        }
-        
-        this.updateMapInterface();
+async forceMapUpdate(newMap) {
+    console.log("🔄 Принудительное обновление карты...");
+    
+    if (this.currentMapType === 'local') {
+        this.currentLocalMap = newMap;
     }
+    this.currentTacticalMap = newMap;
+    
+    if (this.canvasInitialized) {
+        this.calculateCSSScale();
+        this.drawTacticalMap();
+        this.updateMovementInfo();
+        console.log("✅ Карта немедленно обновлена");
+        
+        // Автоматически показываем описание текущей клетки
+        setTimeout(() => {
+            const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+            const currentCell = this.currentTacticalMap.cells[cellKey];
+            
+            if (currentCell) {
+                console.log(`📍 Показываем описание клетки после обновления карты`);
+                this.updateCellActionsUI(currentCell);
+                this.highlightSelectedCell(currentCell);
+            }
+        }, 200);
+    } else {
+        setTimeout(() => {
+            this.initCanvas();
+        }, 100);
+    }
+    
+    this.updateMapInterface();
+}
 
     updateMapInterface() {
         const header = document.querySelector('.tactical-map-header h4');
@@ -3493,38 +3560,50 @@ setupActionEventListeners() {
             </div>
         `;
         
-        container.style.display = 'block';
+       container.style.display = 'block';
+    
+    setTimeout(() => {
+        console.log("🎨 Инициализируем Canvas для карты...");
         
-        setTimeout(() => {
-            console.log("🎨 Инициализируем Canvas для карты...");
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не установлена для Canvas");
+            return;
+        }
+        
+        try {
+            this.initCanvas();
+            this.updateMovementInfo();
+            this.updateHeroResourcesUI();
             
-            if (!this.currentTacticalMap) {
-                console.error("❌ currentTacticalMap не установлена для Canvas");
-                return;
+            // ВАЖНОЕ ИСПРАВЛЕНИЕ: Автоматически показываем описание текущей клетки
+            const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+            const currentCell = this.currentTacticalMap.cells[cellKey];
+            
+            if (currentCell) {
+                console.log(`📍 Автоматически показываем описание текущей клетки [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+                setTimeout(() => {
+                    this.updateCellActionsUI(currentCell);
+                    this.highlightSelectedCell(currentCell);
+                }, 100);
             }
             
-            try {
-                this.initCanvas();
-                this.updateMovementInfo();
-                this.updateHeroResourcesUI();
-                
-                console.log("✅ Canvas успешно инициализирован", {
-                    map: this.currentTacticalMap.name,
-                    type: overlayType,
-                    cells: Object.keys(this.currentTacticalMap.cells).length,
-                    playerPosition: this.playerTacticalPosition
-                });
-                
-            } catch (error) {
-                console.error("❌ Ошибка инициализации Canvas:", error);
-                container.innerHTML += `
-                    <div class="map-error" style="color: red; padding: 10px;">
-                        Ошибка загрузки карты: ${error.message}
-                    </div>
-                `;
-            }
-        }, 50);
-    }
+            console.log("✅ Canvas успешно инициализирован", {
+                map: this.currentTacticalMap.name,
+                type: overlayType,
+                cells: Object.keys(this.currentTacticalMap.cells).length,
+                playerPosition: this.playerTacticalPosition
+            });
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации Canvas:", error);
+            container.innerHTML += `
+                <div class="map-error" style="color: red; padding: 10px;">
+                    Ошибка загрузки карты: ${error.message}
+                </div>
+            `;
+        }
+    }, 50);
+}
 
     showOverlay(overlayType) {
         console.log(`🎯 MapSystem: Показываем оверлей: ${overlayType}`);
