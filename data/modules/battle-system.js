@@ -239,6 +239,7 @@ class BattleSystem {
                 ...selectedMonster,
                 battleId: i + 1,
                 currentHealth: selectedMonster.health,
+                maxHealth: selectedMonster.health,
                 name: monsterCount > 1 ? `${selectedMonster.name} ${i + 1}` : selectedMonster.name,
                 source: 'map',
                 ai: new TacticalAI(this, selectedMonster),
@@ -246,7 +247,8 @@ class BattleSystem {
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
-                previousActions: []
+                previousActions: [],
+                lastRestTurn: -3 // Чтобы не спамил отдых сразу
             };
             monsterGroup.push(monsterCopy);
         }
@@ -370,6 +372,7 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') {
                 ...specificMonster,
                 battleId: i + 1,
                 currentHealth: specificMonster.health,
+                maxHealth: specificMonster.health,
                 name: monsterCount > 1 ? `${specificMonster.name} ${i + 1}` : specificMonster.name,
                 source: 'programmed',
                 ai: new TacticalAI(this, specificMonster),
@@ -377,7 +380,8 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') {
                 ap: 3,
                 currentAction: null,
                 combo: { type: null, count: 0 },
-                previousActions: []
+                previousActions: [],
+                lastRestTurn: -3
             };
             monsterGroup.push(monsterCopy);
         }
@@ -455,7 +459,7 @@ startBattleWithSpecificMonster(hero, specificMonster, context = 'movement') {
             type: 'monster',
             data: monster,
             position: position,
-            maxHealth: monster.health,
+            maxHealth: monster.maxHealth || monster.health,
             currentHealth: monster.currentHealth,
             attackType: monster.attackType,
             row: row
@@ -2270,246 +2274,276 @@ class TacticalAI {
     constructor(battleSystem, monster) {
         this.bs = battleSystem;
         this.monster = monster;
-        this.playerPatternMemory = {
+        this.playerMemory = {
+            lastActions: [],
+            consecutiveBlocks: 0,
             blockCount: 0,
             attackCount: 0,
             healCount: 0,
-            lastActions: [],
-            consecutiveBlocks: 0
+            lastRestTurn: -3
         };
     }
     
     decideAction() {
-        this.updatePlayerPatternMemory();
+        this.updatePlayerMemory();
         
         const availableActions = this.getAvailableActions();
         if (availableActions.length === 0) return 'rest';
         
-        const actionScores = this.calculateActionScores(availableActions);
-        const selectedAction = this.selectActionByScores(actionScores);
+        const actionWeights = this.calculateActionWeights(availableActions);
+        const selectedAction = this.selectActionByWeights(actionWeights);
         
-        console.log(`🤖 ${this.monster.name} [${this.monster.aiType}] выбрал: ${selectedAction} (${this.getActionReason(selectedAction, actionScores)})`);
+        // Запоминаем когда последний раз отдыхали
+        if (selectedAction === 'rest') {
+            this.monster.lastRestTurn = this.bs.battleRound;
+        }
+        
+        console.log(`🤖 ${this.monster.name} [${this.monster.aiType}] выбрал: ${selectedAction}`);
+        console.log(`   Веса:`, actionWeights);
         
         return selectedAction;
     }
     
-    updatePlayerPatternMemory() {
+    updatePlayerMemory() {
         const player = this.bs.players[1];
         
-        // Сохраняем последние действия игрока
-        if (player.currentAction && this.playerPatternMemory.lastActions.length < 5) {
-            this.playerPatternMemory.lastActions.unshift(player.currentAction);
-            if (this.playerPatternMemory.lastActions.length > 5) {
-                this.playerPatternMemory.lastActions.pop();
+        // Запоминаем последние действия игрока (только завершенные)
+        if (player.previousActions && player.previousActions.length > 0) {
+            const lastAction = player.previousActions[0];
+            this.playerMemory.lastActions.unshift(lastAction);
+            if (this.playerMemory.lastActions.length > 5) {
+                this.playerMemory.lastActions.pop();
+            }
+            
+            // Считаем статистику
+            this.playerMemory.blockCount = this.playerMemory.lastActions.filter(a => a === 'Блок').length;
+            this.playerMemory.attackCount = this.playerMemory.lastActions.filter(a => 
+                a === 'Атака' || a === 'Силовая атака' || a === 'Сокрушительная атака'
+            ).length;
+            this.playerMemory.healCount = this.playerMemory.lastActions.filter(a => a === 'Лечение').length;
+            
+            // Считаем последовательные блоки
+            this.playerMemory.consecutiveBlocks = 0;
+            for (let action of this.playerMemory.lastActions) {
+                if (action === 'Блок') {
+                    this.playerMemory.consecutiveBlocks++;
+                } else {
+                    break;
+                }
             }
         }
-        
-        // Считаем статистику
-        this.playerPatternMemory.blockCount = this.playerPatternMemory.lastActions.filter(a => a === 'block').length;
-        this.playerPatternMemory.attackCount = this.playerPatternMemory.lastActions.filter(a => 
-            ['attack', 'strongAttack', 'crushingAttack'].includes(a)
-        ).length;
-        this.playerPatternMemory.healCount = this.playerPatternMemory.lastActions.filter(a => a === 'heal').length;
-        
-        // Считаем последовательные блоки
-        if (player.currentAction === 'block') {
-            this.playerPatternMemory.consecutiveBlocks++;
-        } else {
-            this.playerPatternMemory.consecutiveBlocks = 0;
-        }
-    }
-    
-    calculateActionScores(availableActions) {
-        const hero = this.bs.battleGrid.allies[3];
-        const heroHealthPercent = hero ? hero.currentHealth / hero.maxHealth : 1;
-        const monsterHealthPercent = this.monster.currentHealth / this.monster.health;
-        
-        const scores = {};
-        
-        availableActions.forEach(action => {
-            let score = 0;
-            
-            // Базовые приоритеты по типу монстра
-            score += this.getBasePriority(action);
-            
-            // Модификаторы по ситуации
-            score += this.getHealthModifiers(action, monsterHealthPercent, heroHealthPercent);
-            score += this.getAPModifiers(action);
-            score += this.getPredictionModifiers(action);
-            score += this.getComboModifiers(action);
-            score += this.getRandomVariation();
-            
-            scores[action] = Math.max(0, score);
-        });
-        
-        return scores;
-    }
-    
-    getBasePriority(action) {
-        const basePriorities = {
-            aggressor: {
-                attack: 8, strongAttack: 7, crushingAttack: 6,
-                breakBlock: 5, rest: 3, block: 2, heal: 1
-            },
-            defender: {
-                block: 8, breakBlock: 6, attack: 5, strongAttack: 4,
-                rest: 5, heal: 4, crushingAttack: 2
-            },
-            trickster: {
-                breakBlock: 7, strongAttack: 6, attack: 5, rest: 5,
-                block: 4, heal: 4, crushingAttack: 3
-            },
-            berserker: {
-                attack: 9, strongAttack: 8, crushingAttack: 7,
-                breakBlock: 4, rest: 2, block: 1, heal: 0
-            }
-        };
-        
-        const aiType = this.monster.aiType || this.determineAItype();
-        return basePriorities[aiType][action] || 3;
-    }
-    
-    determineAItype() {
-        if (this.monster.health > 80 && this.monster.damage > 15) {
-            return 'aggressor';
-        } else if (this.monster.armor > 5) {
-            return 'defender';
-        } else if (this.monster.damage > 12 && this.monster.health < 50) {
-            return 'berserker';
-        } else {
-            return 'trickster';
-        }
-    }
-    
-    getHealthModifiers(action, monsterHealth, heroHealth) {
-        let modifier = 0;
-        
-        if (monsterHealth < 0.3) {
-            if (action === 'heal') modifier += 6;
-            if (action === 'block') modifier += 4;
-            if (this.monster.aiType === 'berserker' && action === 'attack') modifier += 3;
-        } else if (monsterHealth < 0.6) {
-            if (action === 'heal') modifier += 3;
-            if (action === 'block') modifier += 2;
-        }
-        
-        if (heroHealth < 0.3) {
-            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 3;
-        } else if (heroHealth > 0.8) {
-            if (action === 'block') modifier += 2;
-        }
-        
-        return modifier;
-    }
-    
-    getAPModifiers(action) {
-        const apCost = this.bs.actionsCost[action];
-        let modifier = 0;
-        
-        if (this.monster.ap <= 2) {
-            if (action === 'rest') modifier += 4;
-            if (apCost === 1) modifier += 2;
-        } else if (this.monster.ap >= 4) {
-            if (action === 'crushingAttack') modifier += 3;
-            if (action === 'strongAttack') modifier += 2;
-        }
-        
-        if (this.monster.ap < apCost) modifier -= 10;
-        
-        return modifier;
-    }
-    
-    getPredictionModifiers(action) {
-        let modifier = 0;
-        const memory = this.playerPatternMemory;
-        
-        if (memory.consecutiveBlocks >= 2) {
-            if (action === 'breakBlock') modifier += 8;
-            if (action === 'crushingAttack') modifier += 6;
-            if (action === 'rest') modifier += 3;
-        } else if (memory.blockCount >= 2) {
-            if (action === 'breakBlock') modifier += 5;
-        }
-        
-        if (memory.attackCount >= 2) {
-            if (action === 'block') modifier += 4;
-        }
-        
-        if (memory.healCount >= 1 && memory.lastActions[0] === 'heal') {
-            if (['attack', 'strongAttack'].includes(action)) modifier += 3;
-        }
-        
-        return modifier;
-    }
-    
-    getComboModifiers(action) {
-        if (this.monster.combo.type === action && this.monster.combo.count > 0) {
-            return this.monster.combo.count * 2;
-        }
-        return 0;
-    }
-    
-    getRandomVariation() {
-        const aiType = this.monster.aiType || 'trickster';
-        const variationRanges = {
-            aggressor: 3,
-            defender: 2,
-            trickster: 4,
-            berserker: 5
-        };
-        
-        const range = variationRanges[aiType] || 3;
-        return (Math.random() * range * 2) - range;
-    }
-    
-    selectActionByScores(actionScores) {
-        const totalScore = Object.values(actionScores).reduce((sum, score) => sum + score, 0);
-        
-        if (totalScore === 0) return 'rest';
-        
-        const rand = Math.random() * totalScore;
-        let cumulative = 0;
-        
-        for (const [action, score] of Object.entries(actionScores)) {
-            cumulative += score;
-            if (rand <= cumulative) {
-                return action;
-            }
-        }
-        
-        return 'rest';
     }
     
     getAvailableActions() {
         const actions = [];
         const ap = this.monster.ap;
         
-        if (ap >= 1) actions.push('attack', 'block', 'breakBlock', 'rest');
-        if (ap >= 1) actions.push('heal');
+        if (ap >= 1) actions.push('attack', 'block', 'breakBlock');
+        
+        // Отдых доступен только если прошло минимум 2 хода с последнего отдыха
+        if (ap >= 1 && (this.bs.battleRound - this.monster.lastRestTurn >= 2)) {
+            actions.push('rest');
+        }
+        
+        // Лечение доступно только если здоровье не полное и ниже 70%
+        if (ap >= 1 && this.monster.currentHealth < this.monster.maxHealth * 0.7) {
+            actions.push('heal');
+        }
+        
         if (ap >= 2) actions.push('strongAttack');
         if (ap >= 4) actions.push('crushingAttack');
         
         return actions.filter(action => ap >= this.bs.actionsCost[action]);
     }
     
-    getActionReason(action, scores) {
-        const reasons = [];
-        const score = scores[action];
+    calculateActionWeights(availableActions) {
+        const hero = this.bs.battleGrid.allies[3];
+        const heroHealthPercent = hero ? hero.currentHealth / hero.maxHealth : 1;
+        const monsterHealthPercent = this.monster.currentHealth / this.monster.maxHealth;
         
-        if (this.playerPatternMemory.consecutiveBlocks >= 2 && action === 'breakBlock') {
-            reasons.push('предсказал блок');
-        }
-        if (this.monster.combo.type === action) {
-            reasons.push(`комбо x${this.monster.combo.count + 1}`);
-        }
-        if (this.monster.currentHealth < 0.3 && action === 'heal') {
-            reasons.push('критическое здоровье');
-        }
-        if (this.monster.ap <= 2 && action === 'rest') {
-            reasons.push('мало ОД');
+        const weights = {};
+        
+        availableActions.forEach(action => {
+            let weight = 0;
+            
+            // Базовый вес по типу монстра
+            weight += this.getBaseWeight(action);
+            
+            // Модификаторы по ситуации
+            weight += this.getHealthModifier(action, monsterHealthPercent, heroHealthPercent);
+            weight += this.getAPModifier(action);
+            weight += this.getPredictionModifier(action);
+            weight += this.getComboModifier(action);
+            weight += this.getRandomModifier();
+            
+            weights[action] = Math.max(0, Math.min(100, weight));
+        });
+        
+        return weights;
+    }
+    
+    getBaseWeight(action) {
+        const baseWeights = {
+            aggressor: {
+                attack: 60,
+                strongAttack: 50,
+                crushingAttack: 40,
+                breakBlock: 30,
+                block: 10,
+                rest: 15,
+                heal: 5
+            },
+            defender: {
+                block: 60,
+                attack: 30,
+                strongAttack: 25,
+                crushingAttack: 15,
+                breakBlock: 35,
+                rest: 20,
+                heal: 25
+            },
+            trickster: {
+                breakBlock: 50,
+                strongAttack: 40,
+                attack: 35,
+                rest: 25,
+                block: 30,
+                heal: 20,
+                crushingAttack: 30
+            },
+            berserker: {
+                attack: 70,
+                strongAttack: 60,
+                crushingAttack: 50,
+                breakBlock: 20,
+                block: 5,
+                rest: 10,
+                heal: 0
+            }
+        };
+        
+        const aiType = this.monster.aiType || 'trickster';
+        return baseWeights[aiType][action] || 20;
+    }
+    
+    getHealthModifier(action, monsterHealth, heroHealth) {
+        let modifier = 0;
+        
+        // Модификаторы своего здоровья
+        if (monsterHealth < 0.3) {
+            // Критически низкое здоровье
+            if (action === 'heal') modifier += 40;
+            if (action === 'block') modifier += 30;
+            if (action === 'rest') modifier -= 20; // Не отдыхать при критическом здоровье
+        } else if (monsterHealth < 0.6) {
+            // Среднее здоровье
+            if (action === 'heal') modifier += 20;
+            if (action === 'block') modifier += 15;
+        } else if (monsterHealth > 0.9) {
+            // Полное здоровье
+            if (action === 'heal') modifier -= 30; // Не лечиться при полном здоровье
         }
         
-        return reasons.length > 0 ? reasons.join(', ') : `оценка: ${score.toFixed(1)}`;
+        // Модификаторы здоровья героя
+        if (heroHealth < 0.3) {
+            // Герой слаб - добиваем
+            if (['attack', 'strongAttack', 'crushingAttack'].includes(action)) modifier += 25;
+            if (action === 'rest') modifier -= 30; // Не отдыхать при добивании
+        } else if (heroHealth > 0.8) {
+            // Герой здоров - осторожничаем
+            if (action === 'block') modifier += 15;
+        }
+        
+        return modifier;
+    }
+    
+    getAPModifier(action) {
+        const apCost = this.bs.actionsCost[action];
+        let modifier = 0;
+        
+        if (this.monster.ap <= 2) {
+            // Мало ОД - приоритет отдыху
+            if (action === 'rest') modifier += 20;
+            if (apCost === 1) modifier += 10;
+        } else if (this.monster.ap >= 4) {
+            // Много ОД - можно тратить
+            if (action === 'crushingAttack') modifier += 15;
+            if (action === 'strongAttack') modifier += 10;
+        }
+        
+        // Штраф за избыточные ОД
+        if (this.monster.ap >= 6 && action === 'rest') {
+            modifier -= 25; // Не отдыхать при куче ОД
+        }
+        
+        if (this.monster.ap < apCost) modifier -= 100;
+        
+        return modifier;
+    }
+    
+    getPredictionModifier(action) {
+        let modifier = 0;
+        const memory = this.playerMemory;
+        
+        // Если игрок часто блокирует
+        if (memory.consecutiveBlocks >= 2) {
+            // Игрок блокирует подряд - используем пробитие
+            if (action === 'breakBlock') modifier += 40;
+            if (action === 'crushingAttack') modifier += 30; // Сокрушительная тоже пробивает
+            if (action === 'rest') modifier += 15; // Можно отдохнуть пока игрок защищается
+        } else if (memory.blockCount >= 2) {
+            // Игрок часто блокирует
+            if (action === 'breakBlock') modifier += 20;
+        }
+        
+        // Если игрок агрессивен
+        if (memory.attackCount >= 2) {
+            // Игрок часто атакует - защищаемся
+            if (action === 'block') modifier += 25;
+        }
+        
+        // Если игрок только что лечился
+        if (memory.lastActions[0] === 'Лечение') {
+            // Давим агрессией
+            if (['attack', 'strongAttack'].includes(action)) modifier += 15;
+        }
+        
+        return modifier;
+    }
+    
+    getComboModifier(action) {
+        if (this.monster.combo.type === action && this.monster.combo.count > 0) {
+            // Поощряем продолжение комбо
+            return this.monster.combo.count * 5;
+        }
+        return 0;
+    }
+    
+    getRandomModifier() {
+        // Добавляем элемент случайности (от -10 до +10)
+        return (Math.random() * 20) - 10;
+    }
+    
+    selectActionByWeights(actionWeights) {
+        const totalWeight = Object.values(actionWeights).reduce((sum, weight) => sum + weight, 0);
+        
+        if (totalWeight === 0) {
+            // Если все веса нулевые, выбираем случайное действие
+            const actions = Object.keys(actionWeights);
+            return actions[Math.floor(Math.random() * actions.length)] || 'rest';
+        }
+        
+        const rand = Math.random() * totalWeight;
+        let cumulative = 0;
+        
+        for (const [action, weight] of Object.entries(actionWeights)) {
+            cumulative += weight;
+            if (rand <= cumulative) {
+                return action;
+            }
+        }
+        
+        return 'rest';
     }
 }
 
