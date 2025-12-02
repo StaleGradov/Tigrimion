@@ -835,18 +835,29 @@ updateCellActionsUI(cell) {
         return;
     }
     
-    // Получаем высоту контейнера карты (чтобы панель была такой же высоты)
+    // Получаем размеры карты и окна
     const mapVisual = document.querySelector('.tactical-map-visual');
-    const mapVisualHeight = mapVisual ? mapVisual.clientHeight : window.innerHeight * 0.8;
+    const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
+    const viewportWidth = window.innerWidth;
     
-    // Оптимальные размеры для панели
-    const panelHeight = mapVisualHeight - 40; // Минус отступы
-    const panelWidth = 400; // Фиксированная ширина, достаточная для контента
+    // Рассчитываем оптимальную ширину панели
+    // Панель занимает всё пространство от карты до правого края окна
+    let panelWidth = 450; // Базовая ширина
     
-    console.log(`📐 Высота карты: ${mapVisualHeight}px`);
+    if (mapRect) {
+        // Вычисляем доступное пространство справа от карты
+        const availableSpace = viewportWidth - mapRect.right - 40; // 40px отступы
+        panelWidth = Math.max(350, Math.min(availableSpace, 550)); // Минимум 350px, максимум 550px
+        
+        console.log(`📍 Карта: right=${mapRect.right}px, Доступно: ${availableSpace}px`);
+    }
+    
+    // Высота = высоте карты
+    const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
+    
     console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
     
-    // Устанавливаем размеры панели (во всю высоту карты)
+    // Устанавливаем размеры панели (максимально широкую)
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -863,10 +874,11 @@ updateCellActionsUI(cell) {
         background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
         border: 2px solid #00ffff !important;
         border-radius: 10px !important;
-        padding: 15px !important;
+        padding: 20px !important;
         margin: 0 !important;
         position: relative !important;
         box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+        flex-shrink: 0 !important;
     `;
     
     // Исправляем родительскую панель для правильного позиционирования
@@ -883,7 +895,9 @@ updateCellActionsUI(cell) {
             max-width: ${panelWidth + 30}px !important;
             min-width: ${panelWidth + 30}px !important;
             margin-left: 20px !important;
+            margin-right: 20px !important;
             align-self: flex-start !important;
+            flex-shrink: 0 !important;
         `;
     }
     
@@ -948,12 +962,12 @@ updateCellActionsUI(cell) {
     // Вставляем HTML
     actionsContainer.innerHTML = actionsHTML;
     
-    // Оптимизация размеров после вставки HTML
+    // Оптимизация размеров после вставки HTML (с учетом новой ширины)
     setTimeout(() => {
-        // 1. Картинка локации - квадратная, но компактная
+        // 1. Картинка локации - квадратная, адаптивная к ширине
         const imageWrapper = actionsContainer.querySelector('.location-visual-container');
         if (imageWrapper) {
-            const imageSize = Math.min(panelWidth * 0.6, 180); // 60% ширины панели
+            const imageSize = Math.min(panelWidth * 0.7, 220); // 70% ширины панели, макс 220px
             imageWrapper.style.cssText = `
                 height: ${imageSize}px !important;
                 width: ${imageSize}px !important;
@@ -962,7 +976,7 @@ updateCellActionsUI(cell) {
                 min-height: ${imageSize}px !important;
                 min-width: ${imageSize}px !important;
                 overflow: hidden !important;
-                margin: 0 auto 10px auto !important;
+                margin: 0 auto 15px auto !important;
                 position: relative !important;
                 border: 2px solid #00ffff !important;
                 border-radius: 10px !important;
@@ -970,51 +984,61 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 2. Оптимальные стили для текста
+        // 2. Широкое описание с переносом текста
         const description = actionsContainer.querySelector('.cell-description-text');
         if (description) {
             description.style.cssText = `
                 display: block !important;
                 color: #e2e8f0 !important;
                 background: rgba(0, 0, 0, 0.6) !important;
-                padding: 10px !important;
-                border-radius: 6px !important;
-                margin: 8px 0 !important;
-                max-height: 150px !important;
+                padding: 12px !important;
+                border-radius: 8px !important;
+                margin: 10px 0 !important;
+                max-height: 160px !important;
                 overflow-y: auto !important;
-                font-size: 13px !important;
-                line-height: 1.4 !important;
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                text-align: justify !important;
             `;
         }
         
-        // 3. Оптимальные кнопки (компактные, но читаемые)
+        // 3. Широкие кнопки с лучшим использованием пространства
         const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
         buttons.forEach(btn => {
             btn.style.cssText = `
                 display: flex !important;
-                margin: 6px 0 !important;
-                padding: 10px !important;
-                border-radius: 6px !important;
-                font-size: 13px !important;
+                margin: 8px 0 !important;
+                padding: 12px !important;
+                border-radius: 8px !important;
+                font-size: 14px !important;
                 align-items: flex-start !important;
-                min-height: 60px !important;
+                min-height: 70px !important;
+                width: 100% !important;
             `;
             
             const icon = btn.querySelector('.action-icon');
             if (icon) {
                 icon.style.cssText = `
-                    font-size: 22px !important;
-                    width: 30px !important;
+                    font-size: 24px !important;
+                    width: 35px !important;
                     flex-shrink: 0 !important;
-                    margin-right: 10px !important;
+                    margin-right: 12px !important;
+                `;
+            }
+            
+            const actionInfo = btn.querySelector('.action-info');
+            if (actionInfo) {
+                actionInfo.style.cssText = `
+                    flex: 1 !important;
+                    min-width: 0 !important;
                 `;
             }
             
             const actionName = btn.querySelector('.action-name');
             if (actionName) {
                 actionName.style.cssText = `
-                    font-size: 14px !important;
-                    margin-bottom: 4px !important;
+                    font-size: 15px !important;
+                    margin-bottom: 5px !important;
                     font-weight: bold !important;
                     color: white !important;
                 `;
@@ -1023,18 +1047,18 @@ updateCellActionsUI(cell) {
             const actionDesc = btn.querySelector('.action-description');
             if (actionDesc) {
                 actionDesc.style.cssText = `
-                    font-size: 11px !important;
-                    margin-bottom: 4px !important;
+                    font-size: 12px !important;
+                    margin-bottom: 5px !important;
                     color: #cbd5e1 !important;
-                    line-height: 1.2 !important;
+                    line-height: 1.3 !important;
                 `;
             }
             
             const chanceDisplay = btn.querySelector('.action-chance-display');
             if (chanceDisplay) {
                 chanceDisplay.style.cssText = `
-                    font-size: 11px !important;
-                    margin-top: 3px !important;
+                    font-size: 12px !important;
+                    margin-top: 4px !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: space-between !important;
@@ -1042,15 +1066,16 @@ updateCellActionsUI(cell) {
             }
         });
         
-        // 4. Название локации
+        // 4. Название локации с учетом ширины
         const locationName = actionsContainer.querySelector('.cell-name');
         if (locationName) {
             locationName.style.cssText = `
-                font-size: 18px !important;
-                margin: 10px 0 !important;
+                font-size: 20px !important;
+                margin: 12px 0 !important;
                 color: #00ffff !important;
                 text-align: center !important;
                 font-weight: bold !important;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
             `;
         }
         
@@ -1058,42 +1083,31 @@ updateCellActionsUI(cell) {
         const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
         if (iconOverlay) {
             iconOverlay.style.cssText = `
-                font-size: 36px !important;
+                font-size: 40px !important;
                 background: rgba(0, 0, 0, 0.8) !important;
                 border-radius: 50% !important;
-                padding: 10px !important;
+                padding: 12px !important;
                 border: 2px solid #00ffff !important;
-                box-shadow: 0 0 15px rgba(0, 255, 255, 0.5) !important;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
             `;
         }
         
-        // 6. Автоматически скроллим вверх
+        // 6. Увеличиваем легенду шансов
+        const legend = actionsContainer.querySelector('.chance-legend');
+        if (legend) {
+            legend.style.cssText = `
+                padding: 15px !important;
+                margin-top: 20px !important;
+                font-size: 13px !important;
+                background: rgba(0, 0, 0, 0.4) !important;
+                border-radius: 8px !important;
+            `;
+        }
+        
+        // Автоматически скроллим вверх
         actionsContainer.scrollTop = 0;
         
-        console.log("✅ Панель оптимизирована");
-        
-        // Проверяем, помещается ли все без прокрутки
-        setTimeout(() => {
-            const scrollNeeded = actionsContainer.scrollHeight > actionsContainer.clientHeight;
-            const freeSpace = actionsContainer.clientHeight - actionsContainer.scrollHeight;
-            
-            console.log(`📊 Высота контента: ${actionsContainer.scrollHeight}px`);
-            console.log(`📊 Высота контейнера: ${actionsContainer.clientHeight}px`);
-            console.log(`📊 Свободное место: ${freeSpace}px`);
-            console.log(`🔄 Прокрутка ${scrollNeeded ? 'нужна' : 'не нужна'}`);
-            
-            if (!scrollNeeded && freeSpace > 50) {
-                // Если есть свободное место, увеличиваем картинку
-                const imageWrapper = actionsContainer.querySelector('.location-visual-container');
-                if (imageWrapper) {
-                    const currentSize = parseInt(imageWrapper.style.height);
-                    const newSize = Math.min(currentSize + 20, 220);
-                    imageWrapper.style.height = newSize + 'px';
-                    imageWrapper.style.width = newSize + 'px';
-                    console.log(`📐 Картинка увеличена до ${newSize}px`);
-                }
-            }
-        }, 100);
+        console.log("✅ Панель оптимизирована под ширину ", panelWidth, "px");
         
     }, 50);
     
@@ -1120,7 +1134,7 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена (во всю высоту карты)");
+    console.log("✅ Панель действий обновлена (широкая версия)");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
