@@ -823,11 +823,6 @@ class MapSystem {
 
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
-    console.log("Клетка:", {
-        col: cell.col,
-        row: cell.row,
-        type: cell.type
-    });
     
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
@@ -840,31 +835,36 @@ updateCellActionsUI(cell) {
         return;
     }
     
-    console.log("✅ Контейнер найден");
+    // Автоматический расчет размеров под экран
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const panelHeight = Math.min(viewportHeight * 0.85, 800); // 85% высоты экрана, но не более 800px
+    const panelWidth = Math.min(viewportWidth * 0.4, 500); // 40% ширины экрана, но не более 500px
     
-    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем увеличенные размеры
-    // Ширина: в 3 раза больше (350px → 1050px)
-    // Высота: в 2 раза больше (600px → 1200px)
+    console.log(`📐 Размеры экрана: ${viewportWidth}x${viewportHeight}`);
+    console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}`);
+    
+    // Устанавливаем адаптивные размеры
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
         visibility: visible !important;
         opacity: 1 !important;
-        height: 1200px !important;
-        max-height: 1200px !important;
-        min-height: 1200px !important;
-        width: 1050px !important;
-        max-width: 1050px !important;
-        min-width: 1050px !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
         background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
-        border: 3px solid #00ffff !important;
-        border-radius: 12px !important;
-        padding: 25px !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
         margin: 0 !important;
         position: relative !important;
-        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5) !important;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
     `;
     
     // Исправляем родительскую панель
@@ -874,24 +874,12 @@ updateCellActionsUI(cell) {
             overflow: visible !important;
             display: flex !important;
             flex-direction: column !important;
-            min-height: 1250px !important;
+            min-height: ${panelHeight + 50}px !important;
             max-height: none !important;
-            min-width: 1100px !important;
-            max-width: 1100px !important;
-            width: 1100px !important;
+            min-width: ${panelWidth + 50}px !important;
+            max-width: ${panelWidth + 50}px !important;
+            width: ${panelWidth + 50}px !important;
         `;
-        
-        // Также обновляем CSS класс для корректного flex распределения
-        const mapContent = panel.closest('.tactical-map-content-with-actions');
-        if (mapContent) {
-            mapContent.style.cssText = `
-                display: flex !important;
-                height: calc(95vh - 160px) !important;
-                gap: 30px !important;
-                padding: 20px !important;
-                overflow: visible !important;
-            `;
-        }
     }
     
     // Инициализируем поля, если их нет
@@ -931,7 +919,7 @@ updateCellActionsUI(cell) {
         actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
     } catch (error) {
         console.error("❌ Ошибка создания информации о клетке:", error);
-        actionsHTML = `<div style="color: red; padding: 20px;">Ошибка: ${error.message}</div>`;
+        actionsHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
     }
     
     // Добавляем действия если клетка не исследована
@@ -941,7 +929,7 @@ updateCellActionsUI(cell) {
                 actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
-                actionsHTML += `<div style="color: red; padding: 10px;">Ошибка действий: ${error.message}</div>`;
+                actionsHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
             }
         } else {
             actionsHTML += this.createNoActionsHTML();
@@ -954,126 +942,141 @@ updateCellActionsUI(cell) {
     
     // Вставляем HTML
     actionsContainer.innerHTML = actionsHTML;
-    console.log("✅ HTML вставлен в контейнер");
     
-    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 2: Фиксируем увеличенные размеры после вставки HTML
+    // Оптимизация размеров после вставки HTML
     setTimeout(() => {
-        // 1. Увеличиваем картинку локации пропорционально
+        // 1. Картинка локации - квадратная, адаптивная
         const imageWrapper = actionsContainer.querySelector('.location-visual-container');
         if (imageWrapper) {
+            const imageSize = Math.min(panelWidth * 0.8, 200); // 80% ширины панели, но не более 200px
             imageWrapper.style.cssText = `
-                height: 300px !important;  // В 2 раза больше (было 150px)
-                max-height: 300px !important;
-                min-height: 300px !important;
-                width: 100% !important;
+                height: ${imageSize}px !important;
+                width: ${imageSize}px !important;
+                max-height: ${imageSize}px !important;
+                max-width: ${imageSize}px !important;
+                min-height: ${imageSize}px !important;
+                min-width: ${imageSize}px !important;
                 overflow: hidden !important;
-                margin-bottom: 20px !important;
+                margin: 0 auto 10px auto !important;
                 position: relative !important;
                 border: 2px solid #00ffff !important;
                 border-radius: 10px !important;
-            `;
-            console.log("✅ Размер картинки увеличен");
-        }
-        
-        // 2. Увеличиваем иконку локации
-        const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
-        if (iconOverlay) {
-            iconOverlay.style.cssText = `
-                font-size: 96px !important;  // В 2 раза больше (было 48px)
-                background: rgba(0, 0, 0, 0.8) !important;
-                border-radius: 50% !important;
-                padding: 25px !important;
-                border: 4px solid #00ffff !important;
-                box-shadow: 0 0 30px rgba(0, 255, 255, 0.7) !important;
+                align-self: center !important;
             `;
         }
         
-        // 3. Увеличиваем название локации
-        const locationName = actionsContainer.querySelector('.cell-name');
-        if (locationName) {
-            locationName.style.cssText = `
-                font-size: 28px !important;  // В 1.5 раза больше
-                margin: 15px 0 !important;
-                color: #00ffff !important;
-                text-shadow: 0 0 15px rgba(0, 255, 255, 0.7) !important;
-            `;
-        }
-        
-        // 4. Увеличиваем описание локации
+        // 2. Уменьшенные стили для текста
         const description = actionsContainer.querySelector('.cell-description-text');
         if (description) {
             description.style.cssText = `
                 display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                color: white !important;
-                background: rgba(0, 0, 0, 0.7) !important;
-                padding: 20px !important;  // Больше padding
-                border-radius: 8px !important;
-                margin: 15px 0 !important;
-                position: relative !important;
-                z-index: 10 !important;
-                max-height: 200px !important;  // Больше высота
+                color: #e2e8f0 !important;
+                background: rgba(0, 0, 0, 0.6) !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                margin: 8px 0 !important;
+                max-height: 120px !important;
                 overflow-y: auto !important;
-                font-size: 16px !important;  // Больше шрифт
-                line-height: 1.6 !important;
+                font-size: 13px !important;
+                line-height: 1.4 !important;
             `;
         }
         
-        // 5. Увеличиваем кнопки действий
+        // 3. Уменьшенные кнопки
         const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
         buttons.forEach(btn => {
             btn.style.cssText = `
                 display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                z-index: 10 !important;
-                margin: 10px 0 !important;  // Больше отступы
-                padding: 20px !important;  // Больше padding
-                border-radius: 10px !important;
-                border-left-width: 6px !important;
-                font-size: 18px !important;  // Больше шрифт
+                margin: 5px 0 !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                font-size: 13px !important;
+                align-items: flex-start !important;
             `;
             
-            // Увеличиваем иконки в кнопках
             const icon = btn.querySelector('.action-icon');
             if (icon) {
                 icon.style.cssText = `
-                    font-size: 32px !important;  // Больше иконка
-                    width: 40px !important;
+                    font-size: 20px !important;
+                    width: 30px !important;
+                    flex-shrink: 0 !important;
                 `;
             }
             
-            // Увеличиваем текст в кнопках
             const actionName = btn.querySelector('.action-name');
             if (actionName) {
                 actionName.style.cssText = `
-                    font-size: 20px !important;  // Больше шрифт
-                    margin-bottom: 8px !important;
+                    font-size: 14px !important;
+                    margin-bottom: 3px !important;
+                    font-weight: bold !important;
                 `;
             }
             
             const actionDesc = btn.querySelector('.action-description');
             if (actionDesc) {
                 actionDesc.style.cssText = `
-                    font-size: 14px !important;  // Больше шрифт
-                    margin-bottom: 6px !important;
+                    font-size: 11px !important;
+                    margin-bottom: 3px !important;
+                    color: #cbd5e1 !important;
+                    line-height: 1.2 !important;
+                `;
+            }
+            
+            const chanceDisplay = btn.querySelector('.action-chance-display');
+            if (chanceDisplay) {
+                chanceDisplay.style.cssText = `
+                    font-size: 11px !important;
+                    margin-top: 2px !important;
                 `;
             }
         });
         
-        // 6. Увеличиваем легенду шансов
-        const legend = actionsContainer.querySelector('.chance-legend');
-        if (legend) {
-            legend.style.cssText = `
-                padding: 20px !important;
-                margin-top: 25px !important;
-                font-size: 16px !important;
+        // 4. Уменьшенное название локации
+        const locationName = actionsContainer.querySelector('.cell-name');
+        if (locationName) {
+            locationName.style.cssText = `
+                font-size: 18px !important;
+                margin: 8px 0 !important;
+                color: #00ffff !important;
+                text-align: center !important;
             `;
         }
         
-        console.log("✅ Все элементы увеличены");
+        // 5. Уменьшенная иконка локации
+        const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
+        if (iconOverlay) {
+            iconOverlay.style.cssText = `
+                font-size: 32px !important;
+                background: rgba(0, 0, 0, 0.7) !important;
+                border-radius: 50% !important;
+                padding: 8px !important;
+                border: 2px solid #00ffff !important;
+            `;
+        }
+        
+        // 6. Автоматически скроллим вверх
+        actionsContainer.scrollTop = 0;
+        
+        console.log("✅ Размеры оптимизированы под экран");
+        
+        // Проверяем, нужна ли прокрутка
+        setTimeout(() => {
+            const needsScroll = actionsContainer.scrollHeight > actionsContainer.clientHeight;
+            console.log(`📊 Высота контента: ${actionsContainer.scrollHeight}px, высота контейнера: ${actionsContainer.clientHeight}px`);
+            console.log(`🔄 Прокрутка ${needsScroll ? 'требуется' : 'не требуется'}`);
+            
+            if (needsScroll) {
+                // Если нужна прокрутка, уменьшаем высоту картинки
+                const imageWrapper = actionsContainer.querySelector('.location-visual-container');
+                if (imageWrapper) {
+                    const currentSize = parseInt(imageWrapper.style.height);
+                    imageWrapper.style.height = (currentSize * 0.8) + 'px';
+                    imageWrapper.style.width = (currentSize * 0.8) + 'px';
+                    console.log(`📐 Картинка уменьшена для устранения прокрутки`);
+                }
+            }
+        }, 100);
+        
     }, 50);
     
     // Загружаем реальную картинку локации
@@ -1099,7 +1102,7 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log(`✅ Панель действий обновлена (размер: 1050x1200)`);
+    console.log("✅ Панель действий обновлена");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
