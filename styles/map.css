@@ -1580,3 +1580,202 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 6px;
 }
+/* Дополнительные стили для новой системы действий */
+.action-chance-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 5px;
+    width: 100%;
+}
+
+.chance-text {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.chance-indicator {
+    width: 60px;
+    height: 6px;
+    border-radius: 3px;
+    margin-left: 10px;
+    overflow: hidden;
+    background: #334155;
+    position: relative;
+}
+
+.chance-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 3px;
+}
+
+.chance-excellent::after { width: 100%; background: #10b981; }
+.chance-good::after { width: 70%; background: #3b82f6; }
+.chance-medium::after { width: 50%; background: #f59e0b; }
+.chance-low::after { width: 30%; background: #ef4444; }
+.chance-poor::after { width: 15%; background: #dc2626; }
+
+.chance-legend {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-title {
+    color: #00ffff;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.chance-excellent.legend-color { background: #10b981; }
+.chance-good.legend-color { background: #3b82f6; }
+.chance-medium.legend-color { background: #f59e0b; }
+.chance-low.legend-color { background: #ef4444; }
+.chance-poor.legend-color { background: #dc2626; }
+
+.legend-item span:last-child {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+}
+
+.chance-display-processing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.chance-label {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.chance-value {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Цвета для новых типов действий */
+.action-treasure {
+    border-left: 4px solid #f59e0b;
+}
+
+.action-treasure:hover:not(.disabled) {
+    border-left-color: #ffcc00;
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3);
+}
+
+.action-water {
+    border-left: 4px solid #3b82f6;
+}
+
+.action-water:hover:not(.disabled) {
+    border-left-color: #60a5fa;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.action-berries {
+    border-left: 4px solid #ec4899;
+}
+
+.action-berries:hover:not(.disabled) {
+    border-left-color: #f472b6;
+    box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
+}
+
+.action-mushrooms {
+    border-left: 4px solid #f97316;
+}
+
+.action-mushrooms:hover:not(.disabled) {
+    border-left-color: #fb923c;
+    box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
+}
+
+.action-herbs {
+    border-left: 4px solid #10b981;
+}
+
+.action-herbs:hover:not(.disabled) {
+    border-left-color: #34d399;
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.action-ore {
+    border-left: 4px solid #64748b;
+}
+
+.action-ore:hover:not(.disabled) {
+    border-left-color: #94a3b8;
+    box-shadow: 0 5px 15px rgba(100, 116, 139, 0.3);
+}
+
+.action-stone {
+    border-left: 4px solid #a8a29e;
+}
+
+.action-stone:hover:not(.disabled) {
+    border-left-color: #d6d3d1;
+    box-shadow: 0 5px 15px rgba(168, 162, 158, 0.3);
+}
+
+.action-trap {
+    border-left: 4px solid #dc2626;
+}
+
+.action-trap:hover:not(.disabled) {
+    border-left-color: #ef4444;
+    box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+}
+
+.action-ambush {
+    border-left: 4px solid #7c3aed;
+}
+
+.action-ambush:hover:not(.disabled) {
+    border-left-color: #8b5cf6;
+    box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+}
+
+.action-unknown {
+    border-left: 4px solid #6b7280;
+}
+
+.action-unknown:hover:not(.disabled) {
+    border-left-color: #9ca3af;
+    box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3);
+}
