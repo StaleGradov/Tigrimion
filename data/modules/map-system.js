@@ -835,16 +835,18 @@ updateCellActionsUI(cell) {
         return;
     }
     
-    // Автоматический расчет размеров под экран
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    const panelHeight = Math.min(viewportHeight * 0.85, 800); // 85% высоты экрана, но не более 800px
-    const panelWidth = Math.min(viewportWidth * 0.4, 500); // 40% ширины экрана, но не более 500px
+    // Получаем высоту контейнера карты (чтобы панель была такой же высоты)
+    const mapVisual = document.querySelector('.tactical-map-visual');
+    const mapVisualHeight = mapVisual ? mapVisual.clientHeight : window.innerHeight * 0.8;
     
-    console.log(`📐 Размеры экрана: ${viewportWidth}x${viewportHeight}`);
-    console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}`);
+    // Оптимальные размеры для панели
+    const panelHeight = mapVisualHeight - 40; // Минус отступы
+    const panelWidth = 400; // Фиксированная ширина, достаточная для контента
     
-    // Устанавливаем адаптивные размеры
+    console.log(`📐 Высота карты: ${mapVisualHeight}px`);
+    console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
+    
+    // Устанавливаем размеры панели (во всю высоту карты)
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -867,18 +869,21 @@ updateCellActionsUI(cell) {
         box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
     `;
     
-    // Исправляем родительскую панель
+    // Исправляем родительскую панель для правильного позиционирования
     const panel = actionsContainer.closest('.cell-actions-panel');
     if (panel) {
         panel.style.cssText = `
             overflow: visible !important;
             display: flex !important;
             flex-direction: column !important;
-            min-height: ${panelHeight + 50}px !important;
-            max-height: none !important;
-            min-width: ${panelWidth + 50}px !important;
-            max-width: ${panelWidth + 50}px !important;
-            width: ${panelWidth + 50}px !important;
+            height: ${panelHeight + 30}px !important;
+            max-height: ${panelHeight + 30}px !important;
+            min-height: ${panelHeight + 30}px !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
+            margin-left: 20px !important;
+            align-self: flex-start !important;
         `;
     }
     
@@ -945,10 +950,10 @@ updateCellActionsUI(cell) {
     
     // Оптимизация размеров после вставки HTML
     setTimeout(() => {
-        // 1. Картинка локации - квадратная, адаптивная
+        // 1. Картинка локации - квадратная, но компактная
         const imageWrapper = actionsContainer.querySelector('.location-visual-container');
         if (imageWrapper) {
-            const imageSize = Math.min(panelWidth * 0.8, 200); // 80% ширины панели, но не более 200px
+            const imageSize = Math.min(panelWidth * 0.6, 180); // 60% ширины панели
             imageWrapper.style.cssText = `
                 height: ${imageSize}px !important;
                 width: ${imageSize}px !important;
@@ -965,7 +970,7 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 2. Уменьшенные стили для текста
+        // 2. Оптимальные стили для текста
         const description = actionsContainer.querySelector('.cell-description-text');
         if (description) {
             description.style.cssText = `
@@ -975,31 +980,33 @@ updateCellActionsUI(cell) {
                 padding: 10px !important;
                 border-radius: 6px !important;
                 margin: 8px 0 !important;
-                max-height: 120px !important;
+                max-height: 150px !important;
                 overflow-y: auto !important;
                 font-size: 13px !important;
                 line-height: 1.4 !important;
             `;
         }
         
-        // 3. Уменьшенные кнопки
+        // 3. Оптимальные кнопки (компактные, но читаемые)
         const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
         buttons.forEach(btn => {
             btn.style.cssText = `
                 display: flex !important;
-                margin: 5px 0 !important;
+                margin: 6px 0 !important;
                 padding: 10px !important;
                 border-radius: 6px !important;
                 font-size: 13px !important;
                 align-items: flex-start !important;
+                min-height: 60px !important;
             `;
             
             const icon = btn.querySelector('.action-icon');
             if (icon) {
                 icon.style.cssText = `
-                    font-size: 20px !important;
+                    font-size: 22px !important;
                     width: 30px !important;
                     flex-shrink: 0 !important;
+                    margin-right: 10px !important;
                 `;
             }
             
@@ -1007,8 +1014,9 @@ updateCellActionsUI(cell) {
             if (actionName) {
                 actionName.style.cssText = `
                     font-size: 14px !important;
-                    margin-bottom: 3px !important;
+                    margin-bottom: 4px !important;
                     font-weight: bold !important;
+                    color: white !important;
                 `;
             }
             
@@ -1016,7 +1024,7 @@ updateCellActionsUI(cell) {
             if (actionDesc) {
                 actionDesc.style.cssText = `
                     font-size: 11px !important;
-                    margin-bottom: 3px !important;
+                    margin-bottom: 4px !important;
                     color: #cbd5e1 !important;
                     line-height: 1.2 !important;
                 `;
@@ -1026,53 +1034,63 @@ updateCellActionsUI(cell) {
             if (chanceDisplay) {
                 chanceDisplay.style.cssText = `
                     font-size: 11px !important;
-                    margin-top: 2px !important;
+                    margin-top: 3px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
                 `;
             }
         });
         
-        // 4. Уменьшенное название локации
+        // 4. Название локации
         const locationName = actionsContainer.querySelector('.cell-name');
         if (locationName) {
             locationName.style.cssText = `
                 font-size: 18px !important;
-                margin: 8px 0 !important;
+                margin: 10px 0 !important;
                 color: #00ffff !important;
                 text-align: center !important;
+                font-weight: bold !important;
             `;
         }
         
-        // 5. Уменьшенная иконка локации
+        // 5. Иконка локации
         const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
         if (iconOverlay) {
             iconOverlay.style.cssText = `
-                font-size: 32px !important;
-                background: rgba(0, 0, 0, 0.7) !important;
+                font-size: 36px !important;
+                background: rgba(0, 0, 0, 0.8) !important;
                 border-radius: 50% !important;
-                padding: 8px !important;
+                padding: 10px !important;
                 border: 2px solid #00ffff !important;
+                box-shadow: 0 0 15px rgba(0, 255, 255, 0.5) !important;
             `;
         }
         
         // 6. Автоматически скроллим вверх
         actionsContainer.scrollTop = 0;
         
-        console.log("✅ Размеры оптимизированы под экран");
+        console.log("✅ Панель оптимизирована");
         
-        // Проверяем, нужна ли прокрутка
+        // Проверяем, помещается ли все без прокрутки
         setTimeout(() => {
-            const needsScroll = actionsContainer.scrollHeight > actionsContainer.clientHeight;
-            console.log(`📊 Высота контента: ${actionsContainer.scrollHeight}px, высота контейнера: ${actionsContainer.clientHeight}px`);
-            console.log(`🔄 Прокрутка ${needsScroll ? 'требуется' : 'не требуется'}`);
+            const scrollNeeded = actionsContainer.scrollHeight > actionsContainer.clientHeight;
+            const freeSpace = actionsContainer.clientHeight - actionsContainer.scrollHeight;
             
-            if (needsScroll) {
-                // Если нужна прокрутка, уменьшаем высоту картинки
+            console.log(`📊 Высота контента: ${actionsContainer.scrollHeight}px`);
+            console.log(`📊 Высота контейнера: ${actionsContainer.clientHeight}px`);
+            console.log(`📊 Свободное место: ${freeSpace}px`);
+            console.log(`🔄 Прокрутка ${scrollNeeded ? 'нужна' : 'не нужна'}`);
+            
+            if (!scrollNeeded && freeSpace > 50) {
+                // Если есть свободное место, увеличиваем картинку
                 const imageWrapper = actionsContainer.querySelector('.location-visual-container');
                 if (imageWrapper) {
                     const currentSize = parseInt(imageWrapper.style.height);
-                    imageWrapper.style.height = (currentSize * 0.8) + 'px';
-                    imageWrapper.style.width = (currentSize * 0.8) + 'px';
-                    console.log(`📐 Картинка уменьшена для устранения прокрутки`);
+                    const newSize = Math.min(currentSize + 20, 220);
+                    imageWrapper.style.height = newSize + 'px';
+                    imageWrapper.style.width = newSize + 'px';
+                    console.log(`📐 Картинка увеличена до ${newSize}px`);
                 }
             }
         }, 100);
@@ -1102,7 +1120,7 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена");
+    console.log("✅ Панель действий обновлена (во всю высоту карты)");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
