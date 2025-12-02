@@ -1907,3 +1907,46 @@
     box-sizing: border-box !important;
     max-width: 100% !important;
 }
+/* ========== ФИКСИРОВАННЫЕ СТИЛИ ДЛЯ ПАНЕЛИ ========== */
+
+/* Картинка локации - фиксированная высота */
+.location-visual-container {
+    height: 150px !important;
+    max-height: 150px !important;
+    margin-bottom: 10px !important;
+}
+
+/* Основной контейнер действий - фиксированная высота */
+.cell-actions-container {
+    height: 600px !important;
+    max-height: 600px !important;
+    min-height: 600px !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Описание локации - всегда видимо */
+.cell-description-text {
+    display: block !important;
+    position: relative !important;
+    z-index: 10 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    padding: 10px !important;
+    border-radius: 5px !important;
+    margin: 10px 0 !important;
+}
+
+/* Список действий - всегда видим */
+.available-actions-list {
+    display: block !important;
+    position: relative !important;
+    z-index: 10 !important;
+    margin-top: 15px !important;
+}
+
+/* Родительская панель */
+.cell-actions-panel {
+    overflow: visible !important;
+    min-height: 650px !important;
+}
