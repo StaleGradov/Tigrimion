@@ -1,271 +1,243 @@
 {
   "cell_types": {
     "grave": {
-      "name": "Могила крестьянина",
-      "description": "Старая могила, возможно, здесь что-то закопано...",
-      "suggestion": "Пахнет свежей землей и древними костями",
-      "actions": ["search_treasure"],
+      "name": "Старая каменная гробница",
+      "description": "Массивная каменная плита с высеченными рунами, явно не крестьянского происхождения. Земля вокруг осела неравномерно, будто под ней пустота. Надпись на плите сделана на древнем наречии, но слово 'сокровище' угадывается.",
+      "suggestion": "Это захоронение знатного воина или мага — слишком дорогая отделка для простолюдина. Судя по наклону креста, кто-то уже пытался что-то искать...",
       "icon": "⚰️",
       "image": "images/locations/grave.jpg",
-      "loot_chances": {
-        "items": 70,
-        "gold": 25,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 85,
+        "search_water": 10,
+        "search_berries": 5,
+        "search_mushrooms": 15,
+        "search_herbs": 20,
+        "search_ore": 25,
+        "search_stone": 60,
+        "set_trap": 40,
+        "prepare_ambush": 55
+      },
+      "special_notes": "Высокий шанс найти сокровища, но будьте осторожны — такие места часто охраняются проклятиями."
     },
+    
     "small_stream": {
-      "name": "Небольшой ручей",
-      "description": "Чистый источник воды, можно пополнить флягу",
-      "suggestion": "Вода прозрачная и холодная, идеальна для питья",
-      "actions": ["refill_flask"],
+      "name": "Хрустальный ручей",
+      "description": "Прозрачная вода струится по гладким камням, образуя небольшие водовороты. Рыбки серебрятся на дне, а на берегу видны следы животных. Источник явно чистый — мхи растут только с северной стороны, что говорит о постоянном течении.",
+      "suggestion": "Идеальное место для пополнения запасов — вода здесь не застаивается. На противоположном берегу видны ягодные кусты...",
       "icon": "💧",
-      "image": "images/locations/stream.jpg",
-      "flask_refill": {
-        "min": 3,
-        "max": 10,
-        "chance": 100
-      }
+      "image": "images/locations/small_stream.jpg",
+      "action_chances": {
+        "search_treasure": 15,
+        "search_water": 95,
+        "search_berries": 45,
+        "search_mushrooms": 25,
+        "search_herbs": 50,
+        "search_ore": 10,
+        "search_stone": 40,
+        "set_trap": 75,
+        "prepare_ambush": 30
+      },
+      "special_notes": "Почти гарантированно можно найти чистую воду. Животные часто приходят на водопой — идеально для ловушек."
     },
+    
     "shallow_burrow": {
-      "name": "Неглубокая нора",
-      "description": "Нора какого-то животного, может содержать ресурсы",
-      "suggestion": "Слышны странные шорохи из глубины",
-      "actions": ["search_ore", "search_stone", "search_bones"],
+      "name": "Лисья нора",
+      "description": "Аккуратный вход в подземное логово, окруженный выброшенной землей и костями мелких животных. Глубина не более метра, но внутри видны ответвления. Запах сырой земли смешивается с чем-то острым — возможно, здесь живет не только лиса.",
+      "suggestion": "Нора слишком ухоженная для дикого зверя — кто-то мог использовать ее как тайник. Кости на входе неестественно аккуратно сложены...",
       "icon": "🕳️",
-      "image": "images/locations/burrow.jpg",
-      "resource_chances": {
-        "ores": 40,
-        "stones": 40,
-        "bones": 10,
-        "nothing": 10
-      }
+      "image": "images/locations/shallow_burrow.jpg",
+      "action_chances": {
+        "search_treasure": 40,
+        "search_water": 20,
+        "search_berries": 10,
+        "search_mushrooms": 35,
+        "search_herbs": 30,
+        "search_ore": 25,
+        "search_stone": 50,
+        "set_trap": 85,
+        "prepare_ambush": 65
+      },
+      "special_notes": "Отличное место для засады — ограниченные пути отхода. Высокий шанс найти камни для строительства или обороны."
     },
+    
     "berry_clearing": {
-      "name": "Поляна с ягодами",
-      "description": "Поляна, усыпанная различными ягодами",
-      "suggestion": "Ягоды выглядят спелыми и сочными",
-      "actions": ["search_berries", "search_herbs"],
+      "name": "Ягодная поляна у опушки",
+      "description": "Солнечная поляна, усыпанная спелыми ягодами всех оттенков красного и синего. Пчелы гудят в теплом воздухе, а ветер доносит сладкий аромат. Некоторые кусты явно посажены рядами — возможно, здесь был сад.",
+      "suggestion": "Ягоды выглядят съедобными, но темно-синие у камня лучше не трогать — они растут только на волчьих тропах. На земле видны следы когтей...",
       "icon": "🫐",
       "image": "images/locations/berry_clearing.jpg",
-      "resource_chances": {
-        "berries": 60,
-        "herbs": 30,
-        "rare_berries": 5,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 25,
+        "search_water": 35,
+        "search_berries": 90,
+        "search_mushrooms": 40,
+        "search_herbs": 75,
+        "search_ore": 5,
+        "search_stone": 20,
+        "set_trap": 60,
+        "prepare_ambush": 45
+      },
+      "special_notes": "Обилие ягод и лекарственных трав. Хорошая видимость делает это место уязвимым для атак, но и удобным для наблюдения."
     },
+    
     "mushroom_grove": {
-      "name": "Грибная роща",
-      "description": "Тенистая местность, богатая грибами",
-      "suggestion": "Воздух пахнет влажной землей и грибами",
-      "actions": ["search_mushrooms", "search_herbs"],
+      "name": "Грибная чаща",
+      "description": "Тихий уголок леса, где гигантские грибы образуют естественные колонны. Воздух влажный и плотный, пахнет гниющим деревом и спорами. Некоторые грибы светятся мягким голубым светом в тени, другие покрыты странной слизью.",
+      "suggestion": "Красные грибы с белыми точками растут только у старых пней — там, где земля богата разложившейся древесиной. Но светящиеся лучше обойти стороной...",
       "icon": "🍄",
       "image": "images/locations/mushroom_grove.jpg",
-      "resource_chances": {
-        "mushrooms": 70,
-        "herbs": 20,
-        "rare_mushrooms": 5,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 20,
+        "search_water": 30,
+        "search_berries": 25,
+        "search_mushrooms": 95,
+        "search_herbs": 65,
+        "search_ore": 15,
+        "search_stone": 25,
+        "set_trap": 50,
+        "prepare_ambush": 70
+      },
+      "special_notes": "Почти гарантированно найдете съедобные грибы. Плотная растительность отлично подходит для скрытой засады."
     },
+    
     "ancient_tree": {
-      "name": "Древнее дерево",
-      "description": "Огромное старое дерево, возможно, содержит ценные ресурсы",
-      "suggestion": "Дерево выглядит мудрым и хранит множество секретов",
-      "actions": ["search_wood", "search_herbs", "search_sap"],
+      "name": "Вековой дуб-исполин",
+      "description": "Дерево таких размеров, что десять человек не обхватят. Кора покрыта мхами и лишайниками, образующими узоры, похожие на письмена. В дупле на высоте двух метров виднеется темнота, а у корней — приношения: монеты, ленты, керамика.",
+      "suggestion": "Дупло слишком аккуратное для естественного образования. Местные, должно быть, считают это дерево священным — приношения свежие. Но что они просят у духа дерева?",
       "icon": "🌳",
       "image": "images/locations/ancient_tree.jpg",
-      "resource_chances": {
-        "woods": 50,
-        "herbs": 30,
-        "rare_herbs": 10,
-        "sap": 5,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 60,
+        "search_water": 25,
+        "search_berries": 40,
+        "search_mushrooms": 55,
+        "search_herbs": 80,
+        "search_ore": 10,
+        "search_stone": 15,
+        "set_trap": 35,
+        "prepare_ambush": 40
+      },
+      "special_notes": "Богатый источник редких трав и возможных подношений-сокровищ. Дерево дает хорошее укрытие, но ограничивает обзор."
     },
+    
     "rocky_outcrop": {
-      "name": "Скальный выступ",
-      "description": "Каменное образование, богатое минералами",
-      "suggestion": "Порода выглядит твердой и богатой минералами",
-      "actions": ["search_ore", "search_stone", "search_gems"],
+      "name": "Скальная гряда",
+      "description": "Выступ древней породы, испещренный трещинами и прожилками минералов. Камни теплые даже в тени — возможно, под ними горячие источники. На одной из плит выбит символ, похожий на карту шахты.",
+      "suggestion": "Блестящие вкрапления в камне — признак металлической руды. Но самая ценная находка может быть в глубоких трещинах, куда не попадает дождь...",
       "icon": "⛰️",
       "image": "images/locations/rocky_outcrop.jpg",
-      "resource_chances": {
-        "ores": 50,
-        "stones": 40,
-        "rare_ores": 5,
-        "gems": 2,
-        "nothing": 3
-      }
+      "action_chances": {
+        "search_treasure": 35,
+        "search_water": 45,
+        "search_berries": 10,
+        "search_mushrooms": 20,
+        "search_herbs": 30,
+        "search_ore": 85,
+        "search_stone": 90,
+        "set_trap": 25,
+        "prepare_ambush": 80
+      },
+      "special_notes": "Идеально для добычи руды и камня. Высокое положение дает тактическое преимущество для засады."
     },
+    
     "abandoned_camp": {
-      "name": "Заброшенный лагерь",
-      "description": "Старый лагерь, брошенный в спешке",
-      "suggestion": "Кто-то ушел отсюда в большой спешке",
-      "actions": ["search_treasure", "search_supplies"],
+      "name": "Покинутый лагерь искателей",
+      "description": "Полуразрушенные палатки, перевернутый котелок над холодным костром, разбросанные инструменты. Лагерь оставлен в спешке — судя по следам, не более недели назад. Под одной из палаток виден край сундука.",
+      "suggestion": "Слишком много ценных вещей брошено, чтобы это было простым уходом. Может, их спугнуло что-то... или кто-то. Сундук не вскрыт — странно для бегства.",
       "icon": "🏕️",
       "image": "images/locations/abandoned_camp.jpg",
-      "loot_chances": {
-        "items": 50,
-        "gold": 30,
-        "supplies": 15,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 75,
+        "search_water": 50,
+        "search_berries": 30,
+        "search_mushrooms": 40,
+        "search_herbs": 45,
+        "search_ore": 35,
+        "search_stone": 40,
+        "set_trap": 70,
+        "prepare_ambush": 85
+      },
+      "special_notes": "Хорошие шансы найти брошенные припасы и ценности. Уже готовые укрытия делают это место идеальным для засады."
     },
+    
     "ruined_shrine": {
-      "name": "Разрушенное святилище",
-      "description": "Древнее святилище, давно забытое богами",
-      "suggestion": "Здесь все еще чувствуется остаточная магия",
-      "actions": ["search_relics", "search_mana_crystals"],
+      "name": "Разрушенное святилище предков",
+      "description": "Остатки каменного алтаря под открытым небом. Статуи богов лишились лиц, но их руки все еще указывают на четыре стороны света. У основания алтаря — высохшая чаша для приношений, в которой что-то блестит.",
+      "suggestion": "Такие святилища строили на пересечении энергетических линий. Даже в руинах здесь чувствуется... присутствие. Приношения могут быть как благословением, так и проклятием.",
       "icon": "🛐",
       "image": "images/locations/ruined_shrine.jpg",
-      "resource_chances": {
-        "relics": 30,
-        "mana_crystals": 25,
-        "enchanted_items": 20,
-        "cursed_items": 15,
-        "nothing": 10
-      }
+      "action_chances": {
+        "search_treasure": 80,
+        "search_water": 20,
+        "search_berries": 15,
+        "search_mushrooms": 25,
+        "search_herbs": 70,
+        "search_ore": 30,
+        "search_stone": 75,
+        "set_trap": 45,
+        "prepare_ambush": 60
+      },
+      "special_notes": "Высокий шанс найти ритуальные ценности и редкие священные травы. Архитектура предоставляет естественные укрытия."
     },
+    
     "crystal_cave": {
-      "name": "Кристальная пещера",
-      "description": "Пещера, сияющая от кристаллов",
-      "suggestion": "Кристаллы излучают мягкий свет и тепло",
-      "actions": ["search_gems", "search_crystals", "search_ore"],
+      "name": "Пещера сияющих кристаллов",
+      "description": "Неглубокая пещера, стены которой покрыты растущими кристаллами. Они излучают мягкий свет без тепла, окрашивая все в голубые и фиолетовые тона. На полу — осколки более крупных образований, некоторые размером с кулак.",
+      "suggestion": "Кристаллы растут только в особых условиях — рядом должен быть источник магической энергии или редких минералов. Самые крупные находятся в самой темной части...",
       "icon": "💎",
       "image": "images/locations/crystal_cave.jpg",
-      "resource_chances": {
-        "gems": 40,
-        "crystals": 35,
-        "ores": 20,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 45,
+        "search_water": 55,
+        "search_berries": 5,
+        "search_mushrooms": 35,
+        "search_herbs": 25,
+        "search_ore": 70,
+        "search_stone": 65,
+        "set_trap": 40,
+        "prepare_ambush": 90
+      },
+      "special_notes": "Богатый источник кристаллов и руды. Пещера — идеальная ловушка, но и смертельная западня, если враг блокирует выход."
     },
+    
     "herb_garden": {
-      "name": "Дикий сад трав",
-      "description": "Место, где растут редкие травы",
-      "suggestion": "Аромат трав бодрит и лечит одновременно",
-      "actions": ["search_herbs", "search_rare_herbs", "search_seeds"],
+      "name": "Заброшенный аптекарский сад",
+      "description": "Огороженный участок с аккуратными, но заросшими грядками. Здесь культивировали лекарственные растения — видна система полива и этикетки на столбиках. Некоторые травы мутировали без ухода, приобретя необычные свойства.",
+      "suggestion": "Сад расположен слишком далеко от поселений для простого крестьянина. Это работа профессионала — возможно, алхимика или знахаря. Самые ценные растения могли быть спрятаны...",
       "icon": "🌿",
       "image": "images/locations/herb_garden.jpg",
-      "resource_chances": {
-        "herbs": 60,
-        "rare_herbs": 25,
-        "seeds": 10,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 30,
+        "search_water": 60,
+        "search_berries": 50,
+        "search_mushrooms": 45,
+        "search_herbs": 95,
+        "search_ore": 10,
+        "search_stone": 25,
+        "set_trap": 55,
+        "prepare_ambush": 35
+      },
+      "special_notes": "Практически гарантированно найдете редкие и сильнодействующие травы. Ограда может служить естественным барьером."
     },
+    
     "haunted_cemetery": {
-      "name": "Проклятое кладбище",
-      "description": "Древнее кладбище с неупокоенными душами",
-      "suggestion": "Холодный ветер шепчет забытые имена",
-      "actions": ["search_ghostly_essence", "search_ancient_bones"],
+      "name": "Заброшенное кладбище у дороги",
+      "description": "Некрополь с покосившимися надгробиями, некоторые из мрамора, а не простого камня. Земля холодная даже на солнце, а в воздухе висит тишина, слишком глубокая для леса. На центральном памятнике — следы недавно сорванных украшений.",
+      "suggestion": "Мраморные плиты в такой глуши? Здесь хоронили богачей или знатных особ. Но почему кладбище заброшено? И куда делись те, кто должен был ухаживать за могилами предков?",
       "icon": "👻",
       "image": "images/locations/haunted_cemetery.jpg",
-      "resource_chances": {
-        "ghostly_essence": 40,
-        "ancient_bones": 35,
-        "cursed_items": 20,
-        "nothing": 5
-      }
-    },
-    "sunken_ship": {
-      "name": "Затонувший корабль",
-      "description": "Обломки корабля, покоящиеся на дне",
-      "suggestion": "Дерево прогнило, но сокровища могут сохраниться",
-      "actions": ["search_treasure", "search_ship_parts"],
-      "icon": "🚢",
-      "image": "images/locations/sunken_ship.jpg",
-      "loot_chances": {
-        "gold": 45,
-        "items": 30,
-        "ship_parts": 20,
-        "nothing": 5
-      }
-    },
-    "dragon_lair": {
-      "name": "Логово дракона",
-      "description": "Пещера, где обитал древний дракон",
-      "suggestion": "Земля все еще теплая от дыхания дракона",
-      "actions": ["search_dragon_scales", "search_treasure"],
-      "icon": "🐉",
-      "image": "images/locations/dragon_lair.jpg",
-      "resource_chances": {
-        "dragon_scales": 35,
-        "gold": 30,
-        "gems": 25,
-        "dragon_bones": 5,
-        "nothing": 5
-      }
-    },
-    "witch_hut": {
-      "name": "Избушка ведьмы",
-      "description": "Странная хижина в глубине леса",
-      "suggestion": "Из трубы валит разноцветный дым",
-      "actions": ["search_potions", "search_spell_components"],
-      "icon": "🧙‍♀️",
-      "image": "images/locations/witch_hut.jpg",
-      "resource_chances": {
-        "potions": 50,
-        "spell_components": 30,
-        "cursed_items": 15,
-        "nothing": 5
-      }
-    },
-    "fairy_ring": {
-      "name": "Кольцо фей",
-      "description": "Круг из грибов, созданный феями",
-      "suggestion": "Воздух дрожит от магии",
-      "actions": ["search_fairy_dust", "search_magic_herbs"],
-      "icon": "🧚",
-      "image": "images/locations/fairy_ring.jpg",
-      "resource_chances": {
-        "fairy_dust": 40,
-        "magic_herbs": 35,
-        "enchanted_items": 20,
-        "nothing": 5
-      }
-    },
-    "obsidian_forge": {
-      "name": "Обсидиановая кузница",
-      "description": "Древняя кузница из черного камня",
-      "suggestion": "Наковальня все еще хранит тепло древних огней",
-      "actions": ["search_metal_ingots", "search_tools"],
-      "icon": "⚒️",
-      "image": "images/locations/obsidian_forge.jpg",
-      "resource_chances": {
-        "metal_ingots": 45,
-        "tools": 35,
-        "weapon_parts": 15,
-        "nothing": 5
-      }
-    },
-    "mystic_pool": {
-      "name": "Мистический водоем",
-      "description": "Водоем с мерцающей водой",
-      "suggestion": "Вода переливается всеми цветами радуги",
-      "actions": ["refill_flask", "search_water_crystals"],
-      "icon": "🔮",
-      "image": "images/locations/mystic_pool.jpg",
-      "resource_chances": {
-        "water_crystals": 60,
-        "mana_water": 30,
-        "nothing": 10
-      }
-    },
-    "goblin_market": {
-      "name": "Гоблинский рынок",
-      "description": "Место, где гоблины торгуют странными товарами",
-      "suggestion": "Пахнет специями и чем-то гнилым",
-      "actions": ["search_trinkets", "search_exotic_goods"],
-      "icon": "🧌",
-      "image": "images/locations/goblin_market.jpg",
-      "resource_chances": {
-        "trinkets": 50,
-        "exotic_goods": 35,
-        "stolen_goods": 10,
-        "nothing": 5
-      }
+      "action_chances": {
+        "search_treasure": 90,
+        "search_water": 15,
+        "search_berries": 10,
+        "search_mushrooms": 20,
+        "search_herbs": 40,
+        "search_ore": 20,
+        "search_stone": 80,
+        "set_trap": 65,
+        "prepare_ambush": 75
+      },
+      "special_notes": "Чрезвычайно высокий шанс найти погребальные ценности, но и риск встретить неупокоенных. Надгробия дают отличное укрытие."
     }
   }
 }
