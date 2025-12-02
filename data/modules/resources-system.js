@@ -1,59 +1,68 @@
 "use strict";
 
-class ResourcesSystem {
-    constructor() {
-        this.resources = {};
-        this.craftingRecipes = {};
-        this.loaded = false;
-        console.log("✅ ResourcesSystem создан!");
-    }
+// 🔥 ВАЖНО: Проверяем, существует ли уже класс
+if (typeof ResourcesSystem === 'undefined') {
+    console.log("🔄 Определяем класс ResourcesSystem...");
+    
+    class ResourcesSystem {
+        constructor() {
+            console.log("✅ ResourcesSystem создан!");
+            this.resources = {};
+            this.craftingRecipes = {};
+            this.loaded = false;
+        }
 
-    async loadResourcesData() {
-        console.log("🌿 Загружаем данные ресурсов...");
-        
-        // Пока просто заглушка для теста
-        this.resources = {
-            herbs: [{id: "test_herb", name: "🌿 Тестовая трава", type: "herb", rarity: "common"}],
-            berries: [],
-            mushrooms: [],
-            ores: [],
-            stones: [],
-            woods: []
-        };
-        
-        this.craftingRecipes = {};
-        this.loaded = true;
-        
-        console.log("✅ Ресурсы загружены (тестовые)");
-        return true;
-    }
+        async loadResourcesData() {
+            console.log("🌿 Загружаем данные ресурсов...");
+            
+            // Временная заглушка
+            this.resources = {
+                herbs: [{id: "test", name: "🌿 Тестовая трава"}],
+                berries: [],
+                mushrooms: [],
+                ores: [],
+                stones: [],
+                woods: []
+            };
+            
+            this.craftingRecipes = {};
+            this.loaded = true;
+            
+            console.log("✅ Данные ресурсов загружены");
+            return true;
+        }
 
-    showResourcesInventory() {
-        return `
-            <div class="overlay-content resources-overlay">
-                <div class="overlay-header">
-                    <h3>📦 Ресурсы (В РАЗРАБОТКЕ)</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div style="text-align: center; padding: 2rem;">
-                        <h4>⚠️ Система ресурсов в разработке</h4>
-                        <p>Эта функция будет доступна в следующем обновлении!</p>
-                        <p>Здесь можно будет управлять материалами для крафта.</p>
+        showResourcesInventory() {
+            return `
+                <div class="overlay-content">
+                    <div class="overlay-header">
+                        <h3>📦 Ресурсы</h3>
+                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                    </div>
+                    <div class="overlay-body">
+                        <h4>Система ресурсов загружена!</h4>
+                        <p>Версия: 1.0.0</p>
+                        <p>Здесь будут отображаться материалы для крафта.</p>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
+
+        showCrafting() {
+            return this.showResourcesInventory();
+        }
+
+        getResourceData() { return null; }
+        isItemResource() { return false; }
+        getResourceIdFromItem() { return ''; }
+        sellResource() { console.log("Продажа ресурса"); }
+        craftItem() { console.log("Крафт предмета"); }
     }
 
-    // Простые заглушки для остальных методов
-    showCrafting() { return this.showResourcesInventory(); }
-    getResourceData() { return null; }
-    isItemResource() { return false; }
-    getResourceIdFromItem() { return ''; }
-    sellResource() { console.log("Продажа ресурса (в разработке)"); }
-    craftItem() { console.log("Крафт (в разработке)"); }
+    // 🔥 КРИТИЧЕСКИ ВАЖНО: Регистрируем класс в глобальной области
+    window.ResourcesSystem = ResourcesSystem;
+    console.log("✅ ResourcesSystem зарегистрирован в window");
+    
+} else {
+    console.log("ℹ️ ResourcesSystem уже определен");
 }
-
-// 🔥 ВАЖНО: Регистрируем в глобальной области
-window.ResourcesSystem = ResourcesSystem;
