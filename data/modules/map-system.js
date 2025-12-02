@@ -2175,125 +2175,134 @@ updateCellActionsUI(cell) {
 
     // ========== ПЕРЕМЕЩЕНИЕ ПО КАРТЕ ==========
 
-    handleCanvasClick(e) {
-        if (!this.currentTacticalMap) {
-            console.error("❌ Нет текущей тактической карты");
-            return;
-        }
-
-        const canvasRect = this.canvas.getBoundingClientRect();
-        
-        const computedStyle = getComputedStyle(this.canvas);
-        const transform = computedStyle.transform;
-        let scale = 1;
-        
-        if (transform && transform !== 'none') {
-            const matrix = new DOMMatrix(transform);
-            scale = matrix.a;
-        }
-        
-        const logicalX = (e.clientX - canvasRect.left) / scale;
-        const logicalY = (e.clientY - canvasRect.top) / scale;
-        
-        console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
-        
-        const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
-        if (!hex) {
-            console.log("❌ Клетка не найдена по координатам");
-            return;
-        }
-        
-        console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
-        
-        if (hex.type === 'village' && hex.tacticalMap) {
-            console.log("🍻 Клик по таверне - проверяем доступность...");
-            
-            const isAdjacent = this.isPlayerAdjacentToTransition(hex);
-            if (!isAdjacent) {
-                console.log("❌ Герой не рядом с таверной");
-                this.showTransitionWarning(hex);
-                return;
-            }
-            
-            console.log("✅ Герой рядом с таверной, активируем переход...");
-            this.activateTransition(hex);
-            return;
-        }
-        
-        if (hex.type === 'water') {
-            console.log("💧 Клик по воде");
-            if (!this.isPlayerAdjacentToWater(hex)) {
-                this.showNotification("❌ Подойдите ближе к воде!", 'warning');
-                return;
-            }
-            this.handleWaterCell(hex);
-            return;
-        }
-        
-        if (hex.type === 'merchant') {
-            console.log("🛒 Клик по магазину");
-            this.handleMerchantClick(hex);
-            return;
-        }
-        
-        if (this.isTransitionCell(hex)) {
-            console.log("🚪 Клик по переходу");
-            this.handleTransitionClick(hex);
-            return;
-        }
-        
-        if (hex.passable !== false || hex.type === 'monster') {
-            console.log("🎯 Клик для перемещения или действий");
-            
-            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-            const isReachable = neighbors.some(neighbor => 
-                neighbor.row === hex.row && neighbor.col === hex.col
-            );
-            
-            if (isReachable) {
-                console.log(`✅ Клетка достижима, начинаем перемещение`);
-                this.moveOnTacticalMap(hex.col, hex.row);
-            } else {
-                console.log(`❌ Клетка недостижима для перемещения`);
-            }
-        } else {
-            console.log(`❌ Клетка непроходима: ${hex.type}`);
-        }
-        
-        if (!this.isTransitionCell(hex)) {
-            console.log(`📋 Показываем панель действий для клетки [${hex.col}, ${hex.row}]`);
-            this.updateCellActionsUI(hex);
-            this.highlightSelectedCell(hex);
-        } else {
-            console.log(`⏭️ Пропускаем показ действий для перехода`);
-        }
+   handleCanvasClick(e) {
+    if (!this.currentTacticalMap) {
+        console.error("❌ Нет текущей тактической карты");
+        return;
     }
 
-    getHexAtLogicalPosition(x, y) {
-        let closestHex = null;
-        let minDistance = Infinity;
+    console.log("🎯 ОБРАБОТКА КЛИКА ПО КАРТЕ");
 
-        for (const cell of Object.values(this.currentTacticalMap.cells)) {
-            const cellX = cell.x || cell.originalX || 0;
-            const cellY = cell.y || cell.originalY || 0;
-            
-            const distance = Math.sqrt(
-                Math.pow(x - cellX, 2) + 
-                Math.pow(y - cellY, 2)
-            );
-            
-            if (distance <= 40 && distance < minDistance) {
-                minDistance = distance;
-                closestHex = cell;
-            }
+    const canvasRect = this.canvas.getBoundingClientRect();
+    
+    const computedStyle = getComputedStyle(this.canvas);
+    const transform = computedStyle.transform;
+    let scale = 1;
+    
+    if (transform && transform !== 'none') {
+        const matrix = new DOMMatrix(transform);
+        scale = matrix.a;
+    }
+    
+    const logicalX = (e.clientX - canvasRect.left) / scale;
+    const logicalY = (e.clientY - canvasRect.top) / scale;
+    
+    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
+    
+    const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
+    if (!hex) {
+        console.log("❌ Клетка не найдена по координатам");
+        return;
+    }
+    
+    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
+    
+    if (hex.type === 'village' && hex.tacticalMap) {
+        console.log("🍻 Клик по таверне - проверяем доступность...");
+        
+        const isAdjacent = this.isPlayerAdjacentToTransition(hex);
+        if (!isAdjacent) {
+            console.log("❌ Герой не рядом с таверной");
+            this.showTransitionWarning(hex);
+            return;
         }
         
-        console.log(`🔍 Найдена клетка:`, closestHex ? 
-            `[${closestHex.col},${closestHex.row}] тип: ${closestHex.type}` : 'нет');
-        
-        return closestHex;
+        console.log("✅ Герой рядом с таверной, активируем переход...");
+        this.activateTransition(hex);
+        return;
     }
+    
+    if (hex.type === 'water') {
+        console.log("💧 Клик по воде");
+        if (!this.isPlayerAdjacentToWater(hex)) {
+            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+            return;
+        }
+        this.handleWaterCell(hex);
+        return;
+    }
+    
+    if (hex.type === 'merchant') {
+        console.log("🛒 Клик по магазину");
+        this.handleMerchantClick(hex);
+        return;
+    }
+    
+    if (this.isTransitionCell(hex)) {
+        console.log("🚪 Клик по переходу");
+        this.handleTransitionClick(hex);
+        return;
+    }
+    
+    if (hex.passable !== false || hex.type === 'monster') {
+        console.log("🎯 Клик для перемещения или действий");
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            console.log(`✅ Клетка достижима, начинаем перемещение`);
+            this.moveOnTacticalMap(hex.col, hex.row);
+        } else {
+            console.log(`❌ Клетка недостижима для перемещения`);
+        }
+    } else {
+        console.log(`❌ Клетка непроходима: ${hex.type}`);
+    }
+    
+    // ВАЖНО: ВСЕГДА показываем панель действий, кроме переходов
+    if (!this.isTransitionCell(hex)) {
+        console.log(`📋 Вызываем updateCellActionsUI для клетки [${hex.col}, ${hex.row}]`);
+        this.updateCellActionsUI(hex);
+        this.highlightSelectedCell(hex);
+    } else {
+        console.log(`⏭️ Пропускаем показ действий для перехода`);
+    }
+}
 
+  getHexAtLogicalPosition(x, y) {
+    console.log(`🔍 Поиск клетки по координатам: [${x}, ${y}]`);
+    
+    let closestHex = null;
+    let minDistance = Infinity;
+
+    const cells = Object.values(this.currentTacticalMap.cells);
+    console.log(`🔍 Всего клеток в карте: ${cells.length}`);
+
+    for (const cell of cells) {
+        const cellX = cell.x || cell.originalX || 0;
+        const cellY = cell.y || cell.originalY || 0;
+        
+        const distance = Math.sqrt(
+            Math.pow(x - cellX, 2) + 
+            Math.pow(y - cellY, 2)
+        );
+        
+        console.log(`  Клетка [${cell.col},${cell.row}]: x=${cellX}, y=${cellY}, distance=${distance}`);
+        
+        if (distance <= 40 && distance < minDistance) {
+            minDistance = distance;
+            closestHex = cell;
+        }
+    }
+    
+    console.log(`🔍 Найдена клетка:`, closestHex ? 
+        `[${closestHex.col},${closestHex.row}] тип: ${closestHex.type}` : 'нет');
+    
+    return closestHex;
+}
     isTransitionCell(cell) {
         return cell.tacticalMap || cell.localMap || cell.globalMap || cell.type === 'exit';
     }
