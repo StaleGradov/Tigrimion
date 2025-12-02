@@ -1268,3 +1268,295 @@
     text-align: right;
     font-weight: bold;
 }
+/* ========== СТИЛИ ДЛЯ КАРТИНОК ЛОКАЦИЙ ========== */
+.location-visual-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border: 2px solid #00ffff;
+}
+
+.location-image-wrapper {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    position: relative;
+}
+
+.location-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.location-image:hover {
+    transform: scale(1.05);
+}
+
+.image-dark-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, 
+        rgba(0, 0, 0, 0.3) 0%,
+        rgba(0, 0, 0, 0.5) 50%,
+        rgba(0, 0, 0, 0.7) 100%);
+}
+
+.location-icon-overlay {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 2;
+}
+
+.location-icon-overlay .cell-icon-large {
+    font-size: 48px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    padding: 15px;
+    border: 3px solid #00ffff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.image-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #00ffff;
+    font-size: 1rem;
+    text-align: center;
+    animation: pulse 1.5s infinite;
+}
+
+.explored-badge {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    font-weight: bold;
+}
+
+/* ========== СТИЛИ ДЛЯ ШАНСОВ ДЕЙСТВИЙ ========== */
+.action-chance-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.chance-text {
+    color: #cbd5e1;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.chance-indicator {
+    width: 50px;
+    height: 6px;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.chance-excellent {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+}
+
+.chance-good {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.chance-medium {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
+}
+
+.chance-low {
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+.chance-poor {
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+    box-shadow: 0 0 5px rgba(107, 114, 128, 0.5);
+}
+
+/* Легенда шансов */
+.chance-legend {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-title {
+    color: #00ffff;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legend-item span:last-child {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+}
+
+/* Особые заметки */
+.special-notes {
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fbbf24;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.special-notes strong {
+    color: #f59e0b;
+}
+
+/* Отображение процесса выполнения с шансом */
+.chance-display-processing {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.chance-label {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.chance-value {
+    color: #00ffff;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.processing-hint {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-top: 10px;
+    font-style: italic;
+}
+
+/* Категории ресурсов */
+.resource-category {
+    color: #00ffff;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    font-size: 0.85rem;
+}
+
+.resource-category:first-child {
+    margin-top: 0;
+}
+
+/* ========== ЦВЕТА ДЛЯ НОВЫХ ДЕЙСТВИЙ ========== */
+.action-water {
+    border-left: 4px solid #3b82f6;
+}
+
+.action-water:hover:not(.disabled) {
+    border-left-color: #60a5fa;
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+}
+
+.action-trap {
+    border-left: 4px solid #dc2626;
+}
+
+.action-trap:hover:not(.disabled) {
+    border-left-color: #ef4444;
+    box-shadow: 0 5px 15px rgba(220, 38, 38, 0.3);
+}
+
+.action-ambush {
+    border-left: 4px solid #7c3aed;
+}
+
+.action-ambush:hover:not(.disabled) {
+    border-left-color: #8b5cf6;
+    box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+}
+
+.action-unknown {
+    border-left: 4px solid #6b7280;
+}
+
+.action-unknown:hover:not(.disabled) {
+    border-left-color: #9ca3af;
+    box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3);
+}
+
+/* ========== АДАПТИВНОСТЬ ========== */
+@media (max-width: 768px) {
+    .location-visual-container {
+        height: 200px;
+    }
+    
+    .location-icon-overlay .cell-icon-large {
+        font-size: 36px;
+        padding: 10px;
+    }
+    
+    .action-chance-display {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .chance-indicator {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .legend-items {
+        grid-template-columns: 1fr;
+    }
+}
