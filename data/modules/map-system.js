@@ -4345,6 +4345,8 @@ class MapSystem {
         `;
     }
 
+
+    
     generateGlobalMapGrid() {
         let gridHTML = '';
         const { width, height } = this.currentGlobalMap;
@@ -4467,6 +4469,216 @@ class MapSystem {
         }
     }
 
+
+    // ========== НОВЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПАНЕЛИ ДЕЙСТВИЙ ==========
+    
+    createActionsContainerFallback() {
+        console.log("🛠️ Создаем резервный контейнер для действий");
+        
+        const mapContent = document.querySelector('.tactical-map-content-with-actions');
+        if (!mapContent) {
+            console.error("❌ Основной контейнер карты не найден");
+            return;
+        }
+        
+        // Проверяем существующий или создаем новый контейнер
+        let actionsPanel = document.querySelector('.cell-actions-panel');
+        if (!actionsPanel) {
+            actionsPanel = document.createElement('div');
+            actionsPanel.className = 'cell-actions-panel';
+            actionsPanel.style.cssText = `
+                flex: 1;
+                min-width: 320px;
+                max-width: 350px;
+                background: rgba(30, 41, 59, 0.95);
+                border: 2px solid #475569;
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                overflow: visible !important;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+                margin-left: 20px;
+            `;
+            mapContent.appendChild(actionsPanel);
+        }
+        
+        const actionsContainer = document.createElement('div');
+        actionsContainer.id = 'cellActionsContainer';
+        actionsContainer.className = 'cell-actions-container';
+        actionsContainer.style.cssText = `
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            margin-bottom: 20px;
+            padding-right: 5px;
+            display: block;
+            visibility: visible;
+            opacity: 1;
+        `;
+        
+        actionsPanel.innerHTML = '';
+        actionsPanel.appendChild(actionsContainer);
+        
+        console.log("✅ Резервный контейнер создан");
+    }
+
+    createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
+        return `
+            <div class="cell-info-header">
+                <div class="location-visual-container">
+                    <div class="location-image-wrapper" id="locationImageWrapper">
+                        <div class="image-loading">🖼️ Загрузка изображения...</div>
+                    </div>
+                    <div class="location-icon-overlay">
+                        <div class="cell-icon-large">${cellIcon}</div>
+                    </div>
+                </div>
+                
+                <h4 class="cell-name">${cellTypeData.name}</h4>
+                
+                <div class="cell-position-info">
+                    <span class="cell-coords">Позиция: [${cell.col}, ${cell.row}]</span>
+                    ${isCurrentPosition ? '<span class="current-position-badge">📍 Вы здесь</span>' : ''}
+                    ${isExplored ? '<span class="explored-badge">✓ Исследовано</span>' : ''}
+                </div>
+                
+                <!-- Описание локации -->
+                <div class="cell-description-text">
+                    ${cellTypeData.description}
+                </div>
+                
+                ${cellTypeData.suggestion ? `
+                    <div class="cell-suggestion">
+                        <strong>💡 Совет:</strong> ${cellTypeData.suggestion}
+                    </div>
+                ` : ''}
+                
+                ${cellTypeData.special_notes ? `
+                    <div class="special-notes">
+                        <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    createActionsListHTML(cell, isCurrentPosition, isReachable) {
+        let html = `
+            <div class="available-actions-list">
+                <div class="actions-header">
+                    <span class="actions-title">⚡ Доступные действия:</span>
+        `;
+        
+        if (!isCurrentPosition && !isReachable) {
+            html += '<span class="reachability-warning">❌ Подойдите ближе</span>';
+        } else if (isCurrentPosition || isReachable) {
+            html += '<span class="reachability-success">✅ Доступно</span>';
+        }
+        
+        html += '</div>';
+        
+        // Показываем все действия с их шансами
+        this.currentCellActions.forEach(action => {
+            const chance = this.getActionChance(action, this.currentCellType);
+            const config = this.actionConfigs[action] || {
+                icon: '❓',
+                name: action.replace(/_/g, ' '),
+                description: 'Неизвестное действие',
+                class: 'action-unknown'
+            };
+            
+            const actionEnabled = isCurrentPosition || isReachable;
+            
+            html += `
+                <button class="cell-action-btn ${config.class} ${!actionEnabled ? 'disabled' : ''}" 
+                        data-action="${action}"
+                        data-cell-row="${cell.row}"
+                        data-cell-col="${cell.col}"
+                        ${!actionEnabled ? 'disabled' : ''}
+                        title="${config.description}\n\n🎯 Шанс успеха: ${chance}%">
+                    <span class="action-icon">${config.icon}</span>
+                    <div class="action-info">
+                        <div class="action-name">${config.name}</div>
+                        <div class="action-description">${config.description}</div>
+                        <div class="action-chance-display">
+                            <span class="chance-text">Шанс: ${chance}%</span>
+                            <div class="chance-indicator ${this.getChanceClass(chance)}"></div>
+                        </div>
+                        ${actionEnabled ? '<div class="action-available">✅ Доступно</div>' : '<div class="action-unavailable">❌ Подойдите ближе</div>'}
+                    </div>
+                </button>
+            `;
+        });
+        
+        // Добавляем легенду шансов
+        html += `
+            <div class="chance-legend">
+                <div class="legend-title">📊 Шкала шансов:</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <span class="legend-color chance-excellent"></span>
+                        <span>Отличный (80-100%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color chance-good"></span>
+                        <span>Хороший (60-79%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color chance-medium"></span>
+                        <span>Средний (40-59%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color chance-low"></span>
+                        <span>Низкий (20-39%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color chance-poor"></span>
+                        <span>Плохой (0-19%)</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        html += '</div>';
+        return html;
+    }
+
+    createNoActionsHTML() {
+        return `
+            <div class="no-available-actions">
+                <div class="no-actions-icon">🚫</div>
+                <p>Для этой локации нет доступных действий</p>
+                <p class="hint">Выберите другую клетку для взаимодействия.</p>
+            </div>
+        `;
+    }
+
+    createExploredCellHTML() {
+        return `
+            <div class="cell-explored">
+                <div class="explored-icon">✓</div>
+                <h5>Местность исследована</h5>
+                <p>Вы уже исследовали эту местность и совершили доступные действия.</p>
+                <p class="hint">Перейдите на другую клетку для новых действий.</p>
+            </div>
+        `;
+    }
+
+    showCellErrorUI(container, cell) {
+        container.innerHTML = `
+            <div class="cell-error">
+                <div class="error-icon">❌</div>
+                <h5>Ошибка загрузки типа клетки</h5>
+                <p>Не удалось загрузить данные для этой локации.</p>
+                <p class="hint">Клетка: [${cell.col}, ${cell.row}] тип: ${cell.type}</p>
+                <button class="btn-control" onclick="game.systems.map.debugInfo()">
+                    🐛 Отладка
+                </button>
+            </div>
+        `;
+    }
+
     showNotification(message, type = 'info') {
         if (window.game && window.game.showNotification) {
             window.game.showNotification(message, type);
@@ -4474,7 +4686,8 @@ class MapSystem {
             console.log(`${type.toUpperCase()}: ${message}`);
         }
     }
-}
+} // ← Закрывающая скобка класса MapSystem
 
 window.MapSystem = MapSystem;
 console.log("📦 MapSystem модуль загружен с системой универсальных действий");
+
