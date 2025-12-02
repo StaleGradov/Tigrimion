@@ -835,29 +835,17 @@ updateCellActionsUI(cell) {
         return;
     }
     
-    // Получаем размеры карты и окна
+    // Получаем размеры карты
     const mapVisual = document.querySelector('.tactical-map-visual');
     const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
-    const viewportWidth = window.innerWidth;
     
-    // Рассчитываем оптимальную ширину панели
-    // Панель занимает всё пространство от карты до правого края окна
-    let panelWidth = 450; // Базовая ширина
-    
-    if (mapRect) {
-        // Вычисляем доступное пространство справа от карты
-        const availableSpace = viewportWidth - mapRect.right - 40; // 40px отступы
-        panelWidth = Math.max(350, Math.min(availableSpace, 550)); // Минимум 350px, максимум 550px
-        
-        console.log(`📍 Карта: right=${mapRect.right}px, Доступно: ${availableSpace}px`);
-    }
-    
-    // Высота = высоте карты
+    // ФИКСИРОВАННЫЕ РАЗМЕРЫ
+    const panelWidth = 800; // Ширина панели
     const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
     
     console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
     
-    // Устанавливаем размеры панели (максимально широкую)
+    // Устанавливаем размеры панели
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -881,7 +869,7 @@ updateCellActionsUI(cell) {
         flex-shrink: 0 !important;
     `;
     
-    // Исправляем родительскую панель для правильного позиционирования
+    // Исправляем родительскую панель
     const panel = actionsContainer.closest('.cell-actions-panel');
     if (panel) {
         panel.style.cssText = `
@@ -895,7 +883,6 @@ updateCellActionsUI(cell) {
             max-width: ${panelWidth + 30}px !important;
             min-width: ${panelWidth + 30}px !important;
             margin-left: 20px !important;
-            margin-right: 20px !important;
             align-self: flex-start !important;
             flex-shrink: 0 !important;
         `;
@@ -962,21 +949,20 @@ updateCellActionsUI(cell) {
     // Вставляем HTML
     actionsContainer.innerHTML = actionsHTML;
     
-    // Оптимизация размеров после вставки HTML (с учетом новой ширины)
+    // ОПТИМИЗАЦИЯ РАЗМЕРОВ ПОСЛЕ ВСТАВКИ HTML
     setTimeout(() => {
-        // 1. Картинка локации - квадратная, адаптивная к ширине
+        // 1. БОЛЬШАЯ КВАДРАТНАЯ КАРТИНКА (300px)
         const imageWrapper = actionsContainer.querySelector('.location-visual-container');
         if (imageWrapper) {
-            const imageSize = Math.min(panelWidth * 0.7, 220); // 70% ширины панели, макс 220px
             imageWrapper.style.cssText = `
-                height: ${imageSize}px !important;
-                width: ${imageSize}px !important;
-                max-height: ${imageSize}px !important;
-                max-width: ${imageSize}px !important;
-                min-height: ${imageSize}px !important;
-                min-width: ${imageSize}px !important;
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
                 overflow: hidden !important;
-                margin: 0 auto 15px auto !important;
+                margin: 0 auto 20px auto !important;
                 position: relative !important;
                 border: 2px solid #00ffff !important;
                 border-radius: 10px !important;
@@ -984,7 +970,7 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 2. Широкое описание с переносом текста
+        // 2. ОПТИМАЛЬНЫЕ СТИЛИ ДЛЯ ТЕКСТА
         const description = actionsContainer.querySelector('.cell-description-text');
         if (description) {
             description.style.cssText = `
@@ -994,7 +980,7 @@ updateCellActionsUI(cell) {
                 padding: 12px !important;
                 border-radius: 8px !important;
                 margin: 10px 0 !important;
-                max-height: 160px !important;
+                max-height: 140px !important;
                 overflow-y: auto !important;
                 font-size: 14px !important;
                 line-height: 1.5 !important;
@@ -1002,27 +988,27 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 3. Широкие кнопки с лучшим использованием пространства
+        // 3. КОМПАКТНЫЕ КНОПКИ ДЕЙСТВИЙ
         const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
         buttons.forEach(btn => {
             btn.style.cssText = `
                 display: flex !important;
-                margin: 8px 0 !important;
-                padding: 12px !important;
-                border-radius: 8px !important;
-                font-size: 14px !important;
-                align-items: flex-start !important;
-                min-height: 70px !important;
+                margin: 5px 0 !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+                font-size: 13px !important;
+                align-items: center !important;
+                min-height: 55px !important;
                 width: 100% !important;
             `;
             
             const icon = btn.querySelector('.action-icon');
             if (icon) {
                 icon.style.cssText = `
-                    font-size: 24px !important;
-                    width: 35px !important;
+                    font-size: 20px !important;
+                    width: 30px !important;
                     flex-shrink: 0 !important;
-                    margin-right: 12px !important;
+                    margin-right: 10px !important;
                 `;
             }
             
@@ -1037,8 +1023,8 @@ updateCellActionsUI(cell) {
             const actionName = btn.querySelector('.action-name');
             if (actionName) {
                 actionName.style.cssText = `
-                    font-size: 15px !important;
-                    margin-bottom: 5px !important;
+                    font-size: 14px !important;
+                    margin-bottom: 4px !important;
                     font-weight: bold !important;
                     color: white !important;
                 `;
@@ -1047,8 +1033,8 @@ updateCellActionsUI(cell) {
             const actionDesc = btn.querySelector('.action-description');
             if (actionDesc) {
                 actionDesc.style.cssText = `
-                    font-size: 12px !important;
-                    margin-bottom: 5px !important;
+                    font-size: 11px !important;
+                    margin-bottom: 4px !important;
                     color: #cbd5e1 !important;
                     line-height: 1.3 !important;
                 `;
@@ -1057,8 +1043,8 @@ updateCellActionsUI(cell) {
             const chanceDisplay = btn.querySelector('.action-chance-display');
             if (chanceDisplay) {
                 chanceDisplay.style.cssText = `
-                    font-size: 12px !important;
-                    margin-top: 4px !important;
+                    font-size: 11px !important;
+                    margin-top: 3px !important;
                     display: flex !important;
                     align-items: center !important;
                     justify-content: space-between !important;
@@ -1066,12 +1052,12 @@ updateCellActionsUI(cell) {
             }
         });
         
-        // 4. Название локации с учетом ширины
+        // 4. НАЗВАНИЕ ЛОКАЦИИ
         const locationName = actionsContainer.querySelector('.cell-name');
         if (locationName) {
             locationName.style.cssText = `
                 font-size: 20px !important;
-                margin: 12px 0 !important;
+                margin: 15px 0 !important;
                 color: #00ffff !important;
                 text-align: center !important;
                 font-weight: bold !important;
@@ -1079,20 +1065,20 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 5. Иконка локации
+        // 5. ИКОНКА ЛОКАЦИИ
         const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
         if (iconOverlay) {
             iconOverlay.style.cssText = `
                 font-size: 40px !important;
                 background: rgba(0, 0, 0, 0.8) !important;
                 border-radius: 50% !important;
-                padding: 12px !important;
+                padding: 15px !important;
                 border: 2px solid #00ffff !important;
                 box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
             `;
         }
         
-        // 6. Увеличиваем легенду шансов
+        // 6. ЛЕГЕНДА ШАНСОВ
         const legend = actionsContainer.querySelector('.chance-legend');
         if (legend) {
             legend.style.cssText = `
@@ -1107,7 +1093,7 @@ updateCellActionsUI(cell) {
         // Автоматически скроллим вверх
         actionsContainer.scrollTop = 0;
         
-        console.log("✅ Панель оптимизирована под ширину ", panelWidth, "px");
+        console.log(`✅ Панель оптимизирована: картинка 300px, ${buttons.length} кнопок`);
         
     }, 50);
     
@@ -1134,7 +1120,7 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена (широкая версия)");
+    console.log("✅ Панель действий обновлена (ширина 800px, картинка 300px)");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
@@ -4862,6 +4848,29 @@ updateCellActionsUI(cell) {
         `;
     }
 
+// Добавьте этот метод в MapSystem (перед showNotification)
+quickAdjustPanel(imageSize = 300, buttonHeight = 55) {
+    console.log(`⚡ Быстрая настройка: картинка ${imageSize}px, кнопки ${buttonHeight}px`);
+    
+    const container = document.getElementById('cellActionsContainer');
+    if (!container) return;
+    
+    // Настройка картинки
+    const imageWrapper = container.querySelector('.location-visual-container');
+    if (imageWrapper) {
+        imageWrapper.style.height = imageSize + 'px';
+        imageWrapper.style.width = imageSize + 'px';
+    }
+    
+    // Настройка кнопок
+    const buttons = container.querySelectorAll('.cell-action-btn');
+    buttons.forEach(btn => {
+        btn.style.minHeight = buttonHeight + 'px';
+    });
+    
+    console.log(`✅ Применено: ${buttons.length} кнопок`);
+}
+    
     showNotification(message, type = 'info') {
         if (window.game && window.game.showNotification) {
             window.game.showNotification(message, type);
