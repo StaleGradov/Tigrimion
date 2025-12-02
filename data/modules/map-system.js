@@ -988,69 +988,44 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // 3. КОМПАКТНЫЕ КНОПКИ ДЕЙСТВИЙ
-        const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
-        buttons.forEach(btn => {
-            btn.style.cssText = `
+        // 3. ОПТИМАЛЬНЫЕ СТИЛИ ДЛЯ КАРТОЧЕК ДЕЙСТВИЙ (3 В РЯД)
+        const actionCards = actionsContainer.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9)) !important;
+                border: 1px solid #00aaff !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
                 display: flex !important;
-                margin: 5px 0 !important;
-                padding: 10px !important;
-                border-radius: 6px !important;
-                font-size: 13px !important;
-                align-items: center !important;
-                min-height: 55px !important;
-                width: 100% !important;
+                flex-direction: column !important;
+                height: 100% !important;
+                transition: all 0.2s ease !important;
+                margin: 0 !important;
             `;
             
-            const icon = btn.querySelector('.action-icon');
-            if (icon) {
-                icon.style.cssText = `
-                    font-size: 20px !important;
-                    width: 30px !important;
-                    flex-shrink: 0 !important;
-                    margin-right: 10px !important;
-                `;
-            }
-            
-            const actionInfo = btn.querySelector('.action-info');
-            if (actionInfo) {
-                actionInfo.style.cssText = `
-                    flex: 1 !important;
-                    min-width: 0 !important;
-                `;
-            }
-            
-            const actionName = btn.querySelector('.action-name');
-            if (actionName) {
-                actionName.style.cssText = `
-                    font-size: 14px !important;
-                    margin-bottom: 4px !important;
-                    font-weight: bold !important;
-                    color: white !important;
-                `;
-            }
-            
-            const actionDesc = btn.querySelector('.action-description');
-            if (actionDesc) {
-                actionDesc.style.cssText = `
-                    font-size: 11px !important;
-                    margin-bottom: 4px !important;
-                    color: #cbd5e1 !important;
-                    line-height: 1.3 !important;
-                `;
-            }
-            
-            const chanceDisplay = btn.querySelector('.action-chance-display');
-            if (chanceDisplay) {
-                chanceDisplay.style.cssText = `
-                    font-size: 11px !important;
-                    margin-top: 3px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: space-between !important;
-                `;
+            // Наведение для неотключенных карточек
+            if (!card.style.opacity || card.style.opacity !== '0.6') {
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+                };
             }
         });
+        
+        // Обновляем стили для сетки действий
+        const actionsGrid = actionsContainer.querySelector('.actions-grid');
+        if (actionsGrid) {
+            actionsGrid.style.cssText = `
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px !important;
+                margin-bottom: 20px !important;
+            `;
+        }
         
         // 4. НАЗВАНИЕ ЛОКАЦИИ
         const locationName = actionsContainer.querySelector('.cell-name');
@@ -1093,7 +1068,7 @@ updateCellActionsUI(cell) {
         // Автоматически скроллим вверх
         actionsContainer.scrollTop = 0;
         
-        console.log(`✅ Панель оптимизирована: картинка 300px, ${buttons.length} кнопок`);
+        console.log(`✅ Панель оптимизирована: картинка 300px, ${actionCards.length} карточек действий`);
         
     }, 50);
     
@@ -1120,8 +1095,166 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена (ширина 800px, картинка 300px)");
+    console.log("✅ Панель действий обновлена (ширина 1150px, картинка 300px)");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
+}
+
+// ВСТАВЬТЕ ЭТОТ МЕТОД ПОСЛЕ updateCellActionsUI
+createActionsListHTML(cell, isCurrentPosition, isReachable) {
+    let html = `
+        <div class="actions-section" style="margin-top: 20px;">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
+    `;
+    
+    // Создаем контейнер для сетки из 3 колонок
+    html += `<div class="actions-grid" style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    ">`;
+    
+    this.currentCellActions.forEach((action, index) => {
+        const chance = this.getActionChance(action, this.currentCellType);
+        const chancePercent = Math.round(chance * 100);
+        
+        // Определяем цвет шанса
+        let chanceColor = '#ff4444'; // плохой
+        if (chance >= 0.4) chanceColor = '#ffaa00'; // средний
+        if (chance >= 0.7) chanceColor = '#44ff44'; // хороший
+        if (chance >= 0.9) chanceColor = '#00ffaa'; // отличный
+        
+        // Определяем доступность кнопки
+        let isDisabled = false;
+        let disabledReason = '';
+        
+        if (!isReachable) {
+            isDisabled = true;
+            disabledReason = 'Клетка недоступна';
+        } else if (!isCurrentPosition && action.requiresPlayerHere) {
+            isDisabled = true;
+            disabledReason = 'Нужно быть в клетке';
+        } else if (action.requiredItems && !this.hasRequiredItems(action.requiredItems)) {
+            isDisabled = true;
+            disabledReason = 'Нужны предметы';
+        } else if (action.requiredSkill && !this.hasRequiredSkill(action.requiredSkill)) {
+            isDisabled = true;
+            disabledReason = 'Нужен навык';
+        }
+        
+        html += `
+            <div class="action-card" style="
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                transition: all 0.2s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6;'}
+            " ${!isDisabled ? `onclick="tacticalManager.performCellAction('${action.id}')"` : ''}>
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div class="action-icon" style="
+                        font-size: 20px;
+                        margin-right: 10px;
+                        color: ${action.color || '#00ffff'};
+                        flex-shrink: 0;
+                    ">
+                        ${action.icon || '⚡'}
+                    </div>
+                    <div class="action-name" style="
+                        font-weight: bold;
+                        color: ${isDisabled ? '#888' : '#ffffff'};
+                        font-size: 13px;
+                        flex: 1;
+                    ">
+                        ${action.name}
+                    </div>
+                </div>
+                
+                <div class="action-description" style="
+                    color: ${isDisabled ? '#777' : '#b0b0ff'};
+                    font-size: 11px;
+                    margin-bottom: 10px;
+                    line-height: 1.3;
+                    flex: 1;
+                ">
+                    ${action.description}
+                </div>
+                
+                <div class="action-chance-display" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 11px;
+                    margin-top: auto;
+                ">
+                    <span style="color: #aaa;">Шанс:</span>
+                    <div style="display: flex; align-items: center;">
+                        <div style="
+                            width: 40px;
+                            height: 6px;
+                            background: #333;
+                            border-radius: 3px;
+                            margin-right: 8px;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                width: ${chancePercent}%;
+                                height: 100%;
+                                background: ${chanceColor};
+                                border-radius: 3px;
+                            "></div>
+                        </div>
+                        <span style="color: ${chanceColor}; font-weight: bold;">
+                            ${chancePercent}%
+                        </span>
+                    </div>
+                </div>
+                
+                ${isDisabled ? `
+                    <div style="
+                        font-size: 10px;
+                        color: #ff6666;
+                        margin-top: 8px;
+                        padding-top: 8px;
+                        border-top: 1px dashed #444;
+                    ">
+                        ${disabledReason}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div>`; // Закрываем actions-grid
+    
+    // Добавляем легенду шансов
+    html += `
+        <div class="chance-legend" style="
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 15px;
+        ">
+            <strong style="color: #00ffcc;">Легенда шансов:</strong>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <span style="color: #ff4444;">0-39% - Плохой</span>
+                <span style="color: #ffaa00;">40-69% - Средний</span>
+                <span style="color: #44ff44;">70-89% - Хороший</span>
+                <span style="color: #00ffaa;">90-100% - Отличный</span>
+            </div>
+        </div>
+    `;
+    
+    html += `</div>`; // Закрываем actions-section
+    
+    return html;
 }
 
     getActionChance(action, cellType) {
