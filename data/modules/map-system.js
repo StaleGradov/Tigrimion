@@ -822,8 +822,15 @@ class MapSystem {
     }
 
 updateCellActionsUI(cell) {
-    console.log(`📋 Обновляем UI для клетки [${cell.col}, ${cell.row}]`, {
+    console.log("=== НАЧАЛО updateCellActionsUI ===");
+    console.log("Клетка:", {
+        col: cell.col,
+        row: cell.row,
         type: cell.type,
+        x: cell.x,
+        y: cell.y,
+        originalX: cell.originalX,
+        originalY: cell.originalY,
         explored: cell.explored,
         hasAction: cell.hasAction
     });
@@ -831,16 +838,44 @@ updateCellActionsUI(cell) {
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден! ID: cellActionsContainer");
+        console.log("Пробую создать резервный контейнер...");
         this.createActionsContainerFallback();
+        
         // Пробуем снова
         const newContainer = document.getElementById('cellActionsContainer');
         if (!newContainer) {
             console.error("❌ Не удалось создать контейнер действий");
+            
+            // Экстренное создание
+            const emergencyDiv = document.createElement('div');
+            emergencyDiv.id = 'cellActionsContainer';
+            emergencyDiv.style.cssText = `
+                background: RED !important;
+                color: WHITE !important;
+                padding: 20px !important;
+                border: 5px solid YELLOW !important;
+                margin: 10px !important;
+                height: 500px !important;
+                width: 350px !important;
+                z-index: 9999 !important;
+                position: relative !important;
+                display: block !important;
+            `;
+            document.querySelector('.tactical-map-content-with-actions').appendChild(emergencyDiv);
+            
+            emergencyDiv.innerHTML = '<h1>ЭКСТРЕННЫЙ КОНТЕЙНЕР</h1>';
+            console.log("✅ Экстренный контейнер создан");
             return;
         }
-        this.updateCellActionsUI(cell); // Рекурсивный вызов
-        return;
+        console.log("✅ Резервный контейнер создан");
     }
+    
+    console.log("✅ Контейнер найден, размеры:", {
+        offsetWidth: actionsContainer.offsetWidth,
+        offsetHeight: actionsContainer.offsetHeight,
+        clientWidth: actionsContainer.clientWidth,
+        clientHeight: actionsContainer.clientHeight
+    });
     
     // ВАЖНО: Убираем все ограничения overflow
     actionsContainer.style.overflowY = 'auto';
@@ -850,15 +885,19 @@ updateCellActionsUI(cell) {
     actionsContainer.style.visibility = 'visible';
     actionsContainer.style.opacity = '1';
     actionsContainer.style.minHeight = '500px';
+    actionsContainer.style.maxHeight = 'none';
     
     // Исправляем родительскую панель
     const panel = actionsContainer.closest('.cell-actions-panel');
     if (panel) {
+        console.log("✅ Родительская панель найдена");
         panel.style.overflow = 'visible';
         panel.style.display = 'flex';
         panel.style.flexDirection = 'column';
         panel.style.minHeight = '600px';
         panel.style.maxHeight = 'none';
+    } else {
+        console.warn("⚠️ Родительская панель не найдена");
     }
     
     // Инициализируем поля, если их нет
@@ -867,21 +906,44 @@ updateCellActionsUI(cell) {
     
     this.selectedCell = cell;
     this.currentCellType = this.determineCellType(cell);
+    console.log("Определенный тип клетки:", this.currentCellType);
+    
     const cellTypeData = this.cellTypes[this.currentCellType];
+    console.log("Данные типа клетки:", cellTypeData ? "найдены" : "НЕ НАЙДЕНЫ");
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-        this.showCellErrorUI(actionsContainer, cell);
+        console.log("Доступные типы:", Object.keys(this.cellTypes));
+        
+        // Показываем ошибку
+        actionsContainer.innerHTML = `
+            <div class="cell-error">
+                <div class="error-icon">❌</div>
+                <h5>Ошибка загрузки типа клетки</h5>
+                <p>Тип: ${this.currentCellType}</p>
+                <p>Клетка: [${cell.col}, ${cell.row}]</p>
+                <button class="btn-control" onclick="console.log('Доступные типы:', Object.keys(game.systems.map.cellTypes))">
+                    🐛 Показать типы
+                </button>
+            </div>
+        `;
         return;
     }
     
     const cellIcon = this.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+    console.log("Иконка клетки:", cellIcon);
     
     // Проверяем доступность клетки
     const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && 
                                cell.row === this.playerTacticalPosition.y);
     const isReachable = this.isCellReachable(cell);
     const isExplored = cell.explored === true;
+    
+    console.log("Статус клетки:", {
+        isCurrentPosition,
+        isReachable,
+        isExplored
+    });
     
     // Всегда определяем доступные действия для клетки
     this.currentCellActions = this.allActions.filter(action => {
@@ -891,36 +953,84 @@ updateCellActionsUI(cell) {
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
+    // ТЕСТ: Сначала простой HTML
+    console.log("🔄 Создаем HTML для панели...");
+    
     // Создаем HTML для панели действий
-    let actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    let actionsHTML = '';
+    
+    try {
+        actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+        console.log("✅ Информация о клетке создана");
+    } catch (error) {
+        console.error("❌ Ошибка создания информации о клетке:", error);
+        actionsHTML = `<div style="color: red;">Ошибка: ${error.message}</div>`;
+    }
     
     // Добавляем действия если клетка не исследована
     if (!isExplored && cell.hasAction !== false) {
         if (this.currentCellActions.length > 0) {
-            actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+            try {
+                actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+                console.log("✅ Список действий создан");
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                actionsHTML += `<div style="color: red;">Ошибка действий: ${error.message}</div>`;
+            }
         } else {
             actionsHTML += this.createNoActionsHTML();
+            console.log("✅ Сообщение 'нет действий' создано");
         }
     } else if (isExplored) {
         actionsHTML += this.createExploredCellHTML();
+        console.log("✅ Сообщение 'исследовано' создано");
     } else if (cell.hasAction === false) {
         actionsHTML += this.createNoActionsHTML();
+        console.log("✅ Сообщение 'нет действий' создано");
     }
     
+    console.log("📝 Общий HTML размер:", actionsHTML.length, "символов");
+    
+    // Вставляем HTML
     actionsContainer.innerHTML = actionsHTML;
+    console.log("✅ HTML вставлен в контейнер");
+    
+    // Проверяем, что контент отобразился
+    setTimeout(() => {
+        console.log("🔍 Проверка отображения контента:");
+        console.log("Дочерние элементы:", actionsContainer.children.length);
+        console.log("Видимые кнопки:", actionsContainer.querySelectorAll('button').length);
+        console.log("Текст внутри:", actionsContainer.innerText.substring(0, 100) + '...');
+    }, 100);
     
     // Загружаем реальную картинку локации
-    this.displayRealLocationImage(cellTypeData);
+    try {
+        this.displayRealLocationImage(cellTypeData);
+        console.log("✅ Картинка локации загружается");
+    } catch (error) {
+        console.error("❌ Ошибка загрузки картинки:", error);
+    }
     
     // Назначаем обработчики событий для кнопок действий
     if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
-        this.setupActionEventListeners();
+        try {
+            this.setupActionEventListeners();
+            console.log("✅ Обработчики событий назначены");
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
     }
     
     // Обновляем список ресурсов героя
-    this.updateHeroResourcesUI();
+    try {
+        this.updateHeroResourcesUI();
+        console.log("✅ Ресурсы героя обновлены");
+    } catch (error) {
+        console.error("❌ Ошибка обновления ресурсов:", error);
+    }
     
-    console.log(`✅ Панель действий обновлена для клетки [${cell.col}, ${cell.row}]`);
+    console.log("✅ Панель действий обновлена для клетки [${cell.col}, ${cell.row}]");
+    console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
     getActionChance(action, cellType) {
