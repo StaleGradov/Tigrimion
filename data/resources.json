@@ -1,25 +1,113 @@
 {
   "herbs": [
-    { "id": "arnica", "name": "🌿 Арника", "type": "herb", "rarity": "common", "description": "Известна своими заживляющими свойствами" },
-    { "id": "willow_bark", "name": "🍂 Кора Ивы", "type": "herb", "rarity": "common", "description": "Содержит природные обезболивающие" }
+    { 
+      "id": "arnica", 
+      "name": "🌿 Арника", 
+      "type": "herb", 
+      "rarity": "common", 
+      "value": 10, 
+      "price": 5,
+      "description": "Известна своими заживляющими свойствами"
+    },
+    { 
+      "id": "willow_bark", 
+      "name": "🍂 Кора Ивы", 
+      "type": "herb", 
+      "rarity": "common", 
+      "value": 12, 
+      "price": 6,
+      "description": "Содержит природные обезболивающие"
+    }
   ],
   "berries": [
-    { "id": "elderberry", "name": "🫐 Бузина", "type": "berry", "rarity": "common", "description": "Укрепляет иммунитет и бодрит" },
-    { "id": "rosehip", "name": "🌰 Шиповник", "type": "berry", "rarity": "common", "description": "Богат витаминами, тонизирует" }
+    { 
+      "id": "elderberry", 
+      "name": "🫐 Бузина", 
+      "type": "berry", 
+      "rarity": "common", 
+      "value": 8, 
+      "price": 4,
+      "description": "Укрепляет иммунитет и бодрит"
+    },
+    { 
+      "id": "rosehip", 
+      "name": "🌰 Шиповник", 
+      "type": "berry", 
+      "rarity": "common", 
+      "value": 15, 
+      "price": 8,
+      "description": "Богат витаминами, тонизирует"
+    }
   ],
   "mushrooms": [
-    { "id": "tea_mushroom", "name": "🍄 Чайный гриб", "type": "mushroom", "rarity": "uncommon", "description": "Основа для ферментированных целебных напитков" }
+    { 
+      "id": "tea_mushroom", 
+      "name": "🍄 Чайный гриб", 
+      "type": "mushroom", 
+      "rarity": "uncommon", 
+      "value": 25, 
+      "price": 12,
+      "description": "Основа для ферментированных целебных напитков"
+    }
   ],
   "ores": [
-    { "id": "iron_ore", "name": "⛏️ Железная руда", "type": "ore", "rarity": "common", "description": "Базовая руда для изготовления оружия и доспехов" },
-    { "id": "copper_ore", "name": "⛏️ Медная руда", "type": "ore", "rarity": "common", "description": "Используется для украшений и инструментов" }
+    { 
+      "id": "iron_ore", 
+      "name": "⛏️ Железная руда", 
+      "type": "ore", 
+      "rarity": "common", 
+      "value": 20, 
+      "price": 10,
+      "description": "Базовая руда для изготовления оружия и доспехов"
+    },
+    { 
+      "id": "copper_ore", 
+      "name": "⛏️ Медная руда", 
+      "type": "ore", 
+      "rarity": "common", 
+      "value": 30, 
+      "price": 15,
+      "description": "Используется для украшений и инструментов"
+    }
   ],
   "stones": [
-    { "id": "flint", "name": "🪨 Кремень", "type": "stone", "rarity": "common", "description": "Для розжига огня и создания инструментов" },
-    { "id": "quartz", "name": "🪨 Кварц", "type": "stone", "rarity": "uncommon", "description": "Полупрозрачный кристалл с магическими свойствами" }
+    { 
+      "id": "flint", 
+      "name": "🪨 Кремень", 
+      "type": "stone", 
+      "rarity": "common", 
+      "value": 5, 
+      "price": 2,
+      "description": "Для розжига огня и создания инструментов"
+    },
+    { 
+      "id": "quartz", 
+      "name": "🪨 Кварц", 
+      "type": "stone", 
+      "rarity": "uncommon", 
+      "value": 50, 
+      "price": 25,
+      "description": "Полупрозрачный кристалл с магическими свойствами"
+    }
   ],
   "woods": [
-    { "id": "oak_wood", "name": "🪵 Дубовая древесина", "type": "wood", "rarity": "common", "description": "Прочная древесина для строительства и оружия" },
-    { "id": "pine_wood", "name": "🪵 Сосновая древесина", "type": "wood", "rarity": "common", "description": "Легкая и ароматная древесина" }
+    { 
+      "id": "oak_wood", 
+      "name": "🪵 Дубовая древесина", 
+      "type": "wood", 
+      "rarity": "common", 
+      "value": 15, 
+      "price": 8,
+      "description": "Прочная древесина для строительства и оружия"
+    },
+    { 
+      "id": "pine_wood", 
+      "name": "🪵 Сосновая древесина", 
+      "type": "wood", 
+      "rarity": "common", 
+      "value": 10, 
+      "price": 5,
+      "description": "Легкая и ароматная древесина"
+    }
   ]
 }
