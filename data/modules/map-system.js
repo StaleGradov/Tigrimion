@@ -4848,18 +4848,24 @@ updateCellActionsUI(cell) {
         `;
     }
 
-// Добавьте этот метод в MapSystem (перед showNotification)
+// === МЕТОДЫ ДЛЯ БЫСТРОЙ НАСТРОЙКИ ИЗ КОНСОЛИ ===
+
+// Быстрая настройка размеров
 quickAdjustPanel(imageSize = 300, buttonHeight = 55) {
     console.log(`⚡ Быстрая настройка: картинка ${imageSize}px, кнопки ${buttonHeight}px`);
     
     const container = document.getElementById('cellActionsContainer');
-    if (!container) return;
+    if (!container) {
+        console.error("❌ Контейнер не найден");
+        return;
+    }
     
     // Настройка картинки
     const imageWrapper = container.querySelector('.location-visual-container');
     if (imageWrapper) {
         imageWrapper.style.height = imageSize + 'px';
         imageWrapper.style.width = imageSize + 'px';
+        console.log(`✅ Картинка: ${imageSize}px`);
     }
     
     // Настройка кнопок
@@ -4868,7 +4874,75 @@ quickAdjustPanel(imageSize = 300, buttonHeight = 55) {
         btn.style.minHeight = buttonHeight + 'px';
     });
     
-    console.log(`✅ Применено: ${buttons.length} кнопок`);
+    console.log(`✅ Применено к ${buttons.length} кнопкам`);
+}
+
+// Отдельные настройки
+adjustImageSize(change) {
+    const container = document.getElementById('cellActionsContainer');
+    const imageWrapper = container?.querySelector('.location-visual-container');
+    
+    if (imageWrapper) {
+        const currentSize = parseInt(imageWrapper.style.height) || 300;
+        const newSize = Math.max(150, Math.min(currentSize + change, 500));
+        
+        imageWrapper.style.height = newSize + 'px';
+        imageWrapper.style.width = newSize + 'px';
+        console.log(`🖼️ Картинка: ${currentSize}px → ${newSize}px`);
+    }
+}
+
+adjustButtonSize(change) {
+    const buttons = document.querySelectorAll('.cell-action-btn');
+    buttons.forEach(btn => {
+        const currentHeight = parseInt(btn.style.minHeight) || 55;
+        const newHeight = Math.max(40, Math.min(currentHeight + change, 80));
+        
+        btn.style.minHeight = newHeight + 'px';
+    });
+    console.log(`🎯 Кнопки: ${buttons.length} шт. изменены на ${change}px`);
+}
+
+// Сброс к стандартным настройкам
+resetPanelSettings() {
+    console.log("🔄 Сброс к стандартным настройкам");
+    
+    const container = document.getElementById('cellActionsContainer');
+    if (!container) return;
+    
+    // Стандартные настройки
+    const imageWrapper = container.querySelector('.location-visual-container');
+    if (imageWrapper) {
+        imageWrapper.style.height = '300px';
+        imageWrapper.style.width = '300px';
+    }
+    
+    const buttons = container.querySelectorAll('.cell-action-btn');
+    buttons.forEach(btn => {
+        btn.style.minHeight = '55px';
+        btn.style.fontSize = '13px';
+        btn.style.padding = '10px';
+    });
+    
+    console.log(`✅ Сброшено: картинка 300px, кнопки 55px`);
+}
+
+// Показать текущие размеры
+showPanelStats() {
+    const container = document.getElementById('cellActionsContainer');
+    const imageWrapper = container?.querySelector('.location-visual-container');
+    const buttons = container?.querySelectorAll('.cell-action-btn');
+    
+    if (imageWrapper && buttons.length > 0) {
+        const imageSize = parseInt(imageWrapper.style.height) || 300;
+        const buttonHeight = parseInt(buttons[0].style.minHeight) || 55;
+        
+        console.log("📊 Текущие настройки панели:");
+        console.log(`  🖼️ Картинка: ${imageSize}px`);
+        console.log(`  🎯 Кнопки: ${buttonHeight}px (${buttons.length} шт.)`);
+        console.log(`  📏 Ширина панели: ${container?.offsetWidth || 800}px`);
+        console.log(`  📐 Высота панели: ${container?.offsetHeight || 600}px`);
+    }
 }
     
     showNotification(message, type = 'info') {
