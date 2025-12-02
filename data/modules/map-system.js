@@ -4373,6 +4373,62 @@ updateCellActionsUI(cell) {
     }
 
 
+
+    // ТЕСТОВЫЙ МЕТОД - ДЛЯ ПРОВЕРКИ РАБОТЫ ПАНЕЛИ
+    testActionsPanel() {
+        console.log("🧪 Тест панели действий...");
+        
+        const container = document.getElementById('cellActionsContainer');
+        if (!container) {
+            console.error("❌ Контейнер действий не найден");
+            return;
+        }
+        
+        // Принудительно показываем панель
+        container.style.cssText = `
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            height: 500px !important;
+            width: 350px !important;
+            background: RED !important;
+            border: 5px solid YELLOW !important;
+            padding: 20px !important;
+            margin: 10px !important;
+            overflow: visible !important;
+            z-index: 9999 !important;
+            position: relative !important;
+        `;
+        
+        container.innerHTML = `
+            <h1 style="color: white; text-align: center;">ТЕСТ ПАНЕЛИ</h1>
+            <p style="color: white;">Если видите этот текст - панель работает</p>
+            <button onclick="alert('Кнопка работает!')" 
+                    style="background: blue; color: white; padding: 10px; margin: 10px;">
+                Нажми меня
+            </button>
+        `;
+        
+        console.log("✅ Тестовый контент добавлен");
+        
+        // Обновляем также родительские элементы
+        const panel = container.closest('.cell-actions-panel');
+        if (panel) {
+            panel.style.cssText = `
+                display: flex !important;
+                flex-direction: column !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                overflow: visible !important;
+                min-height: 600px !important;
+                background: GREEN !important;
+                border: 5px solid WHITE !important;
+                padding: 20px !important;
+                margin: 10px !important;
+            `;
+        }
+    }
+
     // ========== НОВЫЕ ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ПАНЕЛИ ДЕЙСТВИЙ ==========
     
     createActionsContainerFallback() {
