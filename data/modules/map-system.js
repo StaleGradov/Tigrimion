@@ -821,14 +821,45 @@ class MapSystem {
         return cell.cellType;
     }
 
-  updateCellActionsUI(cell) {
+updateCellActionsUI(cell) {
+    console.log(`📋 Обновляем UI для клетки [${cell.col}, ${cell.row}]`, {
+        type: cell.type,
+        explored: cell.explored,
+        hasAction: cell.hasAction
+    });
+    
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден! ID: cellActionsContainer");
+        this.createActionsContainerFallback();
+        // Пробуем снова
+        const newContainer = document.getElementById('cellActionsContainer');
+        if (!newContainer) {
+            console.error("❌ Не удалось создать контейнер действий");
+            return;
+        }
+        this.updateCellActionsUI(cell); // Рекурсивный вызов
         return;
     }
     
-    console.log(`📋 Обновляем UI для клетки [${cell.col}, ${cell.row}]`);
+    // ВАЖНО: Убираем все ограничения overflow
+    actionsContainer.style.overflowY = 'auto';
+    actionsContainer.style.overflowX = 'visible';
+    actionsContainer.style.display = 'flex';
+    actionsContainer.style.flexDirection = 'column';
+    actionsContainer.style.visibility = 'visible';
+    actionsContainer.style.opacity = '1';
+    actionsContainer.style.minHeight = '500px';
+    
+    // Исправляем родительскую панель
+    const panel = actionsContainer.closest('.cell-actions-panel');
+    if (panel) {
+        panel.style.overflow = 'visible';
+        panel.style.display = 'flex';
+        panel.style.flexDirection = 'column';
+        panel.style.minHeight = '600px';
+        panel.style.maxHeight = 'none';
+    }
     
     // Инициализируем поля, если их нет
     if (cell.explored === undefined) cell.explored = false;
@@ -840,7 +871,7 @@ class MapSystem {
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-        actionsContainer.innerHTML = '<div class="no-actions">❌ Тип местности не определен</div>';
+        this.showCellErrorUI(actionsContainer, cell);
         return;
     }
     
@@ -855,155 +886,25 @@ class MapSystem {
     // Всегда определяем доступные действия для клетки
     this.currentCellActions = this.allActions.filter(action => {
         const chance = this.getActionChance(action, this.currentCellType);
-        return chance > 0; // Показываем только действия с шансом > 0%
+        return chance > 0;
     });
     
-    let actionsHTML = `
-        <div class="cell-info-header">
-            <div class="location-visual-container">
-                <div class="location-image-wrapper" id="locationImageWrapper">
-                    <div class="image-loading">🖼️ Загрузка изображения...</div>
-                </div>
-                <div class="location-icon-overlay">
-                    <div class="cell-icon-large">${cellIcon}</div>
-                </div>
-            </div>
-            
-            <h4 class="cell-name">${cellTypeData.name}</h4>
-            
-            <div class="cell-position-info">
-                <span class="cell-coords">Позиция: [${cell.col}, ${cell.row}]</span>
-                ${isCurrentPosition ? '<span class="current-position-badge">📍 Вы здесь</span>' : ''}
-                ${isExplored ? '<span class="explored-badge">✓ Исследовано</span>' : ''}
-            </div>
-            
-            <!-- Описание локации -->
-            <div class="cell-description-text">
-                ${cellTypeData.description}
-            </div>
-            
-            ${cellTypeData.suggestion ? `
-                <div class="cell-suggestion">
-                    <strong>💡 Совет:</strong> ${cellTypeData.suggestion}
-                </div>
-            ` : ''}
-            
-            ${cellTypeData.special_notes ? `
-                <div class="special-notes">
-                    <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
-                </div>
-            ` : ''}
-        </div>
-    `;
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
-    // ВАЖНО: Показываем действия если клетка не исследована
+    // Создаем HTML для панели действий
+    let actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    
+    // Добавляем действия если клетка не исследована
     if (!isExplored && cell.hasAction !== false) {
         if (this.currentCellActions.length > 0) {
-            actionsHTML += `
-                <div class="available-actions-list">
-                    <div class="actions-header">
-                        <span class="actions-title">⚡ Доступные действия:</span>
-            `;
-            
-            if (!isCurrentPosition && !isReachable) {
-                actionsHTML += '<span class="reachability-warning">❌ Подойдите ближе</span>';
-            } else if (isCurrentPosition || isReachable) {
-                actionsHTML += '<span class="reachability-success">✅ Доступно</span>';
-            }
-            
-            actionsHTML += '</div>';
-            
-            // Показываем все действия с их шансами
-            this.currentCellActions.forEach(action => {
-                const chance = this.getActionChance(action, this.currentCellType);
-                const config = this.actionConfigs[action] || {
-                    icon: '❓',
-                    name: action.replace(/_/g, ' '),
-                    description: 'Неизвестное действие',
-                    class: 'action-unknown'
-                };
-                
-                const actionEnabled = isCurrentPosition || isReachable;
-                
-                actionsHTML += `
-                    <button class="cell-action-btn ${config.class} ${!actionEnabled ? 'disabled' : ''}" 
-                            data-action="${action}"
-                            data-cell-row="${cell.row}"
-                            data-cell-col="${cell.col}"
-                            ${!actionEnabled ? 'disabled' : ''}
-                            title="${config.description}\n\n🎯 Шанс успеха: ${chance}%"
-                            ${actionEnabled ? `onclick="game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"` : ''}>
-                        <span class="action-icon">${config.icon}</span>
-                        <div class="action-info">
-                            <div class="action-name">${config.name}</div>
-                            <div class="action-description">${config.description}</div>
-                            <div class="action-chance-display">
-                                <span class="chance-text">Шанс: ${chance}%</span>
-                                <div class="chance-indicator ${this.getChanceClass(chance)}"></div>
-                            </div>
-                            ${actionEnabled ? '<div class="action-available">✅ Доступно</div>' : '<div class="action-unavailable">❌ Подойдите ближе</div>'}
-                        </div>
-                    </button>
-                `;
-            });
-            
-            // Добавляем легенду шансов
-            actionsHTML += `
-                <div class="chance-legend">
-                    <div class="legend-title">📊 Шкала шансов:</div>
-                    <div class="legend-items">
-                        <div class="legend-item">
-                            <span class="legend-color chance-excellent"></span>
-                            <span>Отличный (80-100%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color chance-good"></span>
-                            <span>Хороший (60-79%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color chance-medium"></span>
-                            <span>Средний (40-59%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color chance-low"></span>
-                            <span>Низкий (20-39%)</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color chance-poor"></span>
-                            <span>Плохой (0-19%)</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            actionsHTML += '</div>';
+            actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
         } else {
-            actionsHTML += `
-                <div class="no-available-actions">
-                    <div class="no-actions-icon">🚫</div>
-                    <p>Для этой локации нет доступных действий</p>
-                    <p class="hint">Выберите другую клетку для взаимодействия.</p>
-                </div>
-            `;
+            actionsHTML += this.createNoActionsHTML();
         }
     } else if (isExplored) {
-        // Если клетка уже исследована
-        actionsHTML += `
-            <div class="cell-explored">
-                <div class="explored-icon">✓</div>
-                <h5>Местность исследована</h5>
-                <p>Вы уже исследовали эту местность и совершили доступные действия.</p>
-                <p class="hint">Перейдите на другую клетку для новых действий.</p>
-            </div>
-        `;
+        actionsHTML += this.createExploredCellHTML();
     } else if (cell.hasAction === false) {
-        actionsHTML += `
-            <div class="no-available-actions">
-                <div class="no-actions-icon">🚫</div>
-                <p>Эта клетка не поддерживает действия</p>
-                <p class="hint">Выберите другую клетку для взаимодействия.</p>
-            </div>
-        `;
+        actionsHTML += this.createNoActionsHTML();
     }
     
     actionsContainer.innerHTML = actionsHTML;
@@ -1018,6 +919,8 @@ class MapSystem {
     
     // Обновляем список ресурсов героя
     this.updateHeroResourcesUI();
+    
+    console.log(`✅ Панель действий обновлена для клетки [${cell.col}, ${cell.row}]`);
 }
 
     getActionChance(action, cellType) {
