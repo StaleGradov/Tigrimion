@@ -459,11 +459,12 @@ class MapSystem {
     }
 
     createDefaultCellTypes() {
+        // Используем полный список локаций из предоставленного JSON
         this.cellTypes = {
             'grave': {
                 name: "Старая каменная гробница",
-                description: "Массивная каменная плита с высеченными рунами...",
-                suggestion: "Это захоронение знатного воина или мага...",
+                description: "Массивная каменная плита с высеченными рунами, явно не крестьянского происхождения. Земля вокруг осела неравномерно, будто под ней пустота. Надпись на плите сделана на древнем наречии, но слово 'сокровище' угадывается.",
+                suggestion: "Это захоронение знатного воина или мага — слишком дорогая отделка для простолюдина. Судя по наклону креста, кто-то уже пытался что-то искать...",
                 icon: '⚰️',
                 image: 'images/locations/grave.jpg',
                 action_chances: {
@@ -477,12 +478,13 @@ class MapSystem {
                     set_trap: 40,
                     prepare_ambush: 55
                 },
-                special_notes: "Высокий шанс найти сокровища"
+                special_notes: "Высокий шанс найти сокровища, но будьте осторожны — такие места часто охраняются проклятиями."
             },
+            
             'small_stream': {
                 name: "Хрустальный ручей",
-                description: "Прозрачная вода струится по гладким камням...",
-                suggestion: "Идеальное место для пополнения запасов...",
+                description: "Прозрачная вода струится по гладким камням, образуя небольшие водовороты. Рыбки серебрятся на дне, а на берегу видны следы животных. Источник явно чистый — мхи растут только с северной стороны, что говорит о постоянном течении.",
+                suggestion: "Идеальное место для пополнения запасов — вода здесь не застаивается. На противоположном берегу видны ягодные кусты...",
                 icon: '💧',
                 image: 'images/locations/small_stream.jpg',
                 action_chances: {
@@ -496,12 +498,13 @@ class MapSystem {
                     set_trap: 75,
                     prepare_ambush: 30
                 },
-                special_notes: "Почти гарантированно можно найти чистую воду"
+                special_notes: "Почти гарантированно можно найти чистую воду. Животные часто приходят на водопой — идеально для ловушек."
             },
+            
             'shallow_burrow': {
                 name: "Лисья нора",
-                description: "Аккуратный вход в подземное логово...",
-                suggestion: "Нора слишком ухоженная для дикого зверя...",
+                description: "Аккуратный вход в подземное логово, окруженный выброшенной землей и костями мелких животных. Глубина не более метра, но внутри видны ответвления. Запах сырой земли смешивается с чем-то острым — возможно, здесь живет не только лиса.",
+                suggestion: "Нора слишком ухоженная для дикого зверя — кто-то мог использовать ее как тайник. Кости на входе неестественно аккуратно сложены...",
                 icon: '🕳️',
                 image: 'images/locations/shallow_burrow.jpg',
                 action_chances: {
@@ -515,12 +518,13 @@ class MapSystem {
                     set_trap: 85,
                     prepare_ambush: 65
                 },
-                special_notes: "Отличное место для засады"
+                special_notes: "Отличное место для засады — ограниченные пути отхода. Высокий шанс найти камни для строительства или обороны."
             },
+            
             'berry_clearing': {
                 name: "Ягодная поляна у опушки",
-                description: "Солнечная поляна, усыпанная спелыми ягодами...",
-                suggestion: "Ягоды выглядят съедобными...",
+                description: "Солнечная поляна, усыпанная спелыми ягодами всех оттенков красного и синего. Пчелы гудят в теплом воздухе, а ветер доносит сладкий аромат. Некоторые кусты явно посажены рядами — возможно, здесь был сад.",
+                suggestion: "Ягоды выглядят съедобными, но темно-синие у камня лучше не трогать — они растут только на волчьих тропах. На земле видны следы когтей...",
                 icon: '🫐',
                 image: 'images/locations/berry_clearing.jpg',
                 action_chances: {
@@ -534,12 +538,13 @@ class MapSystem {
                     set_trap: 60,
                     prepare_ambush: 45
                 },
-                special_notes: "Обилие ягод и лекарственных трав"
+                special_notes: "Обилие ягод и лекарственных трав. Хорошая видимость делает это место уязвимым для атак, но и удобным для наблюдения."
             },
+            
             'mushroom_grove': {
                 name: "Грибная чаща",
-                description: "Тихий уголок леса, где гигантские грибы образуют естественные колонны...",
-                suggestion: "Красные грибы с белыми точками растут только у старых пней...",
+                description: "Тихий уголок леса, где гигантские грибы образуют естественные колонны. Воздух влажный и плотный, пахнет гниющим деревом и спорами. Некоторые грибы светятся мягким голубым светом в тени, другие покрыты странной слизью.",
+                suggestion: "Красные грибы с белыми точками растут только у старых пней — там, где земля богата разложившейся древесиной. Но светящиеся лучше обойти стороной...",
                 icon: '🍄',
                 image: 'images/locations/mushroom_grove.jpg',
                 action_chances: {
@@ -553,12 +558,13 @@ class MapSystem {
                     set_trap: 50,
                     prepare_ambush: 70
                 },
-                special_notes: "Почти гарантированно найдете съедобные грибы"
+                special_notes: "Почти гарантированно найдете съедобные грибы. Плотная растительность отлично подходит для скрытой засады."
             },
+            
             'ancient_tree': {
                 name: "Вековой дуб-исполин",
-                description: "Дерево таких размеров, что десять человек не обхватят...",
-                suggestion: "Дупло слишком аккуратное для естественного образования...",
+                description: "Дерево таких размеров, что десять человек не обхватят. Кора покрыта мхами и лишайниками, образующими узоры, похожие на письмена. В дупле на высоте двух метров виднеется темнота, а у корней — приношения: монеты, ленты, керамика.",
+                suggestion: "Дупло слишком аккуратное для естественного образования. Местные, должно быть, считают это дерево священным — приношения свежие. Но что они просят у духа дерева?",
                 icon: '🌳',
                 image: 'images/locations/ancient_tree.jpg',
                 action_chances: {
@@ -572,12 +578,13 @@ class MapSystem {
                     set_trap: 35,
                     prepare_ambush: 40
                 },
-                special_notes: "Богатый источник редких трав"
+                special_notes: "Богатый источник редких трав и возможных подношений-сокровищ. Дерево дает хорошее укрытие, но ограничивает обзор."
             },
+            
             'rocky_outcrop': {
                 name: "Скальная гряда",
-                description: "Выступ древней породы, испещренный трещинами и прожилками минералов...",
-                suggestion: "Блестящие вкрапления в камне — признак металлической руды...",
+                description: "Выступ древней породы, испещренный трещинами и прожилками минералов. Камни теплые даже в тени — возможно, под ними горячие источники. На одной из плит выбит символ, похожий на карту шахты.",
+                suggestion: "Блестящие вкрапления в камне — признак металлической руды. Но самая ценная находка может быть в глубоких трещинах, куда не попадает дождь...",
                 icon: '⛰️',
                 image: 'images/locations/rocky_outcrop.jpg',
                 action_chances: {
@@ -591,7 +598,127 @@ class MapSystem {
                     set_trap: 25,
                     prepare_ambush: 80
                 },
-                special_notes: "Идеально для добычи руды и камня"
+                special_notes: "Идеально для добычи руды и камня. Высокое положение дает тактическое преимущество для засады."
+            },
+            
+            'abandoned_camp': {
+                name: "Покинутый лагерь искателей",
+                description: "Полуразрушенные палатки, перевернутый котелок над холодным костром, разбросанные инструменты. Лагерь оставлен в спешке — судя по следам, не более недели назад. Под одной из палаток виден край сундука.",
+                suggestion: "Слишком много ценных вещей брошено, чтобы это было простым уходом. Может, их спугнуло что-то... или кто-то. Сундук не вскрыт — странно для бегства.",
+                icon: '🏕️',
+                image: 'images/locations/abandoned_camp.jpg',
+                action_chances: {
+                    search_treasure: 75,
+                    search_water: 50,
+                    search_berries: 30,
+                    search_mushrooms: 40,
+                    search_herbs: 45,
+                    search_ore: 35,
+                    search_stone: 40,
+                    set_trap: 70,
+                    prepare_ambush: 85
+                },
+                special_notes: "Хорошие шансы найти брошенные припасы и ценности. Уже готовые укрытия делают это место идеальным для засады."
+            },
+            
+            'ruined_shrine': {
+                name: "Разрушенное святилище предков",
+                description: "Остатки каменного алтаря под открытым небом. Статуи богов лишились лиц, но их руки все еще указывают на четыре стороны света. У основания алтаря — высохшая чаша для приношений, в которой что-то блестит.",
+                suggestion: "Такие святилища строили на пересечении энергетических линий. Даже в руинах здесь чувствуется... присутствие. Приношения могут быть как благословением, так и проклятием.",
+                icon: '🛐',
+                image: 'images/locations/ruined_shrine.jpg',
+                action_chances: {
+                    search_treasure: 80,
+                    search_water: 20,
+                    search_berries: 15,
+                    search_mushrooms: 25,
+                    search_herbs: 70,
+                    search_ore: 30,
+                    search_stone: 75,
+                    set_trap: 45,
+                    prepare_ambush: 60
+                },
+                special_notes: "Высокий шанс найти ритуальные ценности и редкие священные травы. Архитектура предоставляет естественные укрытия."
+            },
+            
+            'crystal_cave': {
+                name: "Пещера сияющих кристаллов",
+                description: "Неглубокая пещера, стены которой покрыты растущими кристаллами. Они излучают мягкий свет без тепла, окрашивая все в голубые и фиолетовые тона. На полу — осколки более крупных образований, некоторые размером с кулак.",
+                suggestion: "Кристаллы растут только в особых условиях — рядом должен быть источник магической энергии или редких минералов. Самые крупные находятся в самой темной части...",
+                icon: '💎',
+                image: 'images/locations/crystal_cave.jpg',
+                action_chances: {
+                    search_treasure: 45,
+                    search_water: 55,
+                    search_berries: 5,
+                    search_mushrooms: 35,
+                    search_herbs: 25,
+                    search_ore: 70,
+                    search_stone: 65,
+                    set_trap: 40,
+                    prepare_ambush: 90
+                },
+                special_notes: "Богатый источник кристаллов и руды. Пещера — идеальная ловушка, но и смертельная западня, если враг блокирует выход."
+            },
+            
+            'herb_garden': {
+                name: "Заброшенный аптекарский сад",
+                description: "Огороженный участок с аккуратными, но заросшими грядками. Здесь культивировали лекарственные растения — видна система полива и этикетки на столбиках. Некоторые травы мутировали без ухода, приобретя необычные свойства.",
+                suggestion: "Сад расположен слишком далеко от поселений для простого крестьянина. Это работа профессионала — возможно, алхимика или знахаря. Самые ценные растения могли быть спрятаны...",
+                icon: '🌿',
+                image: 'images/locations/herb_garden.jpg',
+                action_chances: {
+                    search_treasure: 30,
+                    search_water: 60,
+                    search_berries: 50,
+                    search_mushrooms: 45,
+                    search_herbs: 95,
+                    search_ore: 10,
+                    search_stone: 25,
+                    set_trap: 55,
+                    prepare_ambush: 35
+                },
+                special_notes: "Практически гарантированно найдете редкие и сильнодействующие травы. Ограда может служить естественным барьером."
+            },
+            
+            'haunted_cemetery': {
+                name: "Заброшенное кладбище у дороги",
+                description: "Некрополь с покосившимися надгробиями, некоторые из мрамора, а не простого камня. Земля холодная даже на солнце, а в воздухе висит тишина, слишком глубокая для леса. На центральном памятнике — следы недавно сорванных украшений.",
+                suggestion: "Мраморные плиты в такой глуши? Здесь хоронили богачей или знатных особ. Но почему кладбище заброшено? И куда делись те, кто должен был ухаживать за могилами предков?",
+                icon: '👻',
+                image: 'images/locations/haunted_cemetery.jpg',
+                action_chances: {
+                    search_treasure: 90,
+                    search_water: 15,
+                    search_berries: 10,
+                    search_mushrooms: 20,
+                    search_herbs: 40,
+                    search_ore: 20,
+                    search_stone: 80,
+                    set_trap: 65,
+                    prepare_ambush: 75
+                },
+                special_notes: "Чрезвычайно высокий шанс найти погребальные ценности, но и риск встретить неупокоенных. Надгробия дают отличное укрытие."
+            },
+            
+            'sunken_ship': {
+                name: "Затонувший речной баркас",
+                description: "Каркас старого торгового судна, застрявший на мели посреди речной излучины. Мачты сломаны, но корпус удивительно цел. Вода внутри трюма мутная, но сквозь нее угадываются очертания ящиков и бочек. На носу сохранилась резная фигура русалки.",
+                suggestion: "Судно не было разграблено — видимо, село на мель в половодье и было заброшено. Самые ценные грузы обычно хранились в капитанской каюте... если до нее можно добраться.",
+                icon: '🚢',
+                image: 'images/locations/sunken_ship.jpg',
+                action_chances: {
+                    search_treasure: 70,
+                    search_water: 85,
+                    search_berries: 15,
+                    search_mushrooms: 10,
+                    search_herbs: 25,
+                    search_ore: 5,
+                    search_stone: 30,
+                    set_trap: 40,
+                    prepare_ambush: 60
+                },
+                special_notes: "Хороший источник пресной воды и возможных товаров. Корабль — естественная крепость, но с ограниченными путями отступления."
             }
         };
     }
@@ -640,38 +767,57 @@ class MapSystem {
         
         const cellKey = `${cell.col},${cell.row}`;
         
+        // Если у клетки уже есть тип и он существует в cellTypes, используем его
         if (cell.cellType && this.cellTypes[cell.cellType]) {
             return cell.cellType;
-        }
-        
-        if (cell.type === 'water') {
-            cell.cellType = 'small_stream';
-        } else if (cell.type === 'graveyard_cross') {
-            cell.cellType = 'grave';
-        } else if (cell.type === 'cave') {
-            cell.cellType = 'shallow_burrow';
-        } else if (cell.type === 'tree' || cell.type === 'elegant_tree') {
-            const seed = cell.col * 31 + cell.row * 17;
-            cell.cellType = (seed % 2 === 0) ? 'ancient_tree' : 'berry_clearing';
-        } else if (cell.type === 'mountain') {
-            cell.cellType = 'rocky_outcrop';
-        } else if (cell.type === 'campfire') {
-            const seed = cell.col * 23 + cell.row * 37;
-            cell.cellType = (seed % 2 === 0) ? 'mushroom_grove' : 'berry_clearing';
-        } else if (cell.hasLoot) {
-            cell.cellType = 'grave';
         } else {
-            const availableTypes = Object.keys(this.cellTypes);
-            if (availableTypes.length > 0) {
+            // Определяем тип на основе типа клетки или других характеристик
+            const typeMapping = {
+                'water': 'small_stream',
+                'graveyard_cross': 'grave',
+                'cave': 'shallow_burrow',
+                'tree': 'ancient_tree',
+                'elegant_tree': 'ancient_tree',
+                'mountain': 'rocky_outcrop',
+                'campfire': 'mushroom_grove',
+                'berry_clearing': 'berry_clearing',
+                'rocky_outcrop': 'rocky_outcrop',
+                'ruined_shrine': 'ruined_shrine',
+                'crystal_cave': 'crystal_cave',
+                'herb_garden': 'herb_garden',
+                'haunted_cemetery': 'haunted_cemetery',
+                'sunken_ship': 'sunken_ship',
+                'abandoned_camp': 'abandoned_camp',
+                'player_start': 'ancient_tree',
+                'npc': 'abandoned_camp',
+                'merchant': 'abandoned_camp',
+                'tavern': 'abandoned_camp',
+                'shop': 'abandoned_camp',
+                'village': 'abandoned_camp',
+                'castle': 'ruined_shrine'
+            };
+            
+            if (cell.type && typeMapping[cell.type]) {
+                cell.cellType = typeMapping[cell.type];
+            } else if (cell.hasLoot) {
+                // Для клеток с лутом выбираем из подходящих типов
+                const lootLocations = ['grave', 'sunken_ship', 'abandoned_camp', 'haunted_cemetery'];
                 const seed = cell.col * 47 + cell.row * 29;
-                const randomIndex = seed % availableTypes.length;
-                cell.cellType = availableTypes[randomIndex];
+                cell.cellType = lootLocations[seed % lootLocations.length];
             } else {
-                cell.cellType = 'grave';
+                // Случайный выбор из всех доступных типов
+                const availableTypes = Object.keys(this.cellTypes);
+                if (availableTypes.length > 0) {
+                    const seed = cell.col * 47 + cell.row * 29;
+                    const randomIndex = seed % availableTypes.length;
+                    cell.cellType = availableTypes[randomIndex];
+                } else {
+                    cell.cellType = 'grave';
+                }
             }
         }
         
-        console.log(`🔍 Определен тип клетки [${cell.col},${cell.row}]: ${cell.cellType}`);
+        console.log(`🔍 Определен тип клетки [${cell.col},${cell.row}]: ${cell.cellType} (исходный тип: ${cell.type})`);
         return cell.cellType;
     }
 
@@ -682,7 +828,12 @@ class MapSystem {
             return;
         }
         
-        console.log(`📋 Обновляем UI для клетки [${cell.col}, ${cell.row}]`);
+        console.log(`📋 Обновляем UI для клетки [${cell.col}, ${cell.row}]`, {
+            type: cell.type,
+            explored: cell.explored,
+            hasAction: cell.hasAction,
+            cellType: cell.cellType
+        });
         
         this.selectedCell = cell;
         this.currentCellType = this.determineCellType(cell);
@@ -694,23 +845,24 @@ class MapSystem {
             return;
         }
         
-        const cellIcon = this.objectSymbols[cell.type] || cellTypeData.icon || '❓';
-        let cellDescription = '';
+        const cellIcon = cellTypeData.icon || this.objectSymbols[cell.type] || '❓';
         
-        if (cell.tooltip) {
-            cellDescription = cell.tooltip.replace(/\\n/g, '\n');
-        } else {
-            const baseDescription = this.getBaseCellDescription(cell.type);
-            cellDescription = baseDescription + '\n\n' + cellTypeData.description;
-            if (cellTypeData.suggestion) {
-                cellDescription += `\n\n💡 ${cellTypeData.suggestion}`;
-            }
+        // Формируем полное описание
+        const baseDescription = this.getBaseCellDescription(cell.type);
+        let cellDescription = baseDescription + '\n\n' + cellTypeData.description;
+        if (cellTypeData.suggestion) {
+            cellDescription += `\n\n💡 ${cellTypeData.suggestion}`;
         }
         
-        const isExplored = cell.explored || cell.hasAction === false;
-        const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y);
+        // Правильная проверка: только явно true
+        const isExplored = cell.explored === true;
+        const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && 
+                                  cell.row === this.playerTacticalPosition.y);
         const isReachable = this.isCellReachable(cell);
         
+        console.log(`📊 Состояние клетки: исследована=${isExplored}, текущая=${isCurrentPosition}, достижима=${isReachable}`);
+        
+        // Формируем HTML с информацией о клетке
         let actionsHTML = `
             <div class="cell-info-header">
                 <div class="location-visual-container">
@@ -731,20 +883,26 @@ class MapSystem {
                 </div>
                 
                 <div class="cell-detailed-description">
-                    ${cellDescription}
+                    ${cellDescription.replace(/\n/g, '<br>')}
                 </div>
-                
-                ${cellTypeData.special_notes ? `
-                    <div class="special-notes">
-                        <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
-                    </div>
-                ` : ''}
-                
-                ${isExplored ? '<div class="cell-status">✓ Местность исследована</div>' : ''}
-                ${isCurrentPosition ? '<div class="cell-status current">📍 Ваша текущая позиция</div>' : ''}
+        `;
+        
+        // Добавляем специальные заметки, если есть
+        if (cellTypeData.special_notes) {
+            actionsHTML += `
+                <div class="special-notes">
+                    <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
+                </div>
+            `;
+        }
+        
+        actionsHTML += `
+            ${isExplored ? '<div class="cell-status">✓ Местность исследована</div>' : ''}
+            ${isCurrentPosition ? '<div class="cell-status current">📍 Ваша текущая позиция</div>' : ''}
             </div>
         `;
         
+        // Проверяем, можно ли совершать действия
         if (!isExplored) {
             this.currentCellActions = this.allActions;
             
@@ -759,14 +917,23 @@ class MapSystem {
                     actionsHTML += '<span class="reachability-warning">❌ Подойдите ближе</span>';
                 } else if (isCurrentPosition) {
                     actionsHTML += '<span class="reachability-success">✅ Доступно</span>';
+                } else if (isReachable) {
+                    actionsHTML += '<span class="reachability-success">✅ Достижимо</span>';
                 }
                 
                 actionsHTML += '</div>';
                 
+                // Фильтруем доступные действия
                 const availableActions = this.currentCellActions.filter(action => {
                     if (isCurrentPosition) return true;
                     if (isReachable) return true;
                     return false;
+                });
+                
+                console.log(`🎯 Доступных действий: ${availableActions.length}`, {
+                    currentPosition: isCurrentPosition,
+                    reachable: isReachable,
+                    actions: availableActions
                 });
                 
                 if (availableActions.length > 0) {
@@ -779,14 +946,17 @@ class MapSystem {
                             class: 'action-unknown'
                         };
                         
+                        const canPerform = isCurrentPosition || isReachable;
+                        const tooltipText = `${config.description}\n\n🎯 Шанс успеха: ${chance}%`;
+                        
                         actionsHTML += `
-                            <button class="cell-action-btn ${config.class} ${!isCurrentPosition && !isReachable ? 'disabled' : ''}" 
+                            <button class="cell-action-btn ${config.class} ${!canPerform ? 'disabled' : ''}" 
                                     data-action="${action}"
                                     data-cell-row="${cell.row}"
                                     data-cell-col="${cell.col}"
-                                    ${!isCurrentPosition && !isReachable ? 'disabled' : ''}
-                                    title="${config.description}\n\n🎯 Шанс успеха: ${chance}%"
-                                    ${isCurrentPosition || isReachable ? `onclick="game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"` : ''}>
+                                    ${!canPerform ? 'disabled' : ''}
+                                    title="${tooltipText}"
+                                    ${canPerform ? `onclick="window.game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"` : ''}>
                                 <span class="action-icon">${config.icon}</span>
                                 <div class="action-info">
                                     <div class="action-name">${config.name}</div>
@@ -794,12 +964,13 @@ class MapSystem {
                                         <span class="chance-text">Шанс: ${chance}%</span>
                                         <div class="chance-indicator ${this.getChanceClass(chance)}"></div>
                                     </div>
-                                    ${isCurrentPosition || isReachable ? '<div class="action-available">✅ Доступно</div>' : '<div class="action-unavailable">❌ Недоступно</div>'}
+                                    ${canPerform ? '<div class="action-available">✅ Доступно</div>' : '<div class="action-unavailable">❌ Недоступно</div>'}
                                 </div>
                             </button>
                         `;
                     });
                     
+                    // Легенда шансов
                     actionsHTML += `
                         <div class="chance-legend">
                             <div class="legend-title">📊 Шкала шансов:</div>
@@ -853,8 +1024,10 @@ class MapSystem {
         
         actionsContainer.innerHTML = actionsHTML;
         
+        // Отображаем изображение локации
         this.displayLocationImage(cellTypeData);
         
+        // Настраиваем обработчики событий
         if (!isExplored && (isCurrentPosition || isReachable)) {
             this.setupActionEventListeners();
         }
@@ -979,7 +1152,7 @@ class MapSystem {
             return;
         }
         
-        if (cell.explored || cell.hasAction === false) {
+        if (cell.explored === true) {
             console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
             this.showNotification("❌ Эта клетка уже исследована!", 'warning');
             return;
@@ -1335,6 +1508,9 @@ class MapSystem {
             
             this.debugLoadedMaps();
             
+            // Инициализируем типы клеток для всех загруженных карт
+            await this.initializeCellSystem();
+            
             if (this.localMaps.length > 0) {
                 this.forceSetLocalMap();
             }
@@ -1361,6 +1537,26 @@ class MapSystem {
         }
     }
 
+    async initializeCellSystem() {
+        console.log("🔄 Инициализация системы клеток...");
+        
+        // Инициализируем типы клеток для всех карт
+        [this.localMaps, this.tacticalMaps].forEach(mapArray => {
+            mapArray.forEach(map => {
+                if (map && map.cells) {
+                    Object.values(map.cells).forEach(cell => {
+                        if (!cell.cellType) {
+                            this.determineCellType(cell);
+                        }
+                    });
+                }
+            });
+        });
+        
+        console.log("✅ Система клеток инициализирована");
+        return true;
+    }
+
     forceSetLocalMap() {
         if (this.localMaps.length > 0) {
             const localMap = this.localMaps[0];
@@ -1375,6 +1571,16 @@ class MapSystem {
                 cells: Object.keys(localMap.cells).length,
                 startPosition: localMap.startPosition
             });
+            
+            // Инициализируем типы клеток для этой карты
+            if (localMap.cells) {
+                Object.values(localMap.cells).forEach(cell => {
+                    if (!cell.cellType) {
+                        this.determineCellType(cell);
+                    }
+                });
+            }
+            
             return true;
         }
         console.log("❌ Нет локальных карт для установки");
@@ -1507,7 +1713,8 @@ class MapSystem {
                 explored: false,
                 hasAction: true,
                 isSelected: false,
-                originalData: cell
+                originalData: cell,
+                cellType: null // Будет определено позже
             };
         });
 
@@ -1632,6 +1839,13 @@ class MapSystem {
             if (tacticalMap) {
                 this.currentTacticalMap = tacticalMap;
                 
+                // Инициализируем типы клеток для этой карты
+                Object.values(tacticalMap.cells).forEach(cell => {
+                    if (!cell.cellType) {
+                        this.determineCellType(cell);
+                    }
+                });
+                
                 if (!this._lastTransitionCell || !this._lastTransitionCell.targetPosition) {
                     this.setPlayerToStartPosition();
                 }
@@ -1700,6 +1914,13 @@ class MapSystem {
         this.playerTacticalPosition = {...localMap.startPosition};
         this.currentMapType = 'local';
         
+        // Инициализируем типы клеток для этой карты
+        Object.values(localMap.cells).forEach(cell => {
+            if (!cell.cellType) {
+                this.determineCellType(cell);
+            }
+        });
+        
         console.log(`📍 Установлена локальная карта: ${localMap.name}`, {
             startPosition: localMap.startPosition,
             cellsCount: Object.keys(localMap.cells).length
@@ -1746,7 +1967,8 @@ class MapSystem {
                     x: 300, 
                     y: 300,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "3,2": {
                     type: "exit", 
@@ -1758,7 +1980,8 @@ class MapSystem {
                     y: 250,
                     tooltip: "🚪 Выход из таверны\n(Вернуться на улицу)",
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "2,3": {
                     type: "npc", 
@@ -1770,7 +1993,8 @@ class MapSystem {
                     y: 300,
                     tooltip: "🧙 Хозяин таверны\n(Может рассказать новости)",
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "4,3": {
                     type: "merchant", 
@@ -1785,7 +2009,8 @@ class MapSystem {
                     shopItems: [1, 2, 3],
                     tooltip: "🛒 Бармен\n(Купить выпивку и еду)",
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "3,4": {
                     type: "campfire", 
@@ -1797,7 +2022,8 @@ class MapSystem {
                     y: 350,
                     tooltip: "🔥 Камин\n(Тепло и уют)",
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 }
             },
             cellSize: 40,
@@ -1831,7 +2057,8 @@ class MapSystem {
                     x: 200, 
                     y: 200,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "4,3": {
                     type: "exit", 
@@ -1842,7 +2069,8 @@ class MapSystem {
                     x: 200, 
                     y: 150,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 }
             },
             cellSize: 40,
@@ -1862,6 +2090,15 @@ class MapSystem {
             this.currentLocalMap = newMap;
         }
         this.currentTacticalMap = newMap;
+        
+        // Инициализируем типы клеток для новой карты
+        if (newMap.cells) {
+            Object.values(newMap.cells).forEach(cell => {
+                if (!cell.cellType) {
+                    this.determineCellType(cell);
+                }
+            });
+        }
         
         if (this.canvasInitialized) {
             this.calculateCSSScale();
@@ -1928,99 +2165,99 @@ class MapSystem {
 
     // ========== ПЕРЕМЕЩЕНИЕ ПО КАРТЕ ==========
 
-   handleCanvasClick(e) {
-    if (!this.currentTacticalMap) {
-        console.error("❌ Нет текущей тактической карты");
-        return;
-    }
+    handleCanvasClick(e) {
+        if (!this.currentTacticalMap) {
+            console.error("❌ Нет текущей тактической карты");
+            return;
+        }
 
-    const canvasRect = this.canvas.getBoundingClientRect();
-    
-    const computedStyle = getComputedStyle(this.canvas);
-    const transform = computedStyle.transform;
-    let scale = 1;
-    
-    if (transform && transform !== 'none') {
-        const matrix = new DOMMatrix(transform);
-        scale = matrix.a;
-    }
-    
-    const logicalX = (e.clientX - canvasRect.left) / scale;
-    const logicalY = (e.clientY - canvasRect.top) / scale;
-    
-    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
-    
-    const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
-    if (!hex) {
-        console.log("❌ Клетка не найдена по координатам");
-        return;
-    }
-    
-    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
-    
-    if (hex.type === 'village' && hex.tacticalMap) {
-        console.log("🍻 Клик по таверне - проверяем доступность...");
+        const canvasRect = this.canvas.getBoundingClientRect();
         
-        const isAdjacent = this.isPlayerAdjacentToTransition(hex);
-        if (!isAdjacent) {
-            console.log("❌ Герой не рядом с таверной");
-            this.showTransitionWarning(hex);
+        const computedStyle = getComputedStyle(this.canvas);
+        const transform = computedStyle.transform;
+        let scale = 1;
+        
+        if (transform && transform !== 'none') {
+            const matrix = new DOMMatrix(transform);
+            scale = matrix.a;
+        }
+        
+        const logicalX = (e.clientX - canvasRect.left) / scale;
+        const logicalY = (e.clientY - canvasRect.top) / scale;
+        
+        console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
+        
+        const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
+        if (!hex) {
+            console.log("❌ Клетка не найдена по координатам");
             return;
         }
         
-        console.log("✅ Герой рядом с таверной, активируем переход...");
-        this.activateTransition(hex);
-        return;
-    }
-    
-    if (hex.type === 'water') {
-        console.log("💧 Клик по воде");
-        if (!this.isPlayerAdjacentToWater(hex)) {
-            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+        console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
+        
+        if (hex.type === 'village' && hex.tacticalMap) {
+            console.log("🍻 Клик по таверне - проверяем доступность...");
+            
+            const isAdjacent = this.isPlayerAdjacentToTransition(hex);
+            if (!isAdjacent) {
+                console.log("❌ Герой не рядом с таверной");
+                this.showTransitionWarning(hex);
+                return;
+            }
+            
+            console.log("✅ Герой рядом с таверной, активируем переход...");
+            this.activateTransition(hex);
             return;
         }
-        this.handleWaterCell(hex);
-        return;
-    }
-    
-    if (hex.type === 'merchant') {
-        console.log("🛒 Клик по магазину");
-        this.handleMerchantClick(hex);
-        return;
-    }
-    
-    if (this.isTransitionCell(hex)) {
-        console.log("🚪 Клик по переходу");
-        this.handleTransitionClick(hex);
-        return;
-    }
-    
-    if (hex.passable !== false || hex.type === 'monster') {
-        console.log("🎯 Клик для перемещения или действий");
         
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === hex.row && neighbor.col === hex.col
-        );
+        if (hex.type === 'water') {
+            console.log("💧 Клик по воде");
+            if (!this.isPlayerAdjacentToWater(hex)) {
+                this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+                return;
+            }
+            this.handleWaterCell(hex);
+            return;
+        }
         
-        if (isReachable) {
-            console.log(`✅ Клетка достижима, начинаем перемещение`);
-            this.moveOnTacticalMap(hex.col, hex.row);
+        if (hex.type === 'merchant') {
+            console.log("🛒 Клик по магазину");
+            this.handleMerchantClick(hex);
+            return;
+        }
+        
+        if (this.isTransitionCell(hex)) {
+            console.log("🚪 Клик по переходу");
+            this.handleTransitionClick(hex);
+            return;
+        }
+        
+        if (hex.passable !== false || hex.type === 'monster') {
+            console.log("🎯 Клик для перемещения или действий");
+            
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                console.log(`✅ Клетка достижима, начинаем перемещение`);
+                this.moveOnTacticalMap(hex.col, hex.row);
+            } else {
+                console.log(`❌ Клетка недостижима для перемещения`);
+            }
         } else {
-            console.log(`❌ Клетка недостижима для перемещения`);
+            console.log(`❌ Клетка непроходима: ${hex.type}`);
         }
-    } else {
-        console.log(`❌ Клетка непроходима: ${hex.type}`);
+        
+        if (!this.isTransitionCell(hex)) {
+            console.log(`📋 Показываем панель действий для клетки [${hex.col}, ${hex.row}]`);
+            this.updateCellActionsUI(hex);
+            this.highlightSelectedCell(hex);
+        } else {
+            console.log(`⏭️ Пропускаем показ действий для перехода`);
+        }
     }
-    
-    if (!this.isTransitionCell(hex)) {
-        console.log(`📋 Показываем панель действий для клетки [${hex.col}, ${hex.row}]`);
-        this.updateCellActionsUI(hex);
-        this.highlightSelectedCell(hex);
-    } else {
-        console.log(`⏭️ Пропускаем показ действий для перехода`);
-    }
-}
 
     getHexAtLogicalPosition(x, y) {
         let closestHex = null;
@@ -2396,36 +2633,36 @@ class MapSystem {
         }
     }
 
- completePeacefulMovement(targetX, targetY) {
-    const oldPosition = {...this.playerTacticalPosition};
-    this.playerTacticalPosition = {x: targetX, y: targetY};
-    
-    console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
-    
-    this.syncHeroWithOtherSystems();
-    
-    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-        this.calculateCSSScale();
-        this.drawTacticalMap();
+    completePeacefulMovement(targetX, targetY) {
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x: targetX, y: targetY};
         
-        setTimeout(() => {
-            const cellKey = `${targetX},${targetY}`;
-            const currentCell = this.currentTacticalMap?.cells[cellKey];
+        console.log(`✅ Мирное перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        
+        this.syncHeroWithOtherSystems();
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
             
-            if (currentCell) {
-                console.log(`🎯 Автоматически показываем действия для новой клетки [${targetX}, ${targetY}]`);
-                this.updateCellActionsUI(currentCell);
-                this.highlightSelectedCell(currentCell);
-            }
-            
-            if (window.game) {
-                window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
-            }
-        }, 300);
+            setTimeout(() => {
+                const cellKey = `${targetX},${targetY}`;
+                const currentCell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (currentCell) {
+                    console.log(`🎯 Автоматически показываем действия для новой клетки [${targetX}, ${targetY}]`);
+                    this.updateCellActionsUI(currentCell);
+                    this.highlightSelectedCell(currentCell);
+                }
+                
+                if (window.game) {
+                    window.game.showNotification(`✅ Перемещение на [${targetX}, ${targetY}]`, 'success');
+                }
+            }, 300);
+        }
+        
+        this.updateMovementInfo();
     }
-    
-    this.updateMovementInfo();
-}
 
     startTacticalBattleForMovement(x, y, cellData) {
         const battleSystem = window.game?.systems?.battle;
@@ -2480,72 +2717,72 @@ class MapSystem {
         return randomMonster;
     }
 
-  completeMovementAfterBattle(victory, escape = false) {
-    if (!this.pendingMovement) return;
+    completeMovementAfterBattle(victory, escape = false) {
+        if (!this.pendingMovement) return;
 
-    console.log(`🎲 Завершение движения после боя: победа=${victory}, побег=${escape}`);
+        console.log(`🎲 Завершение движения после боя: победа=${victory}, побег=${escape}`);
 
-    let targetX, targetY;
-    
-    if (victory) {
-        targetX = this.pendingMovement.x;
-        targetY = this.pendingMovement.y;
-        const oldPosition = {...this.playerTacticalPosition};
-        this.playerTacticalPosition = {x: targetX, y: targetY};
+        let targetX, targetY;
         
-        console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
-        
-        if (window.game) {
-            window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
-        }
-    } else {
-        if (escape) {
-            targetX = this.playerTacticalPosition.x;
-            targetY = this.playerTacticalPosition.y;
-            console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
-            
-            if (window.game) {
-                window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
-            }
-        } else {
-            const startPosition = this.currentTacticalMap.startPosition;
-            targetX = startPosition.x;
-            targetY = startPosition.y;
+        if (victory) {
+            targetX = this.pendingMovement.x;
+            targetY = this.pendingMovement.y;
             const oldPosition = {...this.playerTacticalPosition};
             this.playerTacticalPosition = {x: targetX, y: targetY};
             
-            console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
             
             if (window.game) {
-                window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+            }
+        } else {
+            if (escape) {
+                targetX = this.playerTacticalPosition.x;
+                targetY = this.playerTacticalPosition.y;
+                console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                }
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                targetX = startPosition.x;
+                targetY = startPosition.y;
+                const oldPosition = {...this.playerTacticalPosition};
+                this.playerTacticalPosition = {x: targetX, y: targetY};
+                
+                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                }
             }
         }
-    }
-    
-    this.pendingMovement = null;
-    
-    if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-        this.calculateCSSScale();
-        this.drawTacticalMap();
-        this.updateMovementInfo();
         
-        setTimeout(() => {
-            const cellKey = `${targetX},${targetY}`;
-            const currentCell = this.currentTacticalMap?.cells[cellKey];
+        this.pendingMovement = null;
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
             
-            if (currentCell) {
-                console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
-                this.updateCellActionsUI(currentCell);
-                this.highlightSelectedCell(currentCell);
-            }
-        }, 500);
+            setTimeout(() => {
+                const cellKey = `${targetX},${targetY}`;
+                const currentCell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (currentCell) {
+                    console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
+                    this.updateCellActionsUI(currentCell);
+                    this.highlightSelectedCell(currentCell);
+                }
+            }, 500);
+        }
+        
+        if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+            window.game.systems.hero.currentHero = this.currentHero;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
     }
-    
-    if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
-        window.game.systems.hero.currentHero = this.currentHero;
-        window.game.systems.hero.calculateHeroStats(this.currentHero);
-    }
-}
     
     getMonsterFromCell(cellData) {
         if (!cellData || cellData.type !== 'monster' || !cellData.monster_id) {
@@ -3435,6 +3672,19 @@ class MapSystem {
         console.log("Текущая локальная карта:", this.currentLocalMap?.name || 'нет');
         console.log("Текущая тактическая карта:", this.currentTacticalMap?.name || 'нет');
         console.log("Текущий тип карты:", this.currentMapType);
+        console.log("Глубина стека карт:", this.mapStack.length);
+        console.log("Загружено JSON карт:", this.loadedJSONMaps.size);
+        console.log("Canvas инициализирован:", this.canvasInitialized);
+        console.log("Текущий герой:", this.currentHero?.name || 'нет');
+        console.log("Масштаб:", `${Math.round(this.zoomLevel * 100)}%`);
+        console.log("Смещение карты:", this.mapOffset);
+        
+        const availableMoves = this.getAvailableMoves();
+        console.log("Доступные ходы:", availableMoves.length);
+        availableMoves.forEach(move => {
+            console.log(`  [${move.col},${move.row}] - ${move.direction}${move.isMonster ? ' (монстр)' : ''}`);
+        });
+        
         console.groupEnd();
     }
 
@@ -3482,11 +3732,11 @@ class MapSystem {
             localPosition: {x: 4, y: 4},
             description: "Извилистая тропа через древний лес",
             cells: {
-                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300, explored: false, hasAction: true},
-                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250, explored: false, hasAction: true},
-                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300, explored: false, hasAction: true},
-                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300, explored: false, hasAction: true},
-                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350, explored: false, hasAction: true}
+                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300, explored: false, hasAction: true, cellType: null},
+                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250, explored: false, hasAction: true, cellType: null},
+                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300, explored: false, hasAction: true, cellType: null},
+                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300, explored: false, hasAction: true, cellType: null},
+                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350, explored: false, hasAction: true, cellType: null}
             }
         }];
     }
@@ -3521,14 +3771,14 @@ class MapSystem {
             startPosition: {x: 1, y: 1},
             localPosition: {x: 2, y: 2},
             cells: {
-                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100, explored: false, hasAction: true}
+                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100, explored: false, hasAction: true, cellType: null}
             }
         }];
     }
 
     // ========== ОТОБРАЖЕНИЕ ОВЕРЛЕЯ КАРТЫ ==========
 
-      showMapOverlay(overlayType, container) {
+    showMapOverlay(overlayType, container) {
         console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
         
         let targetMap = null;
@@ -3680,6 +3930,12 @@ class MapSystem {
                 this.updateMovementInfo();
                 this.updateHeroResourcesUI();
                 
+                // ОТЛАДКА: проверяем состояние клеток
+                console.log("🔍 Проверяем состояние клеток на карте:");
+                Object.values(this.currentTacticalMap.cells).forEach(cell => {
+                    console.log(`  [${cell.col},${cell.row}]: type=${cell.type}, explored=${cell.explored}, cellType=${cell.cellType}`);
+                });
+                
                 const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
                 const currentCell = this.currentTacticalMap.cells[cellKey];
                 
@@ -3698,9 +3954,8 @@ class MapSystem {
             }
         }, 50);
     }
-
     
-     showOverlay(overlayType) {
+    showOverlay(overlayType) {
         console.log(`🎯 MapSystem: Показываем оверлей: ${overlayType}`);
         
         const container = document.getElementById('overlay-container');
@@ -3926,7 +4181,8 @@ class MapSystem {
                     x: 200, 
                     y: 200,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "4,3": {
                     type: "exit", 
@@ -3937,7 +4193,8 @@ class MapSystem {
                     x: 200, 
                     y: 150,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 },
                 "3,4": {
                     type: "monster", 
@@ -3948,7 +4205,8 @@ class MapSystem {
                     x: 150, 
                     y: 200,
                     explored: false,
-                    hasAction: true
+                    hasAction: true,
+                    cellType: null
                 }
             },
             cellSize: 40,
