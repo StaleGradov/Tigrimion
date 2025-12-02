@@ -1779,3 +1779,48 @@
     border-left-color: #9ca3af;
     box-shadow: 0 5px 15px rgba(107, 114, 128, 0.3);
 }
+/* Исправления для панели действий */
+.cell-actions-panel {
+    overflow: visible !important;
+    min-height: 600px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.cell-actions-container {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Убедимся, что контейнер карты не обрезает контент */
+.tactical-map-content-with-actions {
+    overflow: visible !important;
+}
+
+/* Стили для ошибок */
+.cell-error {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.error-icon {
+    font-size: 48px;
+    color: #ef4444;
+    margin-bottom: 15px;
+}
+
+.cell-error h5 {
+    color: #ef4444;
+    margin-bottom: 10px;
+}
+
+.cell-error p {
+    color: #cbd5e1;
+    margin-bottom: 5px;
+}
