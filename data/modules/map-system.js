@@ -829,8 +829,6 @@ updateCellActionsUI(cell) {
         type: cell.type,
         x: cell.x,
         y: cell.y,
-        originalX: cell.originalX,
-        originalY: cell.originalY,
         explored: cell.explored,
         hasAction: cell.hasAction
     });
@@ -838,66 +836,52 @@ updateCellActionsUI(cell) {
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден! ID: cellActionsContainer");
-        console.log("Пробую создать резервный контейнер...");
         this.createActionsContainerFallback();
         
         // Пробуем снова
         const newContainer = document.getElementById('cellActionsContainer');
         if (!newContainer) {
             console.error("❌ Не удалось создать контейнер действий");
-            
-            // Экстренное создание
-            const emergencyDiv = document.createElement('div');
-            emergencyDiv.id = 'cellActionsContainer';
-            emergencyDiv.style.cssText = `
-                background: RED !important;
-                color: WHITE !important;
-                padding: 20px !important;
-                border: 5px solid YELLOW !important;
-                margin: 10px !important;
-                height: 500px !important;
-                width: 350px !important;
-                z-index: 9999 !important;
-                position: relative !important;
-                display: block !important;
-            `;
-            document.querySelector('.tactical-map-content-with-actions').appendChild(emergencyDiv);
-            
-            emergencyDiv.innerHTML = '<h1>ЭКСТРЕННЫЙ КОНТЕЙНЕР</h1>';
-            console.log("✅ Экстренный контейнер создан");
             return;
         }
         console.log("✅ Резервный контейнер создан");
+        // Рекурсивно вызываем с новым контейнером
+        this.updateCellActionsUI(cell);
+        return;
     }
     
-    console.log("✅ Контейнер найден, размеры:", {
-        offsetWidth: actionsContainer.offsetWidth,
-        offsetHeight: actionsContainer.offsetHeight,
-        clientWidth: actionsContainer.clientWidth,
-        clientHeight: actionsContainer.clientHeight
-    });
+    console.log("✅ Контейнер найден");
     
-    // ВАЖНО: Убираем все ограничения overflow
-    actionsContainer.style.overflowY = 'auto';
-    actionsContainer.style.overflowX = 'visible';
-    actionsContainer.style.display = 'flex';
-    actionsContainer.style.flexDirection = 'column';
-    actionsContainer.style.visibility = 'visible';
-    actionsContainer.style.opacity = '1';
-    actionsContainer.style.minHeight = '500px';
-    actionsContainer.style.maxHeight = 'none';
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем правильные стили
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: 600px !important;
+        max-height: 600px !important;
+        min-height: 600px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 15px !important;
+        margin: 0 !important;
+        position: relative !important;
+    `;
     
     // Исправляем родительскую панель
     const panel = actionsContainer.closest('.cell-actions-panel');
     if (panel) {
         console.log("✅ Родительская панель найдена");
-        panel.style.overflow = 'visible';
-        panel.style.display = 'flex';
-        panel.style.flexDirection = 'column';
-        panel.style.minHeight = '600px';
-        panel.style.maxHeight = 'none';
-    } else {
-        console.warn("⚠️ Родительская панель не найдена");
+        panel.style.cssText = `
+            overflow: visible !important;
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 650px !important;
+            max-height: none !important;
+        `;
     }
     
     // Инициализируем поля, если их нет
@@ -913,7 +897,6 @@ updateCellActionsUI(cell) {
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-        console.log("Доступные типы:", Object.keys(this.cellTypes));
         
         // Показываем ошибку
         actionsContainer.innerHTML = `
@@ -922,9 +905,6 @@ updateCellActionsUI(cell) {
                 <h5>Ошибка загрузки типа клетки</h5>
                 <p>Тип: ${this.currentCellType}</p>
                 <p>Клетка: [${cell.col}, ${cell.row}]</p>
-                <button class="btn-control" onclick="console.log('Доступные типы:', Object.keys(game.systems.map.cellTypes))">
-                    🐛 Показать типы
-                </button>
             </div>
         `;
         return;
@@ -953,9 +933,6 @@ updateCellActionsUI(cell) {
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
-    // ТЕСТ: Сначала простой HTML
-    console.log("🔄 Создаем HTML для панели...");
-    
     // Создаем HTML для панели действий
     let actionsHTML = '';
     
@@ -964,7 +941,7 @@ updateCellActionsUI(cell) {
         console.log("✅ Информация о клетке создана");
     } catch (error) {
         console.error("❌ Ошибка создания информации о клетке:", error);
-        actionsHTML = `<div style="color: red;">Ошибка: ${error.message}</div>`;
+        actionsHTML = `<div style="color: red; padding: 20px;">Ошибка: ${error.message}</div>`;
     }
     
     // Добавляем действия если клетка не исследована
@@ -975,7 +952,7 @@ updateCellActionsUI(cell) {
                 console.log("✅ Список действий создан");
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
-                actionsHTML += `<div style="color: red;">Ошибка действий: ${error.message}</div>`;
+                actionsHTML += `<div style="color: red; padding: 10px;">Ошибка действий: ${error.message}</div>`;
             }
         } else {
             actionsHTML += this.createNoActionsHTML();
@@ -995,13 +972,68 @@ updateCellActionsUI(cell) {
     actionsContainer.innerHTML = actionsHTML;
     console.log("✅ HTML вставлен в контейнер");
     
-    // Проверяем, что контент отобразился
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ 2: Фиксируем размеры после вставки HTML
     setTimeout(() => {
-        console.log("🔍 Проверка отображения контента:");
-        console.log("Дочерние элементы:", actionsContainer.children.length);
-        console.log("Видимые кнопки:", actionsContainer.querySelectorAll('button').length);
-        console.log("Текст внутри:", actionsContainer.innerText.substring(0, 100) + '...');
-    }, 100);
+        // 1. Уменьшаем картинку локации
+        const imageWrapper = actionsContainer.querySelector('.location-visual-container');
+        if (imageWrapper) {
+            imageWrapper.style.cssText = `
+                height: 150px !important;
+                max-height: 150px !important;
+                overflow: hidden !important;
+                margin-bottom: 10px !important;
+                position: relative !important;
+            `;
+            console.log("✅ Размер картинки исправлен");
+        }
+        
+        // 2. Делаем описание видимым
+        const description = actionsContainer.querySelector('.cell-description-text');
+        if (description) {
+            description.style.cssText = `
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                color: white !important;
+                background: rgba(0, 0, 0, 0.7) !important;
+                padding: 10px !important;
+                border-radius: 5px !important;
+                margin: 10px 0 !important;
+                position: relative !important;
+                z-index: 10 !important;
+                max-height: 150px !important;
+                overflow-y: auto !important;
+            `;
+        }
+        
+        // 3. Делаем список действий видимым
+        const actionsList = actionsContainer.querySelector('.available-actions-list');
+        if (actionsList) {
+            actionsList.style.cssText = `
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 10 !important;
+                margin-top: 15px !important;
+            `;
+        }
+        
+        // 4. Делаем кнопки видимыми
+        const buttons = actionsContainer.querySelectorAll('.cell-action-btn');
+        buttons.forEach(btn => {
+            btn.style.cssText += `
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 10 !important;
+                margin: 5px 0 !important;
+            `;
+        });
+        
+        console.log("✅ Все элементы сделаны видимыми");
+    }, 50);
     
     // Загружаем реальную картинку локации
     try {
@@ -1029,7 +1061,7 @@ updateCellActionsUI(cell) {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена для клетки [${cell.col}, ${cell.row}]");
+    console.log(`✅ Панель действий обновлена для клетки [${cell.col}, ${cell.row}]`);
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
