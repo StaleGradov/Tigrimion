@@ -123,31 +123,33 @@ class ModuleLoader {
         }
     }
 
-    isModuleAvailable(moduleName) {
-        const classMap = {
-            'bonuses-system': 'BonusSystem',
-            'level-system': 'LevelSystem',
-            'battle-system': 'BattleSystem',
-            'equipment-system': 'EquipmentSystem',
-            'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem',
-            'shop-system': 'ShopSystem' // ← ДОБАВЛЕНА ShopSystem
-        };
-        return typeof window[classMap[moduleName]] !== 'undefined';
-    }
+isModuleAvailable(moduleName) {
+    const classMap = {
+        'bonuses-system': 'BonusSystem',
+        'level-system': 'LevelSystem',
+        'battle-system': 'BattleSystem',
+        'equipment-system': 'EquipmentSystem',
+        'hero-system': 'HeroSystem',
+        'map-system': 'MapSystem',
+        'shop-system': 'ShopSystem',
+        'resources-system': 'ResourcesSystem' // ← ДОБАВЬ ЭТУ СТРОЧКУ!
+    };
+    return typeof window[classMap[moduleName]] !== 'undefined';
+}
 
-    getClassName(moduleName) {
-        const classMap = {
-            'bonuses-system': 'BonusSystem',
-            'level-system': 'LevelSystem',
-            'battle-system': 'BattleSystem',
-            'equipment-system': 'EquipmentSystem',
-            'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem',
-            'shop-system': 'ShopSystem' // ← ДОБАВЛЕНА ShopSystem
-        };
-        return classMap[moduleName] || moduleName;
-    }
+getClassName(moduleName) {
+    const classMap = {
+        'bonuses-system': 'BonusSystem',
+        'level-system': 'LevelSystem',
+        'battle-system': 'BattleSystem',
+        'equipment-system': 'EquipmentSystem',
+        'hero-system': 'HeroSystem',
+        'map-system': 'MapSystem',
+        'shop-system': 'ShopSystem',
+        'resources-system': 'ResourcesSystem' // ← ДОБАВЬ И ЗДЕСЬ
+    };
+    return classMap[moduleName] || moduleName;
+}
 
     async waitForAllModules() {
         const maxAttempts = 50; // Уменьшил количество попыток
