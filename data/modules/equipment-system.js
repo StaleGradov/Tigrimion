@@ -1222,6 +1222,37 @@ showInventory(targetSlot = null) {
     `;
 }
 
+
+showInventoryWithTabs() {
+    if (!this.currentHero) return '';
+    
+    return `
+        <div class="overlay-content inventory-overlay-wide">
+            <div class="overlay-header">
+                <h3>🎒 Управление инвентарем</h3>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            
+            <div class="inventory-tabs">
+                <button class="inventory-tab active" onclick="game.systems.equipment.showInventory()">
+                    ⚔️ Снаряжение
+                </button>
+                <button class="inventory-tab" onclick="game.showOverlay('resources')">
+                    📦 Ресурсы
+                </button>
+                <button class="inventory-tab" onclick="game.systems.equipment.showShop('all', 'all')">
+                    🏪 Магазин
+                </button>
+            </div>
+            
+            <div class="overlay-body-wide">
+                ${this.showInventory()}
+            </div>
+        </div>
+    `;
+}
+
+    
 // УПРОЩЕННОЕ МОДАЛЬНОЕ ОКНО ПРЕДМЕТА
 showInventoryItemDetails(itemId) {
     const item = this.getItemById(itemId);
