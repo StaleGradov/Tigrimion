@@ -3,8 +3,10 @@
     "grave": {
       "name": "Могила крестьянина",
       "description": "Старая могила, возможно, здесь что-то закопано...",
+      "suggestion": "Пахнет свежей землей и древними костями",
       "actions": ["search_treasure"],
       "icon": "⚰️",
+      "image": "images/locations/grave.jpg",
       "loot_chances": {
         "items": 70,
         "gold": 25,
@@ -14,8 +16,10 @@
     "small_stream": {
       "name": "Небольшой ручей",
       "description": "Чистый источник воды, можно пополнить флягу",
+      "suggestion": "Вода прозрачная и холодная, идеальна для питья",
       "actions": ["refill_flask"],
       "icon": "💧",
+      "image": "images/locations/stream.jpg",
       "flask_refill": {
         "min": 3,
         "max": 10,
@@ -25,57 +29,241 @@
     "shallow_burrow": {
       "name": "Неглубокая нора",
       "description": "Нора какого-то животного, может содержать ресурсы",
-      "actions": ["search_ore", "search_stone"],
+      "suggestion": "Слышны странные шорохи из глубины",
+      "actions": ["search_ore", "search_stone", "search_bones"],
       "icon": "🕳️",
+      "image": "images/locations/burrow.jpg",
       "resource_chances": {
         "ores": 40,
         "stones": 40,
-        "nothing": 20
+        "bones": 10,
+        "nothing": 10
       }
     },
     "berry_clearing": {
       "name": "Поляна с ягодами",
       "description": "Поляна, усыпанная различными ягодами",
+      "suggestion": "Ягоды выглядят спелыми и сочными",
       "actions": ["search_berries", "search_herbs"],
       "icon": "🫐",
+      "image": "images/locations/berry_clearing.jpg",
       "resource_chances": {
         "berries": 60,
         "herbs": 30,
-        "nothing": 10
+        "rare_berries": 5,
+        "nothing": 5
       }
     },
     "mushroom_grove": {
       "name": "Грибная роща",
       "description": "Тенистая местность, богатая грибами",
+      "suggestion": "Воздух пахнет влажной землей и грибами",
       "actions": ["search_mushrooms", "search_herbs"],
       "icon": "🍄",
+      "image": "images/locations/mushroom_grove.jpg",
       "resource_chances": {
         "mushrooms": 70,
         "herbs": 20,
-        "nothing": 10
+        "rare_mushrooms": 5,
+        "nothing": 5
       }
     },
     "ancient_tree": {
       "name": "Древнее дерево",
       "description": "Огромное старое дерево, возможно, содержит ценные ресурсы",
-      "actions": ["search_wood", "search_herbs"],
+      "suggestion": "Дерево выглядит мудрым и хранит множество секретов",
+      "actions": ["search_wood", "search_herbs", "search_sap"],
       "icon": "🌳",
+      "image": "images/locations/ancient_tree.jpg",
       "resource_chances": {
         "woods": 50,
         "herbs": 30,
         "rare_herbs": 10,
-        "nothing": 10
+        "sap": 5,
+        "nothing": 5
       }
     },
     "rocky_outcrop": {
       "name": "Скальный выступ",
       "description": "Каменное образование, богатое минералами",
-      "actions": ["search_ore", "search_stone"],
+      "suggestion": "Порода выглядит твердой и богатой минералами",
+      "actions": ["search_ore", "search_stone", "search_gems"],
       "icon": "⛰️",
+      "image": "images/locations/rocky_outcrop.jpg",
       "resource_chances": {
         "ores": 50,
         "stones": 40,
         "rare_ores": 5,
+        "gems": 2,
+        "nothing": 3
+      }
+    },
+    "abandoned_camp": {
+      "name": "Заброшенный лагерь",
+      "description": "Старый лагерь, брошенный в спешке",
+      "suggestion": "Кто-то ушел отсюда в большой спешке",
+      "actions": ["search_treasure", "search_supplies"],
+      "icon": "🏕️",
+      "image": "images/locations/abandoned_camp.jpg",
+      "loot_chances": {
+        "items": 50,
+        "gold": 30,
+        "supplies": 15,
+        "nothing": 5
+      }
+    },
+    "ruined_shrine": {
+      "name": "Разрушенное святилище",
+      "description": "Древнее святилище, давно забытое богами",
+      "suggestion": "Здесь все еще чувствуется остаточная магия",
+      "actions": ["search_relics", "search_mana_crystals"],
+      "icon": "🛐",
+      "image": "images/locations/ruined_shrine.jpg",
+      "resource_chances": {
+        "relics": 30,
+        "mana_crystals": 25,
+        "enchanted_items": 20,
+        "cursed_items": 15,
+        "nothing": 10
+      }
+    },
+    "crystal_cave": {
+      "name": "Кристальная пещера",
+      "description": "Пещера, сияющая от кристаллов",
+      "suggestion": "Кристаллы излучают мягкий свет и тепло",
+      "actions": ["search_gems", "search_crystals", "search_ore"],
+      "icon": "💎",
+      "image": "images/locations/crystal_cave.jpg",
+      "resource_chances": {
+        "gems": 40,
+        "crystals": 35,
+        "ores": 20,
+        "nothing": 5
+      }
+    },
+    "herb_garden": {
+      "name": "Дикий сад трав",
+      "description": "Место, где растут редкие травы",
+      "suggestion": "Аромат трав бодрит и лечит одновременно",
+      "actions": ["search_herbs", "search_rare_herbs", "search_seeds"],
+      "icon": "🌿",
+      "image": "images/locations/herb_garden.jpg",
+      "resource_chances": {
+        "herbs": 60,
+        "rare_herbs": 25,
+        "seeds": 10,
+        "nothing": 5
+      }
+    },
+    "haunted_cemetery": {
+      "name": "Проклятое кладбище",
+      "description": "Древнее кладбище с неупокоенными душами",
+      "suggestion": "Холодный ветер шепчет забытые имена",
+      "actions": ["search_ghostly_essence", "search_ancient_bones"],
+      "icon": "👻",
+      "image": "images/locations/haunted_cemetery.jpg",
+      "resource_chances": {
+        "ghostly_essence": 40,
+        "ancient_bones": 35,
+        "cursed_items": 20,
+        "nothing": 5
+      }
+    },
+    "sunken_ship": {
+      "name": "Затонувший корабль",
+      "description": "Обломки корабля, покоящиеся на дне",
+      "suggestion": "Дерево прогнило, но сокровища могут сохраниться",
+      "actions": ["search_treasure", "search_ship_parts"],
+      "icon": "🚢",
+      "image": "images/locations/sunken_ship.jpg",
+      "loot_chances": {
+        "gold": 45,
+        "items": 30,
+        "ship_parts": 20,
+        "nothing": 5
+      }
+    },
+    "dragon_lair": {
+      "name": "Логово дракона",
+      "description": "Пещера, где обитал древний дракон",
+      "suggestion": "Земля все еще теплая от дыхания дракона",
+      "actions": ["search_dragon_scales", "search_treasure"],
+      "icon": "🐉",
+      "image": "images/locations/dragon_lair.jpg",
+      "resource_chances": {
+        "dragon_scales": 35,
+        "gold": 30,
+        "gems": 25,
+        "dragon_bones": 5,
+        "nothing": 5
+      }
+    },
+    "witch_hut": {
+      "name": "Избушка ведьмы",
+      "description": "Странная хижина в глубине леса",
+      "suggestion": "Из трубы валит разноцветный дым",
+      "actions": ["search_potions", "search_spell_components"],
+      "icon": "🧙‍♀️",
+      "image": "images/locations/witch_hut.jpg",
+      "resource_chances": {
+        "potions": 50,
+        "spell_components": 30,
+        "cursed_items": 15,
+        "nothing": 5
+      }
+    },
+    "fairy_ring": {
+      "name": "Кольцо фей",
+      "description": "Круг из грибов, созданный феями",
+      "suggestion": "Воздух дрожит от магии",
+      "actions": ["search_fairy_dust", "search_magic_herbs"],
+      "icon": "🧚",
+      "image": "images/locations/fairy_ring.jpg",
+      "resource_chances": {
+        "fairy_dust": 40,
+        "magic_herbs": 35,
+        "enchanted_items": 20,
+        "nothing": 5
+      }
+    },
+    "obsidian_forge": {
+      "name": "Обсидиановая кузница",
+      "description": "Древняя кузница из черного камня",
+      "suggestion": "Наковальня все еще хранит тепло древних огней",
+      "actions": ["search_metal_ingots", "search_tools"],
+      "icon": "⚒️",
+      "image": "images/locations/obsidian_forge.jpg",
+      "resource_chances": {
+        "metal_ingots": 45,
+        "tools": 35,
+        "weapon_parts": 15,
+        "nothing": 5
+      }
+    },
+    "mystic_pool": {
+      "name": "Мистический водоем",
+      "description": "Водоем с мерцающей водой",
+      "suggestion": "Вода переливается всеми цветами радуги",
+      "actions": ["refill_flask", "search_water_crystals"],
+      "icon": "🔮",
+      "image": "images/locations/mystic_pool.jpg",
+      "resource_chances": {
+        "water_crystals": 60,
+        "mana_water": 30,
+        "nothing": 10
+      }
+    },
+    "goblin_market": {
+      "name": "Гоблинский рынок",
+      "description": "Место, где гоблины торгуют странными товарами",
+      "suggestion": "Пахнет специями и чем-то гнилым",
+      "actions": ["search_trinkets", "search_exotic_goods"],
+      "icon": "🧌",
+      "image": "images/locations/goblin_market.jpg",
+      "resource_chances": {
+        "trinkets": 50,
+        "exotic_goods": 35,
+        "stolen_goods": 10,
         "nothing": 5
       }
     }
