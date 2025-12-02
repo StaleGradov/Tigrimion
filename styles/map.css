@@ -1560,3 +1560,23 @@
         grid-template-columns: 1fr;
     }
 }
+.cell-suggestion {
+    margin: 10px 0;
+    padding: 10px;
+    background: rgba(251, 191, 36, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.cell-description-text {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin: 15px 0;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
