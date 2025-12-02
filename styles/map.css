@@ -1824,3 +1824,86 @@
     color: #cbd5e1;
     margin-bottom: 5px;
 }
+/* ========== КРИТИЧЕСКИЕ ИСПРАВЛЕНИЯ ДЛЯ ПАНЕЛИ ДЕЙСТВИЙ ========== */
+
+/* 1. Убираем все overflow:hidden */
+.cell-actions-panel {
+    overflow: visible !important;
+    min-height: 600px !important;
+    max-height: none !important;
+}
+
+.cell-actions-container {
+    overflow-y: auto !important;
+    overflow-x: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
+}
+
+/* 2. Делаем контейнер видимым */
+.tactical-map-content-with-actions {
+    overflow: visible !important;
+    height: calc(95vh - 160px) !important;
+}
+
+/* 3. Контейнер картинки должен занимать фиксированную высоту */
+.location-visual-container {
+    height: 200px !important; /* Фиксированная высота для картинки */
+    margin-bottom: 15px !important;
+    position: relative !important;
+}
+
+/* 4. Основной контент должен быть видимым */
+.cell-info-header {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-bottom: 20px !important;
+}
+
+/* 5. Текст описания должен быть видимым */
+.cell-description-text {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: white !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    padding: 10px !important;
+    border-radius: 5px !important;
+    margin: 10px 0 !important;
+    max-height: 150px !important;
+    overflow-y: auto !important;
+}
+
+/* 6. Кнопки должны быть видимыми */
+.cell-action-btn {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    margin: 5px 0 !important;
+    padding: 10px !important;
+}
+
+/* 7. Контейнер для списка действий */
+.available-actions-list {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-top: 20px !important;
+}
+
+/* 8. Если все еще не видно - временный фикс */
+.cell-actions-container > * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 9. Экстренный фикс для отображения */
+.cell-actions-panel * {
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+}
