@@ -840,7 +840,7 @@ updateCellActionsUI(cell) {
     const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
     
     // ФИКСИРОВАННЫЕ РАЗМЕРЫ
-    const panelWidth = 1000; // Ширина панели
+    const panelWidth = 1150; // Ширина панели
     const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
     
     console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
