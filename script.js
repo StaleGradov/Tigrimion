@@ -12,7 +12,8 @@ class ModuleLoader {
             'equipment-system',
             'hero-system',
             'map-system',
-            'shop-system' // ← ДОБАВЛЕНА ShopSystem
+            'shop-system', // ← ДОБАВЛЕНА ShopSystem
+            'resources-system'
         ];
     }
 
@@ -293,24 +294,25 @@ class SafeHeroGame {
         }
     }
 
-    async initializeSystems() {
-        console.log("⚙️ Инициализация игровых систем...");
+async initializeSystems() {
+    console.log("⚙️ Инициализация игровых систем...");
+    
+    try {
+        this.systems.bonus = new BonusSystem();
+        this.systems.level = new LevelSystem();
+        this.systems.battle = new BattleSystem();
+        this.systems.equipment = new EquipmentSystem();
+        this.systems.hero = new HeroSystem();
+        this.systems.map = new MapSystem();
+        this.systems.shop = new ShopSystem();
+        this.systems.resources = new ResourcesSystem(); // ← ДОБАВЬ
         
-        try {
-            this.systems.bonus = new BonusSystem();
-            this.systems.level = new LevelSystem();
-            this.systems.battle = new BattleSystem();
-            this.systems.equipment = new EquipmentSystem();
-            this.systems.hero = new HeroSystem();
-            this.systems.map = new MapSystem();
-            this.systems.shop = new ShopSystem(); // ← ДОБАВЛЕНА ShopSystem
-            
-            console.log("✅ Все системы инициализированы");
-            
-        } catch (error) {
-            throw new Error(`Ошибка инициализации систем: ${error.message}`);
-        }
+        console.log("✅ Все системы инициализированы");
+        
+    } catch (error) {
+        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
+}
 
       async loadGameData() {
         console.log("📂 Загрузка игровых данных...");
@@ -322,7 +324,8 @@ class SafeHeroGame {
                 this.systems.battle.loadBattleData(),
                 this.systems.map.loadMapData(),
                 this.systems.bonus.loadBonusData(),
-                this.systems.level.loadLevelData()
+                this.systems.level.loadLevelData(),
+                this.systems.resources.loadResourcesData() // ← ДОБАВЬ
             ]);
             
             // ⭐ ИСПРАВЛЕНИЕ: Устанавливаем начальное золото из первого героя
@@ -408,7 +411,26 @@ loadSave() {
             const data = JSON.parse(save);
             console.log("📂 Загружаем сохранение:", data);
             
-            // Сохраняем прогресс ВСЕХ героев
+            // 🔥 ВАЖНОЕ ИСПРАВЛЕНИЕ 1: Сначала загружаем общий инвентарь
+            if (data.sharedResources) {
+                this.sharedResources = {
+                    gold: data.sharedResources.gold || 0,
+                    inventory: data.sharedResources.inventory || [],
+                    unlockedHeroes: data.sharedResources.unlockedHeroes || [1]
+                };
+                console.log("✅ Общий инвентарь загружен:", this.sharedResources.inventory.length, "предметов");
+            } else {
+                // Если сохранение старое - берем золото из первого героя
+                if (this.systems.hero.heroes.length > 0) {
+                    const firstHero = this.systems.hero.heroes[0];
+                    this.sharedResources.gold = firstHero.gold || 0;
+                    this.sharedResources.inventory = [];
+                    this.sharedResources.unlockedHeroes = [1];
+                    console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
+                }
+            }
+            
+            // Загружаем прогресс ВСЕХ героев
             if (data.heroes && this.systems.hero) {
                 // Создаем карту сохраненных героев для быстрого доступа
                 const savedHeroesMap = new Map();
@@ -427,15 +449,16 @@ loadSave() {
                         existingHero.deaths = savedHero.deaths || 0;
                         existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
                         
-                        // Сохраняем экипировку для всех героев
+                        // ⭐ СОХРАНЯЕМ ЭКИПИРОВКУ ИНДИВИДУАЛЬНО ДЛЯ КАЖДОГО ГЕРОЯ
                         if (savedHero.equipment) {
                             existingHero.equipment = {...savedHero.equipment};
                         }
                         
-                        console.log(`🎯 Загружен прогресс героя: ${existingHero.name}`, {
+                        console.log(`🎯 Загружен герой: ${existingHero.name}`, {
                             level: existingHero.level,
                             experience: existingHero.experience,
-                            health: existingHero.currentHealth
+                            health: existingHero.currentHealth,
+                            equipment: existingHero.equipment
                         });
                     }
                 });
@@ -443,30 +466,13 @@ loadSave() {
                 console.log("✅ Прогресс всех героев загружен");
             }
             
-            // Загружаем общие ресурсы
-            if (data.sharedResources) {
-                this.sharedResources = {
-                    gold: data.sharedResources.gold || 0,
-                    inventory: data.sharedResources.inventory || [],
-                    unlockedHeroes: data.sharedResources.unlockedHeroes || [1]
-                };
-                console.log("✅ Общие ресурсы загружены:", this.sharedResources);
-            } else {
-                // Если сохранение старое - берем золото из первого героя
-                if (this.systems.hero.heroes.length > 0) {
-                    const firstHero = this.systems.hero.heroes[0];
-                    this.sharedResources.gold = firstHero.gold || 0;
-                    console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
-                }
-            }
-            
             // Восстанавливаем текущего героя
             if (data.currentHeroId && this.systems.hero) {
                 this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
                 if (this.currentHero) {
-                    // Синхронизируем: Устанавливаем общие ресурсы для текущего героя
-                    this.currentHero.gold = this.sharedResources.gold;
+                    // ⭐ ВАЖНО: СИНХРОНИЗИРУЕМ ИНВЕНТАРЬ - используем общий
                     this.currentHero.inventory = [...this.sharedResources.inventory];
+                    this.currentHero.gold = this.sharedResources.gold;
                     
                     // ⭐ ДОБАВЛЯЕМ: Загрузка состояния фляги для текущего героя
                     if (this.systems.battle && this.systems.battle.flask) {
@@ -491,29 +497,52 @@ loadSave() {
                         }
                     }
                     
+                    // Синхронизируем с системами
                     if (this.systems.equipment) {
                         this.systems.equipment.setCurrentHero(this.currentHero);
                     }
-                    this.systems.hero.currentHero = this.currentHero;
+                    if (this.systems.hero) {
+                        this.systems.hero.currentHero = this.currentHero;
+                    }
                     
-                    console.log("✅ Текущий герой восстановлен с общими ресурсами:", this.currentHero.name);
+                    console.log("✅ Текущий герой восстановлен с общим инвентарем:", {
+                        name: this.currentHero.name,
+                        inventory: this.currentHero.inventory.length,
+                        gold: this.currentHero.gold
+                    });
                 }
             }
             
             return true;
         } else {
-            // Новая игра: Устанавливаем золото из первого героя
-            if (this.systems.hero.heroes.length > 0) {
+            // Новая игра: Устанавливаем значения по умолчанию
+            console.log("🆕 Сохранение не найдено, начинаем новую игру");
+            
+            // Инициализируем общие ресурсы
+            this.sharedResources = {
+                gold: 100,
+                inventory: [],
+                unlockedHeroes: [1]
+            };
+            
+            // Устанавливаем золото для всех героев
+            if (this.systems.hero && this.systems.hero.heroes.length > 0) {
                 const firstHero = this.systems.hero.heroes[0];
-                this.sharedResources.gold = firstHero.gold || 0;
-                console.log(`💰 Начальное золото для новой игры: ${firstHero.gold}`);
+                this.sharedResources.gold = firstHero.gold || 100;
                 
-                // Сбрасываем флягу для новой игры
-                if (this.systems.battle && this.systems.battle.flask) {
-                    this.systems.battle.flask.currentCharges = 10;
-                    this.systems.battle.flask.content = 'water';
-                    console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
-                }
+                // Синхронизируем золото с первым героем
+                this.systems.hero.heroes.forEach(hero => {
+                    hero.gold = this.sharedResources.gold;
+                });
+                
+                console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
+            }
+            
+            // Сбрасываем флягу для новой игры
+            if (this.systems.battle && this.systems.battle.flask) {
+                this.systems.battle.flask.currentCharges = 10;
+                this.systems.battle.flask.content = 'water';
+                console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
             }
         }
     } catch (error) {
@@ -522,6 +551,12 @@ loadSave() {
         console.log("🗑️ Битое сохранение удалено");
         
         // При ошибке загрузки устанавливаем значения по умолчанию
+        this.sharedResources = {
+            gold: 100,
+            inventory: [],
+            unlockedHeroes: [1]
+        };
+        
         if (this.systems.battle && this.systems.battle.flask) {
             this.systems.battle.flask.currentCharges = 10;
             this.systems.battle.flask.content = 'water';
@@ -954,6 +989,7 @@ fixHealthBarLayout() {
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">🎒 Инвентарь</button>
+                    <button class="btn-top" onclick="game.showOverlay('resources')">📦 Ресурсы</button>
                     <button class="btn-top" onclick="game.systems.hero.showHeroStory()">📖 История Героя</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
                      <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
@@ -1076,6 +1112,81 @@ fixHealthBarLayout() {
         console.log("✅ Исправленный интерфейс героя отрендерен");
     }
 
+
+showInventoryHub() {
+    const app = document.getElementById('app');
+    if (!app) return;
+
+    app.innerHTML = `
+        <div class="hero-game-screen">
+            <div class="top-action-bar">
+                <button class="btn-top" onclick="game.showHeroGameScreen()">← Назад к герою</button>
+            </div>
+            
+            <div class="inventory-hub">
+                <div class="hub-header">
+                    <h2>🎪 Центр управления</h2>
+                </div>
+                
+                <div class="hub-grid">
+                    <!-- Инвентарь снаряжения -->
+                    <div class="hub-card" onclick="game.showOverlay('inventory')">
+                        <div class="hub-icon">🎒</div>
+                        <div class="hub-title">Экипировка</div>
+                        <div class="hub-description">Снаряжение, оружие, броня</div>
+                        <div class="hub-stats">
+                            ${this.currentHero ? `${this.currentHero.inventory.length}/100 предметов` : 'Загрузка...'}
+                        </div>
+                    </div>
+                    
+                    <!-- Ресурсы -->
+                    <div class="hub-card" onclick="game.showOverlay('resources')">
+                        <div class="hub-icon">📦</div>
+                        <div class="hub-title">Ресурсы</div>
+                        <div class="hub-description">Материалы для крафта</div>
+                        <div class="hub-stats">
+                            ${this.systems.resources ? 'Доступно' : 'Загрузка...'}
+                        </div>
+                    </div>
+                    
+                    <!-- Крафт -->
+                    <div class="hub-card" onclick="game.systems.resources.showCrafting()">
+                        <div class="hub-icon">⚗️</div>
+                        <div class="hub-title">Крафт</div>
+                        <div class="hub-description">Создание предметов</div>
+                        <div class="hub-stats">
+                            ${this.systems.resources ? `${Object.keys(this.systems.resources.craftingRecipes).length} рецептов` : 'Загрузка...'}
+                        </div>
+                    </div>
+                    
+                    <!-- Магазин -->
+                    <div class="hub-card" onclick="game.showOverlay('shop')">
+                        <div class="hub-icon">🏪</div>
+                        <div class="hub-title">Магазин</div>
+                        <div class="hub-description">Покупка и продажа</div>
+                        <div class="hub-stats">
+                            Доступно всегда
+                        </div>
+                    </div>
+                    
+                    <!-- Продажа -->
+                    <div class="hub-card" onclick="game.showSellScreen()">
+                        <div class="hub-icon">💰</div>
+                        <div class="hub-title">Продажа</div>
+                        <div class="hub-description">Быстрая продажа предметов</div>
+                        <div class="hub-stats">
+                            Нажми для продажи
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="overlay-container" class="overlay-container"></div>
+        </div>
+    `;
+}
+
+    
  showOverlay(overlayType) {
     const container = document.getElementById('overlay-container');
     if (!container) return;
@@ -1129,6 +1240,28 @@ fixHealthBarLayout() {
             container.style.display = 'block';
             break;
 
+case 'resources':
+    if (this.systems.resources && this.systems.resources.loaded) {
+        container.innerHTML = this.systems.resources.showResourcesInventory();
+        container.style.display = 'block';
+    } else {
+        container.innerHTML = `
+            <div class="overlay-content">
+                <div class="overlay-header">
+                    <h3>📦 Ресурсы</h3>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                <div class="overlay-body">
+                    <div class="error-message">
+                        ❌ Система ресурсов не загружена. Попробуйте перезагрузить игру.
+                    </div>
+                </div>
+            </div>
+        `;
+        container.style.display = 'block';
+    }
+    break;
+            
         case 'shop':
             // ⭐ ИСПРАВЛЕННЫЙ КОД: ShopSystem сам управляет отображением
             if (this.systems.shop) {
