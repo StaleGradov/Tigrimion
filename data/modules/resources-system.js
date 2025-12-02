@@ -508,3 +508,5 @@ class ResourcesSystem {
         // Реализуй по необходимости
     }
 }
+window.ResourcesSystem = ResourcesSystem;
+console.log("✅ ResourcesSystem экспортирован в window");
