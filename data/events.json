@@ -1,0 +1,351 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "name": "Спящий ледяной дракон",
+      "icon": "🐉",
+      "description": "Огромный дракон спит среди льдов. Его дыхание создаёт иней на камнях.",
+      
+      "triggers": ["search_treasure", "search_ore", "make_fire"],
+      "trigger_chance": 70,
+      
+      "actions": [
+        {
+          "type": "sneak_away",
+          "name": "Тихо уйти",
+          "chance": 50,
+          "success": {"message": "Вы аккуратно обошли дракона, не потревожив его."},
+          "failure": {
+            "message": "Дракон проснулся!",
+            "consequence": {"type": "combat", "monster_id": 100}
+          }
+        },
+        {
+          "type": "steal",
+          "name": "Украсть сокровище",
+          "chance": 25,
+          "success": {
+            "message": "Вы украли часть сокровищ дракона!",
+            "reward": {"gold": "200-500", "items": ["dragon_scale"]}
+          },
+          "failure": {
+            "message": "Дракон почуял вас!",
+            "consequence": {"type": "combat", "monster_id": 100}
+          }
+        },
+        {
+          "type": "attack",
+          "name": "Атаковать дракона",
+          "chance": 10,
+          "consequence": {"type": "combat", "monster_id": 100}
+        }
+      ],
+      
+      "rarity": "legendary"
+    },
+    
+    {
+      "id": 2,
+      "name": "Застрявший караван",
+      "icon": "🛒",
+      "description": "Купеческий караван застрял в грязи. Купцы отчаянно пытаются его вытащить.",
+      
+      "actions": [
+        {
+          "type": "help",
+          "name": "Помочь вытащить",
+          "chance": 80,
+          "success": {
+            "message": "Купцы благодарны! Они щедро вознаградили вас.",
+            "reward": {"gold": "50-150", "items": ["supplies"]}
+          },
+          "failure": {
+            "message": "Вам не удалось помочь. Купцы раздражены.",
+            "consequence": {"type": "reputation_loss", "amount": 10}
+          }
+        },
+        {
+          "type": "rob",
+          "name": "Ограбить караван",
+          "chance": 60,
+          "success": {
+            "message": "Вы ограбили караван!",
+            "reward": {"gold": "100-300", "items": ["merchant_goods"]}
+          },
+          "failure": {
+            "message": "Охрана оказалась сильнее, чем вы думали!",
+            "consequence": {"type": "combat", "monster_id": 31}
+          }
+        },
+        {
+          "type": "ignore",
+          "name": "Пройти мимо",
+          "result": {"message": "Вы прошли мимо, делая вид, что не заметили караван."}
+        }
+      ],
+      
+      "rarity": "common"
+    },
+    
+    {
+      "id": 3,
+      "name": "Раненый солдат",
+      "icon": "💂",
+      "description": "Солдат лежит у дороги, истекая кровью. Рядом валяется его оружие.",
+      
+      "actions": [
+        {
+          "type": "heal",
+          "name": "Оказать помощь",
+          "requires": ["healing_herbs"],
+          "chance": 90,
+          "success": {
+            "message": "Солдат спасён! Он благодарит вас и делится информацией.",
+            "reward": {"information": "расположение ближайшей крепости", "items": ["soldier_medal"]}
+          },
+          "failure": {
+            "message": "Вы не смогли помочь. Солдат умирает.",
+            "consequence": {"type": "morale_loss"}
+          }
+        },
+        {
+          "type": "loot",
+          "name": "Ограбить",
+          "chance": 100,
+          "success": {
+            "message": "Вы забрали вещи солдата.",
+            "reward": {"gold": "20-80", "items": ["soldier_sword"]}
+          },
+          "consequence": {"type": "karma_loss", "amount": 15}
+        },
+        {
+          "type": "ignore",
+          "name": "Оставить умирать",
+          "result": {"message": "Вы прошли мимо, не обращая внимания на стонущего солдата."}
+        }
+      ],
+      
+      "rarity": "uncommon"
+    },
+    
+    {
+      "id": 4,
+      "name": "Таинственный артефакт",
+      "icon": "🔮",
+      "description": "Странный предмет торчит из земли. Он излучает слабую пульсирующую энергию.",
+      
+      "triggers": ["search_treasure", "search_ore", "search_stone"],
+      
+      "actions": [
+        {
+          "type": "investigate",
+          "name": "Исследовать",
+          "chance": 65,
+          "success": {
+            "message": "Вы нашли древний артефакт!",
+            "reward": {"items": ["mysterious_artifact"], "experience": 50}
+          },
+          "failure": {
+            "message": "Артефакт оказался проклятым!",
+            "consequence": {"type": "curse", "duration": 3}
+          }
+        },
+        {
+          "type": "avoid",
+          "name": "Избегать",
+          "result": {"message": "Вы решаете не трогать странный предмет. Лучше перестраховаться."}
+        },
+        {
+          "type": "destroy",
+          "name": "Уничтожить",
+          "chance": 40,
+          "success": {
+            "message": "Вы уничтожили артефакт, и из него вырвалась магическая энергия!",
+            "reward": {"experience": 25},
+            "consequence": {"type": "explosion", "damage": "10-30"}
+          }
+        }
+      ],
+      
+      "rarity": "rare"
+    },
+    
+    {
+      "id": 5,
+      "name": "Охотничья западня",
+      "icon": "🪤",
+      "description": "Вы обнаружили охотничью ловушку с пойманным животным.",
+      
+      "actions": [
+        {
+          "type": "free_animal",
+          "name": "Освободить животное",
+          "chance": 70,
+          "success": {
+            "message": "Животное благодарно и указывает вам на скрытую тропу.",
+            "reward": {"information": "ближайший источник воды"}
+          },
+          "failure": {
+            "message": "Животное в панике убегает, не проявив благодарности.",
+            "result": {"message": "Ничего не происходит."}
+          }
+        },
+        {
+          "type": "take_animal",
+          "name": "Забрать добычу",
+          "chance": 100,
+          "success": {
+            "message": "Вы забираете пойманное животное.",
+            "reward": {"resources": [{"id": "trapped_game", "amount": "1"}]}
+          },
+          "consequence": {"type": "karma_loss", "amount": 5}
+        },
+        {
+          "type": "reset_trap",
+          "name": "Переустановить ловушку",
+          "requires": ["rope", "trap_kit"],
+          "chance": 85,
+          "success": {
+            "message": "Вы переустановили ловушку. Возможно, она ещё пригодится.",
+            "reward": {"trap_ready": true}
+          }
+        }
+      ],
+      
+      "rarity": "common"
+    },
+    
+    {
+      "id": 6,
+      "name": "Контракт на убийство",
+      "icon": "🗡️",
+      "description": "Вы находите труп с запиской. Кто-то нанял убийцу, и цель указана.",
+      
+      "triggers": ["search_treasure", "prepare_ambush"],
+      
+      "actions": [
+        {
+          "type": "accept_contract",
+          "name": "Взять контракт",
+          "chance": 100,
+          "result": {
+            "message": "Вы взяли контракт. Цель находится где-то поблизости.",
+            "reward": {"contract_active": true, "target": "bandit_leader", "bounty": "200-400"}
+          }
+        },
+        {
+          "type": "ignore_contract",
+          "name": "Проигнорировать",
+          "result": {"message": "Вы решаете не вмешиваться в чужие разборки."}
+        },
+        {
+          "type": "warn_target",
+          "name": "Предупредить цель",
+          "chance": 30,
+          "success": {
+            "message": "Цель благодарна и предлагает вам работу телохранителя.",
+            "reward": {"gold": "100", "job_offer": "bodyguard"}
+          },
+          "failure": {
+            "message": "Цель не поверила вам и наняла своих охранников против вас!",
+            "consequence": {"type": "combat", "monster_id": 32}
+          }
+        }
+      ],
+      
+      "rarity": "uncommon"
+    },
+    
+    {
+      "id": 7,
+      "name": "Волшебный родник",
+      "icon": "🌊",
+      "description": "Источник с кристально чистой водой, которая светится мягким голубым светом.",
+      
+      "triggers": ["search_water"],
+      
+      "actions": [
+        {
+          "type": "drink",
+          "name": "Выпить воды",
+          "chance": 90,
+          "success": {
+            "message": "Вода обладает целительными свойствами!",
+            "reward": {"healing": "full", "blessing": "water_blessing", "duration": 24}
+          },
+          "failure": {
+            "message": "Вода оказалась иллюзией! Вы попробовали пустоты.",
+            "consequence": {"type": "confusion", "duration": 2}
+          }
+        },
+        {
+          "type": "collect",
+          "name": "Собрать воду",
+          "requires": ["flask"],
+          "chance": 100,
+          "success": {
+            "message": "Вы наполнили флягу волшебной водой.",
+            "reward": {"resources": [{"id": "magic_water", "amount": "3-5"}]}
+          }
+        },
+        {
+          "type": "meditate",
+          "name": "Помедитировать у родника",
+          "chance": 75,
+          "success": {
+            "message": "Медитация дала вам ясность ума.",
+            "reward": {"experience": 15, "insight": true}
+          }
+        }
+      ],
+      
+      "rarity": "rare"
+    },
+    
+    {
+      "id": 8,
+      "name": "Разрушенный алтарь",
+      "icon": "🛐",
+      "description": "Древний алтарь, частично разрушенный временем. На нём видны следы недавних подношений.",
+      
+      "actions": [
+        {
+          "type": "restore",
+          "name": "Восстановить алтарь",
+          "requires": ["stone", "carved_stone"],
+          "chance": 60,
+          "success": {
+            "message": "Божество благодарно! Вы чувствуете благословение.",
+            "reward": {"blessing": "protection", "duration": 48, "items": ["holy_symbol"]}
+          },
+          "failure": {
+            "message": "Вы осквернили алтарь неумелым восстановлением!",
+            "consequence": {"type": "curse", "duration": 5}
+          }
+        },
+        {
+          "type": "loot_offerings",
+          "name": "Забрать подношения",
+          "chance": 80,
+          "success": {
+            "message": "Вы забрали подношения со алтаря.",
+            "reward": {"gold": "30-90", "items": ["offerings"]}
+          },
+          "consequence": {"type": "divine_wrath", "chance": 40}
+        },
+        {
+          "type": "make_offering",
+          "name": "Сделать подношение",
+          "requires": ["gold", "herbs"],
+          "chance": 100,
+          "success": {
+            "message": "Божество приняло ваше подношение.",
+            "reward": {"favor": "minor_deity", "blessing": "luck", "duration": 12}
+          }
+        }
+      ],
+      
+      "rarity": "uncommon"
+    }
+  ]
+}
