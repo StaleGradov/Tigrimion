@@ -1,0 +1,208 @@
+{
+  "oddities": [
+    {
+      "id": 1,
+      "name": "Вечная метель",
+      "icon": "❄️",
+      "description": "Необъяснимо холодно. Снег и лёд покрывают всё вокруг.",
+      
+      "modifiers": {
+        "global": {
+          "monster_encounter_chance": -30,
+          "movement_difficulty": 2
+        },
+        "action_chances": {
+          "search_water": 50,
+          "search_berries": -40,
+          "search_mushrooms": -20,
+          "make_fire": -30
+        },
+        "danger_level": 2
+      },
+      
+      "visual_effect": "snow",
+      "rarity": "uncommon"
+    },
+    
+    {
+      "id": 2,
+      "name": "Магическая аномалия",
+      "icon": "✨",
+      "description": "Воздух дрожит от невидимой энергии. Магия здесь нестабильна.",
+      
+      "modifiers": {
+        "global": {
+          "unpredictable_events": 25,
+          "magic_resources": 40
+        },
+        "action_chances": {
+          "search_treasure": 30,
+          "search_herbs": 20,
+          "search_ore": -15
+        },
+        "danger_level": 1
+      },
+      
+      "visual_effect": "sparkles",
+      "rarity": "rare"
+    },
+    
+    {
+      "id": 3,
+      "name": "Проклятие",
+      "icon": "☠️",
+      "description": "Земля стонет под древним проклятием. Невезение витает в воздухе.",
+      
+      "modifiers": {
+        "global": {
+          "monster_encounter_chance": 25,
+          "all_action_chances": -15
+        },
+        "danger_level": 3
+      },
+      
+      "visual_effect": "dark_aura",
+      "rarity": "uncommon"
+    },
+    
+    {
+      "id": 4,
+      "name": "Благословение",
+      "icon": "🙏",
+      "description": "Божественное присутствие ощущается здесь. Удача на вашей стороне.",
+      
+      "modifiers": {
+        "global": {
+          "monster_encounter_chance": -20,
+          "all_action_chances": 20,
+          "reward_quality": 1
+        },
+        "danger_level": -2
+      },
+      
+      "visual_effect": "golden_light",
+      "rarity": "rare"
+    },
+    
+    {
+      "id": 5,
+      "name": "Землетрясение",
+      "icon": "🌋",
+      "description": "Земля нестабильна. Временами ощущаются подземные толчки.",
+      
+      "modifiers": {
+        "global": {
+          "search_ore": 40,
+          "search_stone": 35,
+          "set_trap": -25,
+          "prepare_ambush": -20
+        },
+        "danger_level": 1
+      },
+      
+      "visual_effect": "cracks",
+      "rarity": "common"
+    },
+    
+    {
+      "id": 6,
+      "name": "Туманная завеса",
+      "icon": "🌫️",
+      "description": "Густой туман скрывает всё дальше нескольких шагов.",
+      
+      "modifiers": {
+        "global": {
+          "visibility_range": 1,
+          "prepare_ambush": 30,
+          "hunt": -20,
+          "guard_caravan": -15
+        },
+        "danger_level": 1
+      },
+      
+      "visual_effect": "fog",
+      "rarity": "common"
+    },
+    
+    {
+      "id": 7,
+      "name": "Изобилие",
+      "icon": "💰",
+      "description": "Природа щедра здесь. Ресурсы встречаются на каждом шагу.",
+      
+      "modifiers": {
+        "global": {
+          "resource_amount": 2,
+          "search_berries": 25,
+          "search_mushrooms": 25,
+          "search_herbs": 25
+        },
+        "danger_level": -1
+      },
+      
+      "visual_effect": "shimmer",
+      "rarity": "uncommon"
+    },
+    
+    {
+      "id": 8,
+      "name": "Эхо войны",
+      "icon": "⚔️",
+      "description": "Здесь когда-то была великая битва. Духи павших всё ещё бродят.",
+      
+      "modifiers": {
+        "global": {
+          "monster_encounter_chance": 35,
+          "search_treasure": 25,
+          "danger_level": 2
+        },
+        "action_chances": {
+          "prepare_ambush": 15,
+          "assassination": 10
+        }
+      },
+      
+      "visual_effect": "ghostly",
+      "rarity": "rare"
+    },
+    
+    {
+      "id": 9,
+      "name": "Засуха",
+      "icon": "🔥",
+      "description": "Всё пересохло. Даже воздух обжигает лёгкие.",
+      
+      "modifiers": {
+        "global": {
+          "search_water": -60,
+          "search_berries": -30,
+          "search_herbs": -20,
+          "make_fire": 40
+        },
+        "danger_level": 1
+      },
+      
+      "visual_effect": "heat_haze",
+      "rarity": "common"
+    },
+    
+    {
+      "id": 10,
+      "name": "Лунный свет",
+      "icon": "🌕",
+      "description": "Даже днём здесь царит лунное сияние. Ночь никогда не наступает.",
+      
+      "modifiers": {
+        "global": {
+          "nocturnal_monsters": true,
+          "magic_resources": 20,
+          "search_treasure": 15
+        },
+        "danger_level": 0
+      },
+      
+      "visual_effect": "moonlight",
+      "rarity": "uncommon"
+    }
+  ]
+}
