@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактор окон Tigrimion</title>
+    <title>Редактор окон Tigrimion PRO</title>
     
     <!-- Загружаем стили вашей игры с GitHub -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/StaleGradov/Tigrimion@GAME/styles/core.css">
@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/StaleGradov/Tigrimion@GAME/shop.css">
     
     <style>
-        /* СТИЛИ РЕДАКТОРА */
+        /* ========== СТИЛИ РЕДАКТОРА ========== */
         body {
             margin: 0;
             padding: 0;
@@ -98,18 +98,142 @@
             color: #94a3b8;
         }
         
-        .form-group input {
+        .form-group input, .form-group select, .form-group textarea {
             padding: 8px;
             background: rgba(0,0,0,0.3);
             border: 1px solid #475569;
             border-radius: 4px;
             color: white;
         }
+        
+        /* ========== СТИЛИ ДЛЯ ПЕРЕТАСКИВАНИЯ И РЕСАЙЗА ========== */
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 100000;
+        }
+        
+        .resize-nw { top: -6px; left: -6px; cursor: nw-resize; }
+        .resize-ne { top: -6px; right: -6px; cursor: ne-resize; }
+        .resize-sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+        .resize-se { bottom: -6px; right: -6px; cursor: se-resize; }
+        .resize-n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+        .resize-s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+        .resize-w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
+        .resize-e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
+        
+        .draggable {
+            cursor: move !important;
+            user-select: none;
+        }
+        
+        .draggable:hover {
+            outline: 2px dashed rgba(59, 130, 246, 0.5);
+        }
+        
+        .window-outline.selected {
+            border: 2px solid #10b981 !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+        }
+        
+        .drag-toggle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 100001;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+        
+        /* Сетка */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 99998;
+            display: none;
+        }
+        
+        /* Статус бар */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #475569;
+            z-index: 100000;
+        }
+        
+        /* Вкладки */
+        .editor-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #475569;
+            padding-bottom: 10px;
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+            color: #60a5fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <!-- Кнопка включения редактора -->
     <button class="editor-toggle" onclick="toggleEditor()">🛠️</button>
+    
+    <!-- Кнопка переключения режима перетаскивания -->
+    <button class="drag-toggle-btn" id="dragToggleBtn" style="display: none;">🎮 Включить перетаскивание</button>
+    
+    <!-- Сетка -->
+    <div class="grid-overlay" id="gridOverlay"></div>
+    
+    <!-- Статус бар -->
+    <div class="status-bar" id="statusBar">
+        <span id="statusText">Редактор Tigrimion PRO - Нажмите 🛠️ для начала</span>
+    </div>
     
     <div class="editor-container">
         <!-- Область игры -->
@@ -119,45 +243,111 @@
         
         <!-- Панель редактора (скрыта по умолчанию) -->
         <div class="editor-panel" id="editorPanel" style="display: none;">
-            <h2 style="color: #60a5fa;">🎮 Редактор окон</h2>
+            <h2 style="color: #60a5fa; margin-bottom: 20px;">🎮 Tigrimion Editor PRO</h2>
             
-            <div id="windowList">
-                <div style="color: #94a3b8; padding: 20px; text-align: center;">
-                    Загрузка окон игры...
-                </div>
+            <!-- Вкладки -->
+            <div class="editor-tabs">
+                <button class="tab-btn active" data-tab="windows">🪟 Окна</button>
+                <button class="tab-btn" data-tab="style">🎨 Стили</button>
+                <button class="tab-btn" data-tab="tools">🛠️ Инструменты</button>
+                <button class="tab-btn" data-tab="export">📤 Экспорт</button>
             </div>
             
-            <div id="propertiesForm" class="properties-form">
-                <div style="color: #94a3b8; text-align: center;">
-                    Выберите окно для редактирования
+            <!-- Контент вкладок -->
+            <div id="tabContent">
+                <!-- Вкладка Окна -->
+                <div class="tab-content active" id="tab-windows">
+                    <div id="windowList">
+                        <div style="color: #94a3b8; padding: 20px; text-align: center;">
+                            Загрузка окон игры...
+                        </div>
+                    </div>
+                    
+                    <div id="propertiesForm" class="properties-form">
+                        <div style="color: #94a3b8; text-align: center;">
+                            Выберите окно для редактирования
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div style="margin-top: 30px;">
-                <button onclick="saveLayout()" style="
-                    width: 100%;
-                    padding: 12px;
-                    background: #10b981;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    margin-bottom: 10px;
-                ">
-                    💾 Сохранить Layout
-                </button>
                 
-                <button onclick="exportCSS()" style="
-                    width: 100%;
-                    padding: 12px;
-                    background: #3b82f6;
-                    color: white;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                ">
-                    📝 Экспорт CSS
-                </button>
+                <!-- Вкладка Стили -->
+                <div class="tab-content" id="tab-style">
+                    <div id="styleEditor" style="color: #94a3b8; padding: 20px; text-align: center;">
+                        Выберите окно для редактирования стилей
+                    </div>
+                </div>
+                
+                <!-- Вкладка Инструменты -->
+                <div class="tab-content" id="tab-tools">
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button onclick="toggleGrid()" class="tab-btn">
+                            📐 Переключить сетку
+                        </button>
+                        <button onclick="resetAllWindows()" class="tab-btn">
+                            🔄 Сбросить все позиции
+                        </button>
+                        <button onclick="showAllWindows()" class="tab-btn">
+                            👁️ Показать все окна
+                        </button>
+                        <button onclick="hideAllWindows()" class="tab-btn">
+                            👻 Скрыть все окна
+                        </button>
+                        <button onclick="alignToGrid()" class="tab-btn">
+                            ⬆️ Выровнять по сетке
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Вкладка Экспорт -->
+                <div class="tab-content" id="tab-export">
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <button onclick="saveLayout()" style="
+                            padding: 12px;
+                            background: #10b981;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        ">
+                            💾 Сохранить Layout (JSON)
+                        </button>
+                        
+                        <button onclick="exportCSS()" style="
+                            padding: 12px;
+                            background: #3b82f6;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        ">
+                            📝 Экспорт CSS
+                        </button>
+                        
+                        <button onclick="exportHTML()" style="
+                            padding: 12px;
+                            background: #8b5cf6;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        ">
+                            📄 Экспорт HTML
+                        </button>
+                        
+                        <div id="exportResult" style="
+                            margin-top: 20px;
+                            padding: 15px;
+                            background: rgba(0,0,0,0.3);
+                            border-radius: 6px;
+                            font-family: monospace;
+                            font-size: 12px;
+                            white-space: pre-wrap;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            display: none;
+                        "></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -167,20 +357,40 @@
         let editorVisible = false;
         let gameWindows = [];
         let selectedWindow = null;
+        let isDragging = false;
+        let isResizing = false;
+        let dragOffset = { x: 0, y: 0 };
+        let resizeData = null;
+        let dragEnabled = false;
+        let gridVisible = false;
         
         // ========== ОСНОВНЫЕ ФУНКЦИИ ==========
         function toggleEditor() {
             const panel = document.getElementById('editorPanel');
+            const toggleBtn = document.getElementById('dragToggleBtn');
+            
             editorVisible = !editorVisible;
             
             if (editorVisible) {
                 panel.style.display = 'block';
+                toggleBtn.style.display = 'block';
                 scanWindows();
+                updateStatus('Редактор включен. Сканирую окна...');
             } else {
                 panel.style.display = 'none';
+                toggleBtn.style.display = 'none';
+                disableDragging();
+                updateStatus('Редактор выключен');
             }
         }
         
+        function updateStatus(message) {
+            const statusBar = document.getElementById('statusText');
+            if (statusBar) statusBar.textContent = message;
+            console.log('📢 ' + message);
+        }
+        
+        // ========== СКАНИРОВАНИЕ ОКОН ==========
         function scanWindows() {
             try {
                 const gameFrame = document.getElementById('gameFrame');
@@ -189,13 +399,22 @@
                 // Список окон для сканирования
                 const windowSelectors = [
                     '.hero-game-screen',
-                    '.battle-screen-fullscreen',
+                    '.battle-screen-fullscreen', 
                     '.tactical-map-overlay',
                     '.top-action-bar',
                     '.hero-main-window-v2',
-                    '.equipment-column-v2',
+                    '.equipment-column-v2.left-column',
+                    '.equipment-column-v2.right-column',
+                    '.hero-center-area-v2',
                     '.item-detail-modal',
-                    '.shop-overlay'
+                    '.shop-overlay',
+                    '.overlay-content',
+                    '.modal-content',
+                    '.tactical-panel',
+                    '.battle-grid-compact',
+                    '.enemy-panels-container',
+                    '.battle-controls-fullscreen',
+                    '.battle-log-fullscreen'
                 ];
                 
                 gameWindows = [];
@@ -204,47 +423,166 @@
                     const elements = gameDoc.querySelectorAll(selector);
                     elements.forEach((element, index) => {
                         const rect = element.getBoundingClientRect();
+                        const styles = window.getComputedStyle(element);
                         
-                        gameWindows.push({
-                            id: `${selector}-${index}`,
-                            selector: selector,
-                            name: getWindowName(selector),
-                            element: element,
-                            x: rect.left,
-                            y: rect.top,
-                            width: rect.width,
-                            height: rect.height
-                        });
+                        if (rect.width > 0 && rect.height > 0) {
+                            gameWindows.push({
+                                id: `${selector}-${index}`,
+                                selector: selector,
+                                name: getWindowName(selector, index),
+                                element: element,
+                                x: rect.left,
+                                y: rect.top,
+                                width: rect.width,
+                                height: rect.height,
+                                originalPosition: styles.position,
+                                originalDisplay: styles.display,
+                                zIndex: styles.zIndex,
+                                visible: true
+                            });
+                        }
                     });
                 });
                 
                 updateWindowList();
                 drawWindowOutlines();
+                setupTabs();
+                
+                updateStatus(`Найдено ${gameWindows.length} окон игры`);
                 
             } catch (e) {
                 console.warn('Не удалось просканировать окна:', e);
+                updateStatus(`Ошибка сканирования: ${e.message}`);
                 setTimeout(scanWindows, 1000);
             }
         }
         
-        function getWindowName(selector) {
+        function getWindowName(selector, index) {
             const names = {
-                '.hero-game-screen': 'Экран героя',
+                '.hero-game-screen': 'Главный экран',
                 '.battle-screen-fullscreen': 'Боевой экран',
                 '.tactical-map-overlay': 'Тактическая карта',
-                '.top-action-bar': 'Верхняя панель',
-                '.hero-main-window-v2': 'Основная область героя',
-                '.equipment-column-v2': 'Колонка экипировки',
+                '.top-action-bar': 'Верхняя панель кнопок',
+                '.hero-main-window-v2': 'Основное окно героя',
+                '.equipment-column-v2.left-column': 'Левая экипировка',
+                '.equipment-column-v2.right-column': 'Правая экипировка',
+                '.hero-center-area-v2': 'Центральная область героя',
                 '.item-detail-modal': 'Модальное окно предмета',
-                '.shop-overlay': 'Магазин'
+                '.shop-overlay': 'Окно магазина',
+                '.overlay-content': 'Всплывающее окно',
+                '.modal-content': 'Модальное окно',
+                '.tactical-panel': 'Тактическая панель',
+                '.battle-grid-compact': 'Боевая сетка',
+                '.enemy-panels-container': 'Панели врагов',
+                '.battle-controls-fullscreen': 'Управление боем',
+                '.battle-log-fullscreen': 'Лог боя'
             };
             
-            return names[selector] || selector;
+            return names[selector] || `${selector.replace('.', '')} #${index + 1}`;
         }
         
+        // ========== ПЕРЕТАСКИВАНИЕ ==========
+        function toggleDragMode() {
+            const toggleBtn = document.getElementById('dragToggleBtn');
+            
+            if (dragEnabled) {
+                disableDragging();
+                toggleBtn.innerHTML = '🎮 Включить перетаскивание';
+                toggleBtn.style.background = '#475569';
+                updateStatus('Режим перетаскивания выключен');
+            } else {
+                enableDragging();
+                toggleBtn.innerHTML = '🎮 Выключить перетаскивание';
+                toggleBtn.style.background = '#8b5cf6';
+                updateStatus('Режим перетаскивания включен. Перетаскивайте окна мышкой!');
+            }
+        }
+        
+        function enableDragging() {
+            dragEnabled = true;
+            const gameFrame = document.getElementById('gameFrame');
+            gameFrame.style.pointerEvents = 'auto';
+            
+            gameWindows.forEach(win => {
+                if (win.element) {
+                    win.element.classList.add('draggable');
+                    win.element.addEventListener('mousedown', startDrag);
+                }
+            });
+        }
+        
+        function disableDragging() {
+            dragEnabled = false;
+            const gameFrame = document.getElementById('gameFrame');
+            gameFrame.style.pointerEvents = 'none';
+            
+            gameWindows.forEach(win => {
+                if (win.element) {
+                    win.element.classList.remove('draggable');
+                    win.element.removeEventListener('mousedown', startDrag);
+                }
+            });
+        }
+        
+        function startDrag(e) {
+            if (!dragEnabled) return;
+            
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const element = e.currentTarget;
+            const window = gameWindows.find(w => w.element === element);
+            
+            if (!window) return;
+            
+            isDragging = true;
+            selectedWindow = window;
+            
+            dragOffset = {
+                x: e.clientX - window.x,
+                y: e.clientY - window.y
+            };
+            
+            document.addEventListener('mousemove', handleDrag);
+            document.addEventListener('mouseup', stopDrag);
+            
+            updateWindowList();
+            drawWindowOutlines();
+            updatePropertiesForm();
+        }
+        
+        function handleDrag(e) {
+            if (!isDragging || !selectedWindow) return;
+            
+            const newX = e.clientX - dragOffset.x;
+            const newY = e.clientY - dragOffset.y;
+            
+            selectedWindow.x = newX;
+            selectedWindow.y = newY;
+            selectedWindow.element.style.position = 'absolute';
+            selectedWindow.element.style.left = `${newX}px`;
+            selectedWindow.element.style.top = `${newY}px`;
+            
+            drawWindowOutlines();
+            updatePropertiesForm();
+            updateStatus(`Перемещение: ${selectedWindow.name} → X:${Math.round(newX)} Y:${Math.round(newY)}`);
+        }
+        
+        function stopDrag() {
+            isDragging = false;
+            document.removeEventListener('mousemove', handleDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        
+        // ========== ИНТЕРФЕЙС ==========
         function updateWindowList() {
             const list = document.getElementById('windowList');
             list.innerHTML = '';
+            
+            if (gameWindows.length === 0) {
+                list.innerHTML = '<div style="color: #94a3b8; padding: 20px; text-align: center;">Окна не найдены</div>';
+                return;
+            }
             
             gameWindows.forEach(win => {
                 const item = document.createElement('div');
@@ -255,12 +593,20 @@
                     margin-bottom: 8px;
                     cursor: pointer;
                     border: 1px solid ${selectedWindow?.id === win.id ? '#3b82f6' : 'transparent'};
+                    transition: all 0.2s;
                 `;
                 
                 item.innerHTML = `
-                    <strong>${win.name}</strong>
-                    <div style="font-size: 12px; color: #94a3b8;">
-                        ${Math.round(win.width)}x${Math.round(win.height)}px
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <strong>${win.name}</strong>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 3px;">
+                                ${Math.round(win.width)}×${Math.round(win.height)}px
+                            </div>
+                        </div>
+                        <div style="font-size: 10px; color: ${win.visible ? '#10b981' : '#ef4444'}">
+                            ${win.visible ? '👁️' : '👻'}
+                        </div>
                     </div>
                 `;
                 
@@ -274,13 +620,16 @@
             updateWindowList();
             drawWindowOutlines();
             updatePropertiesForm();
+            updateStyleEditor();
+            updateStatus(`Выбрано: ${window.name}`);
         }
         
         function drawWindowOutlines() {
-            // Удаляем старые контуры
             document.querySelectorAll('.window-outline').forEach(el => el.remove());
             
             gameWindows.forEach(win => {
+                if (!win.visible) return;
+                
                 const outline = document.createElement('div');
                 outline.className = 'window-outline';
                 outline.style.cssText = `
@@ -289,9 +638,14 @@
                     width: ${win.width}px;
                     height: ${win.height}px;
                     border-color: ${selectedWindow?.id === win.id ? '#10b981' : '#3b82f6'};
+                    background: ${selectedWindow?.id === win.id ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'};
                 `;
                 
-                outline.addEventListener('click', () => selectWindow(win));
+                outline.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectWindow(win);
+                });
+                
                 document.querySelector('.game-area').appendChild(outline);
             });
         }
@@ -333,6 +687,14 @@
                     <input type="number" id="height" value="${Math.round(selectedWindow.height)}" 
                            onchange="updateWindowSize()">
                 </div>
+                
+                <div class="form-group">
+                    <label>Видимость</label>
+                    <select id="visibility" onchange="toggleWindowVisibility()">
+                        <option value="visible" ${selectedWindow.visible ? 'selected' : ''}>Видимо</option>
+                        <option value="hidden" ${!selectedWindow.visible ? 'selected' : ''}>Скрыто</option>
+                    </select>
+                </div>
             `;
         }
         
@@ -349,6 +711,7 @@
             selectedWindow.element.style.top = `${y}px`;
             
             drawWindowOutlines();
+            updateStatus(`Позиция обновлена: X:${x} Y:${y}`);
         }
         
         function updateWindowSize() {
@@ -363,62 +726,328 @@
             selectedWindow.element.style.height = `${height}px`;
             
             drawWindowOutlines();
+            updateStatus(`Размер обновлен: ${width}×${height}px`);
         }
         
+        function toggleWindowVisibility() {
+            if (!selectedWindow) return;
+            
+            const select = document.getElementById('visibility');
+            const visible = select.value === 'visible';
+            
+            selectedWindow.visible = visible;
+            selectedWindow.element.style.display = visible ? 'block' : 'none';
+            
+            drawWindowOutlines();
+            updateWindowList();
+            updateStatus(`${selectedWindow.name}: ${visible ? 'показано' : 'скрыто'}`);
+        }
+        
+        // ========== ИНСТРУМЕНТЫ ==========
+        function toggleGrid() {
+            gridVisible = !gridVisible;
+            const grid = document.getElementById('gridOverlay');
+            grid.style.display = gridVisible ? 'block' : 'none';
+            updateStatus(`Сетка: ${gridVisible ? 'включена' : 'выключена'}`);
+        }
+        
+        function resetAllWindows() {
+            if (!confirm('Сбросить ВСЕ окна к исходным позициям?')) return;
+            
+            gameWindows.forEach(win => {
+                if (win.element) {
+                    win.element.style.position = win.originalPosition;
+                    win.element.style.left = '';
+                    win.element.style.top = '';
+                    win.element.style.width = '';
+                    win.element.style.height = '';
+                    win.element.style.display = win.originalDisplay;
+                }
+            });
+            
+            setTimeout(scanWindows, 500);
+            updateStatus('Все окна сброшены к исходным позициям');
+        }
+        
+        function showAllWindows() {
+            gameWindows.forEach(win => {
+                if (win.element) {
+                    win.element.style.display = 'block';
+                    win.visible = true;
+                }
+            });
+            
+            drawWindowOutlines();
+            updateWindowList();
+            updateStatus('Все окна показаны');
+        }
+        
+        function hideAllWindows() {
+            gameWindows.forEach(win => {
+                if (win.element && win.selector !== '.hero-game-screen') {
+                    win.element.style.display = 'none';
+                    win.visible = false;
+                }
+            });
+            
+            drawWindowOutlines();
+            updateWindowList();
+            updateStatus('Все окна (кроме главного) скрыты');
+        }
+        
+        function alignToGrid() {
+            if (!selectedWindow) return;
+            
+            const grid = 20;
+            const x = Math.round(selectedWindow.x / grid) * grid;
+            const y = Math.round(selectedWindow.y / grid) * grid;
+            const width = Math.round(selectedWindow.width / grid) * grid;
+            const height = Math.round(selectedWindow.height / grid) * grid;
+            
+            selectedWindow.x = x;
+            selectedWindow.y = y;
+            selectedWindow.width = width;
+            selectedWindow.height = height;
+            
+            selectedWindow.element.style.left = `${x}px`;
+            selectedWindow.element.style.top = `${y}px`;
+            selectedWindow.element.style.width = `${width}px`;
+            selectedWindow.element.style.height = `${height}px`;
+            
+            drawWindowOutlines();
+            updatePropertiesForm();
+            updateStatus(`Выровнено по сетке 20px: X:${x} Y:${y} ${width}×${height}px`);
+        }
+        
+        // ========== СТИЛИ ==========
+        function updateStyleEditor() {
+            const editor = document.getElementById('styleEditor');
+            
+            if (!selectedWindow) {
+                editor.innerHTML = '<div style="color: #94a3b8; padding: 20px; text-align: center;">Выберите окно</div>';
+                return;
+            }
+            
+            const styles = window.getComputedStyle(selectedWindow.element);
+            
+            editor.innerHTML = `
+                <h4 style="color: #cbd5e1; margin-bottom: 15px;">🎨 Стили: ${selectedWindow.name}</h4>
+                
+                <div class="properties-form">
+                    <div class="form-group">
+                        <label>Цвет фона</label>
+                        <input type="color" id="bgColor" value="${styles.backgroundColor || '#1f2937'}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Цвет текста</label>
+                        <input type="color" id="textColor" value="${styles.color || '#ffffff'}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Размер шрифта</label>
+                        <input type="text" id="fontSize" value="${styles.fontSize || '14px'}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Рамка</label>
+                        <input type="text" id="border" value="${styles.border || '1px solid #475569'}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Скругление углов</label>
+                        <input type="text" id="borderRadius" value="${styles.borderRadius || '8px'}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Z-Index</label>
+                        <input type="number" id="zIndex" value="${styles.zIndex || '1'}">
+                    </div>
+                    
+                    <button onclick="applyStyles()" style="
+                        padding: 10px;
+                        background: #3b82f6;
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    ">
+                        Применить стили
+                    </button>
+                </div>
+            `;
+        }
+        
+        function applyStyles() {
+            if (!selectedWindow) return;
+            
+            const bgColor = document.getElementById('bgColor').value;
+            const textColor = document.getElementById('textColor').value;
+            const fontSize = document.getElementById('fontSize').value;
+            const border = document.getElementById('border').value;
+            const borderRadius = document.getElementById('borderRadius').value;
+            const zIndex = document.getElementById('zIndex').value;
+            
+            selectedWindow.element.style.backgroundColor = bgColor;
+            selectedWindow.element.style.color = textColor;
+            selectedWindow.element.style.fontSize = fontSize;
+            selectedWindow.element.style.border = border;
+            selectedWindow.element.style.borderRadius = borderRadius;
+            selectedWindow.element.style.zIndex = zIndex;
+            
+            updateStatus(`Стили применены к ${selectedWindow.name}`);
+        }
+        
+        // ========== ЭКСПОРТ ==========
         function saveLayout() {
             const layout = {
                 windows: gameWindows.map(win => ({
                     selector: win.selector,
+                    name: win.name,
                     x: win.x,
                     y: win.y,
                     width: win.width,
-                    height: win.height
+                    height: win.height,
+                    visible: win.visible,
+                    styles: {
+                        backgroundColor: win.element?.style.backgroundColor,
+                        color: win.element?.style.color,
+                        fontSize: win.element?.style.fontSize,
+                        border: win.element?.style.border,
+                        borderRadius: win.element?.style.borderRadius,
+                        zIndex: win.element?.style.zIndex
+                    }
                 })),
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                version: '2.0'
             };
             
-            // Сохраняем в localStorage
-            localStorage.setItem('tigrimion_layout', JSON.stringify(layout));
-            alert('✅ Layout сохранен!');
+            localStorage.setItem('tigrimion_pro_layout', JSON.stringify(layout, null, 2));
+            
+            const result = document.getElementById('exportResult');
+            result.textContent = JSON.stringify(layout, null, 2);
+            result.style.display = 'block';
+            
+            updateStatus('✅ Layout сохранен в localStorage!');
         }
         
         function exportCSS() {
-            let css = `/* CSS позиционирование окон Tigrimion */\n/* Сгенерировано редактором */\n\n`;
+            if (gameWindows.length === 0) {
+                alert('Сначала просканируйте окна!');
+                return;
+            }
+            
+            let css = `/* CSS позиционирование окон Tigrimion */\n/* Сгенерировано редактором PRO ${new Date().toLocaleString()} */\n\n`;
             
             gameWindows.forEach(win => {
+                if (!win.visible) return;
+                
                 css += `${win.selector} {\n`;
+                css += `    /* ${win.name} */\n`;
                 css += `    position: absolute;\n`;
                 css += `    left: ${Math.round(win.x)}px;\n`;
                 css += `    top: ${Math.round(win.y)}px;\n`;
                 css += `    width: ${Math.round(win.width)}px;\n`;
                 css += `    height: ${Math.round(win.height)}px;\n`;
+                
+                if (win.element?.style.zIndex) {
+                    css += `    z-index: ${win.element.style.zIndex};\n`;
+                }
+                
+                if (win.element?.style.backgroundColor && win.element.style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                    css += `    background-color: ${win.element.style.backgroundColor};\n`;
+                }
+                
+                if (win.element?.style.border && win.element.style.border !== '0px none rgb(255, 255, 255)') {
+                    css += `    border: ${win.element.style.border};\n`;
+                }
+                
+                if (win.element?.style.borderRadius && win.element.style.borderRadius !== '0px') {
+                    css += `    border-radius: ${win.element.style.borderRadius};\n`;
+                }
+                
                 css += `}\n\n`;
             });
             
-            // Создаем и скачиваем файл
+            // Скачиваем файл
             const blob = new Blob([css], { type: 'text/css' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `tigrimion-layout-${Date.now()}.css`;
+            link.download = `tigrimion-pro-${Date.now()}.css`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
             
-            alert('✅ CSS экспортирован!');
+            const result = document.getElementById('exportResult');
+            result.textContent = css;
+            result.style.display = 'block';
+            
+            updateStatus('✅ CSS экспортирован!');
         }
         
-        // ========== ЗАПУСК ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            // Ждем загрузки игры
-            const gameFrame = document.getElementById('gameFrame');
-            gameFrame.onload = function() {
-                console.log('✅ Игра загружена');
-                // Даем время на рендеринг
-                setTimeout(scanWindows, 2000);
-            };
+        function exportHTML() {
+            let html = `<!-- HTML структура окон Tigrimion -->\n<!-- Сгенерировано редактором PRO ${new Date().toLocaleString()} -->\n\n`;
             
-            // Горячие клавиши
+            html += `<style>\n`;
+            gameWindows.forEach(win => {
+                if (!win.visible) return;
+                
+                html += `${win.selector} {\n`;
+                html += `    position: absolute;\n`;
+                html += `    left: ${Math.round(win.x)}px;\n`;
+                html += `    top: ${Math.round(win.y)}px;\n`;
+                html += `    width: ${Math.round(win.width)}px;\n`;
+                html += `    height: ${Math.round(win.height)}px;\n`;
+                html += `}\n`;
+            });
+            html += `</style>\n\n`;
+            
+            html += `<!-- Окна игры -->\n`;
+            gameWindows.forEach(win => {
+                if (!win.visible) return;
+                html += `<!-- ${win.name} -->\n`;
+                html += `<div class="${win.selector.replace('.', '')}">\n`;
+                html += `    <!-- Содержимое окна -->\n`;
+                html += `</div>\n\n`;
+            });
+            
+            const result = document.getElementById('exportResult');
+            result.textContent = html;
+            result.style.display = 'block';
+            
+            updateStatus('✅ HTML структура сгенерирована!');
+        }
+        
+        // ========== ВКЛАДКИ ==========
+        function setupTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    
+                    // Снимаем активность со всех
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Добавляем активность выбранной
+                    btn.classList.add('active');
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+                    
+                    // Обновляем контент если нужно
+                    if (tabId === 'style') {
+                        updateStyleEditor();
+                    }
+                });
+            });
+        }
+        
+        // ========== ГОРЯЧИЕ КЛАВИШИ ==========
+        function setupHotkeys() {
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey && e.shiftKey && e.key === 'E') {
                     toggleEditor();
@@ -429,7 +1058,51 @@
                     saveLayout();
                     e.preventDefault();
                 }
+                
+                if (e.ctrlKey && e.key === 'd') {
+                    toggleDragMode();
+                    e.preventDefault();
+                }
+                
+                if (e.ctrlKey && e.key === 'g') {
+                    toggleGrid();
+                    e.preventDefault();
+                }
+                
+                // Удаление выбранного окна
+                if (e.key === 'Delete' && selectedWindow) {
+                    selectedWindow.element.style.display = 'none';
+                    selectedWindow.visible = false;
+                    drawWindowOutlines();
+                    updateWindowList();
+                    updateStatus(`Удалено: ${selectedWindow.name}`);
+                }
             });
+        }
+        
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ждем загрузки игры
+            const gameFrame = document.getElementById('gameFrame');
+            gameFrame.onload = function() {
+                console.log('✅ Игра загружена в редактор PRO');
+                updateStatus('Игра загружена. Нажмите 🛠️ для начала работы');
+                
+                // Вешаем обработчик на кнопку перетаскивания
+                const dragToggleBtn = document.getElementById('dragToggleBtn');
+                dragToggleBtn.addEventListener('click', toggleDragMode);
+            };
+            
+            // Инициализируем горячие клавиши
+            setupHotkeys();
+            
+            console.log('🎮 Tigrimion Editor PRO v2.0 инициализирован');
+            console.log('Горячие клавиши:');
+            console.log('• Ctrl+Shift+E - переключить редактор');
+            console.log('• Ctrl+D - переключить режим перетаскивания');
+            console.log('• Ctrl+S - сохранить layout');
+            console.log('• Ctrl+G - переключить сетку');
+            console.log('• Delete - скрыть выбранное окно');
         });
     </script>
 </body>
