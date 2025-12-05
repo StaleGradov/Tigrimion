@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор окон Tigrimion</title>
+    
+    <!-- Загружаем стили вашей игры -->
+    <link rel="stylesheet" href="styles/core.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/ui.css">
+    <link rel="stylesheet" href="styles/hero.css">
+    <link rel="stylesheet" href="styles/battle.css">
+    <link rel="stylesheet" href="styles/map.css">
+    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="shop.css">
+    
+    <style>
+        /* СТИЛИ РЕДАКТОРА */
+        .editor-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99998;
+            display: none;
+        }
+        
+        .editor-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background: rgba(30, 41, 59, 0.95);
+            border-left: 1px solid #475569;
+            z-index: 99999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+            color: white;
+        }
+        
+        .editor-panel.active {
+            right: 0;
+        }
+        
+        .editor-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 100000;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .window-outline {
+            position: absolute;
+            border: 2px dashed #3b82f6;
+            pointer-events: none;
+            z-index: 99997;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .window-outline.selected {
+            border: 2px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .resize-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            z-index: 99998;
+        }
+        
+        /* Другие стили редактора как в предыдущем коде */
+    </style>
+</head>
+<body>
+    <!-- Контейнер для вашей игры -->
+    <div id="app"><!-- Игра загрузится сюда --></div>
+    <div id="overlay-container" class="overlay-container"></div>
+    
+    <!-- Кнопка редактора -->
+    <button class="editor-toggle" id="editorToggle" title="Ctrl+Shift+E">🛠️</button>
+    
+    <!-- Оверлей редактора -->
+    <div class="editor-overlay" id="editorOverlay"></div>
+    
+    <!-- Панель редактора -->
+    <div class="editor-panel" id="editorPanel">
+        <h2 style="color: #60a5fa; margin-bottom: 20px;">🎮 Редактор окон</h2>
+        
+        <div id="editorContent">
+            <!-- Динамически заполняется -->
+        </div>
+    </div>
+    
+    <!-- Загружаем вашу игру -->
+    <script src="script.js"></script>
+    <script>
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Инициализируем игру
+            window.game = new Game();
+            await game.init();
+            
+            // Даем время на рендеринг игры
+            setTimeout(() => {
+                // Инициализируем редактор
+                initEditor();
+                
+                // Вешаем горячие клавиши
+                setupHotkeys();
+                
+                console.log('✅ Игра и редактор загружены');
+            }, 1000);
+        });
+        
+        // ========== РЕДАКТОР ==========
+        function initEditor() {
+            // Кнопка переключения
+            document.getElementById('editorToggle').addEventListener('click', toggleEditor);
+            
+            // Инициализируем контент редактора
+            updateEditorContent();
+            
+            // Сканируем окна игры
+            scanGameWindows();
+        }
+        
+        function toggleEditor() {
+            const panel = document.getElementById('editorPanel');
+            const overlay = document.getElementById('editorOverlay');
+            
+            if (panel.classList.contains('active')) {
+                panel.classList.remove('active');
+                overlay.style.display = 'none';
+            } else {
+                panel.classList.add('active');
+                overlay.style.display = 'block';
+                updateEditorContent();
+            }
+        }
+        
+        // Остальные функции редактора такие же как в предыдущем коде...
+        // (scanGameWindows, showWindowOutlines, и т.д.)
+        
+        function setupHotkeys() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+                    toggleEditor();
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
