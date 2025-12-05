@@ -1,0 +1,373 @@
+{
+  "biomes": [
+    {
+      "id": 1,
+      "name": "Лавовые земли",
+      "icon": "🌋",
+      "color": "#ff6b6b",
+      "danger_level": 9,
+      "description": "Раскалённая земля, покрытая потрескавшейся коркой. Воздух дрожит от жары.",
+      
+      "action_base_chances": {
+        "search_treasure": 20,
+        "search_water": 10,
+        "search_berries": 0,
+        "search_mushrooms": 5,
+        "search_herbs": 5,
+        "search_ore": 40,
+        "search_stone": 30,
+        "set_trap": 10,
+        "prepare_ambush": 15,
+        "hunt": 5,
+        "make_fire": 80,
+        "set_bait": 10,
+        "guard_caravan": 0,
+        "assassination": 0
+      },
+      
+      "action_rewards": {
+        "search_treasure": {"gold": "20-100", "items": ["lava_crystal"]},
+        "search_ore": {"resources": [{"id": "iron_ore", "amount": "1-3"}, {"id": "sulfur", "amount": "1-2"}]},
+        "search_stone": {"resources": [{"id": "obsidian", "amount": "1-2"}]}
+      },
+      
+      "encounter_chance": 25,
+      "monster_ids": [6, 7, 8, 9, 10], // ID демонов/огненных существ
+      
+      "special_notes": "Высокая опасность, но ценные минералы. Вода почти недоступна."
+    },
+    
+    {
+      "id": 2,
+      "name": "Дремучий лес",
+      "icon": "🌲",
+      "color": "#2d6a4f",
+      "danger_level": 5,
+      "description": "Густой древний лес, где свет едва пробивается сквозь кроны.",
+      
+      "action_base_chances": {
+        "search_treasure": 25,
+        "search_water": 30,
+        "search_berries": 60,
+        "search_mushrooms": 50,
+        "search_herbs": 45,
+        "search_ore": 10,
+        "search_stone": 15,
+        "set_trap": 40,
+        "prepare_ambush": 35,
+        "hunt": 30,
+        "make_fire": 70,
+        "set_bait": 25,
+        "guard_caravan": 10,
+        "assassination": 5
+      },
+      
+      "action_rewards": {
+        "search_berries": {"resources": [{"id": "wild_berries", "amount": "2-5"}]},
+        "search_mushrooms": {"resources": [{"id": "forest_mushrooms", "amount": "1-4"}]},
+        "search_herbs": {"resources": [{"id": "healing_herbs", "amount": "1-3"}]},
+        "hunt": {"resources": [{"id": "animal_pelt", "amount": "1"}, {"id": "meat", "amount": "1-2"}]}
+      },
+      
+      "encounter_chance": 35,
+      "monster_ids": [1, 2, 3, 4, 5], // Волки, медведи
+      
+      "special_notes": "Богатство природных ресурсов, но много хищников."
+    },
+    
+    {
+      "id": 3,
+      "name": "Древние руины",
+      "icon": "🏛️",
+      "color": "#adb5bd",
+      "danger_level": 7,
+      "description": "Останки древней цивилизации, хранящие забытые секреты и опасности.",
+      
+      "action_base_chances": {
+        "search_treasure": 50,
+        "search_water": 15,
+        "search_berries": 5,
+        "search_mushrooms": 10,
+        "search_herbs": 20,
+        "search_ore": 25,
+        "search_stone": 40,
+        "set_trap": 20,
+        "prepare_ambush": 25,
+        "hunt": 10,
+        "make_fire": 40,
+        "set_bait": 15,
+        "guard_caravan": 5,
+        "assassination": 15
+      },
+      
+      "action_rewards": {
+        "search_treasure": {"gold": "50-200", "items": ["ancient_artifact", "old_coins"]},
+        "search_stone": {"resources": [{"id": "marble", "amount": "1-2"}, {"id": "carved_stone", "amount": "1"}]}
+      },
+      
+      "encounter_chance": 40,
+      "monster_ids": [11, 12, 13], // Призраки, големы
+      
+      "special_notes": "Высокий шанс ценных находок, но много охраняющих существ."
+    },
+    
+    {
+      "id": 4,
+      "name": "Болотные топи",
+      "icon": "🌫️",
+      "color": "#5c940d",
+      "danger_level": 6,
+      "description": "Зыбкая трясина, наполненная странными звуками и ядовитыми испарениями.",
+      
+      "action_base_chances": {
+        "search_treasure": 15,
+        "search_water": 70,
+        "search_berries": 20,
+        "search_mushrooms": 45,
+        "search_herbs": 55,
+        "search_ore": 5,
+        "search_stone": 10,
+        "set_trap": 30,
+        "prepare_ambush": 40,
+        "hunt": 25,
+        "make_fire": 30,
+        "set_bait": 35,
+        "guard_caravan": 0,
+        "assassination": 10
+      },
+      
+      "action_rewards": {
+        "search_water": {"resources": [{"id": "clean_water", "amount": "1-3"}]},
+        "search_mushrooms": {"resources": [{"id": "swamp_mushrooms", "amount": "1-3"}, {"id": "poison_mushrooms", "amount": "1-2"}]},
+        "search_herbs": {"resources": [{"id": "poison_herbs", "amount": "1-2"}, {"id": "rare_herbs", "amount": "1"}]}
+      },
+      
+      "encounter_chance": 30,
+      "monster_ids": [14, 15, 16], // Болотные твари
+      
+      "special_notes": "Обильная вода и редкие травы, но ядовито и коварно."
+    },
+    
+    {
+      "id": 5,
+      "name": "Горный перевал",
+      "icon": "⛰️",
+      "color": "#6c757d",
+      "danger_level": 8,
+      "description": "Крутые скалы и узкие тропы, где каждый шаг может стать последним.",
+      
+      "action_base_chances": {
+        "search_treasure": 30,
+        "search_water": 25,
+        "search_berries": 10,
+        "search_mushrooms": 15,
+        "search_herbs": 35,
+        "search_ore": 55,
+        "search_stone": 65,
+        "set_trap": 15,
+        "prepare_ambush": 45,
+        "hunt": 20,
+        "make_fire": 25,
+        "set_bait": 10,
+        "guard_caravan": 20,
+        "assassination": 25
+      },
+      
+      "action_rewards": {
+        "search_ore": {"resources": [{"id": "iron_ore", "amount": "2-4"}, {"id": "copper_ore", "amount": "1-3"}]},
+        "search_stone": {"resources": [{"id": "granite", "amount": "1-3"}]},
+        "search_herbs": {"resources": [{"id": "mountain_herbs", "amount": "1-2"}]}
+      },
+      
+      "encounter_chance": 20,
+      "monster_ids": [17, 18, 19], // Орлы, горные тролли
+      
+      "special_notes": "Богатые залежи руды, но экстремально опасные условия."
+    },
+    
+    {
+      "id": 6,
+      "name": "Великие луга",
+      "icon": "🌾",
+      "color": "#a7c957",
+      "danger_level": 3,
+      "description": "Бескрайние просторы высокой травы, где ветер рисует волны.",
+      
+      "action_base_chances": {
+        "search_treasure": 10,
+        "search_water": 40,
+        "search_berries": 30,
+        "search_mushrooms": 20,
+        "search_herbs": 50,
+        "search_ore": 5,
+        "search_stone": 10,
+        "set_trap": 60,
+        "prepare_ambush": 70,
+        "hunt": 55,
+        "make_fire": 90,
+        "set_bait": 50,
+        "guard_caravan": 40,
+        "assassination": 20
+      },
+      
+      "action_rewards": {
+        "search_herbs": {"resources": [{"id": "grassland_herbs", "amount": "2-4"}]},
+        "hunt": {"resources": [{"id": "rabbit_pelt", "amount": "1-2"}, {"id": "meat", "amount": "2-3"}]},
+        "set_trap": {"resources": [{"id": "small_game", "amount": "1-2"}]}
+      },
+      
+      "encounter_chance": 25,
+      "monster_ids": [20, 21], // Койоты, степные хищники
+      
+      "special_notes": "Отличное место для охоты и засад, но мало укрытий."
+    },
+    
+    {
+      "id": 7,
+      "name": "Зачарованный лес",
+      "icon": "🧚",
+      "color": "#9d4edd",
+      "danger_level": 4,
+      "description": "Лес, где деревья шепчут, а в воздухе витает магия.",
+      
+      "action_base_chances": {
+        "search_treasure": 35,
+        "search_water": 45,
+        "search_berries": 40,
+        "search_mushrooms": 60,
+        "search_herbs": 70,
+        "search_ore": 15,
+        "search_stone": 20,
+        "set_trap": 25,
+        "prepare_ambush": 20,
+        "hunt": 15,
+        "make_fire": 50,
+        "set_bait": 20,
+        "guard_caravan": 5,
+        "assassination": 5
+      },
+      
+      "action_rewards": {
+        "search_mushrooms": {"resources": [{"id": "magic_mushrooms", "amount": "1-2"}]},
+        "search_herbs": {"resources": [{"id": "enchanted_herbs", "amount": "1-2"}, {"id": "mana_herbs", "amount": "1"}]},
+        "search_treasure": {"items": ["fairy_dust", "enchanted_acorn"]}
+      },
+      
+      "encounter_chance": 15,
+      "monster_ids": [22, 23, 24], // Феи, лесные духи
+      
+      "special_notes": "Магические ресурсы, но местные существа могут быть капризны."
+    },
+    
+    {
+      "id": 8,
+      "name": "Пустыня",
+      "icon": "🏜️",
+      "color": "#f48c06",
+      "danger_level": 7,
+      "description": "Бескрайние пески, палящее солнце и миражи.",
+      
+      "action_base_chances": {
+        "search_treasure": 40,
+        "search_water": 5,
+        "search_berries": 0,
+        "search_mushrooms": 5,
+        "search_herbs": 10,
+        "search_ore": 25,
+        "search_stone": 35,
+        "set_trap": 20,
+        "prepare_ambush": 30,
+        "hunt": 15,
+        "make_fire": 95,
+        "set_bait": 15,
+        "guard_caravan": 25,
+        "assassination": 30
+      },
+      
+      "action_rewards": {
+        "search_treasure": {"gold": "10-60", "items": ["desert_relic"]},
+        "search_stone": {"resources": [{"id": "sandstone", "amount": "1-3"}]},
+        "search_ore": {"resources": [{"id": "salt", "amount": "1-2"}]}
+      },
+      
+      "encounter_chance": 20,
+      "monster_ids": [25, 26, 27], // Скорпионы, пустынные твари
+      
+      "special_notes": "Редкая вода, но возможны неожиданные находки в песках."
+    },
+    
+    {
+      "id": 9,
+      "name": "Пещеры",
+      "icon": "🕳️",
+      "color": "#495057",
+      "danger_level": 8,
+      "description": "Темные лабиринты, где эхо разносит каждый звук.",
+      
+      "action_base_chances": {
+        "search_treasure": 45,
+        "search_water": 20,
+        "search_berries": 0,
+        "search_mushrooms": 35,
+        "search_herbs": 25,
+        "search_ore": 60,
+        "search_stone": 70,
+        "set_trap": 35,
+        "prepare_ambush": 50,
+        "hunt": 10,
+        "make_fire": 20,
+        "set_bait": 25,
+        "guard_caravan": 0,
+        "assassination": 40
+      },
+      
+      "action_rewards": {
+        "search_ore": {"resources": [{"id": "iron_ore", "amount": "3-5"}, {"id": "silver_ore", "amount": "1-2"}]},
+        "search_mushrooms": {"resources": [{"id": "cave_mushrooms", "amount": "1-3"}]},
+        "search_treasure": {"gold": "30-120", "items": ["cave_crystal"]}
+      },
+      
+      "encounter_chance": 45,
+      "monster_ids": [28, 29, 30], // Летучие мыши, пещерные твари
+      
+      "special_notes": "Обилие минералов, но высокая плотность враждебной фауны."
+    },
+    
+    {
+      "id": 10,
+      "name": "Волшебная поляна",
+      "icon": "✨",
+      "color": "#ffb3c1",
+      "danger_level": 2,
+      "description": "Оазис гармонии, где природа сияет неземным светом.",
+      
+      "action_base_chances": {
+        "search_treasure": 20,
+        "search_water": 60,
+        "search_berries": 70,
+        "search_mushrooms": 65,
+        "search_herbs": 75,
+        "search_ore": 5,
+        "search_stone": 10,
+        "set_trap": 15,
+        "prepare_ambush": 10,
+        "hunt": 5,
+        "make_fire": 40,
+        "set_bait": 10,
+        "guard_caravan": 15,
+        "assassination": 0
+      },
+      
+      "action_rewards": {
+        "search_berries": {"resources": [{"id": "magic_berries", "amount": "2-4"}]},
+        "search_herbs": {"resources": [{"id": "healing_herbs", "amount": "3-5"}, {"id": "blessed_herbs", "amount": "1-2"}]},
+        "search_water": {"resources": [{"id": "spring_water", "amount": "2-3"}]}
+      },
+      
+      "encounter_chance": 5,
+      "monster_ids": [], // Мирные существа или вообще нет
+      
+      "special_notes": "Идеальное место для сбора ресурсов и отдыха. Почти нет опасностей."
+    }
+  ]
+}
