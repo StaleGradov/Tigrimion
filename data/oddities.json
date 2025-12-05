@@ -6,7 +6,23 @@
       "icon": "❄️",
       "category": "weather",
       "description": "Как в самых глухих землях Каэдвена, здесь поселилась буря, что не знает усталости. Воздух звенит осколками льда, и каждый вздох обжигает лёгкие. Тут не до приключений — тут до укрытия бы добраться.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "movement_cost": 2,
+          "visibility": -40,
+          "cold_damage_per_turn": 1
+        },
+        "action_chances": {
+          "search_water": 50,
+          "search_berries": -60,
+          "search_mushrooms": -40,
+          "make_fire": -35,
+          "hunt": -25,
+          "set_trap": -15
+        },
+        "encounter_chance": -20,
+        "danger_level": 1
+      },
       "duration": "permanent",
       "rarity": "uncommon",
       "visual_hint": "snow_flakes"
@@ -17,7 +33,23 @@
       "icon": "🔥",
       "category": "weather",
       "description": "Здесь царит жара, от которой плавятся камни и вянут надежды. Миражи танцуют на горизонте, и кажется, будто сам воздух вот-вот вспыхнет. Даже огненные элементали чувствуют себя неловко.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "movement_cost": 1,
+          "visibility": 20,
+          "heat_damage_per_turn": 2,
+          "water_consumption": 2
+        },
+        "action_chances": {
+          "search_water": -50,
+          "search_berries": -40,
+          "search_herbs": -30,
+          "make_fire": 40,
+          "hunt": -20
+        },
+        "encounter_chance": -15,
+        "danger_level": 1
+      },
       "duration": "permanent",
       "rarity": "uncommon",
       "visual_hint": "heat_waves"
@@ -28,7 +60,23 @@
       "icon": "🌫️",
       "category": "weather",
       "description": "Туман, густой, как суп в таверне «Разбитый горшок». В нём теряются не только тропы, но и собственные сапоги. Идеальное место для засад и очень неудобное — для всего остального.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "visibility": -70,
+          "stealth": 30,
+          "ranged_accuracy": -50,
+          "detection_range": -60
+        },
+        "action_chances": {
+          "prepare_ambush": 40,
+          "assassination": 25,
+          "hunt": -35,
+          "guard_caravan": -20,
+          "search_treasure": -15
+        },
+        "encounter_chance": 10,
+        "danger_level": 0
+      },
       "duration": "3_turns",
       "rarity": "common",
       "visual_hint": "fog"
@@ -39,7 +87,21 @@
       "icon": "🌀",
       "category": "magic",
       "description": "Здесь магия не подчиняется учебникам. Заклинания искрятся не теми цветами, свитки читаются задом наперёд, а тень отбрасывает не туда. Чувствуешь себя учеником, случайно разбившим фамильяра.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "magic_power": 40,
+          "magic_failure_chance": 25,
+          "unpredictable_events_chance": 30,
+          "spell_duration_random": 50
+        },
+        "action_chances": {
+          "search_treasure": 20,
+          "search_herbs": 15,
+          "search_ore": -10
+        },
+        "encounter_chance": 15,
+        "danger_level": 2
+      },
       "duration": "permanent",
       "rarity": "rare",
       "visual_hint": "sparkles"
@@ -50,7 +112,20 @@
       "icon": "🔇",
       "category": "magic",
       "description": "Здесь магия притихла, будто её пристыдил старый маг. Заклинания гаснут на губах, артефакты — просто безделушки. Единственное, что работает — здравый смысл и острая сталь.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "magic_power": -80,
+          "magic_resistance": 50,
+          "magic_items_efficiency": -60,
+          "spell_casting_chance": -90
+        },
+        "action_chances": {
+          "search_treasure": -30,
+          "search_herbs": -20
+        },
+        "encounter_chance": -10,
+        "danger_level": -1
+      },
       "duration": "permanent",
       "rarity": "uncommon",
       "visual_hint": "magic_null"
@@ -60,8 +135,24 @@
       "name": "Шепчущие Руны",
       "icon": "🪬",
       "category": "magic",
-      "description": "Древние символы на камнях мерцают и бормочут обрывки заклятий. Иногда они делятся мудростью, иногда — проклинают на несварение желудка. Рискованное знание для любопытных.",
-      "modifiers": { ... },
+      "description": "Древние символы на камнях мерцают и бормочут обрывки заклятий. Иногда они делясь мудростью, иногда — проклиная на несварение желудка. Рискованное знание для любопытных.",
+      "modifiers": {
+        "global": {
+          "rune_magic_power": 50,
+          "ancient_knowledge_gain": 30,
+          "curse_chance_from_interaction": 20
+        },
+        "action_chances": {
+          "search_stone": 40,
+          "search_treasure": 25
+        },
+        "special_effects": [
+          "Руны можно активировать для временных баффов",
+          "Неправильная активация = случайное проклятие"
+        ],
+        "encounter_chance": 5,
+        "danger_level": 1
+      },
       "duration": "permanent",
       "rarity": "rare",
       "visual_hint": "runes_glow"
@@ -72,7 +163,23 @@
       "icon": "💰",
       "category": "nature",
       "description": "Природа здесь щедра, словно хоббит перед вторым завтраком. Ягоды размером с кулак, грибы просятся в котелок, а в ручьях плещется рыба-переросток. Осталось только разжечь огонь.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "resource_amount_multiplier": 2.0,
+          "resource_quality": 1,
+          "foraging_speed": 30
+        },
+        "action_chances": {
+          "search_berries": 30,
+          "search_mushrooms": 25,
+          "search_herbs": 25,
+          "search_water": 20,
+          "hunt": 20,
+          "fishing": 40
+        },
+        "encounter_chance": 15,
+        "danger_level": -1
+      },
       "duration": "5_turns",
       "rarity": "uncommon",
       "visual_hint": "shimmer"
@@ -83,7 +190,23 @@
       "icon": "🪹",
       "category": "nature",
       "description": "Почва сера и безжизненна, будто после визита дракона или налогового инспектора. Ни травинки, ни букашки. Даже скаредные гоблины обходят это место стороной.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "resource_amount_multiplier": 0.3,
+          "resource_quality": -1,
+          "healing_rate": -20
+        },
+        "action_chances": {
+          "search_berries": -80,
+          "search_mushrooms": -70,
+          "search_herbs": -60,
+          "search_water": -40,
+          "hunt": -50,
+          "set_bait": -30
+        },
+        "encounter_chance": -30,
+        "danger_level": 0
+      },
       "duration": "permanent",
       "rarity": "common",
       "visual_hint": "barren"
@@ -94,7 +217,20 @@
       "icon": "☠️",
       "category": "curse",
       "description": "Воздух отдаёт гнилью и старыми обидами. Удача покинула это место, оставив вместо себя кашель, сломанные шнурки и чувство, что за тобой вот-вот захлопнется дверь.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "all_action_chances": -20,
+          "critical_failure_chance": 15,
+          "item_break_chance": 10,
+          "misfortune_events": 25
+        },
+        "encounter_chance": 25,
+        "danger_level": 2,
+        "special_effects": [
+          "Критический провал: обратный эффект действия",
+          "Сокровища иногда превращаются в прах при взятии"
+        ]
+      },
       "duration": "until_cleansed",
       "rarity": "rare",
       "visual_hint": "dark_aura",
@@ -106,7 +242,20 @@
       "icon": "🙏",
       "category": "blessing",
       "description": "Тихий шёпот древних сил ощущается кожей. Монеты попадаются чаще, тросы не рвутся, а суп в котелке никогда не пригорает. Мир, хоть ненадолго, на твоей стороне.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "all_action_chances": 25,
+          "critical_success_chance": 10,
+          "item_durability": 20,
+          "luck": 30
+        },
+        "encounter_chance": -15,
+        "danger_level": -2,
+        "special_effects": [
+          "Критический успех: в 3 раза больше награды",
+          "Шанс найти редкий предмет +5%"
+        ]
+      },
       "duration": "5_turns",
       "rarity": "rare",
       "visual_hint": "golden_light"
@@ -117,7 +266,26 @@
       "icon": "🍽️",
       "category": "curse",
       "description": "Здесь вечно сводит желудок. Даже съеденный паёк не приносит сытости, а вода утоляет жажду лишь на мгновение. Проклятие для тех, кто забыл дома сухари.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "hunger_rate": 3,
+          "thirst_rate": 3,
+          "healing_effects": -50,
+          "stamina_regen": -40
+        },
+        "action_chances": {
+          "search_berries": -100,
+          "search_mushrooms": -100,
+          "search_water": -80,
+          "hunt": -60
+        },
+        "special_effects": [
+          "Еда в инвентаре портится в 2 раза быстрее",
+          "Зелья лечения на 50% менее эффективны"
+        ],
+        "encounter_chance": -5,
+        "danger_level": 1
+      },
       "duration": "until_left",
       "rarity": "uncommon",
       "visual_hint": "decay"
@@ -128,7 +296,25 @@
       "icon": "⏳",
       "category": "time",
       "description": "Секунды тянутся, как смола. Стрела летит так медленно, что можно прочитать на ней гравировку. Идеально для обдумывания своих ошибок. Ужасно для срочных дел.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "action_points_per_turn": 2,
+          "cooldown_speed": 0.5,
+          "movement_cost": 2,
+          "buff_duration": 2.0
+        },
+        "action_chances": {
+          "prepare_ambush": 30,
+          "assassination": 25,
+          "search_treasure": 20
+        },
+        "special_effects": [
+          "Баффы действуют в 2 раза дольше",
+          "Яды действуют в 2 раза медленнее"
+        ],
+        "encounter_chance": -10,
+        "danger_level": 0
+      },
       "duration": "4_turns",
       "rarity": "legendary",
       "visual_hint": "slow_motion"
@@ -139,7 +325,25 @@
       "icon": "⚡",
       "category": "time",
       "description": "Всё происходит быстрее, чем успеваешь моргнуть. Сердце колотится, мысли мелькают, а день пролетает за час. Такое впечатление, что само пространство куда-то опаздывает.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "action_points_per_turn": 0.5,
+          "cooldown_speed": 2.0,
+          "movement_cost": 0.5,
+          "buff_duration": 0.5
+        },
+        "action_chances": {
+          "hunt": -30,
+          "set_trap": -25,
+          "prepare_ambush": -20
+        },
+        "special_effects": [
+          "Баффы действуют в 2 раза короче",
+          "Кровотечение наносит урон в 2 раза чаще"
+        ],
+        "encounter_chance": 10,
+        "danger_level": 1
+      },
       "duration": "4_turns",
       "rarity": "legendary",
       "visual_hint": "fast_motion"
@@ -150,7 +354,19 @@
       "icon": "🔄",
       "category": "time",
       "description": "Сильное чувство дежавю. Кажется, этот пень, эта лужа, этот камень уже были в твоей судьбе. Возможно, шанс исправить прошлую оплошность? Или наступить на те же грабли?",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "redo_chance": 50,
+          "deja_vu_events": 30
+        },
+        "special_effects": [
+          "При провале: 50% шанс повторить попытку",
+          "При успехе: 50% шанс получить награду ещё раз",
+          "Каждый ход: 10% шанс вернуться на предыдущую клетку"
+        ],
+        "encounter_chance": 0,
+        "danger_level": 0
+      },
       "duration": "3_turns",
       "rarity": "mythical",
       "visual_hint": "time_loop"
@@ -161,7 +377,21 @@
       "icon": "🌀",
       "category": "space",
       "description": "Расстояния лгут. Холм в ста шагах оказывается в двух днях пути. Дверь в пещере ведёт на её же крышу. Навигация здесь — искусство для фанатиков и сумасшедших.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "movement_random": 2,
+          "ranged_accuracy": -40,
+          "visibility": -30,
+          "teleport_chance": 15
+        },
+        "special_effects": [
+          "Телепортация: 15% шанс переместиться в случайную клетку",
+          "Порталы могут появляться случайно",
+          "Ловушки трудно заметить (-25% detection)"
+        ],
+        "encounter_chance": 20,
+        "danger_level": 2
+      },
       "duration": "permanent",
       "rarity": "rare",
       "visual_hint": "space_warp"
@@ -172,7 +402,26 @@
       "icon": "⬇️",
       "category": "space",
       "description": "Земная тяга то давит, как совесть мага-недоучки, то отпускает, позволяя подпрыгнуть до ветвей. Ходить здесь — всё равно что пьяному идти по палубе во время шторма.",
-      "modifiers": { ... },
+      "modifiers": {
+        "global": {
+          "movement_cost": 3,
+          "jump_distance": 0.5,
+          "fall_damage_multiplier": 2.0,
+          "projectile_trajectory_random": 40
+        },
+        "action_chances": {
+          "prepare_ambush": -25,
+          "set_trap": -20,
+          "hunt": -15
+        },
+        "special_effects": [
+          "Предметы иногда всплывают в воздух",
+          "Броски гранат летят не туда",
+          "Падение с высоты наносит 2x урона"
+        ],
+        "encounter_chance": 5,
+        "danger_level": 1
+      },
       "duration": "4_turns",
       "rarity": "uncommon",
       "visual_hint": "gravity_waves"
@@ -184,7 +433,11 @@
       "category": "supernatural",
       "description": "Звуки повторяются, но с искажением. Шёпот становится криком, шаги — топотом толпы. Создаётся впечатление, что за тобой идёт отряд призраков, обсуждая твою походку.",
       "modifiers": {
-        "global": {"stealth": -40, "detection": 30},
+        "global": {
+          "stealth": -40,
+          "detection": 30,
+          "sound_based_skills": -25
+        },
         "encounter_chance": 20,
         "danger_level": 1
       },
@@ -199,8 +452,17 @@
       "category": "curse",
       "description": "Оружие тупится, тетива лопается, а доспехи натирают даже там, где их нет. Место, где доверять можно только собственным кулакам и крепким словам.",
       "modifiers": {
-        "global": {"weapon_damage": -35, "armor": -25, "item_break_chance": 15},
-        "danger_level": 2
+        "global": {
+          "weapon_damage": -35,
+          "armor_protection": -25,
+          "item_break_chance": 15,
+          "repair_efficiency": -50
+        },
+        "danger_level": 2,
+        "special_effects": [
+          "Оружие теряет прочность в 2 раза быстрее",
+          "Доспехи снижают подвижность на 10%"
+        ]
       },
       "duration": "until_left",
       "rarity": "rare",
@@ -214,8 +476,17 @@
       "category": "nature",
       "description": "После каждого дождя земля буквально шевелится от выползших червей. Рыбаки были бы в восторге. Все остальные — в ужасе. Особенно чистюли.",
       "modifiers": {
-        "action_chances": {"fishing": 80, "set_bait": 100, "make_camp": -30},
-        "encounter_chance": 10
+        "action_chances": {
+          "fishing": 80,
+          "set_bait": 100,
+          "make_camp": -30,
+          "search_herbs": -15
+        },
+        "encounter_chance": 10,
+        "special_effects": [
+          "Повышенный шанс найти наживку",
+          "-20% к скрытности из-за хлюпающих звуков"
+        ]
       },
       "duration": "2_turns_after_rain",
       "rarity": "common",
@@ -228,8 +499,17 @@
       "category": "blessing",
       "description": "Роса здесь обладает лёгким целебным свойством. Раны затягиваются быстрее, усталость отступает. Кажется, будто сам лес пытается помочь путнику.",
       "modifiers": {
-        "global": {"healing_rate": 20, "stamina_regen": 15},
-        "action_chances": {"search_herbs": 25}
+        "global": {
+          "healing_rate": 20,
+          "stamina_regen": 15,
+          "nature_magic_power": 25
+        },
+        "action_chances": {
+          "search_herbs": 25,
+          "search_berries": 15
+        },
+        "encounter_chance": -5,
+        "danger_level": -1
       },
       "duration": "dawn_only",
       "rarity": "uncommon",
@@ -242,9 +522,17 @@
       "category": "supernatural",
       "description": "Из-под земли доносятся глухие удары и ворчание на забытом языке. Камни вибрируют. Создаётся впечатление, что кто-то гигантский и не в духе роет прямо под твоими ногами.",
       "modifiers": {
-        "global": {"mining_yield": 40, "cave_in_chance": 25},
+        "global": {
+          "mining_yield": 40,
+          "cave_in_chance": 25,
+          "earth_magic_power": 30
+        },
         "encounter_chance": 30,
-        "danger_level": 2
+        "danger_level": 2,
+        "special_effects": [
+          "Шанс найти редкую руду +15%",
+          "Каждый ход: 5% шанс мелкого землетрясения"
+        ]
       },
       "duration": "permanent",
       "rarity": "rare",
@@ -257,8 +545,17 @@
       "category": "supernatural",
       "description": "Тихая, гипнотическая мелодия витает над трясиной. Она сулит покой и забытьё. Те, кто слушает слишком долго, находят покой в объятиях тины.",
       "modifiers": {
-        "global": {"willpower_save_required": true, "movement_random": 3},
-        "encounter_chance": -10
+        "global": {
+          "willpower_save_required": true,
+          "movement_random": 3,
+          "hypnosis_chance": 20
+        },
+        "encounter_chance": -10,
+        "danger_level": 1,
+        "special_effects": [
+          "Каждый ход: проверка Воли против зачарования",
+          "Провал = движение в случайном направлении"
+        ]
       },
       "duration": "permanent",
       "rarity": "uncommon",
@@ -271,8 +568,19 @@
       "category": "time",
       "description": "Солнце здесь никогда не садится и не восходит. Оно застыло у горизонта, заливая всё мягким оранжевым светом. Время будто замерло в самый прекрасный миг дня.",
       "modifiers": {
-        "global": {"visibility": "excellent", "time_of_day": "fixed_sunset"},
-        "action_chances": {"make_camp": 50, "meditate": 40}
+        "global": {
+          "visibility": "excellent",
+          "time_of_day": "fixed_sunset",
+          "creature_spawn_night": false,
+          "creature_spawn_day": false
+        },
+        "action_chances": {
+          "make_camp": 50,
+          "meditate": 40,
+          "hunt": -10
+        },
+        "encounter_chance": 0,
+        "danger_level": -1
       },
       "duration": "permanent",
       "rarity": "mythical",
@@ -285,8 +593,17 @@
       "category": "space",
       "description": "Даже в полдень местность покрывает огромная, неподвижная тень. Её источник не виден. Создаётся жуткое ощущение, что кто-то невидимый и колоссальный стоит прямо за тобой.",
       "modifiers": {
-        "global": {"temperature": -3, "stealth_in_shadow": 50},
-        "action_chances": {"gather_plants": -20}
+        "global": {
+          "temperature": -3,
+          "stealth_in_shadow": 50,
+          "sunlight_dependent_abilities": -100
+        },
+        "action_chances": {
+          "gather_plants": -20,
+          "hunt": -15
+        },
+        "encounter_chance": 5,
+        "danger_level": 0
       },
       "duration": "permanent",
       "rarity": "rare",
@@ -299,8 +616,22 @@
       "category": "magic",
       "description": "Воздух пахнет серой, мятой и чем-то неслыханно горьким. Предметы случайным образом меняют цвет, а вода в лужах иногда вскипает сама по себе.",
       "modifiers": {
-        "global": {"potion_power": 30, "potion_mishap": 20},
-        "action_chances": {"search_herbs": 40, "search_mushrooms": 50}
+        "global": {
+          "potion_power": 30,
+          "potion_mishap_chance": 20,
+          "alchemy_speed": 40
+        },
+        "action_chances": {
+          "search_herbs": 40,
+          "search_mushrooms": 50,
+          "search_ore": 10
+        },
+        "encounter_chance": 15,
+        "danger_level": 1,
+        "special_effects": [
+          "Случайные алхимические эффекты при создании зелий",
+          "10% шанс, что зелье будет усилено или испорчено"
+        ]
       },
       "duration": "permanent",
       "rarity": "uncommon",
@@ -313,8 +644,17 @@
       "category": "supernatural",
       "description": "По ночам слышатся отголоски торговых криков, звон монет и смех. Но площадь пуста. Будто ярмарка ушедшего города до сих пор ищет покупателей.",
       "modifiers": {
-        "global": {"trade_chance": 25, "fear_save_night": true},
-        "encounter_chance_night": 40
+        "global": {
+          "trade_chance": 25,
+          "fear_save_night": true,
+          "ghost_encounter_chance": 40
+        },
+        "encounter_chance_night": 40,
+        "danger_level_night": 2,
+        "special_effects": [
+          "Ночью можно торговать с призрачными купцами",
+          "Днём эффект отсутствует"
+        ]
       },
       "duration": "night_only",
       "rarity": "rare",
@@ -327,9 +667,17 @@
       "category": "supernatural",
       "description": "Земля тёплая, а из расщелин выходит лёгкий дымок с запахом серы и золота. Ощущение, будто идёшь по сундуку с сокровищами, который к тому же может проснуться.",
       "modifiers": {
-        "global": {"heat_damage": 1, "treasure_find": 15},
+        "global": {
+          "heat_damage_per_turn": 1,
+          "treasure_find_chance": 15,
+          "fire_magic_power": 25
+        },
         "encounter_chance": 5,
-        "danger_level": 3
+        "danger_level": 3,
+        "special_effects": [
+          "Шанс найти драгоценные камни +10%",
+          "Волшебные существа здесь сильнее на 20%"
+        ]
       },
       "duration": "permanent",
       "rarity": "legendary",
@@ -342,9 +690,17 @@
       "category": "nature",
       "description": "На земле отпечатки лап, не принадлежащие ни одному известному зверю. Огромные, странной формы. Что бы это ни было, оно явно больше тебя. И, вероятно, голодное.",
       "modifiers": {
-        "action_chances": {"tracking": 50, "hunt": -30},
+        "action_chances": {
+          "tracking": 50,
+          "hunt": -30,
+          "set_trap": 20
+        },
         "encounter_chance": 15,
-        "danger_level": 2
+        "danger_level": 2,
+        "special_effects": [
+          "Существа могут появляться неожиданно",
+          "Шанс встретить уникального монстра +5%"
+        ]
       },
       "duration": "3_turns",
       "rarity": "common",
@@ -357,7 +713,17 @@
       "category": "nature",
       "description": "Мириады светляков создают в воздухе причудливые, постоянно меняющиеся узоры. Красиво, но сбивает с толку и совершенно не помогает освещать путь.",
       "modifiers": {
-        "global": {"visibility_night": "high_but_confusing", "stealth_night": -20}
+        "global": {
+          "visibility_night": "high_but_confusing",
+          "stealth_night": -20,
+          "ranged_accuracy_night": -15
+        },
+        "special_effects": [
+          "Ночью видимость 70%, но трудно сфокусироваться",
+          "Магические существа привлечены светом"
+        ],
+        "encounter_chance_night": 25,
+        "danger_level_night": 1
       },
       "duration": "night_only",
       "rarity": "common",
@@ -370,8 +736,17 @@
       "category": "supernatural",
       "description": "Здесь царит абсолютная тишина. Не слышно ни ветра, ни птиц, ни даже собственного дыхания. Звук, рождённый здесь, глохнет, не пролетев и метра. Ужасающе спокойно.",
       "modifiers": {
-        "global": {"auditory_detection": 0, "cast_verbal_spells": false},
-        "encounter_chance": -25
+        "global": {
+          "auditory_detection": 0,
+          "cast_verbal_spells": false,
+          "sound_based_skills": -100
+        },
+        "encounter_chance": -25,
+        "danger_level": 0,
+        "special_effects": [
+          "Заклинания с вербальным компонентом не работают",
+          "Крики о помощи не будут услышаны"
+        ]
       },
       "duration": "permanent",
       "rarity": "rare",
