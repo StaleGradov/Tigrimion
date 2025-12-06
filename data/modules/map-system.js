@@ -958,22 +958,23 @@ class MapSystem {
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
-    // Сначала получаем все контейнеры
+    // Получаем основной контейнер карты
     const mapContent = document.querySelector('.tactical-map-content-with-actions');
     if (!mapContent) {
         console.error("❌ Основной контейнер карты не найден!");
         return;
     }
     
-    // Создаем левую панель, если ее нет
+    // Создаем левую панель если ее нет
     let leftPanel = document.querySelector('.cell-info-left-panel');
     if (!leftPanel) {
         leftPanel = document.createElement('div');
         leftPanel.className = 'cell-info-left-panel';
+        // Вставляем левую панель в начало
         mapContent.insertBefore(leftPanel, mapContent.firstChild);
     }
     
-    // Получаем правую панель действий
+    // Получаем правую панель (старый контейнер)
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден!");
@@ -981,15 +982,16 @@ updateCellActionsUI(cell) {
         return;
     }
     
+    // Убираем старое содержимое из правой панели (картинку и описание останутся только слева)
     const mapVisual = document.querySelector('.tactical-map-visual');
     const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
     
-    const panelWidth = 1150; // Ширина как в оригинале
+    const panelWidth = 1150; // Сохраняем оригинальный размер
     const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
     
     console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
     
-    // ========== ЛЕВАЯ ПАНЕЛЬ (Информация о локации) ==========
+    // ========== ЛЕВАЯ ПАНЕЛЬ (картинка и описание) ==========
     leftPanel.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -1014,7 +1016,7 @@ updateCellActionsUI(cell) {
         align-self: flex-start !important;
     `;
     
-    // ========== ПРАВАЯ ПАНЕЛЬ (Только действия) ==========
+    // ========== ПРАВАЯ ПАНЕЛЬ (только кнопки) ==========
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -1039,33 +1041,50 @@ updateCellActionsUI(cell) {
         align-self: flex-start !important;
     `;
     
+    // Обновляем стили родительского контейнера чтобы вместить 3 колонки
     const panel = actionsContainer.closest('.cell-actions-panel');
     if (panel) {
         panel.style.cssText = `
-            overflow: visible !important;
             display: flex !important;
-            flex-direction: row !important;
+            flex-direction: column !important;
             height: ${panelHeight + 30}px !important;
             max-height: ${panelHeight + 30}px !important;
             min-height: ${panelHeight + 30}px !important;
-            width: auto !important;
-            margin: 0 !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
+            margin-left: 20px !important;
             align-self: flex-start !important;
             flex-shrink: 0 !important;
-            background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            position: absolute !important;
-            right: 0 !important;
-            left: 0 !important;
-            top: 0 !important;
-            justify-content: space-between !important;
         `;
     }
     
-    // Убедимся что оба контейнера находятся в правильном порядке
-    if (!mapContent.querySelector('.cell-info-left-panel')) {
-        mapContent.appendChild(leftPanel);
+    // Обновляем стили основного контейнера для 3 колонок
+    mapContent.style.cssText = `
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        height: ${panelHeight + 40}px !important;
+        gap: 20px !important;
+        padding: 0 20px !important;
+        overflow: visible !important;
+        width: 100% !important;
+    `;
+    
+    // Обновляем стили для карты по центру
+    const mapMainArea = document.querySelector('.map-main-area');
+    if (mapMainArea) {
+        mapMainArea.style.cssText = `
+            flex: 1 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: ${panelHeight}px !important;
+            min-width: 600px !important;
+            max-width: 800px !important;
+            margin: 0 20px !important;
+        `;
     }
     
     if (cell.explored === undefined) cell.explored = false;
@@ -1094,7 +1113,7 @@ updateCellActionsUI(cell) {
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
-    // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОЙ ПАНЕЛИ ==========
+    // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОЙ ПАНЕЛИ (картинка и описание) ==========
     let leftHTML = '';
     
     try {
@@ -1106,7 +1125,7 @@ updateCellActionsUI(cell) {
     
     leftPanel.innerHTML = leftHTML;
     
-    // ========== СОЗДАЕМ HTML ДЛЯ ПРАВОЙ ПАНЕЛИ (только действия) ==========
+    // ========== СОЗДАЕМ HTML ДЛЯ ПРАВОЙ ПАНЕЛИ (только кнопки) ==========
     let rightHTML = '';
     
     // Заголовок правой панели
@@ -1120,8 +1139,8 @@ updateCellActionsUI(cell) {
     if (!isExplored && cell.hasAction !== false) {
         if (this.currentCellActions.length > 0) {
             try {
-                // Создаем список действий только с кнопками
-                rightHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+                // Создаем список действий ТОЛЬКО С КНОПКАМИ
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
                 
                 // Кнопка завершения исследования
                 rightHTML += `
@@ -1141,7 +1160,6 @@ updateCellActionsUI(cell) {
                 console.error("❌ Ошибка создания списка действий:", error);
                 rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
             }
-            
         } else {
             rightHTML += this.createNoActionsHTML();
         }
@@ -1153,7 +1171,27 @@ updateCellActionsUI(cell) {
     
     rightHTML += `</div>`;
     
-    // Добавляем ресурсы героя в правую панель
+    // Легенда шансов в правой панели
+    rightHTML += `
+        <div class="chance-legend" style="
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 15px;
+        ">
+            <strong style="color: #00ffcc;">Легенда шансов:</strong>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <span style="color: #ff4444;">0-39% - Плохой</span>
+                <span style="color: #ffaa00;">40-69% - Средний</span>
+                <span style="color: #44ff44;">70-89% - Хороший</span>
+                <span style="color: #00ffaa;">90-100% - Отличный</span>
+            </div>
+        </div>
+    `;
+    
+    // Ресурсы героя в правой панели
     rightHTML += `
         <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
             <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
@@ -1186,39 +1224,16 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        const leftDescription = leftPanel.querySelector('.cell-description-text');
-        if (leftDescription) {
-            leftDescription.style.cssText = `
-                display: block !important;
-                color: #e2e8f0 !important;
-                background: rgba(0, 0, 0, 0.6) !important;
-                padding: 15px !important;
-                border-radius: 8px !important;
-                margin: 15px 0 !important;
-                max-height: 200px !important;
-                overflow-y: auto !important;
-                font-size: 14px !important;
-                line-height: 1.6 !important;
-                text-align: justify !important;
-                border-left: 3px solid #00ffcc !important;
-            `;
+        // Загружаем картинку в левую панель
+        if (cellTypeData) {
+            try {
+                this.displayRealLocationImage(cellTypeData, leftPanel);
+            } catch (error) {
+                console.error("❌ Ошибка загрузки картинки:", error);
+            }
         }
         
-        const leftLocationName = leftPanel.querySelector('.cell-name');
-        if (leftLocationName) {
-            leftLocationName.style.cssText = `
-                font-size: 24px !important;
-                margin: 15px 0 !important;
-                color: #00ffcc !important;
-                text-align: center !important;
-                font-weight: bold !important;
-                text-shadow: 0 0 15px rgba(0, 255, 204, 0.5) !important;
-                padding-bottom: 10px !important;
-                border-bottom: 2px solid rgba(0, 255, 204, 0.3) !important;
-            `;
-        }
-        
-        // Оптимизация правой панели
+        // Оптимизация правой панели (только кнопки)
         const actionCards = actionsContainer.querySelectorAll('.action-card');
         actionCards.forEach(card => {
             card.style.cssText = `
@@ -1255,19 +1270,10 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        // Загружаем картинку в левую панель
-        if (cellTypeData) {
-            try {
-                this.displayRealLocationImage(cellTypeData, leftPanel);
-            } catch (error) {
-                console.error("❌ Ошибка загрузки картинки:", error);
-            }
-        }
-        
         // Обновляем ресурсы в правой панели
         this.updateHeroResourcesUI('heroResourcesListRight');
         
-        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, правая ${panelWidth}x${panelHeight}px`);
+        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
         
     }, 50);
     
@@ -1279,7 +1285,7 @@ updateCellActionsUI(cell) {
         }
     }
     
-    console.log("✅ Панели действий обновлены");
+    console.log("✅ Панели обновлены");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
@@ -1346,15 +1352,15 @@ updateCellActionsUI(cell) {
     }
 
 
-// Обновленный метод createLeftPanelHTML
+
+    
+// Метод createLeftPanelHTML (вставьте его после createCellInfoHTML)
 createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
     return `
         <div class="cell-info-header-left">
-            <div class="left-panel-title">
-                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
-                    📍 Информация о локации
-                </h3>
-            </div>
+            <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px; border-bottom: 2px solid rgba(0, 255, 204, 0.3); padding-bottom: 10px;">
+                📍 Информация о локации
+            </h3>
             
             <div class="location-visual-container">
                 <div class="location-image-wrapper" id="locationImageWrapperLeft">
@@ -1365,66 +1371,270 @@ createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored)
                 </div>
             </div>
             
-            <h4 class="cell-name">${cellTypeData.name}</h4>
+            <h4 class="cell-name" style="color: #00ffcc; text-align: center; margin: 15px 0; font-size: 1.3rem;">
+                ${cellTypeData.name}
+            </h4>
             
-            <div class="cell-position-info">
-                <span class="cell-coords">Позиция: [${cell.col}, ${cell.row}]</span>
-                ${isCurrentPosition ? '<span class="current-position-badge">📍 Вы здесь</span>' : ''}
-                ${isExplored ? '<span class="explored-badge">✓ Исследовано</span>' : ''}
+            <div class="cell-position-info" style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 6px;
+                margin-bottom: 15px;
+            ">
+                <span class="cell-coords" style="color: #94a3b8; font-size: 14px;">
+                    Позиция: [${cell.col}, ${cell.row}]
+                </span>
+                ${isCurrentPosition ? 
+                    '<span class="current-position-badge" style="background: rgba(0, 255, 204, 0.2); color: #00ffcc; padding: 4px 8px; border-radius: 4px; font-size: 12px;">📍 Вы здесь</span>' : ''}
+                ${isExplored ? 
+                    '<span class="explored-badge" style="background: rgba(0, 255, 0, 0.2); color: #00ff00; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✓ Исследовано</span>' : ''}
             </div>
             
-            <div class="cell-description-text">
+            <div class="cell-description-text" style="
+                color: #cbd5e1;
+                font-size: 14px;
+                line-height: 1.6;
+                padding: 15px;
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 8px;
+                margin-bottom: 15px;
+                border-left: 3px solid #00ffcc;
+                max-height: 200px;
+                overflow-y: auto;
+            ">
                 ${cellTypeData.description}
             </div>
             
             ${cellTypeData.suggestion ? `
-                <div class="cell-suggestion">
+                <div class="cell-suggestion" style="
+                    background: rgba(251, 191, 36, 0.1);
+                    border: 1px solid rgba(251, 191, 36, 0.3);
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin-bottom: 15px;
+                    color: #fbbf24;
+                    font-size: 13px;
+                ">
                     <strong>💡 Совет:</strong> ${cellTypeData.suggestion}
                 </div>
             ` : ''}
             
             ${cellTypeData.special_notes ? `
-                <div class="special-notes">
+                <div class="special-notes" style="
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.3);
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin-bottom: 15px;
+                    color: #fbbf24;
+                    font-size: 13px;
+                ">
                     <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
                 </div>
             ` : ''}
             
-            <div class="danger-level-info">
-                <strong>⚠️ Уровень опасности:</strong> ${cellTypeData.monster_level || 1}/5
-                <div class="danger-bar">
-                    <div class="danger-fill" style="width: ${(cellTypeData.monster_level || 1) * 20}%"></div>
+            <div class="danger-level-info" style="
+                background: rgba(255, 100, 100, 0.1);
+                border: 1px solid rgba(255, 100, 100, 0.3);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 15px;
+                color: #ffcccc;
+                font-size: 14px;
+            ">
+                <strong style="color: #ff6666; display: block; margin-bottom: 8px;">⚠️ Уровень опасности: ${cellTypeData.monster_level || 1}/5</strong>
+                <div class="danger-bar" style="
+                    width: 100%;
+                    height: 8px;
+                    background: rgba(255, 100, 100, 0.2);
+                    border-radius: 4px;
+                    overflow: hidden;
+                    margin: 8px 0;
+                ">
+                    <div class="danger-fill" style="
+                        width: ${(cellTypeData.monster_level || 1) * 20}%;
+                        height: 100%;
+                        background: linear-gradient(90deg, #ff6666, #ff4444);
+                        border-radius: 4px;
+                    "></div>
                 </div>
-                <small>Шанс монстра при неудаче: ${cellTypeData.failure_monster_chance || 50}%</small>
+                <small style="color: #ff9999; font-size: 12px;">
+                    Шанс монстра при неудаче: ${cellTypeData.failure_monster_chance || 50}%
+                </small>
             </div>
             
-            <div class="cell-stats-left">
-                <div class="stat-item">
-                    <span>Тип локации:</span>
-                    <span class="stat-value">${cellTypeData.name}</span>
+            <div class="cell-stats-left" style="
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 15px;
+                border: 1px solid rgba(0, 255, 204, 0.2);
+                margin-top: auto;
+            ">
+                <h5 style="color: #00ffcc; margin-bottom: 10px; text-align: center;">📊 Статистика клетки</h5>
+                <div class="stat-item" style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <span style="color: #94a3b8;">Тип:</span>
+                    <span class="stat-value" style="color: #00ffcc; font-weight: bold;">${cell.type || 'Обычная'}</span>
                 </div>
-                <div class="stat-item">
-                    <span>Тип клетки:</span>
-                    <span class="stat-value">${cell.type || 'Неизвестно'}</span>
+                <div class="stat-item" style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <span style="color: #94a3b8;">Проходимость:</span>
+                    <span class="stat-value" style="color: ${cell.passable !== false ? '#00ff00' : '#ff4444'}; font-weight: bold;">
+                        ${cell.passable !== false ? '✅ Проходима' : '❌ Непроходима'}
+                    </span>
                 </div>
-                <div class="stat-item">
-                    <span>Проходимость:</span>
-                    <span class="stat-value">${cell.passable !== false ? '✅ Проходима' : '❌ Непроходима'}</span>
-                </div>
-                <div class="stat-item">
-                    <span>Видимость:</span>
-                    <span class="stat-value">${cell.visible !== false ? '👁️ Видима' : '👻 Скрыта'}</span>
+                <div class="stat-item" style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                    <span style="color: #94a3b8;">Видимость:</span>
+                    <span class="stat-value" style="color: ${cell.visible !== false ? '#00ffcc' : '#ffaa00'}; font-weight: bold;">
+                        ${cell.visible !== false ? '👁️ Видима' : '👻 Скрыта'}
+                    </span>
                 </div>
                 ${cell.hasLoot ? `
-                    <div class="stat-item">
-                        <span>Возможный лут:</span>
-                        <span class="stat-value" style="color: #f59e0b;">💎 Есть</span>
+                    <div class="stat-item" style="display: flex; justify-content: space-between; padding: 6px 0;">
+                        <span style="color: #94a3b8;">Лут:</span>
+                        <span class="stat-value" style="color: #f59e0b; font-weight: bold;">💎 Возможен</span>
                     </div>
                 ` : ''}
             </div>
         </div>
     `;
 }
+
+    // Новый метод для создания только кнопок действий (без описания локации)
+createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
+    let html = `<div class="actions-grid" style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    ">`;
     
+    this.currentCellActions.forEach((action, index) => {
+        const chance = this.getActionChance(action, this.currentCellType);
+        const chancePercent = Math.round(chance);
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Неизвестное действие'
+        };
+        
+        let chanceColor = '#ff4444';
+        if (chance >= 40) chanceColor = '#ffaa00';
+        if (chance >= 70) chanceColor = '#44ff44';
+        if (chance >= 90) chanceColor = '#00ffaa';
+        
+        let isDisabled = false;
+        let disabledReason = '';
+        
+        if (!isReachable) {
+            isDisabled = true;
+            disabledReason = 'Клетка недоступна';
+        } else if (!isCurrentPosition && action.requiresPlayerHere) {
+            isDisabled = true;
+            disabledReason = 'Нужно быть в клетке';
+        }
+        
+        const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
+        const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою' : '';
+        
+        // Создаем обработчик клика
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
+        
+        html += `
+            <div class="action-card" style="
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                transition: all 0.2s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6;'}
+            " ${onClickHandler}>
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div class="action-icon" style="
+                        font-size: 20px;
+                        margin-right: 10px;
+                        color: ${chanceColor};
+                        flex-shrink: 0;
+                    ">
+                        ${config.icon || '⚡'}
+                    </div>
+                    <div class="action-name" style="
+                        font-weight: bold;
+                        color: ${isDisabled ? '#888' : '#ffffff'};
+                        font-size: 13px;
+                        flex: 1;
+                    ">
+                        ${config.name}
+                    </div>
+                </div>
+                
+                <div class="action-description" style="
+                    color: ${isDisabled ? '#777' : '#b0b0ff'};
+                    font-size: 11px;
+                    margin-bottom: 10px;
+                    line-height: 1.3;
+                    flex: 1;
+                ">
+                    ${config.description}
+                    ${triggersMonster ? `<br><small style="color: #ff4444;">${triggersMonster}</small>` : ''}
+                    ${alwaysMonster ? `<br><small style="color: #ffaa00;">${alwaysMonster}</small>` : ''}
+                </div>
+                
+                <div class="action-chance-display" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 11px;
+                    margin-top: auto;
+                ">
+                    <span style="color: #aaa;">Шанс:</span>
+                    <div style="display: flex; align-items: center;">
+                        <div style="
+                            width: 40px;
+                            height: 6px;
+                            background: #333;
+                            border-radius: 3px;
+                            margin-right: 8px;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                width: ${chancePercent}%;
+                                height: 100%;
+                                background: ${chanceColor};
+                                border-radius: 3px;
+                            "></div>
+                        </div>
+                        <span style="color: ${chanceColor}; font-weight: bold;">
+                            ${chancePercent}%
+                        </span>
+                    </div>
+                </div>
+                
+                ${isDisabled ? `
+                    <div style="
+                        font-size: 10px;
+                        color: #ff6666;
+                        margin-top: 8px;
+                        padding-top: 8px;
+                        border-top: 1px dashed #444;
+                    ">
+                        ${disabledReason}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    return html;
+}
 
  createActionsListHTML(cell, isCurrentPosition, isReachable) {
     let html = `
