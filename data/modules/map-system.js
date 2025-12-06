@@ -958,32 +958,39 @@ class MapSystem {
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
+    // Сначала получаем все контейнеры
+    const mapContent = document.querySelector('.tactical-map-content-with-actions');
+    if (!mapContent) {
+        console.error("❌ Основной контейнер карты не найден!");
+        return;
+    }
+    
+    // Создаем левую панель, если ее нет
+    let leftPanel = document.querySelector('.cell-info-left-panel');
+    if (!leftPanel) {
+        leftPanel = document.createElement('div');
+        leftPanel.className = 'cell-info-left-panel';
+        mapContent.insertBefore(leftPanel, mapContent.firstChild);
+    }
+    
+    // Получаем правую панель действий
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден!");
         this.createActionsContainerFallback();
-        const newContainer = document.getElementById('cellActionsContainer');
-        if (newContainer) {
-            this.updateCellActionsUI(cell);
-        }
         return;
     }
-    
-    // Получаем оба контейнера
-    const mapMainArea = document.querySelector('.map-main-area');
-    const leftInfoContainer = document.createElement('div');
-    leftInfoContainer.className = 'cell-info-left-panel';
     
     const mapVisual = document.querySelector('.tactical-map-visual');
     const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
     
-    const panelWidth = 550; // Уменьшили ширину, т.к. теперь 2 панели
+    const panelWidth = 1150; // Ширина как в оригинале
     const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
     
-    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px (две панели)`);
+    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
     
-    // ========== ЛЕВЫЙ КОНТЕЙНЕР (Информация о локации) ==========
-    leftInfoContainer.style.cssText = `
+    // ========== ЛЕВАЯ ПАНЕЛЬ (Информация о локации) ==========
+    leftPanel.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
         visibility: visible !important;
@@ -1004,9 +1011,10 @@ updateCellActionsUI(cell) {
         position: relative !important;
         box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
         flex-shrink: 0 !important;
+        align-self: flex-start !important;
     `;
     
-    // ========== ПРАВЫЙ КОНТЕЙНЕР (Только действия) ==========
+    // ========== ПРАВАЯ ПАНЕЛЬ (Только действия) ==========
     actionsContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
@@ -1024,10 +1032,11 @@ updateCellActionsUI(cell) {
         border: 2px solid #00ffff !important;
         border-radius: 10px !important;
         padding: 20px !important;
-        margin: 0 !important;
+        margin-left: 20px !important;
         position: relative !important;
         box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
         flex-shrink: 0 !important;
+        align-self: flex-start !important;
     `;
     
     const panel = actionsContainer.closest('.cell-actions-panel');
@@ -1039,22 +1048,24 @@ updateCellActionsUI(cell) {
             height: ${panelHeight + 30}px !important;
             max-height: ${panelHeight + 30}px !important;
             min-height: ${panelHeight + 30}px !important;
-            width: ${(panelWidth * 2) + 40}px !important;
-            max-width: ${(panelWidth * 2) + 40}px !important;
-            min-width: ${(panelWidth * 2) + 40}px !important;
-            margin-left: 20px !important;
+            width: auto !important;
+            margin: 0 !important;
             align-self: flex-start !important;
             flex-shrink: 0 !important;
-            justify-content: space-between !important;
             background: transparent !important;
             border: none !important;
             padding: 0 !important;
+            position: absolute !important;
+            right: 0 !important;
+            left: 0 !important;
+            top: 0 !important;
+            justify-content: space-between !important;
         `;
-        
-        // Добавляем левый контейнер в панель
-        if (!panel.querySelector('.cell-info-left-panel')) {
-            panel.insertBefore(leftInfoContainer, actionsContainer);
-        }
+    }
+    
+    // Убедимся что оба контейнера находятся в правильном порядке
+    if (!mapContent.querySelector('.cell-info-left-panel')) {
+        mapContent.appendChild(leftPanel);
     }
     
     if (cell.explored === undefined) cell.explored = false;
@@ -1066,7 +1077,7 @@ updateCellActionsUI(cell) {
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-        leftInfoContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        leftPanel.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
         actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
         return;
     }
@@ -1083,7 +1094,7 @@ updateCellActionsUI(cell) {
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
-    // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОГО КОНТЕЙНЕРА ==========
+    // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОЙ ПАНЕЛИ ==========
     let leftHTML = '';
     
     try {
@@ -1093,10 +1104,18 @@ updateCellActionsUI(cell) {
         leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
     }
     
-    leftInfoContainer.innerHTML = leftHTML;
+    leftPanel.innerHTML = leftHTML;
     
-    // ========== СОЗДАЕМ HTML ДЛЯ ПРАВОГО КОНТЕЙНЕРА ==========
+    // ========== СОЗДАЕМ HTML ДЛЯ ПРАВОЙ ПАНЕЛИ (только действия) ==========
     let rightHTML = '';
+    
+    // Заголовок правой панели
+    rightHTML += `
+        <div class="actions-section" style="margin-bottom: 20px;">
+            <h3 style="color: #00ffff; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
+    `;
     
     if (!isExplored && cell.hasAction !== false) {
         if (this.currentCellActions.length > 0) {
@@ -1104,21 +1123,25 @@ updateCellActionsUI(cell) {
                 // Создаем список действий только с кнопками
                 rightHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
                 
-                // Кнопка завершения исследования в правом контейнере
+                // Кнопка завершения исследования
                 rightHTML += `
-                    <div class="cell-completion-controls">
+                    <div class="cell-completion-controls" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569;">
                         <button class="btn-control complete-exploration-btn" 
                                 onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
-                                title="Отметить клетку как полностью исследованную">
+                                title="Отметить клетку как полностью исследованную"
+                                style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981, #059669);">
                             ✓ Завершить исследование
                         </button>
-                        <p class="hint">После завершения исследования вы не сможете выполнять здесь действия</p>
+                        <p class="hint" style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 12px;">
+                            После завершения исследования вы не сможете выполнять здесь действия
+                        </p>
                     </div>
                 `;
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
                 rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
             }
+            
         } else {
             rightHTML += this.createNoActionsHTML();
         }
@@ -1128,22 +1151,34 @@ updateCellActionsUI(cell) {
         rightHTML += this.createNoActionsHTML();
     }
     
+    rightHTML += `</div>`;
+    
+    // Добавляем ресурсы героя в правую панель
+    rightHTML += `
+        <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
+            <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
+            <div class="resource-list" id="heroResourcesListRight">
+                <!-- Ресурсы будут загружены динамически -->
+            </div>
+        </div>
+    `;
+    
     actionsContainer.innerHTML = rightHTML;
     
     // ========== ОПТИМИЗАЦИЯ СТИЛЕЙ ==========
     setTimeout(() => {
         // Оптимизация левой панели
-        const leftImageWrapper = leftInfoContainer.querySelector('.location-visual-container');
+        const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
         if (leftImageWrapper) {
             leftImageWrapper.style.cssText = `
-                height: 250px !important;
-                width: 250px !important;
-                max-height: 250px !important;
-                max-width: 250px !important;
-                min-height: 250px !important;
-                min-width: 250px !important;
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
                 overflow: hidden !important;
-                margin: 0 auto 15px auto !important;
+                margin: 0 auto 20px auto !important;
                 position: relative !important;
                 border: 2px solid #00ffcc !important;
                 border-radius: 10px !important;
@@ -1151,7 +1186,7 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        const leftDescription = leftInfoContainer.querySelector('.cell-description-text');
+        const leftDescription = leftPanel.querySelector('.cell-description-text');
         if (leftDescription) {
             leftDescription.style.cssText = `
                 display: block !important;
@@ -1160,7 +1195,7 @@ updateCellActionsUI(cell) {
                 padding: 15px !important;
                 border-radius: 8px !important;
                 margin: 15px 0 !important;
-                max-height: 180px !important;
+                max-height: 200px !important;
                 overflow-y: auto !important;
                 font-size: 14px !important;
                 line-height: 1.6 !important;
@@ -1169,15 +1204,15 @@ updateCellActionsUI(cell) {
             `;
         }
         
-        const leftLocationName = leftInfoContainer.querySelector('.cell-name');
+        const leftLocationName = leftPanel.querySelector('.cell-name');
         if (leftLocationName) {
             leftLocationName.style.cssText = `
-                font-size: 22px !important;
+                font-size: 24px !important;
                 margin: 15px 0 !important;
                 color: #00ffcc !important;
                 text-align: center !important;
                 font-weight: bold !important;
-                text-shadow: 0 0 10px rgba(0, 255, 204, 0.5) !important;
+                text-shadow: 0 0 15px rgba(0, 255, 204, 0.5) !important;
                 padding-bottom: 10px !important;
                 border-bottom: 2px solid rgba(0, 255, 204, 0.3) !important;
             `;
@@ -1214,34 +1249,25 @@ updateCellActionsUI(cell) {
         if (actionsGrid) {
             actionsGrid.style.cssText = `
                 display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-columns: repeat(3, 1fr) !important;
                 gap: 12px !important;
                 margin-bottom: 20px !important;
-            `;
-        }
-        
-        const rightTitle = actionsContainer.querySelector('.actions-section h3');
-        if (rightTitle) {
-            rightTitle.style.cssText = `
-                color: #00ffff !important;
-                margin-bottom: 20px !important;
-                text-align: center !important;
-                font-size: 18px !important;
-                padding-bottom: 10px !important;
-                border-bottom: 2px solid rgba(0, 255, 255, 0.3) !important;
             `;
         }
         
         // Загружаем картинку в левую панель
         if (cellTypeData) {
             try {
-                this.displayRealLocationImage(cellTypeData, leftInfoContainer);
+                this.displayRealLocationImage(cellTypeData, leftPanel);
             } catch (error) {
                 console.error("❌ Ошибка загрузки картинки:", error);
             }
         }
         
-        console.log(`✅ Панели оптимизированы: левая ${panelWidth}x${panelHeight}px, правая ${panelWidth}x${panelHeight}px`);
+        // Обновляем ресурсы в правой панели
+        this.updateHeroResourcesUI('heroResourcesListRight');
+        
+        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, правая ${panelWidth}x${panelHeight}px`);
         
     }, 50);
     
@@ -1251,12 +1277,6 @@ updateCellActionsUI(cell) {
         } catch (error) {
             console.error("❌ Ошибка назначения обработчиков:", error);
         }
-    }
-    
-    try {
-        this.updateHeroResourcesUI();
-    } catch (error) {
-        console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
     console.log("✅ Панели действий обновлены");
@@ -1326,10 +1346,16 @@ updateCellActionsUI(cell) {
     }
 
 
-// Новый метод для создания HTML левой панели
+// Обновленный метод createLeftPanelHTML
 createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
     return `
         <div class="cell-info-header-left">
+            <div class="left-panel-title">
+                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
+                    📍 Информация о локации
+                </h3>
+            </div>
+            
             <div class="location-visual-container">
                 <div class="location-image-wrapper" id="locationImageWrapperLeft">
                     <div class="image-loading">🖼️ Загрузка изображения...</div>
@@ -1377,17 +1403,23 @@ createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored)
                     <span class="stat-value">${cellTypeData.name}</span>
                 </div>
                 <div class="stat-item">
-                    <span>Размер клетки:</span>
-                    <span class="stat-value">${this.currentTacticalMap?.cellSize || 40}px</span>
-                </div>
-                <div class="stat-item">
-                    <span>Видимость:</span>
-                    <span class="stat-value">${cell.visible !== false ? 'Видна' : 'Скрыта'}</span>
+                    <span>Тип клетки:</span>
+                    <span class="stat-value">${cell.type || 'Неизвестно'}</span>
                 </div>
                 <div class="stat-item">
                     <span>Проходимость:</span>
-                    <span class="stat-value">${cell.passable !== false ? 'Проходима' : 'Непроходима'}</span>
+                    <span class="stat-value">${cell.passable !== false ? '✅ Проходима' : '❌ Непроходима'}</span>
                 </div>
+                <div class="stat-item">
+                    <span>Видимость:</span>
+                    <span class="stat-value">${cell.visible !== false ? '👁️ Видима' : '👻 Скрыта'}</span>
+                </div>
+                ${cell.hasLoot ? `
+                    <div class="stat-item">
+                        <span>Возможный лут:</span>
+                        <span class="stat-value" style="color: #f59e0b;">💎 Есть</span>
+                    </div>
+                ` : ''}
             </div>
         </div>
     `;
@@ -1607,9 +1639,9 @@ createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored)
         return img;
     }
 
+// Обновленный метод для отображения картинки
 displayRealLocationImage(cellTypeData, leftContainer) {
-    const imageWrapper = leftContainer?.querySelector('#locationImageWrapperLeft') || 
-                        document.getElementById('locationImageWrapperLeft');
+    const imageWrapper = leftContainer?.querySelector('#locationImageWrapperLeft');
     if (!imageWrapper) return;
     
     const img = new Image();
@@ -2249,29 +2281,41 @@ displayFallbackLocationImage(cellTypeData, container) {
         }
     }
 
-    updateHeroResourcesUI() {
-        const resourcesList = document.getElementById('heroResourcesList');
-        if (!resourcesList || !this.currentHero) return;
-        
-        if (!this.currentHero.resources || Object.keys(this.currentHero.resources).length === 0) {
-            resourcesList.innerHTML = '<div class="no-resources">Ресурсов пока нет</div>';
-            return;
-        }
-        
-        let resourcesHTML = '';
-        Object.values(this.currentHero.resources).forEach(resource => {
-            const icon = this.getResourceIcon(resource.type);
-            resourcesHTML += `
-                <div class="resource-item">
-                    <span class="resource-icon">${icon}</span>
-                    <span class="resource-name">${resource.name}</span>
-                    <span class="resource-count">x${resource.count}</span>
-                </div>
-            `;
-        });
-        
-        resourcesList.innerHTML = resourcesHTML;
+ // Обновленный метод updateHeroResourcesUI
+updateHeroResourcesUI(containerId = 'heroResourcesList') {
+    const resourcesList = document.getElementById(containerId);
+    if (!resourcesList || !this.currentHero) return;
+    
+    if (!this.currentHero.resources || Object.keys(this.currentHero.resources).length === 0) {
+        resourcesList.innerHTML = '<div class="no-resources" style="text-align: center; color: #94a3b8; padding: 20px;">Ресурсов пока нет</div>';
+        return;
     }
+    
+    let resourcesHTML = '';
+    Object.values(this.currentHero.resources).forEach(resource => {
+        const icon = this.getResourceIcon(resource.type);
+        resourcesHTML += `
+            <div class="resource-item" style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 12px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 6px;
+                margin-bottom: 8px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 18px;">${icon}</span>
+                    <span style="color: #cbd5e1; font-size: 14px;">${resource.name}</span>
+                </div>
+                <span style="color: #f59e0b; font-weight: bold; font-size: 16px;">x${resource.count}</span>
+            </div>
+        `;
+    });
+    
+    resourcesList.innerHTML = resourcesHTML;
+}
 
     getResourceIcon(resourceType) {
         const icons = {
@@ -5242,55 +5286,38 @@ moveOnTacticalMap(x, y) {
         }
     }
 
-    createActionsContainerFallback() {
-        console.log("🛠️ Создаем резервный контейнер для действий");
-        
-        const mapContent = document.querySelector('.tactical-map-content-with-actions');
-        if (!mapContent) {
-            console.error("❌ Основной контейнер карты не найден");
-            return;
-        }
-        
-        let actionsPanel = document.querySelector('.cell-actions-panel');
-        if (!actionsPanel) {
-            actionsPanel = document.createElement('div');
-            actionsPanel.className = 'cell-actions-panel';
-            actionsPanel.style.cssText = `
-                flex: 1;
-                min-width: 320px;
-                max-width: 350px;
-                background: rgba(30, 41, 59, 0.95);
-                border: 2px solid #475569;
-                border-radius: 10px;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                overflow: visible !important;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-                margin-left: 20px;
-            `;
-            mapContent.appendChild(actionsPanel);
-        }
-        
-        const actionsContainer = document.createElement('div');
-        actionsContainer.id = 'cellActionsContainer';
-        actionsContainer.className = 'cell-actions-container';
-        actionsContainer.style.cssText = `
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            margin-bottom: 20px;
-            padding-right: 5px;
-            display: block;
-            visibility: visible;
-            opacity: 1;
-        `;
-        
-        actionsPanel.innerHTML = '';
-        actionsPanel.appendChild(actionsContainer);
-        
-        console.log("✅ Резервный контейнер создан");
+  // Обновленный метод createActionsContainerFallback
+createActionsContainerFallback() {
+    console.log("🛠️ Создаем контейнеры слева и справа");
+    
+    const mapContent = document.querySelector('.tactical-map-content-with-actions');
+    if (!mapContent) {
+        console.error("❌ Основной контейнер карты не найден");
+        return;
     }
+    
+    // Создаем левую панель
+    const leftPanel = document.createElement('div');
+    leftPanel.className = 'cell-info-left-panel';
+    leftPanel.id = 'cellInfoLeftPanel';
+    
+    // Создаем правую панель
+    const actionsPanel = document.createElement('div');
+    actionsPanel.className = 'cell-actions-panel';
+    
+    const actionsContainer = document.createElement('div');
+    actionsContainer.id = 'cellActionsContainer';
+    actionsContainer.className = 'cell-actions-container';
+    
+    actionsPanel.appendChild(actionsContainer);
+    
+    // Очищаем и добавляем панели
+    mapContent.innerHTML = '';
+    mapContent.appendChild(leftPanel);
+    mapContent.appendChild(actionsPanel);
+    
+    console.log("✅ Контейнеры созданы слева и справа");
+}
 
     showNotification(message, type = 'info') {
         if (window.game && window.game.showNotification) {
