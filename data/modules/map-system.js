@@ -1871,149 +1871,159 @@ class MapSystem {
         return allMonsters[Math.floor(Math.random() * allMonsters.length)];
     }
 
-    completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
-        console.log(`🎲 Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+ completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+    console.log(`🎲 Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+    
+    // Обработка охоты
+    if (battleType === 'hunt' && this.pendingAction) {
+        const { action, row, col, cellTypeData, wasSuccess, doubleLoot: huntDoubleLoot } = this.pendingAction;
         
-        // Обработка охоты
-        if (battleType === 'hunt' && this.pendingAction) {
-            const { action, row, col, cellTypeData, wasSuccess, doubleLoot: huntDoubleLoot } = this.pendingAction;
+        if (victory) {
+            console.log(`🏹 Победа в охоте на клетке [${col},${row}] с двойным лутодропом=${huntDoubleLoot}`);
             
-            if (victory) {
-                console.log(`🏹 Победа в охоте на клетке [${col},${row}] с двойным лутодропом=${huntDoubleLoot}`);
+            // Отмечаем клетку как исследованную
+            this.markCellAsExplored(row, col);
+            
+            // Показываем сообщение об успешной охоте
+            this.showNotification(`🏹 Охота успешна! Вы добыли ${huntDoubleLoot ? 'двойной' : ''} трофей.`, 'success');
+            
+            // Если есть BattleSystem, можем получить лут
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem && doubleLoot) {
+                console.log(`🎁 Удваиваем лут с охоты...`);
                 
-                // Отмечаем клетку как исследованную
-                this.markCellAsExplored(row, col);
+                const allMonsters = battleSystem.currentMonsters || [];
                 
-                // Показываем сообщение об успешной охоте
-                this.showNotification(`🏹 Охота успешна! Вы добыли ${huntDoubleLoot ? 'двойной' : ''} трофей.`, 'success');
+                // Собираем лут со всех монстров еще раз
+                const doubleLoot = [];
+                allMonsters.forEach(monster => {
+                    const monsterLoot = battleSystem.getMonsterLoot(monster);
+                    doubleLoot.push(...monsterLoot);
+                });
                 
-                // Если есть BattleSystem, можем получить лут
-                const battleSystem = window.game?.systems?.battle;
-                if (battleSystem && battleSystem.getBattleRewards) {
-                    const rewards = battleSystem.getBattleRewards();
-                    if (rewards && huntDoubleLoot) {
-                        // Удваиваем награды
-                        if (rewards.gold) {
-                            this.currentHero.gold += rewards.gold;
-                            console.log(`💰 Получено двойное золото: ${rewards.gold * 2}`);
-                        }
-                        if (rewards.items && rewards.items.length > 0) {
-                            rewards.items.forEach(item => {
-                                console.log(`🎁 Получен двойной предмет: ${item}`);
-                                // Здесь нужно добавить логику добавления предмета в инвентарь
-                            });
-                        }
+                // Добавляем дополнительный лут
+                if (doubleLoot.length > 0) {
+                    battleSystem.addLootToResourcesSystem(doubleLoot);
+                    
+                    // Показываем сообщение о двойном луте
+                    if (window.game.showNotification) {
+                        const uniqueCount = new Set(doubleLoot).size;
+                        window.game.showNotification(
+                            `🎯 УСПЕШНАЯ ОХОТА! Получен двойной лут: ${uniqueCount} видов ресурсов`, 
+                            'success'
+                        );
                     }
                 }
-                
-                setTimeout(() => {
-                    const cellKey = `${col},${row}`;
-                    const cell = this.currentTacticalMap?.cells[cellKey];
-                    
-                    if (cell) {
-                        this.updateCellActionsUI(cell);
-                        this.highlightSelectedCell(cell);
-                    }
-                }, 500);
-            } else {
-                console.log(`💀 Поражение в охоте на клетке [${col},${row}]`);
-                this.markCellAsExplored(row, col);
-                this.showNotification(`💀 Охота провалилась! Вы были ранены.`, 'error');
             }
             
-            this.pendingAction = null;
-            return;
-        }
-        
-        if (battleType === 'action_failure' && this.pendingAction) {
-            const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
-            
-            if (victory) {
-                console.log(`✅ Победа над монстром после неудачного действия ${action}`);
-                this.showNotification(`✅ Вы победили монстра! Действие ${action} можно повторить.`, 'success');
+            setTimeout(() => {
+                const cellKey = `${col},${row}`;
+                const cell = this.currentTacticalMap?.cells[cellKey];
                 
-                setTimeout(() => {
-                    const cellKey = `${col},${row}`;
-                    const cell = this.currentTacticalMap?.cells[cellKey];
-                    
-                    if (cell) {
-                        this.updateCellActionsUI(cell);
-                        this.highlightSelectedCell(cell);
-                    }
-                }, 500);
-            } else {
-                console.log(`💀 Поражение от монстра после действия ${action}`);
-                this.markCellAsExplored(row, col);
-                this.showNotification(`💀 Вы были ранены монстром! Локация теперь считается опасной.`, 'error');
-            }
-            
-            this.pendingAction = null;
-            return;
+                if (cell) {
+                    this.updateCellActionsUI(cell);
+                    this.highlightSelectedCell(cell);
+                }
+            }, 500);
+        } else {
+            console.log(`💀 Поражение в охоте на клетке [${col},${row}]`);
+            this.markCellAsExplored(row, col);
+            this.showNotification(`💀 Охота провалилась! Вы были ранены.`, 'error');
         }
         
-        if (this.pendingMovement) {
-            let targetX, targetY;
+        this.pendingAction = null;
+        return;
+    }
+    
+    if (battleType === 'action_failure' && this.pendingAction) {
+        const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
+        
+        if (victory) {
+            console.log(`✅ Победа над монстром после неудачного действия ${action}`);
+            this.showNotification(`✅ Вы победили монстра! Действие ${action} можно повторить.`, 'success');
             
-            if (victory) {
-                targetX = this.pendingMovement.x;
-                targetY = this.pendingMovement.y;
+            setTimeout(() => {
+                const cellKey = `${col},${row}`;
+                const cell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (cell) {
+                    this.updateCellActionsUI(cell);
+                    this.highlightSelectedCell(cell);
+                }
+            }, 500);
+        } else {
+            console.log(`💀 Поражение от монстра после действия ${action}`);
+            this.markCellAsExplored(row, col);
+            this.showNotification(`💀 Вы были ранены монстром! Локация теперь считается опасной.`, 'error');
+        }
+        
+        this.pendingAction = null;
+        return;
+    }
+    
+    if (this.pendingMovement) {
+        let targetX, targetY;
+        
+        if (victory) {
+            targetX = this.pendingMovement.x;
+            targetY = this.pendingMovement.y;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+            
+            if (window.game) {
+                window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+            }
+        } else {
+            if (escape) {
+                targetX = this.playerTacticalPosition.x;
+                targetY = this.playerTacticalPosition.y;
+                console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                }
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                targetX = startPosition.x;
+                targetY = startPosition.y;
                 const oldPosition = {...this.playerTacticalPosition};
                 this.playerTacticalPosition = {x: targetX, y: targetY};
                 
-                console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
                 
                 if (window.game) {
-                    window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+                    window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
                 }
-            } else {
-                if (escape) {
-                    targetX = this.playerTacticalPosition.x;
-                    targetY = this.playerTacticalPosition.y;
-                    console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
-                    
-                    if (window.game) {
-                        window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
-                    }
-                } else {
-                    const startPosition = this.currentTacticalMap.startPosition;
-                    targetX = startPosition.x;
-                    targetY = startPosition.y;
-                    const oldPosition = {...this.playerTacticalPosition};
-                    this.playerTacticalPosition = {x: targetX, y: targetY};
-                    
-                    console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
-                    
-                    if (window.game) {
-                        window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
-                    }
-                }
-            }
-            
-            this.pendingMovement = null;
-            
-            if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-                this.calculateCSSScale();
-                this.drawTacticalMap();
-                this.updateMovementInfo();
-                
-                setTimeout(() => {
-                    const cellKey = `${targetX},${targetY}`;
-                    const currentCell = this.currentTacticalMap?.cells[cellKey];
-                    
-                    if (currentCell) {
-                        console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
-                        this.updateCellActionsUI(currentCell);
-                        this.highlightSelectedCell(currentCell);
-                    }
-                }, 500);
-            }
-            
-            if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
-                window.game.systems.hero.currentHero = this.currentHero;
-                window.game.systems.hero.calculateHeroStats(this.currentHero);
             }
         }
+        
+        this.pendingMovement = null;
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
+            
+            setTimeout(() => {
+                const cellKey = `${targetX},${targetY}`;
+                const currentCell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (currentCell) {
+                    console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
+                    this.updateCellActionsUI(currentCell);
+                    this.highlightSelectedCell(currentCell);
+                }
+            }, 500);
+        }
+        
+        if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+            window.game.systems.hero.currentHero = this.currentHero;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
     }
+}
 
     giveRandomResource(resourceType, row, col) {
         const resources = this.resources[resourceType];
