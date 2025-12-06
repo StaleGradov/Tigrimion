@@ -303,7 +303,6 @@ async initializeSystems() {
     console.log("⚙️ Инициализация игровых систем...");
     
     try {
-        // Инициализация всех систем
         this.systems.bonus = new BonusSystem();
         this.systems.level = new LevelSystem();
         this.systems.battle = new BattleSystem();
@@ -315,7 +314,7 @@ async initializeSystems() {
         // ⭐ ВАЖНО: Инициализируем ResourcesSystem ДО загрузки данных
         this.systems.resources = new ResourcesSystem();
         
-        // ⭐ ДОБАВЛЯЕМ СИСТЕМУ КРАФТА
+        // ⭐ ИСПРАВЛЕНИЕ: Инициализируем CraftingSystem и передаем this
         this.systems.crafting = new CraftingSystem(this);
         
         console.log("✅ Все системы инициализированы");
@@ -337,9 +336,6 @@ async initializeSystems() {
                 console.warn("⚠️ Не удалось загрузить рецепты крафта");
             }
         }
-        
-        // ⭐ УДАЛИТЬ ЭТУ ЧАСТЬ - кнопка уже есть в интерфейсе
-        // Не нужно модифицировать showResourcesInventory
         
     } catch (error) {
         console.error("❌ Ошибка инициализации систем:", error);
