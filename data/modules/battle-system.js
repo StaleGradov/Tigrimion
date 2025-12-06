@@ -55,6 +55,7 @@ class BattleSystem {
         this.availableTargets = [];
         this.resultShown = false;
         this.battleEnding = false;
+        this.battleLoot = []; // Для хранения полученного лута
         this.pendingAction = null;
         
         console.log("✅ BattleSystem инициализирован с системой фляги");
@@ -2012,7 +2013,26 @@ endTacticalBattle(victory, escape = false) {
         window.game.systems.level.addExperience(this.currentHero, totalExperience);
         this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
         
+        // ========== ДОБАВЛЯЕМ РЕСУРСЫ ИЗ МОНСТРОВ ==========
+        const allLoot = [];
+        this.currentMonsters.forEach(monster => {
+            const monsterLoot = this.getMonsterLoot(monster);
+            console.log(`🎁 Лут с ${monster.name}:`, monsterLoot);
+            allLoot.push(...monsterLoot);
+        });
+
+        // Добавляем лут в систему ресурсов
+        if (allLoot.length > 0) {
+            this.addLootToResourcesSystem(allLoot);
+        }
+        // =====================================================
+
         this.addBattleLog(`🎉 ПОБЕДА! +${totalReward} золота, +${totalExperience} опыта`);
+        
+        if (allLoot.length > 0) {
+            const lootMessage = this.getLootMessage(allLoot);
+            this.addBattleLog(`📦 Получено: ${lootMessage}`);
+        }
     } else {
         if (escape) {
             // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
@@ -2042,6 +2062,10 @@ endTacticalBattle(victory, escape = false) {
     if (this.battleContext === 'movement' && window.game.systems.map) {
         console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
+    } else if (this.battleContext === 'hunt' && window.game.systems.map) {
+        // Для охоты передаем дополнительный флаг doubleLoot
+        const doubleLoot = this.battleLoot.length > 0 && this.battleLoot.some(item => item.doubleLoot);
+        window.game.systems.map.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
     }
     
     // Сохраняем игру
@@ -2054,6 +2078,414 @@ endTacticalBattle(victory, escape = false) {
     this.showBattleResult(victory, escape);
 }
 
+
+    // ========== МЕТОДЫ ДЛЯ РАБОТЫ С РЕСУРСАМИ ИЗ БОЯ ==========
+
+addLootToResourcesSystem(lootItems) {
+    if (!this.currentHero || !window.game) return;
+    
+    // Получаем систему ресурсов
+    const resourcesSystem = window.game.systems.resources;
+    if (!resourcesSystem) {
+        console.error("❌ ResourcesSystem не доступна для добавления лута");
+        // Используем запасной вариант через EquipmentSystem
+        this.addLootToInventory(lootItems);
+        return;
+    }
+    
+    // Сохраняем лут для обработки двойного лута
+    lootItems.forEach(resourceId => {
+        this.battleLoot.push({
+            id: resourceId,
+            timestamp: Date.now(),
+            doubleLoot: this.battleContext === 'hunt' // Флаг для охоты
+        });
+    });
+    
+    // Добавляем каждый ресурс в систему
+    lootItems.forEach(resourceId => {
+        this.addResourceToHero(resourceId, 1);
+    });
+    
+    console.log(`📦 Ресурсы добавлены в систему ресурсов:`, lootItems);
+    
+    // Сохраняем изменения
+    if (window.game.saveGame) {
+        window.game.saveGame();
+    }
+    
+    // Показываем уведомление
+    if (window.game.showNotification) {
+        const uniqueLootCount = new Set(lootItems).size;
+        window.game.showNotification(`🎁 Получено ${lootItems.length} ресурсов (${uniqueLootCount} видов)`, 'success');
+    }
+}
+
+addResourceToHero(resourceId, amount = 1) {
+    if (!this.currentHero) return;
+    
+    // Используем sharedResources для хранения ресурсов
+    if (!window.game.sharedResources) {
+        window.game.sharedResources = {};
+    }
+    
+    if (!window.game.sharedResources.resources) {
+        window.game.sharedResources.resources = {};
+    }
+    
+    // Добавляем ресурс
+    if (!window.game.sharedResources.resources[resourceId]) {
+        window.game.sharedResources.resources[resourceId] = {
+            id: resourceId,
+            count: 0
+        };
+    }
+    
+    window.game.sharedResources.resources[resourceId].count += amount;
+    
+    // Также добавляем в текущего героя для совместимости
+    if (!this.currentHero.resources) {
+        this.currentHero.resources = {};
+    }
+    
+    if (!this.currentHero.resources[resourceId]) {
+        this.currentHero.resources[resourceId] = {
+            id: resourceId,
+            count: 0
+        };
+    }
+    
+    this.currentHero.resources[resourceId].count += amount;
+}
+
+getMonsterLoot(monster) {
+    // Получаем данные о ресурсах из ResourcesSystem
+    const resourcesSystem = window.game?.systems?.resources;
+    if (!resourcesSystem || !resourcesSystem.resources) {
+        console.warn("⚠️ ResourcesSystem не загружена, используем базовый лут");
+        return this.getBasicMonsterLoot(monster);
+    }
+
+    // Сопоставление монстров с типами ресурсов (не с конкретными ID)
+    const monsterLootMapping = {
+        // Волки - дают кожи, шкуры, кости, мех
+        "Волк": {
+            types: ["leathers", "hides", "bones", "furs"],
+            weight: {
+                "leathers": 40,    // 40% шанс на кожу
+                "hides": 30,       // 30% шанс на шкуру
+                "bones": 20,       // 20% шанс на кости
+                "furs": 10         // 10% шанс на мех
+            },
+            rarityModifier: 0.1    // 10% шанс на более редкий ресурс
+        },
+        
+        // Медведи - дают толстые кожи, шкуры, большие кости
+        "Медведь": {
+            types: ["leathers", "hides", "bones"],
+            weight: {
+                "leathers": 50,    // толстая кожа
+                "hides": 40,       // толстая шкура
+                "bones": 10        // большие кости
+            },
+            rarityModifier: 0.2    // 20% шанс на редкий ресурс
+        },
+        
+        // Тигры - редкие кожи и шкуры
+        "Тигр": {
+            types: ["leathers", "hides"],
+            weight: {
+                "leathers": 60,    // ящерная кожа
+                "hides": 40        // тигровая шкура
+            },
+            rarityModifier: 0.3    // 30% шанс на эпический ресурс
+        },
+        
+        // Кабаны - кожа, кости, иногда травы
+        "Кабан": {
+            types: ["leathers", "bones", "herbs"],
+            weight: {
+                "leathers": 50,
+                "bones": 30,
+                "herbs": 20
+            },
+            rarityModifier: 0.05
+        },
+        
+        // Лисы - мех, тонкая кожа
+        "Лиса": {
+            types: ["furs", "leathers"],
+            weight: {
+                "furs": 70,
+                "leathers": 30
+            },
+            rarityModifier: 0.15
+        },
+        
+        // Олени/Лоси - шкуры, кости, иногда рога (кости)
+        "Олень": {
+            types: ["hides", "bones"],
+            weight: {
+                "hides": 60,
+                "bones": 40
+            },
+            rarityModifier: 0.1
+        },
+        
+        // Бизоны - толстые шкуры, большие кости
+        "Бизон": {
+            types: ["hides", "bones"],
+            weight: {
+                "hides": 70,
+                "bones": 30
+            },
+            rarityModifier: 0.25
+        },
+        
+        // Человеческие монстры - дают руды, камни, дерево, травы
+        "Лесоруб": {
+            types: ["woods", "stones", "ores", "herbs"],
+            weight: {
+                "woods": 50,
+                "stones": 25,
+                "ores": 15,
+                "herbs": 10
+            },
+            rarityModifier: 0.1
+        },
+        
+        "Шахтер": {
+            types: ["ores", "stones"],
+            weight: {
+                "ores": 70,
+                "stones": 30
+            },
+            rarityModifier: 0.2
+        },
+        
+        "Крестьянин": {
+            types: ["herbs", "berries"],
+            weight: {
+                "herbs": 60,
+                "berries": 40
+            },
+            rarityModifier: 0.05
+        },
+        
+        "Разбойник": {
+            types: ["leathers", "ores", "coins"], // coins - виртуальный тип для золота
+            weight: {
+                "leathers": 40,
+                "ores": 30,
+                "coins": 30
+            },
+            rarityModifier: 0.15
+        }
+    };
+
+    // Определяем тип монстра по имени
+    let monsterType = "Волк"; // по умолчанию
+    const monsterName = monster.name;
+    
+    if (monsterName.includes("Волк")) monsterType = "Волк";
+    else if (monsterName.includes("Медведь")) monsterType = "Медведь";
+    else if (monsterName.includes("Тигр")) monsterType = "Тигр";
+    else if (monsterName.includes("Вепрь") || monsterName.includes("Кабан")) monsterType = "Кабан";
+    else if (monsterName.includes("Лиса")) monsterType = "Лиса";
+    else if (monsterName.includes("Лось") || monsterName.includes("Олень")) monsterType = "Олень";
+    else if (monsterName.includes("Бизон")) monsterType = "Бизон";
+    else if (monsterName.includes("Лесоруб")) monsterType = "Лесоруб";
+    else if (monsterName.includes("Шахтер") || monsterName.includes("Минер")) monsterType = "Шахтер";
+    else if (monsterName.includes("Крестьянин") || monsterName.includes("Бунтарь")) monsterType = "Крестьянин";
+    else if (monsterName.includes("Разбойник") || monsterName.includes("Бандит")) monsterType = "Разбойник";
+
+    const lootConfig = monsterLootMapping[monsterType] || monsterLootMapping["Волк"];
+    
+    // Определяем количество выпавшего лута (зависит от уровня/силы монстра)
+    const baseLootCount = monster.health > 200 ? 3 : monster.health > 100 ? 2 : 1;
+    const lootCount = Math.floor(Math.random() * baseLootCount) + 1;
+    
+    const loot = [];
+    
+    for (let i = 0; i < lootCount; i++) {
+        // Выбираем тип ресурса по весу
+        const resourceType = this.selectResourceTypeByWeight(lootConfig.weight);
+        
+        // Получаем доступные ресурсы этого типа
+        let availableResources = [];
+        
+        // Ищем ресурсы в соответствующей категории
+        const resourceCategory = this.getResourceCategoryByType(resourceType);
+        if (resourcesSystem.resources[resourceCategory]) {
+            availableResources = resourcesSystem.resources[resourceCategory];
+        }
+        
+        if (!availableResources || availableResources.length === 0) continue;
+        
+        // Выбираем конкретный ресурс с учетом редкости
+        const resource = this.selectResourceByRarity(
+            availableResources, 
+            lootConfig.rarityModifier
+        );
+        
+        if (resource) {
+            loot.push(resource.id);
+        }
+    }
+    
+    // Добавляем золото для разбойников
+    if (monsterType === "Разбойник" && Math.random() < 0.5) {
+        // Добавляем прямое золото в награду
+        const extraGold = Math.floor(Math.random() * 20) + 10;
+        this.currentHero.gold += extraGold;
+        console.log(`💰 Дополнительное золото с разбойника: +${extraGold}`);
+    }
+    
+    // Удаляем дубликаты
+    return [...new Set(loot)];
+}
+
+selectResourceTypeByWeight(weights) {
+    const types = Object.keys(weights);
+    const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+    
+    let random = Math.random() * totalWeight;
+    for (const type of types) {
+        if (random < weights[type]) {
+            return type;
+        }
+        random -= weights[type];
+    }
+    
+    return types[0];
+}
+
+selectResourceByRarity(resources, rarityModifier) {
+    // Сортируем по редкости
+    const rarityOrder = {
+        "common": 1,
+        "uncommon": 2,
+        "rare": 3,
+        "epic": 4,
+        "legendary": 5
+    };
+    
+    // Создаем взвешенный список с учетом редкости
+    const weightedResources = resources.map(resource => {
+        let weight = 100;
+        const rarityValue = rarityOrder[resource.rarity] || 1;
+        
+        // Более редкие ресурсы имеют меньший вес
+        weight = Math.max(10, 100 - (rarityValue * 15));
+        
+        // Учитываем модификатор редкости от монстра
+        if (Math.random() < rarityModifier) {
+            // Увеличиваем шанс на более редкий ресурс
+            weight = Math.max(5, weight - (rarityValue * 10));
+        }
+        
+        return {
+            resource,
+            weight
+        };
+    });
+    
+    // Выбираем ресурс по весу
+    const totalWeight = weightedResources.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const item of weightedResources) {
+        if (random < item.weight) {
+            return item.resource;
+        }
+        random -= item.weight;
+    }
+    
+    // Если что-то пошло не так, возвращаем самый распространенный
+    return resources.find(r => r.rarity === "common") || resources[0];
+}
+
+getResourceCategoryByType(type) {
+    const categoryMap = {
+        "leathers": "leathers",
+        "hides": "hides", 
+        "bones": "bones",
+        "furs": "furs",
+        "herbs": "herbs",
+        "berries": "berries",
+        "ores": "ores",
+        "stones": "stones",
+        "woods": "woods"
+    };
+    return categoryMap[type] || "herbs";
+}
+
+getBasicMonsterLoot(monster) {
+    // Запасной метод если ResourcesSystem не загружена
+    const basicLoot = [
+        "grass", "stone", "small_bone", "thin_leather", "thin_hide"
+    ];
+    
+    const lootCount = Math.floor(Math.random() * 2) + 1;
+    const loot = [];
+    
+    for (let i = 0; i < lootCount; i++) {
+        const randomIndex = Math.floor(Math.random() * basicLoot.length);
+        loot.push(basicLoot[randomIndex]);
+    }
+    
+    return loot;
+}
+
+getLootMessage(lootItems) {
+    if (lootItems.length === 0) return "";
+    
+    // Получаем названия ресурсов
+    const resourcesSystem = window.game?.systems?.resources;
+    const resourceNames = [];
+    
+    lootItems.forEach(resourceId => {
+        const resourceData = resourcesSystem?.getResourceData?.(resourceId);
+        if (resourceData) {
+            resourceNames.push(resourceData.name);
+        } else {
+            resourceNames.push(resourceId);
+        }
+    });
+    
+    if (resourceNames.length === 1) {
+        return resourceNames[0];
+    } else if (resourceNames.length === 2) {
+        return `${resourceNames[0]} и ${resourceNames[1]}`;
+    } else {
+        return `${resourceNames.slice(0, -1).join(', ')} и ${resourceNames[resourceNames.length - 1]}`;
+    }
+}
+
+addLootToInventory(lootItems) {
+    // Запасной метод если ResourcesSystem недоступна
+    if (!window.game.sharedResources) {
+        window.game.sharedResources = {};
+    }
+    if (!window.game.sharedResources.inventory) {
+        window.game.sharedResources.inventory = [];
+    }
+    
+    lootItems.forEach(resourceId => {
+        const itemId = `resource_${resourceId}_${Date.now()}`;
+        window.game.sharedResources.inventory.push(itemId);
+        console.log(`📦 Ресурс ${resourceId} добавлен в инвентарь как ${itemId}`);
+    });
+}
+
+getBattleRewards() {
+    return {
+        gold: this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0),
+        items: this.battleLoot.map(item => item.id)
+    };
+}
+
+    
 
 resetFlaskOnHeroDeath() {
     // При смерти сбрасываем флягу к значениям по умолчанию
@@ -2085,6 +2517,16 @@ showBattleResult(victory, escape = false) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
+        // Получаем список полученных ресурсов
+        let resourcesList = "";
+        const resourcesSystem = window.game?.systems?.resources;
+        if (resourcesSystem) {
+            // Можно показать последние полученные ресурсы
+            // или просто общее количество
+            const resourceCount = resourcesSystem.getTotalResourceCount ? resourcesSystem.getTotalResourceCount() : 0;
+            resourcesList = `<p style="font-size: 16px; color: #4ade80;">📦 Всего ресурсов: ${resourceCount}</p>`;
+        }
+        
         resultHTML = `
             <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
                 <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
@@ -2093,6 +2535,7 @@ showBattleResult(victory, escape = false) {
                         <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
                         <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
                         <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
+                        ${resourcesList}
                         <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
                     </div>
                     <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
