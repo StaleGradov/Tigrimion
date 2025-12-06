@@ -13,9 +13,8 @@
     "damage": 30,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "frenzy": 0.15
-    }
+    "abilities": { "frenzy": 0.15 },
+    "loot": { "guaranteed": ["wolf_bone"] }
   },
   {
     "id": 2,
@@ -31,9 +30,8 @@
     "damage": 9,
     "reward": 0.3,
     "experience": 3,
-    "abilities": {
-      "endurance": 0.2
-    }
+    "abilities": { "endurance": 0.2 },
+    "loot": { "guaranteed": ["strong_hide"] }
   },
   {
     "id": 3,
@@ -49,9 +47,8 @@
     "damage": 36,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "shadow_strike": 0.25
-    }
+    "abilities": { "shadow_strike": 0.25 },
+    "loot": { "guaranteed": ["hare_fur"] }
   },
   {
     "id": 4,
@@ -67,9 +64,8 @@
     "damage": 11,
     "reward": 0.32,
     "experience": 3.2,
-    "abilities": {
-      "armored_skin": 0.3
-    }
+    "abilities": { "armored_skin": 0.3 },
+    "loot": { "guaranteed": ["strong_hide"] }
   },
   {
     "id": 5,
@@ -85,9 +81,8 @@
     "damage": 20,
     "reward": 0.4,
     "experience": 4,
-    "abilities": {
-      "berserk": 0.15
-    }
+    "abilities": { "berserk": 0.15 },
+    "loot": { "guaranteed": ["bear_hide"] }
   },
   {
     "id": 6,
@@ -103,9 +98,8 @@
     "damage": 19,
     "reward": 0.38,
     "experience": 3.8,
-    "abilities": {
-      "shield_bash": 0.2
-    }
+    "abilities": { "shield_bash": 0.2 },
+    "loot": { "guaranteed": ["thick_hide"] }
   },
   {
     "id": 7,
@@ -121,9 +115,8 @@
     "damage": 53,
     "reward": 0.35,
     "experience": 3.5,
-    "abilities": {
-      "bone_crush": 0.25
-    }
+    "abilities": { "bone_crush": 0.25 },
+    "loot": { "guaranteed": ["bear_hide"] }
   },
   {
     "id": 8,
@@ -139,9 +132,8 @@
     "damage": 42,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "bleed": 0.2
-    }
+    "abilities": { "bleed": 0.2 },
+    "loot": { "guaranteed": ["lynx_fur"] }
   },
   {
     "id": 9,
@@ -157,9 +149,8 @@
     "damage": 62,
     "reward": 0.27,
     "experience": 2.7,
-    "abilities": {
-      "poison_spit": 0.3
-    }
+    "abilities": { "poison_spit": 0.3 },
+    "loot": { "guaranteed": ["lynx_fur"] }
   },
   {
     "id": 10,
@@ -175,9 +166,8 @@
     "damage": 89,
     "reward": 0.4,
     "experience": 4,
-    "abilities": {
-      "assassinate": 0.2
-    }
+    "abilities": { "assassinate": 0.2 },
+    "loot": { "guaranteed": ["tiger_hide"] }
   },
   {
     "id": 11,
@@ -193,9 +183,8 @@
     "damage": 100,
     "reward": 0.38,
     "experience": 3.8,
-    "abilities": {
-      "ghost_strike": 0.25
-    }
+    "abilities": { "ghost_strike": 0.25 },
+    "loot": { "guaranteed": ["tiger_hide"] }
   },
   {
     "id": 12,
@@ -211,9 +200,8 @@
     "damage": 15,
     "reward": 0.35,
     "experience": 3.5,
-    "abilities": {
-      "charge": 0.15
-    }
+    "abilities": { "charge": 0.15 },
+    "loot": { "guaranteed": ["thick_hide"] }
   },
   {
     "id": 13,
@@ -229,9 +217,8 @@
     "damage": 19,
     "reward": 0.36,
     "experience": 3.6,
-    "abilities": {
-      "spike_armor": 0.25
-    }
+    "abilities": { "spike_armor": 0.25 },
+    "loot": { "guaranteed": ["thick_leather"] }
   },
   {
     "id": 14,
@@ -247,9 +234,8 @@
     "damage": 70,
     "reward": 0.3,
     "experience": 3,
-    "abilities": {
-      "rampage": 0.2
-    }
+    "abilities": { "rampage": 0.2 },
+    "loot": { "guaranteed": ["thick_hide"] }
   },
   {
     "id": 15,
@@ -265,9 +251,8 @@
     "damage": 80,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "spike_volley": 0.25
-    }
+    "abilities": { "spike_volley": 0.25 },
+    "loot": { "guaranteed": ["thick_hide"] }
   },
   {
     "id": 16,
@@ -283,9 +268,8 @@
     "damage": 48,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "fire_breath": 0.2
-    }
+    "abilities": { "fire_breath": 0.2 },
+    "loot": { "guaranteed": ["arctic_fox_fur"] }
   },
   {
     "id": 17,
@@ -301,9 +285,8 @@
     "damage": 58,
     "reward": 0.24,
     "experience": 2.4,
-    "abilities": {
-      "strangle": 0.15
-    }
+    "abilities": { "strangle": 0.15 },
+    "loot": { "guaranteed": ["thin_hide"] }
   },
   {
     "id": 18,
@@ -319,9 +302,8 @@
     "damage": 15,
     "reward": 0.33,
     "experience": 3.3,
-    "abilities": {
-      "antler_bash": 0.2
-    }
+    "abilities": { "antler_bash": 0.2 },
+    "loot": { "guaranteed": ["horse_bone"] }
   },
   {
     "id": 19,
@@ -337,9 +319,8 @@
     "damage": 55,
     "reward": 0.29,
     "experience": 2.9,
-    "abilities": {
-      "stomp": 0.15
-    }
+    "abilities": { "stomp": 0.15 },
+    "loot": { "guaranteed": ["strong_leather"] }
   },
   {
     "id": 20,
@@ -355,9 +336,8 @@
     "damage": 60,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "thorn_shot": 0.25
-    }
+    "abilities": { "thorn_shot": 0.25 },
+    "loot": { "guaranteed": ["strong_hide"] }
   },
   {
     "id": 21,
@@ -373,9 +353,8 @@
     "damage": 52,
     "reward": 0.27,
     "experience": 2.7,
-    "abilities": {
-      "horn_gore": 0.2
-    }
+    "abilities": { "horn_gore": 0.2 },
+    "loot": { "guaranteed": ["horse_bone"] }
   },
   {
     "id": 22,
@@ -391,9 +370,8 @@
     "damage": 25,
     "reward": 0.45,
     "experience": 4.5,
-    "abilities": {
-      "earthquake": 0.1
-    }
+    "abilities": { "earthquake": 0.1 },
+    "loot": { "guaranteed": ["bull_bone"] }
   },
   {
     "id": 23,
@@ -409,9 +387,8 @@
     "damage": 23,
     "reward": 0.37,
     "experience": 3.7,
-    "abilities": {
-      "iron_skin": 0.3
-    }
+    "abilities": { "iron_skin": 0.3 },
+    "loot": { "guaranteed": ["bull_leather"] }
   },
   {
     "id": 24,
@@ -427,9 +404,8 @@
     "damage": 82,
     "reward": 0.34,
     "experience": 3.4,
-    "abilities": {
-      "battering_ram": 0.25
-    }
+    "abilities": { "battering_ram": 0.25 },
+    "loot": { "guaranteed": ["bull_bone"] }
   },
   {
     "id": 25,
@@ -445,9 +421,8 @@
     "damage": 65,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "whirlwind": 0.2
-    }
+    "abilities": { "whirlwind": 0.2 },
+    "loot": { "guaranteed": ["marten_fur"] }
   },
   {
     "id": 26,
@@ -463,9 +438,8 @@
     "damage": 12,
     "reward": 0.22,
     "experience": 2.2,
-    "abilities": {
-      "timber": 0.15
-    }
+    "abilities": { "timber": 0.15 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 27,
@@ -481,9 +455,8 @@
     "damage": 15,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "heavy_strike": 0.2
-    }
+    "abilities": { "heavy_strike": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 28,
@@ -499,9 +472,8 @@
     "damage": 53,
     "reward": 0.24,
     "experience": 2.4,
-    "abilities": {
-      "bloodlust": 0.2
-    }
+    "abilities": { "bloodlust": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 29,
@@ -517,9 +489,8 @@
     "damage": 62,
     "reward": 0.23,
     "experience": 2.3,
-    "abilities": {
-      "axe_throw": 0.3
-    }
+    "abilities": { "axe_throw": 0.3 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 30,
@@ -535,9 +506,8 @@
     "damage": 16,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "mining_strike": 0.15
-    }
+    "abilities": { "mining_strike": 0.15 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 31,
@@ -553,9 +523,8 @@
     "damage": 15,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "sturdy": 0.2
-    }
+    "abilities": { "sturdy": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 32,
@@ -571,9 +540,8 @@
     "damage": 62,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "pickaxe_smash": 0.25
-    }
+    "abilities": { "pickaxe_smash": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 33,
@@ -589,9 +557,8 @@
     "damage": 72,
     "reward": 0.27,
     "experience": 2.7,
-    "abilities": {
-      "dynamite_throw": 0.3
-    }
+    "abilities": { "dynamite_throw": 0.3 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 34,
@@ -607,9 +574,8 @@
     "damage": 42,
     "reward": 0.2,
     "experience": 2,
-    "abilities": {
-      "pitchfork_jab": 0.2
-    }
+    "abilities": { "pitchfork_jab": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 35,
@@ -625,9 +591,8 @@
     "damage": 48,
     "reward": 0.19,
     "experience": 1.9,
-    "abilities": {
-      "sling_shot": 0.25
-    }
+    "abilities": { "sling_shot": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 36,
@@ -643,9 +608,8 @@
     "damage": 11,
     "reward": 0.21,
     "experience": 2.1,
-    "abilities": {
-      "peasant_rage": 0.15
-    }
+    "abilities": { "peasant_rage": 0.15 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 37,
@@ -661,9 +625,8 @@
     "damage": 14,
     "reward": 0.23,
     "experience": 2.3,
-    "abilities": {
-      "improvised_armor": 0.2
-    }
+    "abilities": { "improvised_armor": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 38,
@@ -679,9 +642,8 @@
     "damage": 13,
     "reward": 0.24,
     "experience": 2.4,
-    "abilities": {
-      "worker_strength": 0.15
-    }
+    "abilities": { "worker_strength": 0.15 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 39,
@@ -697,9 +659,8 @@
     "damage": 15,
     "reward": 0.22,
     "experience": 2.2,
-    "abilities": {
-      "tough_cloth": 0.2
-    }
+    "abilities": { "tough_cloth": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 40,
@@ -715,13 +676,12 @@
     "damage": 53,
     "reward": 0.21,
     "experience": 2.1,
-    "abilities": {
-      "hammer_smash": 0.25
-    }
+    "abilities": { "hammer_smash": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 41,
-    "name": "Рабочий-Каменотец",
+    "name": "Рабочий-Каменотес",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/worker.jpg",
     "role": "dd_ranged",
     "attackType": "ranged",
@@ -733,9 +693,8 @@
     "damage": 60,
     "reward": 0.2,
     "experience": 2,
-    "abilities": {
-      "stone_throw": 0.25
-    }
+    "abilities": { "stone_throw": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 42,
@@ -751,9 +710,8 @@
     "damage": 63,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "backstab": 0.3
-    }
+    "abilities": { "backstab": 0.3 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 43,
@@ -769,9 +727,8 @@
     "damage": 74,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "snipe": 0.25
-    }
+    "abilities": { "snipe": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 44,
@@ -787,9 +744,8 @@
     "damage": 13,
     "reward": 0.23,
     "experience": 2.3,
-    "abilities": {
-      "bandit_toughness": 0.2
-    }
+    "abilities": { "bandit_toughness": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 45,
@@ -805,9 +761,8 @@
     "damage": 16,
     "reward": 0.24,
     "experience": 2.4,
-    "abilities": {
-      "bandit_armor": 0.25
-    }
+    "abilities": { "bandit_armor": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 46,
@@ -823,9 +778,8 @@
     "damage": 68,
     "reward": 0.27,
     "experience": 2.7,
-    "abilities": {
-      "murderous_intent": 0.25
-    }
+    "abilities": { "murderous_intent": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 47,
@@ -841,9 +795,8 @@
     "damage": 80,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "crossbow_bolt": 0.3
-    }
+    "abilities": { "crossbow_bolt": 0.3 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 48,
@@ -859,9 +812,8 @@
     "damage": 14,
     "reward": 0.25,
     "experience": 2.5,
-    "abilities": {
-      "bouncer_strength": 0.2
-    }
+    "abilities": { "bouncer_strength": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 49,
@@ -877,9 +829,8 @@
     "damage": 18,
     "reward": 0.24,
     "experience": 2.4,
-    "abilities": {
-      "shield_wall": 0.25
-    }
+    "abilities": { "shield_wall": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 50,
@@ -895,9 +846,8 @@
     "damage": 95,
     "reward": 0.35,
     "experience": 3.5,
-    "abilities": {
-      "wealth_strike": 0.2
-    }
+    "abilities": { "wealth_strike": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 51,
@@ -913,9 +863,8 @@
     "damage": 53,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "hunter_mark": 0.25
-    }
+    "abilities": { "hunter_mark": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 52,
@@ -931,9 +880,8 @@
     "damage": 56,
     "reward": 0.27,
     "experience": 2.7,
-    "abilities": {
-      "forest_walk": 0.2
-    }
+    "abilities": { "forest_walk": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 53,
@@ -949,9 +897,8 @@
     "damage": 47,
     "reward": 0.3,
     "experience": 3,
-    "abilities": {
-      "veteran_skill": 0.2
-    }
+    "abilities": { "veteran_skill": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 54,
@@ -967,9 +914,8 @@
     "damage": 43,
     "reward": 0.32,
     "experience": 3.2,
-    "abilities": {
-      "guard_duty": 0.2
-    }
+    "abilities": { "guard_duty": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 55,
@@ -985,9 +931,8 @@
     "damage": 50,
     "reward": 0.29,
     "experience": 2.9,
-    "abilities": {
-      "wanderer_strike": 0.2
-    }
+    "abilities": { "wanderer_strike": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 56,
@@ -1003,9 +948,8 @@
     "damage": 55,
     "reward": 0.31,
     "experience": 3.1,
-    "abilities": {
-      "ranger_precision": 0.25
-    }
+    "abilities": { "ranger_precision": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 57,
@@ -1021,9 +965,8 @@
     "damage": 48,
     "reward": 0.33,
     "experience": 3.3,
-    "abilities": {
-      "keeper_wrath": 0.2
-    }
+    "abilities": { "keeper_wrath": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 58,
@@ -1039,9 +982,8 @@
     "damage": 58,
     "reward": 0.28,
     "experience": 2.8,
-    "abilities": {
-      "tracking_shot": 0.25
-    }
+    "abilities": { "tracking_shot": 0.25 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 59,
@@ -1057,9 +999,8 @@
     "damage": 50,
     "reward": 0.26,
     "experience": 2.6,
-    "abilities": {
-      "militia_charge": 0.2
-    }
+    "abilities": { "militia_charge": 0.2 },
+    "loot": { "guaranteed": [] }
   },
   {
     "id": 60,
@@ -1075,8 +1016,347 @@
     "damage": 52,
     "reward": 0.3,
     "experience": 3,
-    "abilities": {
-      "border_defense": 0.2
-    }
+    "abilities": { "border_defense": 0.2 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 61,
+    "name": "Ящер-Бронеход",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/lizard.jpg",
+    "role": "tank_armor",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
+    "health": 280,
+    "armor": 55,
+    "damage": 22,
+    "reward": 0.5,
+    "experience": 5,
+    "abilities": { "tail_sweep": 0.2 },
+    "loot": { "guaranteed": ["lizard_leather"] }
+  },
+  {
+    "id": 62,
+    "name": "Ящер-Ядонос",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/lizard.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 130,
+    "armor": 12,
+    "damage": 85,
+    "reward": 0.45,
+    "experience": 4.5,
+    "abilities": { "venom_spit": 0.3 },
+    "loot": { "guaranteed": ["lizard_leather"] }
+  },
+  {
+    "id": 63,
+    "name": "Гигантский Паук",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/spider.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 140,
+    "armor": 8,
+    "damage": 65,
+    "reward": 0.4,
+    "experience": 4,
+    "abilities": { "web_shot": 0.25 },
+    "loot": { "guaranteed": ["cobweb"] }
+  },
+  {
+    "id": 64,
+    "name": "Пещерный Троглодит",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/troglodyte.jpg",
+    "role": "dd_melee",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "aggressive",
+    "health": 220,
+    "armor": 18,
+    "damage": 75,
+    "reward": 0.42,
+    "experience": 4.2,
+    "abilities": { "cave_roar": 0.2 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 65,
+    "name": "Горный Тролль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/troll.jpg",
+    "role": "tank_health",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_health",
+    "health": 800,
+    "armor": 25,
+    "damage": 40,
+    "reward": 0.7,
+    "experience": 7,
+    "abilities": { "regeneration": 0.3 },
+    "loot": { "guaranteed": ["mammoth_bone"] }
+  },
+  {
+    "id": 66,
+    "name": "Ледяной Виверн",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/wyvern.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 350,
+    "armor": 30,
+    "damage": 90,
+    "reward": 0.8,
+    "experience": 8,
+    "abilities": { "frost_breath": 0.25 },
+    "loot": { "guaranteed": ["dragon_bone"] }
+  },
+  {
+    "id": 67,
+    "name": "Огненный Саламандр",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/salamander.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 180,
+    "armor": 15,
+    "damage": 110,
+    "reward": 0.6,
+    "experience": 6,
+    "abilities": { "lava_burst": 0.3 },
+    "loot": { "guaranteed": ["lizard_leather"] }
+  },
+  {
+    "id": 68,
+    "name": "Призрачный Всадник",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/ghost_rider.jpg",
+    "role": "universal",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "universal",
+    "health": 300,
+    "armor": 40,
+    "damage": 80,
+    "reward": 0.75,
+    "experience": 7.5,
+    "abilities": { "spectral_charge": 0.25 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 69,
+    "name": "Древний Энт",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/ent.jpg",
+    "role": "tank_health",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_health",
+    "health": 1200,
+    "armor": 35,
+    "damage": 50,
+    "reward": 1.0,
+    "experience": 10,
+    "abilities": { "root_grasp": 0.2 },
+    "loot": { "guaranteed": ["common_wood"] }
+  },
+  {
+    "id": 70,
+    "name": "Гном-Воитель",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/dwarf.jpg",
+    "role": "tank_armor",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
+    "health": 280,
+    "armor": 60,
+    "damage": 45,
+    "reward": 0.55,
+    "experience": 5.5,
+    "abilities": { "dwarven_resolve": 0.2 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 71,
+    "name": "Гном-Стрелок",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/dwarf.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 160,
+    "armor": 25,
+    "damage": 95,
+    "reward": 0.5,
+    "experience": 5,
+    "abilities": { "precision_shot": 0.3 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 72,
+    "name": "Орк-Варвар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/orc.jpg",
+    "role": "dd_melee",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "aggressive",
+    "health": 320,
+    "armor": 20,
+    "damage": 100,
+    "reward": 0.65,
+    "experience": 6.5,
+    "abilities": { "berserker_rage": 0.25 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 73,
+    "name": "Орк-Шаман",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/orc_shaman.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 200,
+    "armor": 15,
+    "damage": 85,
+    "reward": 0.6,
+    "experience": 6,
+    "abilities": { "lightning_bolt": 0.3 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 74,
+    "name": "Ведьма Леса",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/witch.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 180,
+    "armor": 12,
+    "damage": 120,
+    "reward": 0.7,
+    "experience": 7,
+    "abilities": { "curse": 0.25 },
+    "loot": { "guaranteed": [] }
+  },
+  {
+    "id": 75,
+    "name": "Молодой Дракон",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/dragon.jpg",
+    "role": "universal",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "aggressive",
+    "aiType": "universal",
+    "health": 1500,
+    "armor": 50,
+    "damage": 150,
+    "reward": 2.0,
+    "experience": 20,
+    "abilities": { "dragon_breath": 0.3 },
+    "loot": { "guaranteed": ["dragon_bone"] }
+  },
+  {
+    "id": 76,
+    "name": "Король Волков",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/wolf_king.jpg",
+    "role": "universal",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "universal",
+    "health": 600,
+    "armor": 40,
+    "damage": 120,
+    "reward": 1.2,
+    "experience": 12,
+    "abilities": { "pack_leader": 0.3 },
+    "loot": { "guaranteed": ["leopard_fur"] }
+  },
+  {
+    "id": 77,
+    "name": "Праматерь Пауков",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/spider_queen.jpg",
+    "role": "tank_health",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "tank_health",
+    "health": 900,
+    "armor": 30,
+    "damage": 80,
+    "reward": 1.5,
+    "experience": 15,
+    "abilities": { "web_net": 0.25 },
+    "loot": { "guaranteed": ["cobweb"] }
+  },
+  {
+    "id": 78,
+    "name": "Повелитель Ящеров",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/lizard_king.jpg",
+    "role": "tank_armor",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
+    "health": 700,
+    "armor": 70,
+    "damage": 90,
+    "reward": 1.3,
+    "experience": 13,
+    "abilities": { "royal_command": 0.2 },
+    "loot": { "guaranteed": ["dragon_leather"] }
+  },
+  {
+    "id": 79,
+    "name": "Ледяной Феникс",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/phoenix.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 500,
+    "armor": 25,
+    "damage": 180,
+    "reward": 1.8,
+    "experience": 18,
+    "abilities": { "rebirth": 0.1 },
+    "loot": { "guaranteed": ["dragon_hide"] }
+  },
+  {
+    "id": 80,
+    "name": "Древний Дракон",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/ancient_dragon.jpg",
+    "role": "universal",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "aggressive",
+    "aiType": "universal",
+    "health": 3000,
+    "armor": 80,
+    "damage": 250,
+    "reward": 5.0,
+    "experience": 50,
+    "abilities": { "ancient_wrath": 0.4 },
+    "loot": { "guaranteed": ["meteorite_ore"] }
   }
 ]
