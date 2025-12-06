@@ -1265,6 +1265,46 @@ showInventoryHub() {
     `;
 }
 
+
+    // В классе Game, добавьте этот метод:
+showCrafting(stationFilter = 'all', categoryFilter = 'all') {
+    try {
+        // Проверяем, что система крафта существует
+        if (!this.systems.crafting) {
+            console.warn('⚠️ Crafting system not found');
+            this.showNotification('❌ Система крафта не найдена', 'error');
+            return;
+        }
+        
+        // Проверяем загружены ли рецепты
+        if (!this.systems.crafting.recipes || Object.keys(this.systems.crafting.recipes).length === 0) {
+            console.warn('⚠️ Crafting recipes not loaded');
+            this.showNotification('❌ Рецепты крафта не загружены', 'error');
+            return;
+        }
+        
+        console.log('🔨 Открытие интерфейса крафта...');
+        
+        // Получаем HTML интерфейса крафта
+        const html = this.systems.crafting.showCraftingUI(stationFilter, categoryFilter);
+        
+        // Показываем оверлей
+        this.showOverlayContent(html, 'crafting-overlay');
+        
+        // Привязываем обработчики через небольшой таймаут
+        setTimeout(() => {
+            if (this.systems.crafting && this.systems.crafting.attachCraftingHandlers) {
+                this.systems.crafting.attachCraftingHandlers();
+            }
+        }, 50);
+        
+        console.log('✅ Интерфейс крафта открыт');
+        
+    } catch (error) {
+        console.error('❌ Ошибка при открытии интерфейса крафта:', error);
+        this.showNotification('❌ Ошибка открытия крафта', 'error');
+    }
+}
     
  showOverlay(overlayType) {
     const container = document.getElementById('overlay-container');
