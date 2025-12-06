@@ -42,45 +42,32 @@ async loadRecipes() {
     try {
         console.log("🔨 Загружаем рецепты крафта...");
         
-        // Пробуем разные пути
-        const possiblePaths = [
-            'data/crafting.json',
-            'crafting.json',
-            './crafting.json',
-            '/crafting.json'
-        ];
+        // Пробуем только рабочий путь
+        const path = 'data/crafting.json';
+        console.log(`🔍 Пробуем путь: ${path}`);
         
-        let response = null;
-        let usedPath = '';
+        const response = await fetch(path);
         
-        for (const path of possiblePaths) {
-            try {
-                console.log(`🔍 Пробуем путь: ${path}`);
-                response = await fetch(path);
-                if (response.ok) {
-                    usedPath = path;
-                    break;
-                }
-            } catch (e) {
-                console.log(`❌ Путь ${path} не доступен:`, e.message);
-            }
+        if (!response.ok) {
+            throw new Error(`Не удалось загрузить crafting.json: ${response.status} ${response.statusText}`);
         }
         
-        if (!response || !response.ok) {
-            throw new Error(`Не удалось загрузить crafting.json ни с одного пути`);
-        }
-        
-        console.log(`✅ Файл найден по пути: ${usedPath}`);
+        console.log(`✅ Файл найден по пути: ${path}`);
         const rawData = await response.json();
         
-        // ⭐ ИСПРАВЛЕНИЕ: Правильно парсим структуру файла
+        // ИСПРАВЛЕНИЕ: Правильно получаем данные из структуры файла
         if (rawData.crafting_system) {
-            // Если данные в поле crafting_system
+            // Если данные в поле crafting_system (как в вашем файле)
             this.recipes = rawData.crafting_system;
+            console.log("📁 Данные получены из поля 'crafting_system'");
         } else {
             // Если данные уже на верхнем уровне
             this.recipes = rawData;
+            console.log("📁 Данные получены с верхнего уровня");
         }
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Устанавливаем флаг loaded в true
+        this.loaded = true;
         
         console.log(`✅ Загружено рецептов крафта:`);
         console.log(`  🛠️  Станции: ${this.recipes.stations ? Object.keys(this.recipes.stations).length : 0}`);
@@ -89,13 +76,15 @@ async loadRecipes() {
         console.log(`  🔨 Инструменты: ${this.recipes.tools ? Object.keys(this.recipes.tools).length : 0}`);
         
         return true;
+        
     } catch (error) {
         console.error("❌ Ошибка загрузки рецептов:", error);
         
         // Создаем простые тестовые рецепты
         this.createFallbackRecipes();
+        this.loaded = true;
         
-        return true;
+        return true; // ⭐ ВАЖНО: Всегда возвращаем true для продолжения работы
     }
 }
 
