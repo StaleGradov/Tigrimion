@@ -839,51 +839,49 @@ class CraftingSystem {
         this.unlockStation('workbench');
     }
 
-    addCraftingToResources() {
-        // Добавляем кнопку крафта в интерфейс ресурсов
-        const resourcesSystem = window.game.systems.resources;
-        if (resourcesSystem && resourcesSystem.showResourcesInventory) {
-            // Модифицируем метод showResourcesInventory чтобы добавить кнопку крафта
-            const originalMethod = resourcesSystem.showResourcesInventory;
-            resourcesSystem.showResourcesInventory = function() {
-                let html = originalMethod.call(this);
-                
-                // Добавляем кнопку крафта в конец
-                html = html.replace('</div>', 
-                    `<div class="crafting-button-section">
-                        <button class="btn-crafting-main" onclick="game.systems.crafting.showCraftingUI()">
-                            ⚒️ Перейти к крафту
-                        </button>
-                    </div>
-                    </div>`
-                );
-                
-                return html;
-            };
-        }
+addCraftingToResources() {
+    console.log("🔗 Привязываем кнопку крафта к ресурсам...");
+    
+    // Проверяем, что игра существует
+    if (!window.game || !window.game.systems || !window.game.systems.resources) {
+        console.warn("⚠️ Игра или система ресурсов не доступны");
+        return;
     }
+    
+    const resourcesSystem = window.game.systems.resources;
+    
+    // Сохраняем оригинальный метод
+    if (!resourcesSystem.originalShowResourcesInventory) {
+        resourcesSystem.originalShowResourcesInventory = resourcesSystem.showResourcesInventory;
+    }
+    
+    // Создаем новый метод с кнопкой крафта
+    resourcesSystem.showResourcesInventory = function() {
+        // Вызываем оригинальный метод
+        let html = this.originalShowResourcesInventory();
+        
+        // Находим последний закрывающий div и добавляем перед ним кнопку
+        const buttonHTML = `
+            <div class="crafting-button-section" style="margin-top: 20px; text-align: center;">
+                <button class="btn-crafting-main" 
+                        onclick="if(window.game && window.game.showCrafting) { window.game.showCrafting(); } else { alert('Система крафта не загружена'); }"
+                        style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    ⚒️ Перейти к крафту
+                </button>
+                <p style="margin-top: 8px; font-size: 12px; color: #aaa;">
+                    Создание предметов и ресурсов
+                </p>
+            </div>
+        `;
+        
+        // Добавляем кнопку перед последним закрывающим div
+        return html.replace(/(<\/div>\s*<\/div>\s*<\/div>\s*$)/, buttonHTML + "$1");
+    };
+    
+    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
 }
 
 // Экспортируем систему
 window.CraftingSystem = CraftingSystem;
 console.log("✅ CraftingSystem экспортирован в window");
 
-// Интеграция с основной игрой
-if (window.game) {
-    window.game.systems.crafting = new CraftingSystem();
-    
-    // Добавляем инициализацию после загрузки игры
-    window.game.initializeCrafting = async function() {
-        if (this.systems.crafting) {
-            await this.systems.crafting.initialize();
-            this.systems.crafting.addCraftingToResources();
-        }
-    };
-    
-    // Добавляем в общую инициализацию
-    const originalInit = window.game.initializeGame;
-    window.game.initializeGame = async function() {
-        await originalInit.call(this);
-        await this.initializeCrafting();
-    };
-}
