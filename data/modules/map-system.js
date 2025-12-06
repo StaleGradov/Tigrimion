@@ -62,6 +62,7 @@ class MapSystem {
             'search_stone': 25,
             'set_trap': 50,
             'prepare_ambush': 45,
+            'hunt': 70, // Охотиться - высокий шанс начала боя
             'hunt_caravan': 30,
             'take_assassination_contract': 20,
             'light_campfire': 80,
@@ -79,6 +80,7 @@ class MapSystem {
             'search_stone',
             'set_trap',
             'prepare_ambush',
+            'hunt', // Охотиться - новое действие
             'hunt_caravan',
             'take_assassination_contract',
             'light_campfire',
@@ -149,6 +151,17 @@ class MapSystem {
                 description: 'Подготовить позицию для неожиданной атаки',
                 class: 'action-ambush',
                 resource_type: 'ambush'
+            },
+            'hunt': {
+                icon: '🏹',
+                name: 'Охотиться',
+                description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
+                class: 'action-hunt',
+                resource_type: 'loot',
+                triggers_monster: true,
+                monster_level_multiplier: 1.0,
+                always_monster: true, // Всегда приводит к бою при успехе
+                double_loot: true // Двойной лут с монстра
             },
             'hunt_caravan': {
                 icon: '🏹',
@@ -519,6 +532,7 @@ class MapSystem {
                     search_stone: 60,
                     set_trap: 40,
                     prepare_ambush: 55,
+                    hunt: 70,
                     hunt_caravan: 30,
                     take_assassination_contract: 20,
                     light_campfire: 70,
@@ -545,6 +559,7 @@ class MapSystem {
                     search_stone: 40,
                     set_trap: 75,
                     prepare_ambush: 30,
+                    hunt: 60,
                     hunt_caravan: 10,
                     take_assassination_contract: 5,
                     light_campfire: 90,
@@ -571,6 +586,7 @@ class MapSystem {
                     search_stone: 50,
                     set_trap: 85,
                     prepare_ambush: 65,
+                    hunt: 80,
                     hunt_caravan: 45,
                     take_assassination_contract: 35,
                     light_campfire: 50,
@@ -597,6 +613,7 @@ class MapSystem {
                     search_stone: 20,
                     set_trap: 60,
                     prepare_ambush: 45,
+                    hunt: 50,
                     hunt_caravan: 20,
                     take_assassination_contract: 15,
                     light_campfire: 85,
@@ -623,6 +640,7 @@ class MapSystem {
                     search_stone: 15,
                     set_trap: 35,
                     prepare_ambush: 40,
+                    hunt: 65,
                     hunt_caravan: 25,
                     take_assassination_contract: 40,
                     light_campfire: 60,
@@ -649,6 +667,7 @@ class MapSystem {
                     search_stone: 75,
                     set_trap: 45,
                     prepare_ambush: 60,
+                    hunt: 55,
                     hunt_caravan: 55,
                     take_assassination_contract: 70,
                     light_campfire: 40,
@@ -675,6 +694,7 @@ class MapSystem {
                     search_stone: 40,
                     set_trap: 70,
                     prepare_ambush: 85,
+                    hunt: 90,
                     hunt_caravan: 90,
                     take_assassination_contract: 80,
                     light_campfire: 95,
@@ -701,6 +721,7 @@ class MapSystem {
                     search_stone: 15,
                     set_trap: 20,
                     prepare_ambush: 10,
+                    hunt: 5,
                     hunt_caravan: 5,
                     take_assassination_contract: 90,
                     light_campfire: 85,
@@ -774,6 +795,12 @@ class MapSystem {
                 { id: 'campfire_site', name: '🔥 Место для лагеря', type: 'shelter', rarity: 'common', description: 'Безопасное место для отдыха' },
                 { id: 'hidden_camp', name: '🏕️ Скрытый лагерь', type: 'shelter', rarity: 'uncommon', description: 'Укрытие для длительного пребывания' },
                 { id: 'fortified_camp', name: '🏰 Укрепленный лагерь', type: 'shelter', rarity: 'rare', description: 'Надежное укрытие с защитой' }
+            ],
+            food: [
+                { id: 'venison', name: '🦌 Оленина', type: 'food', rarity: 'common', description: 'Свежее мясо оленя' },
+                { id: 'rabbit', name: '🐇 Крольчатина', type: 'food', rarity: 'common', description: 'Мясо кролика' },
+                { id: 'boar_meat', name: '🐗 Кабанятина', type: 'food', rarity: 'uncommon', description: 'Жирное мясо кабана' },
+                { id: 'bird', name: '🐦 Птица', type: 'food', rarity: 'common', description: 'Мясо лесной птицы' }
             ]
         };
     }
@@ -783,56 +810,119 @@ class MapSystem {
         
         const cellKey = `${cell.col},${cell.row}`;
         
+        // Если тип уже определен и есть в загруженных данных
         if (cell.cellType && this.cellTypes[cell.cellType]) {
             return cell.cellType;
-        } else {
-            const typeMapping = {
-                'water': 'small_stream',
-                'graveyard_cross': 'grave',
-                'cave': 'shallow_burrow',
-                'tree': 'ancient_tree',
-                'elegant_tree': 'ancient_tree',
-                'mountain': 'ruined_shrine',
-                'campfire': 'berry_clearing',
-                'berry_clearing': 'berry_clearing',
-                'rocky_outcrop': 'ruined_shrine',
-                'ruined_shrine': 'ruined_shrine',
-                'crystal_cave': 'shallow_burrow',
-                'herb_garden': 'berry_clearing',
-                'haunted_cemetery': 'grave',
-                'sunken_ship': 'grave',
-                'abandoned_camp': 'bandit_camp',
-                'player_start': 'ancient_tree',
-                'npc': 'village',
-                'merchant': 'village',
-                'tavern': 'village',
-                'shop': 'village',
-                'village': 'village',
-                'castle': 'ruined_shrine',
-                'bandit_camp': 'bandit_camp',
-                'orc_camp': 'bandit_camp'
-            };
-            
-            if (cell.type && typeMapping[cell.type]) {
-                cell.cellType = typeMapping[cell.type];
-            } else if (cell.hasLoot) {
-                const lootLocations = ['grave', 'bandit_camp', 'ruined_shrine'];
-                const seed = cell.col * 47 + cell.row * 29;
-                cell.cellType = lootLocations[seed % lootLocations.length];
+        }
+        
+        // Маппинг типов клеток из JSON карты на типы локаций из файла
+        const typeMapping = {
+            'water': 'small_stream',
+            'graveyard_cross': 'haunted_cemetery',
+            'cave': 'crystal_cave',
+            'tree': 'ancient_tree',
+            'elegant_tree': 'ancient_tree',
+            'mountain': 'rocky_outcrop',
+            'campfire': 'abandoned_camp',
+            'berry_clearing': 'berry_clearing',
+            'rocky_outcrop': 'rocky_outcrop',
+            'ruined_shrine': 'ruined_shrine',
+            'crystal_cave': 'crystal_cave',
+            'herb_garden': 'herb_garden',
+            'haunted_cemetery': 'haunted_cemetery',
+            'sunken_ship': 'sunken_ship',
+            'abandoned_camp': 'abandoned_camp',
+            'player_start': 'ancient_tree',
+            'npc': 'village',
+            'merchant': 'village',
+            'tavern': 'village',
+            'shop': 'village',
+            'village': 'village',
+            'castle': 'ruined_shrine',
+            'bandit_camp': 'bandit_camp',
+            'orc_camp': 'bandit_camp',
+            'monster': 'beast_lair',
+            'chest': 'smugglers_cache',
+            'obstacle': 'petrified_forest',
+            'portal': 'fairy_ring',
+            'ancient_rune': 'druid_stone_circle',
+            'magic_crystal': 'crystal_cave',
+            'bridge': 'bridge_troll_toll',
+            'lava_crack': 'mineral_spring',
+            'traveler': 'abandoned_camp',
+            'cart': 'abandoned_camp',
+            'inactive': 'petrified_forest'
+        };
+        
+        // Определяем тип клетки
+        if (cell.type && typeMapping[cell.type]) {
+            const mappedType = typeMapping[cell.type];
+            if (this.cellTypes[mappedType]) {
+                cell.cellType = mappedType;
             } else {
-                const availableTypes = Object.keys(this.cellTypes);
-                if (availableTypes.length > 0) {
-                    const seed = cell.col * 47 + cell.row * 29;
-                    const randomIndex = seed % availableTypes.length;
-                    cell.cellType = availableTypes[randomIndex];
-                } else {
-                    cell.cellType = 'grave';
-                }
+                // Если нет в загруженных данных, используем дефолтный
+                cell.cellType = this.getDefaultCellType(cell);
             }
+        } else {
+            cell.cellType = this.getDefaultCellType(cell);
         }
         
         console.log(`🔍 Определен тип клетки [${cell.col},${cell.row}]: ${cell.cellType} (исходный тип: ${cell.type})`);
         return cell.cellType;
+    }
+
+    getDefaultCellType(cell) {
+        // Логика для определения типа по умолчанию
+        if (cell.hasLoot) {
+            const lootLocations = ['smugglers_cache', 'abandoned_camp', 'sunken_ship'];
+            const seed = cell.col * 47 + cell.row * 29;
+            return lootLocations[seed % lootLocations.length];
+        } else if (cell.passable === false) {
+            return 'petrified_forest';
+        } else {
+            const availableTypes = Object.keys(this.cellTypes);
+            if (availableTypes.length > 0) {
+                const seed = cell.col * 47 + cell.row * 29;
+                const randomIndex = seed % availableTypes.length;
+                return availableTypes[randomIndex];
+            } else {
+                return 'grave';
+            }
+        }
+    }
+
+    getActionChance(action, cellType) {
+        console.log(`🔍 Запрос шанса для действия: ${action}, тип клетки: ${cellType}`);
+        
+        // Получаем данные типа клетки из загруженного файла
+        const cellTypeData = this.cellTypes[cellType];
+        
+        if (!cellTypeData) {
+            console.warn(`❌ Данные типа клетки не найдены: ${cellType}`);
+            const baseChance = this.baseActionChances[action] || 25;
+            console.log(`   Используем базовый шанс: ${baseChance}%`);
+            return baseChance;
+        }
+        
+        // Проверяем action_chances из файла локаций
+        if (cellTypeData.action_chances) {
+            console.log(`   Найдены action_chances:`, cellTypeData.action_chances);
+            
+            if (cellTypeData.action_chances[action] !== undefined) {
+                const chance = cellTypeData.action_chances[action];
+                console.log(`   Шанс ${action} для ${cellType}: ${chance}% (из файла)`);
+                return chance;
+            } else {
+                console.log(`   Действие ${action} не найдено в action_chances`);
+            }
+        } else {
+            console.log(`   action_chances не определены в данных`);
+        }
+        
+        // Если в файле нет этого действия, используем базовый шанс
+        const baseChance = this.baseActionChances[action] || 25;
+        console.log(`   Используем базовый шанс: ${baseChance}%`);
+        return baseChance;
     }
 
     updateCellActionsUI(cell) {
@@ -918,10 +1008,8 @@ class MapSystem {
         const isReachable = this.isCellReachable(cell);
         const isExplored = cell.explored === true;
         
-        this.currentCellActions = this.allActions.filter(action => {
-            const chance = this.getActionChance(action, this.currentCellType);
-            return chance > 0;
-        });
+        // Получаем доступные действия для этого типа клетки
+        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
         
         console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
         
@@ -1102,6 +1190,21 @@ class MapSystem {
         console.log("=== КОНЕЦ updateCellActionsUI ===");
     }
 
+    getAvailableActionsForCellType(cellType) {
+        const cellTypeData = this.cellTypes[cellType];
+        if (!cellTypeData || !cellTypeData.action_chances) {
+            // Если нет данных в файле, используем все действия с базовыми шансами > 0
+            return this.allActions.filter(action => (this.baseActionChances[action] || 25) > 0);
+        }
+        
+        // Берем только действия, у которых есть шанс в файле локаций
+        const availableActions = Object.keys(cellTypeData.action_chances)
+            .filter(action => cellTypeData.action_chances[action] > 0)
+            .sort((a, b) => cellTypeData.action_chances[b] - cellTypeData.action_chances[a]); // Сортируем по убыванию шанса
+        
+        return availableActions;
+    }
+
     createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
         return `
             <div class="cell-info-header">
@@ -1166,7 +1269,7 @@ class MapSystem {
         
         this.currentCellActions.forEach((action, index) => {
             const chance = this.getActionChance(action, this.currentCellType);
-            const chancePercent = Math.round(chance * 100);
+            const chancePercent = Math.round(chance);
             const config = this.actionConfigs[action] || {
                 icon: '❓',
                 name: action.replace(/_/g, ' '),
@@ -1174,9 +1277,9 @@ class MapSystem {
             };
             
             let chanceColor = '#ff4444';
-            if (chance >= 0.4) chanceColor = '#ffaa00';
-            if (chance >= 0.7) chanceColor = '#44ff44';
-            if (chance >= 0.9) chanceColor = '#00ffaa';
+            if (chance >= 40) chanceColor = '#ffaa00';
+            if (chance >= 70) chanceColor = '#44ff44';
+            if (chance >= 90) chanceColor = '#00ffaa';
             
             let isDisabled = false;
             let disabledReason = '';
@@ -1190,6 +1293,7 @@ class MapSystem {
             }
             
             const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
+            const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою с монстром (двойной лут)' : '';
             
             html += `
                 <div class="action-card" style="
@@ -1231,6 +1335,7 @@ class MapSystem {
                     ">
                         ${config.description}
                         ${triggersMonster ? `<br><small style="color: #ff4444;">${triggersMonster}</small>` : ''}
+                        ${alwaysMonster ? `<br><small style="color: #ffaa00;">${alwaysMonster}</small>` : ''}
                     </div>
                     
                     <div class="action-chance-display" style="
@@ -1302,15 +1407,6 @@ class MapSystem {
         html += `</div>`;
         
         return html;
-    }
-
-    getActionChance(action, cellType) {
-        const cellTypeData = this.cellTypes[cellType];
-        if (!cellTypeData || !cellTypeData.action_chances) {
-            return this.baseActionChances[action] || 25;
-        }
-        
-        return cellTypeData.action_chances[action] || this.baseActionChances[action] || 25;
     }
 
     getChanceClass(chance) {
@@ -1498,10 +1594,28 @@ class MapSystem {
         }
         
         const chance = this.getActionChance(action, this.currentCellType);
+        const config = this.actionConfigs[action] || {};
+        
+        // Особый случай для охоты - всегда приводит к бою при успехе
+        if (action === 'hunt' && config.always_monster) {
+            console.log(`🏹 Охота - всегда приводит к бою при успехе. Шанс: ${chance}%`);
+            
+            const roll = Math.random() * 100;
+            const success = roll <= chance;
+            
+            if (success) {
+                console.log(`🎯 Успешная охота! Начинаем бой с монстром.`);
+                this.handleHuntActionSuccess(row, col);
+            } else {
+                console.log(`❌ Охота провалилась - не удалось найти дичь.`);
+                this.handleActionFailure(action);
+            }
+            
+            return;
+        }
         
         const actionsContainer = document.getElementById('cellActionsContainer');
         if (actionsContainer) {
-            const config = this.actionConfigs[action] || { name: action, description: '' };
             actionsContainer.innerHTML = `
                 <div class="action-processing">
                     <div class="processing-icon">${config.icon || '⚡'}</div>
@@ -1537,7 +1651,6 @@ class MapSystem {
             if (success) {
                 this.handleActionSuccess(action, row, col);
             } else {
-                const config = this.actionConfigs[action];
                 const cellTypeData = this.cellTypes[this.currentCellType];
                 
                 let monsterChance = cellTypeData.failure_monster_chance || 50;
@@ -1565,6 +1678,54 @@ class MapSystem {
         }, 800);
     }
 
+    handleHuntActionSuccess(row, col) {
+        console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
+        
+        const cellKey = `${col},${row}`;
+        const cell = this.currentTacticalMap?.cells[cellKey];
+        const cellTypeData = this.cellTypes[this.currentCellType];
+        
+        if (!cellTypeData) {
+            console.error("❌ Нет данных типа клетки");
+            return;
+        }
+        
+        // Начинаем бой с монстром для охоты
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) {
+            console.error("❌ BattleSystem не доступна");
+            this.showNotification("❌ Не удалось начать охоту", 'error');
+            return;
+        }
+        
+        const monsterLevel = cellTypeData.monster_level || 1;
+        const randomMonster = this.getMonsterByLevel(monsterLevel);
+        
+        if (!randomMonster) {
+            console.error(`❌ Не найден монстр уровня ${monsterLevel}`);
+            this.showNotification("❌ Не удалось найти дичь для охоты", 'error');
+            return;
+        }
+        
+        // Сохраняем информацию об охоте для обработки после боя
+        this.pendingAction = {
+            action: 'hunt',
+            row: row,
+            col: col,
+            cellTypeData: cellTypeData,
+            wasSuccess: true,
+            doubleLoot: true // Флаг двойного лута
+        };
+        
+        console.log(`🏹 Начинаем охоту на ${randomMonster.name} (уровень ${monsterLevel}) с двойным лутодропом`);
+        
+        // Показываем сообщение об успешной охоте
+        this.showNotification(`🏹 Вы успешно выследили ${randomMonster.name}! Начинается бой.`, 'success');
+        
+        // Начинаем бой с флагом двойного лута
+        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'hunt');
+    }
+
     handleActionSuccess(action, row, col) {
         const config = this.actionConfigs[action];
         
@@ -1578,6 +1739,7 @@ class MapSystem {
             'search_stone': "🪨 Собраны камни!",
             'set_trap': "🪤 Ловушка установлена!",
             'prepare_ambush': "🎯 Позиция для засады подготовлена!",
+            'hunt': "🏹 Успешная охота! Начинается бой с монстром.",
             'hunt_caravan': "🏹 Успешная охота на караван!",
             'take_assassination_contract': "🗡️ Контракт на убийство получен!",
             'light_campfire': "🔥 Костёр разожжён!",
@@ -1585,6 +1747,12 @@ class MapSystem {
         };
         
         const message = successMessages[action] || "✅ Действие успешно!";
+        
+        // Для охоты - отдельная обработка
+        if (action === 'hunt') {
+            this.handleHuntActionSuccess(row, col);
+            return;
+        }
         
         const resourceMap = {
             'search_treasure': 'treasure',
@@ -1596,6 +1764,7 @@ class MapSystem {
             'search_stone': 'stones',
             'set_trap': 'traps',
             'prepare_ambush': 'ambush',
+            'hunt': 'loot',
             'hunt_caravan': 'loot',
             'take_assassination_contract': 'contracts',
             'light_campfire': 'shelter',
@@ -1630,6 +1799,7 @@ class MapSystem {
             'search_stone': "❌ Камни слишком хрупкие",
             'set_trap': "❌ Ловушка сломалась при установке",
             'prepare_ambush': "❌ Позиция оказалась неподходящей",
+            'hunt': "❌ Не удалось найти дичь для охоты",
             'hunt_caravan': "❌ Караван оказался слишком хорошо охраняем",
             'take_assassination_contract': "❌ Заказчик передумал или конкуренты перебили цену",
             'light_campfire': "❌ Дрова оказались сырыми, не удалось разжечь огонь",
@@ -1679,30 +1849,81 @@ class MapSystem {
         this.showNotification(`👹 Провал привлёк ${randomMonster.name}! Готовьтесь к бою!`, 'warning');
     }
 
-getMonsterByLevel(level) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return null;
-    
-    // Получаем всех монстров из battleSystem.monsters
-    const allMonsters = battleSystem.monsters || [];
-    if (!allMonsters || allMonsters.length === 0) return null;
-    
-    // Фильтруем монстров по уровню
-    const suitableMonsters = allMonsters.filter(monster => {
-        const monsterLevel = monster.level || 1;
-        return Math.abs(monsterLevel - level) <= 1;
-    });
-    
-    if (suitableMonsters.length > 0) {
-        return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
+    getMonsterByLevel(level) {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) return null;
+        
+        // Получаем всех монстров из battleSystem.monsters
+        const allMonsters = battleSystem.monsters || [];
+        if (!allMonsters || allMonsters.length === 0) return null;
+        
+        // Фильтруем монстров по уровню
+        const suitableMonsters = allMonsters.filter(monster => {
+            const monsterLevel = monster.level || 1;
+            return Math.abs(monsterLevel - level) <= 1;
+        });
+        
+        if (suitableMonsters.length > 0) {
+            return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
+        }
+        
+        // Если не нашли подходящих по уровню, возвращаем случайного
+        return allMonsters[Math.floor(Math.random() * allMonsters.length)];
     }
-    
-    // Если не нашли подходящих по уровню, возвращаем случайного
-    return allMonsters[Math.floor(Math.random() * allMonsters.length)];
-}
 
-    completeMovementAfterBattle(victory, escape = false, battleType = 'movement') {
-        console.log(`🎲 Завершение ${battleType} боя: победа=${victory}, побег=${escape}`);
+    completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+        console.log(`🎲 Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+        
+        // Обработка охоты
+        if (battleType === 'hunt' && this.pendingAction) {
+            const { action, row, col, cellTypeData, wasSuccess, doubleLoot: huntDoubleLoot } = this.pendingAction;
+            
+            if (victory) {
+                console.log(`🏹 Победа в охоте на клетке [${col},${row}] с двойным лутодропом=${huntDoubleLoot}`);
+                
+                // Отмечаем клетку как исследованную
+                this.markCellAsExplored(row, col);
+                
+                // Показываем сообщение об успешной охоте
+                this.showNotification(`🏹 Охота успешна! Вы добыли ${huntDoubleLoot ? 'двойной' : ''} трофей.`, 'success');
+                
+                // Если есть BattleSystem, можем получить лут
+                const battleSystem = window.game?.systems?.battle;
+                if (battleSystem && battleSystem.getBattleRewards) {
+                    const rewards = battleSystem.getBattleRewards();
+                    if (rewards && huntDoubleLoot) {
+                        // Удваиваем награды
+                        if (rewards.gold) {
+                            this.currentHero.gold += rewards.gold;
+                            console.log(`💰 Получено двойное золото: ${rewards.gold * 2}`);
+                        }
+                        if (rewards.items && rewards.items.length > 0) {
+                            rewards.items.forEach(item => {
+                                console.log(`🎁 Получен двойной предмет: ${item}`);
+                                // Здесь нужно добавить логику добавления предмета в инвентарь
+                            });
+                        }
+                    }
+                }
+                
+                setTimeout(() => {
+                    const cellKey = `${col},${row}`;
+                    const cell = this.currentTacticalMap?.cells[cellKey];
+                    
+                    if (cell) {
+                        this.updateCellActionsUI(cell);
+                        this.highlightSelectedCell(cell);
+                    }
+                }, 500);
+            } else {
+                console.log(`💀 Поражение в охоте на клетке [${col},${row}]`);
+                this.markCellAsExplored(row, col);
+                this.showNotification(`💀 Охота провалилась! Вы были ранены.`, 'error');
+            }
+            
+            this.pendingAction = null;
+            return;
+        }
         
         if (battleType === 'action_failure' && this.pendingAction) {
             const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
@@ -1869,7 +2090,8 @@ getMonsterByLevel(level) {
             'ambush': '🎯',
             'loot': '📦',
             'contracts': '📜',
-            'shelter': '🏕️'
+            'shelter': '🏕️',
+            'food': '🍖'
         };
         return icons[resourceType] || '📦';
     }
@@ -1937,7 +2159,7 @@ getMonsterByLevel(level) {
             <div class="no-available-actions">
                 <div class="no-actions-icon">🚫</div>
                 <p>Для этой локации нет доступных действий</p>
-                <p class="hint">Выберите другую клетку для взаимодействия.</p>
+                        <p class="hint">Выберите другую клетку для взаимодействия.</p>
             </div>
         `;
     }
@@ -2957,6 +3179,18 @@ getMonsterByLevel(level) {
             console.log("🚫 Клетка не существует");
             if (window.game) {
                 window.game.showNotification("Эта клетка не существует!", 'error');
+            }
+            return;
+        }
+
+        // Проверяем, является ли текущая клетка исследуемой и было ли совершено действие
+        const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+        const currentCell = this.currentTacticalMap.cells[currentCellKey];
+        
+        if (currentCell && currentCell.explored === false && currentCell.hasAction === true) {
+            console.log("🚫 Нельзя переместиться - сначала совершите действие на текущей клетке!");
+            if (window.game) {
+                window.game.showNotification("Сначала совершите действие на текущей клетке!", 'warning');
             }
             return;
         }
