@@ -145,6 +145,15 @@ class BattleSystem {
         return mapMonsters;
     }
 
+    getAvailableMonsters() {
+    console.log("📋 Получение доступных монстров...");
+    
+    // Возвращаем всех монстров, включая случайных и запрограммированных
+    const allMonsters = [...this.monsters];
+    console.log(`✅ Найдено ${allMonsters.length} монстров`);
+    return allMonsters;
+}
+
     getRandomMonsterForMovement() {
         const mapMonsters = this.getMonstersForCurrentMap();
         
@@ -248,7 +257,7 @@ class BattleSystem {
         return monsterGroup;
     }
 
-startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕНИТЬ С 'normal' НА 'movement'
+startBattleWithMonster(hero, monsterId, context = 'movement') {
     if (!hero) {
         console.error("❌ Не могу начать бой: герой не передан");
         return;
@@ -257,7 +266,24 @@ startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕ�
     this.resultShown = false;
     this.battleEnding = false;
 
-    const monsterGroup = this.generateMonsterGroup(monsterId);
+    // Получаем монстра по ID или случайного
+    let monsterGroup;
+    
+    // Если передан monsterId, пытаемся найти монстра
+    if (monsterId) {
+        const specificMonster = this.getMonsterById(monsterId);
+        if (specificMonster) {
+            console.log(`🎯 Запуск боя с конкретным монстром: ${specificMonster.name}`);
+            monsterGroup = this.generateSpecificMonsterGroup(specificMonster);
+        }
+    }
+    
+    // Если не нашли по ID, генерируем случайного
+    if (!monsterGroup) {
+        console.log(`🎲 Запуск боя со случайным монстром`);
+        monsterGroup = this.generateMonsterGroup(monsterId || 'random');
+    }
+    
     if (!monsterGroup || monsterGroup.length === 0) {
         console.error("❌ Не удалось сгенерировать группу монстров!");
         return;
@@ -279,13 +305,13 @@ startBattleWithMonster(hero, monsterId, context = 'movement') { // ⭐ ИЗМЕ�
     this.battleActive = true;
     this.battleRound = 0;
     this.battleLog = [];
-    this.battleContext = context; // ⭐ Теперь будет 'movement' по умолчанию
+    this.battleContext = context;
     this.selectedTarget = null;
     this.pendingAction = null;
     
     console.log(`🎲 Контекст боя установлен: ${this.battleContext}`);
     
-    // ⭐ ОТМЕЧАЕМ ЧТО БОЙ АКТИВЕН ДЛЯ ЗАЩИТЫ ОТ ПЕРЕЗАГРУЗКИ
+    // Отмечаем что бой активен для защиты от перезагрузки
     if (window.game) {
         window.game.markBattleAsActive();
         console.log("🎲 Бой отмечен как активный для защиты от перезагрузки");
