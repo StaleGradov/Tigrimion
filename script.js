@@ -1156,6 +1156,7 @@ fixHealthBarLayout() {
                     <button class="btn-top" onclick="game.systems.hero.showHeroStory()">📖 История Героя</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
                      <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
+                    <button class="btn-top" onclick="game.debugCrafting()">🐛 Отладка крафта</button>
                 </div>
 
                 <!-- Основная область героя -->
@@ -2088,6 +2089,35 @@ showOverlayContent(content, className = '') {
             setTimeout(() => this.attachShopItemHandlers(), 100);
         }
     }
+
+    debugCrafting() {
+        if (this.systems.crafting) {
+            console.log("=== ОТЛАДКА СИСТЕМЫ КРАФТА ===");
+            
+            // Вызываем метод отладки
+            this.systems.crafting.debugCraftingSystem();
+            
+            // Тестируем пути к файлам
+            this.systems.crafting.testFilePaths().then(() => {
+                console.log("✅ Тестирование путей завершено");
+            });
+            
+            // Проверяем интерфейс
+            console.log("Тест интерфейса крафта:");
+            try {
+                const html = this.systems.crafting.showCraftingUI('all', 'all');
+                console.log("HTML интерфейса сгенерирован:", html.length > 0);
+                console.log("Первые 500 символов HTML:", html.substring(0, 500));
+            } catch (error) {
+                console.error("Ошибка при генерации интерфейса:", error);
+            }
+        } else {
+            console.error("❌ Система крафта не доступна");
+        }
+        
+        this.showNotification("Отладка крафта запущена, смотрите консоль (F12)", "info");
+    }
+    
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ИГРЫ ==========
