@@ -13,7 +13,8 @@ class ModuleLoader {
             'hero-system',
             'map-system',
             'shop-system', // ← ДОБАВЛЕНА ShopSystem
-            'resources-system'
+            'resources-system',
+            'crafting-system' // ← ДОБАВИТЬ ЗДЕСЬ ⭐
         ];
     }
 
@@ -302,6 +303,7 @@ async initializeSystems() {
     console.log("⚙️ Инициализация игровых систем...");
     
     try {
+        // Инициализация всех систем
         this.systems.bonus = new BonusSystem();
         this.systems.level = new LevelSystem();
         this.systems.battle = new BattleSystem();
@@ -313,9 +315,34 @@ async initializeSystems() {
         // ⭐ ВАЖНО: Инициализируем ResourcesSystem ДО загрузки данных
         this.systems.resources = new ResourcesSystem();
         
+        // ⭐ ДОБАВЛЯЕМ СИСТЕМУ КРАФТА
+        this.systems.crafting = new CraftingSystem(this);
+        
         console.log("✅ Все системы инициализированы");
         
+        // ⭐ ЗАГРУЖАЕМ ДАННЫЕ ДЛЯ КРАФТА
+        if (this.systems.crafting && this.systems.crafting.loadRecipes) {
+            console.log("📋 Загрузка рецептов крафта...");
+            const recipesLoaded = await this.systems.crafting.loadRecipes();
+            
+            if (recipesLoaded) {
+                console.log("✅ Рецепты крафта загружены");
+                
+                // Разблокируем базовые станции при старте игры
+                this.systems.crafting.unlockStation('campfire');
+                this.systems.crafting.unlockStation('workbench');
+                
+                console.log("🎉 Базовые станции крафта разблокированы");
+            } else {
+                console.warn("⚠️ Не удалось загрузить рецепты крафта");
+            }
+        }
+        
+        // ⭐ УДАЛИТЬ ЭТУ ЧАСТЬ - кнопка уже есть в интерфейсе
+        // Не нужно модифицировать showResourcesInventory
+        
     } catch (error) {
+        console.error("❌ Ошибка инициализации систем:", error);
         throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
 }
