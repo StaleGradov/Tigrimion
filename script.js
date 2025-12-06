@@ -377,6 +377,15 @@ async initializeSystems() {
                 this.systems.crafting.unlockStation('workbench');
                 
                 console.log("🎉 Базовые станции крафта разблокированы");
+                
+                // ⭐ ДОБАВЬТЕ ЭТО: Привязываем кнопку крафта к ресурсам
+                if (this.systems.crafting.addCraftingToResources) {
+                    setTimeout(() => {
+                        this.systems.crafting.addCraftingToResources();
+                        console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+                    }, 1000); // Небольшая задержка для полной инициализации
+                }
+                
             } else {
                 console.warn("⚠️ Не удалось загрузить рецепты крафта");
             }
@@ -1306,6 +1315,47 @@ showInventoryHub() {
     `;
 }
 
+
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД:
+showCrafting() {
+    try {
+        console.log("🔨 Открытие интерфейса крафта...");
+        
+        // Проверяем, что система крафта существует
+        if (!this.systems.crafting) {
+            console.error("❌ Система крафта не инициализирована");
+            this.showNotification("❌ Система крафта не доступна", "error");
+            return;
+        }
+        
+        // Проверяем, что рецепты загружены
+        if (!this.systems.crafting.recipes || Object.keys(this.systems.crafting.recipes).length === 0) {
+            console.warn("⚠️ Рецепты не загружены, пробуем загрузить...");
+            
+            // Пытаемся загрузить рецепты
+            this.systems.crafting.loadRecipes().then(success => {
+                if (success) {
+                    this.showCrafting();
+                } else {
+                    this.showNotification("❌ Не удалось загрузить рецепты крафта", "error");
+                }
+            });
+            return;
+        }
+        
+        // Показываем оверлей с крафтом
+        const html = this.systems.crafting.showCraftingUI('all', 'all');
+        this.showOverlayContent(html, 'crafting-overlay');
+        
+        console.log("✅ Интерфейс крафта открыт");
+        
+    } catch (error) {
+        console.error("❌ Ошибка при открытии крафта:", error);
+        this.showNotification(`❌ Ошибка: ${error.message}`, "error");
+    }
+}
+
+    
 
     // В классе Game, добавьте этот метод:
 showCrafting(stationFilter = 'all', categoryFilter = 'all') {
