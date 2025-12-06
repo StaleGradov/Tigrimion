@@ -38,11 +38,11 @@ class CraftingSystem {
         }
     }
 
-  async loadRecipes() {
+async loadRecipes() {
     try {
         console.log("🔨 Загружаем рецепты крафта...");
         
-        // ⭐ ПРОБУЕМ РАЗНЫЕ ПУТИ
+        // Пробуем разные пути
         const possiblePaths = [
             'data/crafting.json',
             'crafting.json',
@@ -67,23 +67,19 @@ class CraftingSystem {
         }
         
         if (!response || !response.ok) {
-            throw new Error(`Не удалось загрузить crafting.json ни с одного пути: ${possiblePaths.join(', ')}`);
+            throw new Error(`Не удалось загрузить crafting.json ни с одного пути`);
         }
         
         console.log(`✅ Файл найден по пути: ${usedPath}`);
+        const rawData = await response.json();
         
-        const craftingData = await response.json();
-        
-        // ⭐ ПРОВЕРЯЕМ СТРУКТУРУ ДАННЫХ
-        console.log("📊 Структура данных:", Object.keys(craftingData));
-        
-        if (craftingData.crafting_system) {
-            this.recipes = craftingData.crafting_system;
-        } else if (craftingData.stations || craftingData.consumables) {
-            // Если данные уже в корне
-            this.recipes = craftingData;
+        // ⭐ ИСПРАВЛЕНИЕ: Правильно парсим структуру файла
+        if (rawData.crafting_system) {
+            // Если данные в поле crafting_system
+            this.recipes = rawData.crafting_system;
         } else {
-            throw new Error("Неверная структура файла crafting.json");
+            // Если данные уже на верхнем уровне
+            this.recipes = rawData;
         }
         
         console.log(`✅ Загружено рецептов крафта:`);
@@ -96,10 +92,9 @@ class CraftingSystem {
     } catch (error) {
         console.error("❌ Ошибка загрузки рецептов:", error);
         
-        // ⭐ СОЗДАЕМ ПРОСТЫЕ ТЕСТОВЫЕ РЕЦЕПТЫ НА СЛУЧАЙ ОШИБКИ
+        // Создаем простые тестовые рецепты
         this.createFallbackRecipes();
         
-        // ⭐ ВСЕ РАВНО ВОЗВРАЩАЕМ TRUE ЧТОБЫ ИГРА ПРОДОЛЖАЛАСЬ
         return true;
     }
 }
@@ -586,8 +581,7 @@ class CraftingSystem {
     getAvailableRecipes(stationFilter = 'all', categoryFilter = 'all') {
         const availableRecipes = [];
         
-        // Перебираем все категории рецептов
-        const recipeCategories = ['consumables', 'basic_components', 'tools', 'weapons', 'helmets', 'stations_recipes'];
+        const recipeCategories = ['consumables', 'basic_components', 'tools', 'weapons', 'helmets', 'stations', 'materials', 'weapon_recipes', 'boots_recipes', 'legs_recipes', 'chest_armor', 'gloves'];
         
         recipeCategories.forEach(category => {
             if (categoryFilter !== 'all' && categoryFilter !== category && !category.includes(categoryFilter)) {
