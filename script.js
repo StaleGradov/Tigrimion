@@ -230,7 +230,9 @@ class SafeHeroGame {
         this.sharedResources = {
             gold: 0, // Временно 0, установится после загрузки героев
             inventory: [], // Общий инвентарь
-            unlockedHeroes: [1] // Разблокированные герои
+            unlockedHeroes: [1], // Разблокированные герои
+            // ⭐ ДОБАВЛЕНО ДЛЯ РЕСУРСОВ:
+            resources: {} // Для хранения ресурсов отдельно
         };
         
         this.isSaveLoaded = false;
@@ -307,7 +309,9 @@ async initializeSystems() {
         this.systems.hero = new HeroSystem();
         this.systems.map = new MapSystem();
         this.systems.shop = new ShopSystem();
-        this.systems.resources = new ResourcesSystem(); // ← ДОБАВЬ
+        
+        // ⭐ ВАЖНО: Инициализируем ResourcesSystem ДО загрузки данных
+        this.systems.resources = new ResourcesSystem();
         
         console.log("✅ Все системы инициализированы");
         
@@ -316,33 +320,34 @@ async initializeSystems() {
     }
 }
 
-      async loadGameData() {
-        console.log("📂 Загрузка игровых данных...");
+    async loadGameData() {
+    console.log("📂 Загрузка игровых данных...");
+    
+    try {
+        await Promise.all([
+            this.systems.hero.loadHeroData(),
+            this.systems.equipment.loadItemData(),
+            this.systems.battle.loadBattleData(),
+            this.systems.map.loadMapData(),
+            this.systems.bonus.loadBonusData(),
+            this.systems.level.loadLevelData(),
+            // ⭐ ВАЖНО: Загружаем данные ресурсов
+            this.systems.resources.loadResourcesData()
+        ]);
         
-        try {
-            await Promise.all([
-                this.systems.hero.loadHeroData(),
-                this.systems.equipment.loadItemData(),
-                this.systems.battle.loadBattleData(),
-                this.systems.map.loadMapData(),
-                this.systems.bonus.loadBonusData(),
-                this.systems.level.loadLevelData(),
-                this.systems.resources.loadResourcesData() // ← ДОБАВЬ
-            ]);
-            
-            // ⭐ ИСПРАВЛЕНИЕ: Устанавливаем начальное золото из первого героя
-            if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
-                const firstHero = this.systems.hero.heroes[0];
-                this.sharedResources.gold = firstHero.gold;
-                console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
-            }
-            
-            console.log("✅ Все игровые данные загружены");
-            
-        } catch (error) {
-            throw new Error(`Ошибка загрузки данных: ${error.message}`);
+        // ⭐ ИСПРАВЛЕНИЕ: Устанавливаем начальное золото из первого героя
+        if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
+            const firstHero = this.systems.hero.heroes[0];
+            this.sharedResources.gold = firstHero.gold;
+            console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
         }
+        
+        console.log("✅ Все игровые данные загружены");
+        
+    } catch (error) {
+        throw new Error(`Ошибка загрузки данных: ${error.message}`);
     }
+}
 
 saveGame() {
     try {
@@ -369,6 +374,8 @@ saveGame() {
                         // Экипировка индивидуальна для каждого героя:
                         equipment: {...hero.equipment},
                         unlocked: hero.unlocked,
+                        // ⭐ СОХРАНЯЕМ РЕСУРСЫ ГЕРОЯ
+                        resources: hero.resources || {}
                     };
                     
                     // ⭐ СОХРАНЯЕМ СОСТОЯНИЕ ФЛЯГИ ТОЛЬКО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
@@ -385,16 +392,19 @@ saveGame() {
                 sharedResources: {
                     gold: this.sharedResources.gold,
                     inventory: [...this.sharedResources.inventory],
-                    unlockedHeroes: [...this.sharedResources.unlockedHeroes]
+                    unlockedHeroes: [...this.sharedResources.unlockedHeroes],
+                    // ⭐ СОХРАНЯЕМ РЕСУРСЫ В ОБЩИХ РЕСУРСАХ
+                    resources: this.sharedResources.resources ? {...this.sharedResources.resources} : {}
                 },
                 timestamp: Date.now(),
-                version: "2.2" // Обновляем версию
+                version: "2.3" // Обновляем версию для ресурсов
             };
             
             localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-            console.log("💾 Игра сохранена с прогрессом всех героев и состоянием фляги", {
+            console.log("💾 Игра сохранена с прогрессом всех героев и ресурсами", {
                 gold: this.sharedResources.gold,
                 heroes: this.systems.hero.heroes.map(h => `${h.name}: ур.${h.level}, опыт:${h.experience}`),
+                resourcesCount: Object.keys(this.sharedResources.resources || {}).length,
                 flaskCharges: this.systems.battle?.flask?.currentCharges || 'N/A',
                 flaskContent: this.systems.battle?.flask?.content || 'N/A'
             });
@@ -418,9 +428,14 @@ loadSave() {
                 this.sharedResources = {
                     gold: data.sharedResources.gold || 0,
                     inventory: data.sharedResources.inventory || [],
-                    unlockedHeroes: data.sharedResources.unlockedHeroes || [1]
+                    unlockedHeroes: data.sharedResources.unlockedHeroes || [1],
+                    // ⭐ ЗАГРУЖАЕМ РЕСУРСЫ
+                    resources: data.sharedResources.resources || {}
                 };
-                console.log("✅ Общий инвентарь загружен:", this.sharedResources.inventory.length, "предметов");
+                console.log("✅ Общий инвентарь и ресурсы загружены:", {
+                    inventory: this.sharedResources.inventory.length,
+                    resources: Object.keys(this.sharedResources.resources).length
+                });
             } else {
                 // Если сохранение старое - берем золото из первого героя
                 if (this.systems.hero.heroes.length > 0) {
@@ -428,6 +443,7 @@ loadSave() {
                     this.sharedResources.gold = firstHero.gold || 0;
                     this.sharedResources.inventory = [];
                     this.sharedResources.unlockedHeroes = [1];
+                    this.sharedResources.resources = {};
                     console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
                 }
             }
@@ -456,11 +472,17 @@ loadSave() {
                             existingHero.equipment = {...savedHero.equipment};
                         }
                         
+                        // ⭐ ЗАГРУЖАЕМ РЕСУРСЫ ГЕРОЯ (для совместимости со старой системой)
+                        if (savedHero.resources) {
+                            existingHero.resources = {...savedHero.resources};
+                        }
+                        
                         console.log(`🎯 Загружен герой: ${existingHero.name}`, {
                             level: existingHero.level,
                             experience: existingHero.experience,
                             health: existingHero.currentHealth,
-                            equipment: existingHero.equipment
+                            equipment: existingHero.equipment,
+                            resourcesCount: Object.keys(existingHero.resources || {}).length
                         });
                     }
                 });
@@ -475,6 +497,11 @@ loadSave() {
                     // ⭐ ВАЖНО: СИНХРОНИЗИРУЕМ ИНВЕНТАРЬ - используем общий
                     this.currentHero.inventory = [...this.sharedResources.inventory];
                     this.currentHero.gold = this.sharedResources.gold;
+                    
+                    // ⭐ СИНХРОНИЗИРУЕМ РЕСУРСЫ (для совместимости)
+                    if (!this.currentHero.resources && this.sharedResources.resources) {
+                        this.currentHero.resources = {...this.sharedResources.resources};
+                    }
                     
                     // ⭐ ДОБАВЛЯЕМ: Загрузка состояния фляги для текущего героя
                     if (this.systems.battle && this.systems.battle.flask) {
@@ -506,11 +533,16 @@ loadSave() {
                     if (this.systems.hero) {
                         this.systems.hero.currentHero = this.currentHero;
                     }
+                    if (this.systems.resources) {
+                        // Передаем ресурсы в ResourcesSystem
+                        this.systems.resources.sharedResources = this.sharedResources;
+                    }
                     
-                    console.log("✅ Текущий герой восстановлен с общим инвентарем:", {
+                    console.log("✅ Текущий герой восстановлен с общим инвентарем и ресурсами:", {
                         name: this.currentHero.name,
                         inventory: this.currentHero.inventory.length,
-                        gold: this.currentHero.gold
+                        gold: this.currentHero.gold,
+                        resources: Object.keys(this.currentHero.resources || {}).length
                     });
                 }
             }
@@ -524,7 +556,8 @@ loadSave() {
             this.sharedResources = {
                 gold: 100,
                 inventory: [],
-                unlockedHeroes: [1]
+                unlockedHeroes: [1],
+                resources: {} // Пустые ресурсы для новой игры
             };
             
             // Устанавливаем золото для всех героев
@@ -535,6 +568,7 @@ loadSave() {
                 // Синхронизируем золото с первым героем
                 this.systems.hero.heroes.forEach(hero => {
                     hero.gold = this.sharedResources.gold;
+                    hero.resources = {}; // Пустые ресурсы для нового героя
                 });
                 
                 console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
@@ -546,6 +580,11 @@ loadSave() {
                 this.systems.battle.flask.content = 'water';
                 console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
             }
+            
+            // Инициализируем ResourcesSystem
+            if (this.systems.resources) {
+                this.systems.resources.sharedResources = this.sharedResources;
+            }
         }
     } catch (error) {
         console.error("❌ Ошибка загрузки сохранения:", error);
@@ -556,12 +595,17 @@ loadSave() {
         this.sharedResources = {
             gold: 100,
             inventory: [],
-            unlockedHeroes: [1]
+            unlockedHeroes: [1],
+            resources: {}
         };
         
         if (this.systems.battle && this.systems.battle.flask) {
             this.systems.battle.flask.currentCharges = 10;
             this.systems.battle.flask.content = 'water';
+        }
+        
+        if (this.systems.resources) {
+            this.systems.resources.sharedResources = this.sharedResources;
         }
     }
     return false;
@@ -816,6 +860,8 @@ selectHero(heroId) {
     // Устанавливаем общее золото при смене героя
     if (this.sharedResources) {
         hero.gold = this.sharedResources.gold;
+        // ⭐ СИНХРОНИЗИРУЕМ РЕСУРСЫ
+        hero.resources = {...this.sharedResources.resources};
     }
 
     this.currentHero = hero;
@@ -874,11 +920,15 @@ selectHero(heroId) {
     if (this.systems.map) {
         this.systems.map.setCurrentHero(hero);
     }
+    // ⭐ СИНХРОНИЗИРУЕМ С RESOURCES SYSTEM
+    if (this.systems.resources) {
+        this.systems.resources.sharedResources = this.sharedResources;
+    }
     
     // Сохраняем при смене героя
     this.saveGame();
     
-    console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}, опыт: ${hero.experience}, золото: ${hero.gold}`);
+    console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}, опыт: ${hero.experience}, золото: ${hero.gold}, ресурсов: ${Object.keys(hero.resources || {}).length}`);
     this.showHeroGameScreen();
 }
 
@@ -1244,6 +1294,11 @@ showInventoryHub() {
 
 case 'resources':
     if (this.systems.resources && this.systems.resources.loaded) {
+        // ⭐ ПЕРЕДАЕМ ОБЩИЕ РЕСУРСЫ В СИСТЕМУ
+        if (!this.systems.resources.sharedResources && this.sharedResources) {
+            this.systems.resources.sharedResources = this.sharedResources;
+        }
+        
         container.innerHTML = this.systems.resources.showResourcesInventory();
         container.style.display = 'block';
     } else {
