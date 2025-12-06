@@ -1,113 +1,436 @@
 {
   "herbs": [
-    { 
-      "id": "arnica", 
-      "name": "🌿 Арника", 
-      "type": "herb", 
-      "rarity": "common", 
-      "value": 10, 
-      "price": 5,
-      "description": "Известна своими заживляющими свойствами"
+    {
+      "id": "grass",
+      "name": "🌿 Трава",
+      "type": "herb",
+      "rarity": "common",
+      "value": 3,
+      "price": 1,
+      "description": "Обычная трава. Основа для плетения верёвок и ниток."
     },
-    { 
-      "id": "willow_bark", 
-      "name": "🍂 Кора Ивы", 
-      "type": "herb", 
-      "rarity": "common", 
-      "value": 12, 
+    {
+      "id": "arnica",
+      "name": "🌿 Арника",
+      "type": "herb",
+      "rarity": "common",
+      "value": 10,
+      "price": 5,
+      "description": "Лечебная трава, известная своими заживляющими свойствами."
+    },
+    {
+      "id": "willow_bark",
+      "name": "🍂 Кора Ивы",
+      "type": "herb",
+      "rarity": "common",
+      "value": 12,
       "price": 6,
-      "description": "Содержит природные обезболивающие"
+      "description": "Содержит природные обезболивающие и противовоспалительные вещества."
+    },
+    {
+      "id": "flax",
+      "name": "🌾 Лён",
+      "type": "herb",
+      "rarity": "uncommon",
+      "value": 25,
+      "price": 12,
+      "description": "Растение с прочными волокнами для изготовления ткани."
+    },
+    {
+      "id": "cotton",
+      "name": "🌱 Хлопок",
+      "type": "herb",
+      "rarity": "uncommon",
+      "value": 22,
+      "price": 11,
+      "description": "Пушистое растение, источник волокон для лёгкой и прочной ткани."
+    },
+    {
+      "id": "cobweb",
+      "name": "🕸️ Паутина",
+      "type": "herb",
+      "rarity": "uncommon",
+      "value": 18,
+      "price": 9,
+      "description": "Липкие и прочные нити. Может быть собрана с растений или как трофей."
     }
   ],
   "berries": [
-    { 
-      "id": "elderberry", 
-      "name": "🫐 Бузина", 
-      "type": "berry", 
-      "rarity": "common", 
-      "value": 8, 
+    {
+      "id": "elderberry",
+      "name": "🫐 Бузина",
+      "type": "berry",
+      "rarity": "common",
+      "value": 8,
       "price": 4,
-      "description": "Укрепляет иммунитет и бодрит"
+      "description": "Тёмные ягоды, укрепляющие иммунитет и бодрящие."
     },
-    { 
-      "id": "rosehip", 
-      "name": "🌰 Шиповник", 
-      "type": "berry", 
-      "rarity": "common", 
-      "value": 15, 
+    {
+      "id": "rosehip",
+      "name": "🌰 Шиповник",
+      "type": "berry",
+      "rarity": "common",
+      "value": 15,
       "price": 8,
-      "description": "Богат витаминами, тонизирует"
+      "description": "Плоды шиповника, богатые витаминами, отличный тонизатор."
+    },
+    {
+      "id": "coffee_bean",
+      "name": "☕️ Кофейные зерна",
+      "type": "berry",
+      "rarity": "uncommon",
+      "value": 40,
+      "price": 20,
+      "description": "Ароматные зёрна, дающие заряд бодрости и ясности ума."
     }
   ],
   "mushrooms": [
-    { 
-      "id": "tea_mushroom", 
-      "name": "🍄 Чайный гриб", 
-      "type": "mushroom", 
-      "rarity": "uncommon", 
-      "value": 25, 
+    {
+      "id": "tea_mushroom",
+      "name": "🍄 Чайный гриб",
+      "type": "mushroom",
+      "rarity": "uncommon",
+      "value": 25,
       "price": 12,
-      "description": "Основа для ферментированных целебных напитков"
-    }
-  ],
-  "ores": [
-    { 
-      "id": "iron_ore", 
-      "name": "⛏️ Железная руда", 
-      "type": "ore", 
-      "rarity": "common", 
-      "value": 20, 
-      "price": 10,
-      "description": "Базовая руда для изготовления оружия и доспехов"
-    },
-    { 
-      "id": "copper_ore", 
-      "name": "⛏️ Медная руда", 
-      "type": "ore", 
-      "rarity": "common", 
-      "value": 30, 
-      "price": 15,
-      "description": "Используется для украшений и инструментов"
-    }
-  ],
-  "stones": [
-    { 
-      "id": "flint", 
-      "name": "🪨 Кремень", 
-      "type": "stone", 
-      "rarity": "common", 
-      "value": 5, 
-      "price": 2,
-      "description": "Для розжига огня и создания инструментов"
-    },
-    { 
-      "id": "quartz", 
-      "name": "🪨 Кварц", 
-      "type": "stone", 
-      "rarity": "uncommon", 
-      "value": 50, 
-      "price": 25,
-      "description": "Полупрозрачный кристалл с магическими свойствами"
+      "description": "Основа для ферментированных целебных и тонизирующих напитков."
     }
   ],
   "woods": [
-    { 
-      "id": "oak_wood", 
-      "name": "🪵 Дубовая древесина", 
-      "type": "wood", 
-      "rarity": "common", 
-      "value": 15, 
-      "price": 8,
-      "description": "Прочная древесина для строительства и оружия"
+    {
+      "id": "common_wood",
+      "name": "🪵 Дерево",
+      "type": "wood",
+      "rarity": "common",
+      "value": 8,
+      "price": 4,
+      "description": "Обычная древесина для строительства, инструментов и топлива."
     },
-    { 
-      "id": "pine_wood", 
-      "name": "🪵 Сосновая древесина", 
-      "type": "wood", 
-      "rarity": "common", 
-      "value": 10, 
+    {
+      "id": "flexible_branch",
+      "name": "🪵 Гибкая ветвь",
+      "type": "wood",
+      "rarity": "uncommon",
+      "value": 35,
+      "price": 18,
+      "description": "Особо гибкая и прочная ветвь, идеальна для изготовления луков и древков стрел."
+    }
+  ],
+  "stones": [
+    {
+      "id": "stone",
+      "name": "🪨 Камень",
+      "type": "stone",
+      "rarity": "common",
+      "value": 5,
+      "price": 2,
+      "description": "Обычный булыжник. Основа для каменных инструментов и строительства."
+    },
+    {
+      "id": "flint",
+      "name": "✨ Кремний",
+      "type": "stone",
+      "rarity": "uncommon",
+      "value": 15,
+      "price": 8,
+      "description": "Твёрдый минерал с острыми краями. Используется для розжига огня и первобытных орудий."
+    }
+  ],
+  "ores": [
+    {
+      "id": "copper_ore",
+      "name": "⛏️ Медная руда",
+      "type": "ore",
+      "rarity": "common",
+      "value": 30,
+      "price": 15,
+      "description": "Мягкий металл рыжего цвета. Используется для инструментов, украшений и сплавов."
+    },
+    {
+      "id": "tin_ore",
+      "name": "⛏️ Оловянная руда",
+      "type": "ore",
+      "rarity": "common",
+      "value": 35,
+      "price": 18,
+      "description": "Мягкий, ковкий металл. Ключевой компонент для создания бронзы."
+    },
+    {
+      "id": "iron_ore",
+      "name": "⛏️ Железная руда",
+      "type": "ore",
+      "rarity": "common",
+      "value": 50,
+      "price": 25,
+      "description": "Прочная руда, основа для надёжного оружия, доспехов и инструментов."
+    },
+    {
+      "id": "silver_ore",
+      "name": "⛏️ Серебряная руда",
+      "type": "ore",
+      "rarity": "rare",
+      "value": 120,
+      "price": 60,
+      "description": "Благородный металл. Особенно эффективен против нежити и используется в магии."
+    },
+    {
+      "id": "gold_ore",
+      "name": "⛏️ Золотая руда",
+      "type": "ore",
+      "rarity": "rare",
+      "value": 200,
+      "price": 100,
+      "description": "Роскошный и ковкий металл для украшений, монет и высокоуровневых артефактов."
+    },
+    {
+      "id": "mithril_ore",
+      "name": "⛏️ Мифриловая руда",
+      "type": "ore",
+      "rarity": "epic",
+      "value": 500,
+      "price": 250,
+      "description": "Легендарный лёгкий металл, прочнее стали. Используется для элитных доспехов и оружия."
+    },
+    {
+      "id": "adamantite_ore",
+      "name": "⛏️ Адамантиновая руда",
+      "type": "ore",
+      "rarity": "epic",
+      "value": 800,
+      "price": 400,
+      "description": "Невероятно твёрдая и почти неразрушимая руда для величайших творений кузнечного дела."
+    },
+    {
+      "id": "meteorite_ore",
+      "name": "💎 Метеоритная руда",
+      "type": "ore",
+      "rarity": "legendary",
+      "value": 1500,
+      "price": 750,
+      "description": "Внеземной металл, упавший со звёзд. Обладает уникальными магическими и физическими свойствами."
+    }
+  ],
+  "bones": [
+    {
+      "id": "small_bone",
+      "name": "🦴 Кость",
+      "type": "bone",
+      "rarity": "common",
+      "value": 10,
       "price": 5,
-      "description": "Легкая и ароматная древесина"
+      "description": "Мелкая кость (птичья или грызуна). Используется в ремесле и алхимии."
+    },
+    {
+      "id": "wolf_bone",
+      "name": "🦴 Волчья кость",
+      "type": "bone",
+      "rarity": "common",
+      "value": 25,
+      "price": 12,
+      "description": "Прочная кость хищника. Подходит для рукоятей инструментов и амулетов."
+    },
+    {
+      "id": "horse_bone",
+      "name": "🦴 Лошадиная кость",
+      "type": "bone",
+      "rarity": "uncommon",
+      "value": 40,
+      "price": 20,
+      "description": "Большая и крепкая кость. Используется в строительстве и для создания прочных предметов."
+    },
+    {
+      "id": "bull_bone",
+      "name": "🦴 Бычья кость",
+      "type": "bone",
+      "rarity": "uncommon",
+      "value": 55,
+      "price": 28,
+      "description": "Массивная и тяжёлая кость. Ценный материал для брони и мощного оружия."
+    },
+    {
+      "id": "mammoth_bone",
+      "name": "🦴 Кость мамонта",
+      "type": "bone",
+      "rarity": "rare",
+      "value": 150,
+      "price": 75,
+      "description": "Ископаемая кость исполинского существа. Материал для монументальных построек и оружия."
+    },
+    {
+      "id": "dragon_bone",
+      "name": "🦴 Драконья кость",
+      "type": "bone",
+      "rarity": "legendary",
+      "value": 1000,
+      "price": 500,
+      "description": "Кость древнего дракона, пропитанная магией. Величайший материал для создания артефактов."
+    }
+  ],
+  "leathers": [
+    {
+      "id": "thin_leather",
+      "name": "🐇 Тонкая кожа",
+      "type": "leather",
+      "rarity": "common",
+      "value": 15,
+      "price": 8,
+      "description": "Мягкая кожа мелких животных. Для перчаток, сумок и лёгкой отделки."
+    },
+    {
+      "id": "strong_leather",
+      "name": "🐐 Крепкая кожа",
+      "type": "leather",
+      "rarity": "common",
+      "value": 30,
+      "price": 15,
+      "description": "Прочная кожа коз или оленей. Основа для средней брони и снаряжения."
+    },
+    {
+      "id": "thick_leather",
+      "name": "🐖 Толстая кожа",
+      "type": "leather",
+      "rarity": "uncommon",
+      "value": 60,
+      "price": 30,
+      "description": "Грубая и тяжёлая кожа кабана или быка. Для прочных доспехов и щитов."
+    },
+    {
+      "id": "bull_leather",
+      "name": "🐂 Бычья кожа",
+      "type": "leather",
+      "rarity": "uncommon",
+      "value": 80,
+      "price": 40,
+      "description": "Особо плотная и выносливая кожа. Идеальна для тяжёлой наплечной брони."
+    },
+    {
+      "id": "lizard_leather",
+      "name": "🦎 Кожа ящера",
+      "type": "leather",
+      "rarity": "rare",
+      "value": 180,
+      "price": 90,
+      "description": "Чешуйчатая, гибкая и водоотталкивающая кожа. Для элитной брони."
+    },
+    {
+      "id": "dragon_leather",
+      "name": "🐉 Драконья кожа",
+      "type": "leather",
+      "rarity": "legendary",
+      "value": 1200,
+      "price": 600,
+      "description": "Чрезвычайно прочная и магически устойчивая кожа. Материал для легендарных доспехов."
+    }
+  ],
+  "hides": [
+    {
+      "id": "thin_hide",
+      "name": "🐇 Тонкая шкура",
+      "type": "hide",
+      "rarity": "common",
+      "value": 20,
+      "price": 10,
+      "description": "Шкурка мелкого зверька с мехом. Для лёгкой зимней одежды."
+    },
+    {
+      "id": "strong_hide",
+      "name": "🐐 Крепкая шкура",
+      "type": "hide",
+      "rarity": "common",
+      "value": 45,
+      "price": 22,
+      "description": "Шкура волка или козла. Для тёплых и прочных плащей."
+    },
+    {
+      "id": "thick_hide",
+      "name": "🐖 Толстая шкура",
+      "type": "hide",
+      "rarity": "uncommon",
+      "value": 90,
+      "price": 45,
+      "description": "Шкура медведя или кабана. Обеспечивает отличную защиту от холода и ударов."
+    },
+    {
+      "id": "tiger_hide",
+      "name": "🐅 Тигровая шкура",
+      "type": "hide",
+      "rarity": "rare",
+      "value": 250,
+      "price": 125,
+      "description": "Роскошная полосатая шкура большого хищника. Символ статуса и отличная защита."
+    },
+    {
+      "id": "bear_hide",
+      "name": "🐻 Медвежья шкура",
+      "type": "hide",
+      "rarity": "rare",
+      "value": 300,
+      "price": 150,
+      "description": "Огромная, невероятно тёплая и устрашающая шкура. Для вождей и героев."
+    },
+    {
+      "id": "dragon_hide",
+      "name": "🐉 Драконья шкура",
+      "type": "hide",
+      "rarity": "legendary",
+      "value": 1500,
+      "price": 750,
+      "description": "Чешуйчатая шкура дракона, обладающая innate magic resistance. Бесценный трофей."
+    }
+  ],
+  "furs": [
+    {
+      "id": "hare_fur",
+      "name": "🐇 Заячий мех",
+      "type": "fur",
+      "rarity": "common",
+      "value": 25,
+      "price": 12,
+      "description": "Мягкий и тёплый мех. Для подкладки шапок и варежек."
+    },
+    {
+      "id": "marten_fur",
+      "name": "🐾 Мех куницы",
+      "type": "fur",
+      "rarity": "uncommon",
+      "value": 100,
+      "price": 50,
+      "description": "Чёрный, густой и блестящий мех. Символ роскоши и благородства."
+    },
+    {
+      "id": "arctic_fox_fur",
+      "name": "🦊 Мех песца",
+      "type": "fur",
+      "rarity": "uncommon",
+      "value": 120,
+      "price": 60,
+      "description": "Белоснежный, очень тёплый мех. Идеален для суровых зим."
+    },
+    {
+      "id": "lynx_fur",
+      "name": "🐱 Мех рыси",
+      "type": "fur",
+      "rarity": "rare",
+      "value": 200,
+      "price": 100,
+      "description": "Пятнистый, длинный и невероятно мягкий мех редкого хищника."
+    },
+    {
+      "id": "leopard_fur",
+      "name": "🐆 Мех барса",
+      "type": "fur",
+      "rarity": "rare",
+      "value": 350,
+      "price": 175,
+      "description": "Экзотический пятнистый мех. Высший символ статуса и богатства."
+    },
+    {
+      "id": "mammoth_fur",
+      "name": "🦣 Мех мамонта",
+      "type": "fur",
+      "rarity": "epic",
+      "value": 600,
+      "price": 300,
+      "description": "Густой, косматый и невероятно тёплый мех доисторического гиганта. Легендарный материал."
     }
   ]
 }
