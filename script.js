@@ -133,7 +133,8 @@ isModuleAvailable(moduleName) {
         'hero-system': 'HeroSystem',
         'map-system': 'MapSystem',
         'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem' // ← ДОБАВЬ ЭТУ СТРОЧКУ!
+        'resources-system': 'ResourcesSystem', // ← ДОБАВЬ ЭТУ СТРОЧКУ!
+        'crafting-system': 'CraftingSystem' // ← ДОБАВИТЬ ЭТУ СТРОЧКУ!
     };
     return typeof window[classMap[moduleName]] !== 'undefined';
 }
@@ -147,7 +148,8 @@ getClassName(moduleName) {
         'hero-system': 'HeroSystem',
         'map-system': 'MapSystem',
         'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem' // ← ДОБАВЬ И ЗДЕСЬ
+        'resources-system': 'ResourcesSystem',
+        'crafting-system': 'CraftingSystem' // ← ДОБАВИТЬ И ЗДЕСЬ
     };
     return classMap[moduleName] || moduleName;
 }
