@@ -119,7 +119,7 @@ class ResourcesSystem {
     }
 
     // ========== ОТОБРАЖЕНИЕ ИНВЕНТАРЯ РЕСУРСОВ ==========
- showResourcesInventory() {
+showResourcesInventory() {
     if (!window.game || !window.game.sharedResources) {
         return '<div class="error-message">Система не готова</div>';
     }
@@ -185,8 +185,10 @@ class ResourcesSystem {
             <div class="resources-stats">
                 <span>💰 Золото: ${window.game.sharedResources.gold ? window.game.sharedResources.gold.toFixed(2) : '0.00'}</span>
                 <span>📦 Всего ресурсов: ${this.getTotalResourceCount()} шт.</span>
-                <button class="btn-craft" onclick="game.systems.resources.showCrafting()">
-                    ⚗️ Перейти к крафту
+                
+                <!-- КНОПКА КРАФТА -->
+                <button class="btn-craft" onclick="game.showCrafting()">
+                    ⚒️ Перейти к крафту
                 </button>
             </div>
             
@@ -198,6 +200,10 @@ class ResourcesSystem {
                 <button class="resource-category-btn" data-category="ore">⛏️ Руда</button>
                 <button class="resource-category-btn" data-category="stone">🪨 Камни</button>
                 <button class="resource-category-btn" data-category="wood">🪵 Древесина</button>
+                <button class="resource-category-btn" data-category="leathers">🪢 Кожи</button>
+                <button class="resource-category-btn" data-category="hides">🐅 Шкуры</button>
+                <button class="resource-category-btn" data-category="bones">🦴 Кости</button>
+                <button class="resource-category-btn" data-category="furs">🧥 Меха</button>
             </div>
             
             <div class="resources-grid">
