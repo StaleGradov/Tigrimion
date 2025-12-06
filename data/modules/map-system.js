@@ -84,7 +84,10 @@ class MapSystem {
             'hunt_caravan',
             'take_assassination_contract',
             'light_campfire',
-            'guard_caravan'
+            'guard_caravan',
+              'gather_wood',
+  'stealth_movement',
+  'hunt'
         ];
         
         // Конфигурация действий
@@ -196,7 +199,34 @@ class MapSystem {
                 resource_type: 'gold',
                 triggers_monster: true,
                 monster_level_multiplier: 1.2
-            }
+            },
+ 'gather_wood': {
+    icon: '🪵',
+    name: 'Собирать дрова',
+    description: 'Найти и собрать сухие ветки для костра и строительства',
+    class: 'action-wood',
+    resource_type: 'woods'
+  },
+  
+  'stealth_movement': {
+    icon: '👣',
+    name: 'Скрытное перемещение',
+    description: 'Тихо и незаметно передвинуться на соседнюю клетку без риска боя',
+    class: 'action-stealth',
+    requires_player_here: true, // Требует быть на этой клетке
+    special: 'movement'
+  },
+  
+  'hunt': {
+    icon: '🏹',
+    name: 'Охотиться',
+    description: 'Выследить и добыть животное для получения материалов',
+    class: 'action-hunt',
+    resource_type: 'hunt',
+    requires_target_selection: true,
+    triggers_monster: true,
+    always_monster: true
+  }      
         };
         
         this.locationImages = {};
@@ -925,270 +955,271 @@ class MapSystem {
         return baseChance;
     }
 
-    updateCellActionsUI(cell) {
-        console.log("=== НАЧАЛО updateCellActionsUI ===");
-        
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) {
-            console.error("❌ Контейнер действий не найден!");
-            this.createActionsContainerFallback();
-            const newContainer = document.getElementById('cellActionsContainer');
-            if (newContainer) {
-                this.updateCellActionsUI(cell);
-            }
-            return;
+   updateCellActionsUI(cell) {
+    console.log("=== НАЧАЛО updateCellActionsUI ===");
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден!");
+        this.createActionsContainerFallback();
+        const newContainer = document.getElementById('cellActionsContainer');
+        if (newContainer) {
+            this.updateCellActionsUI(cell);
         }
-        
-        const mapVisual = document.querySelector('.tactical-map-visual');
-        const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
-        
-        const panelWidth = 1150;
-        const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
-        
-        console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
-        
-        actionsContainer.style.cssText = `
+        return;
+    }
+    
+    const mapVisual = document.querySelector('.tactical-map-visual');
+    const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
+    
+    const panelWidth = 1150;
+    const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
+    
+    console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
+    
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+        flex-shrink: 0 !important;
+    `;
+    
+    const panel = actionsContainer.closest('.cell-actions-panel');
+    if (panel) {
+        panel.style.cssText = `
+            overflow: visible !important;
             display: flex !important;
             flex-direction: column !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            height: ${panelHeight}px !important;
-            max-height: ${panelHeight}px !important;
-            min-height: ${panelHeight}px !important;
-            width: ${panelWidth}px !important;
-            max-width: ${panelWidth}px !important;
-            min-width: ${panelWidth}px !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
-            border: 2px solid #00ffff !important;
-            border-radius: 10px !important;
-            padding: 20px !important;
-            margin: 0 !important;
-            position: relative !important;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+            height: ${panelHeight + 30}px !important;
+            max-height: ${panelHeight + 30}px !important;
+            min-height: ${panelHeight + 30}px !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
+            margin-left: 20px !important;
+            align-self: flex-start !important;
             flex-shrink: 0 !important;
         `;
-        
-        const panel = actionsContainer.closest('.cell-actions-panel');
-        if (panel) {
-            panel.style.cssText = `
-                overflow: visible !important;
-                display: flex !important;
-                flex-direction: column !important;
-                height: ${panelHeight + 30}px !important;
-                max-height: ${panelHeight + 30}px !important;
-                min-height: ${panelHeight + 30}px !important;
-                width: ${panelWidth + 30}px !important;
-                max-width: ${panelWidth + 30}px !important;
-                min-width: ${panelWidth + 30}px !important;
-                margin-left: 20px !important;
-                align-self: flex-start !important;
-                flex-shrink: 0 !important;
+    }
+    
+    if (cell.explored === undefined) cell.explored = false;
+    if (cell.hasAction === undefined) cell.hasAction = true;
+    
+    this.selectedCell = cell;
+    this.currentCellType = this.determineCellType(cell);
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    if (!cellTypeData) {
+        console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
+        actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        return;
+    }
+    
+    const cellIcon = this.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+    
+    const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && 
+                           cell.row === this.playerTacticalPosition.y);
+    const isReachable = this.isCellReachable(cell);
+    const isExplored = cell.explored === true;
+    
+    // Получаем доступные действия для этого типа клетки
+    this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
+    
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
+    
+    let actionsHTML = '';
+    
+    try {
+        actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    } catch (error) {
+        console.error("❌ Ошибка создания информации о клетке:", error);
+        actionsHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+    }
+    
+    if (!isExplored && cell.hasAction !== false) {
+        if (this.currentCellActions.length > 0) {
+            try {
+                // Создаем список действий с ОБНОВЛЕННОЙ обработкой
+                actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                actionsHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+            
+            // Кнопка завершения исследования (ОСТАВЛЯЕМ ЕЁ!)
+            actionsHTML += `
+                <div class="cell-completion-controls">
+                    <button class="btn-control complete-exploration-btn" 
+                            onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
+                            title="Отметить клетку как полностью исследованную">
+                        ✓ Завершить исследование
+                    </button>
+                    <p class="hint">После завершения исследования вы не сможете выполнять здесь действия</p>
+                </div>
+            `;
+        } else {
+            actionsHTML += this.createNoActionsHTML();
+        }
+    } else if (isExplored) {
+        actionsHTML += this.createExploredCellHTML();
+    } else if (cell.hasAction === false) {
+        actionsHTML += this.createNoActionsHTML();
+    }
+    
+    actionsContainer.innerHTML = actionsHTML;
+    
+    setTimeout(() => {
+        const imageWrapper = actionsContainer.querySelector('.location-visual-container');
+        if (imageWrapper) {
+            imageWrapper.style.cssText = `
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
+                overflow: hidden !important;
+                margin: 0 auto 20px auto !important;
+                position: relative !important;
+                border: 2px solid #00ffff !important;
+                border-radius: 10px !important;
+                align-self: center !important;
             `;
         }
         
-        if (cell.explored === undefined) cell.explored = false;
-        if (cell.hasAction === undefined) cell.hasAction = true;
-        
-        this.selectedCell = cell;
-        this.currentCellType = this.determineCellType(cell);
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        if (!cellTypeData) {
-            console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-            actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
-            return;
+        const description = actionsContainer.querySelector('.cell-description-text');
+        if (description) {
+            description.style.cssText = `
+                display: block !important;
+                color: #e2e8f0 !important;
+                background: rgba(0, 0, 0, 0.6) !important;
+                padding: 12px !important;
+                border-radius: 8px !important;
+                margin: 10px 0 !important;
+                max-height: 140px !important;
+                overflow-y: auto !important;
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+                text-align: justify !important;
+            `;
         }
         
-        const cellIcon = this.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+        const actionCards = actionsContainer.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9)) !important;
+                border: 1px solid #00aaff !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important;
+                transition: all 0.2s ease !important;
+                margin: 0 !important;
+            `;
+            
+            if (!card.style.opacity || card.style.opacity !== '0.6') {
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-2px)';
+                    card.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0)';
+                    card.style.boxShadow = 'none';
+                };
+            }
+        });
         
-        const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && 
-                               cell.row === this.playerTacticalPosition.y);
-        const isReachable = this.isCellReachable(cell);
-        const isExplored = cell.explored === true;
-        
-        // Получаем доступные действия для этого типа клетки
-        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
-        
-        console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
-        
-        let actionsHTML = '';
-        
-        try {
-            actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
-        } catch (error) {
-            console.error("❌ Ошибка создания информации о клетке:", error);
-            actionsHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+        const actionsGrid = actionsContainer.querySelector('.actions-grid');
+        if (actionsGrid) {
+            actionsGrid.style.cssText = `
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 10px !important;
+                margin-bottom: 20px !important;
+            `;
         }
         
-        if (!isExplored && cell.hasAction !== false) {
-            if (this.currentCellActions.length > 0) {
-                try {
-                    actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
-                } catch (error) {
-                    console.error("❌ Ошибка создания списка действий:", error);
-                    actionsHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
-                }
-                
-                // Кнопка завершения исследования
-                actionsHTML += `
-                    <div class="cell-completion-controls">
-                        <button class="btn-control complete-exploration-btn" 
-                                onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
-                                title="Отметить клетку как полностью исследованную">
-                            ✓ Завершить исследование
-                        </button>
-                        <p class="hint">После завершения исследования вы не сможете выполнять здесь действия</p>
-                    </div>
-                `;
-            } else {
-                actionsHTML += this.createNoActionsHTML();
-            }
-        } else if (isExplored) {
-            actionsHTML += this.createExploredCellHTML();
-        } else if (cell.hasAction === false) {
-            actionsHTML += this.createNoActionsHTML();
+        const locationName = actionsContainer.querySelector('.cell-name');
+        if (locationName) {
+            locationName.style.cssText = `
+                font-size: 20px !important;
+                margin: 15px 0 !important;
+                color: #00ffff !important;
+                text-align: center !important;
+                font-weight: bold !important;
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+            `;
         }
         
-        actionsContainer.innerHTML = actionsHTML;
-        
-        setTimeout(() => {
-            const imageWrapper = actionsContainer.querySelector('.location-visual-container');
-            if (imageWrapper) {
-                imageWrapper.style.cssText = `
-                    height: 300px !important;
-                    width: 300px !important;
-                    max-height: 300px !important;
-                    max-width: 300px !important;
-                    min-height: 300px !important;
-                    min-width: 300px !important;
-                    overflow: hidden !important;
-                    margin: 0 auto 20px auto !important;
-                    position: relative !important;
-                    border: 2px solid #00ffff !important;
-                    border-radius: 10px !important;
-                    align-self: center !important;
-                `;
-            }
-            
-            const description = actionsContainer.querySelector('.cell-description-text');
-            if (description) {
-                description.style.cssText = `
-                    display: block !important;
-                    color: #e2e8f0 !important;
-                    background: rgba(0, 0, 0, 0.6) !important;
-                    padding: 12px !important;
-                    border-radius: 8px !important;
-                    margin: 10px 0 !important;
-                    max-height: 140px !important;
-                    overflow-y: auto !important;
-                    font-size: 14px !important;
-                    line-height: 1.5 !important;
-                    text-align: justify !important;
-                `;
-            }
-            
-            const actionCards = actionsContainer.querySelectorAll('.action-card');
-            actionCards.forEach(card => {
-                card.style.cssText = `
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9)) !important;
-                    border: 1px solid #00aaff !important;
-                    border-radius: 8px !important;
-                    padding: 12px !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    height: 100% !important;
-                    transition: all 0.2s ease !important;
-                    margin: 0 !important;
-                `;
-                
-                if (!card.style.opacity || card.style.opacity !== '0.6') {
-                    card.onmouseenter = () => {
-                        card.style.transform = 'translateY(-2px)';
-                        card.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
-                    };
-                    card.onmouseleave = () => {
-                        card.style.transform = 'translateY(0)';
-                        card.style.boxShadow = 'none';
-                    };
-                }
-            });
-            
-            const actionsGrid = actionsContainer.querySelector('.actions-grid');
-            if (actionsGrid) {
-                actionsGrid.style.cssText = `
-                    display: grid !important;
-                    grid-template-columns: repeat(3, 1fr) !important;
-                    gap: 10px !important;
-                    margin-bottom: 20px !important;
-                `;
-            }
-            
-            const locationName = actionsContainer.querySelector('.cell-name');
-            if (locationName) {
-                locationName.style.cssText = `
-                    font-size: 20px !important;
-                    margin: 15px 0 !important;
-                    color: #00ffff !important;
-                    text-align: center !important;
-                    font-weight: bold !important;
-                    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
-                `;
-            }
-            
-            const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
-            if (iconOverlay) {
-                iconOverlay.style.cssText = `
-                    font-size: 40px !important;
-                    background: rgba(0, 0, 0, 0.8) !important;
-                    border-radius: 50% !important;
-                    padding: 15px !important;
-                    border: 2px solid #00ffff !important;
-                    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
-                `;
-            }
-            
-            const legend = actionsContainer.querySelector('.chance-legend');
-            if (legend) {
-                legend.style.cssText = `
-                    padding: 15px !important;
-                    margin-top: 20px !important;
-                    font-size: 13px !important;
-                    background: rgba(0, 0, 0, 0.4) !important;
-                    border-radius: 8px !important;
-                `;
-            }
-            
-            actionsContainer.scrollTop = 0;
-            
-            console.log(`✅ Панель оптимизирована: картинка 300px, ${actionCards.length} карточек действий`);
-            
-        }, 50);
-        
-        try {
-            this.displayRealLocationImage(cellTypeData);
-        } catch (error) {
-            console.error("❌ Ошибка загрузки картинки:", error);
+        const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
+        if (iconOverlay) {
+            iconOverlay.style.cssText = `
+                font-size: 40px !important;
+                background: rgba(0, 0, 0, 0.8) !important;
+                border-radius: 50% !important;
+                padding: 15px !important;
+                border: 2px solid #00ffff !important;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
+            `;
         }
         
-        if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
-            try {
-                this.setupActionEventListeners();
-            } catch (error) {
-                console.error("❌ Ошибка назначения обработчиков:", error);
-            }
+        const legend = actionsContainer.querySelector('.chance-legend');
+        if (legend) {
+            legend.style.cssText = `
+                padding: 15px !important;
+                margin-top: 20px !important;
+                font-size: 13px !important;
+                background: rgba(0, 0, 0, 0.4) !important;
+                border-radius: 8px !important;
+            `;
         }
         
-        try {
-            this.updateHeroResourcesUI();
-        } catch (error) {
-            console.error("❌ Ошибка обновления ресурсов:", error);
-        }
+        actionsContainer.scrollTop = 0;
         
-        console.log("✅ Панель действий обновлена");
-        console.log("=== КОНЕЦ updateCellActionsUI ===");
+        console.log(`✅ Панель оптимизирована: картинка 300px, ${actionCards.length} карточек действий`);
+        
+    }, 50);
+    
+    try {
+        this.displayRealLocationImage(cellTypeData);
+    } catch (error) {
+        console.error("❌ Ошибка загрузки картинки:", error);
     }
+    
+    if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
+        try {
+            this.setupActionEventListeners();
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
+    }
+    
+    try {
+        this.updateHeroResourcesUI();
+    } catch (error) {
+        console.error("❌ Ошибка обновления ресурсов:", error);
+    }
+    
+    console.log("✅ Панель действий обновлена");
+    console.log("=== КОНЕЦ updateCellActionsUI ===");
+}
 
     getAvailableActionsForCellType(cellType) {
         const cellTypeData = this.cellTypes[cellType];
@@ -1252,162 +1283,168 @@ class MapSystem {
         `;
     }
 
-    createActionsListHTML(cell, isCurrentPosition, isReachable) {
-        let html = `
-            <div class="actions-section" style="margin-top: 20px;">
-                <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
-                    ⚔️ Доступные действия
-                </h3>
-        `;
+ createActionsListHTML(cell, isCurrentPosition, isReachable) {
+    let html = `
+        <div class="actions-section" style="margin-top: 20px;">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
+    `;
+    
+    html += `<div class="actions-grid" style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    ">`;
+    
+    this.currentCellActions.forEach((action, index) => {
+        const chance = this.getActionChance(action, this.currentCellType);
+        const chancePercent = Math.round(chance);
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Неизвестное действие'
+        };
         
-        html += `<div class="actions-grid" style="
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        ">`;
+        let chanceColor = '#ff4444';
+        if (chance >= 40) chanceColor = '#ffaa00';
+        if (chance >= 70) chanceColor = '#44ff44';
+        if (chance >= 90) chanceColor = '#00ffaa';
         
-        this.currentCellActions.forEach((action, index) => {
-            const chance = this.getActionChance(action, this.currentCellType);
-            const chancePercent = Math.round(chance);
-            const config = this.actionConfigs[action] || {
-                icon: '❓',
-                name: action.replace(/_/g, ' '),
-                description: 'Неизвестное действие'
-            };
-            
-            let chanceColor = '#ff4444';
-            if (chance >= 40) chanceColor = '#ffaa00';
-            if (chance >= 70) chanceColor = '#44ff44';
-            if (chance >= 90) chanceColor = '#00ffaa';
-            
-            let isDisabled = false;
-            let disabledReason = '';
-            
-            if (!isReachable) {
-                isDisabled = true;
-                disabledReason = 'Клетка недоступна';
-            } else if (!isCurrentPosition && action.requiresPlayerHere) {
-                isDisabled = true;
-                disabledReason = 'Нужно быть в клетке';
-            }
-            
-            const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
-            const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою с монстром (двойной лут)' : '';
-            
-            html += `
-                <div class="action-card" style="
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                    border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
-                    border-radius: 8px;
-                    padding: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    transition: all 0.2s ease;
-                    ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6;'}
-                " ${!isDisabled ? `onclick="window.game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"` : ''}>
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <div class="action-icon" style="
-                            font-size: 20px;
-                            margin-right: 10px;
-                            color: ${chanceColor};
-                            flex-shrink: 0;
-                        ">
-                            ${config.icon || '⚡'}
-                        </div>
-                        <div class="action-name" style="
-                            font-weight: bold;
-                            color: ${isDisabled ? '#888' : '#ffffff'};
-                            font-size: 13px;
-                            flex: 1;
-                        ">
-                            ${config.name}
-                        </div>
-                    </div>
-                    
-                    <div class="action-description" style="
-                        color: ${isDisabled ? '#777' : '#b0b0ff'};
-                        font-size: 11px;
-                        margin-bottom: 10px;
-                        line-height: 1.3;
-                        flex: 1;
-                    ">
-                        ${config.description}
-                        ${triggersMonster ? `<br><small style="color: #ff4444;">${triggersMonster}</small>` : ''}
-                        ${alwaysMonster ? `<br><small style="color: #ffaa00;">${alwaysMonster}</small>` : ''}
-                    </div>
-                    
-                    <div class="action-chance-display" style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        font-size: 11px;
-                        margin-top: auto;
-                    ">
-                        <span style="color: #aaa;">Шанс:</span>
-                        <div style="display: flex; align-items: center;">
-                            <div style="
-                                width: 40px;
-                                height: 6px;
-                                background: #333;
-                                border-radius: 3px;
-                                margin-right: 8px;
-                                overflow: hidden;
-                            ">
-                                <div style="
-                                    width: ${chancePercent}%;
-                                    height: 100%;
-                                    background: ${chanceColor};
-                                    border-radius: 3px;
-                                "></div>
-                            </div>
-                            <span style="color: ${chanceColor}; font-weight: bold;">
-                                ${chancePercent}%
-                            </span>
-                        </div>
-                    </div>
-                    
-                    ${isDisabled ? `
-                        <div style="
-                            font-size: 10px;
-                            color: #ff6666;
-                            margin-top: 8px;
-                            padding-top: 8px;
-                            border-top: 1px dashed #444;
-                        ">
-                            ${disabledReason}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
+        let isDisabled = false;
+        let disabledReason = '';
         
-        html += `</div>`;
+        if (!isReachable) {
+            isDisabled = true;
+            disabledReason = 'Клетка недоступна';
+        } else if (!isCurrentPosition && action.requiresPlayerHere) {
+            isDisabled = true;
+            disabledReason = 'Нужно быть в клетке';
+        }
+        
+        const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
+        const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою с монстром (двойной лут)' : '';
+        
+        // Создаем обработчик клика
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.map.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
         
         html += `
-            <div class="chance-legend" style="
-                background: rgba(0, 0, 0, 0.4);
+            <div class="action-card" style="
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
                 border-radius: 8px;
                 padding: 12px;
-                font-size: 12px;
-                color: #ccc;
-                margin-top: 15px;
-            ">
-                <strong style="color: #00ffcc;">Легенда шансов:</strong>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <span style="color: #ff4444;">0-39% - Плохой</span>
-                    <span style="color: #ffaa00;">40-69% - Средний</span>
-                    <span style="color: #44ff44;">70-89% - Хороший</span>
-                    <span style="color: #00ffaa;">90-100% - Отличный</span>
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                transition: all 0.2s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6;'}
+            " ${onClickHandler}>
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div class="action-icon" style="
+                        font-size: 20px;
+                        margin-right: 10px;
+                        color: ${chanceColor};
+                        flex-shrink: 0;
+                    ">
+                        ${config.icon || '⚡'}
+                    </div>
+                    <div class="action-name" style="
+                        font-weight: bold;
+                        color: ${isDisabled ? '#888' : '#ffffff'};
+                        font-size: 13px;
+                        flex: 1;
+                    ">
+                        ${config.name}
+                    </div>
                 </div>
+                
+                <div class="action-description" style="
+                    color: ${isDisabled ? '#777' : '#b0b0ff'};
+                    font-size: 11px;
+                    margin-bottom: 10px;
+                    line-height: 1.3;
+                    flex: 1;
+                ">
+                    ${config.description}
+                    ${triggersMonster ? `<br><small style="color: #ff4444;">${triggersMonster}</small>` : ''}
+                    ${alwaysMonster ? `<br><small style="color: #ffaa00;">${alwaysMonster}</small>` : ''}
+                </div>
+                
+                <div class="action-chance-display" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 11px;
+                    margin-top: auto;
+                ">
+                    <span style="color: #aaa;">Шанс:</span>
+                    <div style="display: flex; align-items: center;">
+                        <div style="
+                            width: 40px;
+                            height: 6px;
+                            background: #333;
+                            border-radius: 3px;
+                            margin-right: 8px;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                width: ${chancePercent}%;
+                                height: 100%;
+                                background: ${chanceColor};
+                                border-radius: 3px;
+                            "></div>
+                        </div>
+                        <span style="color: ${chanceColor}; font-weight: bold;">
+                            ${chancePercent}%
+                        </span>
+                    </div>
+                </div>
+                
+                ${isDisabled ? `
+                    <div style="
+                        font-size: 10px;
+                        color: #ff6666;
+                        margin-top: 8px;
+                        padding-top: 8px;
+                        border-top: 1px dashed #444;
+                    ">
+                        ${disabledReason}
+                    </div>
+                ` : ''}
             </div>
         `;
-        
-        html += `</div>`;
-        
-        return html;
-    }
+    });
+    
+    html += `</div>`;
+    
+    html += `
+        <div class="chance-legend" style="
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 15px;
+        ">
+            <strong style="color: #00ffcc;">Легенда шансов:</strong>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <span style="color: #ff4444;">0-39% - Плохой</span>
+                <span style="color: #ffaa00;">40-69% - Средний</span>
+                <span style="color: #44ff44;">70-89% - Хороший</span>
+                <span style="color: #00ffaa;">90-100% - Отличный</span>
+            </div>
+        </div>
+    `;
+    
+    html += `</div>`;
+    
+    return html;
+}
 
     getChanceClass(chance) {
         if (chance >= 80) return 'chance-excellent';
@@ -1569,114 +1606,149 @@ class MapSystem {
         });
     }
 
-    performCellAction(action, row, col) {
-        console.log(`🎯 Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
-        
-        if (!this.currentHero) {
-            console.error("❌ Нет текущего героя для совершения действий!");
-            this.showNotification("❌ Нужен герой для совершения действий!", 'error');
+  performCellAction(action, row, col) {
+    console.log(`🎯 Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
+    
+    if (!this.currentHero) {
+        console.error("❌ Нет текущего героя для совершения действий!");
+        this.showNotification("❌ Нужен герой для совершения действий!", 'error');
+        return;
+    }
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    if (cell.explored === true) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+        return;
+    }
+    
+    const chance = this.getActionChance(action, this.currentCellType);
+    const config = this.actionConfigs[action] || {};
+    
+    // ========== ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ ==========
+    
+    // 1. Охота - показываем выбор цели
+    if (action === 'hunt') {
+        console.log(`🏹 Показываем выбор цели для охоты`);
+        this.showHuntTargetSelection(cell);
+        return;
+    }
+    
+    // 2. Скрытное перемещение - обрабатываем отдельно
+    if (action === 'stealth_movement') {
+        if (!this.isCellReachable(cell)) {
+            console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
+            this.showNotification("❌ Клетка недостижима!", 'warning');
             return;
         }
+        this.handleStealthMovement(cell);
+        return;
+    }
+    
+    // 3. Ресурсные действия с отображением вероятностей
+    const resourceActions = [
+        'search_treasure', 'search_water', 'search_berries', 
+        'search_mushrooms', 'search_herbs', 'search_ore', 
+        'search_stone', 'gather_wood', 'set_trap'
+    ];
+    
+    if (resourceActions.includes(action)) {
+        console.log(`📊 Показываем вероятности для ${action}`);
+        this.performResourceAction(action, row, col);
+        return;
+    }
+    
+    // ========== СТАНДАРТНАЯ ОБРАБОТКА ==========
+    
+    // Особый случай для охоты - всегда приводит к бою при успехе
+    if (action === 'hunt' && config.always_monster) {
+        console.log(`🏹 Охота - всегда приводит к бою при успехе. Шанс: ${chance}%`);
         
-        const cellKey = `${col},${row}`;
-        const cell = this.currentTacticalMap?.cells[cellKey];
+        const roll = Math.random() * 100;
+        const success = roll <= chance;
         
-        if (!cell) {
-            console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
-            this.showNotification("❌ Клетка не найдена!", 'error');
-            return;
+        if (success) {
+            console.log(`🎯 Успешная охота! Начинаем бой с монстром.`);
+            this.handleHuntActionSuccess(row, col);
+        } else {
+            console.log(`❌ Охота провалилась - не удалось найти дичь.`);
+            this.handleActionFailure(action);
         }
         
-        if (cell.explored === true) {
-            console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
-            this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-            return;
-        }
+        return;
+    }
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (actionsContainer) {
+        actionsContainer.innerHTML = `
+            <div class="action-processing">
+                <div class="processing-icon">${config.icon || '⚡'}</div>
+                <h4>Выполняется действие...</h4>
+                <p>${config.name} на клетке [${col}, ${row}]</p>
+                <div class="chance-display-processing">
+                    <span class="chance-label">Шанс успеха:</span>
+                    <span class="chance-value">${chance}%</span>
+                </div>
+                <div class="processing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
+            </div>
+        `;
         
-        const chance = this.getActionChance(action, this.currentCellType);
-        const config = this.actionConfigs[action] || {};
+        setTimeout(() => {
+            const progressFill = actionsContainer.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
+        }, 50);
+    }
+    
+    setTimeout(() => {
+        const roll = Math.random() * 100;
+        const success = roll <= chance;
         
-        // Особый случай для охоты - всегда приводит к бою при успехе
-        if (action === 'hunt' && config.always_monster) {
-            console.log(`🏹 Охота - всегда приводит к бою при успехе. Шанс: ${chance}%`);
+        console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+        
+        if (success) {
+            this.handleActionSuccess(action, row, col);
+        } else {
+            const cellTypeData = this.cellTypes[this.currentCellType];
             
-            const roll = Math.random() * 100;
-            const success = roll <= chance;
+            let monsterChance = cellTypeData.failure_monster_chance || 50;
             
-            if (success) {
-                console.log(`🎯 Успешная охота! Начинаем бой с монстром.`);
-                this.handleHuntActionSuccess(row, col);
-            } else {
-                console.log(`❌ Охота провалилась - не удалось найти дичь.`);
-                this.handleActionFailure(action);
+            if (config && config.triggers_monster) {
+                monsterChance *= (config.monster_level_multiplier || 1);
             }
             
-            return;
-        }
-        
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (actionsContainer) {
-            actionsContainer.innerHTML = `
-                <div class="action-processing">
-                    <div class="processing-icon">${config.icon || '⚡'}</div>
-                    <h4>Выполняется действие...</h4>
-                    <p>${config.name} на клетке [${col}, ${row}]</p>
-                    <div class="chance-display-processing">
-                        <span class="chance-label">Шанс успеха:</span>
-                        <span class="chance-value">${chance}%</span>
-                    </div>
-                    <div class="processing-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill"></div>
-                        </div>
-                    </div>
-                    <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
-                </div>
-            `;
+            const monsterRoll = Math.random() * 100;
             
-            setTimeout(() => {
-                const progressFill = actionsContainer.querySelector('.progress-fill');
-                if (progressFill) {
-                    progressFill.style.width = '100%';
-                }
-            }, 50);
+            if (monsterRoll <= monsterChance) {
+                console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
+                this.handleActionFailureWithMonster(action, row, col, cellTypeData);
+            } else {
+                this.handleActionFailure(action);
+            }
         }
         
         setTimeout(() => {
-            const roll = Math.random() * 100;
-            const success = roll <= chance;
-            
-            console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
-            
-            if (success) {
-                this.handleActionSuccess(action, row, col);
-            } else {
-                const cellTypeData = this.cellTypes[this.currentCellType];
-                
-                let monsterChance = cellTypeData.failure_monster_chance || 50;
-                
-                if (config && config.triggers_monster) {
-                    monsterChance *= (config.monster_level_multiplier || 1);
-                }
-                
-                const monsterRoll = Math.random() * 100;
-                
-                if (monsterRoll <= monsterChance) {
-                    console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
-                    this.handleActionFailureWithMonster(action, row, col, cellTypeData);
-                } else {
-                    this.handleActionFailure(action);
-                }
+            if (cell && !cell.explored) {
+                this.updateCellActionsUI(cell);
             }
-            
-            setTimeout(() => {
-                if (cell && !cell.explored) {
-                    this.updateCellActionsUI(cell);
-                }
-            }, 1000);
-            
-        }, 800);
-    }
+        }, 1000);
+        
+    }, 800);
+}
 
     handleHuntActionSuccess(row, col) {
         console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
@@ -2133,18 +2205,22 @@ class MapSystem {
         }
     }
 
-    completeCellExploration(row, col) {
-        const cellKey = `${col},${row}`;
-        const cell = this.currentTacticalMap?.cells[cellKey];
-        
-        if (cell) {
-            cell.explored = true;
-            cell.hasAction = false;
-            this.showNotification("✅ Вы полностью исследовали эту местность", 'success');
-            this.drawTacticalMap();
-            this.clearCellActionsUI();
-        }
-    }
+ completeCellExploration(row, col) {
+  const cellKey = `${col},${row}`;
+  const cell = this.currentTacticalMap?.cells[cellKey];
+  
+  if (cell) {
+    cell.explored = true;
+    cell.hasAction = false;
+    
+    // СНИМАЕМ ОГРАНИЧЕНИЕ НА ПЕРЕМЕЩЕНИЕ!
+    // Убираем проверку hasAction в методе moveOnTacticalMap
+    
+    this.showNotification("✅ Вы полностью исследовали эту местность", 'success');
+    this.drawTacticalMap();
+    this.clearCellActionsUI();
+  }
+}
 
     clearCellActionsUI() {
         const actionsContainer = document.getElementById('cellActionsContainer');
@@ -3171,39 +3247,33 @@ class MapSystem {
         }
     }
 
-    moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
-        }
+moveOnTacticalMap(x, y) {
+  if (!this.currentHero) {
+    console.error("❌ Герой не выбран!");
+    if (window.game) {
+      window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+    }
+    return;
+  }
 
-        if (!this.currentTacticalMap) return;
+  if (!this.currentTacticalMap) return;
 
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
+  const cellKey = `${x},${y}`;
+  const cellData = this.currentTacticalMap.cells[cellKey];
+  
+  if (!cellData) {
+    console.log("🚫 Клетка не существует");
+    if (window.game) {
+      window.game.showNotification("Эта клетка не существует!", 'error');
+    }
+    return;
+  }
 
         // Проверяем, является ли текущая клетка исследуемой и было ли совершено действие
         const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
         const currentCell = this.currentTacticalMap.cells[currentCellKey];
         
-        if (currentCell && currentCell.explored === false && currentCell.hasAction === true) {
-            console.log("🚫 Нельзя переместиться - сначала совершите действие на текущей клетке!");
-            if (window.game) {
-                window.game.showNotification("Сначала совершите действие на текущей клетке!", 'warning');
-            }
-            return;
-        }
+
 
         if (this.isTransitionCell(cellData)) {
             this.handleTransitionClick(cellData);
@@ -5205,6 +5275,539 @@ class MapSystem {
             console.log(`  📐 Высота панели: ${container?.offsetHeight || 600}px`);
         }
     }
+
+// В MapSystem добавляем:
+showHuntTargetSelection(cell) {
+  const actionsContainer = document.getElementById('cellActionsContainer');
+  if (!actionsContainer) return;
+  
+  const cellTypeData = this.cellTypes[this.currentCellType];
+  const baseChance = this.getActionChance('hunt', this.currentCellType);
+  
+  // Группируем ресурсы по типу для охоты
+  const huntableResources = {
+    'bones': ['small_bone', 'wolf_bone', 'horse_bone', 'bull_bone', 'mammoth_bone', 'dragon_bone'],
+    'leathers': ['thin_leather', 'strong_leather', 'thick_leather', 'bull_leather', 'lizard_leather', 'dragon_leather'],
+    'hides': ['thin_hide', 'strong_hide', 'thick_hide', 'tiger_hide', 'bear_hide', 'dragon_hide'],
+    'furs': ['hare_fur', 'marten_fur', 'arctic_fox_fur', 'lynx_fur', 'leopard_fur', 'mammoth_fur']
+  };
+  
+  // Получаем данные ресурсов из загруженного resources.json
+  const resourceData = this.resources;
+  
+  let html = `
+    <div class="hunt-target-selection">
+      <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+        🏹 Выберите цель охоты
+      </h3>
+      
+      <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+        <strong>Базовая вероятность успеха:</strong> 
+        <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
+          ${baseChance}%
+        </span>
+      </div>
+      
+      <div class="hunt-categories">
+  `;
+  
+  // Для каждой категории охоты
+  Object.keys(huntableResources).forEach(category => {
+    const categoryNames = {
+      'bones': '🦴 Кости',
+      'leathers': '🐂 Кожи',
+      'hides': '🐅 Шкуры',
+      'furs': '🦊 Меха'
+    };
+    
+    html += `
+      <div class="hunt-category">
+        <h4 style="color: #00aaff; margin: 15px 0 10px 0;">${categoryNames[category] || category}</h4>
+        <div class="hunt-targets-grid">
+    `;
+    
+    huntableResources[category].forEach(resourceId => {
+      const resource = this.findResourceById(resourceId);
+      if (!resource) return;
+      
+      // Рассчитываем вероятность получения конкретного ресурса
+      // Чем выше цена, тем ниже вероятность
+      const price = resource.price || resource.value || 10;
+      const resourceChance = this.calculateResourceChance(price, baseChance);
+      
+      html += `
+        <div class="hunt-target-item" onclick="window.game.systems.map.performHunt('${resourceId}', ${cell.row}, ${cell.col})">
+          <div class="hunt-target-name">${resource.name}</div>
+          <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
+            ${resource.description || 'Охотничий трофей'}
+          </div>
+          <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b;">
+            Цена: ${price} золота
+          </div>
+          <div class="hunt-target-chance" style="font-size: 12px; margin-top: 8px;">
+            Шанс: <span style="color: ${resourceChance >= 70 ? '#44ff44' : resourceChance >= 40 ? '#ffaa00' : '#ff4444'}">
+              ${resourceChance}%
+            </span>
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+      
+      <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+              style="margin-top: 20px; width: 100%;">
+        ↩️ Назад к действиям
+      </button>
+    </div>
+  `;
+  
+  actionsContainer.innerHTML = html;
+  
+  // Добавляем CSS для грида
+  setTimeout(() => {
+    const grid = actionsContainer.querySelector('.hunt-targets-grid');
+    if (grid) {
+      grid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+      `;
+    }
+    
+    const items = actionsContainer.querySelectorAll('.hunt-target-item');
+    items.forEach(item => {
+      item.style.cssText = `
+        background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+        border: 1px solid #00aaff;
+        border-radius: 8px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      `;
+      
+      item.onmouseenter = () => {
+        item.style.transform = 'translateY(-2px)';
+        item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+      };
+      item.onmouseleave = () => {
+        item.style.transform = 'translateY(0)';
+        item.style.boxShadow = 'none';
+      };
+    });
+  }, 50);
+}
+
+// Вспомогательные методы для поиска ресурсов
+findResourceById(resourceId) {
+  // Ищем ресурс во всех категориях
+  for (const category in this.resources) {
+    const resource = this.resources[category].find(r => r.id === resourceId);
+    if (resource) return resource;
+  }
+  return null;
+}
+
+calculateResourceChance(price, baseChance) {
+  // Чем выше цена, тем ниже шанс
+  // Формула: baseChance * (1 / (price/100 + 1))
+  const priceFactor = Math.max(0.1, 1 / (price / 100 + 1));
+  const chance = Math.round(baseChance * priceFactor);
+  return Math.min(100, Math.max(5, chance));
+}
+
+    performHunt(targetResourceId, row, col) {
+  const resource = this.findResourceById(targetResourceId);
+  if (!resource) {
+    console.error(`Ресурс ${targetResourceId} не найден`);
+    return;
+  }
+  
+  const cellKey = `${col},${row}`;
+  const cell = this.currentTacticalMap?.cells[cellKey];
+  if (!cell) return;
+  
+  const baseChance = this.getActionChance('hunt', this.currentCellType);
+  const resourceChance = this.calculateResourceChance(resource.price || resource.value, baseChance);
+  
+  // Показываем окно с шансами
+  this.showHuntChanceWindow(resource, resourceChance, row, col);
+}
+
+showHuntChanceWindow(resource, chance, row, col) {
+  const actionsContainer = document.getElementById('cellActionsContainer');
+  if (!actionsContainer) return;
+  
+  const roll = Math.random() * 100;
+  const success = roll <= chance;
+  
+  let html = `
+    <div class="hunt-attempt">
+      <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
+        🏹 Попытка охоты
+      </h3>
+      
+      <div class="hunt-target-info" style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 24px; margin-bottom: 10px;">${resource.name}</div>
+        <div style="color: #aaa; font-size: 14px;">${resource.description || ''}</div>
+      </div>
+      
+      <div class="hunt-chance-display" style="
+        background: rgba(0, 0, 0, 0.4);
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: center;
+      ">
+        <div style="font-size: 16px; margin-bottom: 10px;">Шанс успеха: <strong>${chance}%</strong></div>
+        <div style="
+          width: 100%;
+          height: 20px;
+          background: #333;
+          border-radius: 10px;
+          overflow: hidden;
+          margin: 10px 0;
+        ">
+          <div style="
+            width: ${chance}%;
+            height: 100%;
+            background: ${chance >= 70 ? '#44ff44' : chance >= 40 ? '#ffaa00' : '#ff4444'};
+            transition: width 1s ease;
+          "></div>
+        </div>
+        
+        <div style="margin: 20px 0;">
+          <div class="dice-roll" style="
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: #1a1a2e;
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: ${success ? '#44ff44' : '#ff4444'};
+            margin: 0 auto;
+          ">
+            ${roll.toFixed(1)}
+          </div>
+        </div>
+        
+        <div style="font-size: 18px; color: ${success ? '#44ff44' : '#ff4444'};">
+          ${success ? '✅ УСПЕХ!' : '❌ НЕУДАЧА'}
+        </div>
+      </div>
+  `;
+  
+  if (success) {
+    html += `
+      <div class="hunt-success" style="text-align: center; margin: 20px 0;">
+        <p>Вы успешно добыли ${resource.name}!</p>
+        <div class="monster-warning" style="
+          background: rgba(255, 100, 100, 0.2);
+          border: 1px solid #ff4444;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+        ">
+          <strong>⚠️ Подготовьтесь к бою!</strong>
+          <p style="margin-top: 10px; font-size: 14px;">
+            Добыча привлекла внимание монстра. Придётся защищать свою добычу!
+          </p>
+        </div>
+      </div>
+      
+      <div style="text-align: center;">
+        <button class="btn-control" onclick="window.game.systems.map.startHuntBattle('${resource.id}', ${row}, ${col})" 
+                style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+          ⚔️ Начать бой за добычу
+        </button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="hunt-failure" style="text-align: center; margin: 20px 0;">
+        <p>Не удалось найти подходящую дичь...</p>
+        <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+                style="margin-top: 20px;">
+          ↩️ Вернуться к действиям
+        </button>
+      </div>
+    `;
+  }
+  
+  html += `</div>`;
+  actionsContainer.innerHTML = html;
+}
+
+
+    performResourceAction(action, row, col) {
+  const cellKey = `${col},${row}`;
+  const cell = this.currentTacticalMap?.cells[cellKey];
+  if (!cell) return;
+  
+  const config = this.actionConfigs[action];
+  const baseChance = this.getActionChance(action, this.currentCellType);
+  
+  // Показываем окно с вероятностями
+  this.showResourceChanceWindow(action, config, baseChance, row, col);
+}
+
+showResourceChanceWindow(action, config, baseChance, row, col) {
+  const actionsContainer = document.getElementById('cellActionsContainer');
+  if (!actionsContainer) return;
+  
+  // Получаем ресурсы для этого типа действия
+  const resourceCategory = config.resource_type;
+  const resources = this.resources[resourceCategory] || [];
+  
+  if (resources.length === 0) {
+    console.error(`Нет ресурсов для категории: ${resourceCategory}`);
+    return;
+  }
+  
+  // Рассчитываем вероятности для каждого ресурса
+  const resourceChances = this.calculateResourceProbabilities(resources, baseChance);
+  
+  let html = `
+    <div class="resource-gathering">
+      <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
+        ${config.icon} ${config.name}
+      </h3>
+      
+      <div class="base-chance-info" style="
+        background: rgba(0, 0, 0, 0.4);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      ">
+        <strong>Общая вероятность успеха:</strong> 
+        <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}; font-size: 18px;">
+          ${baseChance}%
+        </span>
+      </div>
+      
+      <div class="resource-probabilities">
+        <h4 style="color: #00aaff; margin: 20px 0 10px 0;">Вероятности находок:</h4>
+  `;
+  
+  resourceChances.forEach(({resource, chance}) => {
+    html += `
+      <div class="resource-chance-item" style="
+        background: rgba(30, 30, 46, 0.7);
+        border-left: 4px solid ${chance >= 30 ? '#44ff44' : chance >= 15 ? '#ffaa00' : '#ff4444'};
+        padding: 10px 15px;
+        margin-bottom: 8px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      ">
+        <div>
+          <span style="font-size: 18px; margin-right: 10px;">${resource.name}</span>
+          <span style="color: #aaa; font-size: 12px;">${resource.description}</span>
+        </div>
+        <div style="
+          font-weight: bold;
+          color: ${chance >= 30 ? '#44ff44' : chance >= 15 ? '#ffaa00' : '#ff4444'};
+          font-size: 16px;
+        ">
+          ${chance}%
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+      
+      <div style="text-align: center; margin-top: 30px;">
+        <button class="btn-control" onclick="window.game.systems.map.executeResourceGathering('${action}', ${row}, ${col})"
+                style="padding: 15px 30px; font-size: 16px;">
+          🎲 Попробовать удачу!
+        </button>
+      </div>
+      
+      <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
+        <em>Примечание: Более дорогие ресурсы имеют меньшую вероятность выпадения</em>
+      </div>
+    </div>
+  `;
+  
+  actionsContainer.innerHTML = html;
+}
+
+calculateResourceProbabilities(resources, baseChance) {
+  // Сортируем ресурсы по цене (от дешевых к дорогим)
+  const sortedResources = [...resources].sort((a, b) => {
+    const priceA = a.price || a.value || 0;
+    const priceB = b.price || b.value || 0;
+    return priceA - priceB;
+  });
+  
+  // Распределяем базовую вероятность по ресурсам
+  // Более дорогие ресурсы получают меньший шанс
+  const totalWeight = sortedResources.reduce((sum, resource, index) => {
+    // Чем выше индекс (дороже ресурс), тем меньше вес
+    const weight = Math.max(1, 10 - index * 2);
+    return sum + weight;
+  }, 0);
+  
+  return sortedResources.map((resource, index) => {
+    const weight = Math.max(1, 10 - index * 2);
+    const chance = Math.round((weight / totalWeight) * baseChance);
+    return {
+      resource,
+      chance: Math.min(100, Math.max(1, chance))
+    };
+  });
+}
+
+
+    handleStealthMovement(cell) {
+  const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+  
+  // Находим все доступные соседние клетки
+  const availableCells = neighbors.filter(neighbor => {
+    const neighborCell = this.currentTacticalMap.cells[`${neighbor.col},${neighbor.row}`];
+    return neighborCell && neighborCell.passable !== false;
+  });
+  
+  if (availableCells.length === 0) {
+    this.showNotification("❌ Нет доступных клеток для перемещения", 'warning');
+    return;
+  }
+  
+  this.showStealthMovementSelection(availableCells, cell);
+}
+
+showStealthMovementSelection(availableCells, currentCell) {
+  const actionsContainer = document.getElementById('cellActionsContainer');
+  if (!actionsContainer) return;
+  
+  const baseChance = this.getActionChance('stealth_movement', this.currentCellType);
+  
+  let html = `
+    <div class="stealth-movement">
+      <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
+        👣 Скрытное перемещение
+      </h3>
+      
+      <div class="base-chance-info" style="
+        background: rgba(0, 0, 0, 0.4);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        text-align: center;
+      ">
+        <strong>Базовая вероятность успеха:</strong> 
+        <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}; font-size: 18px;">
+          ${baseChance}%
+        </span>
+        <p style="margin-top: 10px; font-size: 12px; color: #aaa;">
+          Вероятность тихо переместиться без риска боя
+        </p>
+      </div>
+      
+      <div class="available-targets">
+        <h4 style="color: #00aaff; margin: 20px 0 10px 0;">Доступные направления:</h4>
+  `;
+  
+  availableCells.forEach(targetCell => {
+    const neighborHex = this.currentTacticalMap.cells[`${targetCell.col},${targetCell.row}`];
+    if (!neighborHex) return;
+    
+    html += `
+      <div class="movement-target" onclick="window.game.systems.map.attemptStealthMovement(${targetCell.row}, ${targetCell.col})">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <span style="font-size: 16px;">Направление: ${targetCell.direction}</span>
+            <div style="color: #aaa; font-size: 12px;">
+              Клетка [${targetCell.col}, ${targetCell.row}]
+            </div>
+          </div>
+          <div style="
+            font-weight: bold;
+            color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'};
+          ">
+            ${baseChance}%
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+      
+      <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+              style="margin-top: 20px; width: 100%;">
+        ↩️ Отмена
+      </button>
+    </div>
+  `;
+  
+  actionsContainer.innerHTML = html;
+  
+  setTimeout(() => {
+    const items = actionsContainer.querySelectorAll('.movement-target');
+    items.forEach(item => {
+      item.style.cssText = `
+        background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+        border: 1px solid #00aaff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      `;
+      
+      item.onmouseenter = () => {
+        item.style.transform = 'translateY(-2px)';
+        item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+      };
+      item.onmouseleave = () => {
+        item.style.transform = 'translateY(0)';
+        item.style.boxShadow = 'none';
+      };
+    });
+  }, 50);
+}
+
+attemptStealthMovement(targetRow, targetCol) {
+  const baseChance = this.getActionChance('stealth_movement', this.currentCellType);
+  const roll = Math.random() * 100;
+  const success = roll <= baseChance;
+  
+  if (success) {
+    // Успешное скрытное перемещение
+    this.handlePeacefulMovement(targetCol, targetRow, null);
+    this.showNotification("👣 Вы тихо переместились на соседнюю клетку", 'success');
+  } else {
+    // Провал - начинается бой
+    this.showNotification("🚨 Вас заметили! Готовьтесь к бою!", 'warning');
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem) {
+      this.pendingMovement = { x: targetCol, y: targetRow };
+      battleSystem.startBattleWithMonster(this.currentHero, null, 'movement');
+    }
+  }
+}
+
+    
 }
 
 window.MapSystem = MapSystem;
