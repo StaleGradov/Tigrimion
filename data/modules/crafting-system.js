@@ -871,46 +871,106 @@ async loadRecipes() {
         this.unlockStation('workbench');
     }
 
-addCraftingToResources() {
-    console.log("🔗 Привязываем кнопку крафта к ресурсам...");
-    
-    // Проверяем, что игра существует
-    if (!window.game || !window.game.systems || !window.game.systems.resources) {
-        console.warn("⚠️ Игра или система ресурсов не доступны");
-        return;
-    }
-    
-    const resourcesSystem = window.game.systems.resources;
-    
-    // Сохраняем оригинальный метод
-    if (!resourcesSystem.originalShowResourcesInventory) {
-        resourcesSystem.originalShowResourcesInventory = resourcesSystem.showResourcesInventory;
-    }
-    
-    // Создаем новый метод с кнопкой крафта
-    resourcesSystem.showResourcesInventory = function() {
-        // Вызываем оригинальный метод
-        let html = this.originalShowResourcesInventory();
+    // ========== МЕТОДЫ ОТЛАДКИ ==========
+    debugCraftingSystem() {
+        console.log("=== DEBUG CRAFTING SYSTEM ===");
+        console.log("1. Система загружена:", this.loaded);
+        console.log("2. Рецепты:", this.recipes);
+        console.log("3. Количество станций:", Object.keys(this.recipes.stations || {}).length);
+        console.log("4. Станции:", this.recipes.stations);
+        console.log("5. Портативные станции:", this.portableStations);
+        console.log("6. Метод showCraftingUI существует:", typeof this.showCraftingUI);
+        console.log("7. Метод getAvailableRecipes существует:", typeof this.getAvailableRecipes);
         
-        // Находим последний закрывающий div и добавляем перед ним кнопку
-        const buttonHTML = `
-            <div class="crafting-button-section" style="margin-top: 20px; text-align: center;">
-                <button class="btn-crafting-main" 
-                        onclick="if(window.game && window.game.showCrafting) { window.game.showCrafting(); } else { alert('Система крафта не загружена'); }"
-                        style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                    ⚒️ Перейти к крафту
-                </button>
-                <p style="margin-top: 8px; font-size: 12px; color: #aaa;">
-                    Создание предметов и ресурсов
-                </p>
-            </div>
-        `;
+        // Пробуем получить доступные рецепты
+        const availableRecipes = this.getAvailableRecipes('all', 'all');
+        console.log("8. Доступные рецепты:", availableRecipes.length);
+        console.log("9. Пример рецепта:", availableRecipes[0]);
         
-        // Добавляем кнопку перед последним закрывающим div
-        return html.replace(/(<\/div>\s*<\/div>\s*<\/div>\s*$)/, buttonHTML + "$1");
-    };
-    
-    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+        return {
+            loaded: this.loaded,
+            recipesCount: Object.keys(this.recipes).length,
+            stations: Object.keys(this.recipes.stations || {}),
+            availableRecipes: availableRecipes.length
+        };
+    }
+
+    // Метод для проверки пути к файлу
+    async testFilePaths() {
+        const testPaths = [
+            'data/crafting.json',
+            'crafting.json',
+            './crafting.json',
+            '/crafting.json',
+            'crafting-recipes.json',
+            'data/crafting-recipes.json'
+        ];
+        
+        console.log("🔍 Тестирование путей к файлу рецептов:");
+        
+        for (const path of testPaths) {
+            try {
+                const response = await fetch(path);
+                console.log(`${response.ok ? '✅' : '❌'} ${path}: ${response.status} ${response.statusText}`);
+                if (response.ok) {
+                    const text = await response.text();
+                    console.log(`   Размер файла: ${text.length} байт`);
+                    console.log(`   Первые 200 символов: ${text.substring(0, 200)}...`);
+                }
+            } catch (error) {
+                console.log(`❌ ${path}: ${error.message}`);
+            }
+        }
+    }
+
+    // ========== ПУБЛИЧНЫЕ МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ ==========
+    unlockDefaultStations() {
+        // Разблокировать базовые станции при старте игры
+        this.unlockStation('campfire');
+        this.unlockStation('workbench');
+    }
+
+    addCraftingToResources() {
+        console.log("🔗 Привязываем кнопку крафта к ресурсам...");
+        
+        // Проверяем, что игра существует
+        if (!window.game || !window.game.systems || !window.game.systems.resources) {
+            console.warn("⚠️ Игра или система ресурсов не доступны");
+            return;
+        }
+        
+        const resourcesSystem = window.game.systems.resources;
+        
+        // Сохраняем оригинальный метод
+        if (!resourcesSystem.originalShowResourcesInventory) {
+            resourcesSystem.originalShowResourcesInventory = resourcesSystem.showResourcesInventory;
+        }
+        
+        // Создаем новый метод с кнопкой крафта
+        resourcesSystem.showResourcesInventory = function() {
+            // Вызываем оригинальный метод
+            let html = this.originalShowResourcesInventory();
+            
+            // Находим последний закрывающий div и добавляем перед ним кнопку
+            const buttonHTML = `
+                <div class="crafting-button-section" style="margin-top: 20px; text-align: center;">
+                    <button class="btn-crafting-main" 
+                            onclick="if(window.game && window.game.showCrafting) { window.game.showCrafting(); } else { alert('Система крафта не загружена'); }"
+                            style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        ⚒️ Перейти к крафту
+                    </button>
+                    <p style="margin-top: 8px; font-size: 12px; color: #aaa;">
+                        Создание предметов и ресурсов
+                    </p>
+                </div>
+            `;
+            
+            // Добавляем кнопку перед последним закрывающим div
+            return html.replace(/(<\/div>\s*<\/div>\s*<\/div>\s*$)/, buttonHTML + "$1");
+        };
+        
+        console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+    }
 }
 
 // Экспортируем систему
