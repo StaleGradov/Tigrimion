@@ -364,13 +364,39 @@ async initializeSystems() {
         
         console.log("✅ Все системы инициализированы");
         
-        // ⭐ ЗАГРУЖАЕМ ДАННЫЕ ДЛЯ КРАФТА
+        // ⭐ РАСШИРЕННАЯ ОТЛАДКА КРАФТИНГА
+        console.log("🔍 Детальная проверка системы крафта:");
+        console.log("1. Система крафта создана:", !!this.systems.crafting);
+        console.log("2. Объект системы:", this.systems.crafting);
+        console.log("3. Метод loadRecipes существует:", typeof this.systems.crafting.loadRecipes);
+        
+        // Загружаем данные для крафта
         if (this.systems.crafting && this.systems.crafting.loadRecipes) {
             console.log("📋 Загрузка рецептов крафта...");
-            const recipesLoaded = await this.systems.crafting.loadRecipes();
             
-            if (recipesLoaded) {
-                console.log("✅ Рецепты крафта загружены");
+            // Добавляем обработку Promise
+            const recipesLoaded = await this.systems.crafting.loadRecipes().catch(error => {
+                console.error("❌ Ошибка при загрузке рецептов:", error);
+                return false;
+            });
+            
+            console.log("4. Результат загрузки рецептов:", recipesLoaded);
+            console.log("5. Рецепты после загрузки:", this.systems.crafting.recipes);
+            
+            if (recipesLoaded && this.systems.crafting.recipes) {
+                console.log("✅ Рецепты крафта загружены успешно");
+                console.log("6. Структура рецептов:", Object.keys(this.systems.crafting.recipes));
+                
+                // Проверяем структуру рецептов
+                for (const key in this.systems.crafting.recipes) {
+                    console.log(`   - ${key}:`, 
+                        Array.isArray(this.systems.crafting.recipes[key]) 
+                            ? `массив из ${this.systems.crafting.recipes[key].length} элементов`
+                            : typeof this.systems.crafting.recipes[key] === 'object'
+                                ? `объект с ${Object.keys(this.systems.crafting.recipes[key]).length} ключами`
+                                : typeof this.systems.crafting.recipes[key]
+                    );
+                }
                 
                 // Разблокируем базовые станции при старте игры
                 this.systems.crafting.unlockStation('campfire');
@@ -378,17 +404,25 @@ async initializeSystems() {
                 
                 console.log("🎉 Базовые станции крафта разблокированы");
                 
-                // ⭐ ДОБАВЬТЕ ЭТО: Привязываем кнопку крафта к ресурсам
+                // Привязываем кнопку крафта к ресурсам
                 if (this.systems.crafting.addCraftingToResources) {
                     setTimeout(() => {
                         this.systems.crafting.addCraftingToResources();
                         console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
-                    }, 1000); // Небольшая задержка для полной инициализации
+                    }, 1000);
                 }
                 
             } else {
                 console.warn("⚠️ Не удалось загрузить рецепты крафта");
+                console.warn("Причина: recipesLoaded =", recipesLoaded);
+                console.warn("recipes =", this.systems.crafting.recipes);
+                
+                // Создаем заглушки для тестирования
+                this.systems.crafting.createFallbackRecipes();
+                console.log("🔄 Созданы резервные рецепты для тестирования");
             }
+        } else {
+            console.error("❌ Система крафта не инициализирована правильно");
         }
         
     } catch (error) {
