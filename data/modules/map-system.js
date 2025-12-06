@@ -1679,24 +1679,27 @@ class MapSystem {
         this.showNotification(`👹 Провал привлёк ${randomMonster.name}! Готовьтесь к бою!`, 'warning');
     }
 
-    getMonsterByLevel(level) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) return null;
-        
-        const allMonsters = battleSystem.getAvailableMonsters();
-        if (!allMonsters || allMonsters.length === 0) return null;
-        
-        const suitableMonsters = allMonsters.filter(monster => {
-            const monsterLevel = monster.level || 1;
-            return Math.abs(monsterLevel - level) <= 1;
-        });
-        
-        if (suitableMonsters.length > 0) {
-            return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
-        }
-        
-        return allMonsters[Math.floor(Math.random() * allMonsters.length)];
+getMonsterByLevel(level) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    // Получаем всех монстров из battleSystem.monsters
+    const allMonsters = battleSystem.monsters || [];
+    if (!allMonsters || allMonsters.length === 0) return null;
+    
+    // Фильтруем монстров по уровню
+    const suitableMonsters = allMonsters.filter(monster => {
+        const monsterLevel = monster.level || 1;
+        return Math.abs(monsterLevel - level) <= 1;
+    });
+    
+    if (suitableMonsters.length > 0) {
+        return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
     }
+    
+    // Если не нашли подходящих по уровню, возвращаем случайного
+    return allMonsters[Math.floor(Math.random() * allMonsters.length)];
+}
 
     completeMovementAfterBattle(victory, escape = false, battleType = 'movement') {
         console.log(`🎲 Завершение ${battleType} боя: победа=${victory}, побег=${escape}`);
