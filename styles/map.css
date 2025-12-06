@@ -1950,7 +1950,7 @@
     overflow: visible !important;
     min-height: 650px !important;
 }
-/* ========== СТИЛИ ДЛЯ РАЗДЕЛЕННЫХ ПАНЕЛЕЙ ========== */
+/* ========== СТИЛИ ДЛЯ 3-КОЛОНОЧНОЙ СТРУКТУРЫ ========== */
 .tactical-map-content-with-actions {
     display: flex !important;
     flex-direction: row !important;
@@ -1960,14 +1960,8 @@
     gap: 20px !important;
     padding: 0 20px !important;
     overflow: visible !important;
-}
-
-.map-main-area {
-    flex: 1 !important;
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 /* Левая панель (информация) */
@@ -1985,6 +1979,19 @@
     box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    flex-shrink: 0 !important;
+}
+
+/* Центральная область (карта) */
+.map-main-area {
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: calc(95vh - 200px) !important;
+    min-width: 600px !important;
+    max-width: 800px !important;
+    margin: 0 !important;
 }
 
 /* Правая панель (действия) */
@@ -1994,10 +2001,8 @@
     min-width: 1150px !important;
     max-width: 1150px !important;
     height: calc(95vh - 200px) !important;
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
     margin-left: 20px !important;
+    flex-shrink: 0 !important;
 }
 
 .cell-actions-container {
@@ -2012,89 +2017,47 @@
     overflow-x: hidden !important;
 }
 
-/* Контейнер карты по центру */
+/* Карта */
 .tactical-map-visual {
-    flex: 1 !important;
-    min-width: 600px !important;
-    max-width: 800px !important;
-    height: calc(95vh - 200px) !important;
+    width: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
 }
 
-/* Стили для содержимого левой панели */
-.left-panel-title {
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.cell-stats-left {
-    margin-top: 20px;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    border: 1px solid rgba(0, 255, 204, 0.2);
-}
-
-.stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    color: #cbd5e1;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.stat-item:last-child {
-    border-bottom: none;
-}
-
-.stat-item span:first-child {
-    color: #94a3b8;
-}
-
-.stat-value {
-    color: #00ffcc;
-    font-weight: bold;
-}
-
 /* Адаптивность */
-@media (max-width: 2200px) {
+@media (max-width: 3200px) {
     .tactical-map-content-with-actions {
-        flex-wrap: wrap !important;
         justify-content: center !important;
-        gap: 20px !important;
-        height: auto !important;
+        gap: 10px !important;
     }
     
     .cell-info-left-panel,
     .cell-actions-panel {
-        width: 48% !important;
-        min-width: 48% !important;
-        max-width: 48% !important;
-        height: 500px !important;
+        width: 1000px !important;
+        min-width: 1000px !important;
+        max-width: 1000px !important;
     }
     
     .map-main-area {
-        order: 2 !important;
-        width: 100% !important;
-        margin: 20px 0 !important;
-    }
-    
-    .tactical-map-visual {
-        height: 500px !important;
+        min-width: 500px !important;
+        max-width: 700px !important;
     }
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 2600px) {
     .cell-info-left-panel,
     .cell-actions-panel {
-        width: 100% !important;
-        min-width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 0 20px 0 !important;
+        width: 900px !important;
+        min-width: 900px !important;
+        max-width: 900px !important;
     }
-    
-    .tactical-map-content-with-actions {
-        flex-direction: column !important;
+}
+
+@media (max-width: 2200px) {
+    .cell-info-left-panel,
+    .cell-actions-panel {
+        width: 800px !important;
+        min-width: 800px !important;
+        max-width: 800px !important;
     }
 }
