@@ -38,33 +38,71 @@ class CraftingSystem {
         }
     }
 
-    async loadRecipes() {
-        try {
-            console.log("🔨 Загружаем рецепты крафта...");
-            
-            const response = await fetch('data/crafting.json');
-            if (!response.ok) {
-                throw new Error(`Ошибка загрузки crafting.json: ${response.status}`);
+  async loadRecipes() {
+    try {
+        console.log("🔨 Загружаем рецепты крафта...");
+        
+        // ⭐ ПРОБУЕМ РАЗНЫЕ ПУТИ
+        const possiblePaths = [
+            'data/crafting.json',
+            'crafting.json',
+            './crafting.json',
+            '/crafting.json'
+        ];
+        
+        let response = null;
+        let usedPath = '';
+        
+        for (const path of possiblePaths) {
+            try {
+                console.log(`🔍 Пробуем путь: ${path}`);
+                response = await fetch(path);
+                if (response.ok) {
+                    usedPath = path;
+                    break;
+                }
+            } catch (e) {
+                console.log(`❌ Путь ${path} не доступен:`, e.message);
             }
-            
-            const craftingData = await response.json();
-            this.recipes = craftingData.crafting_system;
-            
-            console.log(`✅ Загружено рецептов крафта:`);
-            console.log(`  🛠️  Станции: ${Object.keys(this.recipes.stations).length}`);
-            console.log(`  ⚗️  Расходники: ${Object.keys(this.recipes.consumables).length}`);
-            console.log(`  🧱 Компоненты: ${Object.keys(this.recipes.basic_components).length}`);
-            console.log(`  🔨 Инструменты: ${Object.keys(this.recipes.tools).length}`);
-            console.log(`  ⚔️  Оружие: ${Object.keys(this.recipes.weapons).length}`);
-            console.log(`  ⛑️  Шлемы: ${Object.keys(this.recipes.helmets).length}`);
-            
-            return true;
-        } catch (error) {
-            console.error("❌ Ошибка загрузки рецептов:", error);
-            this.createFallbackRecipes();
-            return true;
         }
+        
+        if (!response || !response.ok) {
+            throw new Error(`Не удалось загрузить crafting.json ни с одного пути: ${possiblePaths.join(', ')}`);
+        }
+        
+        console.log(`✅ Файл найден по пути: ${usedPath}`);
+        
+        const craftingData = await response.json();
+        
+        // ⭐ ПРОВЕРЯЕМ СТРУКТУРУ ДАННЫХ
+        console.log("📊 Структура данных:", Object.keys(craftingData));
+        
+        if (craftingData.crafting_system) {
+            this.recipes = craftingData.crafting_system;
+        } else if (craftingData.stations || craftingData.consumables) {
+            // Если данные уже в корне
+            this.recipes = craftingData;
+        } else {
+            throw new Error("Неверная структура файла crafting.json");
+        }
+        
+        console.log(`✅ Загружено рецептов крафта:`);
+        console.log(`  🛠️  Станции: ${this.recipes.stations ? Object.keys(this.recipes.stations).length : 0}`);
+        console.log(`  ⚗️  Расходники: ${this.recipes.consumables ? Object.keys(this.recipes.consumables).length : 0}`);
+        console.log(`  🧱 Компоненты: ${this.recipes.basic_components ? Object.keys(this.recipes.basic_components).length : 0}`);
+        console.log(`  🔨 Инструменты: ${this.recipes.tools ? Object.keys(this.recipes.tools).length : 0}`);
+        
+        return true;
+    } catch (error) {
+        console.error("❌ Ошибка загрузки рецептов:", error);
+        
+        // ⭐ СОЗДАЕМ ПРОСТЫЕ ТЕСТОВЫЕ РЕЦЕПТЫ НА СЛУЧАЙ ОШИБКИ
+        this.createFallbackRecipes();
+        
+        // ⭐ ВСЕ РАВНО ВОЗВРАЩАЕМ TRUE ЧТОБЫ ИГРА ПРОДОЛЖАЛАСЬ
+        return true;
     }
+}
 
     async loadPlayerData() {
         // Загружаем данные игрока из сохранения
