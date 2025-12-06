@@ -79,50 +79,93 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
+   async loadModule(moduleName) {
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
+    }
 
-        try {
-            const modulePath = `data/modules/${moduleName}.js`;
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
+    try {
+        // ⭐ ИСПРАВЛЕННЫЙ ПУТЬ: разные пути для разных модулей
+        let modulePath;
+        if (moduleName === 'crafting-system') {
+            modulePath = 'crafting-system.js'; // Корневая папка
+        } else {
+            modulePath = `data/modules/${moduleName}.js`;
+        }
+        
+        console.log(`📥 Загружаем модуль: ${modulePath}`);
+        
+        const response = await fetch(modulePath);
+        if (!response.ok) {
+            // Пробуем альтернативный путь
+            const altPath = `modules/${moduleName}.js`;
+            console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+            const altResponse = await fetch(altPath);
             
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+            if (!altResponse.ok) {
+                throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
             }
             
-            const moduleCode = await response.text();
-            
-            // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob для выполнения кода
-            const blob = new Blob([moduleCode], { type: 'application/javascript' });
-            const url = URL.createObjectURL(blob);
-            
-            await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve();
-                };
-                script.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-                };
-                document.head.appendChild(script);
-            });
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            return false;
+            modulePath = altPath;
         }
+        
+        const moduleCode = await response.text();
+        
+        // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob
+        const blob = new Blob([moduleCode], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve();
+            };
+            script.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+            };
+            document.head.appendChild(script);
+        });
+        
+        this.loadedModules.add(moduleName);
+        console.log(`✅ Модуль ${moduleName} успешно загружен`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        
+        // ⭐ СОЗДАЕМ ПРОСТОЙ ЗАГЛУШЕЧНЫЙ МОДУЛЬ
+        this.createStubModule(moduleName);
+        return false;
     }
+}
+
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД В ModuleLoader
+createStubModule(moduleName) {
+    console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
+    
+    const classMap = {
+        'crafting-system': 'CraftingSystem'
+    };
+    
+    const className = classMap[moduleName];
+    if (className && !window[className]) {
+        window[className] = class StubSystem {
+            constructor() {
+                console.log(`📦 Создана заглушка для ${className}`);
+            }
+            async initialize() {
+                console.log(`🔄 Инициализация заглушки ${className}`);
+                return true;
+            }
+        };
+        console.log(`✅ Заглушка ${className} создана`);
+    }
+}
+    
 
 isModuleAvailable(moduleName) {
     const classMap = {
@@ -1689,6 +1732,19 @@ case 'resources':
         }
     }
 
+// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ПРЯМО ПОСЛЕ hideOverlay
+showOverlayContent(content, className = '') {
+    const container = document.getElementById('overlay-container');
+    if (!container) return;
+    
+    container.innerHTML = content;
+    container.style.display = 'block';
+    
+    if (className) {
+        container.firstElementChild?.classList.add(className);
+    }
+}
+    
     showEquipmentForSlot(slot) {
         this.showOverlay('inventory');
         setTimeout(() => {
