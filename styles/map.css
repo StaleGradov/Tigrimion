@@ -1950,67 +1950,97 @@
     overflow: visible !important;
     min-height: 650px !important;
 }
-/* ========== НОВЫЕ СТИЛИ ДЛЯ РАЗДЕЛЕННОЙ ПАНЕЛИ ========== */
-
-/* Контейнер для двух панелей */
-.cell-actions-panel {
+/* ========== СТИЛИ ДЛЯ РАЗДЕЛЕННЫХ ПАНЕЛЕЙ ========== */
+.tactical-map-content-with-actions {
     display: flex !important;
     flex-direction: row !important;
     justify-content: space-between !important;
+    align-items: flex-start !important;
+    height: calc(95vh - 160px) !important;
     gap: 20px !important;
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
+    padding: 0 20px !important;
+    overflow: visible !important;
+}
+
+.map-main-area {
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-width: 0 !important;
 }
 
 /* Левая панель (информация) */
 .cell-info-left-panel {
-    flex: 1;
-    min-width: 320px;
-    max-width: 350px;
+    flex: 0 0 auto !important;
+    width: 1150px !important;
+    min-width: 1150px !important;
+    max-width: 1150px !important;
+    height: calc(95vh - 200px) !important;
     background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
     border: 2px solid #00ffcc !important;
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+    border-radius: 10px !important;
+    padding: 20px !important;
+    margin-right: 20px !important;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 /* Правая панель (действия) */
+.cell-actions-panel {
+    flex: 0 0 auto !important;
+    width: 1150px !important;
+    min-width: 1150px !important;
+    max-width: 1150px !important;
+    height: calc(95vh - 200px) !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-left: 20px !important;
+}
+
 .cell-actions-container {
-    flex: 1;
-    min-width: 320px;
-    max-width: 350px;
+    width: 100% !important;
+    height: 100% !important;
     background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
     border: 2px solid #00ffff !important;
-    border-radius: 10px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+    border-radius: 10px !important;
+    padding: 20px !important;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
-/* Заголовок левой панели */
-.cell-info-header-left {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+/* Контейнер карты по центру */
+.tactical-map-visual {
+    flex: 1 !important;
+    min-width: 600px !important;
+    max-width: 800px !important;
+    height: calc(95vh - 200px) !important;
+    margin: 0 !important;
 }
 
-/* Статистика в левой панели */
+/* Стили для содержимого левой панели */
+.left-panel-title {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
 .cell-stats-left {
-    margin-top: auto;
-    padding-top: 15px;
-    border-top: 1px solid rgba(0, 255, 204, 0.3);
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 204, 0.2);
 }
 
 .stat-item {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
+    padding: 8px 0;
     color: #cbd5e1;
-    font-size: 0.85rem;
+    font-size: 14px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2027,61 +2057,44 @@
     font-weight: bold;
 }
 
-/* Опасность */
-.danger-level-info {
-    background: rgba(255, 100, 100, 0.1);
-    border: 1px solid rgba(255, 100, 100, 0.3);
-    border-radius: 8px;
-    padding: 12px;
-    margin: 15px 0;
-    color: #ffcccc;
-    font-size: 0.9rem;
-}
-
-.danger-level-info strong {
-    color: #ff6666;
-    display: block;
-    margin-bottom: 5px;
-}
-
-.danger-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 100, 100, 0.2);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 8px 0;
-}
-
-.danger-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff6666, #ff4444);
-    border-radius: 4px;
-    transition: width 0.5s ease;
-}
-
-/* Адаптивность для двух панелей */
-@media (max-width: 1200px) {
-    .cell-actions-panel {
-        flex-direction: column !important;
-        align-items: center !important;
+/* Адаптивность */
+@media (max-width: 2200px) {
+    .tactical-map-content-with-actions {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 20px !important;
+        height: auto !important;
     }
     
     .cell-info-left-panel,
-    .cell-actions-container {
+    .cell-actions-panel {
+        width: 48% !important;
+        min-width: 48% !important;
+        max-width: 48% !important;
+        height: 500px !important;
+    }
+    
+    .map-main-area {
+        order: 2 !important;
         width: 100% !important;
-        max-width: 500px !important;
-        margin-bottom: 20px;
+        margin: 20px 0 !important;
+    }
+    
+    .tactical-map-visual {
+        height: 500px !important;
     }
 }
 
-/* Стили для контента в двух панелях */
-.cell-info-left-panel .location-visual-container {
-    height: 250px !important;
-    margin-bottom: 20px !important;
-}
-
-.cell-info-left-panel .cell-description-text {
-    max-height: 180px !important;
-    margin-bottom: 20px !important;
+@media (max-width: 1400px) {
+    .cell-info-left-panel,
+    .cell-actions-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 20px 0 !important;
+    }
+    
+    .tactical-map-content-with-actions {
+        flex-direction: column !important;
+    }
 }
