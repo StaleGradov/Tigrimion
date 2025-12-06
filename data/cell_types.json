@@ -19,7 +19,10 @@
         "hunt_caravan": 80,
         "take_assassination_contract": 50,
         "light_campfire": 65,
-        "guard_caravan": 85
+        "guard_caravan": 85,
+        "hunt": 70,
+        "stealth_movement": 85,
+        "gather_wood": 60
       },
       "special_notes": "Идеальное место для засады на движущиеся цели. Шанс встретить других путников.",
       "failure_monster_chance": 65,
@@ -45,7 +48,10 @@
         "hunt_caravan": 15,
         "take_assassination_contract": 25,
         "light_campfire": 40,
-        "guard_caravan": 10
+        "guard_caravan": 10,
+        "hunt": 30,
+        "stealth_movement": 40,
+        "gather_wood": 10
       },
       "special_notes": "Высокий шанс найти руду и редкие грибы, но риск встречи с подземными обитателями крайне велик.",
       "failure_monster_chance": 95,
@@ -71,7 +77,10 @@
         "hunt_caravan": 60,
         "take_assassination_contract": 75,
         "light_campfire": 95,
-        "guard_caravan": 90
+        "guard_caravan": 90,
+        "hunt": 45,
+        "stealth_movement": 70,
+        "gather_wood": 55
       },
       "special_notes": "Тактическое преимущество для наблюдения и защиты. Возможны находки старых припасов.",
       "failure_monster_chance": 55,
@@ -97,7 +106,10 @@
         "hunt_caravan": 25,
         "take_assassination_contract": 30,
         "light_campfire": 50,
-        "guard_caravan": 35
+        "guard_caravan": 35,
+        "hunt": 30,
+        "stealth_movement": 80,
+        "gather_wood": 20
       },
       "special_notes": "Отличный источник строительного камня и тенелюбивых растений. Лабиринт для засад.",
       "failure_monster_chance": 60,
@@ -123,7 +135,10 @@
         "hunt_caravan": 5,
         "take_assassination_contract": 10,
         "light_campfire": 95,
-        "guard_caravan": 50
+        "guard_caravan": 50,
+        "hunt": 80,
+        "stealth_movement": 95,
+        "gather_wood": 70
       },
       "special_notes": "Богатая флора, безопасность. Отличное место для отдыха и сбора припасов.",
       "failure_monster_chance": 20,
@@ -149,7 +164,10 @@
         "hunt_caravan": 85,
         "take_assassination_contract": 40,
         "light_campfire": 80,
-        "guard_caravan": 95
+        "guard_caravan": 95,
+        "hunt": 50,
+        "stealth_movement": 65,
+        "gather_wood": 35
       },
       "special_notes": "Гарантированная вода и высокая вероятность встретить торговцев (или тех, кто на них охотится).",
       "failure_monster_chance": 50,
@@ -175,7 +193,10 @@
         "hunt_caravan": 30,
         "take_assassination_contract": 60,
         "light_campfire": 70,
-        "guard_caravan": 20
+        "guard_caravan": 20,
+        "hunt": 40,
+        "stealth_movement": 55,
+        "gather_wood": 45
       },
       "special_notes": "Шанс найти спрятанные семейные ценности или узнать контракт на месть.",
       "failure_monster_chance": 70,
@@ -201,7 +222,10 @@
         "hunt_caravan": 40,
         "take_assassination_contract": 50,
         "light_campfire": 30,
-        "guard_caravan": 60
+        "guard_caravan": 60,
+        "hunt": 95,
+        "stealth_movement": 90,
+        "gather_wood": 40
       },
       "special_notes": "Идеальная позиция для скрытого наблюдения, установки ловушек или засады.",
       "failure_monster_chance": 45,
@@ -227,7 +251,10 @@
         "hunt_caravan": 70,
         "take_assassination_contract": 85,
         "light_campfire": 95,
-        "guard_caravan": 75
+        "guard_caravan": 75,
+        "hunt": 30,
+        "stealth_movement": 60,
+        "gather_wood": 50
       },
       "special_notes": "Одно из лучших мест для поиска ценностей и получения информации о контрактах.",
       "failure_monster_chance": 85,
@@ -253,7 +280,10 @@
         "hunt_caravan": 25,
         "take_assassination_contract": 45,
         "light_campfire": 40,
-        "guard_caravan": 15
+        "guard_caravan": 15,
+        "hunt": 15,
+        "stealth_movement": 40,
+        "gather_wood": 10
       },
       "special_notes": "Можно найти ценное, но проклятое оружие или реликвии. Очень высокая опасность сверхъестественных угроз.",
       "failure_monster_chance": 90,
@@ -279,7 +309,10 @@
         "hunt_caravan": 5,
         "take_assassination_contract": 10,
         "light_campfire": 90,
-        "guard_caravan": 40
+        "guard_caravan": 40,
+        "hunt": 65,
+        "stealth_movement": 35,
+        "gather_wood": 70
       },
       "special_notes": "Уникальный источник редких знаний и могущественных трав. Конфликт маловероятен, если проявить уважение.",
       "failure_monster_chance": 30,
@@ -305,7 +338,10 @@
         "hunt_caravan": 95,
         "take_assassination_contract": 70,
         "light_campfire": 100,
-        "guard_caravan": 90
+        "guard_caravan": 90,
+        "hunt": 55,
+        "stealth_movement": 75,
+        "gather_wood": 60
       },
       "special_notes": "Естественная точка притяжения для торговцев и разбойников. Можно легко встроиться в охрану или подготовить нападение.",
       "failure_monster_chance": 75,
@@ -331,7 +367,10 @@
         "hunt_caravan": 10,
         "take_assassination_contract": 20,
         "light_campfire": 70,
-        "guard_caravan": 25
+        "guard_caravan": 25,
+        "hunt": 40,
+        "stealth_movement": 50,
+        "gather_wood": 45
       },
       "special_notes": "Источник уникальной магической воды и алхимических компонентов. Привлекает необычных существ.",
       "failure_monster_chance": 60,
