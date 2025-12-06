@@ -955,7 +955,7 @@ class MapSystem {
         return baseChance;
     }
 
-   updateCellActionsUI(cell) {
+updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
     const actionsContainer = document.getElementById('cellActionsContainer');
@@ -969,15 +969,21 @@ class MapSystem {
         return;
     }
     
+    // Получаем оба контейнера
+    const mapMainArea = document.querySelector('.map-main-area');
+    const leftInfoContainer = document.createElement('div');
+    leftInfoContainer.className = 'cell-info-left-panel';
+    
     const mapVisual = document.querySelector('.tactical-map-visual');
     const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
     
-    const panelWidth = 1150;
+    const panelWidth = 550; // Уменьшили ширину, т.к. теперь 2 панели
     const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
     
-    console.log(`📐 Размеры панели: ${panelWidth}x${panelHeight}px`);
+    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px (две панели)`);
     
-    actionsContainer.style.cssText = `
+    // ========== ЛЕВЫЙ КОНТЕЙНЕР (Информация о локации) ==========
+    leftInfoContainer.style.cssText = `
         display: flex !important;
         flex-direction: column !important;
         visibility: visible !important;
@@ -991,6 +997,30 @@ class MapSystem {
         overflow-y: auto !important;
         overflow-x: hidden !important;
         background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffcc !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-right: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
+        flex-shrink: 0 !important;
+    `;
+    
+    // ========== ПРАВЫЙ КОНТЕЙНЕР (Только действия) ==========
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
         border: 2px solid #00ffff !important;
         border-radius: 10px !important;
         padding: 20px !important;
@@ -1005,17 +1035,26 @@ class MapSystem {
         panel.style.cssText = `
             overflow: visible !important;
             display: flex !important;
-            flex-direction: column !important;
+            flex-direction: row !important;
             height: ${panelHeight + 30}px !important;
             max-height: ${panelHeight + 30}px !important;
             min-height: ${panelHeight + 30}px !important;
-            width: ${panelWidth + 30}px !important;
-            max-width: ${panelWidth + 30}px !important;
-            min-width: ${panelWidth + 30}px !important;
+            width: ${(panelWidth * 2) + 40}px !important;
+            max-width: ${(panelWidth * 2) + 40}px !important;
+            min-width: ${(panelWidth * 2) + 40}px !important;
             margin-left: 20px !important;
             align-self: flex-start !important;
             flex-shrink: 0 !important;
+            justify-content: space-between !important;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
         `;
+        
+        // Добавляем левый контейнер в панель
+        if (!panel.querySelector('.cell-info-left-panel')) {
+            panel.insertBefore(leftInfoContainer, actionsContainer);
+        }
     }
     
     if (cell.explored === undefined) cell.explored = false;
@@ -1027,6 +1066,7 @@ class MapSystem {
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
+        leftInfoContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
         actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
         return;
     }
@@ -1043,87 +1083,111 @@ class MapSystem {
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
-    let actionsHTML = '';
+    // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОГО КОНТЕЙНЕРА ==========
+    let leftHTML = '';
     
     try {
-        actionsHTML = this.createCellInfoHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+        leftHTML = this.createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
     } catch (error) {
         console.error("❌ Ошибка создания информации о клетке:", error);
-        actionsHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+        leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
     }
+    
+    leftInfoContainer.innerHTML = leftHTML;
+    
+    // ========== СОЗДАЕМ HTML ДЛЯ ПРАВОГО КОНТЕЙНЕРА ==========
+    let rightHTML = '';
     
     if (!isExplored && cell.hasAction !== false) {
         if (this.currentCellActions.length > 0) {
             try {
-                // Создаем список действий с ОБНОВЛЕННОЙ обработкой
-                actionsHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+                // Создаем список действий только с кнопками
+                rightHTML += this.createActionsListHTML(cell, isCurrentPosition, isReachable);
+                
+                // Кнопка завершения исследования в правом контейнере
+                rightHTML += `
+                    <div class="cell-completion-controls">
+                        <button class="btn-control complete-exploration-btn" 
+                                onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
+                                title="Отметить клетку как полностью исследованную">
+                            ✓ Завершить исследование
+                        </button>
+                        <p class="hint">После завершения исследования вы не сможете выполнять здесь действия</p>
+                    </div>
+                `;
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
-                actionsHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
             }
-            
-            // Кнопка завершения исследования (ОСТАВЛЯЕМ ЕЁ!)
-            actionsHTML += `
-                <div class="cell-completion-controls">
-                    <button class="btn-control complete-exploration-btn" 
-                            onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
-                            title="Отметить клетку как полностью исследованную">
-                        ✓ Завершить исследование
-                    </button>
-                    <p class="hint">После завершения исследования вы не сможете выполнять здесь действия</p>
-                </div>
-            `;
         } else {
-            actionsHTML += this.createNoActionsHTML();
+            rightHTML += this.createNoActionsHTML();
         }
     } else if (isExplored) {
-        actionsHTML += this.createExploredCellHTML();
+        rightHTML += this.createExploredCellHTML();
     } else if (cell.hasAction === false) {
-        actionsHTML += this.createNoActionsHTML();
+        rightHTML += this.createNoActionsHTML();
     }
     
-    actionsContainer.innerHTML = actionsHTML;
+    actionsContainer.innerHTML = rightHTML;
     
+    // ========== ОПТИМИЗАЦИЯ СТИЛЕЙ ==========
     setTimeout(() => {
-        const imageWrapper = actionsContainer.querySelector('.location-visual-container');
-        if (imageWrapper) {
-            imageWrapper.style.cssText = `
-                height: 300px !important;
-                width: 300px !important;
-                max-height: 300px !important;
-                max-width: 300px !important;
-                min-height: 300px !important;
-                min-width: 300px !important;
+        // Оптимизация левой панели
+        const leftImageWrapper = leftInfoContainer.querySelector('.location-visual-container');
+        if (leftImageWrapper) {
+            leftImageWrapper.style.cssText = `
+                height: 250px !important;
+                width: 250px !important;
+                max-height: 250px !important;
+                max-width: 250px !important;
+                min-height: 250px !important;
+                min-width: 250px !important;
                 overflow: hidden !important;
-                margin: 0 auto 20px auto !important;
+                margin: 0 auto 15px auto !important;
                 position: relative !important;
-                border: 2px solid #00ffff !important;
+                border: 2px solid #00ffcc !important;
                 border-radius: 10px !important;
                 align-self: center !important;
             `;
         }
         
-        const description = actionsContainer.querySelector('.cell-description-text');
-        if (description) {
-            description.style.cssText = `
+        const leftDescription = leftInfoContainer.querySelector('.cell-description-text');
+        if (leftDescription) {
+            leftDescription.style.cssText = `
                 display: block !important;
                 color: #e2e8f0 !important;
                 background: rgba(0, 0, 0, 0.6) !important;
-                padding: 12px !important;
+                padding: 15px !important;
                 border-radius: 8px !important;
-                margin: 10px 0 !important;
-                max-height: 140px !important;
+                margin: 15px 0 !important;
+                max-height: 180px !important;
                 overflow-y: auto !important;
                 font-size: 14px !important;
-                line-height: 1.5 !important;
+                line-height: 1.6 !important;
                 text-align: justify !important;
+                border-left: 3px solid #00ffcc !important;
             `;
         }
         
+        const leftLocationName = leftInfoContainer.querySelector('.cell-name');
+        if (leftLocationName) {
+            leftLocationName.style.cssText = `
+                font-size: 22px !important;
+                margin: 15px 0 !important;
+                color: #00ffcc !important;
+                text-align: center !important;
+                font-weight: bold !important;
+                text-shadow: 0 0 10px rgba(0, 255, 204, 0.5) !important;
+                padding-bottom: 10px !important;
+                border-bottom: 2px solid rgba(0, 255, 204, 0.3) !important;
+            `;
+        }
+        
+        // Оптимизация правой панели
         const actionCards = actionsContainer.querySelectorAll('.action-card');
         actionCards.forEach(card => {
             card.style.cssText = `
-                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9)) !important;
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
                 border: 1px solid #00aaff !important;
                 border-radius: 8px !important;
                 padding: 12px !important;
@@ -1136,11 +1200,11 @@ class MapSystem {
             
             if (!card.style.opacity || card.style.opacity !== '0.6') {
                 card.onmouseenter = () => {
-                    card.style.transform = 'translateY(-2px)';
-                    card.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+                    card.style.transform = 'translateY(-3px) scale(1.02)';
+                    card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
                 };
                 card.onmouseleave = () => {
-                    card.style.transform = 'translateY(0)';
+                    card.style.transform = 'translateY(0) scale(1)';
                     card.style.boxShadow = 'none';
                 };
             }
@@ -1150,58 +1214,36 @@ class MapSystem {
         if (actionsGrid) {
             actionsGrid.style.cssText = `
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important;
-                gap: 10px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 12px !important;
                 margin-bottom: 20px !important;
             `;
         }
         
-        const locationName = actionsContainer.querySelector('.cell-name');
-        if (locationName) {
-            locationName.style.cssText = `
-                font-size: 20px !important;
-                margin: 15px 0 !important;
+        const rightTitle = actionsContainer.querySelector('.actions-section h3');
+        if (rightTitle) {
+            rightTitle.style.cssText = `
                 color: #00ffff !important;
+                margin-bottom: 20px !important;
                 text-align: center !important;
-                font-weight: bold !important;
-                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5) !important;
+                font-size: 18px !important;
+                padding-bottom: 10px !important;
+                border-bottom: 2px solid rgba(0, 255, 255, 0.3) !important;
             `;
         }
         
-        const iconOverlay = actionsContainer.querySelector('.location-icon-overlay .cell-icon-large');
-        if (iconOverlay) {
-            iconOverlay.style.cssText = `
-                font-size: 40px !important;
-                background: rgba(0, 0, 0, 0.8) !important;
-                border-radius: 50% !important;
-                padding: 15px !important;
-                border: 2px solid #00ffff !important;
-                box-shadow: 0 0 20px rgba(0, 255, 255, 0.6) !important;
-            `;
+        // Загружаем картинку в левую панель
+        if (cellTypeData) {
+            try {
+                this.displayRealLocationImage(cellTypeData, leftInfoContainer);
+            } catch (error) {
+                console.error("❌ Ошибка загрузки картинки:", error);
+            }
         }
         
-        const legend = actionsContainer.querySelector('.chance-legend');
-        if (legend) {
-            legend.style.cssText = `
-                padding: 15px !important;
-                margin-top: 20px !important;
-                font-size: 13px !important;
-                background: rgba(0, 0, 0, 0.4) !important;
-                border-radius: 8px !important;
-            `;
-        }
-        
-        actionsContainer.scrollTop = 0;
-        
-        console.log(`✅ Панель оптимизирована: картинка 300px, ${actionCards.length} карточек действий`);
+        console.log(`✅ Панели оптимизированы: левая ${panelWidth}x${panelHeight}px, правая ${panelWidth}x${panelHeight}px`);
         
     }, 50);
-    
-    try {
-        this.displayRealLocationImage(cellTypeData);
-    } catch (error) {
-        console.error("❌ Ошибка загрузки картинки:", error);
-    }
     
     if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
         try {
@@ -1217,7 +1259,7 @@ class MapSystem {
         console.error("❌ Ошибка обновления ресурсов:", error);
     }
     
-    console.log("✅ Панель действий обновлена");
+    console.log("✅ Панели действий обновлены");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
@@ -1282,6 +1324,75 @@ class MapSystem {
             </div>
         `;
     }
+
+
+// Новый метод для создания HTML левой панели
+createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
+    return `
+        <div class="cell-info-header-left">
+            <div class="location-visual-container">
+                <div class="location-image-wrapper" id="locationImageWrapperLeft">
+                    <div class="image-loading">🖼️ Загрузка изображения...</div>
+                </div>
+                <div class="location-icon-overlay">
+                    <div class="cell-icon-large">${cellIcon}</div>
+                </div>
+            </div>
+            
+            <h4 class="cell-name">${cellTypeData.name}</h4>
+            
+            <div class="cell-position-info">
+                <span class="cell-coords">Позиция: [${cell.col}, ${cell.row}]</span>
+                ${isCurrentPosition ? '<span class="current-position-badge">📍 Вы здесь</span>' : ''}
+                ${isExplored ? '<span class="explored-badge">✓ Исследовано</span>' : ''}
+            </div>
+            
+            <div class="cell-description-text">
+                ${cellTypeData.description}
+            </div>
+            
+            ${cellTypeData.suggestion ? `
+                <div class="cell-suggestion">
+                    <strong>💡 Совет:</strong> ${cellTypeData.suggestion}
+                </div>
+            ` : ''}
+            
+            ${cellTypeData.special_notes ? `
+                <div class="special-notes">
+                    <strong>📝 Особенности:</strong> ${cellTypeData.special_notes}
+                </div>
+            ` : ''}
+            
+            <div class="danger-level-info">
+                <strong>⚠️ Уровень опасности:</strong> ${cellTypeData.monster_level || 1}/5
+                <div class="danger-bar">
+                    <div class="danger-fill" style="width: ${(cellTypeData.monster_level || 1) * 20}%"></div>
+                </div>
+                <small>Шанс монстра при неудаче: ${cellTypeData.failure_monster_chance || 50}%</small>
+            </div>
+            
+            <div class="cell-stats-left">
+                <div class="stat-item">
+                    <span>Тип локации:</span>
+                    <span class="stat-value">${cellTypeData.name}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Размер клетки:</span>
+                    <span class="stat-value">${this.currentTacticalMap?.cellSize || 40}px</span>
+                </div>
+                <div class="stat-item">
+                    <span>Видимость:</span>
+                    <span class="stat-value">${cell.visible !== false ? 'Видна' : 'Скрыта'}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Проходимость:</span>
+                    <span class="stat-value">${cell.passable !== false ? 'Проходима' : 'Непроходима'}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+    
 
  createActionsListHTML(cell, isCurrentPosition, isReachable) {
     let html = `
@@ -1496,94 +1607,97 @@ class MapSystem {
         return img;
     }
 
-    displayRealLocationImage(cellTypeData) {
-        const imageWrapper = document.getElementById('locationImageWrapper');
-        if (!imageWrapper) return;
+displayRealLocationImage(cellTypeData, leftContainer) {
+    const imageWrapper = leftContainer?.querySelector('#locationImageWrapperLeft') || 
+                        document.getElementById('locationImageWrapperLeft');
+    if (!imageWrapper) return;
+    
+    const img = new Image();
+    
+    img.onload = () => {
+        imageWrapper.innerHTML = '';
+        img.className = 'location-image';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        imageWrapper.appendChild(img);
         
-        const img = new Image();
+        const overlay = document.createElement('div');
+        overlay.className = 'image-dark-overlay';
+        imageWrapper.appendChild(overlay);
         
-        img.onload = () => {
-            imageWrapper.innerHTML = '';
-            img.className = 'location-image';
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            imageWrapper.appendChild(img);
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'image-dark-overlay';
-            imageWrapper.appendChild(overlay);
-            
-            console.log(`🖼️ Картинка локации загружена: ${cellTypeData.name}`);
-        };
-        
-        img.onerror = () => {
-            console.error(`❌ Ошибка загрузки картинки: ${cellTypeData.image}`);
-            this.displayFallbackLocationImage(cellTypeData);
-        };
-        
-        img.src = cellTypeData.image || '';
-    }
+        console.log(`🖼️ Картинка локации загружена в левую панель: ${cellTypeData.name}`);
+    };
+    
+    img.onerror = () => {
+        console.error(`❌ Ошибка загрузки картинки: ${cellTypeData.image}`);
+        this.displayFallbackLocationImage(cellTypeData, leftContainer);
+    };
+    
+    img.src = cellTypeData.image || '';
+}
 
-    displayFallbackLocationImage(cellTypeData) {
-        const imageWrapper = document.getElementById('locationImageWrapper');
-        if (!imageWrapper) return;
-        
-        const canvas = document.createElement('canvas');
-        canvas.width = 400;
-        canvas.height = 300;
-        const ctx = canvas.getContext('2d');
-        
-        const gradient = ctx.createLinearGradient(0, 0, 400, 300);
-        gradient.addColorStop(0, '#1a1a2e');
-        gradient.addColorStop(0.5, '#16213e');
-        gradient.addColorStop(1, '#0f172a');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 400, 300);
-        
-        ctx.fillStyle = 'rgba(0, 255, 255, 0.05)';
-        for (let i = 0; i < 100; i++) {
-            const x = Math.random() * 400;
-            const y = Math.random() * 300;
-            const size = Math.random() * 3 + 1;
-            ctx.fillRect(x, y, size, size);
-        }
-        
-        ctx.fillStyle = '#00ffff';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(cellTypeData.name, 200, 40);
-        
-        ctx.font = 'bold 72px Arial';
-        ctx.fillText(cellTypeData.icon || '❓', 200, 140);
-        
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '14px Arial';
-        ctx.fillText('Изображение локации', 200, 180);
-        
-        ctx.strokeStyle = '#00ffff';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, 380, 280);
-        
-        const img = new Image();
-        img.src = canvas.toDataURL();
-        
-        img.onload = () => {
-            imageWrapper.innerHTML = '';
-            const imgElement = img.cloneNode();
-            imgElement.className = 'location-image';
-            imgElement.style.width = '100%';
-            imgElement.style.height = '100%';
-            imgElement.style.objectFit = 'cover';
-            imageWrapper.appendChild(imgElement);
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'image-dark-overlay';
-            imageWrapper.appendChild(overlay);
-            
-            console.log(`🖼️ Fallback картинка локации создана: ${cellTypeData.name}`);
-        };
+// Обновленный метод для фолбэк картинки
+displayFallbackLocationImage(cellTypeData, container) {
+    const imageWrapper = container?.querySelector('#locationImageWrapperLeft') || 
+                        document.getElementById('locationImageWrapperLeft');
+    if (!imageWrapper) return;
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 250;
+    const ctx = canvas.getContext('2d');
+    
+    const gradient = ctx.createLinearGradient(0, 0, 400, 250);
+    gradient.addColorStop(0, '#1a1a2e');
+    gradient.addColorStop(0.5, '#16213e');
+    gradient.addColorStop(1, '#0f172a');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 400, 250);
+    
+    ctx.fillStyle = 'rgba(0, 255, 204, 0.05)';
+    for (let i = 0; i < 80; i++) {
+        const x = Math.random() * 400;
+        const y = Math.random() * 250;
+        const size = Math.random() * 3 + 1;
+        ctx.fillRect(x, y, size, size);
     }
+    
+    ctx.fillStyle = '#00ffcc';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(cellTypeData.name, 200, 35);
+    
+    ctx.font = 'bold 64px Arial';
+    ctx.fillText(cellTypeData.icon || '❓', 200, 120);
+    
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px Arial';
+    ctx.fillText('Изображение локации', 200, 160);
+    
+    ctx.strokeStyle = '#00ffcc';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, 380, 230);
+    
+    const img = new Image();
+    img.src = canvas.toDataURL();
+    
+    img.onload = () => {
+        imageWrapper.innerHTML = '';
+        const imgElement = img.cloneNode();
+        imgElement.className = 'location-image';
+        imgElement.style.width = '100%';
+        imgElement.style.height = '100%';
+        imgElement.style.objectFit = 'cover';
+        imageWrapper.appendChild(imgElement);
+        
+        const overlay = document.createElement('div');
+        overlay.className = 'image-dark-overlay';
+        imageWrapper.appendChild(overlay);
+        
+        console.log(`🖼️ Fallback картинка локации создана: ${cellTypeData.name}`);
+    };
+}
 
     setupActionEventListeners() {
         const actionButtons = document.querySelectorAll('.cell-action-btn:not(.disabled)');
