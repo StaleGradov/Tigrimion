@@ -119,69 +119,92 @@ class ResourcesSystem {
     }
 
     // ========== ОТОБРАЖЕНИЕ ИНВЕНТАРЯ РЕСУРСОВ ==========
-    showResourcesInventory() {
-        if (!window.game || !window.game.sharedResources) {
-            return '<div class="error-message">Система не готова</div>';
-        }
+ showResourcesInventory() {
+    if (!window.game || !window.game.sharedResources) {
+        return '<div class="error-message">Система не готова</div>';
+    }
 
-        const inventory = window.game.sharedResources.inventory || [];
-        
-        // Фильтруем ресурсы из инвентаря
-        const resourceItems = {};
-        
-        inventory.forEach(itemId => {
-            // Проверяем является ли предмет ресурсом
-            const isResource = this.isItemResource(itemId);
-            if (isResource) {
-                const resourceId = this.getResourceIdFromItem(itemId);
-                if (!resourceItems[resourceId]) {
-                    resourceItems[resourceId] = {
-                        count: 1,
-                        data: this.getResourceData(resourceId)
-                    };
-                } else {
-                    resourceItems[resourceId].count++;
-                }
+    // Получаем ресурсы из sharedResources.resources
+    const resources = window.game.sharedResources.resources || {};
+    
+    // Также проверяем инвентарь на предметы-ресурсы для совместимости
+    const inventory = window.game.sharedResources.inventory || [];
+    inventory.forEach(itemId => {
+        if (this.isItemResource(itemId)) {
+            const resourceId = this.getResourceIdFromItem(itemId);
+            if (!resources[resourceId]) {
+                resources[resourceId] = {
+                    id: resourceId,
+                    count: 1
+                };
+            } else {
+                resources[resourceId].count++;
             }
-        });
+        }
+    });
 
-        // Группируем по типам
-        const groupedResources = {};
-        Object.entries(resourceItems).forEach(([id, data]) => {
-            const type = data.data.type;
+    // Группируем по типам
+    const groupedResources = {};
+    Object.entries(resources).forEach(([id, data]) => {
+        const resourceData = this.getResourceData(id);
+        if (!resourceData) return;
+        
+        const type = resourceData.type;
+        if (!groupedResources[type]) groupedResources[type] = [];
+        groupedResources[type].push({ 
+            id, 
+            count: data.count,
+            data: resourceData 
+        });
+    });
+
+    // Если нет ресурсов, но есть старый формат, пытаемся преобразовать
+    if (Object.keys(resources).length === 0 && window.game.currentHero?.resources) {
+        const heroResources = window.game.currentHero.resources;
+        Object.entries(heroResources).forEach(([id, data]) => {
+            const resourceData = this.getResourceData(id);
+            if (!resourceData) return;
+            
+            const type = resourceData.type;
             if (!groupedResources[type]) groupedResources[type] = [];
-            groupedResources[type].push({ id, ...data });
+            groupedResources[type].push({ 
+                id, 
+                count: data.count || 1,
+                data: resourceData 
+            });
         });
+    }
 
-        let html = `
-            <div class="overlay-content resources-overlay">
-                <div class="overlay-header">
-                    <h3>📦 Ресурсы и материалы</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                
-                <div class="resources-stats">
-                    <span>💰 Золото: ${window.game.sharedResources.gold.toFixed(2)}</span>
-                    <span>📦 Всего ресурсов: ${Object.keys(resourceItems).length} видов</span>
-                    <button class="btn-craft" onclick="game.systems.resources.showCrafting()">
-                        ⚗️ Перейти к крафту
-                    </button>
-                </div>
-                
-                <div class="resources-categories">
-                    <button class="resource-category-btn active" data-category="all">Все</button>
-                    <button class="resource-category-btn" data-category="herb">🌿 Травы</button>
-                    <button class="resource-category-btn" data-category="berry">🫐 Ягоды</button>
-                    <button class="resource-category-btn" data-category="mushroom">🍄 Грибы</button>
-                    <button class="resource-category-btn" data-category="ore">⛏️ Руда</button>
-                    <button class="resource-category-btn" data-category="stone">🪨 Камни</button>
-                    <button class="resource-category-btn" data-category="wood">🪵 Древесина</button>
-                </div>
-                
-                <div class="resources-grid">
-        `;
+    let html = `
+        <div class="overlay-content resources-overlay">
+            <div class="overlay-header">
+                <h3>📦 Ресурсы и материалы</h3>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+            </div>
+            
+            <div class="resources-stats">
+                <span>💰 Золото: ${window.game.sharedResources.gold ? window.game.sharedResources.gold.toFixed(2) : '0.00'}</span>
+                <span>📦 Всего ресурсов: ${this.getTotalResourceCount()} шт.</span>
+                <button class="btn-craft" onclick="game.systems.resources.showCrafting()">
+                    ⚗️ Перейти к крафту
+                </button>
+            </div>
+            
+            <div class="resources-categories">
+                <button class="resource-category-btn active" data-category="all">Все</button>
+                <button class="resource-category-btn" data-category="herb">🌿 Травы</button>
+                <button class="resource-category-btn" data-category="berry">🫐 Ягоды</button>
+                <button class="resource-category-btn" data-category="mushroom">🍄 Грибы</button>
+                <button class="resource-category-btn" data-category="ore">⛏️ Руда</button>
+                <button class="resource-category-btn" data-category="stone">🪨 Камни</button>
+                <button class="resource-category-btn" data-category="wood">🪵 Древесина</button>
+            </div>
+            
+            <div class="resources-grid">
+    `;
 
-        // Отображаем ресурсы по группам
+    // Отображаем ресурсы по группам
+    if (Object.keys(groupedResources).length > 0) {
         Object.entries(groupedResources).forEach(([type, resources]) => {
             const typeName = this.getResourceTypeName(type);
             
@@ -202,7 +225,7 @@ class ResourcesSystem {
                         </div>
                         <div class="resource-info">
                             <div class="resource-name">${resourceData.name.split(' ').slice(1).join(' ')}</div>
-                            <div class="resource-description">${resourceData.description}</div>
+                            <div class="resource-description">${resourceData.description || 'Нет описания'}</div>
                             <div class="resource-stats">
                                 <span class="resource-count">📦 ${resource.count} шт.</span>
                                 <span class="resource-value">💰 ${sellPrice} за шт.</span>
@@ -225,23 +248,131 @@ class ResourcesSystem {
                 </div>
             `;
         });
-
-        if (Object.keys(resourceItems).length === 0) {
-            html += `
-                <div class="empty-resources">
-                    <div>📭 Нет ресурсов в инвентаре</div>
-                    <div class="hint">Ресурсы можно найти в боях, на карте или купить у торговцев</div>
-                </div>
-            `;
-        }
-
+    } else {
         html += `
-                </div>
+            <div class="empty-resources">
+                <div>📭 Нет ресурсов в инвентаре</div>
+                <div class="hint">Ресурсы можно найти в боях, на карте или купить у торговцев</div>
             </div>
         `;
-
-        return html;
     }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    return html;
+}
+
+
+// ========== НОВЫЕ МЕТОДЫ ДЛЯ ИНТЕГРАЦИИ С БОЕВОЙ СИСТЕМОЙ ==========
+
+getTotalResourceCount() {
+    if (!window.game || !window.game.sharedResources) return 0;
+    
+    const resources = window.game.sharedResources.resources || {};
+    let total = 0;
+    
+    Object.values(resources).forEach(resource => {
+        total += resource.count || 0;
+    });
+    
+    // Также считаем ресурсы в инвентаре
+    const inventory = window.game.sharedResources.inventory || [];
+    inventory.forEach(itemId => {
+        if (this.isItemResource(itemId)) {
+            total++;
+        }
+    });
+    
+    return total;
+}
+
+getResourceById(resourceId) {
+    return this.getResourceData(resourceId);
+}
+
+getResourceData(resourceId) {
+    // Ищем ресурс во всех категориях
+    for (const category in this.resources) {
+        if (Array.isArray(this.resources[category])) {
+            const found = this.resources[category].find(r => r.id === resourceId);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+// Обновленный метод для получения типа ресурса
+getResourceTypeName(type) {
+    const names = {
+        'herb': '🌿 Лечебные травы',
+        'berry': '🫐 Ягоды и плоды',
+        'mushroom': '🍄 Грибы',
+        'ore': '⛏️ Руды и минералы',
+        'stone': '🪨 Камни и кристаллы',
+        'wood': '🪵 Древесина',
+        'leathers': '🪢 Кожи',
+        'hides': '🐅 Шкуры', 
+        'bones': '🦴 Кости',
+        'furs': '🧥 Меха'
+    };
+    return names[type] || type;
+}
+
+// Обновленный метод для создания дефолтных ресурсов
+createFallbackResources() {
+    console.log("🔄 Создаем резервные ресурсы...");
+    
+    this.resources = {
+        herbs: [
+            { id: "arnica", name: "🌿 Арника", type: "herb", rarity: "common", value: 10, price: 5 },
+            { id: "willow_bark", name: "🍂 Кора Ивы", type: "herb", rarity: "common", value: 12, price: 6 },
+            { id: "grass", name: "🌿 Трава", type: "herb", rarity: "common", value: 5, price: 2 }
+        ],
+        berries: [
+            { id: "elderberry", name: "🫐 Бузина", type: "berry", rarity: "common", value: 8, price: 4 },
+            { id: "rosehip", name: "🌰 Шиповник", type: "berry", rarity: "common", value: 15, price: 8 }
+        ],
+        mushrooms: [
+            { id: "tea_mushroom", name: "🍄 Чайный гриб", type: "mushroom", rarity: "uncommon", value: 25, price: 12 }
+        ],
+        ores: [
+            { id: "iron_ore", name: "⛏️ Железная руда", type: "ore", rarity: "common", value: 20, price: 10 },
+            { id: "copper_ore", name: "⛏️ Медная руда", type: "ore", rarity: "common", value: 30, price: 15 }
+        ],
+        stones: [
+            { id: "flint", name: "🪨 Кремень", type: "stone", rarity: "common", value: 5, price: 2 },
+            { id: "quartz", name: "🪨 Кварц", type: "stone", rarity: "uncommon", value: 50, price: 25 },
+            { id: "stone", name: "🪨 Камень", type: "stone", rarity: "common", value: 3, price: 1 }
+        ],
+        woods: [
+            { id: "oak_wood", name: "🪵 Дубовая древесина", type: "wood", rarity: "common", value: 15, price: 8 },
+            { id: "pine_wood", name: "🪵 Сосновая древесина", type: "wood", rarity: "common", value: 10, price: 5 }
+        ],
+        leathers: [
+            { id: "thin_leather", name: "🪢 Тонкая кожа", type: "leathers", rarity: "common", value: 8, price: 4 },
+            { id: "thick_leather", name: "🪢 Толстая кожа", type: "leathers", rarity: "uncommon", value: 20, price: 10 }
+        ],
+        hides: [
+            { id: "thin_hide", name: "🐅 Тонкая шкура", type: "hides", rarity: "common", value: 10, price: 5 },
+            { id: "thick_hide", name: "🐅 Толстая шкура", type: "hides", rarity: "uncommon", value: 25, price: 12 }
+        ],
+        bones: [
+            { id: "small_bone", name: "🦴 Малая кость", type: "bones", rarity: "common", value: 5, price: 2 },
+            { id: "large_bone", name: "🦴 Большая кость", type: "bones", rarity: "uncommon", value: 15, price: 8 }
+        ],
+        furs: [
+            { id: "fox_fur", name: "🧥 Лисья шкура", type: "furs", rarity: "uncommon", value: 30, price: 15 },
+            { id: "wolf_fur", name: "🧥 Волчий мех", type: "furs", rarity: "rare", value: 50, price: 25 }
+        ]
+    };
+    
+    this.createFallbackRecipes();
+    this.loaded = true;
+}
+    
 
     // ========== ПРОДАЖА РЕСУРСОВ ==========
     sellResource(resourceId, amount) {
