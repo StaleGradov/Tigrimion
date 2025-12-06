@@ -1,0 +1,3461 @@
+{
+  "crafting_system": {
+    "version": "1.0",
+    "description": "Полная система крафта для игры Tigrimion",
+    
+    "stations": {
+      "hand": {
+        "id": "hand_craft",
+        "name": "Ручной крафт",
+        "description": "Простейшие рецепты, не требующие станций"
+      },
+      "campfire": {
+        "id": "campfire",
+        "name": "🔥 Костёр",
+        "description": "Базовая станция для простого крафта и поддержания огня"
+      },
+      "furnace": {
+        "id": "furnace",
+        "name": "🔥 Очаг с печью",
+        "description": "Станция для плавки руд и варки"
+      },
+      "workbench": {
+        "id": "workbench",
+        "name": "⚒️ Верстак",
+        "description": "Основная станция для крафта предметов"
+      },
+      "alchemy_cauldron": {
+        "id": "alchemy_cauldron",
+        "name": "🏺 Алхимический котёл",
+        "description": "Станция для создания зелий и алхимических рецептов"
+      }
+    },
+    
+    "consumables": {
+      "firewood": {
+        "id": "firewood",
+        "name": "🪵 Дрова",
+        "description": "Расходник для поддержания огня. 1 дрова = 10 минут горения",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "common_wood", "count": 1}
+          ],
+          "tools": ["axe"],
+          "time": 30
+        }
+      },
+      "charcoal": {
+        "id": "charcoal",
+        "name": "⚫ Уголь",
+        "description": "Улучшенный расходник. 1 уголь = 30 минут горения и +50°C",
+        "craft": {
+          "station": "furnace",
+          "ingredients": [
+            {"id": "common_wood", "count": 3}
+          ],
+          "requires": ["campfire"],
+          "time": 300,
+          "consumes": {"firewood": 1}
+        }
+      },
+      "water": {
+        "id": "water",
+        "name": "💧 Вода",
+        "description": "Источник, можно собрать у реки или колодца",
+        "source": "natural"
+      },
+      "salt": {
+        "id": "salt",
+        "name": "🧂 Соль",
+        "description": "Можно добыть на солончаках или купить у торговца",
+        "source": "gathering"
+      }
+    },
+    
+    "basic_components": {
+      "string": {
+        "id": "string",
+        "name": "🧵 Нить",
+        "description": "Скрученная вручную нить из травы",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "grass", "count": 3}
+          ],
+          "time": 60
+        }
+      },
+      "rough_cloth": {
+        "id": "rough_cloth",
+        "name": "📜 Грубая ткань",
+        "description": "Простое плетение из нитей",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "string", "count": 5}
+          ],
+          "time": 120
+        }
+      },
+      "yarn": {
+        "id": "yarn",
+        "name": "Пряжа",
+        "description": "Скрученная шерсть для вязания",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "hare_fur", "count": 2}
+          ],
+          "time": 90
+        }
+      },
+      "kindling": {
+        "id": "kindling",
+        "name": "🔥 Хворост",
+        "description": "Расходник для розжига",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "common_wood", "count": 1}
+          ],
+          "time": 30
+        }
+      }
+    },
+    
+    "stations_recipes": {
+      "campfire": {
+        "id": "campfire",
+        "name": "🔥 Костёр",
+        "description": "Базовая станция для крафта и обогрева",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "kindling", "count": 3},
+            {"id": "flint", "count": 1}
+          ],
+          "time": 180
+        }
+      },
+      "furnace": {
+        "id": "furnace",
+        "name": "🔥 Очаг с печью",
+        "description": "Станция для плавки руд",
+        "craft": {
+          "station": "campfire",
+          "ingredients": [
+            {"id": "stone", "count": 5}
+          ],
+          "requires": ["campfire"],
+          "consumes": {"firewood": 1},
+          "time": 300
+        }
+      },
+      "workbench": {
+        "id": "workbench",
+        "name": "⚒️ Верстак",
+        "description": "Главная станция для крафта",
+        "craft": {
+          "station": "campfire",
+          "ingredients": [
+            {"id": "common_wood", "count": 6}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["campfire"],
+          "consumes": {"firewood": 2},
+          "time": 600
+        }
+      },
+      "alchemy_cauldron": {
+        "id": "alchemy_cauldron",
+        "name": "🏺 Алхимический котёл",
+        "description": "Станция для создания зелий",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "stone", "count": 3},
+            {"id": "iron_ingot", "count": 1}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["campfire"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      }
+    },
+    
+    "tools": {
+      "needle": {
+        "id": "needle",
+        "name": "📌 Игла",
+        "description": "Инструмент для шитья",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "small_bone", "count": 1},
+            {"id": "stone", "count": 1}
+          ],
+          "time": 120
+        }
+      },
+      "stone_knife": {
+        "id": "stone_knife",
+        "name": "🔪 Каменный нож",
+        "description": "Инструмент для разделки, Ур.1",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "small_bone", "count": 1},
+            {"id": "stone", "count": 2}
+          ],
+          "time": 180
+        }
+      },
+      "stone_hammer": {
+        "id": "stone_hammer",
+        "name": "🔨 Каменный молоток",
+        "description": "Инструмент для крафта, Ур.1",
+        "craft": {
+          "station": "hand",
+          "ingredients": [
+            {"id": "common_wood", "count": 1},
+            {"id": "stone", "count": 2}
+          ],
+          "time": 240
+        }
+      },
+      "stone_axe": {
+        "id": "stone_axe",
+        "name": "🪓 Каменный топор",
+        "description": "Инструмент для рубки, Ур.1",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "common_wood", "count": 1},
+            {"id": "iron_ingot", "count": 1}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 300
+        }
+      },
+      "stone_pickaxe": {
+        "id": "stone_pickaxe",
+        "name": "⛏️ Каменная кирка",
+        "description": "Инструмент для добычи, Ур.1",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "common_wood", "count": 1},
+            {"id": "iron_ingot", "count": 1}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 300
+        }
+      },
+      "stone_sickle": {
+        "id": "stone_sickle",
+        "name": "📌 Каменный серп",
+        "description": "Инструмент для сбора, Ур.1",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "common_wood", "count": 1},
+            {"id": "iron_ingot", "count": 1}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 300
+        }
+      },
+      "stone_cutter": {
+        "id": "stone_cutter",
+        "name": "⚔️ Каменный резак",
+        "description": "Инструмент для обработки, Ур.1",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 1}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 240
+        }
+      },
+      "scissors": {
+        "id": "scissors",
+        "name": "✂️ Ножницы",
+        "description": "Инструмент для резки, Ур.2",
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 2}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 360
+        }
+      }
+    },
+    
+    "tool_upgrades": {
+      "hammer": {
+        "iron_hammer": {
+          "id": "iron_hammer",
+          "name": "🔨 Железный молоток",
+          "description": "Молоток Ур.2",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "stone_hammer", "count": 1},
+              {"id": "iron_ingot", "count": 2}
+            ],
+            "tools": ["stone_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 2},
+            "time": 420
+          }
+        },
+        "steel_hammer": {
+          "id": "steel_hammer",
+          "name": "🔨 Стальной молоток",
+          "description": "Молоток Ур.3",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "iron_hammer", "count": 1},
+              {"id": "steel_ingot", "count": 2}
+            ],
+            "tools": ["iron_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 1},
+            "time": 480
+          }
+        },
+        "mithril_hammer": {
+          "id": "mithril_hammer",
+          "name": "🔨 Мифриловый молоток",
+          "description": "Молоток Ур.4",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "steel_hammer", "count": 1},
+              {"id": "mithril_ingot", "count": 2}
+            ],
+            "tools": ["steel_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 2},
+            "time": 600
+          }
+        },
+        "adamantium_hammer": {
+          "id": "adamantium_hammer",
+          "name": "🔨 Адамантиевый молоток",
+          "description": "Молоток Ур.5",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "mithril_hammer", "count": 1},
+              {"id": "adamantium_ingot", "count": 2}
+            ],
+            "tools": ["mithril_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 3},
+            "time": 720
+          }
+        }
+      },
+      "other_tools": {
+        "iron_tool": {
+          "template": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "[tool_id]_lvl1", "count": 1},
+              {"id": "iron_ingot", "count": 2}
+            ],
+            "tools": ["iron_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 1},
+            "time": 360
+          }
+        },
+        "steel_tool": {
+          "template": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "[tool_id]_lvl2", "count": 1},
+              {"id": "steel_ingot", "count": 2}
+            ],
+            "tools": ["steel_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 1},
+            "time": 420
+          }
+        },
+        "mithril_tool": {
+          "template": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "[tool_id]_lvl3", "count": 1},
+              {"id": "mithril_ingot", "count": 2}
+            ],
+            "tools": ["mithril_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 2},
+            "time": 540
+          }
+        },
+        "adamantium_tool": {
+          "template": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "[tool_id]_lvl4", "count": 1},
+              {"id": "adamantium_ingot", "count": 2}
+            ],
+            "tools": ["adamantium_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 3},
+            "time": 660
+          }
+        }
+      }
+    },
+    
+    "materials": {
+      "metal_ingots": {
+        "copper_ingot": {
+          "id": "copper_ingot",
+          "name": "🔩 Медный слиток",
+          "description": "Слиток чистой меди",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "copper_ore", "count": 3}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"firewood": 2},
+            "time": 300
+          }
+        },
+        "bronze_ingot": {
+          "id": "bronze_ingot",
+          "name": "🟤 Бронзовый слиток",
+          "description": "Слиток бронзы (медь + олово)",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "copper_ore", "count": 2},
+              {"id": "tin_ore", "count": 1}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"firewood": 3},
+            "time": 360
+          }
+        },
+        "iron_ingot": {
+          "id": "iron_ingot",
+          "name": "⚙️ Железный слиток",
+          "description": "Слиток чистого железа",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "iron_ore", "count": 3}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 1},
+            "time": 420
+          }
+        },
+        "steel_ingot": {
+          "id": "steel_ingot",
+          "name": "🔩 Стальной слиток",
+          "description": "Слиток качественной стали",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "iron_ingot", "count": 2}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 2},
+            "time": 480
+          }
+        },
+        "silver_ingot": {
+          "id": "silver_ingot",
+          "name": "💰 Серебряный слиток",
+          "description": "Слиток чистого серебра",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "silver_ore", "count": 3}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 1},
+            "time": 540
+          }
+        },
+        "gold_ingot": {
+          "id": "gold_ingot",
+          "name": "🌟 Золотой слиток",
+          "description": "Слиток чистого золота",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "gold_ore", "count": 3}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 2},
+            "time": 600
+          }
+        },
+        "mithril_ingot": {
+          "id": "mithril_ingot",
+          "name": "🔵 Мифриловый слиток",
+          "description": "Слиток легендарного мифрила",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "mithril_ore", "count": 3}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 3},
+            "additional": [{"id": "salt", "count": 1}],
+            "time": 720
+          }
+        },
+        "adamantium_ingot": {
+          "id": "adamantium_ingot",
+          "name": "⚫ Адамантиевый слиток",
+          "description": "Слиток несокрушимого адамантия",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "adamantite_ore", "count": 4}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 4},
+            "additional": [{"id": "water", "count": 1}],
+            "time": 900
+          }
+        },
+        "meteorite_ingot": {
+          "id": "meteorite_ingot",
+          "name": "💎 Метеоритный слиток",
+          "description": "Слиток внеземного метеорита",
+          "craft": {
+            "station": "furnace",
+            "ingredients": [
+              {"id": "meteorite_ore", "count": 2}
+            ],
+            "requires": ["furnace"],
+            "consumes": {"charcoal": 5},
+            "time": 1200
+          }
+        }
+      },
+      
+      "textiles": {
+        "cotton_cloth": {
+          "id": "cotton_cloth",
+          "name": "⚪ Хлопковая ткань",
+          "description": "Мягкая ткань из хлопка",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "cotton", "count": 3}
+            ],
+            "tools": ["needle"],
+            "requires": ["workbench"],
+            "time": 240
+          }
+        },
+        "linen_cloth": {
+          "id": "linen_cloth",
+          "name": "🟢 Льняная ткань",
+          "description": "Прочная льняная ткань",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "flax", "count": 3}
+            ],
+            "tools": ["needle"],
+            "requires": ["workbench"],
+            "time": 300
+          }
+        },
+        "silk_cloth": {
+          "id": "silk_cloth",
+          "name": "👑 Шелковая ткань",
+          "description": "Роскошная шелковая ткань",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "cobweb", "count": 5}
+            ],
+            "tools": ["scissors"],
+            "requires": ["workbench"],
+            "time": 360
+          }
+        },
+        "velvet": {
+          "id": "velvet",
+          "name": "🟣 Бархат",
+          "description": "Бархатная ткань",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "silk_cloth", "count": 2},
+              {"id": "strong_thread", "count": 1}
+            ],
+            "tools": ["needle"],
+            "requires": ["workbench"],
+            "time": 420
+          }
+        },
+        "brocade": {
+          "id": "brocade",
+          "name": "🌟 Парча",
+          "description": "Церемониальная парча",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "silk_cloth", "count": 1},
+              {"id": "strong_thread", "count": 1},
+              {"id": "silver_ingot", "count": 1}
+            ],
+            "tools": ["iron_hammer"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 1},
+            "time": 600
+          }
+        },
+        "aramid_cloth": {
+          "id": "aramid_cloth",
+          "name": "Арамидная ткань",
+          "description": "Сверхпрочная ткань",
+          "craft": {
+            "station": "alchemy_cauldron",
+            "ingredients": [
+              {"id": "flax", "count": 5},
+              {"id": "cobweb", "count": 3},
+              {"id": "salt", "count": 2}
+            ],
+            "requires": ["alchemy_cauldron"],
+            "consumes": {"charcoal": 2},
+            "time": 900
+          }
+        },
+        "strong_thread": {
+          "id": "strong_thread",
+          "name": "🧵 Прочная нить",
+          "description": "Крепкая нить для ремесла",
+          "craft": {
+            "station": "hand",
+            "ingredients": [
+              {"id": "string", "count": 3}
+            ],
+            "time": 90
+          }
+        }
+      },
+      
+      "leathers": {
+        "thin_leather_tanned": {
+          "id": "thin_leather_tanned",
+          "name": "🐇 Тонкая кожа (выделанная)",
+          "description": "Выделанная тонкая кожа",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "thin_hide", "count": 1},
+              {"id": "salt", "count": 1}
+            ],
+            "tools": ["stone_knife"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 1},
+            "time": 300
+          }
+        },
+        "strong_leather_tanned": {
+          "id": "strong_leather_tanned",
+          "name": "🐐 Крепкая кожа (выделанная)",
+          "description": "Выделанная крепкая кожа",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "strong_hide", "count": 1},
+              {"id": "salt", "count": 2}
+            ],
+            "tools": ["iron_knife"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 1},
+            "time": 360
+          }
+        },
+        "thick_leather_tanned": {
+          "id": "thick_leather_tanned",
+          "name": "🐖 Толстая кожа (выделанная)",
+          "description": "Выделанная толстая кожа",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "thick_hide", "count": 1},
+              {"id": "salt", "count": 3}
+            ],
+            "tools": ["iron_cutter"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 2},
+            "time": 420
+          }
+        },
+        "bull_leather_tanned": {
+          "id": "bull_leather_tanned",
+          "name": "🐂 Бычья кожа (выделанная)",
+          "description": "Выделанная бычья кожа",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "bull_leather", "count": 1},
+              {"id": "salt", "count": 2}
+            ],
+            "tools": ["steel_cutter"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 1},
+            "time": 480
+          }
+        },
+        "lizard_leather_tanned": {
+          "id": "lizard_leather_tanned",
+          "name": "🦎 Кожа ящера (выделанная)",
+          "description": "Выделанная кожа ящера",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "lizard_leather", "count": 1},
+              {"id": "salt", "count": 2}
+            ],
+            "tools": ["steel_cutter"],
+            "requires": ["workbench"],
+            "consumes": {"charcoal": 1},
+            "time": 540
+          }
+        },
+        "dragon_leather_tanned": {
+          "id": "dragon_leather_tanned",
+          "name": "🐉 Драконья кожа (выделанная)",
+          "description": "Выделанная драконья кожа",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "dragon_leather", "count": 1}
+            ],
+            "tools": ["mithril_cutter"],
+            "requires": ["workbench", "campfire"],
+            "consumes": {"charcoal": 2},
+            "time": 900
+          }
+        }
+      },
+      
+      "furs_tanned": {
+        "wolf_fur_tanned": {
+          "id": "wolf_fur_tanned",
+          "name": "🐺 Волчий мех (обработанный)",
+          "description": "Обработанный волчий мех",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "strong_hide", "count": 1},
+              {"id": "salt", "count": 1}
+            ],
+            "requires": ["workbench"],
+            "time": 300
+          }
+        },
+        "bear_fur_tanned": {
+          "id": "bear_fur_tanned",
+          "name": "🐻 Медвежий мех (обработанный)",
+          "description": "Обработанный медвежий мех",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "bear_hide", "count": 1},
+              {"id": "salt", "count": 2}
+            ],
+            "tools": ["stone_knife"],
+            "requires": ["workbench"],
+            "consumes": {"firewood": 1},
+            "time": 360
+          }
+        },
+        "arctic_fox_fur_tanned": {
+          "id": "arctic_fox_fur_tanned",
+          "name": "🦊 Мех песца (обработанный)",
+          "description": "Обработанный мех песца",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "arctic_fox_fur", "count": 1},
+              {"id": "salt", "count": 1}
+            ],
+            "tools": ["scissors"],
+            "requires": ["workbench"],
+            "time": 420
+          }
+        },
+        "mammoth_fur_tanned": {
+          "id": "mammoth_fur_tanned",
+          "name": "🦣 Мех мамонта (обработанный)",
+          "description": "Обработанный мех мамонта",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "mammoth_fur", "count": 1}
+            ],
+            "tools": ["scissors"],
+            "requires": ["workbench", "campfire"],
+            "consumes": {"charcoal": 1},
+            "time": 600
+          }
+        }
+      },
+      
+      "bones_processed": {
+        "bone_processed": {
+          "id": "bone_processed",
+          "name": "🦴 Обработанная кость",
+          "description": "Обработанная кость для ремесла",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "small_bone", "count": 1}
+            ],
+            "tools": ["stone_cutter"],
+            "requires": ["workbench"],
+            "time": 180
+          }
+        },
+        "bone_plate": {
+          "id": "bone_plate",
+          "name": "💀 Костяная пластина",
+          "description": "Костяная пластина для брони",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "bone_processed", "count": 2}
+            ],
+            "tools": ["iron_cutter"],
+            "requires": ["workbench"],
+            "time": 240
+          }
+        },
+        "dragon_bone_processed": {
+          "id": "dragon_bone_processed",
+          "name": "🐉 Драконья кость (обработанная)",
+          "description": "Обработанная драконья кость",
+          "craft": {
+            "station": "workbench",
+            "ingredients": [
+              {"id": "dragon_bone", "count": 1}
+            ],
+            "tools": ["mithril_cutter"],
+            "requires": ["workbench", "campfire"],
+            "consumes": {"charcoal": 2},
+            "time": 720
+          }
+        }
+      }
+    },
+    
+    "weapons": {
+      "copper_spear": {
+        "id": "copper_spear",
+        "name": "Медное копьё",
+        "item_id": 1,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "bronze_spear": {
+        "id": "bronze_spear",
+        "name": "Бронзовое копьё",
+        "item_id": 2,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 540
+        }
+      },
+      "iron_spear": {
+        "id": "iron_spear",
+        "name": "Железное копьё",
+        "item_id": 3,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "steel_spear": {
+        "id": "steel_spear",
+        "name": "Стальное копьё",
+        "item_id": 4,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "mithril_spear": {
+        "id": "mithril_spear",
+        "name": "Мифрильное копьё",
+        "item_id": 5,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "adamantium_spear": {
+        "id": "adamantium_spear",
+        "name": "Адамантовое копьё",
+        "item_id": 6,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 1},
+            {"id": "flexible_branch", "count": 2}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 900
+        }
+      },
+      "long_copper_spear": {
+        "id": "long_copper_spear",
+        "name": "Длинное медное копьё",
+        "item_id": 7,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 600
+        }
+      },
+      "long_bronze_spear": {
+        "id": "long_bronze_spear",
+        "name": "Длинное бронзовое копьё",
+        "item_id": 8,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 660
+        }
+      },
+      "long_iron_spear": {
+        "id": "long_iron_spear",
+        "name": "Длинное железное копьё",
+        "item_id": 9,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 720
+        }
+      },
+      "long_steel_spear": {
+        "id": "long_steel_spear",
+        "name": "Длинное стальное копьё",
+        "item_id": 10,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 780
+        }
+      },
+      "long_mithril_spear": {
+        "id": "long_mithril_spear",
+        "name": "Длинное мифрильное копьё",
+        "item_id": 11,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "long_adamantium_spear": {
+        "id": "long_adamantium_spear",
+        "name": "Длинное адамантовое копьё",
+        "item_id": 12,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 2},
+            {"id": "flexible_branch", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 1080
+        }
+      },
+      "wooden_shield": {
+        "id": "wooden_shield",
+        "name": "Деревянный щит",
+        "item_id": 13,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 2},
+            {"id": "common_wood", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 540
+        }
+      },
+      "leather_shield": {
+        "id": "leather_shield",
+        "name": "Кожаный щит",
+        "item_id": 14,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 2},
+            {"id": "common_wood", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 600
+        }
+      },
+      "copper_shield": {
+        "id": "copper_shield",
+        "name": "Медный щит",
+        "item_id": 15,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 3},
+            {"id": "common_wood", "count": 2}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 660
+        }
+      },
+      "steel_shield": {
+        "id": "steel_shield",
+        "name": "Стальной щит",
+        "item_id": 16,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 2},
+            {"id": "common_wood", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 720
+        }
+      },
+      "mithril_shield": {
+        "id": "mithril_shield",
+        "name": "Мифрильный щит",
+        "item_id": 17,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 2},
+            {"id": "common_wood", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 840
+        }
+      },
+      "adamantium_shield": {
+        "id": "adamantium_shield",
+        "name": "Адамантовый щит",
+        "item_id": 18,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 2},
+            {"id": "common_wood", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 960
+        }
+      }
+    },
+    
+    "helmets": {
+      "hlopok_helmet": {
+        "id": "hlopok_helmet",
+        "name": "Хлопковый головной убор",
+        "item_id": 19,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "cotton_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "len_helmet": {
+        "id": "len_helmet",
+        "name": "Льняной головной убор",
+        "item_id": 20,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "linen_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "shelk_helmet": {
+        "id": "shelk_helmet",
+        "name": "Шелковый головной убор",
+        "item_id": 21,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "silk_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "barhat_helmet": {
+        "id": "barhat_helmet",
+        "name": "Бархатный головной убор",
+        "item_id": 22,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "velvet", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "parcha_helmet": {
+        "id": "parcha_helmet",
+        "name": "Головной убор из парчи",
+        "item_id": 23,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "brocade", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "aramid_helmet": {
+        "id": "aramid_helmet",
+        "name": "Головной убор из арамида",
+        "item_id": 24,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "aramid_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 720
+        }
+      },
+      "ovca_helmet": {
+        "id": "ovca_helmet",
+        "name": "Шлем из овечьей кожи",
+        "item_id": 25,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 360
+        }
+      },
+      "koza_helmet": {
+        "id": "koza_helmet",
+        "name": "Шлем из козьей кожи",
+        "item_id": 26,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 420
+        }
+      },
+      "telenok_helmet": {
+        "id": "telenok_helmet",
+        "name": "Шлем из телячьей кожи",
+        "item_id": 27,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "bull_helmet": {
+        "id": "bull_helmet",
+        "name": "Шлем из бычьей кожи",
+        "item_id": 28,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 540
+        }
+      },
+      "yasher_helmet": {
+        "id": "yasher_helmet",
+        "name": "Шлем из кожи ящеров",
+        "item_id": 29,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lizard_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "dragonleather_helmet": {
+        "id": "dragonleather_helmet",
+        "name": "Шлем из драконьей кожи",
+        "item_id": 30,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "krolik_helmet": {
+        "id": "krolik_helmet",
+        "name": "Шлем из шкуры кролика",
+        "item_id": 31,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "wolfhide_helmet": {
+        "id": "wolfhide_helmet",
+        "name": "Шлем из шкуры волка",
+        "item_id": 32,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "wolf_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "lionhide_helmet": {
+        "id": "lionhide_helmet",
+        "name": "Шлем из шкуры льва",
+        "item_id": 33,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "tigerhide_helmet": {
+        "id": "tigerhide_helmet",
+        "name": "Шлем из шкуры тигра",
+        "item_id": 34,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "tiger_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bearhide_helmet": {
+        "id": "bearhide_helmet",
+        "name": "Шлем из шкуры медведя",
+        "item_id": 35,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bear_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "dragonhide_helmet": {
+        "id": "dragonhide_helmet",
+        "name": "Шлем из шкуры дракона",
+        "item_id": 36,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "zaic_helmet": {
+        "id": "zaic_helmet",
+        "name": "Шлем из заячьего меха",
+        "item_id": 37,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "hare_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "kunica_helmet": {
+        "id": "kunica_helmet",
+        "name": "Шлем из меха куницы",
+        "item_id": 38,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "marten_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "pisec_helmet": {
+        "id": "pisec_helmet",
+        "name": "Шлем из меха песца",
+        "item_id": 39,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "arctic_fox_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "ris_helmet": {
+        "id": "ris_helmet",
+        "name": "Шлем из меха рыси",
+        "item_id": 40,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lynx_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bars_helmet": {
+        "id": "bars_helmet",
+        "name": "Шлем из меха барса",
+        "item_id": 41,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "leopard_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "mamont_helmet": {
+        "id": "mamont_helmet",
+        "name": "Шлем из меха мамонта",
+        "item_id": 42,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 720
+        }
+      },
+      "ptic_helmet": {
+        "id": "ptic_helmet",
+        "name": "Шлем из птичьих костей",
+        "item_id": 43,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_processed", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["stone_cutter"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "wolfbone_helmet": {
+        "id": "wolfbone_helmet",
+        "name": "Шлем из волчьей головы",
+        "item_id": 44,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_plate", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "horse_helmet": {
+        "id": "horse_helmet",
+        "name": "Шлем из лошадиного черепа",
+        "item_id": 45,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "horse_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bullbone_helmet": {
+        "id": "bullbone_helmet",
+        "name": "Шлем из черепа быка",
+        "item_id": 46,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "mammontbone_helmet": {
+        "id": "mammontbone_helmet",
+        "name": "Шлем из черепа мамонта",
+        "item_id": 47,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "dragonbone_helmet": {
+        "id": "dragonbone_helmet",
+        "name": "Шлем из черепа дракона",
+        "item_id": 48,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_bone_processed", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["mithril_cutter"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "copperplate_helmet": {
+        "id": "copperplate_helmet",
+        "name": "Медный пластинчатый шлем",
+        "item_id": 49,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 420
+        }
+      },
+      "bronzeplate_helmet": {
+        "id": "bronzeplate_helmet",
+        "name": "Бронзовый пластинчатый шлем",
+        "item_id": 50,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "ironplate_helmet": {
+        "id": "ironplate_helmet",
+        "name": "Железный пластинчатый шлем",
+        "item_id": 51,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 540
+        }
+      },
+      "stillplate_helmet": {
+        "id": "stillplate_helmet",
+        "name": "Стальной пластинчатый шлем",
+        "item_id": 52,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "mithrilplate_helmet": {
+        "id": "mithrilplate_helmet",
+        "name": "Мифрильный пластинчатый шлем",
+        "item_id": 53,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 720
+        }
+      },
+      "adamantplate_helmet": {
+        "id": "adamantplate_helmet",
+        "name": "Адамантовый пластинчатый шлем",
+        "item_id": 54,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 840
+        }
+      },
+      "copperchain_helmet": {
+        "id": "copperchain_helmet",
+        "name": "Медный кольчужный шлем",
+        "item_id": 55,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "bronzechain_helmet": {
+        "id": "bronzechain_helmet",
+        "name": "Бронзовый кольчужный шлем",
+        "item_id": 56,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 540
+        }
+      },
+      "ironchain_helmet": {
+        "id": "ironchain_helmet",
+        "name": "Железный кольчужный шлем",
+        "item_id": 57,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "stillchain_helmet": {
+        "id": "stillchain_helmet",
+        "name": "Стальной кольчужный шлем",
+        "item_id": 58,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "mithrilchain_helmet": {
+        "id": "mithrilchain_helmet",
+        "name": "Мифрильный кольчужный шлем",
+        "item_id": 59,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "adamantchain_helmet": {
+        "id": "adamantchain_helmet",
+        "name": "Адамантовый кольчужный шлем",
+        "item_id": 60,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 900
+        }
+      },
+      "copperplatemail_helmet": {
+        "id": "copperplatemail_helmet",
+        "name": "Медный латный шлем",
+        "item_id": 61,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 4}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 540
+        }
+      },
+      "bronzeplatemail_helmet": {
+        "id": "bronzeplatemail_helmet",
+        "name": "Бронзовый латный шлем",
+        "item_id": 62,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 4}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 600
+        }
+      },
+      "ironplatemail_helmet": {
+        "id": "ironplatemail_helmet",
+        "name": "Железный латный шлем",
+        "item_id": 63,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 4}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "stillplatemail_helmet": {
+        "id": "stillplatemail_helmet",
+        "name": "Стальной латный шлем",
+        "item_id": 64,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 4}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 720
+        }
+      },
+      "mithrilplatemail_helmet": {
+        "id": "mithrilplatemail_helmet",
+        "name": "Мифрильный латный шлем",
+        "item_id": 65,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 4}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 840
+        }
+      },
+      "adamantplatemail_helmet": {
+        "id": "adamantplatemail_helmet",
+        "name": "Адамантовый латный шлем",
+        "item_id": 66,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 4}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 960
+        }
+      }
+    },
+    
+    "chest_armor": {
+      "hlopok_armor": {
+        "id": "hlopok_armor",
+        "name": "Хлопковая рубаха",
+        "item_id": 67,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "cotton_cloth", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "len_armor": {
+        "id": "len_armor",
+        "name": "Льняная куртка",
+        "item_id": 68,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "linen_cloth", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "shelk_armor": {
+        "id": "shelk_armor",
+        "name": "Шелковая куртка",
+        "item_id": 69,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "silk_cloth", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "barhat_armor": {
+        "id": "barhat_armor",
+        "name": "Бархатная куртка",
+        "item_id": 70,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "velvet", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 660
+        }
+      },
+      "parcha_armor": {
+        "id": "parcha_armor",
+        "name": "Куртка из парчи",
+        "item_id": 71,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "brocade", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 780
+        }
+      },
+      "aramid_armor": {
+        "id": "aramid_armor",
+        "name": "Куртка из арамида",
+        "item_id": 72,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "aramid_cloth", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 900
+        }
+      },
+      "ovca_armor": {
+        "id": "ovca_armor",
+        "name": "Куртка из овечьей кожи",
+        "item_id": 73,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 540
+        }
+      },
+      "koza_armor": {
+        "id": "koza_armor",
+        "name": "Куртка из козьей кожи",
+        "item_id": 74,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 600
+        }
+      },
+      "telenok_armor": {
+        "id": "telenok_armor",
+        "name": "Куртка из телячьей кожи",
+        "item_id": 75,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 660
+        }
+      },
+      "bull_armor": {
+        "id": "bull_armor",
+        "name": "Куртка из бычьей кожи",
+        "item_id": 76,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 720
+        }
+      },
+      "yasher_armor": {
+        "id": "yasher_armor",
+        "name": "Куртка из кожи ящеров",
+        "item_id": 77,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lizard_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "dragonleather_armor": {
+        "id": "dragonleather_armor",
+        "name": "Куртка из драконьей кожи",
+        "item_id": 78,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_leather_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 1080
+        }
+      },
+      "krolik_armor": {
+        "id": "krolik_armor",
+        "name": "Куртка из заячьей шкуры",
+        "item_id": 79,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_hide", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "wolfhide_armor": {
+        "id": "wolfhide_armor",
+        "name": "Куртка из волчьей шкуры",
+        "item_id": 80,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "wolf_fur_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "lionhide_armor": {
+        "id": "lionhide_armor",
+        "name": "Куртка из львиной шкуры",
+        "item_id": 81,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_hide", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "tigerhide_armor": {
+        "id": "tigerhide_armor",
+        "name": "Куртка из тигриной шкуры",
+        "item_id": 82,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "tiger_hide", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 660
+        }
+      },
+      "bearhide_armor": {
+        "id": "bearhide_armor",
+        "name": "Куртка из медвежьей шкуры",
+        "item_id": 83,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bear_fur_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 720
+        }
+      },
+      "dragonhide_armor": {
+        "id": "dragonhide_armor",
+        "name": "Куртка из драконьей шкуры",
+        "item_id": 84,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_hide", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 1080
+        }
+      },
+      "zaic_armor": {
+        "id": "zaic_armor",
+        "name": "Шуба из заячьего меха",
+        "item_id": 85,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "hare_fur", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "kunica_armor": {
+        "id": "kunica_armor",
+        "name": "Шуба из меха куницы",
+        "item_id": 86,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "marten_fur", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "pisec_armor": {
+        "id": "pisec_armor",
+        "name": "Шуба из меха песца",
+        "item_id": 87,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "arctic_fox_fur_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "ris_armor": {
+        "id": "ris_armor",
+        "name": "Шуба из меха рыси",
+        "item_id": 88,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lynx_fur", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 660
+        }
+      },
+      "bars_armor": {
+        "id": "bars_armor",
+        "name": "Шуба из меха барса",
+        "item_id": 89,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "leopard_fur", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 720
+        }
+      },
+      "mamont_armor": {
+        "id": "mamont_armor",
+        "name": "Шуба из меха мамонта",
+        "item_id": 90,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_fur_tanned", "count": 4},
+            {"id": "strong_thread", "count": 2}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "ptic_armor": {
+        "id": "ptic_armor",
+        "name": "Кираса из птичьих костей",
+        "item_id": 91,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_processed", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["stone_cutter"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "wolfbone_armor": {
+        "id": "wolfbone_armor",
+        "name": "Кираса из волчьих костей",
+        "item_id": 92,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_plate", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "horse_armor": {
+        "id": "horse_armor",
+        "name": "Кираса из лошадиных костей",
+        "item_id": 93,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "horse_bone", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 660
+        }
+      },
+      "bullbone_armor": {
+        "id": "bullbone_armor",
+        "name": "Кираса из бычьих костей",
+        "item_id": 94,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_bone", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 720
+        }
+      },
+      "mammontbone_armor": {
+        "id": "mammontbone_armor",
+        "name": "Кираса из костей мамонта",
+        "item_id": 95,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_bone", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 780
+        }
+      },
+      "dragonbone_armor": {
+        "id": "dragonbone_armor",
+        "name": "Кираса из драконьих костей",
+        "item_id": 96,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_bone_processed", "count": 6},
+            {"id": "strong_thread", "count": 3}
+          ],
+          "tools": ["mithril_cutter"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 1080
+        }
+      },
+      "copperplate_armor": {
+        "id": "copperplate_armor",
+        "name": "Медный пластинчатый нагрудник",
+        "item_id": 97,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 6}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 600
+        }
+      },
+      "bronzeplate_armor": {
+        "id": "bronzeplate_armor",
+        "name": "Бронзовый пластинчатый нагрудник",
+        "item_id": 98,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 6}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 660
+        }
+      },
+      "ironplate_armor": {
+        "id": "ironplate_armor",
+        "name": "Железный пластинчатый нагрудник",
+        "item_id": 99,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 6}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 720
+        }
+      },
+      "stillplate_armor": {
+        "id": "stillplate_armor",
+        "name": "Стальной пластинчатый нагрудник",
+        "item_id": 100,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 6}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "mithrilplate_armor": {
+        "id": "mithrilplate_armor",
+        "name": "Мифрильный пластинчатый нагрудник",
+        "item_id": 101,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 6}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 900
+        }
+      },
+      "adamantplate_armor": {
+        "id": "adamantplate_armor",
+        "name": "Адамантовый пластинчатый нагрудник",
+        "item_id": 102,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 6}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 4},
+          "time": 1080
+        }
+      },
+      "copperchain_armor": {
+        "id": "copperchain_armor",
+        "name": "Медная кольчуга",
+        "item_id": 103,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 6}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 660
+        }
+      },
+      "bronzechain_armor": {
+        "id": "bronzechain_armor",
+        "name": "Бронзовая кольчуга",
+        "item_id": 104,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 6}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 720
+        }
+      },
+      "ironchain_armor": {
+        "id": "ironchain_armor",
+        "name": "Железная кольчуга",
+        "item_id": 105,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 6}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "stillchain_armor": {
+        "id": "stillchain_armor",
+        "name": "Стальная кольчуга",
+        "item_id": 106,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 6}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 840
+        }
+      },
+      "mithrilchain_armor": {
+        "id": "mithrilchain_armor",
+        "name": "Мифрильная кольчуга",
+        "item_id": 107,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 6}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 960
+        }
+      },
+      "adamantchain_armor": {
+        "id": "adamantchain_armor",
+        "name": "Адамантовая кольчуга",
+        "item_id": 108,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 6}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 4},
+          "time": 1080
+        }
+      },
+      "copperplatemail_armor": {
+        "id": "copperplatemail_armor",
+        "name": "Медный латный доспех",
+        "item_id": 109,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 8}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 720
+        }
+      },
+      "bronzeplatemail_armor": {
+        "id": "bronzeplatemail_armor",
+        "name": "Бронзовый латный доспех",
+        "item_id": 110,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 8}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 2},
+          "time": 780
+        }
+      },
+      "ironplatemail_armor": {
+        "id": "ironplatemail_armor",
+        "name": "Железный латный доспех",
+        "item_id": 111,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 8}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 840
+        }
+      },
+      "stillplatemail_armor": {
+        "id": "stillplatemail_armor",
+        "name": "Стальной латный доспех",
+        "item_id": 112,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 8}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 900
+        }
+      },
+      "mithrilplatemail_armor": {
+        "id": "mithrilplatemail_armor",
+        "name": "Мифрильный латный доспех",
+        "item_id": 113,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 8}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 1080
+        }
+      },
+      "adamantplatemail_armor": {
+        "id": "adamantplatemail_armor",
+        "name": "Адамантовый латный доспех",
+        "item_id": 114,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 8}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 4},
+          "time": 1200
+        }
+      }
+    },
+    
+    "gloves": {
+      "hlopok_gloves": {
+        "id": "hlopok_gloves",
+        "name": "Хлопковые перчатки",
+        "item_id": 115,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "cotton_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "len_gloves": {
+        "id": "len_gloves",
+        "name": "Льняные перчатки",
+        "item_id": 116,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "linen_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "shelk_gloves": {
+        "id": "shelk_gloves",
+        "name": "Шелковые перчатки",
+        "item_id": 117,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "silk_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "barhat_gloves": {
+        "id": "barhat_gloves",
+        "name": "Бархатные перчатки",
+        "item_id": 118,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "velvet", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "parcha_gloves": {
+        "id": "parcha_gloves",
+        "name": "Парчовые перчатки",
+        "item_id": 119,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "brocade", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "aramid_gloves": {
+        "id": "aramid_gloves",
+        "name": "Арамидные перчатки",
+        "item_id": 120,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "aramid_cloth", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["needle"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "ovca_glove": {
+        "id": "ovca_glove",
+        "name": "Перчатки из овечьей кожи",
+        "item_id": 121,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 360
+        }
+      },
+      "koza_gloves": {
+        "id": "koza_gloves",
+        "name": "Перчатки из козьей кожи",
+        "item_id": 122,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 420
+        }
+      },
+      "telenok_gloves": {
+        "id": "telenok_gloves",
+        "name": "Перчатки из телячьей кожи",
+        "item_id": 123,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "bull_gloves": {
+        "id": "bull_gloves",
+        "name": "Перчатки из бычьей кожи",
+        "item_id": 124,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 540
+        }
+      },
+      "yasher_gloves": {
+        "id": "yasher_gloves",
+        "name": "Перчатки из кожи ящеров",
+        "item_id": 125,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lizard_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "dragonleather_gloves": {
+        "id": "dragonleather_gloves",
+        "name": "Перчатки из драконьей кожи",
+        "item_id": 126,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_leather_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "krolik_gloves": {
+        "id": "krolik_gloves",
+        "name": "Перчатки из заячьей шкуры",
+        "item_id": 127,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "thin_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "wolfhide_gloves": {
+        "id": "wolfhide_gloves",
+        "name": "Перчатки из волчьей шкуры",
+        "item_id": 128,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "wolf_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "lionhide_gloves": {
+        "id": "lionhide_gloves",
+        "name": "Перчатки из львиной шкуры",
+        "item_id": 129,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "strong_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "tigerhide_gloves": {
+        "id": "tigerhide_gloves",
+        "name": "Перчатки из тигриной шкуры",
+        "item_id": 130,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "tiger_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bearhide_gloves": {
+        "id": "bearhide_gloves",
+        "name": "Перчатки из медвежьей шкуры",
+        "item_id": 131,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bear_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "dragonhide_gloves": {
+        "id": "dragonhide_gloves",
+        "name": "Перчатки из драконьей шкуры",
+        "item_id": 132,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_hide", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "zaic_gloves": {
+        "id": "zaic_gloves",
+        "name": "Варежки из заячьего меха",
+        "item_id": 133,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "hare_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 300
+        }
+      },
+      "kunica_gloves": {
+        "id": "kunica_gloves",
+        "name": "Варежки из меха куницы",
+        "item_id": 134,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "marten_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "pisec_gloves": {
+        "id": "pisec_gloves",
+        "name": "Варежки из меха песца",
+        "item_id": 135,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "arctic_fox_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "ris_gloves": {
+        "id": "ris_gloves",
+        "name": "Перчатки из меха рыси",
+        "item_id": 136,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "lynx_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bars_gloves": {
+        "id": "bars_gloves",
+        "name": "Перчатки из меха барса",
+        "item_id": 137,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "leopard_fur", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "mamont_gloves": {
+        "id": "mamont_gloves",
+        "name": "Перчатки из меха мамонта",
+        "item_id": 138,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_fur_tanned", "count": 2},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["scissors"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "ptic_gloves": {
+        "id": "ptic_gloves",
+        "name": "Перчатки из птичьих костей",
+        "item_id": 139,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_processed", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["stone_cutter"],
+          "requires": ["workbench"],
+          "time": 360
+        }
+      },
+      "wolfbone_gloves": {
+        "id": "wolfbone_gloves",
+        "name": "Перчатки из волчьих костей",
+        "item_id": 140,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bone_plate", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 420
+        }
+      },
+      "horse_gloves": {
+        "id": "horse_gloves",
+        "name": "Перчатки из лошадиных костей",
+        "item_id": 141,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "horse_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["iron_cutter"],
+          "requires": ["workbench"],
+          "time": 480
+        }
+      },
+      "bullbone_gloves": {
+        "id": "bullbone_gloves",
+        "name": "Перчатки из бычьих костей",
+        "item_id": 142,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bull_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 540
+        }
+      },
+      "mammontbone_gloves": {
+        "id": "mammontbone_gloves",
+        "name": "Перчатки из костей мамонта",
+        "item_id": 143,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mammoth_bone", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["steel_cutter"],
+          "requires": ["workbench"],
+          "time": 600
+        }
+      },
+      "dragonbone_gloves": {
+        "id": "dragonbone_gloves",
+        "name": "Перчатки из драконьих костей",
+        "item_id": 144,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "dragon_bone_processed", "count": 3},
+            {"id": "strong_thread", "count": 1}
+          ],
+          "tools": ["mithril_cutter"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "copperplate_gloves": {
+        "id": "copperplate_gloves",
+        "name": "Медные пластинчатые перчатки",
+        "item_id": 145,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 420
+        }
+      },
+      "bronzeplate_gloves": {
+        "id": "bronzeplate_gloves",
+        "name": "Бронзовые пластинчатые перчатки",
+        "item_id": 146,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "ironplate_gloves": {
+        "id": "ironplate_gloves",
+        "name": "Железные пластинчатые перчатки",
+        "item_id": 147,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 540
+        }
+      },
+      "stillplate_gloves": {
+        "id": "stillplate_gloves",
+        "name": "Стальные пластинчатые перчатки",
+        "item_id": 148,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "mithrilplate_gloves": {
+        "id": "mithrilplate_gloves",
+        "name": "Мифрильные пластинчатые перчатки",
+        "item_id": 149,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 720
+        }
+      },
+      "adamantplate_gloves": {
+        "id": "adamantplate_gloves",
+        "name": "Адамантовые пластинчатые перчатки",
+        "item_id": 150,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 840
+        }
+      },
+      "copperchain_gloves": {
+        "id": "copperchain_gloves",
+        "name": "Медные кольчужные перчатки",
+        "item_id": 151,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 3}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      },
+      "bronzechain_gloves": {
+        "id": "bronzechain_gloves",
+        "name": "Бронзовые кольчужные перчатки",
+        "item_id": 152,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 540
+        }
+      },
+      "ironchain_gloves": {
+        "id": "ironchain_gloves",
+        "name": "Железные кольчужные перчатки",
+        "item_id": 153,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 3}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 600
+        }
+      },
+      "stillchain_gloves": {
+        "id": "stillchain_gloves",
+        "name": "Стальные кольчужные перчатки",
+        "item_id": 154,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 3}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "mithrilchain_gloves": {
+        "id": "mithrilchain_gloves",
+        "name": "Мифрильные кольчужные перчатки",
+        "item_id": 155,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 3}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 780
+        }
+      },
+      "adamantchain_gloves": {
+        "id": "adamantchain_gloves",
+        "name": "Адамантовые кольчужные перчатки",
+        "item_id": 156,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 3}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 900
+        }
+      },
+      "copperplatemail_gloves": {
+        "id": "copperplatemail_gloves",
+        "name": "Медные латные рукавицы",
+        "item_id": 157,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "copper_ingot", "count": 4}
+          ],
+          "tools": ["stone_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 540
+        }
+      },
+      "bronzeplatemail_gloves": {
+        "id": "bronzeplatemail_gloves",
+        "name": "Бронзовые латные рукавицы",
+        "item_id": 158,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "bronze_ingot", "count": 4}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"firewood": 1},
+          "time": 600
+        }
+      },
+      "ironplatemail_gloves": {
+        "id": "ironplatemail_gloves",
+        "name": "Железные латные рукавицы",
+        "item_id": 159,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "iron_ingot", "count": 4}
+          ],
+          "tools": ["iron_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 660
+        }
+      },
+      "stillplatemail_gloves": {
+        "id": "stillplatemail_gloves",
+        "name": "Стальные латные рукавицы",
+        "item_id": 160,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "steel_ingot", "count": 4}
+          ],
+          "tools": ["steel_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 1},
+          "time": 720
+        }
+      },
+      "mithrilplatemail_gloves": {
+        "id": "mithrilplatemail_gloves",
+        "name": "Мифрильные латные рукавицы",
+        "item_id": 161,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "mithril_ingot", "count": 4}
+          ],
+          "tools": ["mithril_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 2},
+          "time": 840
+        }
+      },
+      "adamantplatemail_gloves": {
+        "id": "adamantplatemail_gloves",
+        "name": "Адамантовые латные рукавицы",
+        "item_id": 162,
+        "craft": {
+          "station": "workbench",
+          "ingredients": [
+            {"id": "adamantium_ingot", "count": 4}
+          ],
+          "tools": ["adamantium_hammer"],
+          "requires": ["workbench"],
+          "consumes": {"charcoal": 3},
+          "time": 960
+        }
+      }
+    },
+    
+    "potions": {
+      "arnica_tea": {
+        "id": "arnica_tea",
+        "name": "💚 Чай из Арники",
+        "description": "Восстанавливает 15% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "arnica", "count": 2},
+            {"id": "water", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 180
+        }
+      },
+      "willow_decoction": {
+        "id": "willow_decoction",
+        "name": "💙 Отвар из Коры",
+        "description": "Восстанавливает 20% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "willow_bark", "count": 1},
+            {"id": "elderberry", "count": 1},
+            {"id": "water", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 240
+        }
+      },
+      "rosehip_infusion": {
+        "id": "rosehip_infusion",
+        "name": "💜 Настой Шиповника",
+        "description": "Восстанавливает 25% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "rosehip", "count": 1},
+            {"id": "elderberry", "count": 1},
+            {"id": "water", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 300
+        }
+      },
+      "immune_elixir": {
+        "id": "immune_elixir",
+        "name": "❤️ Иммунный Эликсир",
+        "description": "Восстанавливает 30% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "tea_mushroom", "count": 1},
+            {"id": "willow_bark", "count": 1},
+            {"id": "salt", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 360
+        }
+      },
+      "strong_coffee": {
+        "id": "strong_coffee",
+        "name": "🧡 Крепкий Кофе",
+        "description": "Восстанавливает 35% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "coffee_bean", "count": 2},
+            {"id": "water", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 420
+        }
+      },
+      "kombucha": {
+        "id": "kombucha",
+        "name": "💛 Комбуча",
+        "description": "Восстанавливает 40% здоровья",
+        "craft": {
+          "station": "alchemy_cauldron",
+          "ingredients": [
+            {"id": "tea_mushroom", "count": 1},
+            {"id": "rosehip", "count": 1},
+            {"id": "salt", "count": 1}
+          ],
+          "requires": ["alchemy_cauldron", "campfire"],
+          "consumes": {"firewood": 1},
+          "time": 480
+        }
+      }
+    }
+  }
+}
