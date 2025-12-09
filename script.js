@@ -1351,66 +1351,74 @@ showInventoryHub() {
 }
 
 
-async showCrafting() {
+showCrafting() {
     try {
         console.log("🔨 Открытие интерфейса крафта...");
         
-        // ДЕБАГ: Проверяем состояние системы крафта
-        console.log("Состояние системы крафта:", {
-            hasSystem: !!this.systems.crafting,
-            recipes: this.systems.crafting?.recipes,
-            recipesCount: this.systems.crafting?.recipes ? Object.keys(this.systems.crafting.recipes).length : 0,
-            stations: this.systems.crafting?.recipes?.stations,
-            stationsCount: this.systems.crafting?.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
-        });
-        
-        // Проверяем, что система крафта существует
+        // Проверяем систему крафта
         if (!this.systems.crafting) {
-            console.error("❌ Система крафта не инициализирована");
-            this.showNotification("❌ Система крафта не доступна", "error");
+            console.error("❌ Система крафта не найдена");
+            this.showNotification('❌ Система крафта не найдена', 'error');
             return;
         }
         
-        // УПРОЩЕННАЯ ПРОВЕРКА: если рецепты есть, показываем интерфейс
-        if (this.systems.crafting.recipes && Object.keys(this.systems.crafting.recipes).length > 0) {
-            console.log("✅ Рецепты найдены, открываем интерфейс...");
+        // ⭐ ИСПРАВЛЕННАЯ ПРОВЕРКА: проверяем наличие рецептов, а не флаг loaded
+        const hasRecipes = this.systems.crafting.recipes && 
+                          Object.keys(this.systems.crafting.recipes).length > 0;
+        
+        console.log("Проверка рецептов:", {
+            recipes: this.systems.crafting.recipes,
+            recipesCount: Object.keys(this.systems.crafting.recipes || {}).length,
+            hasRecipes: hasRecipes,
+            hasStations: this.systems.crafting.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
+        });
+        
+        if (!hasRecipes) {
+            console.warn("⚠️ Рецепты не найдены в памяти, загружаем...");
             
-            // Показываем оверлей с крафтом
-            const html = this.systems.crafting.showCraftingUI('all', 'all');
-            
-            // Создаем оверлей
-            const overlayHTML = `
-                <div class="overlay-content crafting-overlay">
-                    ${html}
-                </div>
-            `;
-            
-            this.showOverlayContent(overlayHTML, 'crafting-overlay');
-            
-            console.log("✅ Интерфейс крафта открыт");
-        } else {
-            console.warn("⚠️ Рецепты не найдены, создаем резервные...");
-            
-            // Создаем резервные рецепты
-            this.systems.crafting.createFallbackRecipes();
-            
-            // Показываем интерфейс с резервными рецептами
-            const html = this.systems.crafting.showCraftingUI('all', 'all');
-            
-            const overlayHTML = `
-                <div class="overlay-content crafting-overlay">
-                    ${html}
-                </div>
-            `;
-            
-            this.showOverlayContent(overlayHTML, 'crafting-overlay');
-            
-            this.showNotification("⚠️ Используются базовые рецепты крафта", "warning");
+            // Пробуем загрузить рецепты
+            this.systems.crafting.loadRecipes().then(success => {
+                if (success) {
+                    // Загрузились успешно - открываем интерфейс
+                    this.openCraftingInterface();
+                } else {
+                    // Не удалось загрузить - создаем резервные
+                    this.systems.crafting.createFallbackRecipes();
+                    this.openCraftingInterface();
+                    this.showNotification("⚠️ Используются базовые рецепты", "warning");
+                }
+            });
+            return;
         }
         
+        // Если рецепты есть - открываем интерфейс
+        this.openCraftingInterface();
+        
     } catch (error) {
-        console.error("❌ Ошибка при открытии крафта:", error);
-        this.showNotification(`❌ Ошибка: ${error.message}`, "error");
+        console.error('❌ Ошибка при открытии крафта:', error);
+        this.showNotification('❌ Ошибка: ' + error.message, 'error');
+    }
+}
+
+// Добавьте этот вспомогательный метод
+openCraftingInterface() {
+    try {
+        const html = this.systems.crafting.showCraftingUI('all', 'all');
+        this.showOverlayContent(html, 'crafting-overlay');
+        
+        // Привязываем обработчики
+        setTimeout(() => {
+            if (this.systems.crafting && this.systems.crafting.attachCraftingHandlers) {
+                this.systems.crafting.attachCraftingHandlers();
+            }
+        }, 100);
+        
+        console.log('✅ Интерфейс крафта открыт');
+        this.showNotification('⚒️ Открыта система крафта', 'success');
+        
+    } catch (error) {
+        console.error('❌ Ошибка при открытии интерфейса:', error);
+        this.showNotification('❌ Не удалось открыть интерфейс крафта', 'error');
     }
 }
     
