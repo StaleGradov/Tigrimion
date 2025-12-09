@@ -1624,65 +1624,197 @@
     text-align: center;
 }
 
-/* ========== MASONRY LAYOUT ДЛЯ РЕЦЕПТОВ ========== */
-.crafting-recipes-grid {
-    columns: 5 280px; /* 5 колонок, минимальная ширина 280px */
-    column-gap: 20px;
-    margin-top: 25px;
-    max-height: 65vh;
+/* ========== ОПТИМИЗИРОВАННЫЙ КРАФТ С ПАГИНАЦИЕЙ ========== */
+.crafting-overlay {
+    max-width: 1600px !important;
+    width: 97% !important;
+    max-height: 85vh !important;
+    height: auto;
     overflow-y: auto;
-    padding: 15px;
-    background: rgba(15, 23, 42, 0.6);
+    padding: 20px;
+    margin: 15px auto;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: 2px solid #475569;
     border-radius: 15px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+}
+
+/* Заголовок */
+.overlay-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #475569;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.overlay-header h3 {
+    font-size: 24px;
+    color: #f1f5f9;
+    margin: 0;
+    text-shadow: 0 2px 8px rgba(66, 153, 225, 0.5);
+}
+
+/* Информационная панель */
+.crafting-info-panel {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 20px;
+    background: rgba(30, 41, 59, 0.8);
+    padding: 18px;
+    border-radius: 12px;
     border: 1px solid #475569;
 }
 
-/* Каждая карточка - отдельный "кирпичик" */
-.recipe-card {
-    break-inside: avoid; /* Предотвращает разрыв карточки между колонками */
-    page-break-inside: avoid;
-    background: rgba(30, 41, 59, 0.95);
-    border: 1px solid #4a5568;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-    width: 100%;
-    display: inline-block; /* Важно для masonry */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+.crafting-stats {
+    display: flex;
+    gap: 25px;
+    flex: 1;
 }
 
-/* Разные высоты для "кирпичного" эффекта */
-.recipe-card:nth-child(3n+1) {
-    min-height: 220px;
+.skills-display, .stations-display {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #475569;
+    min-width: 280px;
 }
-.recipe-card:nth-child(3n+2) {
-    min-height: 250px;
+
+.skills-display h4, .stations-display h4 {
+    margin-bottom: 12px;
+    color: #60a5fa;
+    font-size: 16px;
 }
-.recipe-card:nth-child(3n+3) {
-    min-height: 200px;
+
+/* Фильтры */
+.crafting-filters {
+    display: flex;
+    gap: 25px;
+    margin: 20px 0;
+    padding: 18px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 12px;
+    border: 1px solid #475569;
+}
+
+.station-filter, .category-filter {
+    flex: 1;
+    min-width: 320px;
+}
+
+.station-filter h5, .category-filter h5 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #60a5fa;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+    padding: 8px;
+    background: rgba(15, 23, 42, 0.7);
+    border-radius: 8px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: rgba(71, 85, 105, 0.5);
+    border: 1px solid #475569;
+    border-radius: 20px;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+    transform: scale(1.05);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.4);
+}
+
+/* ========== ОСНОВНОЙ КОНТЕЙНЕР РЕЦЕПТОВ (ТОЛЬКО 40 ШТУК) ========== */
+.crafting-recipes-container {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    border: 1px solid #475569;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.recipes-counter {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 15px;
+    padding: 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 8px;
+}
+
+/* СЕТКА РЕЦЕПТОВ (только 40 карточек) */
+.crafting-recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 колонки */
+    gap: 15px;
+    min-height: 300px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+/* КАРТОЧКИ РЕЦЕПТОВ */
+.recipe-card {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid #4a5568;
+    border-radius: 10px;
+    padding: 12px;
+    transition: border-color 0.2s ease; /* Упрощенная анимация */
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
 }
 
 .recipe-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
     border-color: #60a5fa;
-    z-index: 10;
-    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-/* Заголовок рецепта */
+.recipe-card.craftable {
+    border-left: 4px solid #10b981;
+}
+
+.recipe-card.uncraftable {
+    border-left: 4px solid #ef4444;
+    opacity: 0.9;
+}
+
+/* Заголовок карточки */
 .recipe-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
     border-bottom: 1px solid #475569;
-    padding-bottom: 10px;
 }
 
 .recipe-name {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: bold;
     color: #f1f5f9;
     margin: 0;
@@ -1691,112 +1823,157 @@
 }
 
 .recipe-station {
-    font-size: 12px;
+    font-size: 11px;
     color: #94a3b8;
-    background: rgba(71, 85, 105, 0.5);
-    padding: 4px 10px;
-    border-radius: 12px;
+    background: rgba(71, 85, 105, 0.4);
+    padding: 3px 8px;
+    border-radius: 10px;
     white-space: nowrap;
-    margin-left: 10px;
+    margin-left: 8px;
 }
 
-/* Описание рецепта */
+/* Описание */
 .recipe-description {
-    font-size: 13px;
+    font-size: 12px;
     color: #cbd5e1;
-    margin: 10px 0;
-    line-height: 1.5;
+    margin: 8px 0;
+    line-height: 1.4;
     flex-grow: 1;
-    min-height: 40px;
-}
-
-/* Качество рецепта */
-.recipe-quality {
-    background: rgba(101, 163, 13, 0.2);
-    padding: 8px;
-    border-radius: 8px;
-    margin: 10px 0;
-    border-left: 3px solid #65a30d;
-}
-
-.quality-bonus {
-    font-size: 13px;
-    color: #84cc16;
-    font-weight: bold;
 }
 
 /* Ингредиенты */
 .recipe-ingredients {
-    margin: 15px 0;
+    margin: 10px 0;
     background: rgba(15, 23, 42, 0.7);
-    padding: 12px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 8px;
 }
 
 .recipe-ingredients h5 {
-    font-size: 14px;
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
     color: #93c5fd;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .ingredient {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 10px;
-    margin: 5px 0;
+    padding: 5px 8px;
+    margin: 4px 0;
     background: rgba(71, 85, 105, 0.4);
-    border-radius: 8px;
-    font-size: 12px;
-    transition: all 0.2s;
-}
-
-.ingredient:hover {
-    background: rgba(71, 85, 105, 0.7);
-    transform: translateX(3px);
+    border-radius: 6px;
+    font-size: 11px;
 }
 
 .ingredient.has {
-    border-left: 4px solid #10b981;
+    border-left: 3px solid #10b981;
 }
 
 .ingredient.missing {
-    border-left: 4px solid #ef4444;
-    opacity: 0.8;
+    border-left: 3px solid #ef4444;
 }
 
 .ingredient-icon {
-    font-size: 16px;
-    margin-right: 8px;
-    width: 24px;
+    font-size: 14px;
+    margin-right: 6px;
+    width: 20px;
     text-align: center;
 }
 
 .ingredient-name {
     flex-grow: 1;
     color: #e2e8f0;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .ingredient-count {
     font-weight: bold;
     color: #fbbf24;
-    min-width: 60px;
+    min-width: 50px;
     text-align: right;
 }
 
 /* Кнопка крафта */
 .recipe-actions {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .btn-craft {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-craft:hover:not(.disabled) {
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+}
+
+.btn-craft.disabled {
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* ========== ПАГИНАЦИЯ ========== */
+.crafting-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 10px;
+    border: 1px solid #475569;
+}
+
+.pagination-info {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-right: 15px;
+}
+
+.page-btn {
+    padding: 8px 16px;
+    background: rgba(71, 85, 105, 0.5);
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: #cbd5e1;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    min-width: 40px;
+    text-align: center;
+}
+
+.page-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-color: #2563eb;
+    color: white;
+    font-weight: bold;
+}
+
+/* Кнопка загрузки еще */
+.load-more-btn {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -1806,35 +1983,37 @@
     transition: all 0.3s;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
+    margin: 20px auto;
 }
 
-.btn-craft:hover:not(.disabled) {
-    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+.load-more-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
 }
 
-.btn-craft.disabled {
-    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-/* Адаптивность */
-@media (max-width: 1600px) {
-    .crafting-recipes-grid {
-        columns: 4 250px;
-    }
-}
-
-@media (max-width: 1200px) {
+/* ========== АДАПТИВНОСТЬ ========== */
+@media (max-width: 1400px) {
     .crafting-overlay {
         max-width: 95% !important;
     }
     .crafting-recipes-grid {
-        columns: 3 250px;
+        grid-template-columns: repeat(3, 1fr); /* 3 колонки на средних экранах */
+    }
+}
+
+@media (max-width: 1024px) {
+    .crafting-info-panel {
+        flex-direction: column;
+    }
+    .crafting-filters {
+        flex-direction: column;
+    }
+    .station-filter, .category-filter {
+        min-width: auto;
+    }
+    .crafting-recipes-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 колонки на планшетах */
     }
 }
 
@@ -1846,10 +2025,11 @@
         border-radius: 0;
         max-height: 100vh;
     }
-    .crafting-recipes-grid {
-        columns: 2 200px;
-    }
-    .crafting-info-panel {
+    .crafting-stats {
         flex-direction: column;
+    }
+    .crafting-recipes-grid {
+        grid-template-columns: 1fr; /* 1 колонка на телефонах */
+        gap: 12px;
     }
 }
