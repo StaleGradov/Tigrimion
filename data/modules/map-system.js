@@ -6284,6 +6284,9 @@ showHuntTargetSelectionWithProbabilities(cell) {
         return animalTypes.some(type => monster.name.toLowerCase().includes(type));
     });
     
+    // НАЧИНАЕМ ФОРМИРОВАТЬ HTML
+    let html = '';
+    
     if (huntableMonsters.length === 0) {
         html = `
             <div class="hunt-no-targets">
@@ -6301,7 +6304,7 @@ showHuntTargetSelectionWithProbabilities(cell) {
         return;
     }
     
-    let html = `
+    html = `
         <div class="hunt-target-selection">
             <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
                 🏹 Выберите цель охоты
@@ -6341,7 +6344,7 @@ showHuntTargetSelectionWithProbabilities(cell) {
         const monsterResources = this.getMonsterResources(monster);
         
         html += `
-            <div class="hunt-target-card" onclick="window.game.systems.map.startHuntForMonster(${cell.row}, ${cell.col}, ${monster.id})">
+            <div class="hunt-target-card" onclick="window.game.systems.map.startHuntForMonster(${cell.row}, ${cell.col}, '${monster.id}')">
                 <div class="hunt-target-header">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="font-size: 24px;">${monster.image || '🐾'}</div>
