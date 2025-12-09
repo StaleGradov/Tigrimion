@@ -51,6 +51,7 @@ class MapSystem {
         this.selectedCell = null;
         this.currentCellActions = [];
         
+        
         // Универсальные действия с базовыми шансами
         this.baseActionChances = {
             'search_treasure': 25,
@@ -68,6 +69,55 @@ class MapSystem {
             'light_campfire': 80,
             'guard_caravan': 40
         };
+
+// ========== СИСТЕМА ВЕРЯТНОСТЕЙ ДЕЙСТВИЙ ==========
+this.actionSuccessRates = {}; // Хранит текущие шансы успеха для каждой клетки
+this.explorationStates = {}; // Хранит состояние исследования клеток
+this.huntSuccessRates = {}; // Хранит шансы охоты на конкретных существ
+this.completedExplorationCells = new Set(); // Клетки, где исследование завершено
+
+// Базовая формула для расчета шансов
+this.calculateActionChance = (baseChance, cellKey, action) => {
+    if (!this.actionSuccessRates[cellKey]) {
+        this.actionSuccessRates[cellKey] = {};
+    }
+    
+    if (this.actionSuccessRates[cellKey][action] !== undefined) {
+        return Math.max(0, this.actionSuccessRates[cellKey][action]);
+    }
+    
+    return baseChance;
+};
+
+// Метод для уменьшения шанса после успешного действия
+this.reduceActionChance = (cellKey, action, reduction = 5) => {
+    if (!this.actionSuccessRates[cellKey]) {
+        this.actionSuccessRates[cellKey] = {};
+    }
+    
+    if (this.actionSuccessRates[cellKey][action] === undefined) {
+        // Инициализируем базовым шансом
+        const cell = this.getCellByKey(cellKey);
+        if (cell) {
+            const cellType = this.determineCellType(cell);
+            const cellTypeData = this.cellTypes[cellType];
+            this.actionSuccessRates[cellKey][action] = cellTypeData?.action_chances?.[action] || 
+                                                    this.baseActionChances[action] || 
+                                                    25;
+        }
+    }
+    
+    if (this.actionSuccessRates[cellKey][action] !== undefined) {
+        this.actionSuccessRates[cellKey][action] = Math.max(0, 
+            this.actionSuccessRates[cellKey][action] - reduction
+        );
+        
+        console.log(`📉 Шанс ${action} на клетке ${cellKey} снижен: ${this.actionSuccessRates[cellKey][action] + reduction}% -> ${this.actionSuccessRates[cellKey][action]}%`);
+        
+        // Сохраняем в localStorage для сохранения между сессиями
+        this.saveProbabilityState();
+    }
+};
         
         // Все доступные действия
         this.allActions = [
@@ -86,8 +136,8 @@ class MapSystem {
             'light_campfire',
             'guard_caravan',
               'gather_wood',
-  'stealth_movement',
-  'hunt'
+              'stealth_movement'
+
         ];
         
         // Конфигурация действий
@@ -325,10 +375,174 @@ class MapSystem {
         this.resizeTimeout = null;
         
         console.log("✅ MapSystem инициализирован с новой системой действий и боями при неудаче");
+        // Загружаем сохраненные вероятности
+setTimeout(() => {
+    this.loadProbabilityState();
+}, 1000);
+        
     }
 
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
+// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ СИСТЕМЫ ВЕРЯТНОСТЕЙ ==========
 
+// Получить клетку по ключу
+getCellByKey(cellKey) {
+    if (!this.currentTacticalMap) return null;
+    return this.currentTacticalMap.cells[cellKey];
+}
+
+// Генерация ключа клетки
+getCellKey(row, col) {
+    return `${col},${row}`;
+}
+
+// Проверка завершено ли исследование клетки
+isExplorationCompleted(row, col) {
+    const cellKey = this.getCellKey(row, col);
+    return this.completedExplorationCells.has(cellKey);
+}
+
+// Завершить исследование клетки
+markExplorationCompleted(row, col) {
+    const cellKey = this.getCellKey(row, col);
+    this.completedExplorationCells.add(cellKey);
+    
+    // Отмечаем клетку как исследованную в данных карты
+    const cell = this.getCellByKey(cellKey);
+    if (cell) {
+        cell.explored = true;
+        cell.hasAction = false;
+    }
+    
+    // Сохраняем состояние
+    this.saveProbabilityState();
+    console.log(`✅ Исследование клетки ${cellKey} завершено`);
+}
+
+// Получить шанс охоты на конкретное существо
+getHuntChanceForMonster(cellKey, monsterId, baseChance) {
+    const huntKey = `${cellKey}_${monsterId}`;
+    
+    if (!this.huntSuccessRates[cellKey]) {
+        this.huntSuccessRates[cellKey] = {};
+    }
+    
+    if (this.huntSuccessRates[cellKey][monsterId] !== undefined) {
+        return Math.max(0, this.huntSuccessRates[cellKey][monsterId]);
+    }
+    
+    // Начальный шанс зависит от редкости существа
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem) {
+        const monster = battleSystem.getMonsterById(monsterId);
+        if (monster) {
+            // Чем выше уровень монстра, тем ниже начальный шанс
+            const levelPenalty = monster.level * 2; // -2% за каждый уровень
+            const adjustedChance = Math.max(5, baseChance - levelPenalty);
+            this.huntSuccessRates[cellKey][monsterId] = adjustedChance;
+            return adjustedChance;
+        }
+    }
+    
+    return baseChance;
+}
+
+// Уменьшить шанс охоты на существо после успеха
+reduceHuntChance(cellKey, monsterId, reduction = 5) {
+    if (!this.huntSuccessRates[cellKey]) {
+        this.huntSuccessRates[cellKey] = {};
+    }
+    
+    if (this.huntSuccessRates[cellKey][monsterId] === undefined) {
+        // Инициализируем базовым шансом
+        const baseChance = this.getActionChance('hunt', this.currentCellType);
+        this.huntSuccessRates[cellKey][monsterId] = baseChance;
+    }
+    
+    this.huntSuccessRates[cellKey][monsterId] = Math.max(0, 
+        this.huntSuccessRates[cellKey][monsterId] - reduction
+    );
+    
+    console.log(`📉 Шанс охоты на монстра ${monsterId} на клетке ${cellKey} снижен: ${this.huntSuccessRates[cellKey][monsterId] + reduction}% -> ${this.huntSuccessRates[cellKey][monsterId]}%`);
+    
+    this.saveProbabilityState();
+}
+
+// Сохранение состояний вероятностей
+saveProbabilityState() {
+    try {
+        const state = {
+            actionSuccessRates: this.actionSuccessRates,
+            huntSuccessRates: this.huntSuccessRates,
+            completedExplorationCells: Array.from(this.completedExplorationCells),
+            timestamp: Date.now()
+        };
+        
+        // Сохраняем отдельно для каждой карты
+        const mapId = this.currentTacticalMap?.id || 'global';
+        localStorage.setItem(`map_probabilities_${mapId}`, JSON.stringify(state));
+        
+        console.log(`💾 Сохранены вероятности для карты ${mapId}`);
+    } catch (error) {
+        console.error("❌ Ошибка сохранения вероятностей:", error);
+    }
+}
+
+// Загрузка состояний вероятностей
+loadProbabilityState() {
+    try {
+        const mapId = this.currentTacticalMap?.id || 'global';
+        const saved = localStorage.getItem(`map_probabilities_${mapId}`);
+        
+        if (saved) {
+            const state = JSON.parse(saved);
+            this.actionSuccessRates = state.actionSuccessRates || {};
+            this.huntSuccessRates = state.huntSuccessRates || {};
+            this.completedExplorationCells = new Set(state.completedExplorationCells || []);
+            
+            // Обновляем состояние клеток на карте
+            this.completedExplorationCells.forEach(cellKey => {
+                const cell = this.getCellByKey(cellKey);
+                if (cell) {
+                    cell.explored = true;
+                    cell.hasAction = false;
+                }
+            });
+            
+            console.log(`📂 Загружены вероятности для карты ${mapId}:`, {
+                actionRates: Object.keys(this.actionSuccessRates).length,
+                huntRates: Object.keys(this.huntSuccessRates).length,
+                completedCells: this.completedExplorationCells.size
+            });
+        }
+    } catch (error) {
+        console.error("❌ Ошибка загрузки вероятностей:", error);
+    }
+}
+
+// Сбросить вероятности для текущей карты (для отладки)
+resetProbabilityState() {
+    const mapId = this.currentTacticalMap?.id || 'global';
+    localStorage.removeItem(`map_probabilities_${mapId}`);
+    
+    this.actionSuccessRates = {};
+    this.huntSuccessRates = {};
+    this.completedExplorationCells.clear();
+    
+    // Сбрасываем состояние клеток
+    if (this.currentTacticalMap?.cells) {
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            cell.explored = false;
+            cell.hasAction = true;
+        });
+    }
+    
+    console.log(`🔄 Вероятности для карты ${mapId} сброшены`);
+}
+
+
+
+    
     handleMerchantClick(merchantCell) {
         if (!this.isPlayerAdjacentToTransition(merchantCell)) {
             this.showTransitionWarning(merchantCell);
@@ -1106,12 +1320,14 @@ updateCellActionsUI(cell) {
     const isCurrentPosition = (cell.col === this.playerTacticalPosition.x && 
                            cell.row === this.playerTacticalPosition.y);
     const isReachable = this.isCellReachable(cell);
-    const isExplored = cell.explored === true;
+    const isExplorationCompleted = this.isExplorationCompleted(cell.row, cell.col);
+    const isExplored = cell.explored === true || isExplorationCompleted; // ВАЖНОЕ ИЗМЕНЕНИЕ
     
     // Получаем доступные действия для этого типа клетки
     this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
+    console.log(`📊 Состояние клетки: explored=${cell.explored}, completion=${isExplorationCompleted}, isExplored=${isExplored}`);
     
     // ========== СОЗДАЕМ HTML ДЛЯ ЛЕВОЙ ПАНЕЛИ (картинка и описание) ==========
     let leftHTML = '';
@@ -1140,22 +1356,47 @@ updateCellActionsUI(cell) {
         if (this.currentCellActions.length > 0) {
             try {
                 // Создаем список действий ТОЛЬКО С КНОПКАМИ
-                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable, isExplored);
                 
-                // Кнопка завершения исследования
+                // ========== БЛОК УПРАВЛЕНИЯ ИССЛЕДОВАНИЕМ ==========
+                // ДОБАВЛЕНО: Кнопка завершения исследования
                 rightHTML += `
-                    <div class="cell-completion-controls" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569;">
+                    <div class="cell-completion-controls" style="
+                        margin-top: 20px;
+                        padding-top: 20px;
+                        border-top: 2px solid #475569;
+                    ">
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">
+                            <strong>🎯 Управление исследованием:</strong>
+                        </div>
                         <button class="btn-control complete-exploration-btn" 
                                 onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
                                 title="Отметить клетку как полностью исследованную"
-                                style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981, #059669);">
-                            ✓ Завершить исследование
+                                style="
+                                    width: 100%;
+                                    padding: 12px;
+                                    background: linear-gradient(135deg, #10b981, #059669);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    font-weight: bold;
+                                    transition: all 0.3s ease;
+                                ">
+                            ✓ Завершить исследование этой клетки
                         </button>
-                        <p class="hint" style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 12px;">
-                            После завершения исследования вы не сможете выполнять здесь действия
+                        <p class="hint" style="
+                            text-align: center;
+                            margin-top: 10px;
+                            color: #94a3b8;
+                            font-size: 12px;
+                        ">
+                            После завершения исследования вы сможете переходить на соседние клетки,
+                            но не сможете выполнять здесь действия
                         </p>
                     </div>
                 `;
+                
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
                 rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
@@ -1165,6 +1406,30 @@ updateCellActionsUI(cell) {
         }
     } else if (isExplored) {
         rightHTML += this.createExploredCellHTML();
+        
+        // ДОБАВЛЕНО: Блок для завершенных клеток
+        if (isExplorationCompleted) {
+            rightHTML += `
+                <div style="
+                    background: rgba(0, 255, 204, 0.1);
+                    border: 1px solid #00ffcc;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-top: 20px;
+                ">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">✅</div>
+                        <h4 style="color: #00ffcc; margin: 10px 0;">Исследование завершено</h4>
+                        <p style="color: #94a3b8; margin-bottom: 10px;">
+                            Эта клетка полностью исследована.
+                        </p>
+                        <div style="font-size: 12px; color: #888;">
+                            Теперь вы можете свободно перемещаться через эту клетку
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     } else if (cell.hasAction === false) {
         rightHTML += this.createNoActionsHTML();
     }
@@ -1962,7 +2227,7 @@ displayFallbackLocationImage(cellTypeData, container) {
         });
     }
 
-  performCellAction(action, row, col) {
+async performCellAction(action, row, col) {
     console.log(`🎯 Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
     
     if (!this.currentHero) {
@@ -1971,12 +2236,19 @@ displayFallbackLocationImage(cellTypeData, container) {
         return;
     }
     
-    const cellKey = `${col},${row}`;
-    const cell = this.currentTacticalMap?.cells[cellKey];
+    const cellKey = this.getCellKey(row, col);
+    const cell = this.getCellByKey(cellKey);
     
     if (!cell) {
         console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
         this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    // Проверка завершено ли исследование
+    if (this.isExplorationCompleted(row, col)) {
+        console.warn(`⚠️ Исследование клетки [${col}, ${row}] уже завершено`);
+        this.showNotification("❌ Исследование этой клетки завершено!", 'warning');
         return;
     }
     
@@ -1986,15 +2258,14 @@ displayFallbackLocationImage(cellTypeData, container) {
         return;
     }
     
-    const chance = this.getActionChance(action, this.currentCellType);
     const config = this.actionConfigs[action] || {};
     
     // ========== ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ ==========
     
-    // 1. Охота - показываем выбор цели
+    // 1. Охота - показываем выбор цели с вероятностями
     if (action === 'hunt') {
-        console.log(`🏹 Показываем выбор цели для охоты`);
-        this.showHuntTargetSelection(cell);
+        console.log(`🏹 Показываем выбор цели для охоты с вероятностями`);
+        this.showHuntTargetSelectionWithProbabilities(cell);
         return;
     }
     
@@ -2018,7 +2289,7 @@ displayFallbackLocationImage(cellTypeData, container) {
     
     if (resourceActions.includes(action)) {
         console.log(`📊 Показываем вероятности для ${action}`);
-        this.performResourceAction(action, row, col);
+        this.showActionProbabilityWindow(action, row, col);
         return;
     }
     
@@ -2026,84 +2297,212 @@ displayFallbackLocationImage(cellTypeData, container) {
     
     // Особый случай для охоты - всегда приводит к бою при успехе
     if (action === 'hunt' && config.always_monster) {
-        console.log(`🏹 Охота - всегда приводит к бою при успехе. Шанс: ${chance}%`);
+        const chance = this.calculateActionChance(
+            this.getActionChance(action, this.currentCellType),
+            cellKey,
+            action
+        );
+        
+        console.log(`🏹 Охота - всегда приводит к бою при успехе. Текущий шанс: ${chance}%`);
         
         const roll = Math.random() * 100;
         const success = roll <= chance;
         
         if (success) {
             console.log(`🎯 Успешная охота! Начинаем бой с монстром.`);
-            this.handleHuntActionSuccess(row, col);
+            this.handleHuntActionSuccess(row, col, cellKey);
+            
+            // Уменьшаем шанс для будущих охот
+            this.reduceActionChance(cellKey, action);
         } else {
             console.log(`❌ Охота провалилась - не удалось найти дичь.`);
             this.handleActionFailure(action);
+            
+            // При неудаче встречаем случайного монстра
+            this.handleRandomMonsterEncounter(row, col);
         }
         
         return;
     }
     
+    // Для обычных действий показываем окно с вероятностью
+    this.showActionProbabilityWindow(action, row, col);
+}
+
+// Новый метод: окно с вероятностью действия
+showActionProbabilityWindow(action, row, col) {
+    const cellKey = this.getCellKey(row, col);
+    const cell = this.getCellByKey(cellKey);
+    const config = this.actionConfigs[action] || {};
+    
+    const baseChance = this.getActionChance(action, this.currentCellType);
+    const currentChance = this.calculateActionChance(baseChance, cellKey, action);
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    let html = `
+        <div class="action-probability-window">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                ${config.icon || '⚡'} ${config.name}
+            </h3>
+            
+            <div class="probability-display" style="
+                background: rgba(0, 0, 0, 0.4);
+                padding: 20px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <div style="font-size: 16px; margin-bottom: 10px;">
+                    <strong>Текущая вероятность успеха:</strong>
+                </div>
+                
+                <div style="
+                    font-size: 32px;
+                    font-weight: bold;
+                    color: ${currentChance >= 70 ? '#44ff44' : currentChance >= 40 ? '#ffaa00' : '#ff4444'};
+                    margin: 15px 0;
+                ">
+                    ${currentChance}%
+                </div>
+                
+                <div style="
+                    width: 100%;
+                    height: 20px;
+                    background: #333;
+                    border-radius: 10px;
+                    overflow: hidden;
+                    margin: 10px 0;
+                ">
+                    <div style="
+                        width: ${currentChance}%;
+                        height: 100%;
+                        background: ${currentChance >= 70 ? '#44ff44' : currentChance >= 40 ? '#ffaa00' : '#ff4444'};
+                        border-radius: 10px;
+                        transition: width 1s ease;
+                    "></div>
+                </div>
+                
+                <div style="font-size: 12px; color: #aaa; margin-top: 10px;">
+                    <i>Базовая вероятность: ${baseChance}%</i>
+                </div>
+                
+                ${currentChance < baseChance ? `
+                    <div style="font-size: 11px; color: #ffaa00; margin-top: 5px;">
+                        ⚠️ Снижена после предыдущих попыток
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button class="btn-control" onclick="window.game.systems.map.executeActionWithProbability('${action}', ${row}, ${col})"
+                        style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                    🎲 Попробовать удачу!
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
+                <em>Примечание: После успешного выполнения вероятность снизится на 5%</em>
+            </div>
+            
+            <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+                    style="margin-top: 20px; width: 100%; background: #6b7280;">
+                ↩️ Назад к действиям
+            </button>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = html;
+}
+
+// Новый метод: выполнение действия с учетом вероятности
+async executeActionWithProbability(action, row, col) {
+    const cellKey = this.getCellKey(row, col);
+    const baseChance = this.getActionChance(action, this.currentCellType);
+    const currentChance = this.calculateActionChance(baseChance, cellKey, action);
+    
+    const roll = Math.random() * 100;
+    const success = roll <= currentChance;
+    
+    console.log(`🎲 Проверка вероятности для ${action}: ${roll.toFixed(1)}/${currentChance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+    
+    // Показываем анимацию броска
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (actionsContainer) {
         actionsContainer.innerHTML = `
-            <div class="action-processing">
-                <div class="processing-icon">${config.icon || '⚡'}</div>
-                <h4>Выполняется действие...</h4>
-                <p>${config.name} на клетке [${col}, ${row}]</p>
-                <div class="chance-display-processing">
-                    <span class="chance-label">Шанс успеха:</span>
-                    <span class="chance-value">${chance}%</span>
-                </div>
-                <div class="processing-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
+            <div class="dice-roll-animation">
+                <h3 style="color: #00ffcc; text-align: center;">🎲 Бросок удачи...</h3>
+                <div class="dice-container" style="text-align: center; margin: 20px 0;">
+                    <div class="dice" style="
+                        display: inline-block;
+                        width: 60px;
+                        height: 60px;
+                        background: #1a1a2e;
+                        border: 2px solid #00ffff;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: ${roll <= currentChance ? '#44ff44' : '#ff4444'};
+                        margin: 0 auto;
+                        animation: spin 1s ease-in-out;
+                    ">
+                        ${roll.toFixed(1)}
                     </div>
                 </div>
-                <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 18px; color: ${success ? '#44ff44' : '#ff4444'};">
+                        ${success ? '✅ УСПЕХ!' : '❌ НЕУДАЧА'}
+                    </div>
+                    <div style="font-size: 14px; color: #aaa; margin-top: 10px;">
+                        Нужно было: ≤ ${currentChance}%
+                    </div>
+                </div>
             </div>
         `;
         
-        setTimeout(() => {
-            const progressFill = actionsContainer.querySelector('.progress-fill');
-            if (progressFill) {
-                progressFill.style.width = '100%';
+        // Добавляем CSS анимацию
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+                50% { transform: rotate(180deg) scale(1.2); opacity: 1; }
+                100% { transform: rotate(360deg) scale(1); opacity: 1; }
             }
-        }, 50);
+        `;
+        document.head.appendChild(style);
     }
     
-    setTimeout(() => {
-        const roll = Math.random() * 100;
-        const success = roll <= chance;
+    // Ждем завершения анимации
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    if (success) {
+        // Успех - выполняем действие
+        this.handleActionSuccess(action, row, col);
         
-        console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+        // Уменьшаем шанс для будущих попыток
+        this.reduceActionChance(cellKey, action);
         
-        if (success) {
-            this.handleActionSuccess(action, row, col);
-        } else {
+        // Сохраняем состояние
+        this.saveProbabilityState();
+    } else {
+        // Провал
+        this.handleActionFailure(action);
+        
+        // Для некоторых действий при неудаче возможна встреча с монстром
+        const config = this.actionConfigs[action];
+        if (config?.triggers_monster) {
             const cellTypeData = this.cellTypes[this.currentCellType];
+            const monsterChance = cellTypeData?.failure_monster_chance || 50;
             
-            let monsterChance = cellTypeData.failure_monster_chance || 50;
-            
-            if (config && config.triggers_monster) {
-                monsterChance *= (config.monster_level_multiplier || 1);
-            }
-            
-            const monsterRoll = Math.random() * 100;
-            
-            if (monsterRoll <= monsterChance) {
-                console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
-                this.handleActionFailureWithMonster(action, row, col, cellTypeData);
-            } else {
-                this.handleActionFailure(action);
+            if (Math.random() * 100 <= monsterChance) {
+                this.handleRandomMonsterEncounter(row, col);
             }
         }
-        
-        setTimeout(() => {
-            if (cell && !cell.explored) {
-                this.updateCellActionsUI(cell);
-            }
-        }, 1000);
-        
-    }, 800);
+    }
 }
 
     handleHuntActionSuccess(row, col) {
@@ -2573,21 +2972,235 @@ updateHeroResourcesUI(containerId = 'heroResourcesList') {
         }
     }
 
- completeCellExploration(row, col) {
-  const cellKey = `${col},${row}`;
-  const cell = this.currentTacticalMap?.cells[cellKey];
-  
-  if (cell) {
-    cell.explored = true;
-    cell.hasAction = false;
+// Обновленный метод завершения исследования
+completeCellExploration(row, col) {
+    const cellKey = this.getCellKey(row, col);
+    const cell = this.getCellByKey(cellKey);
     
-    // СНИМАЕМ ОГРАНИЧЕНИЕ НА ПЕРЕМЕЩЕНИЕ!
-    // Убираем проверку hasAction в методе moveOnTacticalMap
+    if (cell) {
+        // Отмечаем клетку как полностью исследованную
+        this.markExplorationCompleted(row, col);
+        
+        // Убираем все действия с этой клетки
+        cell.explored = true;
+        cell.hasAction = false;
+        
+        // Очищаем вероятности для этой клетки (опционально)
+        delete this.actionSuccessRates[cellKey];
+        delete this.huntSuccessRates[cellKey];
+        
+        // Показываем сообщение
+        this.showNotification("✅ Вы полностью исследовали эту местность", 'success');
+        
+        // Перерисовываем карту
+        this.drawTacticalMap();
+        
+        // Очищаем интерфейс действий
+        this.clearCellActionsUI();
+        
+        // Показываем сообщение о возможности перехода
+        setTimeout(() => {
+            const actionsContainer = document.getElementById('cellActionsContainer');
+            if (actionsContainer) {
+                actionsContainer.innerHTML = `
+                    <div class="exploration-completed">
+                        <div style="text-align: center; margin: 20px 0;">
+                            <div style="font-size: 48px;">✅</div>
+                            <h4 style="color: #00ffcc; margin: 15px 0;">Исследование завершено</h4>
+                            <p style="color: #aaa; margin-bottom: 20px;">
+                                Вы полностью исследовали эту клетку.
+                            </p>
+                            <div style="
+                                background: rgba(0, 255, 204, 0.1);
+                                border: 1px solid #00ffcc;
+                                border-radius: 8px;
+                                padding: 15px;
+                                margin: 20px 0;
+                            ">
+                                <strong>🎯 Теперь вы можете:</strong>
+                                <div style="margin-top: 10px;">
+                                    <p>1. Перейти на соседнюю клетку</p>
+                                    <p>2. Использовать переход (если есть)</p>
+                                    <p>3. Вернуться на предыдущую клетку</p>
+                                </div>
+                            </div>
+                            <p style="font-size: 12px; color: #888; margin-top: 20px;">
+                                Для новых действий выберите другую клетку
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+        }, 300);
+        
+        console.log(`✅ Исследование клетки [${col},${row}] завершено`);
+    }
+}
+
+// Новый метод: проверка возможности перехода
+canMoveToCell(row, col) {
+    const cellKey = this.getCellKey(row, col);
     
-    this.showNotification("✅ Вы полностью исследовали эту местность", 'success');
-    this.drawTacticalMap();
-    this.clearCellActionsUI();
-  }
+    // Можно перейти если:
+    // 1. Клетка существует и проходима
+    // 2. ИЛИ мы уже исследовали эту клетку
+    // 3. ИЛИ это переход
+    const cell = this.getCellByKey(cellKey);
+    
+    if (!cell) return false;
+    
+    // Если клетка уже исследована - можно перейти
+    if (cell.explored || this.isExplorationCompleted(row, col)) {
+        return true;
+    }
+    
+    // Если это переход - можно перейти
+    if (this.isTransitionCell(cell)) {
+        return true;
+    }
+    
+    // Если клетка непроходима - нельзя
+    if (cell.passable === false) {
+        return false;
+    }
+    
+    // Проверяем достижимость
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === row && neighbor.col === col
+    );
+    
+    return isReachable;
+}
+
+// Обновленный метод перемещения с проверкой исследования
+moveOnTacticalMap(x, y) {
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+        }
+        return;
+    }
+
+    if (!this.currentTacticalMap) return;
+
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    // Проверка возможности перехода
+    if (!this.canMoveToCell(y, x)) {
+        console.log("🚫 Нельзя перейти на эту клетку");
+        
+        // Проверяем почему нельзя перейти
+        if (cellData.explored) {
+            this.showNotification("❌ Вы уже исследовали эту клетку", 'warning');
+        } else if (cellData.passable === false) {
+            this.showNotification("❌ Эта клетка непроходима!", 'error');
+        } else {
+            // Проверяем достижимость
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === y && neighbor.col === x
+            );
+            
+            if (!isReachable) {
+                this.showNotification("❌ Клетка недостижима!", 'error');
+            } else {
+                // Если клетка достижима но не исследована - предлагаем завершить исследование
+                const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+                const currentCell = this.currentTacticalMap.cells[currentCellKey];
+                
+                if (currentCell && !currentCell.explored && !this.isExplorationCompleted(this.playerTacticalPosition.y, this.playerTacticalPosition.x)) {
+                    this.showNotification("❌ Сначала завершите исследование текущей клетки!", 'warning');
+                    
+                    // Показываем кнопку завершения исследования
+                    setTimeout(() => {
+                        const actionsContainer = document.getElementById('cellActionsContainer');
+                        if (actionsContainer) {
+                            const completeBtn = document.createElement('button');
+                            completeBtn.className = 'btn-control';
+                            completeBtn.style.cssText = `
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                padding: 12px;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                margin-top: 10px;
+                                width: 100%;
+                            `;
+                            completeBtn.innerHTML = '✓ Завершить исследование текущей клетки';
+                            completeBtn.onclick = () => {
+                                this.completeCellExploration(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+                            };
+                            
+                            // Ищем контейнер для кнопки
+                            const completionControls = actionsContainer.querySelector('.cell-completion-controls');
+                            if (!completionControls) {
+                                const controlsDiv = document.createElement('div');
+                                controlsDiv.className = 'cell-completion-controls';
+                                controlsDiv.style.cssText = `
+                                    margin-top: 20px;
+                                    padding-top: 20px;
+                                    border-top: 2px solid #475569;
+                                `;
+                                controlsDiv.appendChild(completeBtn);
+                                actionsContainer.appendChild(controlsDiv);
+                            }
+                        }
+                    }, 100);
+                }
+            }
+        }
+        return;
+    }
+
+    // Обработка переходов
+    if (this.isTransitionCell(cellData)) {
+        this.handleTransitionClick(cellData);
+        return;
+    }
+
+    if (cellData.passable === false) {
+        console.log("🚫 Клетка непроходима");
+        if (window.game) {
+            window.game.showNotification("Эта клетка непроходима!", 'error');
+        }
+        return;
+    }
+
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    console.log(`✅ Перемещение на [${x}, ${y}]`);
+    this.handlePeacefulMovement(x, y, cellData);
+    
+    // После перемещения показываем действия для новой клетки (если не исследована)
+    setTimeout(() => {
+        if (!cellData.explored && !this.isExplorationCompleted(y, x)) {
+            this.updateCellActionsUI(cellData);
+            this.highlightSelectedCell(cellData);
+        }
+    }, 300);
 }
 
     clearCellActionsUI() {
@@ -5627,134 +6240,444 @@ createActionsContainerFallback() {
         }
     }
 
-// В MapSystem добавляем:
-showHuntTargetSelection(cell) {
-  const actionsContainer = document.getElementById('cellActionsContainer');
-  if (!actionsContainer) return;
-  
-  const cellTypeData = this.cellTypes[this.currentCellType];
-  const baseChance = this.getActionChance('hunt', this.currentCellType);
-  
-  // Группируем ресурсы по типу для охоты
-  const huntableResources = {
-    'bones': ['small_bone', 'wolf_bone', 'horse_bone', 'bull_bone', 'mammoth_bone', 'dragon_bone'],
-    'leathers': ['thin_leather', 'strong_leather', 'thick_leather', 'bull_leather', 'lizard_leather', 'dragon_leather'],
-    'hides': ['thin_hide', 'strong_hide', 'thick_hide', 'tiger_hide', 'bear_hide', 'dragon_hide'],
-    'furs': ['hare_fur', 'marten_fur', 'arctic_fox_fur', 'lynx_fur', 'leopard_fur', 'mammoth_fur']
-  };
-  
-  // Получаем данные ресурсов из загруженного resources.json
-  const resourceData = this.resources;
-  
-  let html = `
-    <div class="hunt-target-selection">
-      <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
-        🏹 Выберите цель охоты
-      </h3>
-      
-      <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-        <strong>Базовая вероятность успеха:</strong> 
-        <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
-          ${baseChance}%
-        </span>
-      </div>
-      
-      <div class="hunt-categories">
-  `;
-  
-  // Для каждой категории охоты
-  Object.keys(huntableResources).forEach(category => {
-    const categoryNames = {
-      'bones': '🦴 Кости',
-      'leathers': '🐂 Кожи',
-      'hides': '🐅 Шкуры',
-      'furs': '🦊 Меха'
-    };
+// Обновленный метод охоты с вероятностями
+showHuntTargetSelectionWithProbabilities(cell) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
     
-    html += `
-      <div class="hunt-category">
-        <h4 style="color: #00aaff; margin: 15px 0 10px 0;">${categoryNames[category] || category}</h4>
-        <div class="hunt-targets-grid">
-    `;
+    const cellKey = this.getCellKey(cell.row, cell.col);
+    const baseHuntChance = this.getActionChance('hunt', this.currentCellType);
     
-    huntableResources[category].forEach(resourceId => {
-      const resource = this.findResourceById(resourceId);
-      if (!resource) return;
-      
-      // Рассчитываем вероятность получения конкретного ресурса
-      // Чем выше цена, тем ниже вероятность
-      const price = resource.price || resource.value || 10;
-      const resourceChance = this.calculateResourceChance(price, baseChance);
-      
-      html += `
-        <div class="hunt-target-item" onclick="window.game.systems.map.performHunt('${resourceId}', ${cell.row}, ${cell.col})">
-          <div class="hunt-target-name">${resource.name}</div>
-          <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
-            ${resource.description || 'Охотничий трофей'}
-          </div>
-          <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b;">
-            Цена: ${price} золота
-          </div>
-          <div class="hunt-target-chance" style="font-size: 12px; margin-top: 8px;">
-            Шанс: <span style="color: ${resourceChance >= 70 ? '#44ff44' : resourceChance >= 40 ? '#ffaa00' : '#ff4444'}">
-              ${resourceChance}%
-            </span>
-          </div>
-        </div>
-      `;
-    });
-    
-    html += `
-        </div>
-      </div>
-    `;
-  });
-  
-  html += `
-      </div>
-      
-      <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
-              style="margin-top: 20px; width: 100%;">
-        ↩️ Назад к действиям
-      </button>
-    </div>
-  `;
-  
-  actionsContainer.innerHTML = html;
-  
-  // Добавляем CSS для грида
-  setTimeout(() => {
-    const grid = actionsContainer.querySelector('.hunt-targets-grid');
-    if (grid) {
-      grid.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-bottom: 15px;
-      `;
+    // Получаем всех охотничьих существ из battleSystem
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
     }
     
-    const items = actionsContainer.querySelectorAll('.hunt-target-item');
-    items.forEach(item => {
-      item.style.cssText = `
-        background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-        border: 1px solid #00aaff;
-        border-radius: 8px;
-        padding: 12px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      `;
-      
-      item.onmouseenter = () => {
-        item.style.transform = 'translateY(-2px)';
-        item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
-      };
-      item.onmouseleave = () => {
-        item.style.transform = 'translateY(0)';
-        item.style.boxShadow = 'none';
-      };
+    // Получаем всех монстров (из данных которые ты предоставил)
+    const allMonsters = battleSystem.monsters || [];
+    
+    // Фильтруем охотничьих существ (животных)
+    const huntableMonsters = allMonsters.filter(monster => {
+        // Это упрощенная логика - можно настроить по tags или типам
+        const animalTypes = ['wolf', 'bear', 'boar', 'deer', 'fox', 'lynx', 'tiger', 'bison', 'wolverine'];
+        return animalTypes.some(type => monster.name.toLowerCase().includes(type));
     });
-  }, 50);
+    
+    if (huntableMonsters.length === 0) {
+        html = `
+            <div class="hunt-no-targets">
+                <h3 style="color: #ff4444; text-align: center;">❌ Нет доступных целей</h3>
+                <p style="text-align: center; margin: 20px 0;">
+                    В этой местности нет подходящей дичи для охоты.
+                </p>
+                <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+                        style="width: 100%;">
+                    ↩️ Назад к действиям
+                </button>
+            </div>
+        `;
+        actionsContainer.innerHTML = html;
+        return;
+    }
+    
+    let html = `
+        <div class="hunt-target-selection">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                🏹 Выберите цель охоты
+            </h3>
+            
+            <div class="base-chance-info" style="
+                background: rgba(0, 0, 0, 0.4);
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <strong>Базовая вероятность успешной охоты:</strong> 
+                <span style="color: ${baseHuntChance >= 70 ? '#44ff44' : baseHuntChance >= 40 ? '#ffaa00' : '#ff4444'}">
+                    ${baseHuntChance}%
+                </span>
+                <p style="margin-top: 10px; font-size: 12px; color: #aaa;">
+                    В случае неудачи вы встретите случайное существо из всех доступных
+                </p>
+            </div>
+            
+            <div class="hunt-targets-list">
+    `;
+    
+    // Сортируем существ по уровню
+    huntableMonsters.sort((a, b) => (a.level || 1) - (b.level || 1));
+    
+    huntableMonsters.forEach(monster => {
+        // Получаем текущий шанс охоты на это существо
+        const currentChance = this.getHuntChanceForMonster(
+            cellKey, 
+            monster.id, 
+            baseHuntChance
+        );
+        
+        // Ресурсы, которые можно получить с этого существа
+        const monsterResources = this.getMonsterResources(monster);
+        
+        html += `
+            <div class="hunt-target-card" onclick="window.game.systems.map.startHuntForMonster(${cell.row}, ${cell.col}, ${monster.id})">
+                <div class="hunt-target-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 24px;">${monster.image || '🐾'}</div>
+                        <div>
+                            <div class="hunt-target-name">${monster.name}</div>
+                            <div class="hunt-target-level" style="font-size: 12px; color: #aaa;">
+                                Уровень: ${monster.level || 1}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hunt-target-chance-display">
+                        <div style="font-size: 12px; color: #aaa; margin-bottom: 5px;">Шанс успеха:</div>
+                        <div style="
+                            font-size: 18px;
+                            font-weight: bold;
+                            color: ${currentChance >= 70 ? '#44ff44' : currentChance >= 40 ? '#ffaa00' : '#ff4444'};
+                        ">
+                            ${currentChance}%
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hunt-target-info">
+                    <div style="font-size: 12px; color: #aaa; margin: 10px 0;">
+                        <strong>Статистика:</strong> ❤️${monster.health} ⚔️${monster.damage} 🛡️${monster.armor}
+                    </div>
+                    
+                    ${monsterResources.length > 0 ? `
+                        <div style="font-size: 12px; color: #f59e0b; margin: 10px 0;">
+                            <strong>Возможная добыча:</strong> ${monsterResources.join(', ')}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="font-size: 11px; color: #888; margin-top: 10px;">
+                        <em>После успеха шанс снизится на 5%</em>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569;">
+                <div class="hunt-warning" style="
+                    background: rgba(255, 100, 100, 0.1);
+                    border: 1px solid #ff4444;
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin-bottom: 15px;
+                ">
+                    <strong>⚠️ Внимание!</strong>
+                    <p style="margin-top: 8px; font-size: 12px;">
+                        В случае неудачи вы встретите <strong>случайное существо</strong> из всех доступных монстров,
+                        а не только охотничьих!
+                    </p>
+                </div>
+            </div>
+            
+            <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+                    style="margin-top: 20px; width: 100%;">
+                ↩️ Назад к действиям
+            </button>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = html;
+    
+    // Добавляем стили для карточек
+    setTimeout(() => {
+        const cards = actionsContainer.querySelectorAll('.hunt-target-card');
+        cards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid #00aaff;
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 15px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
+            
+            card.onmouseenter = () => {
+                card.style.transform = 'translateY(-3px)';
+                card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.3)';
+            };
+            card.onmouseleave = () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+            };
+        });
+    }, 50);
+}
+
+// Новый метод: начать охоту на конкретного монстра
+async startHuntForMonster(row, col, monsterId) {
+    const cellKey = this.getCellKey(row, col);
+    const baseChance = this.getActionChance('hunt', this.currentCellType);
+    const currentChance = this.getHuntChanceForMonster(cellKey, monsterId, baseChance);
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
+    }
+    
+    const monster = battleSystem.getMonsterById(monsterId);
+    if (!monster) {
+        console.error(`❌ Монстр с ID ${monsterId} не найден`);
+        return;
+    }
+    
+    // Показываем окно с вероятностью
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (actionsContainer) {
+        actionsContainer.innerHTML = `
+            <div class="hunt-attempt-window">
+                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
+                    🏹 Охота на ${monster.name}
+                </h3>
+                
+                <div class="hunt-target-info" style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 24px; margin-bottom: 10px;">${monster.image || '🐾'} ${monster.name}</div>
+                    <div style="color: #aaa; font-size: 14px;">Уровень: ${monster.level || 1}</div>
+                </div>
+                
+                <div class="hunt-chance-display" style="
+                    background: rgba(0, 0, 0, 0.4);
+                    padding: 20px;
+                    border-radius: 10px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                ">
+                    <div style="font-size: 16px; margin-bottom: 10px;">
+                        <strong>Вероятность успешной охоты:</strong>
+                    </div>
+                    
+                    <div style="
+                        font-size: 32px;
+                        font-weight: bold;
+                        color: ${currentChance >= 70 ? '#44ff44' : currentChance >= 40 ? '#ffaa00' : '#ff4444'};
+                        margin: 15px 0;
+                    ">
+                        ${currentChance}%
+                    </div>
+                    
+                    <div style="
+                        width: 100%;
+                        height: 20px;
+                        background: #333;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        margin: 10px 0;
+                    ">
+                        <div style="
+                            width: ${currentChance}%;
+                            height: 100%;
+                            background: ${currentChance >= 70 ? '#44ff44' : currentChance >= 40 ? '#ffaa00' : '#ff4444'};
+                            border-radius: 10px;
+                        "></div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <button class="btn-control" onclick="window.game.systems.map.executeHuntAttempt(${row}, ${col}, ${monsterId})"
+                            style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #dc2626, #991b1b);">
+                        🎲 Начать охоту!
+                    </button>
+                </div>
+                
+                <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
+                    <div style="color: #ff4444; margin-bottom: 10px;">
+                        <strong>⚠️ Важно!</strong>
+                    </div>
+                    <p style="margin: 10px 0;">
+                        При неудаче вы встретите <strong>случайного монстра</strong> из всех доступных
+                    </p>
+                    <p style="margin: 10px 0;">
+                        При успехе - шанс охоты на этого монстра снизится на 5%
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Новый метод: выполнить попытку охоты
+async executeHuntAttempt(row, col, targetMonsterId) {
+    const cellKey = this.getCellKey(row, col);
+    const baseChance = this.getActionChance('hunt', this.currentCellType);
+    const currentChance = this.getHuntChanceForMonster(cellKey, targetMonsterId, baseChance);
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return;
+    
+    const targetMonster = battleSystem.getMonsterById(targetMonsterId);
+    if (!targetMonster) return;
+    
+    // Бросок удачи
+    const roll = Math.random() * 100;
+    const success = roll <= currentChance;
+    
+    console.log(`🎲 Охота на ${targetMonster.name}: ${roll.toFixed(1)}/${currentChance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+    
+    // Показываем результат
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (actionsContainer) {
+        actionsContainer.innerHTML = `
+            <div class="hunt-result">
+                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
+                    🎯 Результат охоты
+                </h3>
+                
+                <div class="dice-result" style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 18px; margin-bottom: 10px;">Выпало: <strong>${roll.toFixed(1)}</strong></div>
+                    <div style="font-size: 18px; margin-bottom: 10px;">Нужно было: ≤ <strong>${currentChance}</strong></div>
+                    <div style="
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: ${success ? '#44ff44' : '#ff4444'};
+                        margin: 20px 0;
+                    ">
+                        ${success ? '✅ УСПЕШНАЯ ОХОТА!' : '❌ НЕУДАЧА'}
+                    </div>
+                </div>
+        `;
+        
+        if (success) {
+            // Успех - начинаем бой с целевым монстром
+            actionsContainer.innerHTML += `
+                <div class="hunt-success" style="text-align: center; margin: 20px 0;">
+                    <p>Вы успешно выследили ${targetMonster.name}!</p>
+                    <div style="margin: 20px 0;">
+                        <button class="btn-control" onclick="window.game.systems.map.startHuntBattle(${row}, ${col}, ${targetMonsterId}, true)"
+                                style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                            ⚔️ Начать бой с ${targetMonster.name}
+                        </button>
+                    </div>
+                    <div style="font-size: 12px; color: #aaa;">
+                        После боя шанс охоты на этого монстра снизится на 5%
+                    </div>
+                </div>
+            `;
+        } else {
+            // Неудача - случайный монстр
+            const randomMonster = this.getRandomMonster();
+            actionsContainer.innerHTML += `
+                <div class="hunt-failure" style="text-align: center; margin: 20px 0;">
+                    <p>Не удалось выследить ${targetMonster.name}...</p>
+                    <div style="
+                        background: rgba(255, 100, 100, 0.2);
+                        border: 1px solid #ff4444;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin: 20px 0;
+                    ">
+                        <strong>⚠️ Вы привлекли внимание!</strong>
+                        <p style="margin-top: 10px; font-size: 14px;">
+                            Вас заметил ${randomMonster.name}! Приготовьтесь к бою!
+                        </p>
+                    </div>
+                    <div style="margin: 20px 0;">
+                        <button class="btn-control" onclick="window.game.systems.map.startHuntBattle(${row}, ${col}, ${randomMonster.id}, false)"
+                                style="background: linear-gradient(135deg, #dc2626, #991b1b);">
+                            ⚔️ Начать бой с ${randomMonster.name}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+        
+        actionsContainer.innerHTML += `
+                <button class="btn-control" onclick="window.game.systems.map.updateCellActionsUI(this.selectedCell)" 
+                        style="margin-top: 20px; width: 100%;">
+                    ↩️ Назад к действиям
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Новый метод: получить случайного монстра
+getRandomMonster() {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        // Возвращаем fallback монстра
+        return {
+            id: 1,
+            name: "Свирепый Волк",
+            image: "🐺",
+            level: 1,
+            health: 100,
+            damage: 30,
+            armor: 10
+        };
+    }
+    
+    const allMonsters = battleSystem.monsters || [];
+    if (allMonsters.length === 0) {
+        return {
+            id: 1,
+            name: "Свирепый Волк",
+            image: "🐺",
+            level: 1,
+            health: 100,
+            damage: 30,
+            armor: 10
+        };
+    }
+    
+    // Выбираем случайного монстра, но с учетом уровня местности
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    const areaLevel = cellTypeData?.monster_level || 1;
+    
+    // Фильтруем монстров по уровню (не слишком высокому для области)
+    const suitableMonsters = allMonsters.filter(monster => {
+        const monsterLevel = monster.level || 1;
+        return Math.abs(monsterLevel - areaLevel) <= 2; // ±2 уровня от уровня области
+    });
+    
+    if (suitableMonsters.length > 0) {
+        return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
+    }
+    
+    // Если нет подходящих по уровню, возвращаем любого
+    return allMonsters[Math.floor(Math.random() * allMonsters.length)];
+}
+
+// Новый метод: получить ресурсы с монстра
+getMonsterResources(monster) {
+    const resources = [];
+    
+    // Простая логика - можно расширить
+    if (monster.name.toLowerCase().includes('волк')) {
+        resources.push('Волчья шкура', 'Волчье мясо', 'Кости волка');
+    } else if (monster.name.toLowerCase().includes('медведь')) {
+        resources.push('Медвежья шкура', 'Медвежье мясо', 'Медвежьи когти');
+    } else if (monster.name.toLowerCase().includes('кабан') || monster.name.toLowerCase().includes('вепрь')) {
+        resources.push('Кабанья шкура', 'Кабанье мясо', 'Клыки кабана');
+    } else if (monster.name.toLowerCase().includes('олень') || monster.name.toLowerCase().includes('лось')) {
+        resources.push('Оленья шкура', 'Оленина', 'Рога оленя');
+    } else if (monster.name.toLowerCase().includes('лиса') || monster.name.toLowerCase().includes('лис')) {
+        resources.push('Лисья шкура', 'Лисье мясо');
+    } else if (monster.name.toLowerCase().includes('рысь')) {
+        resources.push('Шкура рыси', 'Мясо рыси');
+    } else if (monster.name.toLowerCase().includes('тигр')) {
+        resources.push('Тигровая шкура', 'Тигриное мясо', 'Тигриные клыки');
+    } else if (monster.name.toLowerCase().includes('бизон')) {
+        resources.push('Бизонья шкура', 'Бизонье мясо', 'Бизоньи рога');
+    } else {
+        resources.push('Шкура животного', 'Мясо животного');
+    }
+    
+    return resources.slice(0, 3); // Максимум 3 ресурса
 }
 
 // Вспомогательные методы для поиска ресурсов
