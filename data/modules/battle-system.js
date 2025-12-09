@@ -1344,6 +1344,37 @@ updateFlaskChargesDisplay() {
         return damage;
     }
 
+
+    // В BattleSystem добавь этот метод:
+getMonsterLoot(monster) {
+    if (!monster) return [];
+    
+    const loot = [];
+    
+    // Добавляем гарантированный лут
+    if (monster.loot && monster.loot.guaranteed) {
+        loot.push(...monster.loot.guaranteed);
+        console.log(`📦 Гаранитированный лут ${monster.name}:`, monster.loot.guaranteed);
+    }
+    
+    // Добавляем случайный лут если есть
+    if (monster.loot && monster.loot.random && monster.loot.random.length > 0) {
+        if (Math.random() < 0.3) { // 30% шанс на случайный лут
+            const randomLoot = monster.loot.random[Math.floor(Math.random() * monster.loot.random.length)];
+            if (randomLoot) {
+                loot.push(randomLoot);
+                console.log(`🎲 Случайный лут ${monster.name}:`, randomLoot);
+            }
+        }
+    }
+    
+    // Убираем дубликаты
+    const uniqueLoot = [...new Set(loot)];
+    console.log(`✅ Итоговый лут ${monster.name}:`, uniqueLoot);
+    
+    return uniqueLoot;
+}
+
     updateHealthBar(side, position, currentHealth, maxHealth) {
         const healthPercent = Math.max(0, (currentHealth / maxHealth) * 100);
         
