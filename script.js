@@ -2080,6 +2080,41 @@ showOverlayContent(content, className = '') {
         }
     }
 
+testCrafting() {
+    console.log("🧪 Тестирование системы крафта...");
+    
+    if (!this.systems.crafting) {
+        console.error("❌ Система крафта не инициализирована");
+        return;
+    }
+    
+    // Тест 1: Проверяем рецепты
+    console.log("Тест 1 - Рецепты:", {
+        загружены: this.systems.crafting.loaded,
+        количество: Object.keys(this.systems.crafting.recipes || {}).length,
+        станции: this.systems.crafting.recipes?.stations
+    });
+    
+    // Тест 2: Пробуем получить HTML
+    try {
+        const html = this.systems.crafting.showCraftingUI('all', 'all');
+        console.log("Тест 2 - HTML получен:", html.substring(0, 200) + "...");
+        
+        // Тест 3: Показываем напрямую в контейнере
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.innerHTML = html;
+            container.style.display = 'block';
+            console.log("✅ HTML отображен в контейнере");
+        } else {
+            console.error("❌ Контейнер не найден");
+        }
+    } catch (error) {
+        console.error("❌ Ошибка при получении HTML:", error);
+    }
+}
+
+    
     debugCrafting() {
         if (this.systems.crafting) {
             console.log("=== ОТЛАДКА СИСТЕМЫ КРАФТА ===");
