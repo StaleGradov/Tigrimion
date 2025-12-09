@@ -471,20 +471,49 @@ async loadRecipes() {
         return html;
     }
 
-    renderStationFilters(activeFilter) {
-        let html = '';
-        for (const stationId in this.portableStations) {
-            if (!this.portableStations[stationId]) continue;
-            
-            html += `
-                <button class="filter-btn ${activeFilter === stationId ? 'active' : ''}" 
-                        onclick="game.systems.crafting.showCraftingUI('${stationId}', 'all')">
-                    ${this.getStationName(stationId)}
-                </button>
-            `;
-        }
-        return html;
+renderStationFilters(activeFilter) {
+    let html = '';
+    for (const stationId in this.portableStations) {
+        if (!this.portableStations[stationId]) continue;
+        
+        html += `
+            <button class="filter-btn ${activeFilter === stationId ? 'active' : ''}" 
+                    onclick="window.game.systems.crafting.showCraftingUI('${stationId}', 'all')">
+                ${this.getStationName(stationId)}
+            </button>
+        `;
     }
+    return html;
+}
+
+renderCategoryFilters(activeCategory, stationFilter) {
+    const categories = {
+        'all': 'Все',
+        'consumables': '⚗️ Расходники',
+        'basic_components': '🧱 Компоненты',
+        'tools': '🔨 Инструменты',
+        'weapons': '⚔️ Оружие',
+        'helmets': '⛑️ Шлемы',
+        'chest_armor': '🛡️ Доспех',
+        'gloves': '🧤 Перчатки',
+        'legs_recipes': '👖 Поножи',
+        'boots_recipes': '👢 Ботинки',
+        'stations': '🛠️ Станции',
+        'weapon_recipes': '🗡️ Оружие',
+        'materials': '📦 Материалы'
+    };
+    
+    let html = '';
+    for (const [category, name] of Object.entries(categories)) {
+        html += `
+            <button class="filter-btn ${activeCategory === category ? 'active' : ''}" 
+                    onclick="window.game.systems.crafting.showCraftingUI('${stationFilter}', '${category}')">
+                ${name}
+            </button>
+        `;
+    }
+    return html;
+}
 
     renderCategoryFilters(activeCategory, stationFilter) {
         const categories = {
