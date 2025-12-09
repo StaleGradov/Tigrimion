@@ -510,63 +510,71 @@ async loadRecipes() {
         return html;
     }
 
-    renderAvailableRecipes(stationFilter, categoryFilter) {
-        const availableRecipes = this.getAvailableRecipes(stationFilter, categoryFilter);
+  renderAvailableRecipes(stationFilter, categoryFilter) {
+    const availableRecipes = this.getAvailableRecipes(stationFilter, categoryFilter);
+    
+    if (availableRecipes.length === 0) {
+        return '<div class="no-recipes">📭 Нет доступных рецептов</div>';
+    }
+    
+    let html = '<div class="recipes-list">';
+    
+    availableRecipes.forEach(recipe => {
+        const canCraft = this.canCraftRecipe(recipe.id);
         
-        if (availableRecipes.length === 0) {
-            return '<div class="no-recipes">📭 Нет доступных рецептов</div>';
+        // ⭐ ИСПРАВЛЕНИЕ: Проверяем перед вызовом calculateQualityBonus
+        let qualityBonus = null;
+        try {
+            qualityBonus = this.calculateQualityBonus(recipe);
+        } catch (error) {
+            console.warn("⚠️ Ошибка расчета бонуса качества для рецепта:", recipe.id, error);
+            qualityBonus = null;
         }
         
-        let html = '<div class="recipes-list">';
-        
-        availableRecipes.forEach(recipe => {
-            const canCraft = this.canCraftRecipe(recipe.id);
-            const qualityBonus = this.calculateQualityBonus(recipe);
-            
-            html += `
-                <div class="recipe-card ${canCraft ? 'craftable' : 'uncraftable'}">
-                    <div class="recipe-header">
-                        <h4 class="recipe-name">${recipe.name}</h4>
-                        <span class="recipe-station">${this.getStationName(recipe.craft.station)}</span>
-                    </div>
-                    
-                    <div class="recipe-description">${recipe.description}</div>
-                    
-                    ${qualityBonus ? `
-                        <div class="recipe-quality">
-                            <span class="quality-bonus">🎯 Качество: +${qualityBonus}%</span>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="recipe-ingredients">
-                        <h5>Ингредиенты:</h5>
-                        ${recipe.craft.ingredients.map(ing => {
-                            const hasAmount = this.getResourceCount(ing.id) >= ing.count;
-                            const resourceData = window.game?.systems?.resources?.getResourceData?.(ing.id);
-                            return `
-                                <div class="ingredient ${hasAmount ? 'has' : 'missing'}">
-                                    <span class="ingredient-icon">${resourceData?.name?.split(' ')[0] || '📦'}</span>
-                                    <span class="ingredient-name">${resourceData?.name?.split(' ').slice(1).join(' ') || ing.id}</span>
-                                    <span class="ingredient-count">${this.getResourceCount(ing.id)}/${ing.count}</span>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                    
-                    <div class="recipe-actions">
-                        <button class="btn-craft ${canCraft ? '' : 'disabled'}" 
-                                onclick="game.systems.crafting.craftItem('${recipe.id}')"
-                                ${!canCraft ? 'disabled' : ''}>
-                            ${canCraft ? '⚒️ Создать' : '❌ Недостаточно ресурсов'}
-                        </button>
-                    </div>
+        html += `
+            <div class="recipe-card ${canCraft ? 'craftable' : 'uncraftable'}">
+                <div class="recipe-header">
+                    <h4 class="recipe-name">${recipe.name}</h4>
+                    <span class="recipe-station">${this.getStationName(recipe.craft?.station || 'hand_craft')}</span>
                 </div>
-            `;
-        });
-        
-        html += '</div>';
-        return html;
-    }
+                
+                <div class="recipe-description">${recipe.description}</div>
+                
+                ${qualityBonus ? `
+                    <div class="recipe-quality">
+                        <span class="quality-bonus">🎯 Качество: +${qualityBonus}%</span>
+                    </div>
+                ` : ''}
+                
+                <div class="recipe-ingredients">
+                    <h5>Ингредиенты:</h5>
+                    ${recipe.craft?.ingredients?.map(ing => {
+                        const hasAmount = this.getResourceCount(ing.id) >= ing.count;
+                        const resourceData = window.game?.systems?.resources?.getResourceData?.(ing.id);
+                        return `
+                            <div class="ingredient ${hasAmount ? 'has' : 'missing'}">
+                                <span class="ingredient-icon">${resourceData?.name?.split(' ')[0] || '📦'}</span>
+                                <span class="ingredient-name">${resourceData?.name?.split(' ').slice(1).join(' ') || ing.id}</span>
+                                <span class="ingredient-count">${this.getResourceCount(ing.id)}/${ing.count}</span>
+                            </div>
+                        `;
+                    }).join('') || '<div>Нет ингредиентов</div>'}
+                </div>
+                
+                <div class="recipe-actions">
+                    <button class="btn-craft ${canCraft ? '' : 'disabled'}" 
+                            onclick="game.systems.crafting.craftItem('${recipe.id}')"
+                            ${!canCraft ? 'disabled' : ''}>
+                        ${canCraft ? '⚒️ Создать' : '❌ Недостаточно ресурсов'}
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
 
     // ========== ЛОГИКА КРАФТА ==========
     getAvailableRecipes(stationFilter = 'all', categoryFilter = 'all') {
@@ -768,28 +776,34 @@ async loadRecipes() {
         return Math.max(1, (ingredientCount * totalIngredients) / 10);
     }
 
-    calculateQualityBonus(recipe) {
-        // Бонус качества на основе:
-        // 1. Уровня станции
-        // 2. Уровня навыка
-        // 3. Улучшений станции
-        
-        const stationLevel = this.stationLevels[recipe.craft.station] || 1;
-        const skill = this.getSkillForRecipe(recipe);
-        const skillLevel = skill ? this.getSkillLevel(skill) : 1;
-        
-        // Базовый бонус 0%
-        // Каждый уровень станции даёт +2%
-        // Каждый уровень навыка даёт +1%
-        let qualityBonus = 0;
-        qualityBonus += (stationLevel - 1) * 2; // 0% на уровне 1, +2% на уровне 2 и т.д.
-        qualityBonus += (skillLevel - 1) * 1; // 0% на уровне 1, +1% на уровне 2 и т.д.
-        
-        // Максимальный бонус 50%
-        qualityBonus = Math.min(qualityBonus, 50);
-        
-        return qualityBonus > 0 ? qualityBonus : null;
+  calculateQualityBonus(recipe) {
+    // Бонус качества на основе:
+    // 1. Уровня станции
+    // 2. Уровня навыка
+    // 3. Улучшений станции
+    
+    // ⭐ ИСПРАВЛЕНИЕ: Проверяем, что recipe.craft и recipe.craft.station существуют
+    if (!recipe || !recipe.craft || !recipe.craft.station) {
+        console.warn("⚠️ calculateQualityBonus: recipe.craft.station не определен", recipe);
+        return 0; // Возвращаем 0% бонуса
     }
+    
+    const stationLevel = this.stationLevels[recipe.craft.station] || 1;
+    const skill = this.getSkillForRecipe(recipe);
+    const skillLevel = skill ? this.getSkillLevel(skill) : 1;
+    
+    // Базовый бонус 0%
+    // Каждый уровень станции даёт +2%
+    // Каждый уровень навыка даёт +1%
+    let qualityBonus = 0;
+    qualityBonus += (stationLevel - 1) * 2; // 0% на уровне 1, +2% на уровне 2 и т.д.
+    qualityBonus += (skillLevel - 1) * 1; // 0% на уровне 1, +1% на уровне 2 и т.д.
+    
+    // Максимальный бонус 50%
+    qualityBonus = Math.min(qualityBonus, 50);
+    
+    return qualityBonus > 0 ? qualityBonus : null;
+}
 
     createCraftedItem(recipe) {
         // Создаём предмет на основе рецепта
