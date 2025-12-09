@@ -1,9 +1,5 @@
 "use strict";
 
-// Импортируем существующие модули
-import { MapRenderer } from './MapRenderer.js';
-import { MapActions } from './MapActions.js';
-
 class MapSystem {
     constructor(game) {
         this.game = game;
