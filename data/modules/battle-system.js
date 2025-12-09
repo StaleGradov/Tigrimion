@@ -2058,11 +2058,25 @@ endTacticalBattle(victory, escape = false) {
         window.game.systems.hero.calculateHeroStats(this.currentHero);
     }
     
-    // ⭐ ВАЖНО: Уведомляем систему карт с правильными параметрами
-    if (this.battleContext === 'movement' && window.game.systems.map) {
+    // ========== ОБРАБОТКА КОНТЕКСТА БОЯ ==========
+    
+    // Для охоты - специальная обработка
+    if (this.battleContext === 'hunt' && window.game.systems.map) {
+        console.log(`🏹 Завершение охоты в BattleSystem`);
+        
+        // Передаем флаг двойного лута для охоты
+        const doubleLoot = this.battleLoot.length > 0 && this.battleLoot.some(item => item.doubleLoot);
+        
+        // Уведомляем MapSystem о завершении охоты
+        window.game.systems.map.completeHuntAfterBattle(victory, escape, doubleLoot);
+    }
+    // Для обычного перемещения
+    else if (this.battleContext === 'movement' && window.game.systems.map) {
         console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
-    } else if (this.battleContext === 'hunt' && window.game.systems.map) {
+    }
+    // Для охоты с MapSystem (старая версия)
+    else if (this.battleContext === 'hunt' && window.game.systems.map) {
         // Для охоты передаем дополнительный флаг doubleLoot
         const doubleLoot = this.battleLoot.length > 0 && this.battleLoot.some(item => item.doubleLoot);
         window.game.systems.map.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
@@ -2077,7 +2091,34 @@ endTacticalBattle(victory, escape = false) {
     // Показываем результат боя
     this.showBattleResult(victory, escape);
 }
-
+// В BattleSystem добавьте:
+handleHuntContext(victory, monster) {
+    if (!this.currentHero) return;
+    
+    if (victory) {
+        console.log(`🏹 Успешная охота на ${monster.name}`);
+        
+        // Дополнительные награды за охоту
+        const huntBonus = {
+            gold: Math.floor(Math.random() * 20) + 10,
+            experience: Math.floor(Math.random() * 15) + 10
+        };
+        
+        this.currentHero.gold += huntBonus.gold;
+        if (window.game.systems.level) {
+            window.game.systems.level.addExperience(this.currentHero, huntBonus.experience);
+        }
+        
+        // Отмечаем лут как двойной
+        if (this.battleLoot.length > 0) {
+            this.battleLoot.forEach(item => {
+                item.doubleLoot = true;
+            });
+        }
+        
+        this.addBattleLog(`🏹 Бонус охоты: +${huntBonus.gold} золота, +${huntBonus.experience} опыта`);
+    }
+}
 
     // ========== МЕТОДЫ ДЛЯ РАБОТЫ С РЕСУРСАМИ ИЗ БОЯ ==========
 
