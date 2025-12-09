@@ -2505,53 +2505,72 @@ async executeActionWithProbability(action, row, col) {
     }
 }
 
-    handleHuntActionSuccess(row, col) {
-        console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
-        
-        const cellKey = `${col},${row}`;
-        const cell = this.currentTacticalMap?.cells[cellKey];
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        if (!cellTypeData) {
-            console.error("❌ Нет данных типа клетки");
-            return;
-        }
-        
-        // Начинаем бой с монстром для охоты
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            this.showNotification("❌ Не удалось начать охоту", 'error');
-            return;
-        }
-        
-        const monsterLevel = cellTypeData.monster_level || 1;
-        const randomMonster = this.getMonsterByLevel(monsterLevel);
-        
-        if (!randomMonster) {
-            console.error(`❌ Не найден монстр уровня ${monsterLevel}`);
-            this.showNotification("❌ Не удалось найти дичь для охоты", 'error');
-            return;
-        }
-        
-        // Сохраняем информацию об охоте для обработки после боя
-        this.pendingAction = {
-            action: 'hunt',
-            row: row,
-            col: col,
-            cellTypeData: cellTypeData,
-            wasSuccess: true,
-            doubleLoot: true // Флаг двойного лута
-        };
-        
-        console.log(`🏹 Начинаем охоту на ${randomMonster.name} (уровень ${monsterLevel}) с двойным лутодропом`);
-        
-        // Показываем сообщение об успешной охоте
-        this.showNotification(`🏹 Вы успешно выследили ${randomMonster.name}! Начинается бой.`, 'success');
-        
-        // Начинаем бой с флагом двойного лута
-        battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'hunt');
+  // Обновленный метод handleHuntActionSuccess (замените существующий)
+handleHuntActionSuccess(row, col) {
+    console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
+    
+    const cellKey = this.getCellKey(row, col);
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    if (!cellTypeData) {
+        console.error("❌ Нет данных типа клетки");
+        return;
     }
+    
+    // Получаем случайного охотничьего монстра
+    const randomMonster = this.getRandomHuntableMonster();
+    
+    if (!randomMonster) {
+        console.error(`❌ Не найден монстр для охоты`);
+        this.showNotification("❌ Не удалось найти дичь для охоты", 'error');
+        return;
+    }
+    
+    // Сохраняем информацию об охоте
+    this.pendingAction = {
+        action: 'hunt',
+        row: row,
+        col: col,
+        cellKey: cellKey,
+        monsterId: randomMonster.id,
+        isSpecificTarget: true,
+        wasSuccess: true,
+        doubleLoot: true
+    };
+    
+    console.log(`🏹 Начинаем охоту на ${randomMonster.name} с двойным лутодропом`);
+    
+    // Начинаем бой с монстром
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem) {
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, randomMonster, 'hunt');
+    }
+}
+
+
+    // Метод для получения случайного охотничьего монстра
+getRandomHuntableMonster() {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    const allMonsters = battleSystem.monsters || [];
+    if (allMonsters.length === 0) return null;
+    
+    // Фильтруем охотничьих существ (животных)
+    const huntableMonsters = allMonsters.filter(monster => {
+        const animalTypes = ['волк', 'медведь', 'кабан', 'олень', 'лось', 'лиса', 'рысь', 'тигр', 'бизон'];
+        return animalTypes.some(type => 
+            monster.name.toLowerCase().includes(type)
+        );
+    });
+    
+    if (huntableMonsters.length === 0) {
+        // Если нет охотничьих монстров, берем любого с уровнем 1-2
+        return allMonsters.find(m => (m.level || 1) <= 2) || allMonsters[0];
+    }
+    
+    return huntableMonsters[Math.floor(Math.random() * huntableMonsters.length)];
+}
 
     handleActionSuccess(action, row, col) {
         const config = this.actionConfigs[action];
@@ -6605,6 +6624,129 @@ async executeHuntAttempt(row, col, targetMonsterId) {
     }
 }
 
+
+// Метод для начала боя охоты
+startHuntBattle(row, col, monsterId, isSpecificTarget = false) {
+    console.log(`🏹 Начинаем бой охоты: цель=${monsterId}, специфичная=${isSpecificTarget}`);
+    
+    if (!this.currentHero) {
+        console.error("❌ Нет текущего героя");
+        return;
+    }
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
+    }
+    
+    const cellKey = this.getCellKey(row, col);
+    const cell = this.getCellByKey(cellKey);
+    
+    if (!cell) {
+        console.error("❌ Клетка не найдена");
+        return;
+    }
+    
+    // Сохраняем информацию об охоте для обработки после боя
+    this.pendingAction = {
+        action: 'hunt',
+        row: row,
+        col: col,
+        cellKey: cellKey,
+        monsterId: monsterId,
+        isSpecificTarget: isSpecificTarget,
+        wasSuccess: true // Для охоты всегда считаем успехом начало боя
+    };
+    
+    console.log(`🎯 Охота на клетке [${col},${row}]: монстр ID=${monsterId}, специфичный=${isSpecificTarget}`);
+    
+    // Получаем монстра
+    const monster = battleSystem.getMonsterById(monsterId);
+    if (!monster) {
+        console.error(`❌ Монстр с ID ${monsterId} не найден`);
+        return;
+    }
+    
+    console.log(`🐺 Начинаем охоту на ${monster.name}`);
+    
+    // Для охоты используем специальный контекст 'hunt'
+    if (isSpecificTarget) {
+        // Если это конкретный целевой монстр (успешная охота)
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, monster, 'hunt');
+    } else {
+        // Если это случайный монстр (неудачная охота)
+        battleSystem.startBattleWithMonster(this.currentHero, monsterId, 'hunt');
+    }
+}
+
+
+    // Метод для завершения охоты после боя (вызывается из BattleSystem)
+completeHuntAfterBattle(victory, escape = false, doubleLoot = false) {
+    console.log(`🏹 Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+    
+    if (!this.pendingAction) {
+        console.warn("⚠️ Нет ожидающего действия охоты");
+        return;
+    }
+    
+    const { action, row, col, cellKey, monsterId, isSpecificTarget } = this.pendingAction;
+    
+    if (victory) {
+        // Победа в охоте
+        console.log(`✅ Успешная охота на клетке [${col},${row}]`);
+        
+        // Отмечаем клетку как исследованную
+        this.markCellAsExplored(row, col);
+        
+        // Уменьшаем шанс охоты на этого монстра
+        if (isSpecificTarget) {
+            this.reduceHuntChance(cellKey, monsterId);
+        }
+        
+        // Двойной лут для охоты
+        if (doubleLoot) {
+            console.log(`🎁 Удваиваем лут с охоты`);
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem) {
+                // Получаем лут еще раз
+                const monster = battleSystem.getMonsterById(monsterId);
+                if (monster) {
+                    const additionalLoot = battleSystem.getMonsterLoot(monster);
+                    if (additionalLoot.length > 0) {
+                        battleSystem.addLootToResourcesSystem(additionalLoot);
+                        this.showNotification(`🎯 УСПЕШНАЯ ОХОТА! Получен двойной лут!`, 'success');
+                    }
+                }
+            }
+        }
+        
+        this.showNotification(`🏹 Охота успешна! Вы добыли трофей.`, 'success');
+    } else {
+        // Поражение в охоте
+        console.log(`💀 Охота провалилась на клетке [${col},${row}]`);
+        this.markCellAsExplored(row, col);
+        
+        if (escape) {
+            this.showNotification(`🏃 Вы сбежали с охоты!`, 'warning');
+        } else {
+            this.showNotification(`💀 Охота провалилась! Вы были ранены.`, 'error');
+        }
+    }
+    
+    // Очищаем ожидающее действие
+    this.pendingAction = null;
+    
+    // Возвращаем к интерфейсу клетки
+    setTimeout(() => {
+        const cell = this.getCellByKey(cellKey);
+        if (cell) {
+            this.updateCellActionsUI(cell);
+            this.highlightSelectedCell(cell);
+        }
+    }, 500);
+}
+    
 // Новый метод: получить случайного монстра
 getRandomMonster() {
     const battleSystem = window.game?.systems?.battle;
