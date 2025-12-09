@@ -605,50 +605,59 @@ renderCategoryFilters(activeCategory, stationFilter) {
     return html;
 }
 
-    // ========== ЛОГИКА КРАФТА ==========
-    getAvailableRecipes(stationFilter = 'all', categoryFilter = 'all') {
-        const availableRecipes = [];
+ getAvailableRecipes(stationFilter = 'all', categoryFilter = 'all') {
+    const availableRecipes = [];
+    
+    // Все категории рецептов
+    const recipeCategories = [
+        'consumables', 'basic_components', 'tools', 
+        'weapons', 'helmets', 'chest_armor', 'gloves',
+        'legs_recipes', 'boots_recipes', 'stations',
+        'weapon_recipes', 'materials', 'stations_recipes',
+        'tool_upgrades', 'potions'
+    ];
+    
+    recipeCategories.forEach(category => {
+        // Пропускаем если фильтр не "all" и не совпадает
+        if (categoryFilter !== 'all' && 
+            categoryFilter !== category && 
+            !category.includes(categoryFilter)) {
+            return;
+        }
         
-        const recipeCategories = ['consumables', 'basic_components', 'tools', 'weapons', 'helmets', 'stations', 'materials', 'weapon_recipes', 'boots_recipes', 'legs_recipes', 'chest_armor', 'gloves'];
+        const recipes = this.recipes[category];
+        if (!recipes) return;
         
-        recipeCategories.forEach(category => {
-            if (categoryFilter !== 'all' && categoryFilter !== category && !category.includes(categoryFilter)) {
-                return; // Пропускаем невыбранные категории
+        for (const [recipeId, recipeData] of Object.entries(recipes)) {
+            // Проверяем станцию
+            const station = recipeData.craft?.station || 'hand_craft';
+            if (stationFilter !== 'all' && stationFilter !== station) {
+                continue;
             }
             
-            const recipes = this.recipes[category];
-            if (!recipes) return;
-            
-            for (const [recipeId, recipeData] of Object.entries(recipes)) {
-                // Проверяем станцию
-                const station = recipeData.craft?.station || 'hand_craft';
-                if (stationFilter !== 'all' && stationFilter !== station) {
-                    continue;
-                }
-                
-                // Проверяем, есть ли у игрока станция
-                if (!this.hasStation(station)) {
-                    continue;
-                }
-                
-                // Проверяем требования (если есть)
-                const requirements = recipeData.craft?.requires || [];
-                if (requirements.length > 0) {
-                    const hasRequirements = requirements.every(req => this.hasStation(req));
-                    if (!hasRequirements) continue;
-                }
-                
-                // Добавляем рецепт
-                availableRecipes.push({
-                    id: recipeId,
-                    category: category,
-                    ...recipeData
-                });
+            // Проверяем доступность станции
+            if (!this.hasStation(station)) {
+                continue;
             }
-        });
-        
-        return availableRecipes;
-    }
+            
+            // Проверяем требования
+            const requirements = recipeData.craft?.requires || [];
+            if (requirements.length > 0) {
+                const hasRequirements = requirements.every(req => this.hasStation(req));
+                if (!hasRequirements) continue;
+            }
+            
+            // Добавляем рецепт
+            availableRecipes.push({
+                id: recipeId,
+                category: category,
+                ...recipeData
+            });
+        }
+    });
+    
+    return availableRecipes;
+}
 
     canCraftRecipe(recipeId) {
         // Находим рецепт
