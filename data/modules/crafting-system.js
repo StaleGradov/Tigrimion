@@ -42,49 +42,51 @@ async loadRecipes() {
     try {
         console.log("🔨 Загружаем рецепты крафта...");
         
-        // Пробуем только рабочий путь
+        // Используем только рабочий путь
         const path = 'data/crafting.json';
-        console.log(`🔍 Пробуем путь: ${path}`);
+        console.log(`🔍 Загружаем с пути: ${path}`);
         
         const response = await fetch(path);
         
         if (!response.ok) {
-            throw new Error(`Не удалось загрузить crafting.json: ${response.status} ${response.statusText}`);
+            console.warn(`⚠️ Не удалось загрузить ${path}, используем резервные рецепты`);
+            this.createFallbackRecipes();
+            this.loaded = true;
+            return true; // ⭐ ВАЖНО: Возвращаем true даже при ошибке
         }
         
-        console.log(`✅ Файл найден по пути: ${path}`);
         const rawData = await response.json();
         
-        // ИСПРАВЛЕНИЕ: Правильно получаем данные из структуры файла
+        // Получаем данные из правильной структуры
         if (rawData.crafting_system) {
-            // Если данные в поле crafting_system (как в вашем файле)
             this.recipes = rawData.crafting_system;
-            console.log("📁 Данные получены из поля 'crafting_system'");
+            console.log("✅ Данные получены из поля 'crafting_system'");
         } else {
-            // Если данные уже на верхнем уровне
             this.recipes = rawData;
-            console.log("📁 Данные получены с верхнего уровня");
+            console.log("✅ Данные получены с верхнего уровня");
         }
         
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Устанавливаем флаг loaded в true
+        // Устанавливаем флаг загрузки
         this.loaded = true;
         
-        console.log(`✅ Загружено рецептов крафта:`);
-        console.log(`  🛠️  Станции: ${this.recipes.stations ? Object.keys(this.recipes.stations).length : 0}`);
-        console.log(`  ⚗️  Расходники: ${this.recipes.consumables ? Object.keys(this.recipes.consumables).length : 0}`);
-        console.log(`  🧱 Компоненты: ${this.recipes.basic_components ? Object.keys(this.recipes.basic_components).length : 0}`);
-        console.log(`  🔨 Инструменты: ${this.recipes.tools ? Object.keys(this.recipes.tools).length : 0}`);
+        console.log(`✅ Загружено рецептов:`, {
+            станций: Object.keys(this.recipes.stations || {}).length,
+            расходников: Object.keys(this.recipes.consumables || {}).length,
+            компонентов: Object.keys(this.recipes.basic_components || {}).length,
+            инструментов: Object.keys(this.recipes.tools || {}).length,
+            всего_рецептов: this.getAvailableRecipes('all', 'all').length
+        });
         
         return true;
         
     } catch (error) {
-        console.error("❌ Ошибка загрузки рецептов:", error);
+        console.error("❌ Критическая ошибка загрузки рецептов:", error);
         
-        // Создаем простые тестовые рецепты
+        // Создаем резервные рецепты
         this.createFallbackRecipes();
         this.loaded = true;
         
-        return true; // ⭐ ВАЖНО: Всегда возвращаем true для продолжения работы
+        return true; // ⭐ ВАЖНО: Всегда возвращаем true
     }
 }
 
