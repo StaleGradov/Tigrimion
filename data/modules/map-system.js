@@ -6468,7 +6468,6 @@ createActionsContainerFallback() {
         }
     }
 
-// Обновленный метод охоты с вероятностями
 showHuntTargetSelectionWithProbabilities(cell) {
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) return;
@@ -6476,28 +6475,14 @@ showHuntTargetSelectionWithProbabilities(cell) {
     const cellKey = this.getCellKey(cell.row, cell.col);
     const baseHuntChance = this.getActionChance('hunt', this.currentCellType);
     
-    // Получаем всех охотничьих существ из battleSystem
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) {
-        console.error("❌ BattleSystem не доступна");
-        return;
-    }
+    // Используем новый метод для получения охотничьих существ
+    const huntableMonsters = this.getHuntableMonsters();
     
-    // Получаем всех монстров (из данных которые ты предоставил)
-    const allMonsters = battleSystem.monsters || [];
-    
-    // Фильтруем охотничьих существ (животных)
-    const huntableMonsters = allMonsters.filter(monster => {
-        // Это упрощенная логика - можно настроить по tags или типам
-        const animalTypes = ['wolf', 'bear', 'boar', 'deer', 'fox', 'lynx', 'tiger', 'bison', 'wolverine'];
-        return animalTypes.some(type => monster.name.toLowerCase().includes(type));
-    });
-    
-    // НАЧИНАЕМ ФОРМИРОВАТЬ HTML
-    let html = '';
+    console.log('🎯 Охотничьи цели найдены:', huntableMonsters.length, 
+                'имена:', huntableMonsters.map(m => m.name));
     
     if (huntableMonsters.length === 0) {
-        html = `
+        const html = `
             <div class="hunt-no-targets">
                 <h3 style="color: #ff4444; text-align: center;">❌ Нет доступных целей</h3>
                 <p style="text-align: center; margin: 20px 0;">
@@ -6513,7 +6498,7 @@ showHuntTargetSelectionWithProbabilities(cell) {
         return;
     }
     
-    html = `
+    let html = `
         <div class="hunt-target-selection">
             <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
                 🏹 Выберите цель охоты
@@ -6538,8 +6523,8 @@ showHuntTargetSelectionWithProbabilities(cell) {
             <div class="hunt-targets-list">
     `;
     
-    // Сортируем существ по уровню
-    huntableMonsters.sort((a, b) => (a.level || 1) - (b.level || 1));
+    // Сортируем существ по уровню (здоровью)
+    huntableMonsters.sort((a, b) => (a.health || 0) - (b.health || 0));
     
     huntableMonsters.forEach(monster => {
         // Получаем текущий шанс охоты на это существо
@@ -6560,7 +6545,7 @@ showHuntTargetSelectionWithProbabilities(cell) {
                         <div>
                             <div class="hunt-target-name">${monster.name}</div>
                             <div class="hunt-target-level" style="font-size: 12px; color: #aaa;">
-                                Уровень: ${monster.level || 1}
+                                ❤️ ${monster.health} HP | ⚔️ ${monster.damage} | 🛡️ ${monster.armor}
                             </div>
                         </div>
                     </div>
@@ -6578,7 +6563,8 @@ showHuntTargetSelectionWithProbabilities(cell) {
                 
                 <div class="hunt-target-info">
                     <div style="font-size: 12px; color: #aaa; margin: 10px 0;">
-                        <strong>Статистика:</strong> ❤️${monster.health} ⚔️${monster.damage} 🛡️${monster.armor}
+                        <strong>Тип:</strong> ${this.determineMonsterType(monster)} 
+                        | <strong>Позиция:</strong> ${monster.preferredPosition || 'front'}
                     </div>
                     
                     ${monsterResources.length > 0 ? `
