@@ -2329,6 +2329,215 @@ async performCellAction(action, row, col) {
     this.showActionProbabilityWindow(action, row, col);
 }
 
+
+// ========== СИСТЕМА ОХОТЫ С УМНОЙ ФИЛЬТРАЦИЕЙ ==========
+
+// Основной метод для получения охотничьих существ
+getHuntableMonsters() {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.warn("❌ BattleSystem не доступна");
+        return [];
+    }
+    
+    const allMonsters = battleSystem.monsters || [];
+    console.log('🔍 Всего монстров в BattleSystem:', allMonsters.length);
+    
+    if (allMonsters.length === 0) {
+        console.warn('⚠️ В BattleSystem нет монстров!');
+        return [];
+    }
+    
+    // Определяем охотничьих существ по типу и наличию дропа
+    const huntableMonsters = allMonsters.filter(monster => {
+        if (!monster) return false;
+        
+        // Проверяем, есть ли у монстра лут
+        const hasLoot = monster.loot && 
+                       (monster.loot.guaranteed?.length > 0 || monster.loot.random?.length > 0);
+        
+        // Определяем тип существа
+        const monsterType = this.determineMonsterType(monster);
+        const isAnimal = this.isAnimalType(monsterType);
+        
+        const isHuntable = hasLoot && isAnimal;
+        
+        if (isHuntable) {
+            console.log(`🎯 ${monster.name} подходит для охоты: тип=${monsterType}, лут=${hasLoot}`);
+        }
+        
+        return isHuntable;
+    });
+    
+    console.log('🎯 Найдено охотничьих существ:', huntableMonsters.length);
+    
+    // Если не нашли охотничьих, показываем несколько случайных для отладки
+    if (huntableMonsters.length === 0 && allMonsters.length > 0) {
+        console.log('⚠️ Не найдено охотничьих существ, показываем первые 3 для отладки');
+        return allMonsters.slice(0, 3);
+    }
+    
+    // Сортируем по уровню (здоровье как показатель уровня)
+    return huntableMonsters.sort((a, b) => (a.health || 0) - (b.health || 0));
+}
+
+// Определение типа монстра по имени и характеристикам
+determineMonsterType(monster) {
+    if (!monster || !monster.name) return 'unknown';
+    
+    const name = monster.name.toLowerCase();
+    
+    // Животные (охота)
+    if (name.includes('волк')) return 'wolf';
+    if (name.includes('медвед')) return 'bear';
+    if (name.includes('кабан') || name.includes('вепрь')) return 'boar';
+    if (name.includes('лис')) return 'fox';
+    if (name.includes('рысь')) return 'lynx';
+    if (name.includes('тигр')) return 'tiger';
+    if (name.includes('олен') || name.includes('лось')) return 'deer';
+    if (name.includes('бизон')) return 'bison';
+    if (name.includes('росомаха') || name.includes('вихрь')) return 'wolverine';
+    if (name.includes('ящер')) return 'lizard';
+    if (name.includes('паук')) return 'spider';
+    if (name.includes('тролль')) return 'troll';
+    if (name.includes('виверн') || name.includes('дракон')) return 'dragon';
+    if (name.includes('саламандр')) return 'salamander';
+    if (name.includes('энт')) return 'ent';
+    if (name.includes('феникс')) return 'phoenix';
+    
+    // Люди (не для охоты, но могут быть для других действий)
+    if (name.includes('лесоруб')) return 'human_lumberjack';
+    if (name.includes('шахтер') || name.includes('минер')) return 'human_miner';
+    if (name.includes('крестьянин') || name.includes('бунтарь')) return 'human_peasant';
+    if (name.includes('рабочий')) return 'human_worker';
+    if (name.includes('разбойник') || name.includes('бандит')) return 'human_bandit';
+    if (name.includes('гном')) return 'human_dwarf';
+    if (name.includes('орк')) return 'human_orc';
+    if (name.includes('охотник') || name.includes('странник') || name.includes('рейнжер')) return 'human_hunter';
+    if (name.includes('страж') || name.includes('гвардеец') || name.includes('воин')) return 'human_guard';
+    if (name.includes('магнат') || name.includes('всадник') || name.includes('ведьма')) return 'human_special';
+    
+    return 'unknown';
+}
+
+// Проверяем, является ли тип животным для охоты
+isAnimalType(type) {
+    const animalTypes = [
+        'wolf', 'bear', 'boar', 'fox', 'lynx', 'tiger', 'deer', 'bison', 
+        'wolverine', 'lizard', 'spider', 'troll', 'dragon', 'salamander',
+        'ent', 'phoenix'
+    ];
+    return animalTypes.includes(type);
+}
+
+// Получаем ресурсы для монстра (используем существующий дроп)
+getMonsterResources(monster) {
+    const resources = [];
+    
+    // Используем гарантированный дроп из данных монстра
+    if (monster.loot && monster.loot.guaranteed) {
+        monster.loot.guaranteed.forEach(itemId => {
+            // Получаем информацию о ресурсе из системы ресурсов
+            const resourceInfo = this.getResourceInfo(itemId);
+            if (resourceInfo) {
+                resources.push(resourceInfo.name);
+            } else {
+                // Если нет в системе, используем ID
+                resources.push(this.formatResourceName(itemId));
+            }
+        });
+    }
+    
+    // Если нет гарантированного дропа, используем общую логику
+    if (resources.length === 0) {
+        const monsterType = this.determineMonsterType(monster);
+        return this.getResourcesByMonsterType(monsterType);
+    }
+    
+    return resources.slice(0, 3);
+}
+
+// Получаем информацию о ресурсе из системы ресурсов
+getResourceInfo(resourceId) {
+    // Ищем в ResourcesSystem если есть
+    const resourcesSystem = window.game?.systems?.resources;
+    if (resourcesSystem) {
+        // Ищем во всех категориях
+        for (const category in resourcesSystem.resources) {
+            const resourceList = resourcesSystem.resources[category];
+            if (Array.isArray(resourceList)) {
+                const resource = resourceList.find(r => r.id === resourceId);
+                if (resource) return resource;
+            }
+        }
+    }
+    
+    // Ищем в EquipmentSystem если есть
+    const equipmentSystem = window.game?.systems?.equipment;
+    if (equipmentSystem && equipmentSystem.getItemById) {
+        const item = equipmentSystem.getItemById(resourceId);
+        if (item) return { name: item.name, type: item.type };
+    }
+    
+    return null;
+}
+
+// Форматируем имя ресурса из ID
+formatResourceName(resourceId) {
+    const nameMap = {
+        'wolf_bone': 'Кость волка',
+        'strong_hide': 'Крепкая шкура',
+        'hare_fur': 'Мех зайца',
+        'bear_hide': 'Медвежья шкура',
+        'thick_hide': 'Толстая шкура',
+        'thick_leather': 'Толстая кожа',
+        'lynx_fur': 'Мех рыси',
+        'tiger_hide': 'Тигриная шкура',
+        'arctic_fox_fur': 'Полярный лис',
+        'thin_hide': 'Тонкая шкура',
+        'horse_bone': 'Кость лошади',
+        'strong_leather': 'Крепкая кожа',
+        'bull_bone': 'Кость быка',
+        'bull_leather': 'Кожа быка',
+        'marten_fur': 'Мех куницы',
+        'lizard_leather': 'Кожа ящера',
+        'cobweb': 'Паутина',
+        'mammoth_bone': 'Кость мамонта',
+        'dragon_bone': 'Кость дракона',
+        'common_wood': 'Обычное дерево',
+        'dragon_leather': 'Кожа дракона',
+        'dragon_hide': 'Шкура дракона',
+        'leopard_fur': 'Мех леопарда',
+        'meteorite_ore': 'Метеоритная руда'
+    };
+    
+    return nameMap[resourceId] || resourceId.replace(/_/g, ' ');
+}
+
+// Альтернативный метод - ресурсы по типу монстра
+getResourcesByMonsterType(monsterType) {
+    const resourceMap = {
+        'wolf': ['Волчья шкура', 'Волчьи клыки', 'Волчье мясо'],
+        'bear': ['Медвежья шкура', 'Медвежьи когти', 'Медвежий жир'],
+        'boar': ['Кабанья шкура', 'Кабаньи клыки', 'Кабанье мясо'],
+        'fox': ['Лисья шкура', 'Лисьи хвост', 'Тонкий мех'],
+        'lynx': ['Мех рыси', 'Когти рыси', 'Кошачий глаз'],
+        'tiger': ['Тигровая шкура', 'Тигриные клыки', 'Тигриные когти'],
+        'deer': ['Оленья шкура', 'Оленьи рога', 'Оленина'],
+        'bison': ['Бизонья шкура', 'Бизоньи рога', 'Бизонье мясо'],
+        'lizard': ['Чешуя ящера', 'Хвост ящера', 'Зубы ящера'],
+        'spider': ['Паутина', 'Яд паука', 'Глаза паука'],
+        'troll': ['Кожа тролля', 'Кровь тролля', 'Кость тролля'],
+        'dragon': ['Чешуя дракона', 'Клык дракона', 'Кровь дракона'],
+        'salamander': ['Огненная чешуя', 'Огненный рог', 'Лавовый камень'],
+        'ent': ['Древесная кора', 'Живой сок', 'Корень энта'],
+        'phoenix': ['Перо феникса', 'Пепел феникса', 'Сердце феникса']
+    };
+    
+    return resourceMap[monsterType] || ['Шкура животного', 'Мясо', 'Кости'];
+}
+
+    
 // Новый метод: окно с вероятностью действия
 showActionProbabilityWindow(action, row, col) {
     const cellKey = this.getCellKey(row, col);
