@@ -2036,6 +2036,35 @@ endTacticalBattle(victory, escape = false) {
         this.clearBattleState();
     }
 
+    // ========== СПЕЦИАЛЬНАЯ ОБРАБОТКА ОХОТЫ ==========
+    if (this.battleContext === 'hunt') {
+        console.log(`🏹 Завершение охоты: победа=${victory}, побег=${escape}`);
+        
+        const mapSystem = window.game?.systems?.map;
+        if (mapSystem && mapSystem.completeHuntAfterBattle) {
+            // Определяем был ли двойной лут (для успешной охоты)
+            let doubleLoot = false;
+            
+            if (victory && !escape) {
+                // Проверяем было ли действие "охота" успешным
+                const pendingAction = mapSystem.pendingAction;
+                if (pendingAction && pendingAction.action === 'hunt' && pendingAction.wasSuccess) {
+                    doubleLoot = true;
+                    console.log("🎁 УСПЕШНАЯ ОХОТА - двойной лут активирован!");
+                }
+            }
+            
+            // Передаем результат в MapSystem для обработки
+            mapSystem.completeHuntAfterBattle(victory, escape, doubleLoot);
+        } else {
+            console.error("❌ MapSystem не доступна для обработки охоты");
+        }
+        
+        // Показываем результат боя
+        this.showBattleResult(victory, escape);
+        return;
+    }
+
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
