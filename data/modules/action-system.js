@@ -189,31 +189,41 @@ class ActionSystem {
 
     // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
 
-    initializeActionModules() {
-        console.log("🔄 Инициализация модулей действий...");
-        
-        try {
-            // Загружаем модуль охоты
-            if (!this.actionModules['hunt']) {
-                const moduleLoader = new ActionModulesLoader(this);
-                moduleLoader.loadModule('hunt').then(() => {
-                    if (window.HuntAction) {
-                        this.actionModules['hunt'] = new window.HuntAction(this);
-                        console.log("✅ Модуль охоты инициализирован");
-                    }
-                }).catch(error => {
-                    console.error("❌ Ошибка загрузки модуля охоты:", error);
-                    this.createHuntActionStub();
-                });
+initializeActionModules() {
+    console.log("🔄 Инициализация модулей действий...");
+    
+    try {
+        // Загружаем модуль охоты
+        if (!this.actionModules['hunt']) {
+            // Сначала проверяем, есть ли уже загруженный класс HuntAction
+            if (window.HuntAction) {
+                this.actionModules['hunt'] = new window.HuntAction(this);
+                console.log("✅ Модуль охоты создан из глобального класса HuntAction");
+                return true;
             }
-        } catch (error) {
-            console.error("❌ Ошибка инициализации модулей действий:", error);
-            this.createHuntActionStub();
+            
+            // Если нет, пытаемся загрузить
+            const moduleLoader = new ActionModulesLoader(this);
+            moduleLoader.loadModule('hunt').then((success) => {
+                if (success && window.HuntAction && !this.actionModules['hunt']) {
+                    this.actionModules['hunt'] = new window.HuntAction(this);
+                    console.log("✅ Модуль охоты загружен и инициализирован");
+                }
+            }).catch(error => {
+                console.error("❌ Ошибка загрузки модуля охоты:", error);
+                this.createHuntActionStub();
+            });
+        } else {
+            console.log("✅ Модуль охоты уже инициализирован");
         }
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка инициализации модулей действий:", error);
+        this.createHuntActionStub();
+        return false;
     }
-
-    getModule(moduleName) {
-    return this.actionModules[moduleName];
 }
 
 registerModule(moduleName, moduleInstance) {
