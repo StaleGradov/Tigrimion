@@ -152,6 +152,34 @@ class MapSystem {
         return this.actionSystem;
     }
 
+
+    // ========== МЕТОДЫ ДЛЯ МОДУЛЯ ОХОТЫ ==========
+
+getActionSystem() {
+    return this.actionSystem;
+}
+
+isHuntModuleLoaded() {
+    return this.actionSystem && 
+           this.actionSystem.actionModules && 
+           this.actionSystem.actionModules['hunt'];
+}
+
+executeHuntAction(row, col) {
+    if (this.isHuntModuleLoaded()) {
+        return this.actionSystem.actionModules['hunt'].execute(row, col);
+    } else {
+        console.error("❌ Модуль охоты не загружен");
+        if (window.game) {
+            window.game.showNotification("❌ Модуль охоты не загружен", 'error');
+        }
+        return false;
+    }
+}
+
+
+
+    
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
 
     handleMerchantClick(merchantCell) {
@@ -416,12 +444,9 @@ class MapSystem {
 completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
     console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
-    // Делегируем обработку охоты модулю охоты
-    if (battleType === 'hunt' && this.pendingAction && this.pendingAction.action === 'hunt') {
-        if (this.actionSystem && this.actionSystem.actionModules['hunt']) {
-            return this.actionSystem.actionModules['hunt'].completeHuntAfterBattle(victory, escape, doubleLoot);
-        }
-        return;
+    // Делегируем обработку охоты модулю охоты через ActionSystem
+    if (battleType === 'hunt' && this.actionSystem) {
+        return this.completeHuntAfterBattle(victory, escape, doubleLoot);
     }
     
     // Обработка неудачных действий
@@ -591,105 +616,6 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     if (window.game && window.game.saveGame) {
         window.game.saveGame();
     }
-}
-
-// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
-
-addResourceFromHunt(resource, doubleLoot) {
-    if (!this.currentHero) return;
-    
-    const actionSystem = window.game?.systems?.action;
-    if (!actionSystem) return;
-    
-    // Добавляем ресурс герою
-    let quantity = 1;
-    
-    if (doubleLoot) {
-        quantity = 2;
-        console.log(`🎁 ДВОЙНОЙ ЛУТ! Добавляем ${quantity}x ${resource.name}`);
-    }
-    
-    actionSystem.addResourceToHero(resource.id, resource.name, quantity, this.getResourceType(resource));
-}
-
-getRandomHuntResource() {
-    const actionSystem = window.game?.systems?.action;
-    if (!actionSystem || !actionSystem.resources) return null;
-    
-    // Безопасное получение всех охотничьих ресурсов
-    const allHuntResources = [];
-    
-    // Добавляем ресурсы из каждого массива если они существуют и являются массивами
-    if (Array.isArray(actionSystem.resources.bones)) {
-        allHuntResources.push(...actionSystem.resources.bones);
-    }
-    if (Array.isArray(actionSystem.resources.leathers)) {
-        allHuntResources.push(...actionSystem.resources.leathers);
-    }
-    if (Array.isArray(actionSystem.resources.hides)) {
-        allHuntResources.push(...actionSystem.resources.hides);
-    }
-    if (Array.isArray(actionSystem.resources.furs)) {
-        allHuntResources.push(...actionSystem.resources.furs);
-    }
-    
-    if (allHuntResources.length === 0) return null;
-    
-    // Взвешенный выбор - более простые ресурсы чаще
-    const weightedResources = allHuntResources.map(resource => {
-        const price = resource.price || resource.value || 10;
-        const weight = Math.max(1, 100 - price); // Дешевые = больший вес
-        
-        return { resource, weight };
-    });
-    
-    const totalWeight = weightedResources.reduce((sum, item) => sum + item.weight, 0);
-    let random = Math.random() * totalWeight;
-    
-    for (const item of weightedResources) {
-        if (random < item.weight) {
-            return item.resource;
-        }
-        random -= item.weight;
-    }
-    
-    return weightedResources[0].resource;
-}
-
-getResourceType(resource) {
-    // Определяем тип ресурса по ID
-    if (resource.id.includes('bone')) return 'bones';
-    if (resource.id.includes('leather')) return 'leathers';
-    if (resource.id.includes('hide')) return 'hides';
-    if (resource.id.includes('fur')) return 'furs';
-    return 'loot';
-}
-
-applyDoubleHuntPenalty(cell) {
-    const cellType = window.game.systems.action?.determineCellType(cell);
-    const cellTypeData = window.game.systems.action?.cellTypes[cellType];
-    
-    if (!cellTypeData || !cellTypeData.action_chances) return;
-    
-    // Удваиваем штраф (еще -5%, итого -10% от оригинала)
-    Object.keys(cellTypeData.action_chances).forEach(action => {
-        if (cellTypeData.action_chances[action] > 0) {
-            // Уменьшаем еще на 5% от ОРИГИНАЛЬНОГО значения
-            const originalChance = cellTypeData.original_chances?.[action] || cellTypeData.action_chances[action] + 5;
-            const newChance = Math.max(1, originalChance - 10);
-            cellTypeData.action_chances[action] = newChance;
-        }
-    });
-    
-    console.log(`📉 УДВОЕННЫЙ штраф применен к клетке [${cell.col},${cell.row}]`);
-    
-    // Сохраняем оригинальные значения для восстановления
-    if (!cellTypeData.original_chances) {
-        cellTypeData.original_chances = { ...cellTypeData.action_chances };
-    }
-    
-    cellTypeData.hunt_failure_penalty = true;
-    cellTypeData.double_penalty = true;
 }
 
     
@@ -1940,42 +1866,48 @@ applyDoubleHuntPenalty(cell) {
         }
     }
 
-    startTacticalBattleForMovement(x, y, cellData) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
+startTacticalBattleForMovement(x, y, cellData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
+    }
 
-        if (!this.currentHero) {
-            console.error("❌ Не могу начать бой: герой не выбран");
-            return;
-        }
+    if (!this.currentHero) {
+        console.error("❌ Не могу начать бой: герой не выбран");
+        return;
+    }
 
-        this.pendingMovement = { x: x, y: y };
-        
-        const specificMonster = this.getMonsterFromCell(cellData);
-        
-        console.log("🎲 Начинаем бой поверх тактической карты...");
-        
-        if (specificMonster && cellData.monster_id) {
-            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
-            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-        } else {
-            const randomMonster = this.getRandomMonster();
-            if (!randomMonster) {
-                console.error("❌ Не удалось начать бой: нет случайных монстров");
-                if (window.game) {
-                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
-                }
-                return;
+    this.pendingMovement = { x: x, y: y };
+    
+    const specificMonster = this.getMonsterFromCell(cellData);
+    
+    console.log("🎲 Начинаем бой поверх тактической карты...");
+    
+    if (specificMonster && cellData.monster_id) {
+        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
+        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
+    } else {
+        const randomMonster = this.getRandomMonster();
+        if (!randomMonster) {
+            console.error("❌ Не удалось начать бой: нет случайных монстров");
+            if (window.game) {
+                window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
             }
-            
-            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+            return;
+        }
+        
+        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+        
+        // Проверяем, не была ли это охота
+        if (this.pendingAction && this.pendingAction.action === 'hunt') {
+            // Для охоты используем специальный тип боя
+            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'hunt');
+        } else {
             battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
         }
     }
-
+}
     getRandomMonster() {
         const battleSystem = window.game?.systems?.battle;
         if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
