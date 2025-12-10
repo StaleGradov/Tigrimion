@@ -614,13 +614,22 @@ getRandomHuntResource() {
     const actionSystem = window.game?.systems?.action;
     if (!actionSystem || !actionSystem.resources) return null;
     
-    // Все охотничьи ресурсы
-    const allHuntResources = [
-        ...(actionSystem.resources.bones || []),
-        ...(actionSystem.resources.leathers || []),
-        ...(actionSystem.resources.hides || []),
-        ...(actionSystem.resources.furs || [])
-    ];
+    // Безопасное получение всех охотничьих ресурсов
+    const allHuntResources = [];
+    
+    // Добавляем ресурсы из каждого массива если они существуют и являются массивами
+    if (Array.isArray(actionSystem.resources.bones)) {
+        allHuntResources.push(...actionSystem.resources.bones);
+    }
+    if (Array.isArray(actionSystem.resources.leathers)) {
+        allHuntResources.push(...actionSystem.resources.leathers);
+    }
+    if (Array.isArray(actionSystem.resources.hides)) {
+        allHuntResources.push(...actionSystem.resources.hides);
+    }
+    if (Array.isArray(actionSystem.resources.furs)) {
+        allHuntResources.push(...actionSystem.resources.furs);
+    }
     
     if (allHuntResources.length === 0) return null;
     
