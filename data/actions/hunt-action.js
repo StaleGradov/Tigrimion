@@ -28,6 +28,12 @@ class HuntAction {
 
     execute(row, col) {
         console.log(`🏹 HuntAction: Начало выполнения охоты на клетке [${col},${row}]`);
+            console.log("=== 🏹 HuntAction.execute() ВЫЗВАН ===");
+    console.log("   row:", row, "col:", col);
+    console.log("   this:", this);
+    console.log("   this.actionSystem:", this.actionSystem);
+    console.log("   this.mapSystem:", this.mapSystem);
+    console.log("   this.mapSystem.currentHero:", this.mapSystem.currentHero);
         
         const cellKey = `${col},${row}`;
         const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
