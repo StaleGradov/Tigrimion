@@ -6,17 +6,17 @@ class ModuleLoader {
         this.modules = {};
         this.loadedModules = new Set();
         this.requiredModules = [
-        'bonuses-system',
-        'level-system', 
-        'battle-system',
-        'equipment-system',
-        'hero-system',
-        'map-actions',      // ⭐ ПЕРВЫМ
-        'map-renderer',     // ⭐ ВТОРЫМ  
-        'map-system',       // ⭐ ПОСЛЕДНИМ
-        'shop-system',
-        'resources-system',
-        'crafting-system'
+            'bonuses-system',
+            'level-system', 
+            'battle-system',
+            'equipment-system',
+            'hero-system',
+            'map-actions',      // ⭐ Загружаем первый - действия на карте
+            'map-renderer',     // ⭐ Загружаем второй - отрисовка карты  
+            'map-system',       // ⭐ Загружаем последним - основной класс карт
+            'shop-system',
+            'resources-system',
+            'crafting-system'
         ];
     }
 
@@ -89,86 +89,41 @@ class ModuleLoader {
 
         try {
             let modulePath;
+            
+            // Определяем путь к модулю
             if (moduleName === 'crafting-system') {
                 modulePath = 'crafting-system.js';
-            } else if (moduleName === 'map-system') {
-                modulePath = 'map-system.js'; // ⭐ ИЗМЕНЕНИЕ: Главный файл MapSystem
+            } else if (moduleName.startsWith('map-')) {
+                // ⭐ ВАЖНОЕ ИЗМЕНЕНИЕ: Все картографические модули в корне
+                modulePath = `${moduleName}.js`;
             } else {
                 modulePath = `data/modules/${moduleName}.js`;
             }
             
             console.log(`📥 Загружаем модуль: ${modulePath}`);
             
+            // Пробуем загрузить модуль
             const response = await fetch(modulePath);
             if (!response.ok) {
-                const altPath = `modules/${moduleName}.js`;
-                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
-                const altResponse = await fetch(altPath);
-                
-                if (!altResponse.ok) {
-                    throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+                // Пробуем альтернативный путь для не-картографических модулей
+                if (!moduleName.startsWith('map-')) {
+                    const altPath = `modules/${moduleName}.js`;
+                    console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+                    const altResponse = await fetch(altPath);
+                    
+                    if (!altResponse.ok) {
+                        throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+                    }
+                    
+                    modulePath = altPath;
+                } else {
+                    throw new Error(`Не удалось загрузить модуль ${moduleName} с пути: ${modulePath}`);
                 }
-                
-                modulePath = altPath;
             }
             
             const moduleCode = await response.text();
             
-            // Загружаем зависимые модули для MapSystem
-            if (moduleName === 'map-system') {
-                // Загружаем MapActions и MapRenderer отдельно
-                try {
-                    console.log("📥 Загружаем MapActions...");
-                    const actionsResponse = await fetch('map-actions.js');
-                    const actionsCode = await actionsResponse.text();
-                    const actionsBlob = new Blob([actionsCode], { type: 'application/javascript' });
-                    const actionsUrl = URL.createObjectURL(actionsBlob);
-                    
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = actionsUrl;
-                        script.onload = () => {
-                            URL.revokeObjectURL(actionsUrl);
-                            console.log("✅ MapActions загружен");
-                            resolve();
-                        };
-                        script.onerror = () => {
-                            URL.revokeObjectURL(actionsUrl);
-                            reject(new Error("Ошибка загрузки MapActions"));
-                        };
-                        document.head.appendChild(script);
-                    });
-                } catch (error) {
-                    console.warn("⚠️ MapActions не загружен:", error);
-                }
-                
-                try {
-                    console.log("📥 Загружаем MapRenderer...");
-                    const rendererResponse = await fetch('map-renderer.js');
-                    const rendererCode = await rendererResponse.text();
-                    const rendererBlob = new Blob([rendererCode], { type: 'application/javascript' });
-                    const rendererUrl = URL.createObjectURL(rendererBlob);
-                    
-                    await new Promise((resolve, reject) => {
-                        const script = document.createElement('script');
-                        script.src = rendererUrl;
-                        script.onload = () => {
-                            URL.revokeObjectURL(rendererUrl);
-                            console.log("✅ MapRenderer загружен");
-                            resolve();
-                        };
-                        script.onerror = () => {
-                            URL.revokeObjectURL(rendererUrl);
-                            reject(new Error("Ошибка загрузки MapRenderer"));
-                        };
-                        document.head.appendChild(script);
-                    });
-                } catch (error) {
-                    console.warn("⚠️ MapRenderer не загружен:", error);
-                }
-            }
-            
-            // Загружаем основной модуль
+            // Создаем и загружаем модуль как Blob URL
             const blob = new Blob([moduleCode], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
             
@@ -201,21 +156,38 @@ class ModuleLoader {
         console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
         
         const classMap = {
-            'crafting-system': 'CraftingSystem',
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
             'map-system': 'MapSystem',
             'map-actions': 'MapActions',
-            'map-renderer': 'MapRenderer'
+            'map-renderer': 'MapRenderer',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem',
+            'crafting-system': 'CraftingSystem'
         };
         
         const className = classMap[moduleName];
         if (className && !window[className]) {
             window[className] = class StubSystem {
-                constructor() {
+                constructor(game = null) {
                     console.log(`📦 Создана заглушка для ${className}`);
+                    this.game = game;
                 }
                 async initialize() {
                     console.log(`🔄 Инициализация заглушки ${className}`);
                     return true;
+                }
+                // Для MapSystem добавляем дополнительные методы
+                async loadMapData() {
+                    console.log(`🔄 Загрузка данных карты (заглушка)`);
+                    return true;
+                }
+                showTacticalMap() {
+                    console.log(`🎲 Показ тактической карты (заглушка)`);
+                    return '<div class="map-error">Система карт не загружена</div>';
                 }
             };
             console.log(`✅ Заглушка ${className} создана`);
@@ -224,37 +196,56 @@ class ModuleLoader {
 
     isModuleAvailable(moduleName) {
         const classMap = {
-        'bonuses-system': 'BonusSystem',
-        'level-system': 'LevelSystem',
-        'battle-system': 'BattleSystem',
-        'equipment-system': 'EquipmentSystem',
-        'hero-system': 'HeroSystem',
-        'map-system': 'MapSystem',
-        'map-actions': 'MapActions',     // ⭐ ПРОВЕРЬТЕ ЕСТЬ ЛИ ЭТО
-        'map-renderer': 'MapRenderer',   // ⭐ ПРОВЕРЬТЕ ЕСТЬ ЛИ ЭТО
-        'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem',
-        'crafting-system': 'CraftingSystem'
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem',
+            'map-actions': 'MapActions',
+            'map-renderer': 'MapRenderer',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem',
+            'crafting-system': 'CraftingSystem'
         };
-        return typeof window[classMap[moduleName]] !== 'undefined';
+        
+        const className = classMap[moduleName];
+        if (!className) return false;
+        
+        // Проверяем, что класс существует в глобальной области видимости
+        const isAvailable = typeof window[className] !== 'undefined';
+        
+        // Особые проверки для картографических модулей
+        if (moduleName === 'map-system') {
+            if (isAvailable && window[className].prototype && 
+                typeof window[className].prototype.initialize === 'function') {
+                console.log(`✅ MapSystem доступен и имеет метод initialize`);
+                return true;
+            } else {
+                console.log(`⚠️ MapSystem не полностью загружен`);
+                return false;
+            }
+        }
+        
+        return isAvailable;
     }
 
-getClassName(moduleName) {
-    const classMap = {
-        'bonuses-system': 'BonusSystem',
-        'level-system': 'LevelSystem',
-        'battle-system': 'BattleSystem',
-        'equipment-system': 'EquipmentSystem',
-        'hero-system': 'HeroSystem',
-        'map-system': 'MapSystem',
-        'map-actions': 'MapActions',     // ⭐ ДОБАВЬТЕ ЭТО
-        'map-renderer': 'MapRenderer',   // ⭐ ДОБАВЬТЕ ЭТО
-        'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem',
-        'crafting-system': 'CraftingSystem'
-    };
-    return classMap[moduleName] || moduleName;
-}
+    getClassName(moduleName) {
+        const classMap = {
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem',
+            'map-actions': 'MapActions',
+            'map-renderer': 'MapRenderer',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem',
+            'crafting-system': 'CraftingSystem'
+        };
+        return classMap[moduleName] || moduleName;
+    }
 
     async waitForAllModules() {
         const maxAttempts = 50;
@@ -279,7 +270,12 @@ getClassName(moduleName) {
                 const loadedList = this.requiredModules
                     .filter(m => this.isModuleAvailable(m))
                     .map(m => this.getClassName(m));
+                const waitingList = this.requiredModules
+                    .filter(m => !this.isModuleAvailable(m))
+                    .map(m => this.getClassName(m));
+                
                 console.log(`📦 Загружены: ${loadedList.join(', ')}`);
+                console.log(`⏳ Ожидаются: ${waitingList.join(', ')}`);
             }
             
             await new Promise(resolve => setTimeout(resolve, checkInterval));
@@ -295,8 +291,10 @@ getClassName(moduleName) {
     async loadAllModules() {
         console.log("🚀 Начинаем загрузку модулей...");
         
+        // Загружаем стили
         await this.loadStyles();
         
+        // Загружаем модули параллельно
         const loadPromises = this.requiredModules.map(async (moduleName) => {
             if (!this.isModuleAvailable(moduleName)) {
                 return await this.loadModule(moduleName);
@@ -306,6 +304,7 @@ getClassName(moduleName) {
         
         const results = await Promise.allSettled(loadPromises);
         
+        // Проверяем результаты загрузки
         const failedModules = results
             .map((result, index) => ({ result, module: this.requiredModules[index] }))
             .filter(({ result }) => result.status === 'rejected' || result.value === false);
@@ -315,6 +314,7 @@ getClassName(moduleName) {
             console.log("🔄 Продолжаем с доступными модулями...");
         }
         
+        // Ждем, пока все модули станут доступны
         return await this.waitForAllModules();
     }
 }
@@ -343,14 +343,19 @@ class SafeHeroGame {
         try {
             console.log("🎮 Инициализация игры...");
             
+            // Показываем экран загрузки
             this.showLoadingScreen("Загрузка игровых модулей...");
             
+            // Загружаем все модули
             await this.moduleLoader.loadAllModules();
             
+            // Инициализируем системы
             await this.initializeSystems();
             
+            // Загружаем игровые данные
             await this.loadGameData();
             
+            // Пытаемся загрузить сохранение
             console.log("📂 Пытаемся загрузить сохранение...");
             const saveLoaded = this.loadSave();
             if (saveLoaded) {
@@ -368,10 +373,16 @@ class SafeHeroGame {
                 this.showHeroSelection();
             }
             
+            // Настраиваем автосохранение
             this.startAutosave();
+            
+            // Запускаем регенерацию здоровья
             this.startHealthRegeneration();
+            
+            // Настраиваем защиту от крашей в бою
             this.setupBattleCrashProtection();
             
+            // Синхронизация HeroSystem с текущим героем
             setTimeout(() => {
                 if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
                     this.systems.hero.currentHero = this.currentHero;
@@ -393,6 +404,7 @@ class SafeHeroGame {
         console.log("⚙️ Инициализация игровых систем...");
         
         try {
+            // Создаем основные системы
             this.systems.bonus = new BonusSystem();
             this.systems.level = new LevelSystem();
             this.systems.battle = new BattleSystem();
@@ -400,19 +412,30 @@ class SafeHeroGame {
             this.systems.hero = new HeroSystem();
             
             // ⭐ ВАЖНОЕ ИЗМЕНЕНИЕ: Создаем MapSystem с передачей ссылки на игру
-            this.systems.map = new MapSystem(this);
+            // MapSystem должен быть загружен после MapActions и MapRenderer
+            if (typeof MapSystem !== 'undefined') {
+                this.systems.map = new MapSystem(this);
+                console.log("✅ MapSystem создан с ссылкой на игру");
+            } else {
+                throw new Error("MapSystem не загружен!");
+            }
             
             this.systems.shop = new ShopSystem();
             this.systems.resources = new ResourcesSystem();
             this.systems.crafting = new CraftingSystem(this);
             
-            console.log("✅ Все системы инициализированы");
+            console.log("✅ Все системы созданы");
             
-            // Инициализируем подсистемы MapSystem
-            if (this.systems.map) {
-                console.log("🔄 Инициализация подсистем MapSystem...");
+            // ⭐ ВАЖНО: Инициализируем MapSystem после создания
+            if (this.systems.map && typeof this.systems.map.initialize === 'function') {
+                console.log("🔄 Инициализация MapSystem...");
                 await this.systems.map.initialize();
+                console.log("✅ MapSystem инициализирован");
+            } else {
+                console.warn("⚠️ MapSystem не имеет метода initialize или не создан");
             }
+            
+            console.log("🎮 Все игровые системы инициализированы");
             
         } catch (error) {
             console.error("❌ Ошибка инициализации систем:", error);
@@ -424,17 +447,19 @@ class SafeHeroGame {
         console.log("📂 Загрузка игровых данных...");
         
         try {
+            // Загружаем данные параллельно
             await Promise.all([
-                this.systems.hero.loadHeroData(),
-                this.systems.equipment.loadItemData(),
-                this.systems.battle.loadBattleData(),
-                this.systems.map.loadMapData(),
-                this.systems.bonus.loadBonusData(),
-                this.systems.level.loadLevelData(),
-                this.systems.resources.loadResourcesData()
+                this.systems.hero?.loadHeroData(),
+                this.systems.equipment?.loadItemData(),
+                this.systems.battle?.loadBattleData(),
+                this.systems.map?.loadMapData(),
+                this.systems.bonus?.loadBonusData(),
+                this.systems.level?.loadLevelData(),
+                this.systems.resources?.loadResourcesData()
             ]);
             
-            if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
+            // Устанавливаем начальное золото
+            if (this.systems.hero?.heroes?.length > 0 && this.sharedResources.gold === 0) {
                 const firstHero = this.systems.hero.heroes[0];
                 this.sharedResources.gold = firstHero.gold;
                 console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
@@ -443,6 +468,7 @@ class SafeHeroGame {
             console.log("✅ Все игровые данные загружены");
             
         } catch (error) {
+            console.error("❌ Ошибка загрузки данных:", error);
             throw new Error(`Ошибка загрузки данных: ${error.message}`);
         }
     }
@@ -450,11 +476,13 @@ class SafeHeroGame {
     saveGame() {
         try {
             if (this.currentHero && this.systems.equipment && this.systems.hero) {
+                // Синхронизируем золото
                 if (this.currentHero.gold !== this.sharedResources.gold) {
                     console.log(`🔄 Синхронизация золота: герой ${this.currentHero.gold} → общее ${this.sharedResources.gold}`);
                     this.sharedResources.gold = this.currentHero.gold;
                 }
                 
+                // Создаем данные для сохранения
                 const saveData = {
                     currentHeroId: this.currentHero.id,
                     heroes: this.systems.hero.heroes.map(hero => {
@@ -471,6 +499,7 @@ class SafeHeroGame {
                             resources: hero.resources || {}
                         };
                         
+                        // Сохраняем состояние фляги для текущего героя
                         if (hero.id === this.currentHero.id && this.systems.battle && this.systems.battle.flask) {
                             heroData.flaskState = {
                                 currentCharges: this.systems.battle.flask.currentCharges,
@@ -490,6 +519,7 @@ class SafeHeroGame {
                     version: "2.3"
                 };
                 
+                // Сохраняем в localStorage
                 localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
                 console.log("💾 Игра сохранена");
                 return true;
@@ -505,8 +535,9 @@ class SafeHeroGame {
             const save = localStorage.getItem('tigrimionSave');
             if (save) {
                 const data = JSON.parse(save);
-                console.log("📂 Загружаем сохранение:", data);
+                console.log("📂 Загружаем сохранение версии:", data.version || "старое");
                 
+                // Загружаем общие ресурсы
                 if (data.sharedResources) {
                     this.sharedResources = {
                         gold: data.sharedResources.gold || 0,
@@ -516,7 +547,8 @@ class SafeHeroGame {
                     };
                     console.log("✅ Общий инвентарь и ресурсы загружены");
                 } else {
-                    if (this.systems.hero.heroes.length > 0) {
+                    // Совместимость со старыми сохранениями
+                    if (this.systems.hero?.heroes?.length > 0) {
                         const firstHero = this.systems.hero.heroes[0];
                         this.sharedResources.gold = firstHero.gold || 0;
                         this.sharedResources.inventory = [];
@@ -526,6 +558,7 @@ class SafeHeroGame {
                     }
                 }
                 
+                // Загружаем героев
                 if (data.heroes && this.systems.hero) {
                     const savedHeroesMap = new Map();
                     data.heroes.forEach(hero => savedHeroesMap.set(hero.id, hero));
@@ -534,6 +567,7 @@ class SafeHeroGame {
                         const savedHero = savedHeroesMap.get(existingHero.id);
                         
                         if (savedHero) {
+                            // Восстанавливаем прогресс героя
                             existingHero.level = savedHero.level || existingHero.level;
                             existingHero.experience = savedHero.experience || existingHero.experience;
                             existingHero.currentHealth = savedHero.currentHealth || existingHero.baseHealth;
@@ -549,16 +583,18 @@ class SafeHeroGame {
                                 existingHero.resources = {...savedHero.resources};
                             }
                             
-                            console.log(`🎯 Загружен герой: ${existingHero.name}`);
+                            console.log(`🎯 Загружен герой: ${existingHero.name} (ур. ${existingHero.level})`);
                         }
                     });
                     
                     console.log("✅ Прогресс всех героев загружен");
                 }
                 
+                // Восстанавливаем текущего героя
                 if (data.currentHeroId && this.systems.hero) {
                     this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
                     if (this.currentHero) {
+                        // Синхронизируем инвентарь и ресурсы
                         this.currentHero.inventory = [...this.sharedResources.inventory];
                         this.currentHero.gold = this.sharedResources.gold;
                         
@@ -566,6 +602,7 @@ class SafeHeroGame {
                             this.currentHero.resources = {...this.sharedResources.resources};
                         }
                         
+                        // Восстанавливаем состояние фляги
                         if (this.systems.battle && this.systems.battle.flask) {
                             const savedHero = data.heroes?.find(h => h.id === this.currentHero.id);
                             if (savedHero?.flaskState) {
@@ -578,6 +615,7 @@ class SafeHeroGame {
                                 console.log(`💧 Фляга сброшена к значениям по умолчанию для ${this.currentHero.name}`);
                             }
                             
+                            // Обновляем UI фляги
                             if (this.systems.battle.updateFlaskUI) {
                                 this.systems.battle.updateFlaskUI();
                             }
@@ -586,6 +624,7 @@ class SafeHeroGame {
                             }
                         }
                         
+                        // Синхронизируем с другими системами
                         if (this.systems.equipment) {
                             this.systems.equipment.setCurrentHero(this.currentHero);
                         }
@@ -599,7 +638,7 @@ class SafeHeroGame {
                             this.systems.map.setCurrentHero(this.currentHero);
                         }
                         
-                        console.log("✅ Текущий герой восстановлен");
+                        console.log("✅ Текущий герой восстановлен:", this.currentHero.name);
                     }
                 }
                 
@@ -607,6 +646,7 @@ class SafeHeroGame {
             } else {
                 console.log("🆕 Сохранение не найдено, начинаем новую игру");
                 
+                // Настраиваем начальные значения для новой игры
                 this.sharedResources = {
                     gold: 100,
                     inventory: [],
@@ -614,6 +654,7 @@ class SafeHeroGame {
                     resources: {}
                 };
                 
+                // Настраиваем героев для новой игры
                 if (this.systems.hero && this.systems.hero.heroes.length > 0) {
                     const firstHero = this.systems.hero.heroes[0];
                     this.sharedResources.gold = firstHero.gold || 100;
@@ -626,21 +667,25 @@ class SafeHeroGame {
                     console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
                 }
                 
+                // Настраиваем флягу для новой игры
                 if (this.systems.battle && this.systems.battle.flask) {
                     this.systems.battle.flask.currentCharges = 10;
                     this.systems.battle.flask.content = 'water';
                     console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
                 }
                 
+                // Синхронизируем с ResourcesSystem
                 if (this.systems.resources) {
                     this.systems.resources.sharedResources = this.sharedResources;
                 }
             }
         } catch (error) {
             console.error("❌ Ошибка загрузки сохранения:", error);
+            // Удаляем битое сохранение
             localStorage.removeItem('tigrimionSave');
             console.log("🗑️ Битое сохранение удалено");
             
+            // Устанавливаем значения по умолчанию
             this.sharedResources = {
                 gold: 100,
                 inventory: [],
@@ -648,11 +693,13 @@ class SafeHeroGame {
                 resources: {}
             };
             
+            // Сбрасываем флягу
             if (this.systems.battle && this.systems.battle.flask) {
                 this.systems.battle.flask.currentCharges = 10;
                 this.systems.battle.flask.content = 'water';
             }
             
+            // Синхронизируем с ResourcesSystem
             if (this.systems.resources) {
                 this.systems.resources.sharedResources = this.sharedResources;
             }
@@ -661,6 +708,7 @@ class SafeHeroGame {
     }
 
     startAutosave() {
+        // Автосохранение каждые 30 секунд
         setInterval(() => {
             if (this.currentHero) {
                 this.saveGame();
@@ -668,6 +716,7 @@ class SafeHeroGame {
             }
         }, 30000);
         
+        // Сохранение при закрытии страницы
         window.addEventListener('beforeunload', () => {
             if (this.currentHero) {
                 this.saveGame();
@@ -677,10 +726,12 @@ class SafeHeroGame {
     }
 
     startHealthRegeneration() {
+        // Регенерация здоровья каждую секунду
         setInterval(() => {
             if (this.currentHero && this.systems.hero) {
                 const stats = this.systems.hero.calculateHeroStats(this.currentHero);
                 
+                // Регенерируем здоровье если герой жив и не восстанавливается после смерти
                 if (this.currentHero.currentHealth > 0 && 
                     this.currentHero.currentHealth < stats.maxHealth &&
                     !this.currentHero.isInPostDeathRegeneration) {
@@ -694,6 +745,7 @@ class SafeHeroGame {
                         this.currentHero.currentHealth + totalRegen
                     );
                     
+                    // Периодическое автосохранение при регенерации
                     if (Math.random() < 0.02) {
                         this.saveGame();
                     }
@@ -705,30 +757,36 @@ class SafeHeroGame {
     }
 
     setupBattleCrashProtection() {
+        // Обработка перезагрузки во время боя
         window.addEventListener('beforeunload', (e) => {
             if (this.systems?.battle?.battleActive) {
                 console.log("💀 Перезагрузка во время боя - поражение");
                 
                 if (this.currentHero) {
+                    // Устанавливаем героя в критическое состояние
                     this.currentHero.currentHealth = 1;
                     this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
                     
+                    // Завершаем движение на карте
                     if (this.systems.map) {
                         this.systems.map.completeMovementAfterBattle(false, false);
                     }
                     
+                    // Сохраняем состояние
                     this.saveGame();
                     console.log("💾 Сохранено состояние после поражения при перезагрузке");
                 }
             }
         });
 
+        // Обработка обновления страницы
         window.addEventListener('unload', () => {
             if (this.systems?.battle?.battleActive) {
                 console.log("🔄 Страница обновляется во время боя");
             }
         });
 
+        // Восстановление после перезагрузки
         window.addEventListener('load', () => {
             const wasBattleActive = sessionStorage.getItem('battleWasActive');
             if (wasBattleActive === 'true') {
@@ -757,13 +815,17 @@ class SafeHeroGame {
         
         console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
         
+        // Устанавливаем минимальное здоровье и флаг восстановления
         this.currentHero.currentHealth = 1;
         this.currentHero.isInPostDeathRegeneration = true;
         
+        // Сохраняем игру
         this.saveGame();
         
+        // Показываем уведомление
         this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
         
+        // Через 10 секунд снимаем флаг восстановления
         setTimeout(() => {
             if (this.currentHero) {
                 this.currentHero.isInPostDeathRegeneration = false;
@@ -879,6 +941,7 @@ class SafeHeroGame {
             return;
         }
 
+        // Синхронизируем ресурсы
         if (this.sharedResources) {
             hero.gold = this.sharedResources.gold;
             hero.resources = {...this.sharedResources.resources};
@@ -886,10 +949,12 @@ class SafeHeroGame {
 
         this.currentHero = hero;
         
+        // Синхронизируем с другими системами
         if (this.systems.equipment) {
             this.systems.equipment.setCurrentHero(hero);
         }
         
+        // Восстанавливаем состояние фляги
         if (this.systems.battle && this.systems.battle.flask) {
             let hasFlaskState = false;
             const save = localStorage.getItem('tigrimionSave');
@@ -914,6 +979,7 @@ class SafeHeroGame {
                 console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
             }
             
+            // Обновляем UI фляги
             if (this.systems.battle.updateFlaskUI) {
                 this.systems.battle.updateFlaskUI();
             }
@@ -922,6 +988,7 @@ class SafeHeroGame {
             }
         }
         
+        // Устанавливаем героя в другие системы
         if (this.systems.battle) {
             this.systems.battle.currentHero = hero;
         }
@@ -935,6 +1002,7 @@ class SafeHeroGame {
             this.systems.resources.sharedResources = this.sharedResources;
         }
         
+        // Сохраняем игру
         this.saveGame();
         
         console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}`);
@@ -946,11 +1014,13 @@ class SafeHeroGame {
         const itemId = this.currentHero.equipment[slot];
         
         if (itemId && this.systems.equipment) {
+            // Снимаем предмет если он есть
             this.systems.equipment.unequipItem(slot);
             this.showHeroGameScreen();
             this.saveGame();
             this.showNotification(`✅ Предмет снят со слота ${this.getSlotName(slot)}`, 'success');
         } else {
+            // Показываем инвентарь для выбора предмета
             this.showEquipmentForSlot(slot);
         }
     }
@@ -994,6 +1064,7 @@ class SafeHeroGame {
 
         const stats = this.systems.hero.calculateHeroStats(this.currentHero);
         
+        // Функция для рендеринга столбца экипировки
         const renderEquipmentColumn = (slots) => {
             return slots.map(slot => {
                 const itemId = this.currentHero.equipment[slot];
@@ -1020,6 +1091,7 @@ class SafeHeroGame {
             }).join('');
         };
 
+        // Получаем активные бонусы
         const activeBonuses = stats.activeBonuses || [];
         const bonusesHTML = activeBonuses.length > 0 ? 
             activeBonuses.map(bonus => `
@@ -1043,7 +1115,7 @@ class SafeHeroGame {
                     <button class="btn-top" onclick="game.showOverlay('resources')">📦 Ресурсы</button>
                     <button class="btn-top" onclick="game.systems.hero.showHeroStory()">📖 История Героя</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
-                     <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
+                    <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
                     <button class="btn-top" onclick="game.debugCrafting()">🐛 Отладка крафта</button>
                 </div>
 
@@ -1144,6 +1216,7 @@ class SafeHeroGame {
             </div>
         `;
         
+        // Обновляем интерфейс после рендеринга
         setTimeout(() => {
             if (this.systems.hero) {
                 this.systems.hero.startHealthBarUpdates();
@@ -1155,6 +1228,7 @@ class SafeHeroGame {
             }
         }, 100);
 
+        // Исправляем layout полосок здоровья
         setTimeout(() => {
             this.fixHealthBarLayout();
         }, 200);
@@ -1331,8 +1405,25 @@ class SafeHeroGame {
                 break;
 
             case 'inventory':
-                container.innerHTML = this.systems.equipment.showInventory();
-                container.style.display = 'block';
+                if (this.systems.equipment) {
+                    container.innerHTML = this.systems.equipment.showInventory();
+                    container.style.display = 'block';
+                } else {
+                    container.innerHTML = `
+                        <div class="overlay-content">
+                            <div class="overlay-header">
+                                <h3>🎒 Инвентарь</h3>
+                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                            </div>
+                            <div class="overlay-body">
+                                <div class="error-message">
+                                    ❌ Система экипировки не загружена
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.style.display = 'block';
+                }
                 break;
 
             case 'resources':
@@ -1372,7 +1463,7 @@ class SafeHeroGame {
                         restockTimer: 86400000
                     };
                     this.systems.shop.openShop(testMerchantCell);
-                } else {
+                } else if (this.systems.equipment) {
                     console.warn("ShopSystem не доступна, используем EquipmentSystem");
                     const currentCategory = this.systems.equipment.currentCategory || 'all';
                     const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
@@ -1380,6 +1471,21 @@ class SafeHeroGame {
                     container.style.display = 'block';
                     
                     setTimeout(() => this.attachShopItemHandlers(), 100);
+                } else {
+                    container.innerHTML = `
+                        <div class="overlay-content">
+                            <div class="overlay-header">
+                                <h3>🏪 Магазин</h3>
+                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                            </div>
+                            <div class="overlay-body">
+                                <div class="error-message">
+                                    ❌ Система магазина не загружена
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.style.display = 'block';
                 }
                 break;
 
@@ -1932,6 +2038,11 @@ class SafeHeroGame {
         this.showNotification("Отладка крафта запущена, смотрите консоль (F12)", "info");
     }
     
+    showSellScreen() {
+        // Метод для показа экрана продажи
+        console.log("🛒 Показываем экран продажи");
+        this.showNotification("Экран продажи в разработке", "info");
+    }
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ИГРЫ ==========
@@ -1987,3 +2098,5 @@ if (!Array.prototype.includes) {
         return false;
     };
 }
+
+console.log("✅ Основной файл игры полностью загружен");
