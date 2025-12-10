@@ -1,22 +1,28 @@
 "use strict";
 
 class HuntAction {
-    constructor(actionSystem) {
-        this.actionSystem = actionSystem;
-        this.mapSystem = actionSystem.mapSystem;
-        this.config = {
-            id: 'hunt',
-            icon: '🏹',
-            name: 'Охотиться',
-            description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
-            class: 'action-hunt',
-            resource_type: 'loot',
-            triggers_monster: true,
-            monster_level_multiplier: 1.0,
-            always_monster: true,
-            double_loot: true
-        };
+constructor(actionSystem) {
+    this.actionSystem = actionSystem;
+    this.mapSystem = actionSystem.mapSystem;
+    this.config = {
+        id: 'hunt',
+        icon: '🏹',
+        name: 'Охотиться',
+        description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
+        class: 'action-hunt',
+        resource_type: 'loot',
+        triggers_monster: true,
+        monster_level_multiplier: 1.0,
+        always_monster: true,
+        double_loot: true
+    };
+    
+    // Регистрируем модуль в ActionSystem
+    if (actionSystem) {
+        actionSystem.registerModule('hunt', this);
+        console.log("✅ HuntAction зарегистрирован в ActionSystem");
     }
+}
 
     // ========== ОСНОВНЫЕ МЕТОДЫ ==========
 
