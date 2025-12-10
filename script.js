@@ -6,15 +6,17 @@ class ModuleLoader {
         this.modules = {};
         this.loadedModules = new Set();
         this.requiredModules = [
-            'bonuses-system',
-            'level-system', 
-            'battle-system',
-            'equipment-system',
-            'hero-system',
-            'map-system',
-            'shop-system',
-            'resources-system',
-            'crafting-system'
+        'bonuses-system',
+        'level-system', 
+        'battle-system',
+        'equipment-system',
+        'hero-system',
+        'map-actions',      // ⭐ ПЕРВЫМ
+        'map-renderer',     // ⭐ ВТОРЫМ  
+        'map-system',       // ⭐ ПОСЛЕДНИМ
+        'shop-system',
+        'resources-system',
+        'crafting-system'
         ];
     }
 
