@@ -2068,7 +2068,7 @@ class ActionSystem {
         }, 50);
     }
 
-  performHuntForMonster(resourceId, monsterId, row, col) {
+ performHuntForMonster(resourceId, monsterId, row, col) {
     const resource = this.findResourceById(resourceId);
     if (!resource) {
         console.error(`Ресурс ${resourceId} не найден`);
@@ -2087,7 +2087,7 @@ class ActionSystem {
     
     // Получаем всех монстров с этим трофеем
     const allMonstersWithResource = this.getMonstersWithResource(resourceId);
-    const allMonsters = battleSystem.monsters || [];
+    const allMonsters = battleSystem.getAvailableMonsters();
     
     const cellKey = `${col},${row}`;
     const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
@@ -2168,7 +2168,7 @@ class ActionSystem {
             huntRoll: roll
         };
         
-        // Начинаем бой с выбранным монстром
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: передаем контекст 'hunt'
         battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, targetMonster, 'hunt');
         
         let message = '';
@@ -2194,7 +2194,10 @@ class ActionSystem {
         
         // Возвращаем к выбору трофея
         setTimeout(() => {
-            this.showHuntTargetSelection(this.selectedCell);
+            const cell = this.mapSystem.currentTacticalMap?.cells[`${col},${row}`];
+            if (cell) {
+                this.showHuntTargetSelection(cell);
+            }
         }, 1000);
     }
 }
@@ -2321,57 +2324,57 @@ class ActionSystem {
         actionsContainer.innerHTML = html;
     }
 
-    startHuntBattle(resourceId, monsterId, row, col) {
-        const resource = this.findResourceById(resourceId);
-        if (!resource) return;
-        
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
-        
-        // Находим монстра
-        const monster = battleSystem.getMonsterById(monsterId);
-        if (!monster) {
-            console.error(`Монстр ${monsterId} не найден`);
-            return;
-        }
-        
-        const cellKey = `${col},${row}`;
-        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        // Проверяем шанс успеха охоты
-        const baseChance = this.getActionChance('hunt', this.currentCellType);
-        const huntChance = this.calculateMonsterHuntChance(monster, baseChance);
-        const roll = Math.random() * 100;
-        const huntSuccess = roll <= huntChance;
-        
-        console.log(`🏹 Охота на ${monster.name} за ${resource.name}: ${roll.toFixed(1)}/${huntChance} - ${huntSuccess ? 'УСПЕХ' : 'НЕУДАЧА'}`);
-        
-        // Сохраняем информацию об охоте для обработки после боя
-        this.mapSystem.pendingAction = {
-            action: 'hunt',
-            row: row,
-            col: col,
-            cellTypeData: cellTypeData,
-            targetResource: resource,
-            targetMonster: monster,
-            huntSuccess: huntSuccess,
-            huntChance: huntChance,
-            huntRoll: roll
-        };
-        
-        // Начинаем бой
-        battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, monster, 'hunt');
-        
-        const message = huntSuccess ? 
-            `🏹 Удача на вашей стороне! Вы выследили ${monster.name} для добычи ${resource.name}` :
-            `🏹 Удача отвернулась... Вы спугнули ${monster.name}! Начинается обычный бой`;
-        
-        this.showNotification(message, huntSuccess ? 'success' : 'warning');
+ startHuntBattle(resourceId, monsterId, row, col) {
+    const resource = this.findResourceById(resourceId);
+    if (!resource) return;
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
     }
+    
+    // Находим монстра
+    const monster = battleSystem.getMonsterById(monsterId);
+    if (!monster) {
+        console.error(`Монстр ${monsterId} не найден`);
+        return;
+    }
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    // Проверяем шанс успеха охоты
+    const baseChance = this.getActionChance('hunt', this.currentCellType);
+    const huntChance = this.calculateMonsterHuntChance(monster, baseChance);
+    const roll = Math.random() * 100;
+    const huntSuccess = roll <= huntChance;
+    
+    console.log(`🏹 Охота на ${monster.name} за ${resource.name}: ${roll.toFixed(1)}/${huntChance} - ${huntSuccess ? 'УСПЕХ' : 'НЕУДАЧА'}`);
+    
+    // Сохраняем информацию об охоте для обработки после боя
+    this.mapSystem.pendingAction = {
+        action: 'hunt',
+        row: row,
+        col: col,
+        cellTypeData: cellTypeData,
+        targetResource: resource,
+        targetMonster: monster,
+        huntSuccess: huntSuccess,
+        huntChance: huntChance,
+        huntRoll: roll
+    };
+    
+    // ⭐ ИСПРАВЛЕНИЕ: передаем контекст 'hunt'
+    battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, monster, 'hunt');
+    
+    const message = huntSuccess ? 
+        `🏹 Удача на вашей стороне! Вы выследили ${monster.name} для добычи ${resource.name}` :
+        `🏹 Удача отвернулась... Вы спугнули ${monster.name}! Начинается обычный бой`;
+    
+    this.showNotification(message, huntSuccess ? 'success' : 'warning');
+}
 
     calculateMonsterLevel(monster) {
         // Рассчитываем примерный уровень монстра на основе его характеристик
