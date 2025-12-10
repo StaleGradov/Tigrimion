@@ -224,33 +224,37 @@ class ModuleLoader {
 
     isModuleAvailable(moduleName) {
         const classMap = {
-            'bonuses-system': 'BonusSystem',
-            'level-system': 'LevelSystem',
-            'battle-system': 'BattleSystem',
-            'equipment-system': 'EquipmentSystem',
-            'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem',
-            'shop-system': 'ShopSystem',
-            'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
+        'bonuses-system': 'BonusSystem',
+        'level-system': 'LevelSystem',
+        'battle-system': 'BattleSystem',
+        'equipment-system': 'EquipmentSystem',
+        'hero-system': 'HeroSystem',
+        'map-system': 'MapSystem',
+        'map-actions': 'MapActions',     // ⭐ ПРОВЕРЬТЕ ЕСТЬ ЛИ ЭТО
+        'map-renderer': 'MapRenderer',   // ⭐ ПРОВЕРЬТЕ ЕСТЬ ЛИ ЭТО
+        'shop-system': 'ShopSystem',
+        'resources-system': 'ResourcesSystem',
+        'crafting-system': 'CraftingSystem'
         };
         return typeof window[classMap[moduleName]] !== 'undefined';
     }
 
-    getClassName(moduleName) {
-        const classMap = {
-            'bonuses-system': 'BonusSystem',
-            'level-system': 'LevelSystem',
-            'battle-system': 'BattleSystem',
-            'equipment-system': 'EquipmentSystem',
-            'hero-system': 'HeroSystem',
-            'map-system': 'MapSystem',
-            'shop-system': 'ShopSystem',
-            'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
-        };
-        return classMap[moduleName] || moduleName;
-    }
+getClassName(moduleName) {
+    const classMap = {
+        'bonuses-system': 'BonusSystem',
+        'level-system': 'LevelSystem',
+        'battle-system': 'BattleSystem',
+        'equipment-system': 'EquipmentSystem',
+        'hero-system': 'HeroSystem',
+        'map-system': 'MapSystem',
+        'map-actions': 'MapActions',     // ⭐ ДОБАВЬТЕ ЭТО
+        'map-renderer': 'MapRenderer',   // ⭐ ДОБАВЬТЕ ЭТО
+        'shop-system': 'ShopSystem',
+        'resources-system': 'ResourcesSystem',
+        'crafting-system': 'CraftingSystem'
+    };
+    return classMap[moduleName] || moduleName;
+}
 
     async waitForAllModules() {
         const maxAttempts = 50;
