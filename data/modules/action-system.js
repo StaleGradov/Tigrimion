@@ -2214,6 +2214,8 @@ class ActionSystem {
 }
 
 performHuntForMonster(resourceId, monsterId, row, col) {
+    console.log(`🔍 performHuntForMonster: resourceId=${resourceId}, monsterId=${monsterId} (тип: ${typeof monsterId})`);
+    
     const resource = this.findResourceById(resourceId);
     if (!resource) {
         console.error(`Ресурс ${resourceId} не найден`);
@@ -2227,15 +2229,22 @@ performHuntForMonster(resourceId, monsterId, row, col) {
         return;
     }
     
-    // ⭐ ВАЖНО: НАХОДИМ КОНКРЕТНОГО МОНСТРА НА КОТОРОГО КЛИКНУЛИ
-    const specificMonster = battleSystem.getMonsterById(monsterId);
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Конвертируем monsterId в строку для поиска
+    const monsterIdStr = monsterId.toString();
+    console.log(`🔍 Ищем монстра с ID "${monsterIdStr}" (конвертировано из ${typeof monsterId})`);
+    
+    const specificMonster = battleSystem.getMonsterById(monsterIdStr);
+    
     if (!specificMonster) {
-        console.error(`❌ Монстр с ID ${monsterId} не найден!`);
+        console.error(`❌ Монстр с ID "${monsterIdStr}" не найден!`);
+        console.log(`🔍 Список всех ID:`, battleSystem.getAvailableMonsters().map(m => m.id));
         this.showNotification("❌ Выбранный монстр не найден", 'error');
         return;
     }
     
-    // Получаем всех монстров с этим трофеем для расчета шансов
+    console.log(`✅ Найден монстр: ${specificMonster.name} (ID: "${specificMonster.id}")`);
+    
+    // Получаем всех монстров с этим трофеем
     const allMonstersWithResource = this.getMonstersWithResource(resourceId);
     
     const cellKey = `${col},${row}`;
@@ -2251,7 +2260,7 @@ performHuntForMonster(resourceId, monsterId, row, col) {
         
         // Корректируем в зависимости от сложности монстра
         const monsterLevel = specificMonster.level || this.calculateMonsterLevel(specificMonster);
-        const levelBonus = Math.min(30, monsterLevel * 5); // Более сильные монстры более вероятны
+        const levelBonus = Math.min(30, monsterLevel * 5);
         
         specificMonsterChance = Math.min(80, baseSpecificChance + levelBonus);
     }
@@ -2263,7 +2272,7 @@ performHuntForMonster(resourceId, monsterId, row, col) {
     const totalBattleChance = baseChance;
     
     console.log(`🏹 Охота за ${resource.name}:`);
-    console.log(`   - Выбранный монстр: ${specificMonster.name}`);
+    console.log(`   - Выбранный монстр: ${specificMonster.name} (ID: "${specificMonster.id}")`);
     console.log(`   - Шанс встретить именно его: ${specificMonsterChance}%`);
     console.log(`   - Шанс встретить любого с трофеем: ${anyMonsterWithResourceChance}%`);
     console.log(`   - Общий шанс боя: ${totalBattleChance}%`);
@@ -2279,13 +2288,12 @@ performHuntForMonster(resourceId, monsterId, row, col) {
         console.log(`🎯 Удача! Выследили именно ${specificMonster.name}`);
     } else if (roll <= anyMonsterWithResourceChance) {
         // 🎲 Встречаем другого монстра с тем же трофеем
-        const otherMonsters = allMonstersWithResource.filter(m => m.id !== monsterId);
+        const otherMonsters = allMonstersWithResource.filter(m => m.id.toString() !== monsterIdStr);
         if (otherMonsters.length > 0) {
             targetMonster = otherMonsters[Math.floor(Math.random() * otherMonsters.length)];
             huntType = 'any_with_resource';
             console.log(`🎲 Встретили другого монстра с трофеем: ${targetMonster.name}`);
         } else {
-            // Если других монстров нет, всё равно берем выбранного
             targetMonster = specificMonster;
             huntType = 'specific_fallback';
             console.log(`🎲 Нет других монстров, встретили ${specificMonster.name}`);
@@ -2310,8 +2318,8 @@ performHuntForMonster(resourceId, monsterId, row, col) {
             cellTypeData: cellTypeData,
             targetResource: resource,
             targetMonster: targetMonster,
-            originalTargetMonsterId: monsterId, // ⭐ СОХРАНЯЕМ ID ВЫБРАННОГО МОНСТРА
-            originalTargetMonster: specificMonster, // ⭐ СОХРАНЯЕМ ОРИГИНАЛЬНЫЙ МОНСТР
+            originalTargetMonsterId: monsterIdStr,
+            originalTargetMonster: specificMonster,
             huntType: huntType,
             specificMonsterChance: specificMonsterChance,
             anyMonsterChance: anyMonsterWithResourceChance,
@@ -2319,7 +2327,7 @@ performHuntForMonster(resourceId, monsterId, row, col) {
             huntRoll: roll
         };
         
-        // ⭐ ВАЖНО: передаем контекст 'hunt' и ТОЧНОГО монстра для боя
+        // ⭐ Начинаем бой с контекстом 'hunt'
         battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, targetMonster, 'hunt');
         
         let message = '';
@@ -2339,11 +2347,9 @@ performHuntForMonster(resourceId, monsterId, row, col) {
         
         this.showNotification(message, huntType === 'specific' ? 'success' : 'info');
     } else {
-        // Охота полностью провалилась
         console.log(`❌ Охота провалилась - не удалось найти дичь`);
         this.showNotification("❌ Не удалось найти дичь для охоты", 'warning');
         
-        // Возвращаем к выбору трофея
         setTimeout(() => {
             const cell = this.mapSystem.currentTacticalMap?.cells[`${col},${row}`];
             if (cell) {
