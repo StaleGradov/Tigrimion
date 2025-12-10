@@ -184,7 +184,13 @@ class ActionSystem {
         // Модули действий (охоты)
         this.actionModules = {};
         
+        // ДЕБАГ ИНФОРМАЦИЯ
         console.log("✅ ActionSystem инициализирован");
+        console.log("   mapSystem:", mapSystem);
+        console.log("   window.HuntAction:", window.HuntAction);
+        
+        // Пытаемся сразу инициализировать модуль охоты если он уже загружен
+        this.tryInitializeHuntModule();
     }
 
     // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
