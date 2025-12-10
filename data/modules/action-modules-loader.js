@@ -8,25 +8,43 @@ class ActionModulesLoader {
     
     async loadModule(moduleName) {
         try {
-            const modulePath = `data/actions/${moduleName}-action.js`;
-            console.log(`📥 Загружаем модуль действия: ${modulePath}`);
+            // Пробуем разные пути
+            const modulePaths = [
+                `data/actions/${moduleName}-action.js`,
+                `data/actions/${moduleName}.js`,
+                `data/modules/actions/${moduleName}-action.js`,
+                `data/modules/actions/${moduleName}.js`,
+                `modules/actions/${moduleName}-action.js`,
+                `modules/actions/${moduleName}.js`
+            ];
             
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                console.warn(`⚠️ Не удалось загрузить модуль ${moduleName} из ${modulePath}`);
-                // Пробуем альтернативный путь
-                const altPath = `modules/actions/${moduleName}-action.js`;
-                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
-                
-                const altResponse = await fetch(altPath);
-                if (!altResponse.ok) {
-                    throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+            console.log(`📥 Загружаем модуль действия: ${moduleName}`);
+            console.log(`🔍 Проверяем пути:`, modulePaths);
+            
+            let response = null;
+            let successfulPath = '';
+            
+            for (const path of modulePaths) {
+                try {
+                    console.log(`   Пробуем: ${path}`);
+                    response = await fetch(path);
+                    if (response.ok) {
+                        successfulPath = path;
+                        console.log(`✅ Файл найден: ${path}`);
+                        break;
+                    }
+                } catch (e) {
+                    console.log(`   ❌ Не удалось: ${path} - ${e.message}`);
+                    continue;
                 }
-                
-                modulePath = altPath;
+            }
+            
+            if (!response || !response.ok) {
+                throw new Error(`Не удалось загрузить модуль ${moduleName} ни с одного пути`);
             }
             
             const moduleCode = await response.text();
+            console.log(`📄 Код модуля (первые 200 символов): ${moduleCode.substring(0, 200)}...`);
             
             const blob = new Blob([moduleCode], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
@@ -36,6 +54,7 @@ class ActionModulesLoader {
                 script.src = url;
                 script.onload = () => {
                     URL.revokeObjectURL(url);
+                    console.log(`✅ Скрипт ${moduleName} загружен успешно`);
                     resolve();
                 };
                 script.onerror = () => {
@@ -46,12 +65,29 @@ class ActionModulesLoader {
             });
             
             this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль действия ${moduleName} загружен`);
+            console.log(`✅ Модуль действия ${moduleName} загружен с пути: ${successfulPath}`);
+            
+            // Автоматически создаем экземпляр модуля
+            if (window.HuntAction && moduleName === 'hunt') {
+                setTimeout(() => {
+                    if (this.actionSystem && !this.actionSystem.actionModules['hunt']) {
+                        this.actionSystem.actionModules['hunt'] = new window.HuntAction(this.actionSystem);
+                        console.log("✅ Экземпляр HuntAction создан автоматически");
+                    }
+                }, 100);
+            }
             
             return true;
             
         } catch (error) {
             console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            
+            // Создаем заглушку если не удалось загрузить
+            if (moduleName === 'hunt') {
+                console.log("🔄 Создаем заглушку для модуля охоты");
+                this.actionSystem.createHuntActionStub();
+            }
+            
             return false;
         }
     }
@@ -70,4 +106,3 @@ class ActionModulesLoader {
 }
 
 window.ActionModulesLoader = ActionModulesLoader;
-console.log("📦 ActionModulesLoader модуль загружен");
