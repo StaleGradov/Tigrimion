@@ -14,7 +14,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "frenzy": 0.15 },
-    "loot": { "guaranteed": ["wolf_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "wolf_bone", "quantity": 1},
+        {"id": "strong_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 2,
@@ -31,7 +36,12 @@
     "reward": 0.3,
     "experience": 3,
     "abilities": { "endurance": 0.2 },
-    "loot": { "guaranteed": ["strong_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "strong_hide", "quantity": 2},
+        {"id": "wolf_bone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 3,
@@ -48,7 +58,12 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "shadow_strike": 0.25 },
-    "loot": { "guaranteed": ["hare_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "hare_fur", "quantity": 1},
+        {"id": "wolf_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 4,
@@ -65,7 +80,11 @@
     "reward": 0.32,
     "experience": 3.2,
     "abilities": { "armored_skin": 0.3 },
-    "loot": { "guaranteed": ["strong_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "strong_hide", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 5,
@@ -82,7 +101,12 @@
     "reward": 0.4,
     "experience": 4,
     "abilities": { "berserk": 0.15 },
-    "loot": { "guaranteed": ["bear_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "bear_hide", "quantity": 2},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 6,
@@ -99,7 +123,12 @@
     "reward": 0.38,
     "experience": 3.8,
     "abilities": { "shield_bash": 0.2 },
-    "loot": { "guaranteed": ["thick_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_hide", "quantity": 1},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 7,
@@ -116,7 +145,12 @@
     "reward": 0.35,
     "experience": 3.5,
     "abilities": { "bone_crush": 0.25 },
-    "loot": { "guaranteed": ["bear_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "bear_hide", "quantity": 1},
+        {"id": "bull_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 8,
@@ -133,7 +167,12 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "bleed": 0.2 },
-    "loot": { "guaranteed": ["lynx_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "lynx_fur", "quantity": 1},
+        {"id": "small_bone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 9,
@@ -150,7 +189,12 @@
     "reward": 0.27,
     "experience": 2.7,
     "abilities": { "poison_spit": 0.3 },
-    "loot": { "guaranteed": ["lynx_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "lynx_fur", "quantity": 1},
+        {"id": "thin_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 10,
@@ -167,7 +211,12 @@
     "reward": 0.4,
     "experience": 4,
     "abilities": { "assassinate": 0.2 },
-    "loot": { "guaranteed": ["tiger_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "tiger_hide", "quantity": 1},
+        {"id": "strong_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 11,
@@ -184,7 +233,12 @@
     "reward": 0.38,
     "experience": 3.8,
     "abilities": { "ghost_strike": 0.25 },
-    "loot": { "guaranteed": ["tiger_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "tiger_hide", "quantity": 1},
+        {"id": "horse_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 12,
@@ -201,7 +255,12 @@
     "reward": 0.35,
     "experience": 3.5,
     "abilities": { "charge": 0.15 },
-    "loot": { "guaranteed": ["thick_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_hide", "quantity": 2},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 13,
@@ -218,7 +277,11 @@
     "reward": 0.36,
     "experience": 3.6,
     "abilities": { "spike_armor": 0.25 },
-    "loot": { "guaranteed": ["thick_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_leather", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 14,
@@ -235,7 +298,12 @@
     "reward": 0.3,
     "experience": 3,
     "abilities": { "rampage": 0.2 },
-    "loot": { "guaranteed": ["thick_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_hide", "quantity": 1},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 15,
@@ -252,7 +320,12 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "spike_volley": 0.25 },
-    "loot": { "guaranteed": ["thick_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_hide", "quantity": 1},
+        {"id": "flint", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 16,
@@ -269,7 +342,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "fire_breath": 0.2 },
-    "loot": { "guaranteed": ["arctic_fox_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "arctic_fox_fur", "quantity": 1},
+        {"id": "thin_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 17,
@@ -286,7 +364,12 @@
     "reward": 0.24,
     "experience": 2.4,
     "abilities": { "strangle": 0.15 },
-    "loot": { "guaranteed": ["thin_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thin_hide", "quantity": 1},
+        {"id": "small_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 18,
@@ -303,7 +386,12 @@
     "reward": 0.33,
     "experience": 3.3,
     "abilities": { "antler_bash": 0.2 },
-    "loot": { "guaranteed": ["horse_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "horse_bone", "quantity": 2},
+        {"id": "strong_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 19,
@@ -320,7 +408,12 @@
     "reward": 0.29,
     "experience": 2.9,
     "abilities": { "stomp": 0.15 },
-    "loot": { "guaranteed": ["strong_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "strong_leather", "quantity": 2},
+        {"id": "horse_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 20,
@@ -337,7 +430,12 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "thorn_shot": 0.25 },
-    "loot": { "guaranteed": ["strong_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "strong_hide", "quantity": 1},
+        {"id": "grass", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 21,
@@ -354,7 +452,12 @@
     "reward": 0.27,
     "experience": 2.7,
     "abilities": { "horn_gore": 0.2 },
-    "loot": { "guaranteed": ["horse_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "horse_bone", "quantity": 1},
+        {"id": "strong_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 22,
@@ -371,7 +474,13 @@
     "reward": 0.45,
     "experience": 4.5,
     "abilities": { "earthquake": 0.1 },
-    "loot": { "guaranteed": ["bull_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "bull_bone", "quantity": 3},
+        {"id": "bull_leather", "quantity": 2},
+        {"id": "thick_hide", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 23,
@@ -388,7 +497,12 @@
     "reward": 0.37,
     "experience": 3.7,
     "abilities": { "iron_skin": 0.3 },
-    "loot": { "guaranteed": ["bull_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "bull_leather", "quantity": 3},
+        {"id": "bull_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 24,
@@ -405,7 +519,12 @@
     "reward": 0.34,
     "experience": 3.4,
     "abilities": { "battering_ram": 0.25 },
-    "loot": { "guaranteed": ["bull_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "bull_bone", "quantity": 2},
+        {"id": "thick_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 25,
@@ -422,7 +541,12 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "whirlwind": 0.2 },
-    "loot": { "guaranteed": ["marten_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "marten_fur", "quantity": 1},
+        {"id": "thin_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 26,
@@ -439,7 +563,12 @@
     "reward": 0.22,
     "experience": 2.2,
     "abilities": { "timber": 0.15 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 3},
+        {"id": "stone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 27,
@@ -456,7 +585,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "heavy_strike": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 2},
+        {"id": "copper_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 28,
@@ -473,7 +607,12 @@
     "reward": 0.24,
     "experience": 2.4,
     "abilities": { "bloodlust": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 2},
+        {"id": "flint", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 29,
@@ -490,7 +629,12 @@
     "reward": 0.23,
     "experience": 2.3,
     "abilities": { "axe_throw": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flexible_branch", "quantity": 1},
+        {"id": "stone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 30,
@@ -507,7 +651,12 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "mining_strike": 0.15 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "copper_ore", "quantity": 2},
+        {"id": "stone", "quantity": 3}
+      ]
+    }
   },
   {
     "id": 31,
@@ -524,7 +673,12 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "sturdy": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 1},
+        {"id": "copper_ore", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 32,
@@ -541,7 +695,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "pickaxe_smash": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "tin_ore", "quantity": 2},
+        {"id": "stone", "quantity": 3}
+      ]
+    }
   },
   {
     "id": 33,
@@ -558,7 +717,12 @@
     "reward": 0.27,
     "experience": 2.7,
     "abilities": { "dynamite_throw": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flint", "quantity": 2},
+        {"id": "iron_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 34,
@@ -575,7 +739,12 @@
     "reward": 0.2,
     "experience": 2,
     "abilities": { "pitchfork_jab": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "grass", "quantity": 2},
+        {"id": "stone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 35,
@@ -592,7 +761,12 @@
     "reward": 0.19,
     "experience": 1.9,
     "abilities": { "sling_shot": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "stone", "quantity": 3},
+        {"id": "grass", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 36,
@@ -609,7 +783,12 @@
     "reward": 0.21,
     "experience": 2.1,
     "abilities": { "peasant_rage": 0.15 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "grass", "quantity": 3},
+        {"id": "flax", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 37,
@@ -626,7 +805,12 @@
     "reward": 0.23,
     "experience": 2.3,
     "abilities": { "improvised_armor": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "copper_ore", "quantity": 1},
+        {"id": "thin_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 38,
@@ -643,7 +827,12 @@
     "reward": 0.24,
     "experience": 2.4,
     "abilities": { "worker_strength": 0.15 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 1},
+        {"id": "stone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 39,
@@ -660,7 +849,12 @@
     "reward": 0.22,
     "experience": 2.2,
     "abilities": { "tough_cloth": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flax", "quantity": 2},
+        {"id": "cotton", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 40,
@@ -677,7 +871,12 @@
     "reward": 0.21,
     "experience": 2.1,
     "abilities": { "hammer_smash": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 1},
+        {"id": "copper_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 41,
@@ -694,7 +893,12 @@
     "reward": 0.2,
     "experience": 2,
     "abilities": { "stone_throw": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "stone", "quantity": 4},
+        {"id": "flint", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 42,
@@ -711,7 +915,12 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "backstab": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "copper_ore", "quantity": 1},
+        {"id": "silver_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 43,
@@ -728,7 +937,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "snipe": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flexible_branch", "quantity": 1},
+        {"id": "flint", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 44,
@@ -745,7 +959,12 @@
     "reward": 0.23,
     "experience": 2.3,
     "abilities": { "bandit_toughness": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 2},
+        {"id": "strong_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 45,
@@ -762,7 +981,12 @@
     "reward": 0.24,
     "experience": 2.4,
     "abilities": { "bandit_armor": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 2},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 46,
@@ -779,7 +1003,12 @@
     "reward": 0.27,
     "experience": 2.7,
     "abilities": { "murderous_intent": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "silver_ore", "quantity": 1},
+        {"id": "gold_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 47,
@@ -796,7 +1025,12 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "crossbow_bolt": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flexible_branch", "quantity": 2},
+        {"id": "iron_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 48,
@@ -813,7 +1047,12 @@
     "reward": 0.25,
     "experience": 2.5,
     "abilities": { "bouncer_strength": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "thick_leather", "quantity": 2},
+        {"id": "bull_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 49,
@@ -830,7 +1069,12 @@
     "reward": 0.24,
     "experience": 2.4,
     "abilities": { "shield_wall": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 3},
+        {"id": "bull_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 50,
@@ -847,7 +1091,12 @@
     "reward": 0.35,
     "experience": 3.5,
     "abilities": { "wealth_strike": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "gold_ore", "quantity": 2},
+        {"id": "silver_ore", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 51,
@@ -864,7 +1113,13 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "hunter_mark": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flexible_branch", "quantity": 1},
+        {"id": "strong_hide", "quantity": 1},
+        {"id": "wolf_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 52,
@@ -881,7 +1136,13 @@
     "reward": 0.27,
     "experience": 2.7,
     "abilities": { "forest_walk": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "arnica", "quantity": 2},
+        {"id": "willow_bark", "quantity": 1},
+        {"id": "hare_fur", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 53,
@@ -898,7 +1159,12 @@
     "reward": 0.3,
     "experience": 3,
     "abilities": { "veteran_skill": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 2},
+        {"id": "strong_leather", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 54,
@@ -915,7 +1181,12 @@
     "reward": 0.32,
     "experience": 3.2,
     "abilities": { "guard_duty": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 3},
+        {"id": "thick_leather", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 55,
@@ -932,7 +1203,12 @@
     "reward": 0.29,
     "experience": 2.9,
     "abilities": { "wanderer_strike": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "copper_ore", "quantity": 2},
+        {"id": "strong_hide", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 56,
@@ -949,7 +1225,12 @@
     "reward": 0.31,
     "experience": 3.1,
     "abilities": { "ranger_precision": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "flexible_branch", "quantity": 2},
+        {"id": "lynx_fur", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 57,
@@ -966,7 +1247,13 @@
     "reward": 0.33,
     "experience": 3.3,
     "abilities": { "keeper_wrath": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 3},
+        {"id": "flexible_branch", "quantity": 1},
+        {"id": "arnica", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 58,
@@ -983,7 +1270,12 @@
     "reward": 0.28,
     "experience": 2.8,
     "abilities": { "tracking_shot": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "hare_fur", "quantity": 2},
+        {"id": "small_bone", "quantity": 3}
+      ]
+    }
   },
   {
     "id": 59,
@@ -1000,7 +1292,13 @@
     "reward": 0.26,
     "experience": 2.6,
     "abilities": { "militia_charge": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "grass", "quantity": 3},
+        {"id": "stone", "quantity": 2},
+        {"id": "flint", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 60,
@@ -1017,7 +1315,12 @@
     "reward": 0.3,
     "experience": 3,
     "abilities": { "border_defense": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 2},
+        {"id": "strong_leather", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 61,
@@ -1034,7 +1337,12 @@
     "reward": 0.5,
     "experience": 5,
     "abilities": { "tail_sweep": 0.2 },
-    "loot": { "guaranteed": ["lizard_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "lizard_leather", "quantity": 3},
+        {"id": "small_bone", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 62,
@@ -1051,7 +1359,12 @@
     "reward": 0.45,
     "experience": 4.5,
     "abilities": { "venom_spit": 0.3 },
-    "loot": { "guaranteed": ["lizard_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "lizard_leather", "quantity": 2},
+        {"id": "arnica", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 63,
@@ -1068,7 +1381,12 @@
     "reward": 0.4,
     "experience": 4,
     "abilities": { "web_shot": 0.25 },
-    "loot": { "guaranteed": ["cobweb"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "cobweb", "quantity": 3},
+        {"id": "small_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 64,
@@ -1085,7 +1403,13 @@
     "reward": 0.42,
     "experience": 4.2,
     "abilities": { "cave_roar": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "stone", "quantity": 4},
+        {"id": "flint", "quantity": 2},
+        {"id": "copper_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 65,
@@ -1102,7 +1426,13 @@
     "reward": 0.7,
     "experience": 7,
     "abilities": { "regeneration": 0.3 },
-    "loot": { "guaranteed": ["mammoth_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "mammoth_bone", "quantity": 2},
+        {"id": "stone", "quantity": 5},
+        {"id": "thick_hide", "quantity": 3}
+      ]
+    }
   },
   {
     "id": 66,
@@ -1119,7 +1449,13 @@
     "reward": 0.8,
     "experience": 8,
     "abilities": { "frost_breath": 0.25 },
-    "loot": { "guaranteed": ["dragon_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "dragon_bone", "quantity": 1},
+        {"id": "dragon_leather", "quantity": 1},
+        {"id": "mithril_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 67,
@@ -1136,7 +1472,13 @@
     "reward": 0.6,
     "experience": 6,
     "abilities": { "lava_burst": 0.3 },
-    "loot": { "guaranteed": ["lizard_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "lizard_leather", "quantity": 3},
+        {"id": "flint", "quantity": 3},
+        {"id": "iron_ore", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 68,
@@ -1153,7 +1495,12 @@
     "reward": 0.75,
     "experience": 7.5,
     "abilities": { "spectral_charge": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "silver_ore", "quantity": 3},
+        {"id": "ghost_essence", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 69,
@@ -1170,7 +1517,13 @@
     "reward": 1.0,
     "experience": 10,
     "abilities": { "root_grasp": 0.2 },
-    "loot": { "guaranteed": ["common_wood"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 10},
+        {"id": "flexible_branch", "quantity": 3},
+        {"id": "tea_mushroom", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 70,
@@ -1187,7 +1540,13 @@
     "reward": 0.55,
     "experience": 5.5,
     "abilities": { "dwarven_resolve": 0.2 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 4},
+        {"id": "mithril_ore", "quantity": 1},
+        {"id": "stone", "quantity": 3}
+      ]
+    }
   },
   {
     "id": 71,
@@ -1204,7 +1563,13 @@
     "reward": 0.5,
     "experience": 5,
     "abilities": { "precision_shot": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "tin_ore", "quantity": 3},
+        {"id": "copper_ore", "quantity": 2},
+        {"id": "flexible_branch", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 72,
@@ -1221,7 +1586,13 @@
     "reward": 0.65,
     "experience": 6.5,
     "abilities": { "berserker_rage": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 3},
+        {"id": "thick_leather", "quantity": 2},
+        {"id": "bull_bone", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 73,
@@ -1238,7 +1609,13 @@
     "reward": 0.6,
     "experience": 6,
     "abilities": { "lightning_bolt": 0.3 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "silver_ore", "quantity": 2},
+        {"id": "arnica", "quantity": 3},
+        {"id": "willow_bark", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 74,
@@ -1255,7 +1632,13 @@
     "reward": 0.7,
     "experience": 7,
     "abilities": { "curse": 0.25 },
-    "loot": { "guaranteed": [] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "arnica", "quantity": 4},
+        {"id": "willow_bark", "quantity": 3},
+        {"id": "tea_mushroom", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 75,
@@ -1272,7 +1655,14 @@
     "reward": 2.0,
     "experience": 20,
     "abilities": { "dragon_breath": 0.3 },
-    "loot": { "guaranteed": ["dragon_bone"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "dragon_bone", "quantity": 3},
+        {"id": "dragon_leather", "quantity": 2},
+        {"id": "dragon_hide", "quantity": 1},
+        {"id": "adamantite_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 76,
@@ -1289,7 +1679,14 @@
     "reward": 1.2,
     "experience": 12,
     "abilities": { "pack_leader": 0.3 },
-    "loot": { "guaranteed": ["leopard_fur"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "leopard_fur", "quantity": 2},
+        {"id": "strong_hide", "quantity": 3},
+        {"id": "wolf_bone", "quantity": 4},
+        {"id": "silver_ore", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 77,
@@ -1306,7 +1703,13 @@
     "reward": 1.5,
     "experience": 15,
     "abilities": { "web_net": 0.25 },
-    "loot": { "guaranteed": ["cobweb"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "cobweb", "quantity": 10},
+        {"id": "poison_gland", "quantity": 2},
+        {"id": "adamantite_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 78,
@@ -1323,7 +1726,14 @@
     "reward": 1.3,
     "experience": 13,
     "abilities": { "royal_command": 0.2 },
-    "loot": { "guaranteed": ["dragon_leather"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "dragon_leather", "quantity": 3},
+        {"id": "lizard_leather", "quantity": 5},
+        {"id": "gold_ore", "quantity": 2},
+        {"id": "mithril_ore", "quantity": 1}
+      ]
+    }
   },
   {
     "id": 79,
@@ -1340,7 +1750,13 @@
     "reward": 1.8,
     "experience": 18,
     "abilities": { "rebirth": 0.1 },
-    "loot": { "guaranteed": ["dragon_hide"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "dragon_hide", "quantity": 2},
+        {"id": "phoenix_feather", "quantity": 3},
+        {"id": "adamantite_ore", "quantity": 2}
+      ]
+    }
   },
   {
     "id": 80,
@@ -1357,6 +1773,133 @@
     "reward": 5.0,
     "experience": 50,
     "abilities": { "ancient_wrath": 0.4 },
-    "loot": { "guaranteed": ["meteorite_ore"] }
+    "loot": { 
+      "guaranteed": [
+        {"id": "meteorite_ore", "quantity": 3},
+        {"id": "dragon_bone", "quantity": 5},
+        {"id": "dragon_leather", "quantity": 4},
+        {"id": "dragon_hide", "quantity": 3},
+        {"id": "adamantite_ore", "quantity": 3}
+      ]
+    }
+  },
+  {
+    "id": 81,
+    "name": "Мамонт-Исполин",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/mammoth.jpg",
+    "role": "tank_health",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_health",
+    "health": 2000,
+    "armor": 45,
+    "damage": 80,
+    "reward": 2.5,
+    "experience": 25,
+    "abilities": { "tusk_gore": 0.3 },
+    "loot": { 
+      "guaranteed": [
+        {"id": "mammoth_bone", "quantity": 5},
+        {"id": "mammoth_fur", "quantity": 4},
+        {"id": "thick_hide", "quantity": 6},
+        {"id": "bull_leather", "quantity": 3}
+      ]
+    }
+  },
+  {
+    "id": 82,
+    "name": "Призрачный Медведь",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/ghost_bear.jpg",
+    "role": "tank_health",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_health",
+    "health": 850,
+    "armor": 35,
+    "damage": 95,
+    "reward": 1.1,
+    "experience": 11,
+    "abilities": { "spectral_claw": 0.25 },
+    "loot": { 
+      "guaranteed": [
+        {"id": "bear_hide", "quantity": 3},
+        {"id": "ghost_essence", "quantity": 2},
+        {"id": "silver_ore", "quantity": 3}
+      ]
+    }
+  },
+  {
+    "id": 83,
+    "name": "Каменный Голем",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/golem.jpg",
+    "role": "tank_armor",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_armor",
+    "health": 1200,
+    "armor": 90,
+    "damage": 60,
+    "reward": 1.4,
+    "experience": 14,
+    "abilities": { "stone_slam": 0.2 },
+    "loot": { 
+      "guaranteed": [
+        {"id": "stone", "quantity": 15},
+        {"id": "iron_ore", "quantity": 5},
+        {"id": "mithril_ore", "quantity": 2},
+        {"id": "adamantite_ore", "quantity": 1}
+      ]
+    }
+  },
+  {
+    "id": 84,
+    "name": "Лесной Дух",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/forest_spirit.jpg",
+    "role": "dd_ranged",
+    "attackType": "ranged",
+    "preferredPosition": "back",
+    "aiBehavior": "ranged_support",
+    "aiType": "ranged_support",
+    "health": 400,
+    "armor": 20,
+    "damage": 110,
+    "reward": 0.9,
+    "experience": 9,
+    "abilities": { "nature_wrath": 0.3 },
+    "loot": { 
+      "guaranteed": [
+        {"id": "common_wood", "quantity": 8},
+        {"id": "flexible_branch", "quantity": 4},
+        {"id": "arnica", "quantity": 5},
+        {"id": "elderberry", "quantity": 3}
+      ]
+    }
+  },
+  {
+    "id": 85,
+    "name": "Подземный Червь",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/GAME/images/monsters/worm.jpg",
+    "role": "tank_health",
+    "attackType": "melee",
+    "preferredPosition": "front",
+    "aiBehavior": "aggressive",
+    "aiType": "tank_health",
+    "health": 950,
+    "armor": 40,
+    "damage": 70,
+    "reward": 1.2,
+    "experience": 12,
+    "abilities": { "burrow": 0.25 },
+    "loot": { 
+      "guaranteed": [
+        {"id": "iron_ore", "quantity": 4},
+        {"id": "copper_ore", "quantity": 6},
+        {"id": "stone", "quantity": 10},
+        {"id": "thick_leather", "quantity": 3}
+      ]
+    }
   }
 ]
