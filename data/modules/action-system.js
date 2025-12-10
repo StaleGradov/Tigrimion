@@ -212,57 +212,67 @@ class ActionSystem {
         }
     }
 
-    createHuntActionStub() {
-        console.log("🔄 Создаем заглушку для модуля охоты");
-        this.actionModules['hunt'] = {
-            execute: (row, col) => {
-                console.log(`🏹 Заглушка охоты: клетка [${col},${row}]`);
-                this.showNotification("⚠️ Модуль охоты не загружен. Заглушка активирована.", 'warning');
-                
-                // Базовая логика охоты как заглушка
-                const cellKey = `${col},${row}`;
-                const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-                
-                if (!cell) {
-                    this.showNotification("❌ Клетка не найдена!", 'error');
-                    return;
-                }
-                
-                if (cell.explored === true) {
-                    this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-                    return;
-                }
-                
-                // Простой бой как заглушка
-                const battleSystem = window.game?.systems?.battle;
-                if (battleSystem) {
-                    const randomMonster = battleSystem.getRandomMonsterForMovement();
-                    if (randomMonster) {
-                        this.mapSystem.pendingAction = {
-                            action: 'hunt',
-                            row: row,
-                            col: col,
-                            wasSuccess: true,
-                            doubleLoot: true
-                        };
-                        battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
-                        this.showNotification(`🏹 Простая охота на ${randomMonster.name}`, 'info');
-                    }
-                }
-            },
-            completeHuntAfterBattle: (victory, escape, doubleLoot) => {
-                console.log(`🏹 Заглушка: обработка результата охоты`);
-                this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
-            },
-            config: {
-                id: 'hunt',
-                icon: '🏹',
-                name: 'Охотиться',
-                description: 'Выследить и добыть дичь'
-            }
-        };
-    }
+    getModule(moduleName) {
+    return this.actionModules[moduleName];
+}
 
+registerModule(moduleName, moduleInstance) {
+    this.actionModules[moduleName] = moduleInstance;
+    console.log(`✅ Модуль ${moduleName} зарегистрирован в ActionSystem`);
+}
+
+ createHuntActionStub() {
+    console.log("🔄 Создаем заглушку для модуля охоты");
+    this.actionModules['hunt'] = {
+        execute: (row, col) => {
+            console.log(`🏹 Заглушка охоты: клетка [${col},${row}]`);
+            this.showNotification("⚠️ Модуль охоты не загружен. Заглушка активирована.", 'warning');
+            
+            // Базовая логика охоты как заглушка
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+            
+            if (!cell) {
+                this.showNotification("❌ Клетка не найдена!", 'error');
+                return;
+            }
+            
+            if (cell.explored === true) {
+                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                return;
+            }
+            
+            // Простой бой как заглушка
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem) {
+                const randomMonster = battleSystem.getRandomMonsterForMovement();
+                if (randomMonster) {
+                    this.mapSystem.pendingAction = {
+                        action: 'hunt',
+                        row: row,
+                        col: col,
+                        wasSuccess: true,
+                        doubleLoot: true
+                    };
+                    battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
+                    this.showNotification(`🏹 Простая охота на ${randomMonster.name}`, 'info');
+                }
+            }
+        },
+        completeHuntAfterBattle: (victory, escape, doubleLoot) => {
+            console.log(`🏹 Заглушка: обработка результата охоты`);
+            this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
+        },
+        config: {
+            id: 'hunt',
+            icon: '🏹',
+            name: 'Охотиться',
+            description: 'Выследить и добыть дичь'
+        }
+    };
+    
+    console.log("✅ Заглушка модуля охоты создана и зарегистрирована");
+}
     // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
 
     async loadCellData() {
