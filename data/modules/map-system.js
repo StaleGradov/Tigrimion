@@ -416,9 +416,11 @@ class MapSystem {
 completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
     console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
-    // Обработка охоты
+    // Делегируем обработку охоты модулю охоты
     if (battleType === 'hunt' && this.pendingAction && this.pendingAction.action === 'hunt') {
-        this.completeHuntAfterBattle(victory, escape, doubleLoot);
+        if (this.actionSystem && this.actionSystem.actionModules['hunt']) {
+            return this.actionSystem.actionModules['hunt'].completeHuntAfterBattle(victory, escape, doubleLoot);
+        }
         return;
     }
     
