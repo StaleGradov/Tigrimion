@@ -2068,35 +2068,136 @@ class ActionSystem {
         }, 50);
     }
 
-    performHuntForMonster(resourceId, monsterId, row, col) {
-        const resource = this.findResourceById(resourceId);
-        if (!resource) {
-            console.error(`Ресурс ${resourceId} не найден`);
-            return;
-        }
-        
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            this.showNotification("❌ Не удалось начать охоту", 'error');
-            return;
-        }
-        
-        // Находим монстра
-        const monster = battleSystem.getMonsterById(monsterId);
-        if (!monster) {
-            console.error(`Монстр ${monsterId} не найден`);
-            return;
-        }
-        
-        const cellKey = `${col},${row}`;
-        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        const baseChance = this.getActionChance('hunt', this.currentCellType);
-        
-        // Показываем окно подтверждения с шансом
-        this.showHuntConfirmation(resource, monster, row, col, baseChance);
+  performHuntForMonster(resourceId, monsterId, row, col) {
+    const resource = this.findResourceById(resourceId);
+    if (!resource) {
+        console.error(`Ресурс ${resourceId} не найден`);
+        return;
     }
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        this.showNotification("❌ Не удалось начать охоту", 'error');
+        return;
+    }
+    
+    // Находим конкретного монстра
+    const specificMonster = battleSystem.getMonsterById(monsterId);
+    
+    // Получаем всех монстров с этим трофеем
+    const allMonstersWithResource = this.getMonstersWithResource(resourceId);
+    const allMonsters = battleSystem.monsters || [];
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    const baseChance = this.getActionChance('hunt', this.currentCellType);
+    
+    // Рассчитываем шанс встречи именно с выбранным монстром
+    let specificMonsterChance = 0;
+    if (specificMonster && allMonstersWithResource.length > 0) {
+        // Базовый шанс встречи с выбранным монстром
+        const baseSpecificChance = Math.max(20, Math.min(80, 100 / allMonstersWithResource.length));
+        
+        // Корректируем в зависимости от сложности монстра
+        const monsterLevel = specificMonster.level || this.calculateMonsterLevel(specificMonster);
+        const levelBonus = Math.min(30, monsterLevel * 5); // Более сильные монстры более вероятны
+        
+        specificMonsterChance = Math.min(80, baseSpecificChance + levelBonus);
+    }
+    
+    // Шанс встречи с любым монстром с этим трофеем
+    const anyMonsterWithResourceChance = Math.min(95, baseChance + 10);
+    
+    // Суммарный шанс хоть какого-то боя
+    const totalBattleChance = baseChance;
+    
+    console.log(`🏹 Охота за ${resource.name}:`);
+    console.log(`   - Шанс встречи с ${specificMonster?.name || 'выбранным монстром'}: ${specificMonsterChance}%`);
+    console.log(`   - Шанс встречи с любым монстром с трофеем: ${anyMonsterWithResourceChance}%`);
+    console.log(`   - Общий шанс боя: ${totalBattleChance}%`);
+    
+    const roll = Math.random() * 100;
+    
+    // Определяем результат охоты
+    let targetMonster = null;
+    let huntType = 'none';
+    
+    if (roll <= specificMonsterChance) {
+        // Выпал шанс встретить именно выбранного монстра
+        targetMonster = specificMonster;
+        huntType = 'specific';
+        console.log(`🎯 Удача! Выследили именно ${specificMonster?.name}`);
+    } else if (roll <= anyMonsterWithResourceChance) {
+        // Выпал шанс встретить любого монстра с этим трофеем
+        // Исключаем уже проверенного выбранного монстра
+        const otherMonsters = allMonstersWithResource.filter(m => m.id !== monsterId);
+        if (otherMonsters.length > 0) {
+            targetMonster = otherMonsters[Math.floor(Math.random() * otherMonsters.length)];
+            huntType = 'any_with_resource';
+            console.log(`🎲 Встретили другого монстра с трофеем: ${targetMonster?.name}`);
+        } else if (allMonstersWithResource.length > 0) {
+            // Если других монстров нет, берем выбранного
+            targetMonster = specificMonster || allMonstersWithResource[0];
+            huntType = 'specific_fallback';
+        }
+    } else if (roll <= totalBattleChance) {
+        // Выпал шанс встретить любого монстра
+        if (allMonsters.length > 0) {
+            targetMonster = allMonsters[Math.floor(Math.random() * allMonsters.length)];
+            huntType = 'any_monster';
+            console.log(`👹 Встретили случайного монстра: ${targetMonster?.name}`);
+        }
+    }
+    
+    // Если бой должен начаться
+    if (targetMonster) {
+        // Сохраняем информацию об охоте для обработки после боя
+        this.mapSystem.pendingAction = {
+            action: 'hunt',
+            row: row,
+            col: col,
+            cellTypeData: cellTypeData,
+            targetResource: resource,
+            targetMonster: targetMonster,
+            huntType: huntType,
+            specificMonsterChance: specificMonsterChance,
+            anyMonsterChance: anyMonsterWithResourceChance,
+            totalChance: totalBattleChance,
+            huntRoll: roll
+        };
+        
+        // Начинаем бой с выбранным монстром
+        battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, targetMonster, 'hunt');
+        
+        let message = '';
+        switch (huntType) {
+            case 'specific':
+                message = `🏹 Удача! Вы выследили именно ${targetMonster.name} для добычи ${resource.name}`;
+                break;
+            case 'any_with_resource':
+                message = `🎯 Вы наткнулись на ${targetMonster.name}, у которого тоже есть ${resource.name}`;
+                break;
+            case 'any_monster':
+                message = `👹 Вы спугнули ${targetMonster.name}! Придется сражаться`;
+                break;
+            default:
+                message = `⚔️ Начинается бой с ${targetMonster.name}`;
+        }
+        
+        this.showNotification(message, huntType === 'specific' ? 'success' : 'info');
+    } else {
+        // Охота полностью провалилась - не встретили никого
+        console.log(`❌ Охота провалилась - не удалось найти дичь`);
+        this.showNotification("❌ Не удалось найти дичь для охоты", 'warning');
+        
+        // Возвращаем к выбору трофея
+        setTimeout(() => {
+            this.showHuntTargetSelection(this.selectedCell);
+        }, 1000);
+    }
+}
 
     showHuntConfirmation(resource, monster, row, col, baseChance) {
         const actionsContainer = document.getElementById('cellActionsContainer');
