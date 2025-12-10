@@ -190,7 +190,9 @@ class ActionSystem {
         console.log("   window.HuntAction:", window.HuntAction);
         
         // Пытаемся сразу инициализировать модуль охоты если он уже загружен
-        this.tryInitializeHuntModule();
+    setTimeout(() => {
+        this.initializeActionModules();
+    }, 500);
     }
 
     // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
