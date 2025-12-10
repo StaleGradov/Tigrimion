@@ -1681,6 +1681,47 @@ class ActionSystem {
         return allMonsters[Math.floor(Math.random() * allMonsters.length)];
     }
 
+// ========== МЕТОДЫ ДЛЯ ОХОТЫ ==========
+
+getMonstersWithResource(resourceId) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return [];
+    
+    const allMonsters = battleSystem.getAvailableMonsters();
+    
+    // Фильтруем монстров, у которых есть этот ресурс в гарантированном дропе
+    const matchingMonsters = allMonsters.filter(monster => {
+        if (!monster.loot || !monster.loot.guaranteed) return false;
+        
+        return monster.loot.guaranteed.includes(resourceId);
+    });
+    
+    console.log(`🎯 Найдено ${matchingMonsters.length} монстров с ресурсом ${resourceId}:`, 
+                matchingMonsters.map(m => m.name));
+    
+    return matchingMonsters;
+}
+
+getRandomMonsterForResource(resourceId) {
+    const monstersWithResource = this.getMonstersWithResource(resourceId);
+    
+    if (monstersWithResource.length > 0) {
+        // Если есть монстры с этим ресурсом - выбираем случайного
+        const randomIndex = Math.floor(Math.random() * monstersWithResource.length);
+        return monstersWithResource[randomIndex];
+    } else {
+        // Если нет монстров с этим ресурсом - берем случайного монстра
+        console.log(`⚠️ Нет монстров с ресурсом ${resourceId}, выбираем случайного`);
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) return null;
+        
+        const allMonsters = battleSystem.getAvailableMonsters();
+        if (allMonsters.length === 0) return null;
+        
+        return allMonsters[Math.floor(Math.random() * allMonsters.length)];
+    }
+}
+    
     giveRandomResource(resourceType, row, col) {
         const resources = this.resources[resourceType];
         if (!resources || resources.length === 0) {
@@ -1775,77 +1816,86 @@ class ActionSystem {
     }
 
     // ========== СПЕЦИАЛЬНЫЕ ДЕЙСТВИЯ ==========
-
-    showHuntTargetSelection(cell) {
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) return;
-        
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        const baseChance = this.getActionChance('hunt', this.currentCellType);
-        
-        const huntableResources = {
-            'bones': ['small_bone', 'wolf_bone', 'horse_bone', 'bull_bone', 'mammoth_bone', 'dragon_bone'],
-            'leathers': ['thin_leather', 'strong_leather', 'thick_leather', 'bull_leather', 'lizard_leather', 'dragon_leather'],
-            'hides': ['thin_hide', 'strong_hide', 'thick_hide', 'tiger_hide', 'bear_hide', 'dragon_hide'],
-            'furs': ['hare_fur', 'marten_fur', 'arctic_fox_fur', 'lynx_fur', 'leopard_fur', 'mammoth_fur']
+showHuntTargetSelection(cell) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    const baseChance = this.getActionChance('hunt', this.currentCellType);
+    
+    // Группируем ресурсы по категориям
+    const huntableResources = this.groupHuntableResources();
+    
+    let html = `
+        <div class="hunt-target-selection">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                🏹 Выберите цель охоты
+            </h3>
+            
+            <div class="hunt-info" style="background: rgba(255, 100, 100, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff4444;">
+                <strong>⚠️ Важно:</strong>
+                <p style="margin-top: 8px; font-size: 14px; color: #ffcccc;">
+                    • При успехе: начнется бой с монстром, обладающим этим ресурсом<br>
+                    • При неудаче: начнется бой со случайным монстром<br>
+                    • После неудачи: эффективность действий на этой клетке снизится на 5%
+                </p>
+            </div>
+            
+            <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <strong>Базовая вероятность успеха:</strong> 
+                <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
+                    ${baseChance}%
+                </span>
+            </div>
+            
+            <div class="hunt-categories">
+    `;
+    
+    Object.keys(huntableResources).forEach(category => {
+        const categoryNames = {
+            'bones': '🦴 Кости',
+            'leathers': '🐂 Кожи',
+            'hides': '🐅 Шкуры',
+            'furs': '🦊 Меха'
         };
         
-        let html = `
-            <div class="hunt-target-selection">
-                <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
-                    🏹 Выберите цель охоты
-                </h3>
-                
-                <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                    <strong>Базовая вероятность успеха:</strong> 
-                    <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
-                        ${baseChance}%
-                    </span>
-                </div>
-                
-                <div class="hunt-categories">
+        const categoryData = huntableResources[category];
+        if (categoryData.resources.length === 0) return;
+        
+        html += `
+            <div class="hunt-category">
+                <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
+                    ${categoryNames[category] || category} 
+                    <small style="color: #666; font-size: 12px;">(${categoryData.description})</small>
+                </h4>
+                <div class="hunt-targets-grid">
         `;
         
-        Object.keys(huntableResources).forEach(category => {
-            const categoryNames = {
-                'bones': '🦴 Кости',
-                'leathers': '🐂 Кожи',
-                'hides': '🐅 Шкуры',
-                'furs': '🦊 Меха'
-            };
+        categoryData.resources.forEach(resource => {
+            const price = resource.price || resource.value || 10;
+            const resourceChance = this.calculateHuntChance(price, baseChance, category);
+            
+            // Получаем монстров для этого ресурса
+            const monsters = this.getMonstersWithResource(resource.id);
+            const monsterNames = monsters.slice(0, 3).map(m => m.name).join(', ');
+            const monsterInfo = monsters.length > 0 ? 
+                `<div style="font-size: 10px; color: #888; margin-top: 5px;">Монстры: ${monsterNames}${monsters.length > 3 ? '...' : ''}</div>` : 
+                `<div style="font-size: 10px; color: #ff6666; margin-top: 5px;">⚠️ Любой случайный монстр</div>`;
             
             html += `
-                <div class="hunt-category">
-                    <h4 style="color: #00aaff; margin: 15px 0 10px 0;">${categoryNames[category] || category}</h4>
-                    <div class="hunt-targets-grid">
-            `;
-            
-            huntableResources[category].forEach(resourceId => {
-                const resource = this.findResourceById(resourceId);
-                if (!resource) return;
-                
-                const price = resource.price || resource.value || 10;
-                const resourceChance = this.calculateResourceChance(price, baseChance);
-                
-                html += `
-                    <div class="hunt-target-item" onclick="window.game.systems.action.performHunt('${resourceId}', ${cell.row}, ${cell.col})">
-                        <div class="hunt-target-name">${resource.name}</div>
-                        <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
-                            ${resource.description || 'Охотничий трофей'}
-                        </div>
-                        <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b;">
-                            Цена: ${price} золота
-                        </div>
-                        <div class="hunt-target-chance" style="font-size: 12px; margin-top: 8px;">
-                            Шанс: <span style="color: ${resourceChance >= 70 ? '#44ff44' : resourceChance >= 40 ? '#ffaa00' : '#ff4444'}">
-                                ${resourceChance}%
-                            </span>
-                        </div>
+                <div class="hunt-target-item" onclick="window.game.systems.action.performHunt('${resource.id}', ${cell.row}, ${cell.col})">
+                    <div class="hunt-target-name">${resource.name}</div>
+                    <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
+                        ${resource.description || 'Охотничий трофей'}
                     </div>
-                `;
-            });
-            
-            html += `
+                    ${monsterInfo}
+                    <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b;">
+                        Цена: ${price} золота
+                    </div>
+                    <div class="hunt-target-chance" style="font-size: 12px; margin-top: 8px;">
+                        Шанс: <span style="color: ${resourceChance >= 70 ? '#44ff44' : resourceChance >= 40 ? '#ffaa00' : '#ff4444'}">
+                            ${resourceChance}%
+                        </span>
                     </div>
                 </div>
             `;
@@ -1853,49 +1903,123 @@ class ActionSystem {
         
         html += `
                 </div>
-                
-                <button class="btn-control" onclick="window.game.systems.action.updateCellActionsUI(this.selectedCell)" 
-                        style="margin-top: 20px; width: 100%;">
-                    ↩️ Назад к действиям
-                </button>
             </div>
         `;
-        
-        actionsContainer.innerHTML = html;
-        
-        setTimeout(() => {
-            const grid = actionsContainer.querySelector('.hunt-targets-grid');
-            if (grid) {
-                grid.style.cssText = `
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 10px;
-                    margin-bottom: 15px;
-                `;
-            }
+    });
+    
+    html += `
+            </div>
             
-            const items = actionsContainer.querySelectorAll('.hunt-target-item');
-            items.forEach(item => {
-                item.style.cssText = `
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                    border: 1px solid #00aaff;
-                    border-radius: 8px;
-                    padding: 12px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                `;
-                
-                item.onmouseenter = () => {
-                    item.style.transform = 'translateY(-2px)';
-                    item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
-                };
-                item.onmouseleave = () => {
-                    item.style.transform = 'translateY(0)';
-                    item.style.boxShadow = 'none';
-                };
-            });
-        }, 50);
-    }
+            <button class="btn-control" onclick="window.game.systems.action.updateCellActionsUI(this.selectedCell)" 
+                    style="margin-top: 20px; width: 100%;">
+                ↩️ Назад к действиям
+            </button>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = html;
+    
+    // Применяем стили
+    setTimeout(() => {
+        const grid = actionsContainer.querySelector('.hunt-targets-grid');
+        if (grid) {
+            grid.style.cssText = `
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                margin-bottom: 15px;
+            `;
+        }
+        
+        const items = actionsContainer.querySelectorAll('.hunt-target-item');
+        items.forEach(item => {
+            item.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid #00aaff;
+                border-radius: 8px;
+                padding: 12px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
+            
+            item.onmouseenter = () => {
+                item.style.transform = 'translateY(-2px)';
+                item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+            };
+            item.onmouseleave = () => {
+                item.style.transform = 'translateY(0)';
+                item.style.boxShadow = 'none';
+            };
+        });
+    }, 50);
+}
+
+groupHuntableResources() {
+    return {
+        'bones': {
+            description: 'Кости животных для ремесла и алхимии',
+            resources: [
+                this.findResourceById('small_bone'),
+                this.findResourceById('wolf_bone'),
+                this.findResourceById('horse_bone'),
+                this.findResourceById('bull_bone'),
+                this.findResourceById('mammoth_bone'),
+                this.findResourceById('dragon_bone')
+            ].filter(r => r !== null)
+        },
+        'leathers': {
+            description: 'Кожи животных для брони и снаряжения',
+            resources: [
+                this.findResourceById('thin_leather'),
+                this.findResourceById('strong_leather'),
+                this.findResourceById('thick_leather'),
+                this.findResourceById('bull_leather'),
+                this.findResourceById('lizard_leather'),
+                this.findResourceById('dragon_leather')
+            ].filter(r => r !== null)
+        },
+        'hides': {
+            description: 'Шкуры животных для теплой одежды',
+            resources: [
+                this.findResourceById('thin_hide'),
+                this.findResourceById('strong_hide'),
+                this.findResourceById('thick_hide'),
+                this.findResourceById('tiger_hide'),
+                this.findResourceById('bear_hide'),
+                this.findResourceById('dragon_hide')
+            ].filter(r => r !== null)
+        },
+        'furs': {
+            description: 'Мех животных для роскошной одежды',
+            resources: [
+                this.findResourceById('hare_fur'),
+                this.findResourceById('marten_fur'),
+                this.findResourceById('arctic_fox_fur'),
+                this.findResourceById('lynx_fur'),
+                this.findResourceById('leopard_fur'),
+                this.findResourceById('mammoth_fur')
+            ].filter(r => r !== null)
+        }
+    };
+}
+
+calculateHuntChance(price, baseChance, resourceType) {
+    // Дорогие ресурсы сложнее добыть
+    const priceFactor = Math.max(0.1, 1 / (price / 100 + 1));
+    
+    // Разные типы ресурсов имеют разные базовые шансы
+    const typeModifiers = {
+        'bones': 1.0,
+        'leathers': 0.9,
+        'hides': 0.8,
+        'furs': 0.7
+    };
+    
+    const typeModifier = typeModifiers[resourceType] || 1.0;
+    const chance = Math.round(baseChance * priceFactor * typeModifier);
+    
+    return Math.min(100, Math.max(5, chance));
+}
 
     findResourceById(resourceId) {
         for (const category in this.resources) {
@@ -1928,149 +2052,293 @@ class ActionSystem {
         this.showHuntChanceWindow(resource, resourceChance, row, col);
     }
 
-    showHuntChanceWindow(resource, chance, row, col) {
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) return;
-        
-        const roll = Math.random() * 100;
-        const success = roll <= chance;
-        
-        let html = `
-            <div class="hunt-attempt">
-                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
-                    🏹 Попытка охоты
-                </h3>
-                
-                <div class="hunt-target-info" style="text-align: center; margin-bottom: 20px;">
-                    <div style="font-size: 24px; margin-bottom: 10px;">${resource.name}</div>
-                    <div style="color: #aaa; font-size: 14px;">${resource.description || ''}</div>
-                </div>
-                
-                <div class="hunt-chance-display" style="
-                    background: rgba(0, 0, 0, 0.4);
-                    padding: 20px;
+ showHuntChanceWindow(resource, chance, row, col) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    const roll = Math.random() * 100;
+    const success = roll <= chance;
+    
+    // Получаем монстра для этого ресурса (для успешного случая)
+    const specificMonster = this.getRandomMonsterForResource(resource.id);
+    
+    // Получаем случайного монстра (для неудачного случая)
+    const randomMonster = this.getRandomMonsterForResource(null);
+    
+    let html = `
+        <div class="hunt-attempt">
+            <h3 style="color: #00ffcc; text-align: center; margin-bottom: 20px;">
+                🏹 Попытка охоты
+            </h3>
+            
+            <div class="hunt-target-info" style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 24px; margin-bottom: 10px;">${resource.name}</div>
+                <div style="color: #aaa; font-size: 14px;">${resource.description || ''}</div>
+            </div>
+            
+            <div class="hunt-chance-display" style="
+                background: rgba(0, 0, 0, 0.4);
+                padding: 20px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <div style="font-size: 16px; margin-bottom: 10px;">Шанс успеха: <strong>${chance}%</strong></div>
+                <div style="
+                    width: 100%;
+                    height: 20px;
+                    background: #333;
                     border-radius: 10px;
-                    margin-bottom: 20px;
-                    text-align: center;
+                    overflow: hidden;
+                    margin: 10px 0;
                 ">
-                    <div style="font-size: 16px; margin-bottom: 10px;">Шанс успеха: <strong>${chance}%</strong></div>
                     <div style="
-                        width: 100%;
-                        height: 20px;
-                        background: #333;
-                        border-radius: 10px;
-                        overflow: hidden;
-                        margin: 10px 0;
+                        width: ${chance}%;
+                        height: 100%;
+                        background: ${chance >= 70 ? '#44ff44' : chance >= 40 ? '#ffaa00' : '#ff4444'};
+                        transition: width 1s ease;
+                    "></div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <div class="dice-roll" style="
+                        display: inline-block;
+                        width: 50px;
+                        height: 50px;
+                        background: #1a1a2e;
+                        border: 2px solid #00ffff;
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                        font-weight: bold;
+                        color: ${success ? '#44ff44' : '#ff4444'};
+                        margin: 0 auto;
                     ">
-                        <div style="
-                            width: ${chance}%;
-                            height: 100%;
-                            background: ${chance >= 70 ? '#44ff44' : chance >= 40 ? '#ffaa00' : '#ff4444'};
-                            transition: width 1s ease;
-                        "></div>
-                    </div>
-                    
-                    <div style="margin: 20px 0;">
-                        <div class="dice-roll" style="
-                            display: inline-block;
-                            width: 50px;
-                            height: 50px;
-                            background: #1a1a2e;
-                            border: 2px solid #00ffff;
-                            border-radius: 8px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 20px;
-                            font-weight: bold;
-                            color: ${success ? '#44ff44' : '#ff4444'};
-                            margin: 0 auto;
-                        ">
-                            ${roll.toFixed(1)}
-                        </div>
-                    </div>
-                    
-                    <div style="font-size: 18px; color: ${success ? '#44ff44' : '#ff4444'};">
-                        ${success ? '✅ УСПЕХ!' : '❌ НЕУДАЧА'}
+                        ${roll.toFixed(1)}
                     </div>
                 </div>
-        `;
-        
-        if (success) {
-            html += `
-                <div class="hunt-success" style="text-align: center; margin: 20px 0;">
-                    <p>Вы успешно добыли ${resource.name}!</p>
-                    <div class="monster-warning" style="
-                        background: rgba(255, 100, 100, 0.2);
-                        border: 1px solid #ff4444;
+                
+                <div style="font-size: 18px; color: ${success ? '#44ff44' : '#ff4444'};">
+                    ${success ? '✅ УСПЕХ!' : '❌ НЕУДАЧА'}
+                </div>
+            </div>
+    `;
+    
+    if (success) {
+        html += `
+            <div class="hunt-success" style="text-align: center; margin: 20px 0;">
+                <p>Вы успешно выследили добычу для ${resource.name}!</p>
+                ${specificMonster ? `
+                    <div class="monster-preview" style="
+                        background: rgba(100, 100, 255, 0.1);
+                        border: 1px solid #3b82f6;
                         border-radius: 8px;
                         padding: 15px;
                         margin: 20px 0;
                     ">
-                        <strong>⚠️ Подготовьтесь к бою!</strong>
-                        <p style="margin-top: 10px; font-size: 14px;">
-                            Добыча привлекла внимание монстра. Придётся защищать свою добычу!
-                        </p>
+                        <div style="font-weight: bold; color: #3b82f6; margin-bottom: 10px;">
+                            🎯 Целевой монстр: ${specificMonster.name}
+                        </div>
+                        <div style="font-size: 14px; color: #ccc;">
+                            Этот монстр гарантированно имеет ресурс: ${resource.name}
+                        </div>
                     </div>
+                ` : ''}
+                
+                <div class="monster-warning" style="
+                    background: rgba(255, 100, 100, 0.2);
+                    border: 1px solid #ff4444;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 20px 0;
+                ">
+                    <strong>⚠️ Подготовьтесь к бою!</strong>
+                    <p style="margin-top: 10px; font-size: 14px;">
+                        ${specificMonster ? 
+                            `Вы нашли следы ${specificMonster.name}. Придётся сразиться за добычу!` :
+                            'Добыча привлекла внимание монстра. Придётся защищать свою добычу!'
+                        }
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn-control" onclick="window.game.systems.action.startHuntBattle('${resource.id}', ${row}, ${col}, true, '${specificMonster ? specificMonster.id : ''}')" 
+                        style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 15px 30px; font-size: 16px;">
+                    ⚔️ Начать бой за добычу
+                </button>
+            </div>
+        `;
+    } else {
+        html += `
+            <div class="hunt-failure" style="text-align: center; margin: 20px 0;">
+                <p>Не удалось найти подходящую дичь...</p>
+                
+                <div class="failure-penalty" style="
+                    background: rgba(255, 165, 0, 0.1);
+                    border: 1px solid #ffaa00;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin: 20px 0;
+                ">
+                    <strong>⚠️ Провал охоты имеет последствия!</strong>
+                    <p style="margin-top: 10px; font-size: 14px;">
+                        • Эффективность всех действий на этой клетке снизится на 5%<br>
+                        • Вы привлекли внимание случайного монстра
+                    </p>
                 </div>
                 
-                <div style="text-align: center;">
-                    <button class="btn-control" onclick="window.game.systems.action.startHuntBattle('${resource.id}', ${row}, ${col})" 
-                            style="background: linear-gradient(135deg, #dc2626, #991b1b);">
-                        ⚔️ Начать бой за добычу
+                ${randomMonster ? `
+                    <div class="random-monster" style="
+                        background: rgba(150, 150, 150, 0.1);
+                        border: 1px solid #888;
+                        border-radius: 8px;
+                        padding: 15px;
+                        margin: 20px 0;
+                    ">
+                        <div style="font-weight: bold; color: #888; margin-bottom: 10px;">
+                            🎲 Случайный монстр: ${randomMonster.name}
+                        </div>
+                        <div style="font-size: 14px; color: #aaa;">
+                            Ваш провал привлёк внимание этого существа
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn-control" onclick="window.game.systems.action.startHuntBattle('${resource.id}', ${row}, ${col}, false, '${randomMonster ? randomMonster.id : ''}')" 
+                            style="background: linear-gradient(135deg, #666, #444); padding: 15px 30px; font-size: 16px;">
+                        ⚔️ Принять бой с монстром
+                    </button>
+                    
+                    <button class="btn-control" onclick="window.game.systems.action.applyHuntFailurePenalty(${row}, ${col})" 
+                            style="margin-top: 10px; padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #333, #222);">
+                        😨 Отступить (без боя, но с штрафом)
                     </button>
                 </div>
-            `;
-        } else {
-            html += `
-                <div class="hunt-failure" style="text-align: center; margin: 20px 0;">
-                    <p>Не удалось найти подходящую дичь...</p>
-                    <button class="btn-control" onclick="window.game.systems.action.updateCellActionsUI(this.selectedCell)" 
-                            style="margin-top: 20px;">
-                        ↩️ Вернуться к действиям
-                    </button>
-                </div>
-            `;
-        }
-        
-        html += `</div>`;
-        actionsContainer.innerHTML = html;
+            </div>
+        `;
     }
+    
+    html += `</div>`;
+    actionsContainer.innerHTML = html;
+}
 
-    startHuntBattle(resourceId, row, col) {
-        const resource = this.findResourceById(resourceId);
-        if (!resource) return;
+
+applyHuntFailurePenalty(row, col) {
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) return;
+    
+    // Применяем штраф 5% ко всем шансам действий на этой клетке
+    const cellType = this.determineCellType(cell);
+    const cellTypeData = this.cellTypes[cellType];
+    
+    if (cellTypeData && cellTypeData.action_chances) {
+        Object.keys(cellTypeData.action_chances).forEach(action => {
+            if (cellTypeData.action_chances[action] > 0) {
+                // Уменьшаем шанс на 5%, но не ниже 1%
+                const newChance = Math.max(1, cellTypeData.action_chances[action] - 5);
+                cellTypeData.action_chances[action] = newChance;
+            }
+        });
         
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        const monsterLevel = cellTypeData.monster_level || 1;
+        // Добавляем специальную пометку о штрафе
+        cellTypeData.hunt_failure_penalty = true;
+        cellTypeData.penalty_applied = true;
         
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            return;
-        }
-        
-        const randomMonster = this.getMonsterByLevel(monsterLevel);
-        if (!randomMonster) {
-            console.error(`❌ Не найден монстр уровня ${monsterLevel}`);
-            return;
-        }
-        
-        this.mapSystem.pendingAction = {
-            action: 'hunt',
-            row: row,
-            col: col,
-            cellTypeData: cellTypeData,
-            wasSuccess: true,
-            doubleLoot: true,
-            targetResource: resource
-        };
-        
-        console.log(`🏹 Начинаем охоту на ${randomMonster.name} для получения ${resource.name}`);
-        battleSystem.startBattleWithMonster(this.mapSystem.currentHero, randomMonster.id, 'hunt');
-        
-        this.showNotification(`🏹 Вы начинаете охоту на ${randomMonster.name} за ${resource.name}!`, 'success');
+        console.log(`📉 Применён штраф 5% к действиям на клетке [${col},${row}]`);
     }
+    
+    // Сохраняем изменения
+    if (window.game && window.game.saveGame) {
+        window.game.saveGame();
+    }
+    
+    // Показываем уведомление
+    this.showNotification("⚠️ Провал охоты! Эффективность действий на этой клетке снижена на 5%", 'warning');
+    
+    // Возвращаемся к списку действий
+    this.updateCellActionsUI(cell);
+}
+    
+
+ startHuntBattle(resourceId, row, col, success = true, monsterId = null) {
+    const resource = this.findResourceById(resourceId);
+    if (!resource) return;
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        console.error("❌ BattleSystem не доступна");
+        return;
+    }
+    
+    let targetMonster;
+    
+    if (success) {
+        // УСПЕХ: Бой с монстром, у которого есть этот ресурс
+        if (monsterId) {
+            targetMonster = battleSystem.getMonsterById(monsterId);
+        }
+        
+        if (!targetMonster) {
+            targetMonster = this.getRandomMonsterForResource(resourceId);
+        }
+        
+        console.log(`🏹 УСПЕШНАЯ охота на ${resource.name}: начинаем бой с ${targetMonster?.name || 'случайным монстром'}`);
+    } else {
+        // НЕУДАЧА: Бой со случайным монстром + штраф
+        if (monsterId) {
+            targetMonster = battleSystem.getMonsterById(monsterId);
+        }
+        
+        if (!targetMonster) {
+            targetMonster = battleSystem.getRandomMonsterForMovement();
+        }
+        
+        console.log(`🏹 НЕУДАЧНАЯ охота на ${resource.name}: начинаем бой со случайным ${targetMonster?.name}`);
+        
+        // Применяем штраф ПЕРЕД началом боя
+        this.applyHuntFailurePenalty(row, col);
+    }
+    
+    if (!targetMonster) {
+        console.error(`❌ Не найден монстр для охоты`);
+        this.showNotification("❌ Не удалось начать охоту", 'error');
+        return;
+    }
+    
+    // Сохраняем информацию об охоте для обработки после боя
+    this.mapSystem.pendingAction = {
+        action: 'hunt',
+        row: row,
+        col: col,
+        cellTypeData: cellTypeData,
+        wasSuccess: success,
+        wasFailure: !success,
+        targetResource: resource,
+        targetMonster: targetMonster,
+        applyPenalty: !success // Флаг для применения штрафа (если неудача)
+    };
+    
+    console.log(`🏹 Начинаем ${success ? 'успешную' : 'неудачную'} охоту на ${targetMonster.name} для ${resource.name}`);
+    
+    // Начинаем бой
+    battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, targetMonster, 'hunt');
+    
+    const message = success ? 
+        `🏹 Вы начинаете охоту на ${targetMonster.name} за ${resource.name}!` :
+        `🏹 Провал охоты привлёк ${targetMonster.name}!`;
+    
+    this.showNotification(message, success ? 'success' : 'warning');
+}
 
     performResourceAction(action, row, col) {
         const cellKey = `${col},${row}`;
