@@ -13,10 +13,21 @@ class ActionModulesLoader {
             
             const response = await fetch(modulePath);
             if (!response.ok) {
-                throw new Error(`Не удалось загрузить модуль ${moduleName}`);
+                console.warn(`⚠️ Не удалось загрузить модуль ${moduleName} из ${modulePath}`);
+                // Пробуем альтернативный путь
+                const altPath = `modules/actions/${moduleName}-action.js`;
+                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+                
+                const altResponse = await fetch(altPath);
+                if (!altResponse.ok) {
+                    throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+                }
+                
+                modulePath = altPath;
             }
             
             const moduleCode = await response.text();
+            
             const blob = new Blob([moduleCode], { type: 'application/javascript' });
             const url = URL.createObjectURL(blob);
             
@@ -59,3 +70,4 @@ class ActionModulesLoader {
 }
 
 window.ActionModulesLoader = ActionModulesLoader;
+console.log("📦 ActionModulesLoader модуль загружен");
