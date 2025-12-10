@@ -1010,7 +1010,10 @@ class MapSystem {
     }
 }
 
-// Экспорт класса
-export { MapSystem };
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = MapSystem;
+} else {
+    window.MapSystem = MapSystem;
+}
 
 console.log("📦 MapSystem модуль загружен");
