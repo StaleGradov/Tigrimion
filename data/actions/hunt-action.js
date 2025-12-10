@@ -1,28 +1,28 @@
 "use strict";
 
 class HuntAction {
-constructor(actionSystem) {
-    this.actionSystem = actionSystem;
-    this.mapSystem = actionSystem.mapSystem;
-    this.config = {
-        id: 'hunt',
-        icon: '🏹',
-        name: 'Охотиться',
-        description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
-        class: 'action-hunt',
-        resource_type: 'loot',
-        triggers_monster: true,
-        monster_level_multiplier: 1.0,
-        always_monster: true,
-        double_loot: true
-    };
-    
-    // Регистрируем модуль в ActionSystem
-    if (actionSystem) {
-        actionSystem.registerModule('hunt', this);
-        console.log("✅ HuntAction зарегистрирован в ActionSystem");
+    constructor(actionSystem) {
+        this.actionSystem = actionSystem;
+        this.mapSystem = actionSystem.mapSystem;
+        this.config = {
+            id: 'hunt',
+            icon: '🏹',
+            name: 'Охотиться',
+            description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
+            class: 'action-hunt',
+            resource_type: 'loot',
+            triggers_monster: true,
+            monster_level_multiplier: 1.0,
+            always_monster: true,
+            double_loot: true
+        };
+        
+        // Регистрируем модуль в ActionSystem
+        if (actionSystem) {
+            actionSystem.registerModule('hunt', this);
+            console.log("✅ HuntAction зарегистрирован в ActionSystem");
+        }
     }
-}
 
     // ========== ОСНОВНЫЕ МЕТОДЫ ==========
 
@@ -903,5 +903,25 @@ constructor(actionSystem) {
     }
 }
 
+// Глобальная регистрация модуля
+if (window.ActionSystem) {
+    // Автоматическая регистрация при загрузке модуля
+    const originalActionSystem = window.ActionSystem;
+    window.ActionSystem = class extends originalActionSystem {
+        constructor(mapSystem) {
+            super(mapSystem);
+            
+            // Автоматически создаем экземпляр HuntAction при создании ActionSystem
+            setTimeout(() => {
+                if (!this.actionModules['hunt'] && window.HuntAction) {
+                    this.actionModules['hunt'] = new window.HuntAction(this);
+                    console.log("✅ HuntAction автоматически зарегистрирован в ActionSystem");
+                }
+            }, 100);
+        }
+    };
+}
+
+// Экспорт класса
 window.HuntAction = HuntAction;
-console.log("📦 HuntAction модуль загружен");
+console.log("📦 HuntAction модуль загружен и готов к регистрации");
