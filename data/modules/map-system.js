@@ -413,12 +413,14 @@ class MapSystem {
         return isNeighbor;
     }
 
-    completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
-        console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
-        
-        // Обработка охоты
-        if (battleType === 'hunt' && this.pendingAction) {
-            const { action, row, col, cellTypeData, wasSuccess, doubleLoot: huntDoubleLoot } = this.pendingAction;
+completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+    console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+    
+    // Обработка охоты
+    if (battleType === 'hunt' && this.pendingAction && this.pendingAction.action === 'hunt') {
+        this.completeHuntAfterBattle(victory, escape, doubleLoot);
+        return;
+    }
             
             if (victory) {
                 console.log(`🏹 Победа в охоте на клетке [${col},${row}] с двойным лутодропом=${huntDoubleLoot}`);
@@ -567,6 +569,172 @@ class MapSystem {
         }
     }
 
+
+
+// ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
+
+completeHuntAfterBattle(victory, escape, doubleLoot = false) {
+    console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+    
+    if (!this.pendingAction || this.pendingAction.action !== 'hunt') {
+        console.error("❌ Нет ожидающего действия охоты");
+        this.completeMovementAfterBattle(victory, escape);
+        return;
+    }
+    
+    const { row, col, targetResource, wasSuccess, wasFailure } = this.pendingAction;
+    const cellKey = `${col},${row}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (victory) {
+        // ГЕРОЙ ПОБЕДИЛ В БОЮ
+        if (wasSuccess) {
+            // УСПЕШНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем целевой ресурс
+            this.addResourceFromHunt(targetResource, doubleLoot);
+            
+            this.showNotification(`🎉 Успешная охота! Получен: ${targetResource.name}${doubleLoot ? ' (двойной лут!)' : ''}`, 'success');
+            
+            // Отмечаем клетку как исследованную после успешной охоты
+            if (cell) {
+                cell.explored = true;
+                cell.hasAction = false;
+            }
+        } else {
+            // НЕУДАЧНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем случайный ресурс
+            const randomResource = this.getRandomHuntResource();
+            if (randomResource) {
+                this.addResourceFromHunt(randomResource, false);
+                this.showNotification(`🎉 Победа в бою! Получен случайный трофей: ${randomResource.name}`, 'success');
+            }
+        }
+        
+        // Штраф уже применен в startHuntBattle если была неудача
+        if (wasFailure && cell) {
+            this.applyDoubleHuntPenalty(cell);
+        }
+        
+    } else {
+        // ГЕРОЙ ПРОИГРАЛ БОЙ ИЛИ СБЕЖАЛ
+        if (escape) {
+            this.showNotification("🏃 Вы сбежали с поля боя", 'warning');
+        } else {
+            this.showNotification("💀 Вы проиграли бой", 'error');
+        }
+        
+        // При поражении штраф удваивается
+        if (wasFailure && cell) {
+            this.applyDoubleHuntPenalty(cell);
+        }
+    }
+    
+    // Очищаем pendingAction
+    this.pendingAction = null;
+    
+    // Обновляем интерфейс клетки
+    setTimeout(() => {
+        if (cell && this.actionSystem) {
+            this.actionSystem.updateCellActionsUI(cell);
+            this.actionSystem.highlightSelectedCell(cell);
+        }
+    }, 500);
+    
+    // Сохраняем игру
+    if (window.game && window.game.saveGame) {
+        window.game.saveGame();
+    }
+}
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
+
+addResourceFromHunt(resource, doubleLoot) {
+    if (!this.currentHero) return;
+    
+    const actionSystem = window.game?.systems?.action;
+    if (!actionSystem) return;
+    
+    // Добавляем ресурс герою
+    let quantity = 1;
+    
+    if (doubleLoot) {
+        quantity = 2;
+        console.log(`🎁 ДВОЙНОЙ ЛУТ! Добавляем ${quantity}x ${resource.name}`);
+    }
+    
+    actionSystem.addResourceToHero(resource.id, resource.name, quantity, this.getResourceType(resource));
+}
+
+getRandomHuntResource() {
+    const actionSystem = window.game?.systems?.action;
+    if (!actionSystem || !actionSystem.resources) return null;
+    
+    // Все охотничьи ресурсы
+    const allHuntResources = [
+        ...(actionSystem.resources.bones || []),
+        ...(actionSystem.resources.leathers || []),
+        ...(actionSystem.resources.hides || []),
+        ...(actionSystem.resources.furs || [])
+    ];
+    
+    if (allHuntResources.length === 0) return null;
+    
+    // Взвешенный выбор - более простые ресурсы чаще
+    const weightedResources = allHuntResources.map(resource => {
+        const price = resource.price || resource.value || 10;
+        const weight = Math.max(1, 100 - price); // Дешевые = больший вес
+        
+        return { resource, weight };
+    });
+    
+    const totalWeight = weightedResources.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const item of weightedResources) {
+        if (random < item.weight) {
+            return item.resource;
+        }
+        random -= item.weight;
+    }
+    
+    return weightedResources[0].resource;
+}
+
+getResourceType(resource) {
+    // Определяем тип ресурса по ID
+    if (resource.id.includes('bone')) return 'bones';
+    if (resource.id.includes('leather')) return 'leathers';
+    if (resource.id.includes('hide')) return 'hides';
+    if (resource.id.includes('fur')) return 'furs';
+    return 'loot';
+}
+
+applyDoubleHuntPenalty(cell) {
+    const cellType = window.game.systems.action?.determineCellType(cell);
+    const cellTypeData = window.game.systems.action?.cellTypes[cellType];
+    
+    if (!cellTypeData || !cellTypeData.action_chances) return;
+    
+    // Удваиваем штраф (еще -5%, итого -10% от оригинала)
+    Object.keys(cellTypeData.action_chances).forEach(action => {
+        if (cellTypeData.action_chances[action] > 0) {
+            // Уменьшаем еще на 5% от ОРИГИНАЛЬНОГО значения
+            const originalChance = cellTypeData.original_chances?.[action] || cellTypeData.action_chances[action] + 5;
+            const newChance = Math.max(1, originalChance - 10);
+            cellTypeData.action_chances[action] = newChance;
+        }
+    });
+    
+    console.log(`📉 УДВОЕННЫЙ штраф применен к клетке [${cell.col},${cell.row}]`);
+    
+    // Сохраняем оригинальные значения для восстановления
+    if (!cellTypeData.original_chances) {
+        cellTypeData.original_chances = { ...cellTypeData.action_chances };
+    }
+    
+    cellTypeData.hunt_failure_penalty = true;
+    cellTypeData.double_penalty = true;
+}
+
+    
     // ========== СИСТЕМА ЛУТА ==========
 
     getLootItemById(itemId) {
