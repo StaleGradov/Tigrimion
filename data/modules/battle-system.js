@@ -169,19 +169,35 @@ class BattleSystem {
         return monster;
     }
 
-    getMonsterById(monsterId) {
-        if (this.programmedMonsters.has(monsterId)) {
-            return this.programmedMonsters.get(monsterId);
+   getMonsterById(monsterId) {
+    // Конвертируем в строку для сравнения
+    const searchId = monsterId.toString();
+    
+    console.log(`🔍 getMonsterById: ищем ID "${searchId}" (тип: ${typeof searchId})`);
+    
+    // Пробуем найти в случайных монстрах
+    let monster = this.randomMonsters.find(m => m.id.toString() === searchId);
+    
+    // Если не нашли, пробуем в запрограммированных
+    if (!monster) {
+        for (const [key, value] of this.programmedMonsters.entries()) {
+            if (key.toString() === searchId) {
+                monster = value;
+                break;
+            }
         }
-        
-        const randomMonster = this.randomMonsters.find(m => m.id === monsterId);
-        if (randomMonster) {
-            return randomMonster;
-        }
-        
-        console.warn(`❌ Монстр с ID ${monsterId} не найден!`);
-        return null;
     }
+    
+    if (monster) {
+        console.log(`✅ Найден монстр: ${monster.name} (ID: "${monster.id}")`);
+    } else {
+        console.warn(`❌ Монстр с ID "${searchId}" не найден!`);
+        console.log(`🔍 Доступные ID: случайные:`, this.randomMonsters.map(m => m.id));
+        console.log(`🔍 Доступные ID: запрограммированные:`, Array.from(this.programmedMonsters.keys()));
+    }
+    
+    return monster;
+}
 
     getHeroStatsForBattle() {
         if (!this.currentHero || !window.game.systems.hero) {
