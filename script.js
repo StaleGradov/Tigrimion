@@ -15,7 +15,9 @@ class ModuleLoader {
             'action-system',
             'shop-system',
             'resources-system',
-            'crafting-system'
+            'crafting-system',
+            // ========== ДОБАВИТЬ: Загрузчик модулей действий ==========
+            'action-modules-loader'
         ];
     }
 
@@ -90,6 +92,8 @@ class ModuleLoader {
             let modulePath;
             if (moduleName === 'crafting-system') {
                 modulePath = 'crafting-system.js';
+            } else if (moduleName === 'action-modules-loader') {
+                modulePath = 'action-modules-loader.js';
             } else {
                 modulePath = `data/modules/${moduleName}.js`;
             }
@@ -153,7 +157,8 @@ class ModuleLoader {
             'equipment-system': 'EquipmentSystem',
             'hero-system': 'HeroSystem',
             'shop-system': 'ShopSystem',
-            'resources-system': 'ResourcesSystem'
+            'resources-system': 'ResourcesSystem',
+            'action-modules-loader': 'ActionModulesLoader'
         };
         
         const className = classMap[moduleName];
@@ -182,7 +187,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
+            'crafting-system': 'CraftingSystem',
+            'action-modules-loader': 'ActionModulesLoader'
         };
         return typeof window[classMap[moduleName]] !== 'undefined';
     }
@@ -198,7 +204,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
+            'crafting-system': 'CraftingSystem',
+            'action-modules-loader': 'ActionModulesLoader'
         };
         return classMap[moduleName] || moduleName;
     }
@@ -294,6 +301,10 @@ class SafeHeroGame {
         };
         
         this.isSaveLoaded = false;
+        
+        // ========== ДОБАВИТЬ: Инициализация модулей действий ==========
+        this.actionModules = {};
+        
         this.init();
     }
 
@@ -376,6 +387,9 @@ class SafeHeroGame {
             
             console.log("✅ Все системы инициализированы");
             
+            // ========== ДОБАВИТЬ: Инициализация модулей действий ==========
+            await this.initializeActionModules();
+            
             console.log("🔍 Детальная проверка системы крафта:");
             console.log("1. Система крафта создана:", !!this.systems.crafting);
             console.log("2. Объект системы:", this.systems.crafting);
@@ -433,6 +447,96 @@ class SafeHeroGame {
         } catch (error) {
             console.error("❌ Ошибка инициализации систем:", error);
             throw new Error(`Ошибка инициализации систем: ${error.message}`);
+        }
+    }
+
+    // ========== НОВЫЙ МЕТОД: Инициализация модулей действий ==========
+    async initializeActionModules() {
+        console.log("🔄 Инициализация модулей действий...");
+        
+        try {
+            // Загружаем модуль охоты
+            const moduleLoader = new ActionModulesLoader(this.systems.action);
+            
+            // Загружаем все модули действий (пока только охоту)
+            const modules = ['hunt'];
+            const loaded = await moduleLoader.loadAllModules(modules);
+            
+            if (loaded) {
+                console.log("✅ Модули действий загружены");
+                
+                // Инициализируем загруженные модули
+                if (window.HuntAction && this.systems.action) {
+                    this.systems.action.actionModules['hunt'] = new window.HuntAction(this.systems.action);
+                    console.log("✅ Модуль охоты инициализирован");
+                }
+            } else {
+                console.warn("⚠️ Не удалось загрузить модули действий");
+                this.createActionModuleStubs();
+            }
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации модулей действий:", error);
+            this.createActionModuleStubs();
+        }
+    }
+
+    // ========== НОВЫЙ МЕТОД: Создание заглушек для модулей действий ==========
+    createActionModuleStubs() {
+        console.log("🔄 Создаем заглушки для модулей действий...");
+        
+        if (this.systems.action) {
+            // Заглушка для охоты
+            this.systems.action.actionModules['hunt'] = {
+                execute: (row, col) => {
+                    console.log(`🏹 Заглушка охоты: клетка [${col},${row}]`);
+                    this.showNotification("⚠️ Модуль охоты не загружен. Заглушка активирована.", 'warning');
+                    
+                    const cellKey = `${col},${row}`;
+                    const cell = this.systems.map?.currentTacticalMap?.cells[cellKey];
+                    
+                    if (!cell) {
+                        this.showNotification("❌ Клетка не найдена!", 'error');
+                        return;
+                    }
+                    
+                    if (cell.explored === true) {
+                        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                        return;
+                    }
+                    
+                    // Простой бой как заглушка
+                    const battleSystem = this.systems.battle;
+                    if (battleSystem) {
+                        const randomMonster = battleSystem.getRandomMonsterForMovement();
+                        if (randomMonster) {
+                            this.systems.map.pendingAction = {
+                                action: 'hunt',
+                                row: row,
+                                col: col,
+                                wasSuccess: true,
+                                doubleLoot: true
+                            };
+                            battleSystem.startBattleWithSpecificMonster(this.currentHero, randomMonster, 'hunt');
+                            this.showNotification(`🏹 Простая охота на ${randomMonster.name}`, 'info');
+                        }
+                    }
+                },
+                completeHuntAfterBattle: (victory, escape, doubleLoot) => {
+                    console.log(`🏹 Заглушка: обработка результата охоты`);
+                    if (this.systems.map) {
+                        this.systems.map.completeHuntAfterBattle(victory, escape, doubleLoot);
+                    }
+                },
+                config: {
+                    id: 'hunt',
+                    icon: '🏹',
+                    name: 'Охотиться',
+                    description: 'Выследить и добыть дичь'
+                }
+            };
+            
+            console.log("✅ Заглушки модулей действий созданы");
         }
     }
 
@@ -1207,7 +1311,8 @@ class SafeHeroGame {
         console.log("✅ Исправленный интерфейс героя отрендерен");
     }
 
-    showInventoryHub() {
+
+   showInventoryHub() {
         const app = document.getElementById('app');
         if (!app) return;
 
@@ -1335,6 +1440,8 @@ class SafeHeroGame {
             this.showNotification(`❌ Ошибка: ${error.message}`, "error");
         }
     }
+
+    
     
     showOverlay(overlayType) {
         const container = document.getElementById('overlay-container');
@@ -1971,7 +2078,16 @@ class SafeHeroGame {
             console.error("❌ Система крафта не доступна");
         }
         
-        this.showNotification("Отладка крафта запущена, смотрите консоль (F12)", "info");
+        // ========== ДОБАВИТЬ: Отладка модулей действий ==========
+        console.log("=== ОТЛАДКА МОДУЛЕЙ ДЕЙСТВИЙ ===");
+        if (this.systems.action && this.systems.action.actionModules) {
+            console.log("Загруженные модули действий:", Object.keys(this.systems.action.actionModules));
+            console.log("Модуль охоты:", this.systems.action.actionModules['hunt']);
+        } else {
+            console.error("❌ Модули действий не инициализированы");
+        }
+        
+        this.showNotification("Отладка крафта и модулей действий запущена, смотрите консоль (F12)", "info");
     }
 }
 
