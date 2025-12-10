@@ -12,9 +12,10 @@ class ModuleLoader {
             'equipment-system',
             'hero-system',
             'map-system',
-            'shop-system', // ← ДОБАВЛЕНА ShopSystem
+            'action-system',
+            'shop-system',
             'resources-system',
-            'crafting-system' // ← ДОБАВИТЬ ЗДЕСЬ ⭐
+            'crafting-system'
         ];
     }
 
@@ -79,126 +80,131 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-   async loadModule(moduleName) {
-    if (this.loadedModules.has(moduleName)) {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-
-    try {
-        // ⭐ ИСПРАВЛЕННЫЙ ПУТЬ: разные пути для разных модулей
-        let modulePath;
-        if (moduleName === 'crafting-system') {
-            modulePath = 'crafting-system.js'; // Корневая папка
-        } else {
-            modulePath = `data/modules/${moduleName}.js`;
+    async loadModule(moduleName) {
+        if (this.loadedModules.has(moduleName)) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
         }
-        
-        console.log(`📥 Загружаем модуль: ${modulePath}`);
-        
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-            // Пробуем альтернативный путь
-            const altPath = `modules/${moduleName}.js`;
-            console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
-            const altResponse = await fetch(altPath);
-            
-            if (!altResponse.ok) {
-                throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+
+        try {
+            let modulePath;
+            if (moduleName === 'crafting-system') {
+                modulePath = 'crafting-system.js';
+            } else {
+                modulePath = `data/modules/${moduleName}.js`;
             }
             
-            modulePath = altPath;
+            console.log(`📥 Загружаем модуль: ${modulePath}`);
+            
+            const response = await fetch(modulePath);
+            if (!response.ok) {
+                const altPath = `modules/${moduleName}.js`;
+                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+                const altResponse = await fetch(altPath);
+                
+                if (!altResponse.ok) {
+                    throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
+                }
+                
+                modulePath = altPath;
+            }
+            
+            const moduleCode = await response.text();
+            
+            const blob = new Blob([moduleCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                script.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+                };
+                document.head.appendChild(script);
+            });
+            
+            this.loadedModules.add(moduleName);
+            console.log(`✅ Модуль ${moduleName} успешно загружен`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            
+            this.createStubModule(moduleName);
+            return false;
         }
-        
-        const moduleCode = await response.text();
-        
-        // ⭐ БЕЗОПАСНЫЙ СПОСОБ: Используем Blob
-        const blob = new Blob([moduleCode], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = () => {
-                URL.revokeObjectURL(url);
-                resolve();
-            };
-            script.onerror = () => {
-                URL.revokeObjectURL(url);
-                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-            };
-            document.head.appendChild(script);
-        });
-        
-        this.loadedModules.add(moduleName);
-        console.log(`✅ Модуль ${moduleName} успешно загружен`);
-        return true;
-        
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-        
-        // ⭐ СОЗДАЕМ ПРОСТОЙ ЗАГЛУШЕЧНЫЙ МОДУЛЬ
-        this.createStubModule(moduleName);
-        return false;
     }
-}
 
-// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД В ModuleLoader
-createStubModule(moduleName) {
-    console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
-    
-    const classMap = {
-        'crafting-system': 'CraftingSystem'
-    };
-    
-    const className = classMap[moduleName];
-    if (className && !window[className]) {
-        window[className] = class StubSystem {
-            constructor() {
-                console.log(`📦 Создана заглушка для ${className}`);
-            }
-            async initialize() {
-                console.log(`🔄 Инициализация заглушки ${className}`);
-                return true;
-            }
+    createStubModule(moduleName) {
+        console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
+        
+        const classMap = {
+            'crafting-system': 'CraftingSystem',
+            'action-system': 'ActionSystem',
+            'map-system': 'MapSystem',
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem'
         };
-        console.log(`✅ Заглушка ${className} создана`);
+        
+        const className = classMap[moduleName];
+        if (className && !window[className]) {
+            window[className] = class StubSystem {
+                constructor() {
+                    console.log(`📦 Создана заглушка для ${className}`);
+                }
+                async initialize() {
+                    console.log(`🔄 Инициализация заглушки ${className}`);
+                    return true;
+                }
+            };
+            console.log(`✅ Заглушка ${className} создана`);
+        }
     }
-}
     
+    isModuleAvailable(moduleName) {
+        const classMap = {
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem',
+            'action-system': 'ActionSystem',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem',
+            'crafting-system': 'CraftingSystem'
+        };
+        return typeof window[classMap[moduleName]] !== 'undefined';
+    }
 
-isModuleAvailable(moduleName) {
-    const classMap = {
-        'bonuses-system': 'BonusSystem',
-        'level-system': 'LevelSystem',
-        'battle-system': 'BattleSystem',
-        'equipment-system': 'EquipmentSystem',
-        'hero-system': 'HeroSystem',
-        'map-system': 'MapSystem',
-        'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem', // ← ДОБАВЬ ЭТУ СТРОЧКУ!
-        'crafting-system': 'CraftingSystem' // ← ДОБАВИТЬ ЭТУ СТРОЧКУ!
-    };
-    return typeof window[classMap[moduleName]] !== 'undefined';
-}
-
-getClassName(moduleName) {
-    const classMap = {
-        'bonuses-system': 'BonusSystem',
-        'level-system': 'LevelSystem',
-        'battle-system': 'BattleSystem',
-        'equipment-system': 'EquipmentSystem',
-        'hero-system': 'HeroSystem',
-        'map-system': 'MapSystem',
-        'shop-system': 'ShopSystem',
-        'resources-system': 'ResourcesSystem',
-        'crafting-system': 'CraftingSystem' // ← ДОБАВИТЬ И ЗДЕСЬ
-    };
-    return classMap[moduleName] || moduleName;
-}
+    getClassName(moduleName) {
+        const classMap = {
+            'bonuses-system': 'BonusSystem',
+            'level-system': 'LevelSystem',
+            'battle-system': 'BattleSystem',
+            'equipment-system': 'EquipmentSystem',
+            'hero-system': 'HeroSystem',
+            'map-system': 'MapSystem',
+            'action-system': 'ActionSystem',
+            'shop-system': 'ShopSystem',
+            'resources-system': 'ResourcesSystem',
+            'crafting-system': 'CraftingSystem'
+        };
+        return classMap[moduleName] || moduleName;
+    }
 
     async waitForAllModules() {
-        const maxAttempts = 50; // Уменьшил количество попыток
+        const maxAttempts = 50;
         const checkInterval = 200;
         
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -217,7 +223,6 @@ getClassName(moduleName) {
             
             if (attempt % 5 === 0) {
                 console.log(`⏳ Попытка ${attempt}/${maxAttempts}...`);
-                // Покажем какие модули уже загружены
                 const loadedList = this.requiredModules
                     .filter(m => this.isModuleAvailable(m))
                     .map(m => this.getClassName(m));
@@ -227,7 +232,6 @@ getClassName(moduleName) {
             await new Promise(resolve => setTimeout(resolve, checkInterval));
         }
         
-        // Покажем какие модули не загрузились
         const failedModules = this.requiredModules
             .filter(m => !this.isModuleAvailable(m))
             .map(m => this.getClassName(m));
@@ -255,7 +259,6 @@ getClassName(moduleName) {
         
         if (failedModules.length > 0) {
             console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
-            // Не бросаем ошибку сразу, пробуем продолжить с тем что есть
             console.log("🔄 Продолжаем с доступными модулями...");
         }
         
@@ -267,18 +270,27 @@ getClassName(moduleName) {
 class SafeHeroGame {
     constructor() {
         this.moduleLoader = new ModuleLoader();
-        this.systems = {};
+        this.systems = {
+            bonus: null,
+            level: null,
+            battle: null,
+            equipment: null,
+            hero: null,
+            map: null,
+            action: null,
+            shop: null,
+            resources: null,
+            crafting: null
+        };
         this.currentScreen = 'loading';
         this.currentHero = null;
         this.activeOverlay = null;
         
-        // ⭐ ДОБАВИТЬ ЭТО - ОБЩИЕ РЕСУРСЫ
         this.sharedResources = {
-            gold: 0, // Временно 0, установится после загрузки героев
-            inventory: [], // Общий инвентарь
-            unlockedHeroes: [1], // Разблокированные герои
-            // ⭐ ДОБАВЛЕНО ДЛЯ РЕСУРСОВ:
-            resources: {} // Для хранения ресурсов отдельно
+            gold: 0,
+            inventory: [],
+            unlockedHeroes: [1],
+            resources: {}
         };
         
         this.isSaveLoaded = false;
@@ -297,14 +309,12 @@ class SafeHeroGame {
             
             await this.loadGameData();
             
-            // ⭐ ВАЖНО: Загружаем сохранение ДО показа интерфейса
             console.log("📂 Пытаемся загрузить сохранение...");
             const saveLoaded = this.loadSave();
             if (saveLoaded) {
                 console.log("✅ Сохранение загружено");
                 this.isSaveLoaded = true;
                 
-                // Если есть текущий герой, показываем его экран
                 if (this.currentHero) {
                     console.log(`🎯 Восстановлен герой: ${this.currentHero.name}`);
                     this.showHeroGameScreen();
@@ -316,22 +326,17 @@ class SafeHeroGame {
                 this.showHeroSelection();
             }
             
-            // Запускаем автосохранение
             this.startAutosave();
             
-            // ⭐ ЗАПУСКАЕМ РЕГЕНЕРАЦИЮ ЗДОРОВЬЯ
             this.startHealthRegeneration();
                   
-            // ⭐ ЗАПУСКАЕМ ЗАЩИТУ ОТ ПЕРЕЗАГРУЗКИ ВО ВРЕМЯ БОЯ
             this.setupBattleCrashProtection();
             
-            // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Синхронизация HeroSystem после загрузки
             setTimeout(() => {
                 if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
                     this.systems.hero.currentHero = this.currentHero;
                     console.log("✅ HeroSystem синхронизирован с текущим героем");
                     
-                    // Принудительно обновляем интерфейс если нужно
                     if (this.currentScreen === 'hero-game') {
                         this.systems.hero.showHeroGameScreen();
                     }
@@ -344,387 +349,357 @@ class SafeHeroGame {
         }
     }
 
-async initializeSystems() {
-    console.log("⚙️ Инициализация игровых систем...");
-    
-    try {
-        this.systems.bonus = new BonusSystem();
-        this.systems.level = new LevelSystem();
-        this.systems.battle = new BattleSystem();
-        this.systems.equipment = new EquipmentSystem();
-        this.systems.hero = new HeroSystem();
-        this.systems.map = new MapSystem();
-        this.systems.shop = new ShopSystem();
+    async initializeSystems() {
+        console.log("⚙️ Инициализация игровых систем...");
         
-        // ⭐ ВАЖНО: Инициализируем ResourcesSystem ДО загрузки данных
-        this.systems.resources = new ResourcesSystem();
-        
-        // ⭐ ИСПРАВЛЕНИЕ: Инициализируем CraftingSystem и передаем this
-        this.systems.crafting = new CraftingSystem(this);
-        
-        console.log("✅ Все системы инициализированы");
-        
-        // ⭐ РАСШИРЕННАЯ ОТЛАДКА КРАФТИНГА
-        console.log("🔍 Детальная проверка системы крафта:");
-        console.log("1. Система крафта создана:", !!this.systems.crafting);
-        console.log("2. Объект системы:", this.systems.crafting);
-        console.log("3. Метод loadRecipes существует:", typeof this.systems.crafting.loadRecipes);
-        
-        // Загружаем данные для крафта
-        if (this.systems.crafting && this.systems.crafting.loadRecipes) {
-            console.log("📋 Загрузка рецептов крафта...");
+        try {
+            this.systems.bonus = new BonusSystem();
+            this.systems.level = new LevelSystem();
+            this.systems.battle = new BattleSystem();
+            this.systems.equipment = new EquipmentSystem();
+            this.systems.hero = new HeroSystem();
             
-            // Добавляем обработку Promise
-            const recipesLoaded = await this.systems.crafting.loadRecipes().catch(error => {
-                console.error("❌ Ошибка при загрузке рецептов:", error);
-                return false;
-            });
+            // Создаем MapSystem первым
+            this.systems.map = new MapSystem();
             
-            console.log("4. Результат загрузки рецептов:", recipesLoaded);
-            console.log("5. Рецепты после загрузки:", this.systems.crafting.recipes);
+            // Создаем ActionSystem и передаем MapSystem
+            this.systems.action = new ActionSystem(this.systems.map);
             
-            if (recipesLoaded && this.systems.crafting.recipes) {
-                console.log("✅ Рецепты крафта загружены успешно");
-                console.log("6. Структура рецептов:", Object.keys(this.systems.crafting.recipes));
+            // Инициализируем ActionSystem в MapSystem
+            this.systems.map.initializeActionSystem();
+            
+            this.systems.shop = new ShopSystem();
+            
+            this.systems.resources = new ResourcesSystem();
+            
+            this.systems.crafting = new CraftingSystem(this);
+            
+            console.log("✅ Все системы инициализированы");
+            
+            console.log("🔍 Детальная проверка системы крафта:");
+            console.log("1. Система крафта создана:", !!this.systems.crafting);
+            console.log("2. Объект системы:", this.systems.crafting);
+            console.log("3. Метод loadRecipes существует:", typeof this.systems.crafting.loadRecipes);
+            
+            if (this.systems.crafting && this.systems.crafting.loadRecipes) {
+                console.log("📋 Загрузка рецептов крафта...");
                 
-                // Проверяем структуру рецептов
-                for (const key in this.systems.crafting.recipes) {
-                    console.log(`   - ${key}:`, 
-                        Array.isArray(this.systems.crafting.recipes[key]) 
-                            ? `массив из ${this.systems.crafting.recipes[key].length} элементов`
-                            : typeof this.systems.crafting.recipes[key] === 'object'
-                                ? `объект с ${Object.keys(this.systems.crafting.recipes[key]).length} ключами`
-                                : typeof this.systems.crafting.recipes[key]
-                    );
+                const recipesLoaded = await this.systems.crafting.loadRecipes().catch(error => {
+                    console.error("❌ Ошибка при загрузке рецептов:", error);
+                    return false;
+                });
+                
+                console.log("4. Результат загрузки рецептов:", recipesLoaded);
+                console.log("5. Рецепты после загрузки:", this.systems.crafting.recipes);
+                
+                if (recipesLoaded && this.systems.crafting.recipes) {
+                    console.log("✅ Рецепты крафта загружены успешно");
+                    console.log("6. Структура рецептов:", Object.keys(this.systems.crafting.recipes));
+                    
+                    for (const key in this.systems.crafting.recipes) {
+                        console.log(`   - ${key}:`, 
+                            Array.isArray(this.systems.crafting.recipes[key]) 
+                                ? `массив из ${this.systems.crafting.recipes[key].length} элементов`
+                                : typeof this.systems.crafting.recipes[key] === 'object'
+                                    ? `объект с ${Object.keys(this.systems.crafting.recipes[key]).length} ключами`
+                                    : typeof this.systems.crafting.recipes[key]
+                        );
+                    }
+                    
+                    this.systems.crafting.unlockStation('campfire');
+                    this.systems.crafting.unlockStation('workbench');
+                    
+                    console.log("🎉 Базовые станции крафта разблокированы");
+                    
+                    if (this.systems.crafting.addCraftingToResources) {
+                        setTimeout(() => {
+                            this.systems.crafting.addCraftingToResources();
+                            console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+                        }, 1000);
+                    }
+                    
+                } else {
+                    console.warn("⚠️ Не удалось загрузить рецепты крафта");
+                    console.warn("Причина: recipesLoaded =", recipesLoaded);
+                    console.warn("recipes =", this.systems.crafting.recipes);
+                    
+                    this.systems.crafting.createFallbackRecipes();
+                    console.log("🔄 Созданы резервные рецепты для тестирования");
                 }
-                
-                // Разблокируем базовые станции при старте игры
-                this.systems.crafting.unlockStation('campfire');
-                this.systems.crafting.unlockStation('workbench');
-                
-                console.log("🎉 Базовые станции крафта разблокированы");
-                
-                // Привязываем кнопку крафта к ресурсам
-                if (this.systems.crafting.addCraftingToResources) {
-                    setTimeout(() => {
-                        this.systems.crafting.addCraftingToResources();
-                        console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
-                    }, 1000);
-                }
-                
             } else {
-                console.warn("⚠️ Не удалось загрузить рецепты крафта");
-                console.warn("Причина: recipesLoaded =", recipesLoaded);
-                console.warn("recipes =", this.systems.crafting.recipes);
-                
-                // Создаем заглушки для тестирования
-                this.systems.crafting.createFallbackRecipes();
-                console.log("🔄 Созданы резервные рецепты для тестирования");
+                console.error("❌ Система крафта не инициализирована правильно");
             }
-        } else {
-            console.error("❌ Система крафта не инициализирована правильно");
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации систем:", error);
+            throw new Error(`Ошибка инициализации систем: ${error.message}`);
         }
-        
-    } catch (error) {
-        console.error("❌ Ошибка инициализации систем:", error);
-        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
-}
 
     async loadGameData() {
-    console.log("📂 Загрузка игровых данных...");
-    
-    try {
-        await Promise.all([
-            this.systems.hero.loadHeroData(),
-            this.systems.equipment.loadItemData(),
-            this.systems.battle.loadBattleData(),
-            this.systems.map.loadMapData(),
-            this.systems.bonus.loadBonusData(),
-            this.systems.level.loadLevelData(),
-            // ⭐ ВАЖНО: Загружаем данные ресурсов
-            this.systems.resources.loadResourcesData()
-        ]);
+        console.log("📂 Загрузка игровых данных...");
         
-        // ⭐ ИСПРАВЛЕНИЕ: Устанавливаем начальное золото из первого героя
-        if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
-            const firstHero = this.systems.hero.heroes[0];
-            this.sharedResources.gold = firstHero.gold;
-            console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
-        }
-        
-        console.log("✅ Все игровые данные загружены");
-        
-    } catch (error) {
-        throw new Error(`Ошибка загрузки данных: ${error.message}`);
-    }
-}
-
-saveGame() {
-    try {
-        if (this.currentHero && this.systems.equipment && this.systems.hero) {
-            // Перед сохранением синхронизируем золото
-            if (this.currentHero.gold !== this.sharedResources.gold) {
-                console.log(`🔄 Синхронизация золота: герой ${this.currentHero.gold} → общее ${this.sharedResources.gold}`);
-                this.sharedResources.gold = this.currentHero.gold;
+        try {
+            await Promise.all([
+                this.systems.hero.loadHeroData(),
+                this.systems.equipment.loadItemData(),
+                this.systems.battle.loadBattleData(),
+                this.systems.map.loadMapData(),
+                this.systems.bonus.loadBonusData(),
+                this.systems.level.loadLevelData(),
+                this.systems.resources.loadResourcesData()
+            ]);
+            
+            // После загрузки карт, загружаем данные клеток в ActionSystem
+            if (this.systems.action) {
+                await this.systems.action.loadCellData();
+                await this.systems.action.loadLocationImages();
             }
             
-            const saveData = {
-                currentHeroId: this.currentHero.id,
-                // Сохраняем ВСЕХ героев с их прогрессом
-                heroes: this.systems.hero.heroes.map(hero => {
-                    const heroData = {
-                        id: hero.id,
-                        // Сохраняем весь прогресс каждого героя:
-                        level: hero.level,
-                        experience: hero.experience,
-                        monstersKilled: hero.monstersKilled || 0,
-                        deaths: hero.deaths || 0,
-                        healthRegen: hero.healthRegen || 1.0,
-                        currentHealth: hero.currentHealth || hero.baseHealth,
-                        // Экипировка индивидуальна для каждого героя:
-                        equipment: {...hero.equipment},
-                        unlocked: hero.unlocked,
-                        // ⭐ СОХРАНЯЕМ РЕСУРСЫ ГЕРОЯ
-                        resources: hero.resources || {}
-                    };
-                    
-                    // ⭐ СОХРАНЯЕМ СОСТОЯНИЕ ФЛЯГИ ТОЛЬКО ДЛЯ ТЕКУЩЕГО ГЕРОЯ
-                    if (hero.id === this.currentHero.id && this.systems.battle && this.systems.battle.flask) {
-                        heroData.flaskState = {
-                            currentCharges: this.systems.battle.flask.currentCharges,
-                            content: this.systems.battle.flask.content
-                        };
-                    }
-                    
-                    return heroData;
-                }),
-                // Общие ресурсы:
-                sharedResources: {
-                    gold: this.sharedResources.gold,
-                    inventory: [...this.sharedResources.inventory],
-                    unlockedHeroes: [...this.sharedResources.unlockedHeroes],
-                    // ⭐ СОХРАНЯЕМ РЕСУРСЫ В ОБЩИХ РЕСУРСАХ
-                    resources: this.sharedResources.resources ? {...this.sharedResources.resources} : {}
-                },
-                timestamp: Date.now(),
-                version: "2.3" // Обновляем версию для ресурсов
-            };
+            if (this.systems.hero.heroes.length > 0 && this.sharedResources.gold === 0) {
+                const firstHero = this.systems.hero.heroes[0];
+                this.sharedResources.gold = firstHero.gold;
+                console.log(`💰 Начальное золото установлено из первого героя: ${firstHero.gold}`);
+            }
             
-            localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
-            console.log("💾 Игра сохранена с прогрессом всех героев и ресурсами", {
-                gold: this.sharedResources.gold,
-                heroes: this.systems.hero.heroes.map(h => `${h.name}: ур.${h.level}, опыт:${h.experience}`),
-                resourcesCount: Object.keys(this.sharedResources.resources || {}).length,
-                flaskCharges: this.systems.battle?.flask?.currentCharges || 'N/A',
-                flaskContent: this.systems.battle?.flask?.content || 'N/A'
-            });
-            return true;
+            console.log("✅ Все игровые данные загружены");
+            
+        } catch (error) {
+            throw new Error(`Ошибка загрузки данных: ${error.message}`);
         }
-    } catch (error) {
-        console.error("❌ Ошибка сохранения:", error);
     }
-    return false;
-}
 
-loadSave() {
-    try {
-        const save = localStorage.getItem('tigrimionSave');
-        if (save) {
-            const data = JSON.parse(save);
-            console.log("📂 Загружаем сохранение:", data);
-            
-            // 🔥 ВАЖНОЕ ИСПРАВЛЕНИЕ 1: Сначала загружаем общий инвентарь
-            if (data.sharedResources) {
-                this.sharedResources = {
-                    gold: data.sharedResources.gold || 0,
-                    inventory: data.sharedResources.inventory || [],
-                    unlockedHeroes: data.sharedResources.unlockedHeroes || [1],
-                    // ⭐ ЗАГРУЖАЕМ РЕСУРСЫ
-                    resources: data.sharedResources.resources || {}
-                };
-                console.log("✅ Общий инвентарь и ресурсы загружены:", {
-                    inventory: this.sharedResources.inventory.length,
-                    resources: Object.keys(this.sharedResources.resources).length
-                });
-            } else {
-                // Если сохранение старое - берем золото из первого героя
-                if (this.systems.hero.heroes.length > 0) {
-                    const firstHero = this.systems.hero.heroes[0];
-                    this.sharedResources.gold = firstHero.gold || 0;
-                    this.sharedResources.inventory = [];
-                    this.sharedResources.unlockedHeroes = [1];
-                    this.sharedResources.resources = {};
-                    console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
+    saveGame() {
+        try {
+            if (this.currentHero && this.systems.equipment && this.systems.hero) {
+                if (this.currentHero.gold !== this.sharedResources.gold) {
+                    console.log(`🔄 Синхронизация золота: герой ${this.currentHero.gold} → общее ${this.sharedResources.gold}`);
+                    this.sharedResources.gold = this.currentHero.gold;
                 }
-            }
-            
-            // Загружаем прогресс ВСЕХ героев
-            if (data.heroes && this.systems.hero) {
-                // Создаем карту сохраненных героев для быстрого доступа
-                const savedHeroesMap = new Map();
-                data.heroes.forEach(hero => savedHeroesMap.set(hero.id, hero));
                 
-                // Обновляем всех героев
-                this.systems.hero.heroes.forEach(existingHero => {
-                    const savedHero = savedHeroesMap.get(existingHero.id);
+                const saveData = {
+                    currentHeroId: this.currentHero.id,
+                    heroes: this.systems.hero.heroes.map(hero => {
+                        const heroData = {
+                            id: hero.id,
+                            level: hero.level,
+                            experience: hero.experience,
+                            monstersKilled: hero.monstersKilled || 0,
+                            deaths: hero.deaths || 0,
+                            healthRegen: hero.healthRegen || 1.0,
+                            currentHealth: hero.currentHealth || hero.baseHealth,
+                            equipment: {...hero.equipment},
+                            unlocked: hero.unlocked,
+                            resources: hero.resources || {}
+                        };
+                        
+                        if (hero.id === this.currentHero.id && this.systems.battle && this.systems.battle.flask) {
+                            heroData.flaskState = {
+                                currentCharges: this.systems.battle.flask.currentCharges,
+                                content: this.systems.battle.flask.content
+                            };
+                        }
+                        
+                        return heroData;
+                    }),
+                    sharedResources: {
+                        gold: this.sharedResources.gold,
+                        inventory: [...this.sharedResources.inventory],
+                        unlockedHeroes: [...this.sharedResources.unlockedHeroes],
+                        resources: this.sharedResources.resources ? {...this.sharedResources.resources} : {}
+                    },
+                    timestamp: Date.now(),
+                    version: "2.4"
+                };
+                
+                localStorage.setItem('tigrimionSave', JSON.stringify(saveData));
+                console.log("💾 Игра сохранена с прогрессом всех героев и ресурсами", {
+                    gold: this.sharedResources.gold,
+                    heroes: this.systems.hero.heroes.map(h => `${h.name}: ур.${h.level}, опыт:${h.experience}`),
+                    resourcesCount: Object.keys(this.sharedResources.resources || {}).length,
+                    flaskCharges: this.systems.battle?.flask?.currentCharges || 'N/A',
+                    flaskContent: this.systems.battle?.flask?.content || 'N/A'
+                });
+                return true;
+            }
+        } catch (error) {
+            console.error("❌ Ошибка сохранения:", error);
+        }
+        return false;
+    }
+
+    loadSave() {
+        try {
+            const save = localStorage.getItem('tigrimionSave');
+            if (save) {
+                const data = JSON.parse(save);
+                console.log("📂 Загружаем сохранение:", data);
+                
+                if (data.sharedResources) {
+                    this.sharedResources = {
+                        gold: data.sharedResources.gold || 0,
+                        inventory: data.sharedResources.inventory || [],
+                        unlockedHeroes: data.sharedResources.unlockedHeroes || [1],
+                        resources: data.sharedResources.resources || {}
+                    };
+                    console.log("✅ Общий инвентарь и ресурсы загружены:", {
+                        inventory: this.sharedResources.inventory.length,
+                        resources: Object.keys(this.sharedResources.resources).length
+                    });
+                } else {
+                    if (this.systems.hero.heroes.length > 0) {
+                        const firstHero = this.systems.hero.heroes[0];
+                        this.sharedResources.gold = firstHero.gold || 0;
+                        this.sharedResources.inventory = [];
+                        this.sharedResources.unlockedHeroes = [1];
+                        this.sharedResources.resources = {};
+                        console.log(`💰 Золото установлено из первого героя (старое сохранение): ${firstHero.gold}`);
+                    }
+                }
+                
+                if (data.heroes && this.systems.hero) {
+                    const savedHeroesMap = new Map();
+                    data.heroes.forEach(hero => savedHeroesMap.set(hero.id, hero));
                     
-                    if (savedHero) {
-                        // Сохраняем весь прогресс для всех героев
-                        existingHero.level = savedHero.level || existingHero.level;
-                        existingHero.experience = savedHero.experience || existingHero.experience;
-                        existingHero.currentHealth = savedHero.currentHealth || existingHero.baseHealth;
-                        existingHero.monstersKilled = savedHero.monstersKilled || 0;
-                        existingHero.deaths = savedHero.deaths || 0;
-                        existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
+                    this.systems.hero.heroes.forEach(existingHero => {
+                        const savedHero = savedHeroesMap.get(existingHero.id);
                         
-                        // ⭐ СОХРАНЯЕМ ЭКИПИРОВКУ ИНДИВИДУАЛЬНО ДЛЯ КАЖДОГО ГЕРОЯ
-                        if (savedHero.equipment) {
-                            existingHero.equipment = {...savedHero.equipment};
+                        if (savedHero) {
+                            existingHero.level = savedHero.level || existingHero.level;
+                            existingHero.experience = savedHero.experience || existingHero.experience;
+                            existingHero.currentHealth = savedHero.currentHealth || existingHero.baseHealth;
+                            existingHero.monstersKilled = savedHero.monstersKilled || 0;
+                            existingHero.deaths = savedHero.deaths || 0;
+                            existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
+                            
+                            if (savedHero.equipment) {
+                                existingHero.equipment = {...savedHero.equipment};
+                            }
+                            
+                            if (savedHero.resources) {
+                                existingHero.resources = {...savedHero.resources};
+                            }
+                            
+                            console.log(`🎯 Загружен герой: ${existingHero.name}`, {
+                                level: existingHero.level,
+                                experience: existingHero.experience,
+                                health: existingHero.currentHealth,
+                                equipment: existingHero.equipment,
+                                resourcesCount: Object.keys(existingHero.resources || {}).length
+                            });
+                        }
+                    });
+                    
+                    console.log("✅ Прогресс всех героев загружен");
+                }
+                
+                if (data.currentHeroId && this.systems.hero) {
+                    this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
+                    if (this.currentHero) {
+                        this.currentHero.inventory = [...this.sharedResources.inventory];
+                        this.currentHero.gold = this.sharedResources.gold;
+                        
+                        if (!this.currentHero.resources && this.sharedResources.resources) {
+                            this.currentHero.resources = {...this.sharedResources.resources};
                         }
                         
-                        // ⭐ ЗАГРУЖАЕМ РЕСУРСЫ ГЕРОЯ (для совместимости со старой системой)
-                        if (savedHero.resources) {
-                            existingHero.resources = {...savedHero.resources};
+                        if (this.systems.battle && this.systems.battle.flask) {
+                            const savedHero = data.heroes?.find(h => h.id === this.currentHero.id);
+                            if (savedHero?.flaskState) {
+                                this.systems.battle.flask.currentCharges = savedHero.flaskState.currentCharges;
+                                this.systems.battle.flask.content = savedHero.flaskState.content;
+                                console.log(`💧 Фляга восстановлена для ${this.currentHero.name}: ${savedHero.flaskState.currentCharges} зарядов (${savedHero.flaskState.content})`);
+                            } else {
+                                this.systems.battle.flask.currentCharges = 10;
+                                this.systems.battle.flask.content = 'water';
+                                console.log(`💧 Фляга сброшена к значениям по умолчанию для ${this.currentHero.name}`);
+                            }
+                            
+                            if (this.systems.battle.updateFlaskUI) {
+                                this.systems.battle.updateFlaskUI();
+                            }
+                            if (this.systems.battle.updateFlaskChargesDisplay) {
+                                this.systems.battle.updateFlaskChargesDisplay();
+                            }
                         }
                         
-                        console.log(`🎯 Загружен герой: ${existingHero.name}`, {
-                            level: existingHero.level,
-                            experience: existingHero.experience,
-                            health: existingHero.currentHealth,
-                            equipment: existingHero.equipment,
-                            resourcesCount: Object.keys(existingHero.resources || {}).length
+                        if (this.systems.equipment) {
+                            this.systems.equipment.setCurrentHero(this.currentHero);
+                        }
+                        if (this.systems.hero) {
+                            this.systems.hero.currentHero = this.currentHero;
+                        }
+                        if (this.systems.resources) {
+                            this.systems.resources.sharedResources = this.sharedResources;
+                        }
+                        
+                        console.log("✅ Текущий герой восстановлен с общим инвентарем и ресурсами:", {
+                            name: this.currentHero.name,
+                            inventory: this.currentHero.inventory.length,
+                            gold: this.currentHero.gold,
+                            resources: Object.keys(this.currentHero.resources || {}).length
                         });
                     }
-                });
+                }
                 
-                console.log("✅ Прогресс всех героев загружен");
-            }
-            
-            // Восстанавливаем текущего героя
-            if (data.currentHeroId && this.systems.hero) {
-                this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
-                if (this.currentHero) {
-                    // ⭐ ВАЖНО: СИНХРОНИЗИРУЕМ ИНВЕНТАРЬ - используем общий
-                    this.currentHero.inventory = [...this.sharedResources.inventory];
-                    this.currentHero.gold = this.sharedResources.gold;
+                return true;
+            } else {
+                console.log("🆕 Сохранение не найдено, начинаем новую игру");
+                
+                this.sharedResources = {
+                    gold: 100,
+                    inventory: [],
+                    unlockedHeroes: [1],
+                    resources: {}
+                };
+                
+                if (this.systems.hero && this.systems.hero.heroes.length > 0) {
+                    const firstHero = this.systems.hero.heroes[0];
+                    this.sharedResources.gold = firstHero.gold || 100;
                     
-                    // ⭐ СИНХРОНИЗИРУЕМ РЕСУРСЫ (для совместимости)
-                    if (!this.currentHero.resources && this.sharedResources.resources) {
-                        this.currentHero.resources = {...this.sharedResources.resources};
-                    }
-                    
-                    // ⭐ ДОБАВЛЯЕМ: Загрузка состояния фляги для текущего героя
-                    if (this.systems.battle && this.systems.battle.flask) {
-                        const savedHero = data.heroes?.find(h => h.id === this.currentHero.id);
-                        if (savedHero?.flaskState) {
-                            this.systems.battle.flask.currentCharges = savedHero.flaskState.currentCharges;
-                            this.systems.battle.flask.content = savedHero.flaskState.content;
-                            console.log(`💧 Фляга восстановлена для ${this.currentHero.name}: ${savedHero.flaskState.currentCharges} зарядов (${savedHero.flaskState.content})`);
-                        } else {
-                            // Если нет сохраненного состояния - сбрасываем к значениям по умолчанию
-                            this.systems.battle.flask.currentCharges = 10;
-                            this.systems.battle.flask.content = 'water';
-                            console.log(`💧 Фляга сброшена к значениям по умолчанию для ${this.currentHero.name}`);
-                        }
-                        
-                        // Обновляем интерфейс фляги
-                        if (this.systems.battle.updateFlaskUI) {
-                            this.systems.battle.updateFlaskUI();
-                        }
-                        if (this.systems.battle.updateFlaskChargesDisplay) {
-                            this.systems.battle.updateFlaskChargesDisplay();
-                        }
-                    }
-                    
-                    // Синхронизируем с системами
-                    if (this.systems.equipment) {
-                        this.systems.equipment.setCurrentHero(this.currentHero);
-                    }
-                    if (this.systems.hero) {
-                        this.systems.hero.currentHero = this.currentHero;
-                    }
-                    if (this.systems.resources) {
-                        // Передаем ресурсы в ResourcesSystem
-                        this.systems.resources.sharedResources = this.sharedResources;
-                    }
-                    
-                    console.log("✅ Текущий герой восстановлен с общим инвентарем и ресурсами:", {
-                        name: this.currentHero.name,
-                        inventory: this.currentHero.inventory.length,
-                        gold: this.currentHero.gold,
-                        resources: Object.keys(this.currentHero.resources || {}).length
+                    this.systems.hero.heroes.forEach(hero => {
+                        hero.gold = this.sharedResources.gold;
+                        hero.resources = {};
                     });
+                    
+                    console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
+                }
+                
+                if (this.systems.battle && this.systems.battle.flask) {
+                    this.systems.battle.flask.currentCharges = 10;
+                    this.systems.battle.flask.content = 'water';
+                    console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
+                }
+                
+                if (this.systems.resources) {
+                    this.systems.resources.sharedResources = this.sharedResources;
                 }
             }
+        } catch (error) {
+            console.error("❌ Ошибка загрузки сохранения:", error);
+            localStorage.removeItem('tigrimionSave');
+            console.log("🗑️ Битое сохранение удалено");
             
-            return true;
-        } else {
-            // Новая игра: Устанавливаем значения по умолчанию
-            console.log("🆕 Сохранение не найдено, начинаем новую игру");
-            
-            // Инициализируем общие ресурсы
             this.sharedResources = {
                 gold: 100,
                 inventory: [],
                 unlockedHeroes: [1],
-                resources: {} // Пустые ресурсы для новой игры
+                resources: {}
             };
             
-            // Устанавливаем золото для всех героев
-            if (this.systems.hero && this.systems.hero.heroes.length > 0) {
-                const firstHero = this.systems.hero.heroes[0];
-                this.sharedResources.gold = firstHero.gold || 100;
-                
-                // Синхронизируем золото с первым героем
-                this.systems.hero.heroes.forEach(hero => {
-                    hero.gold = this.sharedResources.gold;
-                    hero.resources = {}; // Пустые ресурсы для нового героя
-                });
-                
-                console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
-            }
-            
-            // Сбрасываем флягу для новой игры
             if (this.systems.battle && this.systems.battle.flask) {
                 this.systems.battle.flask.currentCharges = 10;
                 this.systems.battle.flask.content = 'water';
-                console.log("💧 Фляга установлена на значения по умолчанию для новой игры");
             }
             
-            // Инициализируем ResourcesSystem
             if (this.systems.resources) {
                 this.systems.resources.sharedResources = this.sharedResources;
             }
         }
-    } catch (error) {
-        console.error("❌ Ошибка загрузки сохранения:", error);
-        localStorage.removeItem('tigrimionSave');
-        console.log("🗑️ Битое сохранение удалено");
-        
-        // При ошибке загрузки устанавливаем значения по умолчанию
-        this.sharedResources = {
-            gold: 100,
-            inventory: [],
-            unlockedHeroes: [1],
-            resources: {}
-        };
-        
-        if (this.systems.battle && this.systems.battle.flask) {
-            this.systems.battle.flask.currentCharges = 10;
-            this.systems.battle.flask.content = 'water';
-        }
-        
-        if (this.systems.resources) {
-            this.systems.resources.sharedResources = this.sharedResources;
-        }
+        return false;
     }
-    return false;
-}
 
-    // ========== УЛУЧШЕННОЕ АВТОСОХРАНЕНИЕ ==========
     startAutosave() {
-        // Сохраняем каждые 30 секунд
         setInterval(() => {
             if (this.currentHero) {
                 this.saveGame();
@@ -732,7 +707,6 @@ loadSave() {
             }
         }, 30000);
         
-        // Сохраняем при закрытии страницы
         window.addEventListener('beforeunload', () => {
             if (this.currentHero) {
                 this.saveGame();
@@ -741,123 +715,101 @@ loadSave() {
         });
     }
 
-    // ========== СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
-   // ========== УЛУЧШЕННАЯ СИСТЕМА РЕГЕНЕРАЦИИ ЗДОРОВЬЯ ==========
-startHealthRegeneration() {
-    setInterval(() => {
-        if (this.currentHero && this.systems.hero) {
-            const stats = this.systems.hero.calculateHeroStats(this.currentHero);
-            
-            // ⭐ ИСПРАВЛЕНИЕ: Регенерируем только если здоровье меньше максимума И больше 0
-            // И если герой не находится в специальной пост-смертной регенерации
-            if (this.currentHero.currentHealth > 0 && 
-                this.currentHero.currentHealth < stats.maxHealth &&
-                !this.currentHero.isInPostDeathRegeneration) {
+    startHealthRegeneration() {
+        setInterval(() => {
+            if (this.currentHero && this.systems.hero) {
+                const stats = this.systems.hero.calculateHeroStats(this.currentHero);
                 
-                // ОБЫЧНАЯ регенерация (медленнее чем после смерти)
-                const baseRegen = 0.5; // 0.5 хита в секунду в обычном режиме
-                const bonusRegen = (stats.healthRegen || 1) * baseRegen;
-                const totalRegen = baseRegen + bonusRegen;
-                
-                this.currentHero.currentHealth = Math.min(
-                    stats.maxHealth, 
-                    this.currentHero.currentHealth + totalRegen
-                );
-                
-                // РЕДКОЕ автосохранение при обычной регенерации
-                if (Math.random() < 0.02) { // 2% шанс
-                    this.saveGame();
+                if (this.currentHero.currentHealth > 0 && 
+                    this.currentHero.currentHealth < stats.maxHealth &&
+                    !this.currentHero.isInPostDeathRegeneration) {
+                    
+                    const baseRegen = 0.5;
+                    const bonusRegen = (stats.healthRegen || 1) * baseRegen;
+                    const totalRegen = baseRegen + bonusRegen;
+                    
+                    this.currentHero.currentHealth = Math.min(
+                        stats.maxHealth, 
+                        this.currentHero.currentHealth + totalRegen
+                    );
+                    
+                    if (Math.random() < 0.02) {
+                        this.saveGame();
+                    }
+                    
+                    console.log(`❤️ Обычная регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
                 }
-                
-                console.log(`❤️ Обычная регенерация: +${totalRegen.toFixed(1)} HP (${this.currentHero.currentHealth}/${stats.maxHealth})`);
             }
-        }
-    }, 1000);
-}
-
-// ========== ОБРАБОТКА ПЕРЕЗАПУСКА ВО ВРЕМЯ БОЯ ==========
-setupBattleCrashProtection() {
-    // Обработка перезагрузки страницы во время боя
-    window.addEventListener('beforeunload', (e) => {
-        if (this.systems?.battle?.battleActive) {
-            console.log("💀 Перезагрузка во время боя - поражение");
-            
-            // Если бой активен, считаем это поражением
-            if (this.currentHero) {
-                // Возвращаем героя на стартовую позицию
-                this.currentHero.currentHealth = 1;
-                this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
-                
-                // Уведомляем систему карт о поражении
-                if (this.systems.map) {
-                    this.systems.map.completeMovementAfterBattle(false, false);
-                }
-                
-                // Сохраняем состояние
-                this.saveGame();
-                console.log("💾 Сохранено состояние после поражения при перезагрузке");
-            }
-        }
-    });
-
-    // Обработка обновления страницы (F5)
-    window.addEventListener('unload', () => {
-        if (this.systems?.battle?.battleActive) {
-            console.log("🔄 Страница обновляется во время боя");
-            // Состояние уже сохранено в beforeunload
-        }
-    });
-
-    // Проверка при загрузке - был ли бой активен до перезагрузки
-    window.addEventListener('load', () => {
-        const wasBattleActive = sessionStorage.getItem('battleWasActive');
-        if (wasBattleActive === 'true') {
-            console.log("🎲 Восстановление после перезагрузки во время боя");
-            sessionStorage.removeItem('battleWasActive');
-            
-            // Показываем уведомление о поражении
-            setTimeout(() => {
-                this.showNotification("💀 Бой прерван перезагрузкой! Герой возвращен на стартовую позицию.", 'error');
-            }, 1000);
-        }
-    });
-}
-
-// Сохраняем состояние боя при начале
-markBattleAsActive() {
-    if (this.systems?.battle?.battleActive) {
-        sessionStorage.setItem('battleWasActive', 'true');
+        }, 1000);
     }
-}
 
-// Очищаем состояние при завершении боя
-markBattleAsInactive() {
-    sessionStorage.removeItem('battleWasActive');
-}
-    
-handleHeroDeath() {
-    if (!this.currentHero) return;
-    
-    console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
-    
-    // ⭐ УБЕДИТЕЛЬНОЕ УСТАНОВЛЕНИЕ ЗДОРОВЬЯ В 1 (вместо 0)
-    this.currentHero.currentHealth = 1;
-    
-    // ⭐ ПОМЕЧАЕМ ЧТО ГЕРОЙ В РЕЖИМЕ ПОСЛЕСМЕРТНОЙ РЕГЕНЕРАЦИИ
-    this.currentHero.isInPostDeathRegeneration = true;
-    
-    // ⭐ СОХРАНЯЕМ СРАЗУ
-    this.saveGame();
-    
-    this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
-    
-    // ⭐ ЧЕРЕЗ 10 СЕКУНД СНИМАЕМ ФЛАГ (на всякий случай)
-    setTimeout(() => {
-        if (this.currentHero) {
-            this.currentHero.isInPostDeathRegeneration = false;
+    setupBattleCrashProtection() {
+        window.addEventListener('beforeunload', (e) => {
+            if (this.systems?.battle?.battleActive) {
+                console.log("💀 Перезагрузка во время боя - поражение");
+                
+                if (this.currentHero) {
+                    this.currentHero.currentHealth = 1;
+                    this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+                    
+                    if (this.systems.map) {
+                        this.systems.map.completeMovementAfterBattle(false, false);
+                    }
+                    
+                    this.saveGame();
+                    console.log("💾 Сохранено состояние после поражения при перезагрузке");
+                }
+            }
+        });
+
+        window.addEventListener('unload', () => {
+            if (this.systems?.battle?.battleActive) {
+                console.log("🔄 Страница обновляется во время боя");
+            }
+        });
+
+        window.addEventListener('load', () => {
+            const wasBattleActive = sessionStorage.getItem('battleWasActive');
+            if (wasBattleActive === 'true') {
+                console.log("🎲 Восстановление после перезагрузки во время боя");
+                sessionStorage.removeItem('battleWasActive');
+                
+                setTimeout(() => {
+                    this.showNotification("💀 Бой прерван перезагрузкой! Герой возвращен на стартовую позицию.", 'error');
+                }, 1000);
+            }
+        });
+    }
+
+    markBattleAsActive() {
+        if (this.systems?.battle?.battleActive) {
+            sessionStorage.setItem('battleWasActive', 'true');
         }
-    }, 10000);
-}
+    }
+
+    markBattleAsInactive() {
+        sessionStorage.removeItem('battleWasActive');
+    }
+    
+    handleHeroDeath() {
+        if (!this.currentHero) return;
+        
+        console.log(`💀 Основная игра: обработка смерти ${this.currentHero.name}`);
+        
+        this.currentHero.currentHealth = 1;
+        
+        this.currentHero.isInPostDeathRegeneration = true;
+        
+        this.saveGame();
+        
+        this.showNotification(`💀 ${this.currentHero.name} повержен! Здоровье восстановится до 1 и начнет регенерировать.`, 'warning');
+        
+        setTimeout(() => {
+            if (this.currentHero) {
+                this.currentHero.isInPostDeathRegeneration = false;
+            }
+        }, 10000);
+    }
 
     showLoadingScreen(message) {
         const app = document.getElementById('app');
@@ -904,7 +856,6 @@ handleHeroDeath() {
                 <div class="heroes-grid">
                     ${heroes.map(hero => {
                         const isUnlocked = hero.unlocked || hero.id === 1;
-                        // ⭐ ИСПРАВЛЕНИЕ: Используем HeroSystem вместо LevelSystem
                         const stats = this.systems.hero.calculateHeroStats(hero);
                         
                         return `
@@ -955,141 +906,124 @@ handleHeroDeath() {
         `;
     }
 
-selectHero(heroId) {
-    const hero = this.systems.hero.heroes.find(h => h.id === heroId);
-    if (!hero) {
-        console.error(`❌ Герой с ID ${heroId} не найден`);
-        return;
-    }
+    selectHero(heroId) {
+        const hero = this.systems.hero.heroes.find(h => h.id === heroId);
+        if (!hero) {
+            console.error(`❌ Герой с ID ${heroId} не найден`);
+            return;
+        }
 
-    const isUnlocked = hero.unlocked;
-    if (!isUnlocked) {
-        this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
-        return;
-    }
+        const isUnlocked = hero.unlocked;
+        if (!isUnlocked) {
+            this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
+            return;
+        }
 
-    // Устанавливаем общее золото при смене героя
-    if (this.sharedResources) {
-        hero.gold = this.sharedResources.gold;
-        // ⭐ СИНХРОНИЗИРУЕМ РЕСУРСЫ
-        hero.resources = {...this.sharedResources.resources};
-    }
+        if (this.sharedResources) {
+            hero.gold = this.sharedResources.gold;
+            hero.resources = {...this.sharedResources.resources};
+        }
 
-    this.currentHero = hero;
-    
-    // Сохраняем в основной игре
-    if (this.systems.equipment) {
-        this.systems.equipment.setCurrentHero(hero);
-    }
-    
-    // ⭐ ВАЖНО: Загружаем состояние фляги для выбранного героя
-    if (this.systems.battle && this.systems.battle.flask) {
-        // Ищем сохраненное состояние фляги для этого героя
-        const savedHero = this.systems.hero.heroes.find(h => h.id === heroId);
+        this.currentHero = hero;
         
-        // Проверяем, есть ли сохраненное состояние фляги
-        let hasFlaskState = false;
-        const save = localStorage.getItem('tigrimionSave');
-        if (save) {
-            try {
-                const data = JSON.parse(save);
-                const savedHeroData = data.heroes?.find(h => h.id === heroId);
-                if (savedHeroData?.flaskState) {
-                    this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
-                    this.systems.battle.flask.content = savedHeroData.flaskState.content;
-                    hasFlaskState = true;
-                    console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
+        if (this.systems.equipment) {
+            this.systems.equipment.setCurrentHero(hero);
+        }
+        
+        if (this.systems.battle && this.systems.battle.flask) {
+            let hasFlaskState = false;
+            const save = localStorage.getItem('tigrimionSave');
+            if (save) {
+                try {
+                    const data = JSON.parse(save);
+                    const savedHeroData = data.heroes?.find(h => h.id === heroId);
+                    if (savedHeroData?.flaskState) {
+                        this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
+                        this.systems.battle.flask.content = savedHeroData.flaskState.content;
+                        hasFlaskState = true;
+                        console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
+                    }
+                } catch (e) {
+                    console.error("❌ Ошибка чтения состояния фляги:", e);
                 }
-            } catch (e) {
-                console.error("❌ Ошибка чтения состояния фляги:", e);
+            }
+            
+            if (!hasFlaskState) {
+                this.systems.battle.flask.currentCharges = 10;
+                this.systems.battle.flask.content = 'water';
+                console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
+            }
+            
+            if (this.systems.battle.updateFlaskUI) {
+                this.systems.battle.updateFlaskUI();
+            }
+            if (this.systems.battle.updateFlaskChargesDisplay) {
+                this.systems.battle.updateFlaskChargesDisplay();
             }
         }
         
-        // Если нет сохраненного состояния - сбрасываем к значениям по умолчанию
-        if (!hasFlaskState) {
-            this.systems.battle.flask.currentCharges = 10;
-            this.systems.battle.flask.content = 'water';
-            console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
+        if (this.systems.battle) {
+            this.systems.battle.currentHero = hero;
+        }
+        if (this.systems.shop) {
+            this.systems.shop.currentHero = hero;
+        }
+        if (this.systems.map) {
+            this.systems.map.setCurrentHero(hero);
+        }
+        if (this.systems.action) {
+            this.systems.action.mapSystem.setCurrentHero(hero);
+        }
+        if (this.systems.resources) {
+            this.systems.resources.sharedResources = this.sharedResources;
         }
         
-        // Обновляем интерфейс фляги
-        if (this.systems.battle.updateFlaskUI) {
-            this.systems.battle.updateFlaskUI();
-        }
-        if (this.systems.battle.updateFlaskChargesDisplay) {
-            this.systems.battle.updateFlaskChargesDisplay();
-        }
+        this.saveGame();
+        
+        console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}, опыт: ${hero.experience}, золото: ${hero.gold}, ресурсов: ${Object.keys(hero.resources || {}).length}`);
+        this.showHeroGameScreen();
     }
-    
-    // Синхронизируем с другими системами
-    if (this.systems.battle) {
-        this.systems.battle.currentHero = hero;
-    }
-    if (this.systems.shop) {
-        this.systems.shop.currentHero = hero;
-    }
-    if (this.systems.map) {
-        this.systems.map.setCurrentHero(hero);
-    }
-    // ⭐ СИНХРОНИЗИРУЕМ С RESOURCES SYSTEM
-    if (this.systems.resources) {
-        this.systems.resources.sharedResources = this.sharedResources;
-    }
-    
-    // Сохраняем при смене героя
-    this.saveGame();
-    
-    console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}, опыт: ${hero.experience}, золото: ${hero.gold}, ресурсов: ${Object.keys(hero.resources || {}).length}`);
-    this.showHeroGameScreen();
-}
 
-    // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ОБРАБОТКИ КЛИКОВ ПО СЛОТАМ ЭКИПИРОВКИ
     handleEquipmentSlotClick(slot) {
         console.log(`Клик по слоту: ${slot}`);
         const itemId = this.currentHero.equipment[slot];
         
         if (itemId && this.systems.equipment) {
-            // Если есть предмет - снимаем его
             this.systems.equipment.unequipItem(slot);
-            // Обновляем интерфейс
             this.showHeroGameScreen();
-            // Сохраняем игру
             this.saveGame();
             this.showNotification(`✅ Предмет снят со слота ${this.getSlotName(slot)}`, 'success');
         } else {
-            // Если нет предмета - показываем инвентарь для экипировки
             this.showEquipmentForSlot(slot);
         }
     }
 
-  // ⭐ ДОБАВЛЕН МЕТОД ДЛЯ ИСПРАВЛЕНИЯ LAYOUT ПОЛОСОК ЗДОРОВЬЯ
-fixHealthBarLayout() {
-    setTimeout(() => {
-        // Принудительно исправляем все полоски здоровья
-        const healthBars = document.querySelectorAll('.health-bar, .experience-bar');
-        healthBars.forEach(bar => {
-            bar.style.margin = '0';
-            bar.style.padding = '0';
-            bar.style.position = 'relative';
-        });
-        
-        const containers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
-        containers.forEach(container => {
-            container.style.margin = '4px 0 0 0';
-            container.style.padding = '0';
-            container.style.position = 'relative';
-        });
-        
-        const sections = document.querySelectorAll('.health-display-section, .experience-display-section');
-        sections.forEach(section => {
-            section.style.margin = '0';
-            section.style.padding = '8px 0';
-            section.style.position = 'relative';
-        });
-        
-        console.log("✅ Layout полосок здоровья исправлен");
-    }, 300);
-}
+    fixHealthBarLayout() {
+        setTimeout(() => {
+            const healthBars = document.querySelectorAll('.health-bar, .experience-bar');
+            healthBars.forEach(bar => {
+                bar.style.margin = '0';
+                bar.style.padding = '0';
+                bar.style.position = 'relative';
+            });
+            
+            const containers = document.querySelectorAll('.health-bar-container, .experience-bar-container');
+            containers.forEach(container => {
+                container.style.margin = '4px 0 0 0';
+                container.style.padding = '0';
+                container.style.position = 'relative';
+            });
+            
+            const sections = document.querySelectorAll('.health-display-section, .experience-display-section');
+            sections.forEach(section => {
+                section.style.margin = '0';
+                section.style.padding = '8px 0';
+                section.style.position = 'relative';
+            });
+            
+            console.log("✅ Layout полосок здоровья исправлен");
+        }, 300);
+    }
 
     showHeroGameScreen() {
         if (!this.currentHero) return;
@@ -1103,14 +1037,12 @@ fixHealthBarLayout() {
 
         const stats = this.systems.hero.calculateHeroStats(this.currentHero);
         
-        // Вспомогательная функция для рендеринга столбца экипировки
         const renderEquipmentColumn = (slots) => {
             return slots.map(slot => {
                 const itemId = this.currentHero.equipment[slot];
                 const item = itemId && this.systems.equipment ? 
                     this.systems.equipment.getItemById(itemId) : null;
                 
-                // ФИКС: Правильно передаем слот в обработчик
                 return `
                     <div class="equipment-slot-column-v2 ${item ? 'equipped' : 'empty'}"
                          onclick="game.handleEquipmentSlotClick('${slot}')"
@@ -1131,7 +1063,6 @@ fixHealthBarLayout() {
             }).join('');
         };
 
-        // Формируем список активных бонусов
         const activeBonuses = stats.activeBonuses || [];
         const bonusesHTML = activeBonuses.length > 0 ? 
             activeBonuses.map(bonus => `
@@ -1151,12 +1082,14 @@ fixHealthBarLayout() {
                 <div class="top-action-bar">
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
+                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">🎯 Редактор карты</button>
+                    <button class="btn-top" onclick="game.systems.map.debugInfo()">🐛 Отладка карты</button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">🎒 Инвентарь</button>
                     <button class="btn-top" onclick="game.showOverlay('resources')">📦 Ресурсы</button>
                     <button class="btn-top" onclick="game.systems.hero.showHeroStory()">📖 История Героя</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
-                     <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
-                    <button class="btn-top" onclick="game.debugCrafting()">🐛 Отладка крафта</button>
+                    <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
+                    <button class="btn-top" onclick="game.debugCrafting()">⚗️ Отладка крафта</button>
                 </div>
 
                 <!-- Основная область героя -->
@@ -1256,7 +1189,6 @@ fixHealthBarLayout() {
             </div>
         `;
         
-        // ФИКС: Убедимся что обработчики работают
         setTimeout(() => {
             if (this.systems.hero) {
                 this.systems.hero.startHealthBarUpdates();
@@ -1268,7 +1200,6 @@ fixHealthBarLayout() {
             }
         }, 100);
 
-        // ⭐ ВЫЗЫВАЕМ ИСПРАВЛЕНИЕ LAYOUT
         setTimeout(() => {
             this.fixHealthBarLayout();
         }, 200);
@@ -1276,258 +1207,227 @@ fixHealthBarLayout() {
         console.log("✅ Исправленный интерфейс героя отрендерен");
     }
 
+    showInventoryHub() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-showInventoryHub() {
-    const app = document.getElementById('app');
-    if (!app) return;
-
-    app.innerHTML = `
-        <div class="hero-game-screen">
-            <div class="top-action-bar">
-                <button class="btn-top" onclick="game.showHeroGameScreen()">← Назад к герою</button>
-            </div>
-            
-            <div class="inventory-hub">
-                <div class="hub-header">
-                    <h2>🎪 Центр управления</h2>
+        app.innerHTML = `
+            <div class="hero-game-screen">
+                <div class="top-action-bar">
+                    <button class="btn-top" onclick="game.showHeroGameScreen()">← Назад к герою</button>
                 </div>
                 
-                <div class="hub-grid">
-                    <!-- Инвентарь снаряжения -->
-                    <div class="hub-card" onclick="game.showOverlay('inventory')">
-                        <div class="hub-icon">🎒</div>
-                        <div class="hub-title">Экипировка</div>
-                        <div class="hub-description">Снаряжение, оружие, броня</div>
-                        <div class="hub-stats">
-                            ${this.currentHero ? `${this.currentHero.inventory.length}/100 предметов` : 'Загрузка...'}
-                        </div>
+                <div class="inventory-hub">
+                    <div class="hub-header">
+                        <h2>🎪 Центр управления</h2>
                     </div>
                     
-                    <!-- Ресурсы -->
-                    <div class="hub-card" onclick="game.showOverlay('resources')">
-                        <div class="hub-icon">📦</div>
-                        <div class="hub-title">Ресурсы</div>
-                        <div class="hub-description">Материалы для крафта</div>
-                        <div class="hub-stats">
-                            ${this.systems.resources ? 'Доступно' : 'Загрузка...'}
+                    <div class="hub-grid">
+                        <!-- Инвентарь снаряжения -->
+                        <div class="hub-card" onclick="game.showOverlay('inventory')">
+                            <div class="hub-icon">🎒</div>
+                            <div class="hub-title">Экипировка</div>
+                            <div class="hub-description">Снаряжение, оружие, броня</div>
+                            <div class="hub-stats">
+                                ${this.currentHero ? `${this.currentHero.inventory.length}/100 предметов` : 'Загрузка...'}
+                            </div>
+                        </div>
+                        
+                        <!-- Ресурсы -->
+                        <div class="hub-card" onclick="game.showOverlay('resources')">
+                            <div class="hub-icon">📦</div>
+                            <div class="hub-title">Ресурсы</div>
+                            <div class="hub-description">Материалы для крафта</div>
+                            <div class="hub-stats">
+                                ${this.systems.resources ? 'Доступно' : 'Загрузка...'}
+                            </div>
+                        </div>
+                        
+                        <!-- Крафт -->
+                        <div class="hub-card" onclick="game.systems.resources.showCrafting()">
+                            <div class="hub-icon">⚗️</div>
+                            <div class="hub-title">Крафт</div>
+                            <div class="hub-description">Создание предметов</div>
+                            <div class="hub-stats">
+                                ${this.systems.resources ? `${Object.keys(this.systems.resources.craftingRecipes).length} рецептов` : 'Загрузка...'}
+                            </div>
+                        </div>
+                        
+                        <!-- Магазин -->
+                        <div class="hub-card" onclick="game.showOverlay('shop')">
+                            <div class="hub-icon">🏪</div>
+                            <div class="hub-title">Магазин</div>
+                            <div class="hub-description">Покупка и продажа</div>
+                            <div class="hub-stats">
+                                Доступно всегда
+                            </div>
+                        </div>
+                        
+                        <!-- Продажа -->
+                        <div class="hub-card" onclick="game.showSellScreen()">
+                            <div class="hub-icon">💰</div>
+                            <div class="hub-title">Продажа</div>
+                            <div class="hub-description">Быстрая продажа предметов</div>
+                            <div class="hub-stats">
+                                Нажми для продажи
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Крафт -->
-                    <div class="hub-card" onclick="game.systems.resources.showCrafting()">
-                        <div class="hub-icon">⚗️</div>
-                        <div class="hub-title">Крафт</div>
-                        <div class="hub-description">Создание предметов</div>
-                        <div class="hub-stats">
-                            ${this.systems.resources ? `${Object.keys(this.systems.resources.craftingRecipes).length} рецептов` : 'Загрузка...'}
-                        </div>
-                    </div>
-                    
-                    <!-- Магазин -->
-                    <div class="hub-card" onclick="game.showOverlay('shop')">
-                        <div class="hub-icon">🏪</div>
-                        <div class="hub-title">Магазин</div>
-                        <div class="hub-description">Покупка и продажа</div>
-                        <div class="hub-stats">
-                            Доступно всегда
-                        </div>
-                    </div>
-                    
-                    <!-- Продажа -->
-                    <div class="hub-card" onclick="game.showSellScreen()">
-                        <div class="hub-icon">💰</div>
-                        <div class="hub-title">Продажа</div>
-                        <div class="hub-description">Быстрая продажа предметов</div>
-                        <div class="hub-stats">
-                            Нажми для продажи
-                        </div>
-                    </div>
                 </div>
-            </div>
-            
-            <div id="overlay-container" class="overlay-container"></div>
-        </div>
-    `;
-}
-
-
-async showCrafting() {
-    try {
-        console.log("🔨 Открытие интерфейса крафта...");
-        
-        // ДЕБАГ: Проверяем состояние системы крафта
-        console.log("Состояние системы крафта:", {
-            hasSystem: !!this.systems.crafting,
-            recipes: this.systems.crafting?.recipes,
-            recipesCount: this.systems.crafting?.recipes ? Object.keys(this.systems.crafting.recipes).length : 0,
-            stations: this.systems.crafting?.recipes?.stations,
-            stationsCount: this.systems.crafting?.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
-        });
-        
-        // Проверяем, что система крафта существует
-        if (!this.systems.crafting) {
-            console.error("❌ Система крафта не инициализирована");
-            this.showNotification("❌ Система крафта не доступна", "error");
-            return;
-        }
-        
-        // УПРОЩЕННАЯ ПРОВЕРКА: если рецепты есть, показываем интерфейс
-        if (this.systems.crafting.recipes && Object.keys(this.systems.crafting.recipes).length > 0) {
-            console.log("✅ Рецепты найдены, открываем интерфейс...");
-            
-            // Показываем оверлей с крафтом
-            const html = this.systems.crafting.showCraftingUI('all', 'all');
-            
-            // Создаем оверлей
-            const overlayHTML = `
-                <div class="overlay-content crafting-overlay">
-                    ${html}
-                </div>
-            `;
-            
-            this.showOverlayContent(overlayHTML, 'crafting-overlay');
-            
-            console.log("✅ Интерфейс крафта открыт");
-        } else {
-            console.warn("⚠️ Рецепты не найдены, создаем резервные...");
-            
-            // Создаем резервные рецепты
-            this.systems.crafting.createFallbackRecipes();
-            
-            // Показываем интерфейс с резервными рецептами
-            const html = this.systems.crafting.showCraftingUI('all', 'all');
-            
-            const overlayHTML = `
-                <div class="overlay-content crafting-overlay">
-                    ${html}
-                </div>
-            `;
-            
-            this.showOverlayContent(overlayHTML, 'crafting-overlay');
-            
-            this.showNotification("⚠️ Используются базовые рецепты крафта", "warning");
-        }
-        
-    } catch (error) {
-        console.error("❌ Ошибка при открытии крафта:", error);
-        this.showNotification(`❌ Ошибка: ${error.message}`, "error");
-    }
-}
-    
- showOverlay(overlayType) {
-    const container = document.getElementById('overlay-container');
-    if (!container) return;
-
-    this.activeOverlay = overlayType;
-
-    switch(overlayType) {
-        case 'global-map':
-            container.innerHTML = `
-                <div class="overlay-content map-overlay">
-                    <div class="overlay-header">
-                        <h3>🗺️ Глобальная карта</h3>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="overlay-body">
-                        ${this.systems.map ? this.systems.map.renderGlobalMap() : 'Карта загружается...'}
-                    </div>
-                </div>
-            `;
-            container.style.display = 'block';
-            break;
-
-        case 'local-map':
-            container.innerHTML = `
-                <div class="overlay-content map-overlay">
-                    <div class="overlay-header">
-                        <h3>📍 Локальная карта</h3>
-                        <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                    </div>
-                    <div class="overlay-body">
-                        ${this.systems.map ? this.systems.map.renderLocalMap() : 'Карта загружается...'}
-                    </div>
-                </div>
-            `;
-            container.style.display = 'block';
-            break;
-
-        case 'tactical-map':
-            if (this.systems.map) {
-                // ⭐ ПЕРЕДАЕМ ТЕКУЩЕГО ГЕРОЯ В СИСТЕМУ КАРТ
-                this.systems.map.setCurrentHero(this.currentHero);
-                this.systems.map.showTacticalMapEditor();
-            } else {
-                container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
-                container.style.display = 'block';
-            }
-            break;
-
-        case 'inventory':
-            container.innerHTML = this.systems.equipment.showInventory();
-            container.style.display = 'block';
-            break;
-
-case 'resources':
-    if (this.systems.resources && this.systems.resources.loaded) {
-        // ⭐ ПЕРЕДАЕМ ОБЩИЕ РЕСУРСЫ В СИСТЕМУ
-        if (!this.systems.resources.sharedResources && this.sharedResources) {
-            this.systems.resources.sharedResources = this.sharedResources;
-        }
-        
-        container.innerHTML = this.systems.resources.showResourcesInventory();
-        container.style.display = 'block';
-    } else {
-        container.innerHTML = `
-            <div class="overlay-content">
-                <div class="overlay-header">
-                    <h3>📦 Ресурсы</h3>
-                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-                </div>
-                <div class="overlay-body">
-                    <div class="error-message">
-                        ❌ Система ресурсов не загружена. Попробуйте перезагрузить игру.
-                    </div>
-                </div>
+                
+                <div id="overlay-container" class="overlay-container"></div>
             </div>
         `;
-        container.style.display = 'block';
     }
-    break;
+
+    async showCrafting() {
+        try {
+            console.log("🔨 Открытие интерфейса крафта...");
             
-        case 'shop':
-            // ⭐ ИСПРАВЛЕННЫЙ КОД: ShopSystem сам управляет отображением
-            if (this.systems.shop) {
-                // Создаем тестовую клетку магазина для демонстрации
-                const testMerchantCell = {
-                    col: 4,
-                    row: 4,
-                    shopName: "Оружейная Борга",
-                    merchantName: "Борг Железный",
-                    shopItems: [1, 2, 3, 15, 22, 34], // ID предметов из твоего примера
-                    restockTimer: 86400000
-                };
-                this.systems.shop.openShop(testMerchantCell);
-            } else {
-                // Fallback на старую систему если ShopSystem не доступна
-                console.warn("ShopSystem не доступна, используем EquipmentSystem");
-                const currentCategory = this.systems.equipment.currentCategory || 'all';
-                const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
-                container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
-                container.style.display = 'block';
-                
-                // Добавляем обработчики для предметов магазина
-                setTimeout(() => this.attachShopItemHandlers(), 100);
+            console.log("Состояние системы крафта:", {
+                hasSystem: !!this.systems.crafting,
+                recipes: this.systems.crafting?.recipes,
+                recipesCount: this.systems.crafting?.recipes ? Object.keys(this.systems.crafting.recipes).length : 0,
+                stations: this.systems.crafting?.recipes?.stations,
+                stationsCount: this.systems.crafting?.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
+            });
+            
+            if (!this.systems.crafting) {
+                console.error("❌ Система крафта не инициализирована");
+                this.showNotification("❌ Система крафта не доступна", "error");
+                return;
             }
-            break;
-
-        default:
-            console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
-            container.innerHTML = `<div class="map-error">Неизвестный тип окна: ${overlayType}</div>`;
-            container.style.display = 'block';
+            
+            if (this.systems.crafting.recipes && Object.keys(this.systems.crafting.recipes).length > 0) {
+                console.log("✅ Рецепты найдены, открываем интерфейс...");
+                
+                const html = this.systems.crafting.showCraftingUI('all', 'all');
+                
+                const overlayHTML = `
+                    <div class="overlay-content crafting-overlay">
+                        ${html}
+                    </div>
+                `;
+                
+                this.showOverlayContent(overlayHTML, 'crafting-overlay');
+                
+                console.log("✅ Интерфейс крафта открыт");
+            } else {
+                console.warn("⚠️ Рецепты не найдены, создаем резервные...");
+                
+                this.systems.crafting.createFallbackRecipes();
+                
+                const html = this.systems.crafting.showCraftingUI('all', 'all');
+                
+                const overlayHTML = `
+                    <div class="overlay-content crafting-overlay">
+                        ${html}
+                    </div>
+                `;
+                
+                this.showOverlayContent(overlayHTML, 'crafting-overlay');
+                
+                this.showNotification("⚠️ Используются базовые рецепты крафта", "warning");
+            }
+            
+        } catch (error) {
+            console.error("❌ Ошибка при открытии крафта:", error);
+            this.showNotification(`❌ Ошибка: ${error.message}`, "error");
+        }
     }
-}
+    
+    showOverlay(overlayType) {
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
 
-    // ========== ОБРАБОТЧИКИ ПРЕДМЕТОВ МАГАЗИНА ==========
+        this.activeOverlay = overlayType;
+
+        switch(overlayType) {
+            case 'global-map':
+                container.innerHTML = `
+                    <div class="overlay-content map-overlay">
+                        <div class="overlay-header">
+                            <h3>🗺️ Глобальная карта</h3>
+                            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                        </div>
+                        <div class="overlay-body">
+                            ${this.systems.map ? this.systems.map.renderGlobalMap() : 'Карта загружается...'}
+                        </div>
+                    </div>
+                `;
+                container.style.display = 'block';
+                break;
+
+            case 'local-map':
+            case 'tactical-map':
+                if (this.systems.map) {
+                    this.systems.map.showOverlay(overlayType);
+                } else {
+                    container.innerHTML = '<div class="map-error">Система карт не загружена</div>';
+                    container.style.display = 'block';
+                }
+                break;
+
+            case 'inventory':
+                container.innerHTML = this.systems.equipment.showInventory();
+                container.style.display = 'block';
+                break;
+
+            case 'resources':
+                if (this.systems.resources && this.systems.resources.loaded) {
+                    if (!this.systems.resources.sharedResources && this.sharedResources) {
+                        this.systems.resources.sharedResources = this.sharedResources;
+                    }
+                    
+                    container.innerHTML = this.systems.resources.showResourcesInventory();
+                    container.style.display = 'block';
+                } else {
+                    container.innerHTML = `
+                        <div class="overlay-content">
+                            <div class="overlay-header">
+                                <h3>📦 Ресурсы</h3>
+                                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                            </div>
+                            <div class="overlay-body">
+                                <div class="error-message">
+                                    ❌ Система ресурсов не загружена. Попробуйте перезагрузить игру.
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.style.display = 'block';
+                }
+                break;
+                
+            case 'shop':
+                if (this.systems.shop) {
+                    const testMerchantCell = {
+                        col: 4,
+                        row: 4,
+                        shopName: "Оружейная Борга",
+                        merchantName: "Борг Железный",
+                        shopItems: [1, 2, 3, 15, 22, 34],
+                        restockTimer: 86400000
+                    };
+                    this.systems.shop.openShop(testMerchantCell);
+                } else {
+                    console.warn("ShopSystem не доступна, используем EquipmentSystem");
+                    const currentCategory = this.systems.equipment.currentCategory || 'all';
+                    const currentSubcategory = this.systems.equipment.currentSubcategory || 'all';
+                    container.innerHTML = this.systems.equipment.showShop(currentCategory, currentSubcategory);
+                    container.style.display = 'block';
+                    
+                    setTimeout(() => this.attachShopItemHandlers(), 100);
+                }
+                break;
+
+            default:
+                console.warn(`⚠️ Неизвестный тип оверлея: ${overlayType}`);
+                container.innerHTML = `<div class="map-error">Неизвестный тип окна: ${overlayType}</div>`;
+                container.style.display = 'block';
+        }
+    }
+
     attachShopItemHandlers() {
         const shopItems = document.querySelectorAll('.shop-item');
         console.log(`Найдено предметов в магазине: ${shopItems.length}`);
@@ -1544,7 +1444,6 @@ case 'resources':
         });
     }
 
-    // ========== МОДАЛЬНОЕ ОКНО ПРЕДМЕТА ==========
     showItemDetailModal(itemId) {
         console.log(`Открываем модалку для предмета ID: ${itemId}`);
         const item = this.systems.equipment.getItemById(itemId);
@@ -1592,7 +1491,6 @@ case 'resources':
                                 </div>
                             ` : ''}
                             
-                            <!-- ИНФОРМАЦИЯ О БОНУСЕ ПРЕДМЕТА -->
                             ${item.bonus && item.bonus.type !== 'none' ? `
                                 <div class="item-bonus-info">
                                     <h5>🎯 Бонус предмета:</h5>
@@ -1615,7 +1513,6 @@ case 'resources':
                                 ${item.fixed_health ? `<div class="stat-line"><span>❤️ Здоровье:</span> <span class="stat-value">+${item.fixed_health}</span></div>` : ''}
                             </div>
                             
-                            <!-- ИНФОРМАЦИЯ О СЕТЕ -->
                             ${item.setName && this.systems.equipment.itemSets[item.setName] ? `
                                 <div class="item-set-details">
                                     <h5>✨ Бонус сета:</h5>
@@ -1669,12 +1566,10 @@ case 'resources':
             </div>
         `;
 
-        // Добавляем модальное окно в контейнер оверлея
         const container = document.getElementById('overlay-container');
         if (container) {
             container.innerHTML = modalHTML;
             
-            // Добавляем обработчик для увеличения картинки
             setTimeout(() => {
                 const zoomableImage = document.querySelector('.item-detail-image-zoom');
                 if (zoomableImage) {
@@ -1687,7 +1582,6 @@ case 'resources':
         }
     }
 
-    // ========== УВЕЛИЧЕНИЕ ИЗОБРАЖЕНИЯ ПРЕДМЕТА ==========
     showZoomedImage(imageSrc, itemName) {
         const zoomOverlay = document.createElement('div');
         zoomOverlay.className = 'item-image-zoom-overlay';
@@ -1698,14 +1592,12 @@ case 'resources':
                  onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
         `;
         
-        // Закрытие по клику на оверлей
         zoomOverlay.addEventListener('click', (e) => {
             if (e.target === zoomOverlay) {
                 zoomOverlay.remove();
             }
         });
         
-        // Закрытие по ESC
         const handleKeyDown = (e) => {
             if (e.key === 'Escape') {
                 zoomOverlay.remove();
@@ -1717,15 +1609,11 @@ case 'resources':
         document.body.appendChild(zoomOverlay);
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Возврат к тактической карте
     returnToTacticalMap() {
-        // Сначала скрываем боевой экран
         const app = document.getElementById('app');
         if (app) {
-            // Показываем экран героя
             this.showHeroGameScreen();
             
-            // Затем открываем тактическую карту
             setTimeout(() => {
                 if (this.systems.map) {
                     this.systems.map.showOverlay('tactical-map');
@@ -1734,28 +1622,22 @@ case 'resources':
         }
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Управление боем и картой
     manageBattleWithMap() {
-        // Этот метод будет вызываться когда нужно показать бой поверх карты
         if (this.systems.battle && this.systems.battle.battleActive) {
             this.systems.battle.showBattleScreen();
         }
     }
 
-    // ⭐ НОВЫЙ МЕТОД: Начать бой при перемещении
     startMovementBattle(hero, monsterId) {
         if (this.systems.battle) {
-            // Скрываем карту перед боем
             this.hideOverlay();
             
-            // Запускаем бой
             setTimeout(() => {
                 this.systems.battle.startBattleWithMonster(hero, monsterId, 'movement');
             }, 50);
         }
     }
 
-    // ========== ПОКУПКА ИЗ МОДАЛЬНОГО ОКНА ==========
     buyItemFromModal(itemId) {
         const item = this.systems.equipment.getItemById(itemId);
         if (!item) return;
@@ -1764,13 +1646,11 @@ case 'resources':
             this.currentHero.gold -= item.price;
             this.systems.equipment.addItemToInventory(itemId);
             
-            // ⭐ СОХРАНЕНИЕ ПОСЛЕ ПОКУПКИ
             this.saveGame();
             
             this.showNotification(`✅ Предмет "${item.name}" куплен!`, 'success');
             this.closeItemDetailModal();
             
-            // Обновляем магазин
             this.refreshShop();
             
         } else {
@@ -1778,9 +1658,7 @@ case 'resources':
         }
     }
 
-    // ========== ЗАКРЫТИЕ МОДАЛЬНОГО ОКНА ==========
     closeItemDetailModal() {
-        // Восстанавливаем магазин с сохраненным состоянием
         const container = document.getElementById('overlay-container');
         if (container && this.systems.equipment) {
             const currentCategory = this.systems.equipment.currentCategory || 'all';
@@ -1793,24 +1671,27 @@ case 'resources':
     hideOverlay() {
         const container = document.getElementById('overlay-container');
         if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
+            if (this.systems.map && (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map')) {
+                this.systems.map.hideOverlay();
+            } else {
+                container.style.display = 'none';
+                container.innerHTML = '';
+            }
             this.activeOverlay = null;
         }
     }
 
-// ⭐ ДОБАВЬТЕ ЭТОТ МЕТОД ПРЯМО ПОСЛЕ hideOverlay
-showOverlayContent(content, className = '') {
-    const container = document.getElementById('overlay-container');
-    if (!container) return;
-    
-    container.innerHTML = content;
-    container.style.display = 'block';
-    
-    if (className) {
-        container.firstElementChild?.classList.add(className);
+    showOverlayContent(content, className = '') {
+        const container = document.getElementById('overlay-container');
+        if (!container) return;
+        
+        container.innerHTML = content;
+        container.style.display = 'block';
+        
+        if (className) {
+            container.firstElementChild?.classList.add(className);
+        }
     }
-}
     
     showEquipmentForSlot(slot) {
         this.showOverlay('inventory');
@@ -1831,7 +1712,6 @@ showOverlayContent(content, className = '') {
         }, 100);
     }
 
-    // ========== СИСТЕМА УВЕДОМЛЕНИЙ ==========
     showNotification(message, type = 'info') {
         const existingNotifications = document.querySelectorAll('.game-notification');
         existingNotifications.forEach(notification => notification.remove());
@@ -1854,7 +1734,6 @@ showOverlayContent(content, className = '') {
         }, 5000);
     }
 
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     getRaceName(race) {
         const races = {
             'human': 'Человек',
@@ -2020,7 +1899,6 @@ showOverlayContent(content, className = '') {
         console.log("Экипировка текущего героя:", this.currentHero?.equipment);
         console.log("Предметы в системе экипировки:", this.systems.equipment ? this.systems.equipment.items.length : 0);
         
-        // Проверяем сохранение
         const save = localStorage.getItem('tigrimionSave');
         if (save) {
             const data = JSON.parse(save);
@@ -2061,7 +1939,6 @@ showOverlayContent(content, className = '') {
         console.error("💀 ПАНИКА:", error);
     }
 
-    // ========== ОБНОВЛЕНИЕ МАГАЗИНА ==========
     refreshShop() {
         const container = document.getElementById('overlay-container');
         if (container && this.activeOverlay === 'shop') {
@@ -2076,15 +1953,12 @@ showOverlayContent(content, className = '') {
         if (this.systems.crafting) {
             console.log("=== ОТЛАДКА СИСТЕМЫ КРАФТА ===");
             
-            // Вызываем метод отладки
             this.systems.crafting.debugCraftingSystem();
             
-            // Тестируем пути к файлам
             this.systems.crafting.testFilePaths().then(() => {
                 console.log("✅ Тестирование путей завершено");
             });
             
-            // Проверяем интерфейс
             console.log("Тест интерфейса крафта:");
             try {
                 const html = this.systems.crafting.showCraftingUI('all', 'all');
@@ -2099,7 +1973,6 @@ showOverlayContent(content, className = '') {
         
         this.showNotification("Отладка крафта запущена, смотрите консоль (F12)", "info");
     }
-    
 }
 
 // ========== ИНИЦИАЛИЗАЦИЯ ИГРЫ ==========
