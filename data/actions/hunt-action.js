@@ -24,48 +24,31 @@ class HuntAction {
         }
     }
 
-    // ========== ОСНОВНЫЕ МЕТОДЫ ==========
-execute(row, col) {
-    console.log(`🏹 HuntAction: Начало выполнения охоты на клетке [${col},${row}]`);
-    console.log("=== 🏹 HuntAction.execute() ВЫЗВАН ===");
-    console.log("   row:", row, "col:", col);
-    console.log("   this:", this);
-    console.log("   this.actionSystem:", this.actionSystem);
-    console.log("   this.mapSystem:", this.mapSystem);
-    console.log("   this.mapSystem.currentHero:", this.mapSystem.currentHero);
-    console.log("   this.actionModules:", this.actionSystem?.actionModules);
-    console.log("   window.HuntAction:", window.HuntAction);
+async execute(row, col) {
+    console.log(`🏹 HuntAction.execute(): Начало охоты на [${col},${row}]`);
     
-    // Проверяем, что все системы инициализированы
-    if (!this.mapSystem) {
-        console.error("❌ MapSystem не доступна!");
-        this.showNotification("❌ Ошибка карты!", 'error');
+    // Проверяем загрузку модуля
+    if (!this.verifyModuleSetup()) {
+        this.showNotification("❌ Модуль охоты не готов!", 'error');
         return;
     }
     
-    if (!this.mapSystem.currentHero) {
-        console.error("❌ Нет текущего героя!");
-        this.showNotification("❌ Сначала выберите героя!", 'error');
+    // Проверяем базовые условия
+    if (!this.verifyBasicConditions(row, col)) {
         return;
     }
     
-    if (!this.mapSystem.currentTacticalMap) {
-        console.error("❌ Нет текущей тактической карты!");
-        this.showNotification("❌ Карта не загружена!", 'error');
-        return;
-    }
-    
+    // Получаем данные клетки
     const cellKey = `${col},${row}`;
     const cell = this.mapSystem.currentTacticalMap.cells[cellKey];
     
     if (!cell) {
-        console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
+        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
         this.showNotification("❌ Клетка не найдена!", 'error');
         return;
     }
     
     if (cell.explored === true) {
-        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
         this.showNotification("❌ Эта клетка уже исследована!", 'warning');
         return;
     }
@@ -73,66 +56,137 @@ execute(row, col) {
     // Проверяем, достижима ли клетка
     const isReachable = this.mapSystem.isCellReachable(cell);
     if (!isReachable) {
-        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
         this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
         return;
     }
     
-    // Проверяем наличие ActionSystem и его методов
-    if (!this.actionSystem) {
-        console.error("❌ ActionSystem не доступна!");
-        this.showNotification("❌ Ошибка системы действий!", 'error');
-        return;
-    }
-    
-    // Определяем тип клетки для отображения правильного интерфейса
+    // Определяем тип клетки
     const cellType = this.actionSystem.determineCellType(cell);
     console.log(`🔍 Тип клетки [${col},${row}]: ${cellType}`);
     
-    // Сохраняем информацию о текущей клетке для использования в других методах
+    // Сохраняем информацию
     this.currentCell = cell;
     this.currentCellRow = row;
     this.currentCellCol = col;
     this.currentCellType = cellType;
     
-    // Проверяем, есть ли необходимые ресурсы для отображения
-    if (!this.actionSystem.resources || Object.keys(this.actionSystem.resources).length === 0) {
-        console.error("❌ Ресурсы не загружены в ActionSystem!");
-        
-        // Пытаемся загрузить ресурсы
-        setTimeout(() => {
-            if (this.actionSystem.resources && Object.keys(this.actionSystem.resources).length > 0) {
-                console.log("✅ Ресурсы загружены, показываем выбор трофея");
-                this.showHuntTargetSelection(cell);
-            } else {
-                console.error("❌ Не удалось загрузить ресурсы");
-                this.showNotification("❌ Ошибка загрузки ресурсов для охоты!", 'error');
-                
-                // Показываем простой интерфейс охоты
-                this.showSimpleHuntInterface(cell);
-            }
-        }, 500);
-        return;
-    }
-    
-    // Проверяем наличие контейнера для действий
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) {
-        console.error("❌ Контейнер действий не найден!");
-        this.showNotification("❌ Ошибка интерфейса!", 'error');
-        return;
-    }
-    
-    console.log(`✅ Все проверки пройдены, показываем выбор трофея для клетки [${col},${row}]`);
+    // Проверяем ресурсы
+    await this.verifyResourcesLoaded();
     
     // Показываем выбор трофея
     this.showHuntTargetSelection(cell);
     
-    // ВАЖНО: Не запускайте бой здесь!
-    // Бой должен запускаться только после выбора трофея и монстра
-    // в методе performHuntForMonster()
+    console.log(`✅ Подготовка охоты завершена, показываем выбор трофея`);
 }
 
+verifyModuleSetup() {
+    console.log("🔍 Проверка настройки модуля охоты:");
+    console.log("   this:", this);
+    console.log("   this.actionSystem:", this.actionSystem);
+    console.log("   this.mapSystem:", this.mapSystem);
+    console.log("   this.mapSystem.currentHero:", this.mapSystem?.currentHero);
+    
+    if (!this.mapSystem) {
+        console.error("❌ MapSystem не доступна!");
+        return false;
+    }
+    
+    if (!this.actionSystem) {
+        console.error("❌ ActionSystem не доступна!");
+        return false;
+    }
+    
+    if (!this.mapSystem.currentHero) {
+        console.error("❌ Нет текущего героя!");
+        return false;
+    }
+    
+    return true;
+}
+
+verifyBasicConditions(row, col) {
+    if (!this.mapSystem.currentTacticalMap) {
+        console.error("❌ Нет текущей тактической карты!");
+        this.showNotification("❌ Карта не загружена!", 'error');
+        return false;
+    }
+    
+    const cellKey = `${col},${row}`;
+    if (!this.mapSystem.currentTacticalMap.cells[cellKey]) {
+        console.error(`❌ Клетка [${col}, ${row}] не существует на карте`);
+        this.showNotification("❌ Клетка не существует!", 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+async verifyResourcesLoaded() {
+    if (!this.actionSystem.resources || Object.keys(this.actionSystem.resources).length === 0) {
+        console.warn("⚠️ Ресурсы не загружены, пробуем загрузить...");
+        
+        try {
+            await this.actionSystem.loadCellData();
+            console.log("✅ Ресурсы загружены");
+        } catch (error) {
+            console.error("❌ Не удалось загрузить ресурсы:", error);
+        }
+    }
+    
+    // Проверяем наличие охотничьих ресурсов
+    const huntResources = ['bones', 'leathers', 'hides', 'furs'];
+    let hasHuntResources = false;
+    
+    huntResources.forEach(category => {
+        if (this.actionSystem.resources[category] && 
+            this.actionSystem.resources[category].length > 0) {
+            hasHuntResources = true;
+        }
+    });
+    
+    if (!hasHuntResources) {
+        console.warn("⚠️ Нет охотничьих ресурсов, создаем тестовые");
+        this.createTestHuntResources();
+    }
+}
+
+
+createTestHuntResources() {
+    console.log("🔄 Создаем тестовые охотничьи ресурсы");
+    
+    if (!this.actionSystem.resources) {
+        this.actionSystem.resources = {};
+    }
+    
+    // Охотничьи ресурсы
+    this.actionSystem.resources.bones = [
+        { id: 'small_bone', name: '🦴 Маленькая кость', description: 'Кость мелкого животного', type: 'bones', price: 5 },
+        { id: 'wolf_bone', name: '🐺 Волчья кость', description: 'Кость волка, прочная и крепкая', type: 'bones', price: 15 },
+        { id: 'horse_bone', name: '🐴 Конская кость', description: 'Кость лошади, большая и тяжелая', type: 'bones', price: 25 }
+    ];
+    
+    this.actionSystem.resources.leathers = [
+        { id: 'thin_leather', name: '🐂 Тонкая кожа', description: 'Кожа мелкого животного', type: 'leathers', price: 10 },
+        { id: 'strong_leather', name: '🦌 Прочная кожа', description: 'Кожа оленя, хорошего качества', type: 'leathers', price: 20 },
+        { id: 'thick_leather', name: '🐗 Толстая кожа', description: 'Кожа кабана, очень прочная', type: 'leathers', price: 30 }
+    ];
+    
+    this.actionSystem.resources.hides = [
+        { id: 'thin_hide', name: '🐇 Тонкая шкура', description: 'Шкурка кролика', type: 'hides', price: 8 },
+        { id: 'strong_hide', name: '🦊 Лисья шкура', description: 'Шкурка лисы, красивая и теплая', type: 'hides', price: 40 },
+        { id: 'thick_hide', name: '🐻 Медвежья шкура', description: 'Шкура медведя, очень ценная', type: 'hides', price: 100 }
+    ];
+    
+    this.actionSystem.resources.furs = [
+        { id: 'hare_fur', name: '🐰 Заячий мех', description: 'Мягкий мех зайца', type: 'furs', price: 12 },
+        { id: 'marten_fur', name: '🦡 Куний мех', description: 'Мех куницы, очень ценный', type: 'furs', price: 50 },
+        { id: 'arctic_fox_fur', name: '🦊 Мех песца', description: 'Белый мех песца, роскошный', type: 'furs', price: 80 }
+    ];
+    
+    console.log("✅ Тестовые охотничьи ресурсы созданы");
+}
+
+    
 // Добавьте этот вспомогательный метод если ресурсы не загружены
 showSimpleHuntInterface(cell) {
     const actionsContainer = document.getElementById('cellActionsContainer');
