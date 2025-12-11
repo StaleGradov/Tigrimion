@@ -354,6 +354,483 @@ async ensureHuntModuleLoaded() {
 }
 
 
+    // ========== ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА МОДУЛЯ ОХОТЫ ==========
+
+    async forceLoadHuntModule() {
+        console.log("🔄 ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА МОДУЛЯ ОХОТЫ");
+        
+        // Удаляем старый модуль если есть
+        delete this.actionModules['hunt'];
+        
+        // Пробуем несколько путей
+        const paths = [
+            'data/actions/hunt-action.js',
+            'data/modules/actions/hunt-action.js',
+            'modules/actions/hunt-action.js',
+            'hunt-action.js'
+        ];
+        
+        for (const path of paths) {
+            console.log(`   Пробуем: ${path}`);
+            try {
+                const response = await fetch(path);
+                if (response.ok) {
+                    console.log(`✅ Файл найден: ${path}`);
+                    const moduleCode = await response.text();
+                    
+                    // Проверяем содержимое файла
+                    console.log(`📄 Размер файла: ${moduleCode.length} байт`);
+                    console.log(`   Содержит 'showHuntTargetSelection': ${moduleCode.includes('showHuntTargetSelection')}`);
+                    console.log(`   Содержит 'execute': ${moduleCode.includes('execute')}`);
+                    console.log(`   Содержит 'class HuntAction': ${moduleCode.includes('class HuntAction')}`);
+                    
+                    // Загружаем скрипт
+                    const script = document.createElement('script');
+                    script.textContent = moduleCode;
+                    document.head.appendChild(script);
+                    
+                    console.log("✅ Скрипт загружен в DOM");
+                    
+                    // Ждем немного чтобы класс зарегистрировался
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    if (window.HuntAction) {
+                        console.log("✅ Класс HuntAction зарегистрирован глобально");
+                        this.actionModules['hunt'] = new window.HuntAction(this);
+                        console.log("✅ Экземпляр HuntAction создан");
+                        return true;
+                    } else {
+                        console.log("❌ Класс HuntAction не зарегистрирован после загрузки");
+                    }
+                } else {
+                    console.log(`   ❌ Не доступен: ${path}`);
+                }
+            } catch (error) {
+                console.log(`   ❌ Ошибка: ${error.message}`);
+            }
+        }
+        
+        console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
+        this.createHuntActionStub();
+        return false;
+    }
+
+    // ========== ДИАГНОСТИКА МОДУЛЯ ОХОТЫ ==========
+
+    async diagnoseHuntModule() {
+        console.group("🔍 ДИАГНОСТИКА МОДУЛЯ ОХОТЫ");
+        
+        // 1. Проверяем состояние модуля
+        console.log("1. Состояние модуля охоты:");
+        console.log("   - actionModules['hunt']:", this.actionModules['hunt']);
+        console.log("   - Тип:", typeof this.actionModules['hunt']);
+        console.log("   - Является ли классом?", this.actionModules['hunt']?.constructor?.name);
+        
+        // 2. Проверяем методы
+        if (this.actionModules['hunt']) {
+            const hunt = this.actionModules['hunt'];
+            console.log("2. Методы модуля охоты:");
+            console.log("   - execute:", typeof hunt.execute);
+            console.log("   - showHuntTargetSelection:", typeof hunt.showHuntTargetSelection);
+            console.log("   - performHuntForMonster:", typeof hunt.performHuntForMonster);
+            console.log("   - Все методы:", Object.getOwnPropertyNames(Object.getPrototypeOf(hunt)));
+        }
+        
+        // 3. Проверяем глобальный класс
+        console.log("3. Глобальный класс HuntAction:");
+        console.log("   - window.HuntAction:", window.HuntAction);
+        console.log("   - Тип:", typeof window.HuntAction);
+        
+        // 4. Проверяем загрузку файла
+        console.log("4. Проверка загрузки файла:");
+        try {
+            const testResponse = await fetch('data/actions/hunt-action.js');
+            console.log("   - Файл hunt-action.js:", testResponse.ok ? "НАЙДЕН" : "НЕ НАЙДЕН");
+        } catch (error) {
+            console.log("   - Ошибка проверки файла:", error.message);
+        }
+        
+        // 5. Проверяем связь с MapSystem
+        console.log("5. Связь с MapSystem:");
+        console.log("   - MapSystem:", this.mapSystem);
+        console.log("   - MapSystem.currentHero:", this.mapSystem?.currentHero);
+        
+        console.groupEnd();
+        
+        return {
+            moduleExists: !!this.actionModules['hunt'],
+            hasExecuteMethod: typeof this.actionModules['hunt']?.execute === 'function',
+            hasShowHuntMethod: typeof this.actionModules['hunt']?.showHuntTargetSelection === 'function',
+            fileExists: false, // будет обновлено
+            globalClassExists: !!window.HuntAction
+        };
+    }
+
+    // ========== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ==========
+
+    async forceFixHuntModule() {
+        console.log("🛠️ ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ОХОТЫ");
+        
+        // 1. Получаем диагностику
+        const diagnosis = await this.diagnoseHuntModule();
+        console.log("Текущая диагностика:", diagnosis);
+        
+        // 2. Если модуль вообще не существует
+        if (!diagnosis.moduleExists) {
+            console.log("❌ Модуль охоты не существует, создаем...");
+            
+            // Пробуем загрузить файл
+            const loaded = await this.forceLoadHuntModule();
+            if (loaded) {
+                console.log("✅ Модуль создан после загрузки файла");
+                return true;
+            } else {
+                console.log("⚠️ Не удалось загрузить, создаем заглушку");
+                this.createHuntActionStub();
+                return false;
+            }
+        }
+        
+        // 3. Если модуль есть, но нет нужных методов
+        else if (!diagnosis.hasShowHuntMethod) {
+            console.log("⚠️ У модуля нет метода showHuntTargetSelection, заменяем...");
+            
+            // Удаляем старый модуль
+            delete this.actionModules['hunt'];
+            
+            // Создаем правильный модуль
+            const CorrectHuntModule = class {
+                constructor(actionSystem) {
+                    this.actionSystem = actionSystem;
+                    this.mapSystem = actionSystem.mapSystem;
+                    this.config = {
+                        id: 'hunt',
+                        icon: '🏹',
+                        name: 'Охотиться',
+                        description: 'Выследить и добыть дичь. Сначала выберите трофей, затем монстра'
+                    };
+                }
+                
+                execute(row, col) {
+                    console.log(`🏹 CorrectHuntModule.execute() на [${col},${row}]`);
+                    
+                    // Получаем клетку
+                    const cellKey = `${col},${row}`;
+                    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+                    
+                    if (cell) {
+                        this.showHuntTargetSelection(cell);
+                    } else {
+                        console.error("❌ Клетка не найдена");
+                        this.actionSystem.showNotification("❌ Клетка не найдена", 'error');
+                    }
+                }
+                
+                showHuntTargetSelection(cell) {
+                    console.log(`🎯 Показываем выбор трофея для клетки [${cell.col},${cell.row}]`);
+                    
+                    // Показываем тестовый интерфейс
+                    const actionsContainer = document.getElementById('cellActionsContainer');
+                    if (actionsContainer) {
+                        actionsContainer.innerHTML = `
+                            <div class="hunt-target-selection">
+                                <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                                    🏹 ВЫБОР ТРОФЕЯ ДЛЯ ОХОТЫ
+                                </h3>
+                                <div style="text-align: center; padding: 20px;">
+                                    <p>✅ Исправленный модуль охоты работает!</p>
+                                    <p>Сначала выбирается трофей, затем монстр</p>
+                                    <button class="btn-control" onclick="game.systems.action.testHuntSelection()">
+                                        🎯 Тест выбора трофея
+                                    </button>
+                                    <div style="margin-top: 15px; color: #aaa; font-size: 12px;">
+                                        Это исправленная версия модуля
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            };
+            
+            // Заменяем модуль
+            this.actionModules['hunt'] = new CorrectHuntModule(this);
+            console.log("✅ Модуль заменен на исправленный");
+            return true;
+        }
+        
+        // 4. Если все ок
+        else {
+            console.log("✅ Модуль охоты в порядке");
+            return true;
+        }
+    }
+
+    // ========== ТЕСТ ВЫБОРА ТРОФЕЯ ==========
+
+    testHuntSelection() {
+        console.log("🧪 ТЕСТ: Симуляция выбора трофея");
+        
+        // Создаем тестовые данные
+        const testResources = {
+            'bones': [
+                { id: 'small_bone', name: '🦴 Маленькая кость', description: 'Кость мелкого животного' },
+                { id: 'wolf_bone', name: '🐺 Волчья кость', description: 'Кость волка' },
+                { id: 'horse_bone', name: '🐴 Конская кость', description: 'Кость лошади' }
+            ],
+            'leathers': [
+                { id: 'thin_leather', name: '🐂 Тонкая кожа', description: 'Кожа мелкого животного' },
+                { id: 'strong_leather', name: '🦌 Прочная кожа', description: 'Кожа оленя' }
+            ]
+        };
+        
+        // Показываем интерфейс выбора трофея
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (actionsContainer) {
+            let html = `
+                <div class="hunt-target-selection">
+                    <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                        🏹 ВЫБЕРИТЕ ТРОФЕЙ ДЛЯ ОХОТЫ
+                    </h3>
+                    <p style="text-align: center; color: #aaa; margin-bottom: 20px;">
+                        Это тестовый интерфейс. В реальной игре здесь будут ресурсы из файла.
+                    </p>
+                    
+                    <div class="hunt-categories">
+            `;
+            
+            Object.entries(testResources).forEach(([category, resources]) => {
+                const categoryName = category === 'bones' ? '🦴 Кости' : '🐂 Кожи';
+                
+                html += `
+                    <div class="hunt-category">
+                        <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
+                            ${categoryName}
+                        </h4>
+                        <div class="hunt-targets-grid">
+                `;
+                
+                resources.forEach(resource => {
+                    html += `
+                        <div class="hunt-target-item" onclick="game.systems.action.testMonsterSelection('${resource.id}', '${resource.name}')">
+                            <div class="hunt-target-name">${resource.name}</div>
+                            <div class="hunt-target-description">${resource.description}</div>
+                            <div class="test-tag" style="font-size: 10px; color: #f59e0b; margin-top: 5px;">[ТЕСТ]</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background: rgba(255, 100, 100, 0.1); border-radius: 8px; border: 1px solid #ff4444;">
+                        <strong style="color: #ff4444;">⚠️ ВАЖНО:</strong>
+                        <p style="margin-top: 8px; font-size: 12px; color: #ffcccc;">
+                            1. Сначала выбирается трофей<br>
+                            2. Затем показываются монстры, у которых падает этот трофей<br>
+                            3. Выбирается монстр для охоты<br>
+                            4. Начинается бой с выбранным монстром
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            actionsContainer.innerHTML = html;
+            
+            // Стилизуем
+            setTimeout(() => {
+                const grid = document.querySelector('.hunt-targets-grid');
+                if (grid) {
+                    grid.style.cssText = `
+                        display: grid;
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 10px;
+                        margin-bottom: 15px;
+                    `;
+                }
+                
+                const items = document.querySelectorAll('.hunt-target-item');
+                items.forEach(item => {
+                    item.style.cssText = `
+                        background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                        border: 1px solid #00aaff;
+                        border-radius: 8px;
+                        padding: 12px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    `;
+                    
+                    item.onmouseenter = () => {
+                        item.style.transform = 'translateY(-2px)';
+                        item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+                    };
+                    item.onmouseleave = () => {
+                        item.style.transform = 'translateY(0)';
+                        item.style.boxShadow = 'none';
+                    };
+                });
+            }, 50);
+        }
+    }
+
+    testMonsterSelection(resourceId, resourceName) {
+        console.log(`🧪 ТЕСТ: Выбран трофей ${resourceName} (${resourceId})`);
+        
+        // Тестовые монстры
+        const testMonsters = [
+            { id: 'wolf', name: '🐺 Волк', level: 2, health: 50, armor: 5, damage: 15 },
+            { id: 'bear', name: '🐻 Медведь', level: 3, health: 80, armor: 10, damage: 25 },
+            { id: 'boar', name: '🐗 Кабан', level: 1, health: 30, armor: 3, damage: 10 }
+        ];
+        
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (actionsContainer) {
+            let html = `
+                <div class="monster-selection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: #00ffcc; margin: 0;">
+                            🎯 ВЫБЕРИТЕ МОНСТРА ДЛЯ ОХОТЫ
+                        </h3>
+                        <button class="btn-control" onclick="game.systems.action.testHuntSelection()" 
+                                style="padding: 5px 10px; font-size: 12px;">
+                            ↩️ Назад
+                        </button>
+                    </div>
+                    
+                    <div class="selected-resource-info" style="background: rgba(0, 100, 255, 0.1); border: 1px solid #00aaff; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;">
+                        <div style="font-size: 18px; color: #00aaff; margin-bottom: 5px;">
+                            Цель охоты: ${resourceName}
+                        </div>
+                        <div style="color: #aaa; font-size: 12px;">
+                            [ТЕСТОВЫЙ РЕСУРС]
+                        </div>
+                    </div>
+                    
+                    <div class="monsters-grid">
+            `;
+            
+            testMonsters.forEach(monster => {
+                html += `
+                    <div class="monster-card" data-monster-id="${monster.id}">
+                        <div class="monster-header">
+                            <div class="monster-name">${monster.name}</div>
+                            <div class="monster-difficulty" style="color: #44ff44;">
+                                Легкий (Ур. ${monster.level})
+                            </div>
+                        </div>
+                        
+                        <div class="monster-stats" style="margin: 10px 0; font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #ff6666;">❤️ Здоровье:</span>
+                                <span>${monster.health}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #6666ff;">🛡️ Броня:</span>
+                                <span>${monster.armor}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #ffaa00;">⚔️ Урон:</span>
+                                <span>${monster.damage}</span>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button class="btn-control" onclick="game.systems.action.startTestHunt('${resourceId}', '${monster.id}', '${monster.name}')"
+                                    style="padding: 8px 15px; font-size: 12px;">
+                                🏹 Охотиться на этого
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; font-size: 12px; color: #aaa; border: 1px solid rgba(0, 255, 204, 0.3);">
+                        <strong style="color: #00ffcc;">📝 Это тестовый интерфейс:</strong>
+                        <p style="margin-top: 8px;">
+                            1. В реальной игре здесь будут монстры из базы данных<br>
+                            2. Каждый монстр будет иметь список лута<br>
+                            3. Шанс встретить конкретного монстра зависит от сложности<br>
+                            4. После победы вы получите выбранный трофей
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            actionsContainer.innerHTML = html;
+            
+            // Стилизуем
+            setTimeout(() => {
+                const grid = document.querySelector('.monsters-grid');
+                if (grid) {
+                    grid.style.cssText = `
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 15px;
+                        margin-bottom: 20px;
+                    `;
+                }
+                
+                const cards = document.querySelectorAll('.monster-card');
+                cards.forEach(card => {
+                    card.style.cssText = `
+                        background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
+                        border: 1px solid #00aaff;
+                        border-radius: 8px;
+                        padding: 15px;
+                    `;
+                });
+            }, 50);
+        }
+    }
+
+    startTestHunt(resourceId, monsterId, monsterName) {
+        console.log(`🧪 ТЕСТ: Начинаем охоту на ${monsterName} за ресурс ${resourceId}`);
+        
+        // Сохраняем информацию для теста
+        this.mapSystem.pendingAction = {
+            action: 'hunt',
+            row: 0,
+            col: 0,
+            targetResource: { id: resourceId, name: 'Тестовый ресурс' },
+            wasSuccess: true,
+            doubleLoot: false
+        };
+        
+        // Начинаем тестовый бой
+        const battleSystem = window.game?.systems?.battle;
+        if (battleSystem) {
+            const testMonster = {
+                id: monsterId,
+                name: monsterName,
+                level: 2,
+                health: 50,
+                armor: 5,
+                damage: 15,
+                loot: {
+                    guaranteed: [
+                        { id: resourceId, quantity: 1 }
+                    ]
+                }
+            };
+            
+            this.showNotification(`🏹 Начинается тестовая охота на ${monsterName}!`, 'info');
+            battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, testMonster, 'hunt');
+        } else {
+            this.showNotification("❌ Система боя не доступна для теста", 'error');
+        }
+    }
+
+    
+
     
     // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
 
