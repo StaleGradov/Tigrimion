@@ -25,32 +25,191 @@ class HuntAction {
     }
 
     // ========== ОСНОВНЫЕ МЕТОДЫ ==========
-
-    execute(row, col) {
-        console.log(`🏹 HuntAction: Начало выполнения охоты на клетке [${col},${row}]`);
-            console.log("=== 🏹 HuntAction.execute() ВЫЗВАН ===");
+execute(row, col) {
+    console.log(`🏹 HuntAction: Начало выполнения охоты на клетке [${col},${row}]`);
+    console.log("=== 🏹 HuntAction.execute() ВЫЗВАН ===");
     console.log("   row:", row, "col:", col);
     console.log("   this:", this);
     console.log("   this.actionSystem:", this.actionSystem);
     console.log("   this.mapSystem:", this.mapSystem);
     console.log("   this.mapSystem.currentHero:", this.mapSystem.currentHero);
-        
-        const cellKey = `${col},${row}`;
-        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-        
-        if (!cell) {
-            console.error(`❌ Клетка [${col}, ${row}] не найдена`);
-            this.showNotification("❌ Клетка не найдена!", 'error');
-            return;
-        }
-        
-        if (cell.explored === true) {
-            this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-            return;
-        }
-        
-        this.showHuntTargetSelection(cell);
+    console.log("   this.actionModules:", this.actionSystem?.actionModules);
+    console.log("   window.HuntAction:", window.HuntAction);
+    
+    // Проверяем, что все системы инициализированы
+    if (!this.mapSystem) {
+        console.error("❌ MapSystem не доступна!");
+        this.showNotification("❌ Ошибка карты!", 'error');
+        return;
     }
+    
+    if (!this.mapSystem.currentHero) {
+        console.error("❌ Нет текущего героя!");
+        this.showNotification("❌ Сначала выберите героя!", 'error');
+        return;
+    }
+    
+    if (!this.mapSystem.currentTacticalMap) {
+        console.error("❌ Нет текущей тактической карты!");
+        this.showNotification("❌ Карта не загружена!", 'error');
+        return;
+    }
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap.cells[cellKey];
+    
+    if (!cell) {
+        console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    if (cell.explored === true) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+        return;
+    }
+    
+    // Проверяем, достижима ли клетка
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+        this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
+        return;
+    }
+    
+    // Проверяем наличие ActionSystem и его методов
+    if (!this.actionSystem) {
+        console.error("❌ ActionSystem не доступна!");
+        this.showNotification("❌ Ошибка системы действий!", 'error');
+        return;
+    }
+    
+    // Определяем тип клетки для отображения правильного интерфейса
+    const cellType = this.actionSystem.determineCellType(cell);
+    console.log(`🔍 Тип клетки [${col},${row}]: ${cellType}`);
+    
+    // Сохраняем информацию о текущей клетке для использования в других методах
+    this.currentCell = cell;
+    this.currentCellRow = row;
+    this.currentCellCol = col;
+    this.currentCellType = cellType;
+    
+    // Проверяем, есть ли необходимые ресурсы для отображения
+    if (!this.actionSystem.resources || Object.keys(this.actionSystem.resources).length === 0) {
+        console.error("❌ Ресурсы не загружены в ActionSystem!");
+        
+        // Пытаемся загрузить ресурсы
+        setTimeout(() => {
+            if (this.actionSystem.resources && Object.keys(this.actionSystem.resources).length > 0) {
+                console.log("✅ Ресурсы загружены, показываем выбор трофея");
+                this.showHuntTargetSelection(cell);
+            } else {
+                console.error("❌ Не удалось загрузить ресурсы");
+                this.showNotification("❌ Ошибка загрузки ресурсов для охоты!", 'error');
+                
+                // Показываем простой интерфейс охоты
+                this.showSimpleHuntInterface(cell);
+            }
+        }, 500);
+        return;
+    }
+    
+    // Проверяем наличие контейнера для действий
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден!");
+        this.showNotification("❌ Ошибка интерфейса!", 'error');
+        return;
+    }
+    
+    console.log(`✅ Все проверки пройдены, показываем выбор трофея для клетки [${col},${row}]`);
+    
+    // Показываем выбор трофея
+    this.showHuntTargetSelection(cell);
+    
+    // ВАЖНО: Не запускайте бой здесь!
+    // Бой должен запускаться только после выбора трофея и монстра
+    // в методе performHuntForMonster()
+}
+
+// Добавьте этот вспомогательный метод если ресурсы не загружены
+showSimpleHuntInterface(cell) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    const cellType = this.actionSystem.determineCellType(cell);
+    const cellTypeData = this.actionSystem.cellTypes[cellType];
+    const baseChance = this.actionSystem.getActionChance(this.config.id, cellType);
+    
+    actionsContainer.innerHTML = `
+        <div class="simple-hunt-interface">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                🏹 Охота
+            </h3>
+            
+            <div class="hunt-info" style="background: rgba(255, 100, 100, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff4444;">
+                <strong>⚠️ Простая охота:</strong>
+                <p style="margin-top: 8px; font-size: 14px; color: #ffcccc;">
+                    • Ресурсы для охоты не загружены<br>
+                    • Вы начнете обычную охоту без выбора трофея<br>
+                    • Встретите случайного монстра<br>
+                    • Получите стандартный лут
+                </p>
+            </div>
+            
+            <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <strong>Базовая вероятность успеха:</strong> 
+                <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
+                    ${baseChance}%
+                </span>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn-control" onclick="window.game.systems.action.actionModules.hunt.startSimpleHunt()"
+                        style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #ff4444, #ff6666);">
+                    🏹 Начать простую охоту
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
+                <em>Примечание: Загрузите файлы ресурсов для полного функционала охоты</em>
+            </div>
+        </div>
+    `;
+}
+
+// Метод для простой охоты (если ресурсы не загружены)
+startSimpleHunt() {
+    if (!this.mapSystem.currentHero) return;
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        this.showNotification("❌ Система боя не доступна!", 'error');
+        return;
+    }
+    
+    const randomMonster = battleSystem.getRandomMonsterForMovement();
+    if (!randomMonster) {
+        this.showNotification("❌ Нет доступных монстров!", 'error');
+        return;
+    }
+    
+    // Сохраняем информацию о охоте
+    this.mapSystem.pendingAction = {
+        action: 'hunt',
+        row: this.currentCellRow,
+        col: this.currentCellCol,
+        wasSuccess: true,
+        doubleLoot: false,
+        simpleHunt: true
+    };
+    
+    console.log(`🏹 Начинаем простую охоту на: ${randomMonster.name}`);
+    this.showNotification(`🏹 Начинается охота на ${randomMonster.name}!`, 'info');
+    
+    battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
+}
 
     // ========== ВЫБОР ЦЕЛИ ОХОТЫ ==========
 
