@@ -1456,7 +1456,6 @@ registerModule(moduleName, moduleInstance) {
         });
     }
 
-    // ========== ВЫПОЛНЕНИЕ ДЕЙСТВИЙ ==========
 performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem: Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
     
@@ -1534,11 +1533,7 @@ performCellAction(action, row, col) {
         }
     }
     
-    // ========== ОСТАЛЬНЫЕ ДЕЙСТВИЯ ==========
-    const chance = this.getActionChance(action, this.currentCellType);
-    const config = this.actionConfigs[action] || {};
-    
-    // 2. Скрытное перемещение - обрабатываем отдельно
+    // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
     if (action === 'stealth_movement') {
         if (!this.mapSystem.isCellReachable(cell)) {
             console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
@@ -1549,7 +1544,7 @@ performCellAction(action, row, col) {
         return;
     }
     
-    // 3. Ресурсные действия с отображением вероятностей
+    // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ==========
     const resourceActions = [
         'search_treasure', 'search_water', 'search_berries', 
         'search_mushrooms', 'search_herbs', 'search_ore', 
@@ -1562,10 +1557,17 @@ performCellAction(action, row, col) {
         return;
     }
     
-    // ========== СТАНДАРТНАЯ ОБРАБОТКА ==========
+    // ========== СТАНДАРТНАЯ ОБРАБОТКА ОСТАЛЬНЫХ ДЕЙСТВИЙ ==========
     
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (actionsContainer) {
+        const config = this.actionConfigs[action] || {
+            icon: '⚡',
+            name: action.replace(/_/g, ' '),
+            description: 'Выполняется действие...'
+        };
+        const chance = this.getActionChance(action, this.currentCellType);
+        
         actionsContainer.innerHTML = `
             <div class="action-processing">
                 <div class="processing-icon">${config.icon || '⚡'}</div>
@@ -1592,7 +1594,9 @@ performCellAction(action, row, col) {
         }, 50);
     }
     
+    // Имитация выполнения действия с задержкой
     setTimeout(() => {
+        const chance = this.getActionChance(action, this.currentCellType);
         const roll = Math.random() * 100;
         const success = roll <= chance;
         
@@ -1603,8 +1607,9 @@ performCellAction(action, row, col) {
         } else {
             const cellTypeData = this.cellTypes[this.currentCellType];
             
-            let monsterChance = cellTypeData.failure_monster_chance || 50;
+            let monsterChance = cellTypeData?.failure_monster_chance || 50;
             
+            const config = this.actionConfigs[action];
             if (config && config.triggers_monster) {
                 monsterChance *= (config.monster_level_multiplier || 1);
             }
@@ -1619,6 +1624,7 @@ performCellAction(action, row, col) {
             }
         }
         
+        // Обновляем интерфейс клетки после завершения действия
         setTimeout(() => {
             if (cell && !cell.explored) {
                 this.updateCellActionsUI(cell);
@@ -1672,69 +1678,71 @@ performCellAction(action, row, col) {
         battleSystem.startBattleWithMonster(this.mapSystem.currentHero, randomMonster.id, 'hunt');
     }
 
-    handleActionSuccess(action, row, col) {
-        const config = this.actionConfigs[action];
-        
-        const successMessages = {
-            'search_treasure': "💰 Найдены ценности!",
-            'search_water': "💧 Найдена вода!",
-            'search_berries': "🫐 Собраны ягоды!",
-            'search_mushrooms': "🍄 Собраны грибы!",
-            'search_herbs': "🌿 Собраны травы!",
-            'search_ore': "⛏️ Найдена руда!",
-            'search_stone': "🪨 Собраны камни!",
-            'set_trap': "🪤 Ловушка установлена!",
-            'prepare_ambush': "🎯 Позиция для засады подготовлена!",
-            'hunt': "🏹 Успешная охота! Начинается бой с монстром.",
-            'hunt_caravan': "🏹 Успешная охота на караван!",
-            'take_assassination_contract': "🗡️ Контракт на убийство получен!",
-            'light_campfire': "🔥 Костёр разожжён!",
-            'guard_caravan': "🛡️ Найм на охрану каравана успешен!",
-            'gather_wood': "🪵 Дрова собраны!",
-            'stealth_movement': "👣 Вы тихо переместились!"
-        };
-        
-        const message = successMessages[action] || "✅ Действие успешно!";
-        
-        if (action === 'hunt') {
-            this.handleHuntActionSuccess(row, col);
-            return;
-        }
-        
-        const resourceMap = {
-            'search_treasure': 'treasure',
-            'search_water': 'water',
-            'search_berries': 'berries',
-            'search_mushrooms': 'mushrooms',
-            'search_herbs': 'herbs',
-            'search_ore': 'ores',
-            'search_stone': 'stones',
-            'set_trap': 'traps',
-            'prepare_ambush': 'ambush',
-            'hunt': 'loot',
-            'hunt_caravan': 'loot',
-            'take_assassination_contract': 'contracts',
-            'light_campfire': 'shelter',
-            'guard_caravan': 'gold',
-            'gather_wood': 'woods'
-        };
-        
-        const resourceType = resourceMap[action];
-        if (resourceType) {
-            if (resourceType === 'gold') {
-                const goldAmount = Math.floor(Math.random() * 50) + 25;
-                this.mapSystem.currentHero.gold += goldAmount;
-                this.showNotification(`${message} Получено ${goldAmount} золота.`, 'success');
-                console.log(`💰 Добавлено золото: ${goldAmount}`);
-            } else {
-                this.giveRandomResource(resourceType, row, col);
-            }
-        }
-        
-        this.showNotification(message, 'success');
-        
-        console.log(`✅ Клетка [${col},${row}] остаётся доступной для других действий`);
+   handleActionSuccess(action, row, col) {
+    const config = this.actionConfigs[action];
+    
+    const successMessages = {
+        'search_treasure': "💰 Найдены ценности!",
+        'search_water': "💧 Найдена вода!",
+        'search_berries': "🫐 Собраны ягоды!",
+        'search_mushrooms': "🍄 Собраны грибы!",
+        'search_herbs': "🌿 Собраны травы!",
+        'search_ore': "⛏️ Найдена руда!",
+        'search_stone': "🪨 Собраны камни!",
+        'set_trap': "🪤 Ловушка установлена!",
+        'prepare_ambush': "🎯 Позиция для засады подготовлена!",
+        'hunt': "🏹 Успешная охота! Начинается бой с монстром.",
+        'hunt_caravan': "🏹 Успешная охота на караван!",
+        'take_assassination_contract': "🗡️ Контракт на убийство получен!",
+        'light_campfire': "🔥 Костёр разожжён!",
+        'guard_caravan': "🛡️ Найм на охрану каравана успешен!",
+        'gather_wood': "🪵 Дрова собраны!",
+        'stealth_movement': "👣 Вы тихо переместились!"
+    };
+    
+    const message = successMessages[action] || "✅ Действие успешно!";
+    
+    // Охота обрабатывается через модуль, так что здесь не запускаем бой
+    if (action === 'hunt') {
+        // Этот код не должен выполняться, так как охота обрабатывается через модуль
+        console.warn("⚠️ Охота не должна обрабатываться через handleActionSuccess!");
+        return;
     }
+    
+    const resourceMap = {
+        'search_treasure': 'treasure',
+        'search_water': 'water',
+        'search_berries': 'berries',
+        'search_mushrooms': 'mushrooms',
+        'search_herbs': 'herbs',
+        'search_ore': 'ores',
+        'search_stone': 'stones',
+        'set_trap': 'traps',
+        'prepare_ambush': 'ambush',
+        'hunt': 'loot',
+        'hunt_caravan': 'loot',
+        'take_assassination_contract': 'contracts',
+        'light_campfire': 'shelter',
+        'guard_caravan': 'gold',
+        'gather_wood': 'woods'
+    };
+    
+    const resourceType = resourceMap[action];
+    if (resourceType) {
+        if (resourceType === 'gold') {
+            const goldAmount = Math.floor(Math.random() * 50) + 25;
+            this.mapSystem.currentHero.gold += goldAmount;
+            this.showNotification(`${message} Получено ${goldAmount} золота.`, 'success');
+            console.log(`💰 Добавлено золото: ${goldAmount}`);
+        } else {
+            this.giveRandomResource(resourceType, row, col);
+        }
+    }
+    
+    this.showNotification(message, 'success');
+    
+    console.log(`✅ Клетка [${col},${row}] остаётся доступной для других действий`);
+}
 
     handleActionFailure(action) {
         const failureMessages = {
