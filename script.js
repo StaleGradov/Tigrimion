@@ -1320,7 +1320,7 @@ class SafeHeroGame {
 
         app.innerHTML = `
             <div class="hero-game-screen">
-                <!-- Верхняя панель кнопок -->
+                            <!-- Верхняя панель кнопок -->
                 <div class="top-action-bar">
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
@@ -1332,6 +1332,9 @@ class SafeHeroGame {
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
                     <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
                     <button class="btn-top" onclick="game.debugCrafting()">⚗️ Отладка крафта</button>
+                    <button class="btn-top" onclick="game.systems.action?.diagnoseHuntModule()">🔍 Диагностика охоты</button>
+                    <button class="btn-top" onclick="game.systems.action?.forceFixHuntModule()">🛠️ Исправить модуль</button>
+                    <button class="btn-top" onclick="game.systems.action?.testHuntSelection()">🧪 Тест охоты</button>
                 </div>
 
                 <!-- Основная область героя -->
