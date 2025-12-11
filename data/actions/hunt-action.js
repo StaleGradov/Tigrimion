@@ -24,7 +24,7 @@ class HuntAction {
         }
     }
 
-async execute(row, col) {
+execute(row, col) {
     console.log(`🏹 HuntAction.execute(): Начало охоты на [${col},${row}]`);
     
     // Проверяем загрузку модуля
@@ -38,7 +38,7 @@ async execute(row, col) {
         return;
     }
     
-    // Получаем данные клетки
+    // Получаем клетку
     const cellKey = `${col},${row}`;
     const cell = this.mapSystem.currentTacticalMap.cells[cellKey];
     
@@ -70,10 +70,8 @@ async execute(row, col) {
     this.currentCellCol = col;
     this.currentCellType = cellType;
     
-    // Проверяем ресурсы
-    await this.verifyResourcesLoaded();
-    
-    // Показываем выбор трофея
+    // ВАЖНО: Показываем выбор трофея, а не сразу бой!
+    console.log(`✅ Вызываем showHuntTargetSelection() для клетки [${col},${row}]`);
     this.showHuntTargetSelection(cell);
     
     console.log(`✅ Подготовка охоты завершена, показываем выбор трофея`);
