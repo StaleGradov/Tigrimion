@@ -1520,183 +1520,153 @@ async ensureHuntModuleLoaded() {
         });
     }
 
-performCellAction(action, row, col) {
-    console.log(`🎯 ActionSystem: Начало выполнения действия: ${action} на клетке [${col}, ${row}]`);
-    
-    // ВАЖНО: Проверяем состояние модулей
-    console.log(`🔍 Проверка модулей действий:`);
-    console.log(`   - Доступные модули:`, Object.keys(this.actionModules));
-    console.log(`   - Модуль охоты:`, this.actionModules['hunt']);
-    console.log(`   - Метод execute:`, this.actionModules['hunt']?.execute);
-    
-    if (!this.mapSystem.currentHero) {
-        console.error("❌ Нет текущего героя для совершения действий!");
-        this.showNotification("❌ Нужен герой для совершения действий!", 'error');
-        return;
-    }
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        console.error(`❌ Клетка [${col}, ${row}] не найдена в текущей карте`);
-        this.showNotification("❌ Клетка не найдена!", 'error');
-        return;
-    }
-    
-    if (cell.explored === true) {
-        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
-        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-        return;
-    }
-    
-    // ========== ПЕРВЫЙ ПРИОРИТЕТ: ОХОТА ЧЕРЕЗ МОДУЛЬ ==========
-    if (action === 'hunt') {
-        console.log(`🏹 === ОБРАБОТКА ОХОТЫ ЧЕРЕЗ МОДУЛЬ ===`);
+    async performCellAction(action, row, col) {
+        console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
         
-        // Проверяем и инициализируем модуль если нужно
-        if (!this.actionModules['hunt']) {
-            console.log(`🔄 Модуль охоты не найден, пытаемся инициализировать...`);
-            this.initializeActionModules();
+        // Проверяем состояние модулей
+        this.checkModulesLoaded();
+        
+        // Для охоты - специальная обработка
+        if (action === 'hunt') {
+            console.log(`🏹 === ОБРАБОТКА ОХОТЫ ЧЕРЕЗ МОДУЛЬ ===`);
             
-            // Создаем заглушку если не удалось
+            // Обеспечиваем загрузку модуля охоты
+            const huntModuleLoaded = await this.ensureHuntModuleLoaded();
+            
+            if (!huntModuleLoaded || !this.actionModules['hunt']) {
+                console.error("❌ Не удалось загрузить модуль охоты");
+                this.showNotification("❌ Система охоты не доступна!", 'error');
+                return;
+            }
+            
+            // Проверяем метод execute
+            if (!this.actionModules['hunt'].execute) {
+                console.error("❌ У модуля охоты нет метода execute!");
+                console.log("Модуль:", this.actionModules['hunt']);
+                this.showNotification("❌ Ошибка модуля охоты!", 'error');
+                return;
+            }
+            
+            console.log("✅ Вызываем execute() модуля охоты");
+            
+            try {
+                // Вызываем метод execute модуля охоты
+                return await this.actionModules['hunt'].execute(row, col);
+            } catch (error) {
+                console.error("❌ Ошибка выполнения модуля охоты:", error);
+                this.showNotification("❌ Ошибка системы охоты!", 'error');
+                return;
+            }
+        }
+        
+        // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
+        if (action === 'stealth_movement') {
+            if (!this.mapSystem.isCellReachable(cell)) {
+                console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
+                this.showNotification("❌ Клетка недостижима!", 'warning');
+                return;
+            }
+            this.handleStealthMovement(cell);
+            return;
+        }
+        
+        // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ==========
+        const resourceActions = [
+            'search_treasure', 'search_water', 'search_berries', 
+            'search_mushrooms', 'search_herbs', 'search_ore', 
+            'search_stone', 'gather_wood', 'set_trap'
+        ];
+        
+        if (resourceActions.includes(action)) {
+            console.log(`📊 Показываем вероятности для ${action}`);
+            this.performResourceAction(action, row, col);
+            return;
+        }
+        
+        // ========== СТАНДАРТНАЯ ОБРАБОТКА ОСТАЛЬНЫХ ДЕЙСТВИЙ ==========
+        
+        // Получаем клетку
+        const cellKey = `${col},${row}`;
+        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+        if (!cell) {
+            console.error(`❌ Клетка не найдена`);
+            return;
+        }
+        
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (actionsContainer) {
+            const config = this.actionConfigs[action] || {
+                icon: '⚡',
+                name: action.replace(/_/g, ' '),
+                description: 'Выполняется действие...'
+            };
+            const chance = this.getActionChance(action, this.currentCellType);
+            
+            actionsContainer.innerHTML = `
+                <div class="action-processing">
+                    <div class="processing-icon">${config.icon || '⚡'}</div>
+                    <h4>Выполняется действие...</h4>
+                    <p>${config.name} на клетке [${col}, ${row}]</p>
+                    <div class="chance-display-processing">
+                        <span class="chance-label">Шанс успеха:</span>
+                        <span class="chance-value">${chance}%</span>
+                    </div>
+                    <div class="processing-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
+                </div>
+            `;
+            
             setTimeout(() => {
-                if (!this.actionModules['hunt']) {
-                    console.log(`🔄 Создаем заглушку...`);
-                    this.createHuntActionStub();
+                const progressFill = actionsContainer.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = '100%';
+                }
+            }, 50);
+        }
+        
+        // Имитация выполнения действия с задержкой
+        setTimeout(() => {
+            const chance = this.getActionChance(action, this.currentCellType);
+            const roll = Math.random() * 100;
+            const success = roll <= chance;
+            
+            console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+            
+            if (success) {
+                this.handleActionSuccess(action, row, col);
+            } else {
+                const cellTypeData = this.cellTypes[this.currentCellType];
+                
+                let monsterChance = cellTypeData?.failure_monster_chance || 50;
+                
+                const config = this.actionConfigs[action];
+                if (config && config.triggers_monster) {
+                    monsterChance *= (config.monster_level_multiplier || 1);
                 }
                 
-                // Пробуем снова
-                if (this.actionModules['hunt'] && this.actionModules['hunt'].execute) {
-                    console.log(`✅ Вызываем execute() через таймаут`);
-                    return this.actionModules['hunt'].execute(row, col);
+                const monsterRoll = Math.random() * 100;
+                
+                if (monsterRoll <= monsterChance) {
+                    console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
+                    this.handleActionFailureWithMonster(action, row, col, cellTypeData);
                 } else {
-                    console.error(`❌ Модуль охоты все еще не доступен`);
-                    this.showNotification("❌ Система охоты не доступна!", 'error');
-                    return;
+                    this.handleActionFailure(action);
                 }
-            }, 100);
-            return;
-        }
-        
-        // Проверяем метод execute
-        if (!this.actionModules['hunt'].execute) {
-            console.error(`❌ У модуля охоты нет метода execute!`);
-            console.log(`Модуль:`, this.actionModules['hunt']);
-            this.showNotification("❌ Ошибка модуля охоты!", 'error');
-            return;
-        }
-        
-        console.log(`✅ Вызываем execute() модуля охоты`);
-        try {
-            return this.actionModules['hunt'].execute(row, col);
-        } catch (error) {
-            console.error(`❌ Ошибка выполнения модуля охоты:`, error);
-            this.showNotification("❌ Ошибка системы охоты!", 'error');
-            return;
-        }
-    }
-    
-    // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
-    if (action === 'stealth_movement') {
-        if (!this.mapSystem.isCellReachable(cell)) {
-            console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
-            this.showNotification("❌ Клетка недостижима!", 'warning');
-            return;
-        }
-        this.handleStealthMovement(cell);
-        return;
-    }
-    
-    // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ==========
-    const resourceActions = [
-        'search_treasure', 'search_water', 'search_berries', 
-        'search_mushrooms', 'search_herbs', 'search_ore', 
-        'search_stone', 'gather_wood', 'set_trap'
-    ];
-    
-    if (resourceActions.includes(action)) {
-        console.log(`📊 Показываем вероятности для ${action}`);
-        this.performResourceAction(action, row, col);
-        return;
-    }
-    
-    // ========== СТАНДАРТНАЯ ОБРАБОТКА ОСТАЛЬНЫХ ДЕЙСТВИЙ ==========
-    
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (actionsContainer) {
-        const config = this.actionConfigs[action] || {
-            icon: '⚡',
-            name: action.replace(/_/g, ' '),
-            description: 'Выполняется действие...'
-        };
-        const chance = this.getActionChance(action, this.currentCellType);
-        
-        actionsContainer.innerHTML = `
-            <div class="action-processing">
-                <div class="processing-icon">${config.icon || '⚡'}</div>
-                <h4>Выполняется действие...</h4>
-                <p>${config.name} на клетке [${col}, ${row}]</p>
-                <div class="chance-display-processing">
-                    <span class="chance-label">Шанс успеха:</span>
-                    <span class="chance-value">${chance}%</span>
-                </div>
-                <div class="processing-progress">
-                    <div class="progress-bar">
-                        <div class="progress-fill"></div>
-                    </div>
-                </div>
-                <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
-            </div>
-        `;
-        
-        setTimeout(() => {
-            const progressFill = actionsContainer.querySelector('.progress-fill');
-            if (progressFill) {
-                progressFill.style.width = '100%';
-            }
-        }, 50);
-    }
-    
-    // Имитация выполнения действия с задержкой
-    setTimeout(() => {
-        const chance = this.getActionChance(action, this.currentCellType);
-        const roll = Math.random() * 100;
-        const success = roll <= chance;
-        
-        console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
-        
-        if (success) {
-            this.handleActionSuccess(action, row, col);
-        } else {
-            const cellTypeData = this.cellTypes[this.currentCellType];
-            
-            let monsterChance = cellTypeData?.failure_monster_chance || 50;
-            
-            const config = this.actionConfigs[action];
-            if (config && config.triggers_monster) {
-                monsterChance *= (config.monster_level_multiplier || 1);
             }
             
-            const monsterRoll = Math.random() * 100;
+            // Обновляем интерфейс клетки после завершения действия
+            setTimeout(() => {
+                if (cell && !cell.explored) {
+                    this.updateCellActionsUI(cell);
+                }
+            }, 1000);
             
-            if (monsterRoll <= monsterChance) {
-                console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
-                this.handleActionFailureWithMonster(action, row, col, cellTypeData);
-            } else {
-                this.handleActionFailure(action);
-            }
-        }
-        
-        // Обновляем интерфейс клетки после завершения действия
-        setTimeout(() => {
-            if (cell && !cell.explored) {
-                this.updateCellActionsUI(cell);
-            }
-        }, 1000);
-        
-    }, 800);
-}
+        }, 800);
+    }
 
     handleHuntActionSuccess(row, col) {
         console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
