@@ -1997,38 +1997,88 @@ async ensureHuntModuleLoaded() {
         });
     }
 
-    async performCellAction(action, row, col) {
+      async performCellAction(action, row, col) {
         console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
         
-        // Проверяем состояние модулей
-        this.checkModulesLoaded();
-        
-        // Для охоты - специальная обработка
+        // ========== ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ==========
         if (action === 'hunt') {
-            console.log(`🏹 === ОБРАБОТКА ОХОТЫ ЧЕРЕЗ МОДУЛЬ ===`);
+            console.log(`🏹 === ОБРАБОТКА ОХОТЫ ===`);
             
-            // Обеспечиваем загрузку модуля охоты
-            const huntModuleLoaded = await this.ensureHuntModuleLoaded();
+            // 1. Диагностика
+            console.log("🔍 Запускаем диагностику модуля охоты...");
+            const diagnosis = await this.diagnoseHuntModule();
+            console.log("Диагностика:", diagnosis);
             
-            if (!huntModuleLoaded || !this.actionModules['hunt']) {
-                console.error("❌ Не удалось загрузить модуль охоты");
+            // 2. Если модуль не имеет метода showHuntTargetSelection, исправляем
+            if (!diagnosis.hasShowHuntMethod) {
+                console.log("⚠️ У модуля нет метода showHuntTargetSelection!");
+                console.log("Пытаемся исправить автоматически...");
+                
+                const fixed = await this.forceFixHuntModule();
+                if (!fixed) {
+                    console.error("❌ Не удалось исправить модуль");
+                    this.showNotification("❌ Ошибка модуля охоты!", 'error');
+                    return;
+                }
+                
+                // Проверяем еще раз
+                const newDiagnosis = await this.diagnoseHuntModule();
+                if (!newDiagnosis.hasShowHuntMethod) {
+                    console.error("❌ Модуль все еще не исправлен");
+                    this.showNotification("⚠️ Используется заглушка охоты", 'warning');
+                }
+            }
+            
+            // 3. Получаем модуль
+            const huntModule = this.actionModules['hunt'];
+            if (!huntModule) {
+                console.error("❌ Модуль охоты не найден");
                 this.showNotification("❌ Система охоты не доступна!", 'error');
                 return;
             }
             
-            // Проверяем метод execute
-            if (!this.actionModules['hunt'].execute) {
-                console.error("❌ У модуля охоты нет метода execute!");
-                console.log("Модуль:", this.actionModules['hunt']);
+            console.log("✅ Модуль охоты найден:", huntModule);
+            
+            // 4. Проверяем метод execute
+            if (typeof huntModule.execute !== 'function') {
+                console.error("❌ У модуля нет метода execute!");
                 this.showNotification("❌ Ошибка модуля охоты!", 'error');
                 return;
             }
             
-            console.log("✅ Вызываем execute() модуля охоты");
+            // 5. Получаем клетку для проверки
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+            
+            if (!cell) {
+                console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+                this.showNotification("❌ Клетка не найдена!", 'error');
+                return;
+            }
+            
+            if (cell.explored === true) {
+                console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                return;
+            }
+            
+            // 6. Проверяем, достижима ли клетка
+            const isReachable = this.mapSystem.isCellReachable(cell);
+            if (!isReachable) {
+                console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+                this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
+                return;
+            }
+            
+            // 7. Вызываем execute модуля охоты
+            console.log(`✅ Вызываем huntModule.execute(${row}, ${col})`);
+            console.log("   - Модуль:", huntModule);
+            console.log("   - Метод execute:", huntModule.execute);
+            console.log("   - Контекст:", this);
             
             try {
-                // Вызываем метод execute модуля охоты
-                return await this.actionModules['hunt'].execute(row, col);
+                // Привязываем правильный контекст
+                return await huntModule.execute(row, col);
             } catch (error) {
                 console.error("❌ Ошибка выполнения модуля охоты:", error);
                 this.showNotification("❌ Ошибка системы охоты!", 'error');
@@ -2038,6 +2088,13 @@ async ensureHuntModuleLoaded() {
         
         // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
         if (action === 'stealth_movement') {
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+            if (!cell) {
+                console.error(`❌ Клетка не найдена`);
+                return;
+            }
+            
             if (!this.mapSystem.isCellReachable(cell)) {
                 console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
                 this.showNotification("❌ Клетка недостижима!", 'warning');
