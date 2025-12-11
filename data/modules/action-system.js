@@ -291,6 +291,70 @@ registerModule(moduleName, moduleInstance) {
     
     console.log("✅ Заглушка модуля охоты создана и зарегистрирована");
 }
+
+
+// ========== ПРОВЕРКА ЗАГРУЗКИ МОДУЛЕЙ ==========
+
+checkModulesLoaded() {
+    console.log("🔍 Проверка загрузки модулей действий:");
+    console.log("   Доступные модули:", Object.keys(this.actionModules));
+    
+    if (!this.actionModules['hunt']) {
+        console.log("❌ Модуль охоты не найден в actionModules");
+        
+        // Проверяем, есть ли глобальный класс HuntAction
+        if (window.HuntAction) {
+            console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
+            this.actionModules['hunt'] = new window.HuntAction(this);
+            return true;
+        } else {
+            console.error("❌ Глобальный класс HuntAction не найден");
+            this.createHuntActionStub();
+            return false;
+        }
+    }
+    
+    console.log("✅ Модуль охоты загружен:", this.actionModules['hunt']);
+    return true;
+}
+
+async ensureHuntModuleLoaded() {
+    if (this.actionModules['hunt']) {
+        console.log("✅ Модуль охоты уже загружен");
+        return true;
+    }
+    
+    console.log("🔄 Обеспечиваем загрузку модуля охоты...");
+    
+    // Сначала пробуем найти глобальный класс
+    if (window.HuntAction) {
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        console.log("✅ Экземпляр HuntAction создан из глобального класса");
+        return true;
+    }
+    
+    // Если нет, пробуем загрузить через loader
+    try {
+        const loader = new ActionModulesLoader(this);
+        const loaded = await loader.loadModule('hunt');
+        
+        if (loaded && window.HuntAction) {
+            this.actionModules['hunt'] = new window.HuntAction(this);
+            console.log("✅ Модуль охоты загружен через loader");
+            return true;
+        }
+    } catch (error) {
+        console.error("❌ Ошибка загрузки модуля охоты:", error);
+    }
+    
+    // В крайнем случае создаем заглушку
+    this.createHuntActionStub();
+    console.log("⚠️ Используется заглушка модуля охоты");
+    return false;
+}
+
+
+    
     // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
 
     async loadCellData() {
