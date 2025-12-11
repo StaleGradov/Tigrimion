@@ -450,35 +450,173 @@ class SafeHeroGame {
         }
     }
 
+
     // ========== НОВЫЙ МЕТОД: Инициализация модулей действий ==========
     async initializeActionModules() {
         console.log("🔄 Инициализация модулей действий...");
         
         try {
-            // Загружаем модуль охоты
+            // Проверяем, что ActionSystem загружена
+            if (!this.systems.action) {
+                console.error("❌ ActionSystem не доступна для инициализации модулей");
+                return false;
+            }
+            
+            console.log("🔍 Проверяем ActionSystem:", {
+                hasActionSystem: !!this.systems.action,
+                actionModules: this.systems.action.actionModules,
+                mapSystem: this.systems.action.mapSystem
+            });
+            
+            // Инициализируем загрузчик модулей действий
             const moduleLoader = new ActionModulesLoader(this.systems.action);
+            console.log("✅ ModuleLoader создан");
             
-            // Загружаем все модули действий (пока только охоту)
-            const modules = ['hunt'];
-            const loaded = await moduleLoader.loadAllModules(modules);
+            // Загружаем модуль охоты
+            console.log("📥 Начинаем загрузку модуля охоты...");
+            const loaded = await moduleLoader.loadModule('hunt');
+            console.log("Результат загрузки модуля охоты:", loaded);
             
-            if (loaded) {
-                console.log("✅ Модули действий загружены");
+            if (loaded && window.HuntAction) {
+                console.log("✅ Модуль охоты загружен, создаем экземпляр...");
                 
-                // Инициализируем загруженные модули
-                if (window.HuntAction && this.systems.action) {
-                    this.systems.action.actionModules['hunt'] = new window.HuntAction(this.systems.action);
-                    console.log("✅ Модуль охоты инициализирован");
-                }
+                // Создаем экземпляр HuntAction и регистрируем его в ActionSystem
+                this.systems.action.actionModules['hunt'] = new window.HuntAction(this.systems.action);
+                console.log("✅ Экземпляр HuntAction создан и зарегистрирован");
+                
+                // Также регистрируем в game.actionModules для прямого доступа
+                this.actionModules['hunt'] = this.systems.action.actionModules['hunt'];
+                
+                // Выводим отладочную информацию
+                this.debugActionModules();
+                
+                return true;
             } else {
-                console.warn("⚠️ Не удалось загрузить модули действий");
+                console.warn("⚠️ Не удалось загрузить модуль охоты через loader");
+                console.log("Пробуем загрузить напрямую...");
+                
+                // Пробуем альтернативные пути
+                const success = await this.loadHuntModuleDirectly();
+                if (success) {
+                    return true;
+                }
+                
+                console.warn("⚠️ Не удалось загрузить модуль охоты, создаем заглушку");
                 this.createActionModuleStubs();
+                return false;
             }
             
         } catch (error) {
             console.error("❌ Ошибка инициализации модулей действий:", error);
             this.createActionModuleStubs();
+            return false;
         }
+    }
+
+
+        // ========== НОВЫЙ МЕТОД: Прямая загрузка модуля охоты ==========
+    async loadHuntModuleDirectly() {
+        try {
+            console.log("🔄 Пытаемся загрузить модуль охоты напрямую...");
+            
+            const modulePaths = [
+                'data/actions/hunt-action.js',
+                'modules/actions/hunt-action.js',
+                'hunt-action.js'
+            ];
+            
+            for (const path of modulePaths) {
+                console.log(`   Пробуем путь: ${path}`);
+                try {
+                    const response = await fetch(path);
+                    if (!response.ok) {
+                        console.log(`   ❌ Не найден: ${path}`);
+                        continue;
+                    }
+                    
+                    const code = await response.text();
+                    console.log(`   ✅ Найден: ${path} (${code.length} байт)`);
+                    
+                    // Загружаем скрипт
+                    const blob = new Blob([code], { type: 'application/javascript' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = url;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                    
+                    URL.revokeObjectURL(url);
+                    
+                    if (window.HuntAction) {
+                        console.log("✅ Класс HuntAction загружен!");
+                        
+                        // Создаем экземпляр
+                        if (this.systems.action) {
+                            this.systems.action.actionModules['hunt'] = new window.HuntAction(this.systems.action);
+                            console.log("✅ Экземпляр HuntAction создан!");
+                            return true;
+                        }
+                    }
+                    
+                } catch (e) {
+                    console.log(`   ❌ Ошибка: ${e.message}`);
+                }
+            }
+            
+            console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
+            return false;
+            
+        } catch (error) {
+            console.error("❌ Ошибка прямой загрузки:", error);
+            return false;
+        }
+    }
+
+    // ========== НОВЫЙ МЕТОД: Отладка модулей действий ==========
+    debugActionModules() {
+        console.group("🔍 Отладка модулей действий (из game.js)");
+        console.log("Game actionModules:", this.actionModules);
+        console.log("ActionSystem actionModules:", this.systems.action?.actionModules);
+        console.log("Hunt module:", this.systems.action?.actionModules['hunt']);
+        
+        if (this.systems.action?.actionModules['hunt']) {
+            const huntModule = this.systems.action.actionModules['hunt'];
+            console.log("Hunt module methods:", Object.getOwnPropertyNames(Object.getPrototypeOf(huntModule)));
+            console.log("Has execute method:", typeof huntModule.execute === 'function');
+            console.log("Hunt module config:", huntModule.config);
+        }
+        
+        console.log("Global HuntAction:", window.HuntAction);
+        console.groupEnd();
+    }
+
+    // ========== НОВЫЙ МЕТОД: Принудительная перезагрузка модулей ==========
+    async reloadActionModules() {
+        console.log("🔄 ПРИНУДИТЕЛЬНАЯ ПЕРЕЗАГРУЗКА МОДУЛЕЙ ДЕЙСТВИЙ");
+        
+        // Удаляем старые модули
+        if (this.systems.action) {
+            delete this.systems.action.actionModules['hunt'];
+        }
+        delete this.actionModules['hunt'];
+        
+        // Удаляем глобальный класс
+        delete window.HuntAction;
+        
+        // Загружаем заново
+        const success = await this.initializeActionModules();
+        
+        if (success) {
+            this.showNotification("✅ Модули действий перезагружены!", 'success');
+        } else {
+            this.showNotification("⚠️ Используется заглушка модуля охоты", 'warning');
+        }
+        
+        return success;
     }
 
     // ========== НОВЫЙ МЕТОД: Создание заглушек для модулей действий ==========
