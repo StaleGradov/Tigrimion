@@ -836,7 +836,7 @@ async ensureHuntModuleLoaded() {
                         </div>
                         
                         <div style="text-align: center; margin-top: 15px;">
-                            <button class="btn-control" onclick="game.systems.action.startTestHunt('${resourceId}', '${monster.id}', '${monster.name}')"
+                            <button class="btn-control" onclick="game.systems.action.startProperHunt('${resourceId}', '${monster.id}', '${monster.name}')">
                                     style="padding: 8px 15px; font-size: 12px;">
                                 🏹 Охотиться на этого
                             </button>
