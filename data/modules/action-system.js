@@ -203,24 +203,8 @@ initializeActionModules() {
     try {
         // Загружаем модуль охоты
         if (!this.actionModules['hunt']) {
-            // Сначала проверяем, есть ли уже загруженный класс HuntAction
-            if (window.HuntAction) {
-                this.actionModules['hunt'] = new window.HuntAction(this);
-                console.log("✅ Модуль охоты создан из глобального класса HuntAction");
-                return true;
-            }
-            
-            // Если нет, пытаемся загрузить
-            const moduleLoader = new ActionModulesLoader(this);
-            moduleLoader.loadModule('hunt').then((success) => {
-                if (success && window.HuntAction && !this.actionModules['hunt']) {
-                    this.actionModules['hunt'] = new window.HuntAction(this);
-                    console.log("✅ Модуль охоты загружен и инициализирован");
-                }
-            }).catch(error => {
-                console.error("❌ Ошибка загрузки модуля охоты:", error);
-                this.createHuntActionStub();
-            });
+            // Пытаемся загрузить модуль напрямую
+            this.loadHuntModuleWithFallback();
         } else {
             console.log("✅ Модуль охоты уже инициализирован");
         }
@@ -232,6 +216,117 @@ initializeActionModules() {
         this.createHuntActionStub();
         return false;
     }
+}
+
+async loadHuntModuleWithFallback() {
+    console.log("🔄 Пытаемся загрузить модуль охоты...");
+    
+    // Проверяем, есть ли уже загруженный класс HuntAction
+    if (window.HuntAction) {
+        console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        return true;
+    }
+    
+    // Если нет, пробуем загрузить через loader
+    try {
+        const loader = new ActionModulesLoader(this);
+        const loaded = await loader.loadModule('hunt');
+        
+        if (loaded && window.HuntAction) {
+            this.actionModules['hunt'] = new window.HuntAction(this);
+            console.log("✅ Модуль охоты загружен через loader");
+            return true;
+        }
+    } catch (error) {
+        console.error("❌ Ошибка загрузки модуля охоты:", error);
+    }
+    
+    // В крайнем случае создаем правильную заглушку
+    this.createProperHuntStub();
+    return false;
+}
+
+createProperHuntStub() {
+    console.log("🔄 Создаем правильную заглушку для модуля охоты");
+    
+    // Используем реальный класс HuntAction если он есть
+    if (window.HuntAction) {
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        console.log("✅ Используем реальный класс HuntAction");
+        return;
+    }
+    
+    // Создаем заглушку с ВСЕМИ методами
+    this.actionModules['hunt'] = {
+        // Конфиг
+        config: {
+            id: 'hunt',
+            icon: '🏹',
+            name: 'Охотиться',
+            description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
+            class: 'action-hunt',
+            resource_type: 'loot',
+            triggers_monster: true,
+            monster_level_multiplier: 1.0,
+            always_monster: true,
+            double_loot: true
+        },
+        
+        // Основные методы
+        execute: (row, col) => {
+            console.log(`🏹 HuntAction.execute(): Начало охоты на [${col},${row}]`);
+            
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+            
+            if (!cell) {
+                this.showNotification("❌ Клетка не найдена!", 'error');
+                return;
+            }
+            
+            if (cell.explored === true) {
+                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                return;
+            }
+            
+            console.log(`✅ Показываем выбор трофея для клетки [${col},${row}]`);
+            this.showNotification("🏹 Начинаем охоту... Выберите трофей", 'info');
+            
+            // Вызываем метод выбора трофея
+            this.actionModules['hunt'].showHuntTargetSelection(cell);
+        },
+        
+        showHuntTargetSelection: (cell) => {
+            console.log(`🎯 Показываем выбор трофея для клетки [${cell.col},${cell.row}]`);
+            this.showTestHuntInterface(cell);
+        },
+        
+        showMonsterSelectionForResource: (resourceId, row, col) => {
+            console.log(`🎯 Показываем выбор монстра для ресурса ${resourceId}`);
+            this.showTestMonsterInterface(resourceId, row, col);
+        },
+        
+        performHuntForMonster: (resourceId, monsterId, row, col) => {
+            console.log(`🏹 Начинаем охоту на монстра ${monsterId} за ресурс ${resourceId}`);
+            
+            const battleSystem = window.game?.systems?.battle;
+            if (!battleSystem) {
+                this.showNotification("❌ Система боя не доступна!", 'error');
+                return;
+            }
+            
+            // Начинаем охоту с тестовым монстром
+            this.startTestHunt(resourceId, monsterId, 'Тестовый монстр');
+        },
+        
+        completeHuntAfterBattle: (victory, escape, doubleLoot = false) => {
+            console.log(`🏹 Заглушка: обработка результата охоты`);
+            this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
+        }
+    };
+    
+    console.log("✅ Правильная заглушка модуля охоты создана");
 }
 
 registerModule(moduleName, moduleInstance) {
