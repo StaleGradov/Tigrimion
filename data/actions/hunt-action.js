@@ -383,7 +383,6 @@ startSimpleHunt() {
 }
 
     // ========== ВЫБОР ЦЕЛИ ОХОТЫ ==========
-
 showHuntTargetSelection(cell) {
     console.log("🎯 Показываем выбор трофея для охоты");
     
@@ -405,79 +404,72 @@ showHuntTargetSelection(cell) {
     
     // Используем реальные ресурсы из ActionSystem
     const huntableResources = this.groupRealHuntResources();
+
     
-}
+    let html = `
+        <div class="hunt-target-selection">
+            <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                🏹 Выберите желаемый трофей для охоты
+            </h3>
+            
+            <div class="hunt-info" style="background: rgba(255, 100, 100, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff4444;">
+                <strong>⚠️ Особенности охоты:</strong>
+                <p style="margin-top: 8px; font-size: 14px; color: #ffcccc;">
+                    • Выберите трофей, который хотите добыть<br>
+                    • Затем увидите монстров, у которых падает этот ресурс<br>
+                    • Охота всегда приводит к бою с выбранным монстром<br>
+                    • После победы вы получите выбранный трофей
+                </p>
+            </div>
+            
+            <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <strong>Базовая вероятность успеха:</strong> 
+                <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
+                    ${baseChance}%
+                </span>
+            </div>
+            
+            <div class="hunt-categories">
+    `;
+    
+    const huntCategories = ['bones', 'leathers', 'hides', 'furs'];
+    
+    huntCategories.forEach(category => {
+        const categoryData = huntableResources[category];
+        if (!categoryData || categoryData.resources.length === 0) return;
         
-        let html = `
-            <div class="hunt-target-selection">
-                <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
-                    🏹 Выберите желаемый трофей для охоты
-                </h3>
-                
-                <div class="hunt-info" style="background: rgba(255, 100, 100, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff4444;">
-                    <strong>⚠️ Особенности охоты:</strong>
-                    <p style="margin-top: 8px; font-size: 14px; color: #ffcccc;">
-                        • Выберите трофей, который хотите добыть<br>
-                        • Затем увидите монстров, у которых падает этот ресурс<br>
-                        • Охота всегда приводит к бою с выбранным монстром<br>
-                        • После победы вы получите выбранный трофей
-                    </p>
-                </div>
-                
-                <div class="base-chance-info" style="background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                    <strong>Базовая вероятность успеха:</strong> 
-                    <span style="color: ${baseChance >= 70 ? '#44ff44' : baseChance >= 40 ? '#ffaa00' : '#ff4444'}">
-                        ${baseChance}%
-                    </span>
-                </div>
-                
-                <div class="hunt-categories">
+        const categoryNames = {
+            'bones': '🦴 Кости',
+            'leathers': '🐂 Кожи',
+            'hides': '🐅 Шкуры',
+            'furs': '🦊 Меха'
+        };
+        
+        html += `
+            <div class="hunt-category">
+                <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
+                    ${categoryNames[category] || category}
+                </h4>
+                <div class="hunt-targets-grid">
         `;
         
-        const huntCategories = ['bones', 'leathers', 'hides', 'furs'];
-        
-        huntCategories.forEach(category => {
-            const categoryData = huntableResources[category];
-            if (!categoryData || categoryData.resources.length === 0) return;
-            
-            const categoryNames = {
-                'bones': '🦴 Кости',
-                'leathers': '🐂 Кожи',
-                'hides': '🐅 Шкуры',
-                'furs': '🦊 Меха'
-            };
+        categoryData.resources.forEach(resource => {
+            const monstersWithResource = this.getMonstersWithResource(resource.id);
+            const monsterCount = monstersWithResource.length;
             
             html += `
-                <div class="hunt-category">
-                    <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
-                        ${categoryNames[category] || category}
-                    </h4>
-                    <div class="hunt-targets-grid">
-            `;
-            
-            categoryData.resources.forEach(resource => {
-                const monstersWithResource = this.getMonstersWithResource(resource.id);
-                const monsterCount = monstersWithResource.length;
-                
-                html += `
-                    <div class="hunt-target-item" onclick="window.game.systems.action.actionModules.hunt.showMonsterSelectionForResource('${resource.id}', ${cell.row}, ${cell.col})">
-                        <div class="hunt-target-name" style="font-size: 16px; margin-bottom: 5px;">
-                            ${resource.name}
-                        </div>
-                        <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
-                            ${resource.description}
-                        </div>
-                        <div class="monster-count" style="font-size: 10px; color: #888; margin-top: 5px;">
-                            🎯 Монстров с этим трофеем: <strong>${monsterCount}</strong>
-                        </div>
-                        <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b; margin-top: 8px;">
-                            Цена: ${resource.price || resource.value || 10} золота
-                        </div>
+                <div class="hunt-target-item" onclick="window.game.systems.action.actionModules.hunt.showMonsterSelectionForResource('${resource.id}', ${cell.row}, ${cell.col})">
+                    <div class="hunt-target-name" style="font-size: 16px; margin-bottom: 5px;">
+                        ${resource.name}
                     </div>
-                `;
-            });
-            
-            html += `
+                    <div class="hunt-target-description" style="font-size: 11px; color: #aaa; margin: 5px 0;">
+                        ${resource.description}
+                    </div>
+                    <div class="monster-count" style="font-size: 10px; color: #888; margin-top: 5px;">
+                        🎯 Монстров с этим трофеем: <strong>${monsterCount}</strong>
+                    </div>
+                    <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b; margin-top: 8px;">
+                        Цена: ${resource.price || resource.value || 10} золота
                     </div>
                 </div>
             `;
@@ -485,18 +477,24 @@ showHuntTargetSelection(cell) {
         
         html += `
                 </div>
-                
-                <button class="btn-control" onclick="window.game.systems.action.updateCellActionsUI(this.selectedCell)" 
-                        style="margin-top: 20px; width: 100%;">
-                    ↩️ Назад к действиям
-                </button>
             </div>
         `;
-        
-        actionsContainer.innerHTML = html;
-        
-        this.styleHuntTargetSelection();
-    }
+    });
+    
+    html += `
+            </div>
+            
+            <button class="btn-control" onclick="window.game.systems.action.updateCellActionsUI(this.selectedCell)" 
+                    style="margin-top: 20px; width: 100%;">
+                ↩️ Назад к действиям
+            </button>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = html;
+    
+    this.styleHuntTargetSelection();
+}
 
     showMonsterSelectionForResource(resourceId, row, col) {
         const resource = this.findResourceById(resourceId);
