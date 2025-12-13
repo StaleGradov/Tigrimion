@@ -15,9 +15,7 @@ class ModuleLoader {
             'action-system',
             'shop-system',
             'resources-system',
-            'crafting-system',
-            // ========== ДОБАВИТЬ: Загрузчик модулей действий ==========
-            'action-modules-loader'
+            'crafting-system'
         ];
     }
 
@@ -157,8 +155,7 @@ class ModuleLoader {
             'equipment-system': 'EquipmentSystem',
             'hero-system': 'HeroSystem',
             'shop-system': 'ShopSystem',
-            'resources-system': 'ResourcesSystem',
-            'action-modules-loader': 'ActionModulesLoader'
+            'resources-system': 'ResourcesSystem'
         };
         
         const className = classMap[moduleName];
@@ -187,8 +184,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem',
-            'action-modules-loader': 'ActionModulesLoader'
+            'crafting-system': 'CraftingSystem'
+
         };
         return typeof window[classMap[moduleName]] !== 'undefined';
     }
@@ -204,8 +201,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem',
-            'action-modules-loader': 'ActionModulesLoader'
+            'crafting-system': 'CraftingSystem'
+
         };
         return classMap[moduleName] || moduleName;
     }
