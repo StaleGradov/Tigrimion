@@ -1,3 +1,17 @@
+// ========== ПРЕДВАРИТЕЛЬНАЯ РЕГИСТРАЦИЯ ДЛЯ ЗАГРУЗЧИКА ==========
+if (typeof window !== 'undefined') {
+    if (!window.ActionSystem) {
+        window.ActionSystem = class ActionSystemPlaceholder {
+            constructor(mapSystem) {
+                console.log("📦 ActionSystemPlaceholder создан для загрузчика");
+                this.mapSystem = mapSystem;
+            }
+            init() { return Promise.resolve(true); }
+        };
+        console.log("✅ ActionSystem предварительно зарегистрирован");
+    }
+}
+
 "use strict";
 
 class ActionSystem {
@@ -3176,5 +3190,4 @@ startHuntBattle(resourceId, monsterId, row, col) {
     }
 }
 
-window.ActionSystem = ActionSystem;
-console.log("📦 ActionSystem модуль загружен");
+
