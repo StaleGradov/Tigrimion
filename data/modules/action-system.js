@@ -232,38 +232,46 @@ class ActionSystem {
         }
     }
 
-    async loadHuntModuleWithFallback() {
-        console.log("🔄 Пытаемся загрузить модуль охоты...");
-        
-        // Проверяем, есть ли уже загруженный класс HuntAction
-        if (window.HuntAction) {
-            console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
-            this.actionModules['hunt'] = new window.HuntAction(this);
-            return true;
-        }
-        
-        // Если нет, пробуем загрузить через loader (если он есть)
-        try {
-            if (window.ActionModulesLoader) {
-                const loader = new ActionModulesLoader(this);
-                const loaded = await loader.loadModule('hunt');
-                
-                if (loaded && window.HuntAction) {
-                    this.actionModules['hunt'] = new window.HuntAction(this);
-                    console.log("✅ Модуль охоты загружен через loader");
-                    return true;
-                }
-            }
-        } catch (error) {
-            console.error("❌ Ошибка загрузки модуля охоты через loader:", error);
-        }
-        
-        // В крайнем случае создаем простую заглушку
-        this.createHuntActionStub();
-        return false;
+  async loadHuntModuleWithFallback() {
+    console.log("🔄 Пытаемся загрузить модуль охоты...");
+    
+    // Если уже есть нормальный модуль, не перезагружаем
+    if (this.actionModules['hunt'] && this.actionModules['hunt'].showHuntTargetSelection) {
+        console.log("✅ Настоящий модуль охоты уже загружен");
+        return true;
     }
-
-    // УДАЛЕН ПРОБЛЕМНЫЙ МЕТОД createProperHuntStub() - он больше не нужен
+    
+    // 1. Пробуем загрузить класс HuntAction
+    if (window.HuntAction) {
+        console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        return true;
+    }
+    
+    // 2. Пробуем загрузить файл
+    console.log("🔄 Загружаем файл hunt-action.js...");
+    try {
+        const response = await fetch('data/actions/hunt-action.js');
+        if (response.ok) {
+            const code = await response.text();
+            // Выполняем код
+            eval(code);
+            
+            if (window.HuntAction) {
+                this.actionModules['hunt'] = new window.HuntAction(this);
+                console.log("✅ Модуль охоты загружен из файла");
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error("❌ Ошибка загрузки модуля охоты:", error);
+    }
+    
+    // 3. В крайнем случае создаем заглушку
+    console.log("⚠️ Не удалось загрузить модуль, создаем заглушку");
+    this.createHuntActionStub();
+    return false;
+}
 
     registerModule(moduleName, moduleInstance) {
         this.actionModules[moduleName] = moduleInstance;
