@@ -563,55 +563,94 @@ async ensureHuntModuleLoaded() {
 
     // ========== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ==========
 
-  async forceFixHuntModule() {
-    console.log("🛠️ ForceFix: Пробуем загрузить реальный модуль охоты");
+ async forceFixHuntModule() {
+    console.log("🛠️ ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ОХОТЫ");
     
-    try {
-        // Пробуем загрузить реальный файл
-        const response = await fetch('data/actions/hunt-action.js');
-        if (!response.ok) {
-            throw new Error("Файл не найден");
-        }
+    // 1. Получаем диагностику
+    const diagnosis = await this.diagnoseHuntModule();
+    console.log("Текущая диагностика:", diagnosis);
+    
+    // 2. Если модуль вообще не существует
+    if (!diagnosis.moduleExists) {
+        console.log("❌ Модуль охоты не существует, создаем...");
         
-        const moduleCode = await response.text();
-        console.log("✅ Файл hunt-action.js найден, размер:", moduleCode.length);
-        
-        // Загружаем скрипт
-        const script = document.createElement('script');
-        script.textContent = moduleCode;
-        document.head.appendChild(script);
-        
-        // Ждем загрузки
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        if (window.HuntAction) {
-            console.log("✅ Реальный HuntAction загружен!");
-            this.actionModules['hunt'] = new window.HuntAction(this);
+        // Пробуем загрузить файл
+        const loaded = await this.loadHuntModuleWithFallback();
+        if (loaded) {
+            console.log("✅ Модуль создан после загрузки файла");
             return true;
+        } else {
+            console.log("⚠️ Не удалось загрузить, создаем заглушку");
+            this.createHuntActionStub();
+            return false;
         }
-    } catch (error) {
-        console.error("❌ Не удалось загрузить реальный модуль:", error);
     }
     
-    // Если не удалось - используем правильную заглушку
-    this.actionModules['hunt'] = {
-        execute: (row, col) => {
-            console.log(`🏹 Заглушка: Начало охоты на [${col},${row}]`);
-            
-            // ПОКАЗЫВАЕМ РЕАЛЬНЫЕ РЕСУРСЫ, а не тестовые!
-            const cellKey = `${col},${row}`;
-            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-            
-            if (cell) {
-                // Показываем интерфейс с реальными ресурсами
-                this.showRealResourceSelection(cell);
-            }
+    // 3. Если модуль есть, но нет нужных методов
+    else if (!diagnosis.hasShowHuntMethod) {
+        console.log("⚠️ У модуля нет метода showHuntTargetSelection, заменяем...");
+        
+        // Удаляем старый модуль
+        delete this.actionModules['hunt'];
+        
+        // Пробуем загрузить реальный модуль
+        const loaded = await this.loadHuntModuleWithFallback();
+        if (loaded) {
+            console.log("✅ Реальный модуль загружен");
+            return true;
         }
-    };
+        
+        // Если не удалось - создаем минимальную заглушку
+        this.actionModules['hunt'] = {
+            execute: (row, col) => {
+                console.log(`🏹 Заглушка: охота на [${col},${row}]`);
+                this.showNotification("⚠️ Модуль охоты в процессе загрузки", 'warning');
+            }
+        };
+        
+        console.log("✅ Создана минимальная заглушка");
+        return false;
+    }
     
-    return false;
+    // 4. Если все ок
+    else {
+        console.log("✅ Модуль охоты в порядке");
+        return true;
+    }
 }
 
+
+
+async loadHuntModuleWithFallback() {
+    console.log("🔄 Пытаемся загрузить модуль охоты...");
+    
+    // Проверяем, есть ли уже загруженный класс HuntAction
+    if (window.HuntAction) {
+        console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        return true;
+    }
+    
+    // Если нет, пробуем загрузить через loader
+    try {
+        if (window.ActionModulesLoader) {
+            const loader = new ActionModulesLoader(this);
+            const loaded = await loader.loadModule('hunt');
+            
+            if (loaded && window.HuntAction) {
+                this.actionModules['hunt'] = new window.HuntAction(this);
+                console.log("✅ Модуль охоты загружен через loader");
+                return true;
+            }
+        }
+    } catch (error) {
+        console.error("❌ Ошибка загрузки модуля охоты:", error);
+    }
+    
+    console.log("⚠️ Не удалось загрузить модуль охоты");
+    return false;
+}
+    
 // Добавить метод для показа реальных ресурсов
 showRealResourceSelection(cell) {
     const actionsContainer = document.getElementById('cellActionsContainer');
