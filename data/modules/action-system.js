@@ -273,34 +273,60 @@ createProperHuntStub() {
             double_loot: true
         },
         
-        // Основные методы
-        execute: (row, col) => {
-            console.log(`🏹 HuntAction.execute(): Начало охоты на [${col},${row}]`);
+                  execute(row, col) {
+                    console.log(`🏹 CorrectHuntModule.execute() на [${col},${row}]`);
+                    
+                    // Получаем клетку
+                    const cellKey = `${col},${row}`;
+                    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+                    
+                    if (cell) {
+                        this.showHuntTargetSelection(cell);
+                    } else {
+                        console.error("❌ Клетка не найдена");
+                        this.actionSystem.showNotification("❌ Клетка не найдена", 'error');
+                    }
+                }
+                
+                showHuntTargetSelection(cell) {
+                    console.log(`🎯 Показываем выбор трофея для клетки [${cell.col},${cell.row}]`);
+                    
+                    // Показываем тестовый интерфейс
+                    const actionsContainer = document.getElementById('cellActionsContainer');
+                    if (actionsContainer) {
+                        actionsContainer.innerHTML = `
+                            <div class="hunt-target-selection">
+                                <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
+                                    🏹 ВЫБОР ТРОФЕЯ ДЛЯ ОХОТЫ
+                                </h3>
+                                <div style="text-align: center; padding: 20px;">
+                                    <p>✅ Исправленный модуль охоты работает!</p>
+                                    <p>Сначала выбирается трофей, затем монстр</p>
+                                    <button class="btn-control" onclick="game.systems.action.testHuntSelection()">
+                                        🎯 Тест выбора трофея
+                                    </button>
+                                    <div style="margin-top: 15px; color: #aaa; font-size: 12px;">
+                                        Это исправленная версия модуля
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            };
             
-            const cellKey = `${col},${row}`;
-            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-            
-            if (!cell) {
-                this.showNotification("❌ Клетка не найдена!", 'error');
-                return;
-            }
-            
-            if (cell.explored === true) {
-                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-                return;
-            }
-            
-            console.log(`✅ Показываем выбор трофея для клетки [${col},${row}]`);
-            this.showNotification("🏹 Начинаем охоту... Выберите трофей", 'info');
-            
-            // Вызываем метод выбора трофея
-            this.actionModules['hunt'].showHuntTargetSelection(cell);
-        },
+            // Заменяем модуль
+            this.actionModules['hunt'] = new CorrectHuntModule(this);
+            console.log("✅ Модуль заменен на исправленный");
+            return true;
+        }
         
-        showHuntTargetSelection: (cell) => {
-            console.log(`🎯 Показываем выбор трофея для клетки [${cell.col},${cell.row}]`);
-            this.showTestHuntInterface(cell);
-        },
+        // 4. Если все ок
+        else {
+            console.log("✅ Модуль охоты в порядке");
+            return true;
+        }
+    }
         
         showMonsterSelectionForResource: (resourceId, row, col) => {
             console.log(`🎯 Показываем выбор монстра для ресурса ${resourceId}`);
