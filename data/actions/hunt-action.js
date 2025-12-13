@@ -26,26 +26,127 @@ class HuntAction {
 
 execute(row, col) {
     console.log(`🏹 HuntAction.execute(): Начало охоты на [${col},${row}]`);
+    console.log("=== ДИАГНОСТИКА СИСТЕМЫ ===");
     
-    // Проверяем загрузку модуля
+    // ========== ОТЛАДОЧНАЯ ИНФОРМАЦИЯ ==========
+    console.log("🔍 1. Проверка ActionSystem и ресурсов:");
+    console.log("   - this.actionSystem:", this.actionSystem ? "✅" : "❌");
+    console.log("   - this.actionSystem.resources:", this.actionSystem?.resources ? "✅" : "❌");
+    
+    if (this.actionSystem?.resources) {
+        console.log("   📊 Ресурсы в ActionSystem:");
+        const resourceCategories = ['bones', 'leathers', 'hides', 'furs', 'herbs', 'berries', 'mushrooms', 'woods', 'stones', 'ores'];
+        resourceCategories.forEach(category => {
+            const count = this.actionSystem.resources[category]?.length || 0;
+            if (count > 0) {
+                console.log(`     ${category}: ${count} шт.`);
+                if (category === 'bones' && count > 0) {
+                    console.log(`       Примеры: ${this.actionSystem.resources[category].slice(0, 3).map(r => r.name).join(', ')}`);
+                }
+            }
+        });
+    }
+    
+    console.log("🔍 2. Проверка BattleSystem и монстров:");
+    const battleSystem = window.game?.systems?.battle;
+    console.log("   - battleSystem:", battleSystem ? "✅" : "❌");
+    console.log("   - battleSystem.monsters:", battleSystem?.monsters?.length || 0, "шт.");
+    
+    if (battleSystem?.monsters && battleSystem.monsters.length > 0) {
+        console.log("   📊 Примеры монстров и их лут:");
+        const sampleMonsters = battleSystem.monsters.slice(0, 5);
+        sampleMonsters.forEach(monster => {
+            if (monster.loot?.guaranteed) {
+                const lootList = monster.loot.guaranteed.map(l => `${l.id}×${l.quantity}`).join(', ');
+                console.log(`     ${monster.name} (ID:${monster.id}): ${lootList}`);
+            } else {
+                console.log(`     ${monster.name}: ❌ Нет гарантированного лута`);
+            }
+        });
+        
+        // Проверяем связь ресурсов и монстров
+        console.log("   🔗 Проверка связи монстров с ресурсами:");
+        const testResources = ['wolf_bone', 'strong_hide', 'hare_fur'];
+        testResources.forEach(resourceId => {
+            const monstersWithResource = battleSystem.monsters.filter(m => 
+                m.loot?.guaranteed?.some(l => l.id === resourceId)
+            );
+            console.log(`     Ресурс "${resourceId}": ${monstersWithResource.length} монстров`);
+        });
+    }
+    
+    console.log("🔍 3. Проверка MapSystem:");
+    console.log("   - this.mapSystem:", this.mapSystem ? "✅" : "❌");
+    console.log("   - currentTacticalMap:", this.mapSystem?.currentTacticalMap ? "✅" : "❌");
+    
+    console.log("🔍 4. Проверка текущего героя:");
+    console.log("   - currentHero:", this.mapSystem?.currentHero ? "✅" : "❌");
+    console.log("   - Имя героя:", this.mapSystem?.currentHero?.name || "неизвестно");
+    
+    console.log("🔍 5. Проверка клетки:");
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem?.currentTacticalMap?.cells[cellKey];
+    console.log("   - Клетка:", cell ? `[${col},${row}] ✅` : "❌ не найдена");
+    console.log("   - Тип клетки:", cell?.type || "неизвестно");
+    console.log("   - Исследована:", cell?.explored || false);
+    
+    console.log("=== КОНЕЦ ДИАГНОСТИКИ ===");
+    
+    // ========== ОСНОВНАЯ ПРОВЕРКА ==========
+    
+    // Если нет ресурсов в ActionSystem, пробуем их загрузить
+    if (!this.actionSystem?.resources || Object.keys(this.actionSystem.resources).length === 0) {
+        console.warn("⚠️ ActionSystem не имеет ресурсов, пробуем загрузить...");
+        
+        // Пробуем получить ресурсы через game.systems.action
+        const mainActionSystem = window.game?.systems?.action;
+        if (mainActionSystem?.resources) {
+            console.log("✅ Нашли ресурсы в game.systems.action, копируем...");
+            this.actionSystem.resources = mainActionSystem.resources;
+        } else if (mainActionSystem?.loadCellData) {
+            console.log("🔄 Пробуем загрузить данные...");
+            try {
+                // Пробуем вызвать асинхронную загрузку
+                mainActionSystem.loadCellData().then(() => {
+                    console.log("✅ Данные перезагружены");
+                    this.actionSystem.resources = mainActionSystem.resources;
+                    this.continueHuntExecution(row, col, cell);
+                }).catch(error => {
+                    console.error("❌ Ошибка загрузки данных:", error);
+                    this.showNotification("❌ Не удалось загрузить данные для охоты", 'error');
+                });
+                return; // Выходим, так как загрузка асинхронная
+            } catch (error) {
+                console.error("❌ Ошибка при попытке загрузки:", error);
+            }
+        }
+    }
+    
+    // Выполняем охоту
+    this.continueHuntExecution(row, col, cell);
+}
+
+// Вспомогательный метод для продолжения выполнения после проверок
+continueHuntExecution(row, col, cell) {
+    console.log("🔄 Продолжаем выполнение охоты...");
+    
     if (!this.verifyModuleSetup()) {
         this.showNotification("❌ Модуль охоты не готов!", 'error');
         return;
     }
     
-    // Проверяем базовые условия
     if (!this.verifyBasicConditions(row, col)) {
         return;
     }
     
-    // Получаем клетку
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap.cells[cellKey];
-    
     if (!cell) {
-        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
-        this.showNotification("❌ Клетка не найдена!", 'error');
-        return;
+        const cellKey = `${col},${row}`;
+        cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+        if (!cell) {
+            console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+            this.showNotification("❌ Клетка не найдена!", 'error');
+            return;
+        }
     }
     
     if (cell.explored === true) {
@@ -53,24 +154,28 @@ execute(row, col) {
         return;
     }
     
-    // Проверяем, достижима ли клетка
     const isReachable = this.mapSystem.isCellReachable(cell);
     if (!isReachable) {
         this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
         return;
     }
     
-    // Определяем тип клетки
     const cellType = this.actionSystem.determineCellType(cell);
     console.log(`🔍 Тип клетки [${col},${row}]: ${cellType}`);
     
-    // Сохраняем информацию
+    // Проверяем наличие реальных охотничьих ресурсов
+    const hasHuntResources = this.checkRealHuntResources();
+    if (!hasHuntResources) {
+        console.warn("⚠️ Нет охотничьих ресурсов, показываем простой интерфейс");
+        this.showSimpleHuntInterface(cell);
+        return;
+    }
+    
     this.currentCell = cell;
     this.currentCellRow = row;
     this.currentCellCol = col;
     this.currentCellType = cellType;
     
-    // ВАЖНО: Показываем выбор трофея, а не сразу бой!
     console.log(`✅ Вызываем showHuntTargetSelection() для клетки [${col},${row}]`);
     this.showHuntTargetSelection(cell);
     
@@ -119,33 +224,47 @@ verifyBasicConditions(row, col) {
     return true;
 }
 
-async verifyResourcesLoaded() {
-    if (!this.actionSystem.resources || Object.keys(this.actionSystem.resources).length === 0) {
-        console.warn("⚠️ Ресурсы не загружены, пробуем загрузить...");
-        
-        try {
-            await this.actionSystem.loadCellData();
-            console.log("✅ Ресурсы загружены");
-        } catch (error) {
-            console.error("❌ Не удалось загрузить ресурсы:", error);
-        }
-    }
+verifyResourcesLoaded() {
+    console.log("🔍 Проверка охотничьих ресурсов...");
     
-    // Проверяем наличие охотничьих ресурсов
-    const huntResources = ['bones', 'leathers', 'hides', 'furs'];
-    let hasHuntResources = false;
+    // Проверяем, есть ли охотничьи ресурсы в загруженных данных
+    const huntResourceCategories = ['bones', 'leathers', 'hides', 'furs'];
+    let hasRealHuntResources = false;
     
-    huntResources.forEach(category => {
-        if (this.actionSystem.resources[category] && 
+    huntResourceCategories.forEach(category => {
+        if (this.actionSystem.resources && 
+            this.actionSystem.resources[category] && 
             this.actionSystem.resources[category].length > 0) {
-            hasHuntResources = true;
+            console.log(`✅ Найдены реальные ресурсы категории ${category}: ${this.actionSystem.resources[category].length} шт.`);
+            hasRealHuntResources = true;
         }
     });
     
-    if (!hasHuntResources) {
-        console.warn("⚠️ Нет охотничьих ресурсов, создаем тестовые");
-        this.createTestHuntResources();
+    if (!hasRealHuntResources) {
+        console.warn("⚠️ Нет охотничьих ресурсов в загруженных данных");
+        
+        // Пробуем загрузить данные
+        if (this.actionSystem.loadCellData) {
+            console.log("🔄 Пробуем загрузить данные...");
+            try {
+                await this.actionSystem.loadCellData();
+                console.log("✅ Данные перезагружены");
+            } catch (error) {
+                console.error("❌ Ошибка загрузки данных:", error);
+            }
+        }
+        
+        // Проверяем снова
+        huntResourceCategories.forEach(category => {
+            if (this.actionSystem.resources && 
+                this.actionSystem.resources[category] && 
+                this.actionSystem.resources[category].length > 0) {
+                hasRealHuntResources = true;
+            }
+        });
     }
+    
+    return hasRealHuntResources;
 }
 
 
@@ -265,15 +384,29 @@ startSimpleHunt() {
 
     // ========== ВЫБОР ЦЕЛИ ОХОТЫ ==========
 
-    showHuntTargetSelection(cell) {
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) return;
-        
-        const cellType = this.actionSystem.determineCellType(cell);
-        const cellTypeData = this.actionSystem.cellTypes[cellType];
-        const baseChance = this.actionSystem.getActionChance(this.config.id, cellType);
-        
-        const huntableResources = this.groupHuntableResources();
+showHuntTargetSelection(cell) {
+    console.log("🎯 Показываем выбор трофея для охоты");
+    
+    // Проверяем, есть ли реальные ресурсы
+    const hasResources = this.checkRealHuntResources();
+    
+    if (!hasResources) {
+        console.warn("⚠️ Нет реальных охотничьих ресурсов, показываем тестовый интерфейс");
+        this.showSimpleHuntInterface(cell);
+        return;
+    }
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    const cellType = this.actionSystem.determineCellType(cell);
+    const cellTypeData = this.actionSystem.cellTypes[cellType];
+    const baseChance = this.actionSystem.getActionChance(this.config.id, cellType);
+    
+    // Используем реальные ресурсы из ActionSystem
+    const huntableResources = this.groupRealHuntResources();
+    
+}
         
         let html = `
             <div class="hunt-target-selection">
@@ -777,20 +910,40 @@ startSimpleHunt() {
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
-
-    getMonstersWithResource(resourceId) {
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) return [];
+getMonstersWithResource(resourceId) {
+    console.log(`🔍 Поиск монстров с ресурсом: ${resourceId}`);
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem || !battleSystem.monsters) {
+        console.error("❌ BattleSystem или монстры не найдены");
+        return [];
+    }
+    
+    // Находим все монстры, у которых в loot.guaranteed есть этот ресурс
+    const matchingMonsters = battleSystem.monsters.filter(monster => {
+        // Проверяем, есть ли у монстра лут
+        if (!monster.loot || !monster.loot.guaranteed) {
+            console.log(`   Монстр ${monster.name} (ID: ${monster.id}) не имеет гарантированного лута`);
+            return false;
+        }
         
-        const allMonsters = battleSystem.monsters || [];
-        const matchingMonsters = allMonsters.filter(monster => {
-            if (!monster.loot || !monster.loot.guaranteed) return false;
-            return monster.loot.guaranteed.some(lootItem => lootItem.id === resourceId);
+        // Ищем ресурс в гарантированном луте
+        const hasResource = monster.loot.guaranteed.some(lootItem => {
+            const matches = lootItem.id === resourceId;
+            if (matches) {
+                console.log(`   ✅ Монстр ${monster.name} имеет ${lootItem.quantity}x ${resourceId}`);
+            }
+            return matches;
         });
         
-        console.log(`🎯 Найдено ${matchingMonsters.length} монстров с ресурсом ${resourceId}`);
-        return matchingMonsters;
-    }
+        return hasResource;
+    });
+    
+    console.log(`🎯 Найдено ${matchingMonsters.length} монстров с ресурсом ${resourceId}:`);
+    matchingMonsters.forEach(m => console.log(`   - ${m.name} (ID: ${m.id})`));
+    
+    return matchingMonsters;
+}
 
     findResourceById(resourceId) {
         for (const category in this.actionSystem.resources) {
@@ -848,6 +1001,56 @@ startSimpleHunt() {
             }
         };
     }
+
+
+groupRealHuntResources() {
+    if (!this.actionSystem.resources) {
+        console.warn("⚠️ Нет ресурсов в ActionSystem, используем тестовые данные");
+        return this.groupHuntableResources(); // fallback к тестовым
+    }
+    
+    return {
+        'bones': {
+            description: '🦴 Кости животных для ремесла и алхимии',
+            resources: (this.actionSystem.resources.bones || []).filter(r => r !== null)
+        },
+        'leathers': {
+            description: '🐂 Кожи животных для брони и снаряжения',
+            resources: (this.actionSystem.resources.leathers || []).filter(r => r !== null)
+        },
+        'hides': {
+            description: '🐅 Шкуры животных для теплой одежды',
+            resources: (this.actionSystem.resources.hides || []).filter(r => r !== null)
+        },
+        'furs': {
+            description: '🦊 Мех животных для роскошной одежды',
+            resources: (this.actionSystem.resources.furs || []).filter(r => r !== null)
+        }
+    };
+}
+
+// И этот вспомогательный метод рядом:
+checkRealHuntResources() {
+    if (!this.actionSystem.resources) {
+        console.warn("❌ ActionSystem.resources не определен");
+        return false;
+    }
+    
+    const categories = ['bones', 'leathers', 'hides', 'furs'];
+    let totalResources = 0;
+    
+    categories.forEach(category => {
+        if (this.actionSystem.resources[category] && Array.isArray(this.actionSystem.resources[category])) {
+            const count = this.actionSystem.resources[category].length;
+            totalResources += count;
+            console.log(`   ${category}: ${count} ресурсов`);
+        }
+    });
+    
+    console.log(`📊 Итого: ${totalResources} охотничьих ресурсов`);
+    return totalResources > 0;
+}
+
 
     calculateMonsterLevel(monster) {
         const healthLevel = Math.floor(monster.health / 100);
