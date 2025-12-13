@@ -211,64 +211,98 @@ class ActionSystem {
 
     // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
 
-    initializeActionModules() {
-        console.log("🔄 Инициализация модулей действий...");
-        
-        try {
-            // Загружаем модуль охоты
-            if (!this.actionModules['hunt']) {
-                // Пытаемся загрузить модуль напрямую
-                this.loadHuntModuleWithFallback();
-            } else {
-                console.log("✅ Модуль охоты уже инициализирован");
+initializeActionModules() {
+    console.log("🔄 Инициализация модулей действий...");
+    
+    try {
+        // ВАЖНО: Проверяем, не является ли текущий модуль охоты заглушкой
+        const currentHuntModule = this.actionModules['hunt'];
+        if (currentHuntModule) {
+            // Проверяем признаки заглушки
+            const isStub = currentHuntModule.execute && 
+                          currentHuntModule.execute.toString().includes('Заглушка охоты');
+            
+            if (isStub) {
+                console.log("⚠️ Обнаружена заглушка модуля охоты, удаляем её");
+                delete this.actionModules['hunt'];
+            } else if (currentHuntModule.showHuntTargetSelection) {
+                console.log("✅ Настоящий модуль охоты уже загружен");
+                return true;
             }
-            
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка инициализации модулей действий:", error);
-            this.createHuntActionStub();
-            return false;
         }
+        
+        // Загружаем модуль охоты
+        console.log("🔄 Загружаем модуль охоты...");
+        return this.loadHuntModuleWithFallback();
+        
+    } catch (error) {
+        console.error("❌ Ошибка инициализации модулей действий:", error);
+        
+        // Только в крайнем случае создаем заглушку
+        // Но сначала проверяем, может настоящий модуль уже загружен
+        if (!this.actionModules['hunt'] || !this.actionModules['hunt'].showHuntTargetSelection) {
+            this.createHuntActionStub();
+        }
+        
+        return false;
     }
+}
 
-  async loadHuntModuleWithFallback() {
+async loadHuntModuleWithFallback() {
     console.log("🔄 Пытаемся загрузить модуль охоты...");
     
-    // Если уже есть нормальный модуль, не перезагружаем
-    if (this.actionModules['hunt'] && this.actionModules['hunt'].showHuntTargetSelection) {
-        console.log("✅ Настоящий модуль охоты уже загружен");
-        return true;
-    }
+    // Пробуем несколько способов загрузки
     
-    // 1. Пробуем загрузить класс HuntAction
+    // 1. Если класс уже глобально доступен
     if (window.HuntAction) {
         console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
         this.actionModules['hunt'] = new window.HuntAction(this);
         return true;
     }
     
-    // 2. Пробуем загрузить файл
-    console.log("🔄 Загружаем файл hunt-action.js...");
-    try {
-        const response = await fetch('data/actions/hunt-action.js');
-        if (response.ok) {
-            const code = await response.text();
-            // Выполняем код
-            eval(code);
-            
-            if (window.HuntAction) {
-                this.actionModules['hunt'] = new window.HuntAction(this);
-                console.log("✅ Модуль охоты загружен из файла");
-                return true;
+    // 2. Пробуем загрузить из файла
+    const paths = [
+        'data/actions/hunt-action.js',
+        'modules/actions/hunt-action.js',
+        'hunt-action.js'
+    ];
+    
+    for (const path of paths) {
+        try {
+            console.log(`   Пробуем: ${path}`);
+            const response = await fetch(path);
+            if (response.ok) {
+                const code = await response.text();
+                
+                // Проверяем содержимое файла
+                if (code.includes('class HuntAction') && code.includes('showHuntTargetSelection')) {
+                    console.log(`✅ Файл найден: ${path}`);
+                    
+                    // Выполняем код
+                    eval(code);
+                    
+                    // Ждем немного чтобы класс зарегистрировался
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    if (window.HuntAction) {
+                        this.actionModules['hunt'] = new window.HuntAction(this);
+                        console.log(`✅ Модуль охоты загружен из ${path}`);
+                        return true;
+                    }
+                } else {
+                    console.log(`   ❌ Файл не содержит класс HuntAction: ${path}`);
+                }
+            } else {
+                console.log(`   ❌ Не доступен: ${path}`);
             }
+        } catch (error) {
+            console.log(`   ❌ Ошибка: ${error.message}`);
         }
-    } catch (error) {
-        console.error("❌ Ошибка загрузки модуля охоты:", error);
     }
     
-    // 3. В крайнем случае создаем заглушку
-    console.log("⚠️ Не удалось загрузить модуль, создаем заглушку");
+    // 3. Только если все способы не сработали - заглушка
+    console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
+    console.log("⚠️ Создаем заглушку модуля охоты");
     this.createHuntActionStub();
     return false;
 }
@@ -773,46 +807,70 @@ class ActionSystem {
 
     // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
 
-    async loadCellData() {
-        try {
-            console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
-            
-            const [cellTypesResponse, resourcesResponse] = await Promise.all([
-                fetch('data/cell_types.json').catch(() => null),
-                fetch('data/resources.json').catch(() => null)
-            ]);
-            
-            if (cellTypesResponse && cellTypesResponse.ok) {
-                const cellData = await cellTypesResponse.json();
-                this.cellTypes = cellData.cell_types || {};
-                console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
-            } else {
-                console.warn("❌ cell_types.json не загружен, создаем базовые типы");
-                this.createDefaultCellTypes();
-            }
-            
-            if (resourcesResponse && resourcesResponse.ok) {
-                const resourcesData = await resourcesResponse.json();
-                this.resources = resourcesData;
-                console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
-            } else {
-                console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
-                this.createDefaultResources();
-            }
-            
-            // Инициализируем модули действий после загрузки данных
-            this.initializeActionModules();
-            
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных клеток:", error);
+  async loadCellData() {
+    try {
+        console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
+        
+        // Используем Promise.all для параллельной загрузки
+        const [cellTypesResponse, resourcesResponse] = await Promise.all([
+            fetch('data/cell_types.json').catch(() => {
+                console.warn("⚠️ cell_types.json не загружен, создаем базовые типы");
+                return null;
+            }),
+            fetch('data/resources.json').catch(() => {
+                console.warn("⚠️ resources.json не загружен, создаем базовые ресурсы");
+                return null;
+            })
+        ]);
+        
+        // Загружаем типы клеток
+        if (cellTypesResponse && cellTypesResponse.ok) {
+            const cellData = await cellTypesResponse.json();
+            this.cellTypes = cellData.cell_types || {};
+            console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
+        } else {
+            console.warn("❌ cell_types.json не загружен, создаем базовые типы");
             this.createDefaultCellTypes();
-            this.createDefaultResources();
-            this.initializeActionModules();
-            return false;
         }
+        
+        // Загружаем ресурсы
+        if (resourcesResponse && resourcesResponse.ok) {
+            const resourcesData = await resourcesResponse.json();
+            this.resources = resourcesData;
+            console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
+        } else {
+            console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
+            this.createDefaultResources();
+        }
+        
+        // ВАЖНО: Инициализируем модули действий ПОСЛЕ загрузки данных
+        console.log("🔄 Инициализация модулей действий после загрузки данных...");
+        await this.initializeActionModules();
+        
+        // Загружаем картинки локаций (асинхронно, не ждем завершения)
+        this.loadLocationImages().catch(error => {
+            console.error("❌ Ошибка загрузки картинок локаций:", error);
+        });
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных клеток:", error);
+        
+        // Создаем базовые данные при ошибке
+        this.createDefaultCellTypes();
+        this.createDefaultResources();
+        
+        // Пробуем инициализировать модули даже при ошибке
+        try {
+            await this.initializeActionModules();
+        } catch (moduleError) {
+            console.error("❌ Ошибка инициализации модулей:", moduleError);
+        }
+        
+        return false;
     }
+}
 
     createDefaultCellTypes() {
         this.cellTypes = {
