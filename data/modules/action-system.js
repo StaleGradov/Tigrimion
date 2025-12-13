@@ -563,48 +563,96 @@ async ensureHuntModuleLoaded() {
 
     // ========== ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ==========
 
-    async forceFixHuntModule() {
-        console.log("🛠️ ПРИНУДИТЕЛЬНОЕ ИСПРАВЛЕНИЕ МОДУЛЯ ОХОТЫ");
-        
-        // 1. Получаем диагностику
-        const diagnosis = await this.diagnoseHuntModule();
-        console.log("Текущая диагностика:", diagnosis);
-        
-        // 2. Если модуль вообще не существует
-        if (!diagnosis.moduleExists) {
-            console.log("❌ Модуль охоты не существует, создаем...");
-            
-            // Пробуем загрузить файл
-            const loaded = await this.forceLoadHuntModule();
-            if (loaded) {
-                console.log("✅ Модуль создан после загрузки файла");
-                return true;
-            } else {
-                console.log("⚠️ Не удалось загрузить, создаем заглушку");
-                this.createHuntActionStub();
-                return false;
-            }
+  async forceFixHuntModule() {
+    console.log("🛠️ ForceFix: Пробуем загрузить реальный модуль охоты");
+    
+    try {
+        // Пробуем загрузить реальный файл
+        const response = await fetch('data/actions/hunt-action.js');
+        if (!response.ok) {
+            throw new Error("Файл не найден");
         }
         
-        // 3. Если модуль есть, но нет нужных методов
-        else if (!diagnosis.hasShowHuntMethod) {
-            console.log("⚠️ У модуля нет метода showHuntTargetSelection, заменяем...");
+        const moduleCode = await response.text();
+        console.log("✅ Файл hunt-action.js найден, размер:", moduleCode.length);
+        
+        // Загружаем скрипт
+        const script = document.createElement('script');
+        script.textContent = moduleCode;
+        document.head.appendChild(script);
+        
+        // Ждем загрузки
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (window.HuntAction) {
+            console.log("✅ Реальный HuntAction загружен!");
+            this.actionModules['hunt'] = new window.HuntAction(this);
+            return true;
+        }
+    } catch (error) {
+        console.error("❌ Не удалось загрузить реальный модуль:", error);
+    }
+    
+    // Если не удалось - используем правильную заглушку
+    this.actionModules['hunt'] = {
+        execute: (row, col) => {
+            console.log(`🏹 Заглушка: Начало охоты на [${col},${row}]`);
             
-            // Удаляем старый модуль
-            delete this.actionModules['hunt'];
+            // ПОКАЗЫВАЕМ РЕАЛЬНЫЕ РЕСУРСЫ, а не тестовые!
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
             
-            // Создаем правильный модуль
-            const CorrectHuntModule = class {
-                constructor(actionSystem) {
-                    this.actionSystem = actionSystem;
-                    this.mapSystem = actionSystem.mapSystem;
-                    this.config = {
-                        id: 'hunt',
-                        icon: '🏹',
-                        name: 'Охотиться',
-                        description: 'Выследить и добыть дичь. Сначала выберите трофей, затем монстра'
-                    };
-                }
+            if (cell) {
+                // Показываем интерфейс с реальными ресурсами
+                this.showRealResourceSelection(cell);
+            }
+        }
+    };
+    
+    return false;
+}
+
+// Добавить метод для показа реальных ресурсов
+showRealResourceSelection(cell) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    // Проверяем реальные ресурсы
+    const hasRealResources = this.checkForRealHuntResources();
+    
+    if (!hasRealResources) {
+        actionsContainer.innerHTML = `
+            <div class="hunt-error">
+                <h3 style="color: #ff4444;">❌ Ошибка загрузки ресурсов</h3>
+                <p>Не удалось загрузить данные для охоты.</p>
+                <button onclick="game.systems.action.loadCellData().then(() => location.reload())">
+                    🔄 Перезагрузить данные
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // Показываем реальные ресурсы
+    const huntCategories = ['bones', 'leathers', 'hides', 'furs'];
+    let html = `<h3>🏹 Выберите трофей для охоты</h3>`;
+    
+    huntCategories.forEach(category => {
+        const resources = this.resources[category] || [];
+        if (resources.length > 0) {
+            html += `<h4>${this.getCategoryName(category)}</h4>`;
+            resources.forEach(resource => {
+                html += `
+                    <div class="resource-item" onclick="alert('Выбран: ${resource.name}')">
+                        ${resource.name} - ${resource.description}
+                    </div>
+                `;
+            });
+        }
+    });
+    
+    actionsContainer.innerHTML = html;
+}
                 
                 execute(row, col) {
                     console.log(`🏹 CorrectHuntModule.execute() на [${col},${row}]`);
