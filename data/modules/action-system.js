@@ -31,6 +31,9 @@ class ActionSystem {
         // Реестр всех доступных действий
         this.actionsRegistry = {};
         
+        // Кэш изображений локаций
+        this.locationImageCache = new Map();
+        
         // Конфигурация базовых действий (без логики, только метаданные)
         this.baseActionConfigs = {
             'search_treasure': {
@@ -213,6 +216,9 @@ class ActionSystem {
             // Инициализируем базовые действия (те, что не требуют модулей)
             this.initializeBaseActions();
             
+            // Загружаем картинки локаций
+            await this.loadLocationImages();
+            
             return true;
             
         } catch (error) {
@@ -225,6 +231,52 @@ class ActionSystem {
             
             return false;
         }
+    }
+
+    async loadLocationImages() {
+        try {
+            console.log("🖼️ ActionSystem: Инициализируем кэш картинок локаций...");
+            
+            // Создаем кэш для картинок
+            this.locationImageCache = new Map();
+            
+            // Создаем fallback изображение
+            const fallbackImg = this.createFallbackImage();
+            this.locationImageCache.set('fallback', fallbackImg);
+            
+            console.log("✅ Кэш картинок локаций инициализирован");
+            return true;
+        } catch (error) {
+            console.error("❌ Ошибка инициализации кэша картинок:", error);
+            return false;
+        }
+    }
+
+    createFallbackImage() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createLinearGradient(0, 0, 400, 400);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 400, 400);
+        
+        ctx.fillStyle = '#00ffff';
+        ctx.font = 'bold 24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Изображение', 200, 180);
+        ctx.fillText('локации', 200, 220);
+        
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(10, 10, 380, 380);
+        
+        const img = new Image();
+        img.src = canvas.toDataURL();
+        return img;
     }
 
     createDefaultCellTypes() {
@@ -285,6 +337,64 @@ class ActionSystem {
                 special_notes: "Почти гарантированно можно найти чистую воду. Животные часто приходят на водопой.",
                 failure_monster_chance: 40,
                 monster_level: 1
+            },
+            
+            'shallow_burrow': {
+                name: "Лисья нора",
+                description: "Аккуратный вход в подземное логово, окруженный выброшенной землей и костями мелких животных.",
+                suggestion: "Нора слишком ухоженная для дикого зверя — кто-то мог использовать ее как тайник.",
+                icon: '🕳️',
+                image: 'images/locations/shallow_burrow.jpg',
+                action_chances: {
+                    search_treasure: 40,
+                    search_water: 20,
+                    search_berries: 10,
+                    search_mushrooms: 35,
+                    search_herbs: 30,
+                    search_ore: 25,
+                    search_stone: 50,
+                    set_trap: 85,
+                    prepare_ambush: 65,
+                    hunt: 80,
+                    hunt_caravan: 45,
+                    take_assassination_contract: 35,
+                    light_campfire: 50,
+                    guard_caravan: 40,
+                    gather_wood: 15,
+                    stealth_movement: 70
+                },
+                special_notes: "Отличное место для засады — ограниченные пути отхода.",
+                failure_monster_chance: 60,
+                monster_level: 2
+            },
+            
+            'berry_clearing': {
+                name: "Ягодная поляна у опушки",
+                description: "Солнечная поляна, усыпанная спелыми ягоды всех оттенков красного и синего.",
+                suggestion: "Ягоды выглядят съедобными, но темно-синие у камня лучше не трогать.",
+                icon: '🫐',
+                image: 'images/locations/berry_clearing.jpg',
+                action_chances: {
+                    search_treasure: 25,
+                    search_water: 35,
+                    search_berries: 90,
+                    search_mushrooms: 40,
+                    search_herbs: 75,
+                    search_ore: 5,
+                    search_stone: 20,
+                    set_trap: 60,
+                    prepare_ambush: 45,
+                    hunt: 50,
+                    hunt_caravan: 20,
+                    take_assassination_contract: 15,
+                    light_campfire: 85,
+                    guard_caravan: 30,
+                    gather_wood: 40,
+                    stealth_movement: 80
+                },
+                special_notes: "Обилие ягод и лекарственных трав.",
+                failure_monster_chance: 35,
+                monster_level: 1
             }
         };
     }
@@ -293,15 +403,95 @@ class ActionSystem {
         this.resources = {
             treasure: [
                 { id: 'gold_coins', name: '💰 Золотые монеты', type: 'treasure', rarity: 'common', description: 'Древние монеты, все еще имеющие ценность' },
-                { id: 'silver_goblet', name: '🥈 Серебряный кубок', type: 'treasure', rarity: 'uncommon', description: 'Изысканный кубок с гравировкой' }
+                { id: 'silver_goblet', name: '🥈 Серебряный кубок', type: 'treasure', rarity: 'uncommon', description: 'Изысканный кубок с гравировкой' },
+                { id: 'jewelry', name: '💎 Драгоценности', type: 'treasure', rarity: 'rare', description: 'Бриллианты и изумруды' }
             ],
             water: [
                 { id: 'fresh_water', name: '💧 Пресная вода', type: 'water', rarity: 'common', description: 'Чистая питьевая вода' },
-                { id: 'mineral_water', name: '💎 Минеральная вода', type: 'water', rarity: 'uncommon', description: 'Вода с полезными минералами' }
+                { id: 'mineral_water', name: '💎 Минеральная вода', type: 'water', rarity: 'uncommon', description: 'Вода с полезными минералами' },
+                { id: 'magical_spring', name: '✨ Вода из магического источника', type: 'water', rarity: 'rare', description: 'Вода с лечебными свойствами' }
             ],
             berries: [
                 { id: 'wild_berries', name: '🫐 Дикие ягоды', type: 'berries', rarity: 'common', description: 'Сладкие лесные ягоды' },
-                { id: 'medicinal_berries', name: '🌿 Лечебные ягоды', type: 'berries', rarity: 'uncommon', description: 'Ягоды с целебными свойствами' }
+                { id: 'medicinal_berries', name: '🌿 Лечебные ягоды', type: 'berries', rarity: 'uncommon', description: 'Ягоды с целебными свойствами' },
+                { id: 'nightshade', name: '☠️ Паслён', type: 'berries', rarity: 'rare', description: 'Ядовитые ягоды для создания ядов' }
+            ],
+            mushrooms: [
+                { id: 'common_mushrooms', name: '🍄 Обычные грибы', type: 'mushrooms', rarity: 'common', description: 'Съедобные лесные грибы' },
+                { id: 'healing_mushrooms', name: '❤️ Целебные грибы', type: 'mushrooms', rarity: 'uncommon', description: 'Грибы с лечебными свойствами' },
+                { id: 'hallucinogenic_mushrooms', name: '🌀 Галлюциногенные грибы', type: 'mushrooms', rarity: 'rare', description: 'Грибы, изменяющие сознание' }
+            ],
+            herbs: [
+                { id: 'healing_herbs', name: '🌿 Целебные травы', type: 'herbs', rarity: 'common', description: 'Травы для лечения ран' },
+                { id: 'poison_herbs', name: '☠️ Ядовитые травы', type: 'herbs', rarity: 'uncommon', description: 'Травы для создания ядов' },
+                { id: 'magical_herbs', name: '✨ Магические травы', type: 'herbs', rarity: 'rare', description: 'Редкие травы для алхимии' }
+            ],
+            ores: [
+                { id: 'iron_ore', name: '⛏️ Железная руда', type: 'ores', rarity: 'common', description: 'Базовая руда для ковки' },
+                { id: 'copper_ore', name: '🔶 Медная руда', type: 'ores', rarity: 'common', description: 'Руда для инструментов' },
+                { id: 'silver_ore', name: '🥈 Серебряная руда', type: 'ores', rarity: 'uncommon', description: 'Руда для ценных предметов' }
+            ],
+            stones: [
+                { id: 'common_stone', name: '🪨 Обычный камень', type: 'stones', rarity: 'common', description: 'Строительный материал' },
+                { id: 'flint', name: '🔥 Кремень', type: 'stones', rarity: 'common', description: 'Для разжигания огня' },
+                { id: 'obsidian', name: '⚫ Обсидиан', type: 'stones', rarity: 'uncommon', description: 'Вулканическое стекло' }
+            ],
+            traps: [
+                { id: 'snare_trap', name: '🪤 Петля-ловушка', type: 'traps', rarity: 'common', description: 'Простая ловушка для мелкой дичи' },
+                { id: 'pit_trap', name: '🕳️ Яма-ловушка', type: 'traps', rarity: 'uncommon', description: 'Глубокая яма, прикрытая ветками' },
+                { id: 'bear_trap', name: '🐻 Капкан', type: 'traps', rarity: 'rare', description: 'Мощная ловушка для крупной дичи' }
+            ],
+            ambush: [
+                { id: 'ambush_position', name: '🎯 Позиция для засады', type: 'ambush', rarity: 'common', description: 'Подготовленная позиция для атаки' },
+                { id: 'hidden_position', name: '👁️ Скрытная позиция', type: 'ambush', rarity: 'uncommon', description: 'Отличное укрытие для наблюдения' },
+                { id: 'killing_ground', name: '💀 Убийственная зона', type: 'ambush', rarity: 'rare', description: 'Идеальное место для засады' }
+            ],
+            loot: [
+                { id: 'caravan_loot', name: '📦 Добыча с каравана', type: 'loot', rarity: 'uncommon', description: 'Товары и припасы с торгового каравана' },
+                { id: 'bandit_loot', name: '⚔️ Добыча разбойников', type: 'loot', rarity: 'common', description: 'Награбленное добро' },
+                { id: 'treasure_chest', name: '💰 Сундук с сокровищами', type: 'loot', rarity: 'rare', description: 'Богатая добыча' }
+            ],
+            contracts: [
+                { id: 'assassination_contract', name: '📜 Контракт на убийство', type: 'contracts', rarity: 'rare', description: 'Задание на устранение цели' },
+                { id: 'bounty_hunt', name: '🎯 Задание на поимку', type: 'contracts', rarity: 'uncommon', description: 'Охота на преступника' },
+                { id: 'delivery_contract', name: '📦 Контракт на доставку', type: 'contracts', rarity: 'common', description: 'Доставка груза' }
+            ],
+            shelter: [
+                { id: 'campfire_site', name: '🔥 Место для лагеря', type: 'shelter', rarity: 'common', description: 'Безопасное место для отдыха' },
+                { id: 'hidden_camp', name: '🏕️ Скрытый лагерь', type: 'shelter', rarity: 'uncommon', description: 'Укрытие для длительного пребывания' },
+                { id: 'fortified_camp', name: '🏰 Укрепленный лагерь', type: 'shelter', rarity: 'rare', description: 'Надежное укрытие с защитой' }
+            ],
+            food: [
+                { id: 'venison', name: '🦌 Оленина', type: 'food', rarity: 'common', description: 'Свежее мясо оленя' },
+                { id: 'rabbit', name: '🐇 Крольчатина', type: 'food', rarity: 'common', description: 'Мясо кролика' },
+                { id: 'boar_meat', name: '🐗 Кабанятина', type: 'food', rarity: 'uncommon', description: 'Жирное мясо кабана' },
+                { id: 'bird', name: '🐦 Птица', type: 'food', rarity: 'common', description: 'Мясо лесной птицы' }
+            ],
+            woods: [
+                { id: 'twigs', name: '🌿 Веточки', type: 'woods', rarity: 'common', description: 'Мелкие сухие ветки' },
+                { id: 'branches', name: '🪵 Ветки', type: 'woods', rarity: 'common', description: 'Крепкие ветки для костра' },
+                { id: 'logs', name: '🪓 Поленья', type: 'woods', rarity: 'uncommon', description: 'Толстые поленья для длительного горения' }
+            ],
+            // Охотничьи ресурсы (для модуля охоты)
+            bones: [
+                { id: 'small_bone', name: '🦴 Маленькая кость', type: 'bones', rarity: 'common', description: 'Кость мелкого животного', price: 5 },
+                { id: 'wolf_bone', name: '🐺 Волчья кость', type: 'bones', rarity: 'uncommon', description: 'Кость волка, прочная и крепкая', price: 15 },
+                { id: 'horse_bone', name: '🐴 Конская кость', type: 'bones', rarity: 'rare', description: 'Кость лошади, большая и тяжелая', price: 25 }
+            ],
+            leathers: [
+                { id: 'thin_leather', name: '🐂 Тонкая кожа', type: 'leathers', rarity: 'common', description: 'Кожа мелкого животного', price: 10 },
+                { id: 'strong_leather', name: '🦌 Прочная кожа', type: 'leathers', rarity: 'uncommon', description: 'Кожа оленя, хорошего качества', price: 20 },
+                { id: 'thick_leather', name: '🐗 Толстая кожа', type: 'leathers', rarity: 'rare', description: 'Кожа кабана, очень прочная', price: 30 }
+            ],
+            hides: [
+                { id: 'thin_hide', name: '🐇 Тонкая шкура', type: 'hides', rarity: 'common', description: 'Шкурка кролика', price: 8 },
+                { id: 'strong_hide', name: '🦊 Лисья шкура', type: 'hides', rarity: 'uncommon', description: 'Шкурка лисы, красивая и теплая', price: 40 },
+                { id: 'thick_hide', name: '🐻 Медвежья шкура', type: 'hides', rarity: 'rare', description: 'Шкура медведя, очень ценная', price: 100 }
+            ],
+            furs: [
+                { id: 'hare_fur', name: '🐰 Заячий мех', type: 'furs', rarity: 'common', description: 'Мягкий мех зайца', price: 12 },
+                { id: 'marten_fur', name: '🦡 Куний мех', type: 'furs', rarity: 'uncommon', description: 'Мех куницы, очень ценный', price: 50 },
+                { id: 'arctic_fox_fur', name: '🦊 Мех песца', type: 'furs', rarity: 'rare', description: 'Белый мех песца, роскошный', price: 80 }
             ]
         };
     }
@@ -720,19 +910,78 @@ class ActionSystem {
             return cell.cellType;
         }
         
-        // Простая логика определения типа клетки
+        // Маппинг типов клеток на типы локаций
         const typeMapping = {
             'water': 'small_stream',
-            'graveyard_cross': 'grave',
-            'campfire': 'small_stream',
-            'berry_clearing': 'small_stream',
-            'default': 'grave'
+            'graveyard_cross': 'haunted_cemetery',
+            'cave': 'crystal_cave',
+            'tree': 'ancient_tree',
+            'elegant_tree': 'ancient_tree',
+            'mountain': 'rocky_outcrop',
+            'campfire': 'abandoned_camp',
+            'berry_clearing': 'berry_clearing',
+            'rocky_outcrop': 'rocky_outcrop',
+            'ruined_shrine': 'ruined_shrine',
+            'crystal_cave': 'crystal_cave',
+            'herb_garden': 'herb_garden',
+            'haunted_cemetery': 'haunted_cemetery',
+            'sunken_ship': 'sunken_ship',
+            'abandoned_camp': 'abandoned_camp',
+            'player_start': 'ancient_tree',
+            'npc': 'village',
+            'merchant': 'village',
+            'tavern': 'village',
+            'shop': 'village',
+            'village': 'village',
+            'castle': 'ruined_shrine',
+            'bandit_camp': 'bandit_camp',
+            'orc_camp': 'bandit_camp',
+            'monster': 'beast_lair',
+            'chest': 'smugglers_cache',
+            'obstacle': 'petrified_forest',
+            'portal': 'fairy_ring',
+            'ancient_rune': 'druid_stone_circle',
+            'magic_crystal': 'crystal_cave',
+            'bridge': 'bridge_troll_toll',
+            'lava_crack': 'mineral_spring',
+            'traveler': 'abandoned_camp',
+            'cart': 'abandoned_camp',
+            'inactive': 'petrified_forest'
         };
         
-        const mappedType = typeMapping[cell.type] || typeMapping['default'];
-        cell.cellType = this.cellTypes[mappedType] ? mappedType : 'grave';
+        // Определяем тип клетки
+        if (cell.type && typeMapping[cell.type]) {
+            const mappedType = typeMapping[cell.type];
+            if (this.cellTypes[mappedType]) {
+                cell.cellType = mappedType;
+            } else {
+                cell.cellType = this.getDefaultCellType(cell);
+            }
+        } else {
+            cell.cellType = this.getDefaultCellType(cell);
+        }
         
+        console.log(`🔍 ActionSystem: Определен тип клетки [${cell.col},${cell.row}]: ${cell.cellType} (исходный тип: ${cell.type})`);
         return cell.cellType;
+    }
+
+    getDefaultCellType(cell) {
+        if (cell.hasLoot) {
+            const lootLocations = ['smugglers_cache', 'abandoned_camp', 'sunken_ship'];
+            const seed = cell.col * 47 + cell.row * 29;
+            return lootLocations[seed % lootLocations.length];
+        } else if (cell.passable === false) {
+            return 'petrified_forest';
+        } else {
+            const availableTypes = Object.keys(this.cellTypes);
+            if (availableTypes.length > 0) {
+                const seed = cell.col * 47 + cell.row * 29;
+                const randomIndex = seed % availableTypes.length;
+                return availableTypes[randomIndex];
+            } else {
+                return 'grave';
+            }
+        }
     }
 
     getAvailableActionsForCellType(cellType) {
@@ -912,6 +1161,9 @@ class ActionSystem {
         
         // Обновляем ресурсы
         this.updateHeroResourcesUI('heroResourcesListRight');
+        
+        // Показываем изображение локации
+        this.displayLocationImage(leftPanel, cellTypeData);
         
         console.log("✅ Панели обновлены");
         console.log("=== КОНЕЦ updateCellActionsUI ===");
@@ -1196,6 +1448,40 @@ class ActionSystem {
         resourcesList.innerHTML = resourcesHTML;
     }
 
+    displayLocationImage(container, cellTypeData) {
+        const imageWrapper = container?.querySelector('#locationImageWrapperLeft');
+        if (!imageWrapper) return;
+        
+        // Показываем fallback изображение
+        const fallbackImg = this.locationImageCache.get('fallback');
+        if (fallbackImg) {
+            imageWrapper.innerHTML = '';
+            const imgElement = fallbackImg.cloneNode();
+            imgElement.className = 'location-image';
+            imgElement.style.width = '100%';
+            imgElement.style.height = '100%';
+            imgElement.style.objectFit = 'cover';
+            imageWrapper.appendChild(imgElement);
+        }
+        
+        // Пробуем загрузить реальное изображение
+        if (cellTypeData.image) {
+            const realImg = new Image();
+            realImg.onload = () => {
+                imageWrapper.innerHTML = '';
+                realImg.className = 'location-image';
+                realImg.style.width = '100%';
+                realImg.style.height = '100%';
+                realImg.style.objectFit = 'cover';
+                imageWrapper.appendChild(realImg);
+            };
+            realImg.onerror = () => {
+                console.warn(`⚠️ Не удалось загрузить изображение: ${cellTypeData.image}`);
+            };
+            realImg.src = cellTypeData.image;
+        }
+    }
+
     getResourceIcon(resourceType) {
         const icons = {
             'treasure': '💰',
@@ -1255,6 +1541,47 @@ class ActionSystem {
         
         console.log("✅ Модули сброшены и переинициализированы");
         this.showNotification("Модули действий перезагружены", 'info');
+    }
+
+    // ========== МЕТОДЫ ДЛЯ СОВМЕСТИМОСТИ ==========
+
+    // Метод для обратной совместимости со старым кодом
+    performCellAction(action, row, col) {
+        return this.performAction(action, row, col);
+    }
+
+    // Метод для обратной совместимости со старым кодом
+    initializeActionModules() {
+        // Этот метод теперь ничего не делает, т.к. модули загружаются лениво
+        console.log("🔄 ActionSystem: Модули действий будут загружены по требованию");
+        return Promise.resolve(true);
+    }
+
+    // Метод для обратной совместимости со старым кодом
+    testHuntSelection() {
+        console.log("🧪 Тест выбора охоты...");
+        
+        // Пробуем загрузить модуль охоты
+        if (!this.actionModules['hunt']) {
+            console.log("🔄 Модуль охоты не загружен, пробуем загрузить...");
+            this.loadActionModule('hunt').then(success => {
+                if (success) {
+                    this.showNotification("✅ Модуль охоты загружен для теста", 'success');
+                    
+                    // Тестируем модуль
+                    if (this.selectedCell) {
+                        this.actionModules['hunt'].execute('hunt', this.selectedCell.row, this.selectedCell.col);
+                    }
+                } else {
+                    this.showNotification("❌ Не удалось загрузить модуль охоты", 'error');
+                }
+            });
+        } else {
+            // Модуль уже загружен, тестируем его
+            if (this.selectedCell) {
+                this.actionModules['hunt'].execute('hunt', this.selectedCell.row, this.selectedCell.col);
+            }
+        }
     }
 }
 
