@@ -3651,35 +3651,38 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
     }
 
-showNotification(message, type = 'info') {
-    if (window.game && window.game.showNotification) {
-        window.game.showNotification(message, type);
-    } else {
-        console.log(`${type.toUpperCase()}: ${message}`);
-        // Создаем простую нотификацию
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
-            color: white;
-            border-radius: 6px;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 3000);
+    showNotification(message, type = 'info') {
+        if (window.game && window.game.showNotification) {
+            window.game.showNotification(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+            // Создаем простую нотификацию
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
+                color: white;
+                border-radius: 6px;
+                z-index: 9999;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
     }
-}
 
+} // <-- ЗАКРЫВАЕМ КЛАСС MapSystem ЗДЕСЬ
+
+// ЭТОТ КОД ДОЛЖЕН БЫТЬ ВНЕ КЛАССА:
 window.MapSystem = MapSystem;
 console.log("📦 MapSystem модуль загружен (упрощенная версия)");
