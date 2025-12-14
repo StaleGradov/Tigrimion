@@ -3291,26 +3291,36 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
     }
 
-    hideOverlay() {
-        console.log("👋 MapSystem: Скрываем оверлей");
+  hideOverlay() {
+    console.log("👋 MapSystem: Скрываем оверлей");
+    
+    const container = document.getElementById('overlay-container');
+    if (container) {
+        container.style.display = 'none';
+        container.innerHTML = '';
+        this.activeOverlay = null;
+        this.hoveredHex = null;
+        this.lastHoveredHex = null;
+        this.hideTooltip();
         
-        const container = document.getElementById('overlay-container');
-        if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
-            this.activeOverlay = null;
-            this.hoveredHex = null;
-            this.lastHoveredHex = null;
-            this.hideTooltip();
-            
-            if (this.animationFrame) {
-                cancelAnimationFrame(this.animationFrame);
-                this.animationFrame = null;
-            }
-            
-            console.log("✅ Оверлей скрыт");
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+        
+        console.log("✅ Оверлей скрыт, показываем главный экран героя");
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Возвращаемся к главному экрану героя
+        if (window.game && window.game.showHeroGameScreen) {
+            // Небольшая задержка для гарантии очистки DOM
+            setTimeout(() => {
+                window.game.showHeroGameScreen();
+            }, 50);
+        } else {
+            console.error("❌ window.game.showHeroGameScreen не доступен");
         }
     }
+}
 
     toggleGrid() {
         this.showGrid = !this.showGrid;
