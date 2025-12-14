@@ -18,12 +18,15 @@ class ActionSystem {
     constructor(mapSystem) {
         this.mapSystem = mapSystem;
         
-        // ========== КОНФИГУРАЦИЯ ДЕЙСТВИЙ ==========
+        // ========== КОНФИГУРАЦИЯ СИСТЕМЫ ==========
         this.cellTypes = {};
         this.resources = {};
         this.currentCellType = null;
         this.selectedCell = null;
         this.currentCellActions = [];
+        
+        // Модули действий
+        this.actionModules = {};
         
         // Универсальные действия с базовыми шансами
         this.baseActionChances = {
@@ -36,16 +39,15 @@ class ActionSystem {
             'search_stone': 25,
             'set_trap': 50,
             'prepare_ambush': 45,
-            'hunt': 70,
-            'hunt_caravan': 30,
             'take_assassination_contract': 20,
             'light_campfire': 80,
             'guard_caravan': 40,
             'gather_wood': 60,
             'stealth_movement': 85
+            // Охота теперь в модуле - шанс удален отсюда
         };
         
-        // Все доступные действия
+        // Общие действия (не модульные)
         this.allActions = [
             'search_treasure',
             'search_water', 
@@ -56,16 +58,15 @@ class ActionSystem {
             'search_stone',
             'set_trap',
             'prepare_ambush',
-            'hunt',
-            'hunt_caravan',
             'take_assassination_contract',
             'light_campfire',
             'guard_caravan',
             'gather_wood',
             'stealth_movement'
+            // Охота теперь в модуле - удалена из общего списка
         ];
         
-        // Конфигурация действий
+        // Конфигурация общих действий
         this.actionConfigs = {
             'search_treasure': {
                 icon: '💰',
@@ -130,26 +131,6 @@ class ActionSystem {
                 class: 'action-ambush',
                 resource_type: 'ambush'
             },
-            'hunt': {
-                icon: '🏹',
-                name: 'Охотиться',
-                description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
-                class: 'action-hunt',
-                resource_type: 'loot',
-                triggers_monster: true,
-                monster_level_multiplier: 1.0,
-                always_monster: true,
-                double_loot: true
-            },
-            'hunt_caravan': {
-                icon: '🏹',
-                name: 'Охотиться на караван',
-                description: 'Подкараулить торговый караван для нападения',
-                class: 'action-hunt',
-                resource_type: 'loot',
-                triggers_monster: true,
-                monster_level_multiplier: 1.5
-            },
             'take_assassination_contract': {
                 icon: '🗡️',
                 name: 'Взять контракт на убийство',
@@ -190,136 +171,96 @@ class ActionSystem {
                 requires_player_here: true,
                 special: 'movement'
             }
+            // Конфигурация охоты теперь в модуле HuntAction
         };
         
         this.locationImages = {};
         this.locationImageCache = new Map();
         
-        // Модули действий (охоты)
-        this.actionModules = {};
-        
-        // ДЕБАГ ИНФОРМАЦИЯ
         console.log("✅ ActionSystem инициализирован");
         console.log("   mapSystem:", mapSystem);
-        console.log("   window.HuntAction:", window.HuntAction);
-        
-        // НЕ вызываем инициализацию модулей здесь - они загрузятся позже
-        // setTimeout(() => {
-        //     this.initializeActionModules();
-        // }, 500);
     }
 
-    // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
-
-initializeActionModules() {
-    console.log("🔄 Инициализация модулей действий...");
-    
-    try {
-        // ВАЖНО: Проверяем, не является ли текущий модуль охоты заглушкой
-        const currentHuntModule = this.actionModules['hunt'];
-        if (currentHuntModule) {
-            // Проверяем признаки заглушки
-            const isStub = currentHuntModule.execute && 
-                          currentHuntModule.execute.toString().includes('Заглушка охоты');
-            
-            if (isStub) {
-                console.log("⚠️ Обнаружена заглушка модуля охоты, удаляем её");
-                delete this.actionModules['hunt'];
-            } else if (currentHuntModule.showHuntTargetSelection) {
-                console.log("✅ Настоящий модуль охоты уже загружен");
-                return true;
-            }
-        }
-        
-        // Загружаем модуль охоты
-        console.log("🔄 Загружаем модуль охоты...");
-        return this.loadHuntModuleWithFallback();
-        
-    } catch (error) {
-        console.error("❌ Ошибка инициализации модулей действий:", error);
-        
-        // Только в крайнем случае создаем заглушку
-        // Но сначала проверяем, может настоящий модуль уже загружен
-        if (!this.actionModules['hunt'] || !this.actionModules['hunt'].showHuntTargetSelection) {
-            this.createHuntActionStub();
-        }
-        
-        return false;
-    }
-}
-
-async loadHuntModuleWithFallback() {
-    console.log("🔄 Пытаемся загрузить модуль охоты...");
-    
-    // Пробуем несколько способов загрузки
-    
-    // 1. Если класс уже глобально доступен
-    if (window.HuntAction) {
-        console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
-        this.actionModules['hunt'] = new window.HuntAction(this);
-        return true;
-    }
-    
-    // 2. Пробуем загрузить из файла
-    const paths = [
-        'data/actions/hunt-action.js',
-        'modules/actions/hunt-action.js',
-        'hunt-action.js'
-    ];
-    
-    for (const path of paths) {
-        try {
-            console.log(`   Пробуем: ${path}`);
-            const response = await fetch(path);
-            if (response.ok) {
-                const code = await response.text();
-                
-                // Проверяем содержимое файла
-                if (code.includes('class HuntAction') && code.includes('showHuntTargetSelection')) {
-                    console.log(`✅ Файл найден: ${path}`);
-                    
-                    // Выполняем код
-                    eval(code);
-                    
-                    // Ждем немного чтобы класс зарегистрировался
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    
-                    if (window.HuntAction) {
-                        this.actionModules['hunt'] = new window.HuntAction(this);
-                        console.log(`✅ Модуль охоты загружен из ${path}`);
-                        return true;
-                    }
-                } else {
-                    console.log(`   ❌ Файл не содержит класс HuntAction: ${path}`);
-                }
-            } else {
-                console.log(`   ❌ Не доступен: ${path}`);
-            }
-        } catch (error) {
-            console.log(`   ❌ Ошибка: ${error.message}`);
-        }
-    }
-    
-    // 3. Только если все способы не сработали - заглушка
-    console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
-    console.log("⚠️ Создаем заглушку модуля охоты");
-    this.createHuntActionStub();
-    return false;
-}
+    // ========== РЕГИСТРАЦИЯ И УПРАВЛЕНИЕ МОДУЛЯМИ ==========
 
     registerModule(moduleName, moduleInstance) {
         this.actionModules[moduleName] = moduleInstance;
         console.log(`✅ Модуль ${moduleName} зарегистрирован в ActionSystem`);
+        
+        // Добавляем действие из модуля в общий список
+        if (moduleInstance.config && moduleInstance.config.id) {
+            const actionId = moduleInstance.config.id;
+            if (!this.allActions.includes(actionId)) {
+                this.allActions.push(actionId);
+                console.log(`✅ Действие ${actionId} добавлено из модуля ${moduleName}`);
+            }
+        }
     }
 
-    createHuntActionStub() {
-        console.log("🔄 Создаем заглушку для модуля охоты");
-        this.actionModules['hunt'] = {
-            execute: (row, col) => {
-                console.log(`🏹 Заглушка охоты: клетка [${col},${row}]`);
-                this.showNotification("⚠️ Модуль охоты не загружен. Заглушка активирована.", 'warning');
+    async initializeActionModules() {
+        console.log("🔄 Инициализация модулей действий...");
+        
+        // Загружаем данные перед инициализацией модулей
+        await this.loadCellData();
+        
+        // Охота будет загружена автоматически через глобальную регистрацию
+        // или через загрузчик
+        return true;
+    }
+
+    async ensureModuleLoaded(moduleName) {
+        if (this.actionModules[moduleName]) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
+        }
+        
+        console.log(`🔄 Обеспечиваем загрузку модуля ${moduleName}...`);
+        
+        // Сначала пробуем найти глобальный класс
+        const globalClassName = this.getGlobalClassName(moduleName);
+        if (window[globalClassName]) {
+            this.actionModules[moduleName] = new window[globalClassName](this);
+            console.log(`✅ Экземпляр ${globalClassName} создан из глобального класса`);
+            return true;
+        }
+        
+        // Если нет, пробуем загрузить через loader
+        try {
+            if (window.ActionModulesLoader) {
+                const loader = new ActionModulesLoader(this);
+                const loaded = await loader.loadModule(moduleName);
                 
-                // Базовая логика охоты как заглушка
+                if (loaded && window[globalClassName]) {
+                    this.actionModules[moduleName] = new window[globalClassName](this);
+                    console.log(`✅ Модуль ${moduleName} загружен через loader`);
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        }
+        
+        // В крайнем случае создаем заглушку
+        this.createModuleStub(moduleName);
+        console.log(`⚠️ Используется заглушка модуля ${moduleName}`);
+        return false;
+    }
+
+    getGlobalClassName(moduleName) {
+        // Преобразуем module_name в ModuleName
+        return moduleName.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('') + 'Action';
+    }
+
+    createModuleStub(moduleName) {
+        console.log(`🔄 Создаем заглушку для модуля ${moduleName}`);
+        
+        this.actionModules[moduleName] = {
+            execute: (row, col) => {
+                console.log(`⚡ Заглушка ${moduleName}: клетка [${col},${row}]`);
+                this.showNotification(`⚠️ Модуль ${moduleName} не загружен. Заглушка активирована.`, 'warning');
+                
                 const cellKey = `${col},${row}`;
                 const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
                 
@@ -333,544 +274,83 @@ async loadHuntModuleWithFallback() {
                     return;
                 }
                 
-                // Простой бой как заглушка
-                const battleSystem = window.game?.systems?.battle;
-                if (battleSystem) {
-                    const randomMonster = battleSystem.getRandomMonsterForMovement();
-                    if (randomMonster) {
-                        this.mapSystem.pendingAction = {
-                            action: 'hunt',
-                            row: row,
-                            col: col,
-                            wasSuccess: true,
-                            doubleLoot: true
-                        };
-                        battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
-                        this.showNotification(`🏹 Простая охота на ${randomMonster.name}`, 'info');
-                    }
+                // Простая реализация
+                const chance = 50;
+                const roll = Math.random() * 100;
+                const success = roll <= chance;
+                
+                if (success) {
+                    this.showNotification(`✅ Действие ${moduleName} успешно выполнено!`, 'success');
+                } else {
+                    this.showNotification(`❌ Действие ${moduleName} не удалось.`, 'warning');
                 }
-            },
-            completeHuntAfterBattle: (victory, escape, doubleLoot) => {
-                console.log(`🏹 Заглушка: обработка результата охоты`);
-                this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
             },
             config: {
-                id: 'hunt',
-                icon: '🏹',
-                name: 'Охотиться',
-                description: 'Выследить и добыть дичь'
+                id: moduleName,
+                icon: '⚡',
+                name: moduleName.replace(/_/g, ' '),
+                description: 'Действие временно недоступно'
             }
         };
         
-        console.log("✅ Заглушка модуля охоты создана и зарегистрирована");
+        console.log(`✅ Заглушка модуля ${moduleName} создана и зарегистрирована`);
     }
 
-    // ========== ПРОВЕРКА ЗАГРУЗКИ МОДУЛЕЙ ==========
+    // ========== ЗАГРУЗКА ДАННЫХ ==========
 
-    checkModulesLoaded() {
-        console.log("🔍 Проверка загрузки модулей действий:");
-        console.log("   Доступные модули:", Object.keys(this.actionModules));
-        
-        if (!this.actionModules['hunt']) {
-            console.log("❌ Модуль охоты не найден в actionModules");
+    async loadCellData() {
+        try {
+            console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
             
-            // Проверяем, есть ли глобальный класс HuntAction
-            if (window.HuntAction) {
-                console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
-                this.actionModules['hunt'] = new window.HuntAction(this);
-                return true;
+            // Используем Promise.all для параллельной загрузки
+            const [cellTypesResponse, resourcesResponse] = await Promise.all([
+                fetch('data/cell_types.json').catch(() => {
+                    console.warn("⚠️ cell_types.json не загружен, создаем базовые типы");
+                    return null;
+                }),
+                fetch('data/resources.json').catch(() => {
+                    console.warn("⚠️ resources.json не загружен, создаем базовые ресурсы");
+                    return null;
+                })
+            ]);
+            
+            // Загружаем типы клеток
+            if (cellTypesResponse && cellTypesResponse.ok) {
+                const cellData = await cellTypesResponse.json();
+                this.cellTypes = cellData.cell_types || {};
+                console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
             } else {
-                console.error("❌ Глобальный класс HuntAction не найден");
-                this.createHuntActionStub();
-                return false;
+                console.warn("❌ cell_types.json не загружен, создаем базовые типы");
+                this.createDefaultCellTypes();
             }
-        }
-        
-        console.log("✅ Модуль охоты загружен:", this.actionModules['hunt']);
-        return true;
-    }
-
-    async ensureHuntModuleLoaded() {
-        if (this.actionModules['hunt']) {
-            console.log("✅ Модуль охоты уже загружен");
-            return true;
-        }
-        
-        console.log("🔄 Обеспечиваем загрузку модуля охоты...");
-        
-        // Сначала пробуем найти глобальный класс
-        if (window.HuntAction) {
-            this.actionModules['hunt'] = new window.HuntAction(this);
-            console.log("✅ Экземпляр HuntAction создан из глобального класса");
-            return true;
-        }
-        
-        // Если нет, пробуем загрузить через loader
-        try {
-            if (window.ActionModulesLoader) {
-                const loader = new ActionModulesLoader(this);
-                const loaded = await loader.loadModule('hunt');
-                
-                if (loaded && window.HuntAction) {
-                    this.actionModules['hunt'] = new window.HuntAction(this);
-                    console.log("✅ Модуль охоты загружен через loader");
-                    return true;
-                }
-            }
-        } catch (error) {
-            console.error("❌ Ошибка загрузки модуля охоты:", error);
-        }
-        
-        // В крайнем случае создаем заглушку
-        this.createHuntActionStub();
-        console.log("⚠️ Используется заглушка модуля охоты");
-        return false;
-    }
-
-    // ========== ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА МОДУЛЯ ОХОТЫ ==========
-
-    async forceLoadHuntModule() {
-        console.log("🔄 ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА МОДУЛЯ ОХОТЫ");
-        
-        // Удаляем старый модуль если есть
-        delete this.actionModules['hunt'];
-        
-        // Пробуем несколько путей
-        const paths = [
-            'data/actions/hunt-action.js',
-            'data/modules/actions/hunt-action.js',
-            'modules/actions/hunt-action.js',
-            'hunt-action.js'
-        ];
-        
-        for (const path of paths) {
-            console.log(`   Пробуем: ${path}`);
-            try {
-                const response = await fetch(path);
-                if (response.ok) {
-                    console.log(`✅ Файл найден: ${path}`);
-                    const moduleCode = await response.text();
-                    
-                    // Проверяем содержимое файла
-                    console.log(`📄 Размер файла: ${moduleCode.length} байт`);
-                    console.log(`   Содержит 'showHuntTargetSelection': ${moduleCode.includes('showHuntTargetSelection')}`);
-                    console.log(`   Содержит 'execute': ${moduleCode.includes('execute')}`);
-                    console.log(`   Содержит 'class HuntAction': ${moduleCode.includes('class HuntAction')}`);
-                    
-                    // Загружаем скрипт
-                    const script = document.createElement('script');
-                    script.textContent = moduleCode;
-                    document.head.appendChild(script);
-                    
-                    console.log("✅ Скрипт загружен в DOM");
-                    
-                    // Ждем немного чтобы класс зарегистрировался
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    
-                    if (window.HuntAction) {
-                        console.log("✅ Класс HuntAction зарегистрирован глобально");
-                        this.actionModules['hunt'] = new window.HuntAction(this);
-                        console.log("✅ Экземпляр HuntAction создан");
-                        return true;
-                    } else {
-                        console.log("❌ Класс HuntAction не зарегистрирован после загрузки");
-                    }
-                } else {
-                    console.log(`   ❌ Не доступен: ${path}`);
-                }
-            } catch (error) {
-                console.log(`   ❌ Ошибка: ${error.message}`);
-            }
-        }
-        
-        console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
-        this.createHuntActionStub();
-        return false;
-    }
-
-    // ========== ДИАГНОСТИКА МОДУЛЯ ОХОТЫ ==========
-
-    async diagnoseHuntModule() {
-        console.group("🔍 ДИАГНОСТИКА МОДУЛЯ ОХОТЫ");
-        
-        // 1. Проверяем состояние модуля
-        console.log("1. Состояние модуля охоты:");
-        console.log("   - actionModules['hunt']:", this.actionModules['hunt']);
-        console.log("   - Тип:", typeof this.actionModules['hunt']);
-        console.log("   - Является ли классом?", this.actionModules['hunt']?.constructor?.name);
-        
-        // 2. Проверяем методы
-        if (this.actionModules['hunt']) {
-            const hunt = this.actionModules['hunt'];
-            console.log("2. Методы модуля охоты:");
-            console.log("   - execute:", typeof hunt.execute);
-            console.log("   - showHuntTargetSelection:", typeof hunt.showHuntTargetSelection);
-            console.log("   - performHuntForMonster:", typeof hunt.performHuntForMonster);
-            if (hunt) {
-                const prototype = Object.getPrototypeOf(hunt);
-                console.log("   - Все методы:", Object.getOwnPropertyNames(prototype));
-            }
-        }
-        
-        // 3. Проверяем глобальный класс
-        console.log("3. Глобальный класс HuntAction:");
-        console.log("   - window.HuntAction:", window.HuntAction);
-        console.log("   - Тип:", typeof window.HuntAction);
-        
-        // 4. Проверяем загрузку файла
-        console.log("4. Проверка загрузки файла:");
-        try {
-            const testResponse = await fetch('data/actions/hunt-action.js');
-            console.log("   - Файл hunt-action.js:", testResponse.ok ? "НАЙДЕН" : "НЕ НАЙДЕН");
-        } catch (error) {
-            console.log("   - Ошибка проверки файла:", error.message);
-        }
-        
-        // 5. Проверяем связь с MapSystem
-        console.log("5. Связь с MapSystem:");
-        console.log("   - MapSystem:", this.mapSystem);
-        console.log("   - MapSystem.currentHero:", this.mapSystem?.currentHero);
-        
-        console.groupEnd();
-        
-        return {
-            moduleExists: !!this.actionModules['hunt'],
-            hasExecuteMethod: typeof this.actionModules['hunt']?.execute === 'function',
-            hasShowHuntMethod: typeof this.actionModules['hunt']?.showHuntTargetSelection === 'function',
-            fileExists: false, // будет обновлено
-            globalClassExists: !!window.HuntAction
-        };
-    }
-
-    // ========== ТЕСТ ВЫБОРА ТРОФЕЯ ==========
-
-    testHuntSelection() {
-        console.log("🧪 ТЕСТ: Симуляция выбора трофея");
-        
-        // Создаем тестовые данные
-        const testResources = {
-            'bones': [
-                { id: 'small_bone', name: '🦴 Маленькая кость', description: 'Кость мелкого животного' },
-                { id: 'wolf_bone', name: '🐺 Волчья кость', description: 'Кость волка' },
-                { id: 'horse_bone', name: '🐴 Конская кость', description: 'Кость лошади' }
-            ],
-            'leathers': [
-                { id: 'thin_leather', name: '🐂 Тонкая кожа', description: 'Кожа мелкого животного' },
-                { id: 'strong_leather', name: '🦌 Прочная кожа', description: 'Кожа оленя' }
-            ]
-        };
-        
-        // Показываем интерфейс выбора трофея
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (actionsContainer) {
-            let html = `
-                <div class="hunt-target-selection">
-                    <h3 style="color: #00ffcc; margin-bottom: 15px; text-align: center;">
-                        🏹 ВЫБЕРИТЕ ТРОФЕЙ ДЛЯ ОХОТЫ
-                    </h3>
-                    <p style="text-align: center; color: #aaa; margin-bottom: 20px;">
-                        Это тестовый интерфейс. В реальной игре здесь будут ресурсы из файла.
-                    </p>
-                    
-                    <div class="hunt-categories">
-            `;
             
-            Object.entries(testResources).forEach(([category, resources]) => {
-                const categoryName = category === 'bones' ? '🦴 Кости' : '🐂 Кожи';
-                
-                html += `
-                    <div class="hunt-category">
-                        <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
-                            ${categoryName}
-                        </h4>
-                        <div class="hunt-targets-grid">
-                `;
-                
-                resources.forEach(resource => {
-                    html += `
-                        <div class="hunt-target-item" onclick="game.systems.action.testMonsterSelection('${resource.id}', '${resource.name}')">
-                            <div class="hunt-target-name">${resource.name}</div>
-                            <div class="hunt-target-description">${resource.description}</div>
-                            <div class="test-tag" style="font-size: 10px; color: #f59e0b; margin-top: 5px;">[ТЕСТ]</div>
-                        </div>
-                    `;
-                });
-                
-                html += `
-                        </div>
-                    </div>
-                `;
+            // Загружаем ресурсы
+            if (resourcesResponse && resourcesResponse.ok) {
+                const resourcesData = await resourcesResponse.json();
+                this.resources = resourcesData;
+                console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
+            } else {
+                console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
+                this.createDefaultResources();
+            }
+            
+            // Загружаем картинки локаций (асинхронно, не ждем завершения)
+            this.loadLocationImages().catch(error => {
+                console.error("❌ Ошибка загрузки картинок локаций:", error);
             });
             
-            html += `
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding: 15px; background: rgba(255, 100, 100, 0.1); border-radius: 8px; border: 1px solid #ff4444;">
-                        <strong style="color: #ff4444;">⚠️ ВАЖНО:</strong>
-                        <p style="margin-top: 8px; font-size: 12px; color: #ffcccc;">
-                            1. Сначала выбирается трофей<br>
-                            2. Затем показываются монстры, у которых падает этот трофей<br>
-                            3. Выбирается монстр для охоты<br>
-                            4. Начинается бой с выбранным монстром
-                        </p>
-                    </div>
-                </div>
-            `;
+            return true;
             
-            actionsContainer.innerHTML = html;
+        } catch (error) {
+            console.error("❌ Ошибка загрузки данных клеток:", error);
             
-            // Стилизуем
-            setTimeout(() => {
-                const grid = document.querySelector('.hunt-targets-grid');
-                if (grid) {
-                    grid.style.cssText = `
-                        display: grid;
-                        grid-template-columns: repeat(2, 1fr);
-                        gap: 10px;
-                        margin-bottom: 15px;
-                    `;
-                }
-                
-                const items = document.querySelectorAll('.hunt-target-item');
-                items.forEach(item => {
-                    item.style.cssText = `
-                        background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                        border: 1px solid #00aaff;
-                        border-radius: 8px;
-                        padding: 12px;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                    `;
-                    
-                    item.onmouseenter = () => {
-                        item.style.transform = 'translateY(-2px)';
-                        item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
-                    };
-                    item.onmouseleave = () => {
-                        item.style.transform = 'translateY(0)';
-                        item.style.boxShadow = 'none';
-                    };
-                });
-            }, 50);
-        }
-    }
-
-    testMonsterSelection(resourceId, resourceName) {
-        console.log(`🧪 ТЕСТ: Выбран трофей ${resourceName} (${resourceId})`);
-        
-        // Тестовые монстры
-        const testMonsters = [
-            { id: 'wolf', name: '🐺 Волк', level: 2, health: 50, armor: 5, damage: 15 },
-            { id: 'bear', name: '🐻 Медведь', level: 3, health: 80, armor: 10, damage: 25 },
-            { id: 'boar', name: '🐗 Кабан', level: 1, health: 30, armor: 3, damage: 10 }
-        ];
-        
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (actionsContainer) {
-            let html = `
-                <div class="monster-selection">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h3 style="color: #00ffcc; margin: 0;">
-                            🎯 ВЫБЕРИТЕ МОНСТРА ДЛЯ ОХОТЫ
-                        </h3>
-                        <button class="btn-control" onclick="game.systems.action.testHuntSelection()" 
-                                style="padding: 5px 10px; font-size: 12px;">
-                            ↩️ Назад
-                        </button>
-                    </div>
-                    
-                    <div class="selected-resource-info" style="background: rgba(0, 100, 255, 0.1); border: 1px solid #00aaff; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center;">
-                        <div style="font-size: 18px; color: #00aaff; margin-bottom: 5px;">
-                            Цель охоты: ${resourceName}
-                        </div>
-                        <div style="color: #aaa; font-size: 12px;">
-                            [ТЕСТОВЫЙ РЕСУРС]
-                        </div>
-                    </div>
-                    
-                    <div class="monsters-grid">
-            `;
-            
-            testMonsters.forEach(monster => {
-                html += `
-                    <div class="monster-card" data-monster-id="${monster.id}">
-                        <div class="monster-header">
-                            <div class="monster-name">${monster.name}</div>
-                            <div class="monster-difficulty" style="color: #44ff44;">
-                                Легкий (Ур. ${monster.level})
-                            </div>
-                        </div>
-                        
-                        <div class="monster-stats" style="margin: 10px 0; font-size: 12px;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #ff6666;">❤️ Здоровье:</span>
-                                <span>${monster.health}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #6666ff;">🛡️ Броня:</span>
-                                <span>${monster.armor}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #ffaa00;">⚔️ Урон:</span>
-                                <span>${monster.damage}</span>
-                            </div>
-                        </div>
-                        
-                        <div style="text-align: center; margin-top: 15px;">
-                            <button class="btn-control" onclick="game.systems.action.startTestHunt('${resourceId}', '${monster.id}', '${monster.name}')"
-                                    style="padding: 8px 15px; font-size: 12px;">
-                                🏹 Охотиться на этого
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += `
-                    </div>
-                    
-                    <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; font-size: 12px; color: #aaa; border: 1px solid rgba(0, 255, 204, 0.3);">
-                        <strong style="color: #00ffcc;">📝 Это тестовый интерфейс:</strong>
-                        <p style="margin-top: 8px;">
-                            1. В реальной игре здесь будут монстры из базы данных<br>
-                            2. Каждый монстр будет иметь список лута<br>
-                            3. Шанс встретить конкретного монстра зависит от сложности<br>
-                            4. После победы вы получите выбранный трофей
-                        </p>
-                    </div>
-                </div>
-            `;
-            
-            actionsContainer.innerHTML = html;
-            
-            // Стилизуем
-            setTimeout(() => {
-                const grid = document.querySelector('.monsters-grid');
-                if (grid) {
-                    grid.style.cssText = `
-                        display: grid;
-                        grid-template-columns: repeat(3, 1fr);
-                        gap: 15px;
-                        margin-bottom: 20px;
-                    `;
-                }
-                
-                const cards = document.querySelectorAll('.monster-card');
-                cards.forEach(card => {
-                    card.style.cssText = `
-                        background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
-                        border: 1px solid #00aaff;
-                        border-radius: 8px;
-                        padding: 15px;
-                    `;
-                });
-            }, 50);
-        }
-    }
-
-    startTestHunt(resourceId, monsterId, monsterName) {
-        console.log(`🧪 ТЕСТ: Начинаем охоту на ${monsterName} за ресурс ${resourceId}`);
-        
-        // Сохраняем информацию для теста
-        this.mapSystem.pendingAction = {
-            action: 'hunt',
-            row: 0,
-            col: 0,
-            targetResource: { id: resourceId, name: 'Тестовый ресурс' },
-            wasSuccess: true,
-            doubleLoot: false
-        };
-        
-        // Начинаем тестовый бой
-        const battleSystem = window.game?.systems?.battle;
-        if (battleSystem) {
-            const testMonster = {
-                id: monsterId,
-                name: monsterName,
-                level: 2,
-                health: 50,
-                armor: 5,
-                damage: 15,
-                loot: {
-                    guaranteed: [
-                        { id: resourceId, quantity: 1 }
-                    ]
-                }
-            };
-            
-            this.showNotification(`🏹 Начинается тестовая охота на ${monsterName}!`, 'info');
-            battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, testMonster, 'hunt');
-        } else {
-            this.showNotification("❌ Система боя не доступна для теста", 'error');
-        }
-    }
-
-    // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
-
-  async loadCellData() {
-    try {
-        console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
-        
-        // Используем Promise.all для параллельной загрузки
-        const [cellTypesResponse, resourcesResponse] = await Promise.all([
-            fetch('data/cell_types.json').catch(() => {
-                console.warn("⚠️ cell_types.json не загружен, создаем базовые типы");
-                return null;
-            }),
-            fetch('data/resources.json').catch(() => {
-                console.warn("⚠️ resources.json не загружен, создаем базовые ресурсы");
-                return null;
-            })
-        ]);
-        
-        // Загружаем типы клеток
-        if (cellTypesResponse && cellTypesResponse.ok) {
-            const cellData = await cellTypesResponse.json();
-            this.cellTypes = cellData.cell_types || {};
-            console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
-        } else {
-            console.warn("❌ cell_types.json не загружен, создаем базовые типы");
+            // Создаем базовые данные при ошибке
             this.createDefaultCellTypes();
-        }
-        
-        // Загружаем ресурсы
-        if (resourcesResponse && resourcesResponse.ok) {
-            const resourcesData = await resourcesResponse.json();
-            this.resources = resourcesData;
-            console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
-        } else {
-            console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
             this.createDefaultResources();
+            
+            return false;
         }
-        
-        // ВАЖНО: Инициализируем модули действий ПОСЛЕ загрузки данных
-        console.log("🔄 Инициализация модулей действий после загрузки данных...");
-        await this.initializeActionModules();
-        
-        // Загружаем картинки локаций (асинхронно, не ждем завершения)
-        this.loadLocationImages().catch(error => {
-            console.error("❌ Ошибка загрузки картинок локаций:", error);
-        });
-        
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Ошибка загрузки данных клеток:", error);
-        
-        // Создаем базовые данные при ошибке
-        this.createDefaultCellTypes();
-        this.createDefaultResources();
-        
-        // Пробуем инициализировать модули даже при ошибке
-        try {
-            await this.initializeActionModules();
-        } catch (moduleError) {
-            console.error("❌ Ошибка инициализации модулей:", moduleError);
-        }
-        
-        return false;
     }
-}
 
     createDefaultCellTypes() {
         this.cellTypes = {
@@ -890,8 +370,7 @@ async loadHuntModuleWithFallback() {
                     search_stone: 60,
                     set_trap: 40,
                     prepare_ambush: 55,
-                    hunt: 70,
-                    hunt_caravan: 30,
+                    hunt: 70, // Шанс охоты теперь может управляться модулем
                     take_assassination_contract: 20,
                     light_campfire: 70,
                     guard_caravan: 35,
@@ -920,7 +399,6 @@ async loadHuntModuleWithFallback() {
                     set_trap: 75,
                     prepare_ambush: 30,
                     hunt: 60,
-                    hunt_caravan: 10,
                     take_assassination_contract: 5,
                     light_campfire: 90,
                     guard_caravan: 25,
@@ -949,7 +427,6 @@ async loadHuntModuleWithFallback() {
                     set_trap: 85,
                     prepare_ambush: 65,
                     hunt: 80,
-                    hunt_caravan: 45,
                     take_assassination_contract: 35,
                     light_campfire: 50,
                     guard_caravan: 40,
@@ -978,7 +455,6 @@ async loadHuntModuleWithFallback() {
                     set_trap: 60,
                     prepare_ambush: 45,
                     hunt: 50,
-                    hunt_caravan: 20,
                     take_assassination_contract: 15,
                     light_campfire: 85,
                     guard_caravan: 30,
@@ -1220,6 +696,14 @@ async loadHuntModuleWithFallback() {
     getActionChance(action, cellType) {
         console.log(`🔍 ActionSystem: Запрос шанса для действия: ${action}, тип клетки: ${cellType}`);
         
+        // Проверяем, есть ли модуль для этого действия
+        if (this.actionModules[action]) {
+            // Делегируем модулю расчет шанса
+            const chance = this.actionModules[action].calculateChance(cellType);
+            console.log(`   Шанс ${action} для ${cellType}: ${chance}% (из модуля)`);
+            return chance;
+        }
+        
         const cellTypeData = this.cellTypes[cellType];
         
         if (!cellTypeData) {
@@ -1245,7 +729,10 @@ async loadHuntModuleWithFallback() {
     getAvailableActionsForCellType(cellType) {
         const cellTypeData = this.cellTypes[cellType];
         if (!cellTypeData || !cellTypeData.action_chances) {
-            return this.allActions.filter(action => (this.baseActionChances[action] || 25) > 0);
+            return this.allActions.filter(action => {
+                const chance = this.getActionChance(action, cellType);
+                return chance > 0;
+            });
         }
         
         const availableActions = Object.keys(cellTypeData.action_chances)
@@ -1729,13 +1216,20 @@ async loadHuntModuleWithFallback() {
         ">`;
         
         this.currentCellActions.forEach((action, index) => {
+            // Получаем конфигурацию действия
+            let config;
+            if (this.actionModules[action]) {
+                config = this.actionModules[action].config;
+            } else {
+                config = this.actionConfigs[action] || {
+                    icon: '❓',
+                    name: action.replace(/_/g, ' '),
+                    description: 'Неизвестное действие'
+                };
+            }
+            
             const chance = this.getActionChance(action, this.currentCellType);
             const chancePercent = Math.round(chance);
-            const config = this.actionConfigs[action] || {
-                icon: '❓',
-                name: action.replace(/_/g, ' '),
-                description: 'Неизвестное действие'
-            };
             
             let chanceColor = '#ff4444';
             if (chance >= 40) chanceColor = '#ffaa00';
@@ -2015,76 +1509,32 @@ async loadHuntModuleWithFallback() {
         });
     }
 
+    // ========== ВЫПОЛНЕНИЕ ДЕЙСТВИЙ ==========
+
     async performCellAction(action, row, col) {
         console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
         
-        // ========== ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ==========
-        if (action === 'hunt') {
-            console.log(`🏹 === ОБРАБОТКА ОХОТЫ ===`);
+        // Проверяем, есть ли модуль для этого действия
+        if (this.actionModules[action]) {
+            console.log(`🔄 Делегируем выполнение модулю ${action}`);
             
-            // 1. Проверяем, загружен ли модуль охоты
-            if (!this.actionModules['hunt']) {
-                console.log("🔄 Модуль охоты не загружен, пробуем загрузить...");
-                await this.ensureHuntModuleLoaded();
+            // Проверяем, загружен ли модуль
+            if (!this.actionModules[action].execute) {
+                console.error(`❌ У модуля ${action} нет метода execute`);
+                await this.ensureModuleLoaded(action);
             }
             
-            // 2. Получаем модуль охоты
-            const huntModule = this.actionModules['hunt'];
-            if (!huntModule) {
-                console.error("❌ Модуль охоты не найден даже после загрузки");
-                this.showNotification("❌ Система охоты не доступна!", 'error');
-                return;
-            }
-            
-            console.log("✅ Модуль охоты найден:", huntModule);
-            
-            // 3. Проверяем метод execute
-            if (typeof huntModule.execute !== 'function') {
-                console.error("❌ У модуля нет метода execute!");
-                this.showNotification("❌ Ошибка модуля охоты!", 'error');
-                return;
-            }
-            
-            // 4. Получаем клетку для проверки
-            const cellKey = `${col},${row}`;
-            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-            
-            if (!cell) {
-                console.error(`❌ Клетка [${col}, ${row}] не найдена`);
-                this.showNotification("❌ Клетка не найдена!", 'error');
-                return;
-            }
-            
-            if (cell.explored === true) {
-                console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
-                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-                return;
-            }
-            
-            // 5. Проверяем, достижима ли клетка
-            const isReachable = this.mapSystem.isCellReachable(cell);
-            if (!isReachable) {
-                console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
-                this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
-                return;
-            }
-            
-            // 6. Вызываем execute модуля охоты
-            console.log(`✅ Вызываем huntModule.execute(${row}, ${col})`);
-            console.log("   - Модуль:", huntModule);
-            console.log("   - Метод execute:", huntModule.execute);
-            
+            // Вызываем модуль
             try {
-                // Привязываем правильный контекст
-                return await huntModule.execute(row, col);
+                return await this.actionModules[action].execute(row, col);
             } catch (error) {
-                console.error("❌ Ошибка выполнения модуля охоты:", error);
-                this.showNotification("❌ Ошибка системы охоты!", 'error');
+                console.error(`❌ Ошибка выполнения модуля ${action}:`, error);
+                this.showNotification(`❌ Ошибка системы ${action}!`, 'error');
                 return;
             }
         }
         
-        // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
+        // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ ==========
         if (action === 'stealth_movement') {
             const cellKey = `${col},${row}`;
             const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
@@ -2102,7 +1552,7 @@ async loadHuntModuleWithFallback() {
             return;
         }
         
-        // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ==========
+        // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ ==========
         const resourceActions = [
             'search_treasure', 'search_water', 'search_berries', 
             'search_mushrooms', 'search_herbs', 'search_ore', 
@@ -2115,9 +1565,7 @@ async loadHuntModuleWithFallback() {
             return;
         }
         
-        // ========== СТАНДАРТНАЯ ОБРАБОТКА ОСТАЛЬНЫХ ДЕЙСТВИЙ ==========
-        
-        // Получаем клетку
+        // ========== ОБЩАЯ ОБРАБОТКА ДЕЙСТВИЙ ==========
         const cellKey = `${col},${row}`;
         const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
         if (!cell) {
@@ -2200,53 +1648,7 @@ async loadHuntModuleWithFallback() {
         }, 800);
     }
 
-    handleHuntActionSuccess(row, col) {
-        console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
-        
-        const cellKey = `${col},${row}`;
-        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        if (!cellTypeData) {
-            console.error("❌ Нет данных типа клетки");
-            return;
-        }
-        
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) {
-            console.error("❌ BattleSystem не доступна");
-            this.showNotification("❌ Не удалось начать охоту", 'error');
-            return;
-        }
-        
-        const monsterLevel = cellTypeData.monster_level || 1;
-        const randomMonster = this.getMonsterByLevel(monsterLevel);
-        
-        if (!randomMonster) {
-            console.error(`❌ Не найден монстр уровня ${monsterLevel}`);
-            this.showNotification("❌ Не удалось найти дичь для охоты", 'error');
-            return;
-        }
-        
-        this.mapSystem.pendingAction = {
-            action: 'hunt',
-            row: row,
-            col: col,
-            cellTypeData: cellTypeData,
-            wasSuccess: true,
-            doubleLoot: true
-        };
-        
-        console.log(`🏹 Начинаем охоту на ${randomMonster.name} (уровень ${monsterLevel}) с двойным лутодропом`);
-        
-        this.showNotification(`🏹 Вы успешно выследили ${randomMonster.name}! Начинается бой.`, 'success');
-        
-        battleSystem.startBattleWithMonster(this.mapSystem.currentHero, randomMonster.id, 'hunt');
-    }
-
     handleActionSuccess(action, row, col) {
-        const config = this.actionConfigs[action];
-        
         const successMessages = {
             'search_treasure': "💰 Найдены ценности!",
             'search_water': "💧 Найдена вода!",
@@ -2257,8 +1659,6 @@ async loadHuntModuleWithFallback() {
             'search_stone': "🪨 Собраны камни!",
             'set_trap': "🪤 Ловушка установлена!",
             'prepare_ambush': "🎯 Позиция для засады подготовлена!",
-            'hunt': "🏹 Успешная охота! Начинается бой с монстром.",
-            'hunt_caravan': "🏹 Успешная охота на караван!",
             'take_assassination_contract': "🗡️ Контракт на убийство получен!",
             'light_campfire': "🔥 Костёр разожжён!",
             'guard_caravan': "🛡️ Найм на охрану каравана успешен!",
@@ -2267,13 +1667,6 @@ async loadHuntModuleWithFallback() {
         };
         
         const message = successMessages[action] || "✅ Действие успешно!";
-        
-        // Охота обрабатывается через модуль, так что здесь не запускаем бой
-        if (action === 'hunt') {
-            // Этот код не должен выполняться, так как охота обрабатывается через модуль
-            console.warn("⚠️ Охота не должна обрабатываться через handleActionSuccess!");
-            return;
-        }
         
         const resourceMap = {
             'search_treasure': 'treasure',
@@ -2285,8 +1678,6 @@ async loadHuntModuleWithFallback() {
             'search_stone': 'stones',
             'set_trap': 'traps',
             'prepare_ambush': 'ambush',
-            'hunt': 'loot',
-            'hunt_caravan': 'loot',
             'take_assassination_contract': 'contracts',
             'light_campfire': 'shelter',
             'guard_caravan': 'gold',
@@ -2321,8 +1712,6 @@ async loadHuntModuleWithFallback() {
             'search_stone': "❌ Камни слишком хрупкие",
             'set_trap': "❌ Ловушка сломалась при установке",
             'prepare_ambush': "❌ Позиция оказалась неподходящей",
-            'hunt': "❌ Не удалось найти дичь для охоты",
-            'hunt_caravan': "❌ Караван оказался слишком хорошо охраняем",
             'take_assassination_contract': "❌ Заказчик передумал или конкуренты перебили цену",
             'light_campfire': "❌ Дрова оказались сырыми, не удалось разжечь огонь",
             'guard_caravan': "❌ Вас не взяли на работу - недостаточно опыта или репутации",
@@ -2392,100 +1781,7 @@ async loadHuntModuleWithFallback() {
         return allMonsters[Math.floor(Math.random() * allMonsters.length)];
     }
 
-    giveRandomResource(resourceType, row, col) {
-        const resources = this.resources[resourceType];
-        if (!resources || resources.length === 0) {
-            console.warn(`⚠️ Ресурсы типа ${resourceType} не найдены`);
-            return;
-        }
-        
-        const randomResource = resources[Math.floor(Math.random() * resources.length)];
-        const quantity = Math.floor(Math.random() * 3) + 1;
-        
-        this.addResourceToHero(randomResource.id, randomResource.name, quantity, resourceType);
-    }
-
-    addResourceToHero(resourceId, resourceName, quantity, resourceType) {
-        if (!this.mapSystem.currentHero.resources) {
-            this.mapSystem.currentHero.resources = {};
-        }
-        
-        if (!this.mapSystem.currentHero.resources[resourceId]) {
-            this.mapSystem.currentHero.resources[resourceId] = {
-                id: resourceId,
-                name: resourceName,
-                count: 0,
-                type: resourceType
-            };
-        }
-        
-        this.mapSystem.currentHero.resources[resourceId].count += quantity;
-        
-        console.log(`📦 ActionSystem: Добавлен ресурс ${resourceId}: ${quantity} шт. Всего: ${this.mapSystem.currentHero.resources[resourceId].count}`);
-        
-        this.updateHeroResourcesUI();
-        
-        if (window.game) {
-            window.game.saveGame();
-        }
-    }
-
-    updateHeroResourcesUI(containerId = 'heroResourcesList') {
-        const resourcesList = document.getElementById(containerId);
-        if (!resourcesList || !this.mapSystem.currentHero) return;
-        
-        if (!this.mapSystem.currentHero.resources || Object.keys(this.mapSystem.currentHero.resources).length === 0) {
-            resourcesList.innerHTML = '<div class="no-resources" style="text-align: center; color: #94a3b8; padding: 20px;">Ресурсов пока нет</div>';
-            return;
-        }
-        
-        let resourcesHTML = '';
-        Object.values(this.mapSystem.currentHero.resources).forEach(resource => {
-            const icon = this.getResourceIcon(resource.type);
-            resourcesHTML += `
-                <div class="resource-item" style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 8px 12px;
-                    background: rgba(0, 0, 0, 0.3);
-                    border-radius: 6px;
-                    margin-bottom: 8px;
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                ">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 18px;">${icon}</span>
-                        <span style="color: #cbd5e1; font-size: 14px;">${resource.name}</span>
-                    </div>
-                    <span style="color: #f59e0b; font-weight: bold; font-size: 16px;">x${resource.count}</span>
-                </div>
-            `;
-        });
-        
-        resourcesList.innerHTML = resourcesHTML;
-    }
-
-    getResourceIcon(resourceType) {
-        const icons = {
-            'treasure': '💰',
-            'water': '💧',
-            'berries': '🫐',
-            'mushrooms': '🍄',
-            'herbs': '🌿',
-            'ores': '⛏️',
-            'stones': '🪨',
-            'traps': '🪤',
-            'ambush': '🎯',
-            'loot': '📦',
-            'contracts': '📜',
-            'shelter': '🏕️',
-            'food': '🍖',
-            'woods': '🪵'
-        };
-        return icons[resourceType] || '📦';
-    }
-
-    // ========== СПЕЦИАЛЬНЫЕ ДЕЙСТВИЯ ==========
+    // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ ==========
 
     performResourceAction(action, row, col) {
         const cellKey = `${col},${row}`;
@@ -2643,6 +1939,8 @@ async loadHuntModuleWithFallback() {
         }, 1000);
     }
 
+    // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ ==========
+
     handleStealthMovement(cell) {
         const neighbors = this.mapSystem.getHexNeighbors(this.mapSystem.playerTacticalPosition.y, this.mapSystem.playerTacticalPosition.x);
         
@@ -2769,6 +2067,105 @@ async loadHuntModuleWithFallback() {
                 battleSystem.startBattleWithMonster(this.mapSystem.currentHero, null, 'movement');
             }
         }
+    }
+
+    // ========== УПРАВЛЕНИЕ РЕСУРСАМИ ==========
+
+    giveRandomResource(resourceType, row, col) {
+        const resources = this.resources[resourceType];
+        if (!resources || resources.length === 0) {
+            console.warn(`⚠️ Ресурсы типа ${resourceType} не найдены`);
+            return;
+        }
+        
+        const randomResource = resources[Math.floor(Math.random() * resources.length)];
+        const quantity = Math.floor(Math.random() * 3) + 1;
+        
+        this.addResourceToHero(randomResource.id, randomResource.name, quantity, resourceType);
+    }
+
+    addResourceToHero(resourceId, resourceName, quantity, resourceType) {
+        if (!this.mapSystem.currentHero.resources) {
+            this.mapSystem.currentHero.resources = {};
+        }
+        
+        if (!this.mapSystem.currentHero.resources[resourceId]) {
+            this.mapSystem.currentHero.resources[resourceId] = {
+                id: resourceId,
+                name: resourceName,
+                count: 0,
+                type: resourceType
+            };
+        }
+        
+        this.mapSystem.currentHero.resources[resourceId].count += quantity;
+        
+        console.log(`📦 ActionSystem: Добавлен ресурс ${resourceId}: ${quantity} шт. Всего: ${this.mapSystem.currentHero.resources[resourceId].count}`);
+        
+        this.updateHeroResourcesUI();
+        
+        if (window.game) {
+            window.game.saveGame();
+        }
+    }
+
+    updateHeroResourcesUI(containerId = 'heroResourcesList') {
+        const resourcesList = document.getElementById(containerId);
+        if (!resourcesList || !this.mapSystem.currentHero) return;
+        
+        if (!this.mapSystem.currentHero.resources || Object.keys(this.mapSystem.currentHero.resources).length === 0) {
+            resourcesList.innerHTML = '<div class="no-resources" style="text-align: center; color: #94a3b8; padding: 20px;">Ресурсов пока нет</div>';
+            return;
+        }
+        
+        let resourcesHTML = '';
+        Object.values(this.mapSystem.currentHero.resources).forEach(resource => {
+            const icon = this.getResourceIcon(resource.type);
+            resourcesHTML += `
+                <div class="resource-item" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 8px 12px;
+                    background: rgba(0, 0, 0, 0.3);
+                    border-radius: 6px;
+                    margin-bottom: 8px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                ">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 18px;">${icon}</span>
+                        <span style="color: #cbd5e1; font-size: 14px;">${resource.name}</span>
+                    </div>
+                    <span style="color: #f59e0b; font-weight: bold; font-size: 16px;">x${resource.count}</span>
+                </div>
+            `;
+        });
+        
+        resourcesList.innerHTML = resourcesHTML;
+    }
+
+    getResourceIcon(resourceType) {
+        const icons = {
+            'treasure': '💰',
+            'water': '💧',
+            'berries': '🫐',
+            'mushrooms': '🍄',
+            'herbs': '🌿',
+            'ores': '⛏️',
+            'stones': '🪨',
+            'traps': '🪤',
+            'ambush': '🎯',
+            'loot': '📦',
+            'contracts': '📜',
+            'shelter': '🏕️',
+            'food': '🍖',
+            'woods': '🪵',
+            'bones': '🦴',
+            'leathers': '🐂',
+            'hides': '🐅',
+            'furs': '🦊'
+        };
+        return icons[resourceType] || '📦';
     }
 
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
