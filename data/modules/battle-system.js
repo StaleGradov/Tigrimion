@@ -2072,15 +2072,25 @@ endTacticalBattle(victory, escape = false) {
             
             // Передаем результат в MapSystem для обработки
             mapSystem.completeHuntAfterBattle(victory, escape, doubleLoot);
+            
+            // ⭐ ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ
+            setTimeout(() => {
+                this.showBattleResult(victory, escape);
+            }, 500);
+            
         } else {
             console.error("❌ MapSystem не доступна для обработки охоты");
+            // ⭐ ИСПРАВЛЕНИЕ: Все равно показываем результат
+            setTimeout(() => {
+                this.showBattleResult(victory, escape);
+            }, 500);
         }
         
-        // Показываем результат боя
-        this.showBattleResult(victory, escape);
-        return;
+        return; // ⭐ ВАЖНО: Выходим из метода, так как охота обработана
     }
 
+    // ========== СТАНДАРТНАЯ ОБРАБОТКА БОЯ ==========
+    
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
@@ -2136,26 +2146,21 @@ endTacticalBattle(victory, escape = false) {
     
     // ========== ОБРАБОТКА КОНТЕКСТА БОЯ ==========
     
-    // Для охоты - специальная обработка
-    if (this.battleContext === 'hunt' && window.game.systems.map) {
-        console.log(`🏹 Завершение охоты в BattleSystem`);
-        
-        // Передаем флаг двойного лута для охоты
-        const doubleLoot = this.battleLoot.length > 0 && this.battleLoot.some(item => item.doubleLoot);
-        
-        // Уведомляем MapSystem о завершении охоты
-        window.game.systems.map.completeHuntAfterBattle(victory, escape, doubleLoot);
-    }
     // Для обычного перемещения
-    else if (this.battleContext === 'movement' && window.game.systems.map) {
+    if (this.battleContext === 'movement' && window.game.systems.map) {
         console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
+        
+        // ⭐ ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ ПОСЛЕ ОБРАБОТКИ
+        setTimeout(() => {
+            this.showBattleResult(victory, escape);
+        }, 500);
     }
-    // Для охоты с MapSystem (старая версия)
-    else if (this.battleContext === 'hunt' && window.game.systems.map) {
-        // Для охоты передаем дополнительный флаг doubleLoot
-        const doubleLoot = this.battleLoot.length > 0 && this.battleLoot.some(item => item.doubleLoot);
-        window.game.systems.map.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
+    else {
+        // ⭐ ИСПРАВЛЕНИЕ: ДЛЯ ДРУГИХ КОНТЕКСТОВ ТОЖЕ ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
+        setTimeout(() => {
+            this.showBattleResult(victory, escape);
+        }, 500);
     }
     
     // Сохраняем игру
@@ -2163,9 +2168,6 @@ endTacticalBattle(victory, escape = false) {
         window.game.saveGame();
         console.log("💾 Состояние сохранено после боя");
     }
-    
-    // Показываем результат боя
-    this.showBattleResult(victory, escape);
 }
 // В BattleSystem добавьте:
 handleHuntContext(victory, monster) {
@@ -2630,6 +2632,9 @@ showBattleResult(victory, escape = false) {
 
     let resultHTML = '';
     
+    // ⭐ ДОБАВЛЯЕМ ИНФОРМАЦИЮ О КОНТЕКСТЕ В ОТЛАДКУ
+    console.log(`📊 Показ результатов боя (контекст: ${this.battleContext})`);
+    
     if (victory) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
@@ -2644,11 +2649,15 @@ showBattleResult(victory, escape = false) {
             resourcesList = `<p style="font-size: 16px; color: #4ade80;">📦 Всего ресурсов: ${resourceCount}</p>`;
         }
         
+        // ⭐ ДОБАВЛЯЕМ КОНТЕКСТ БОЯ В СООБЩЕНИЕ
+        const contextInfo = this.battleContext === 'hunt' ? '<p style="font-size: 16px; color: #fbbf24;">🏹 Успешная охота!</p>' : '';
+        
         resultHTML = `
             <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
                 <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
                     <h3 style="color: #00ff00; margin-bottom: 20px; font-size: 28px;">🎉 ПОБЕДА!</h3>
                     <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
+                        ${contextInfo}
                         <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
                         <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
                         <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
@@ -2706,30 +2715,91 @@ showBattleResult(victory, escape = false) {
     if (existingOverlay) existingOverlay.remove();
     
     app.insertAdjacentHTML('beforeend', resultHTML);
+    
+    // ⭐ ДОБАВЛЯЕМ ЛОГИКУ ПРИНУДИТЕЛЬНОГО ЗАКРЫТИЯ ПО ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            this.closeBattleResult();
+        }
+    }, { once: true });
 }
-
 closeBattleResult() {
     const overlay = document.querySelector('.battle-result-overlay');
     if (overlay) overlay.remove();
     
-    this.returnToGameAfterBattle(); // ← Вызываем тот же метод
-}
-returnToGameAfterBattle() {
+    // ⭐ ИСПРАВЛЕНИЕ: В зависимости от контекста боя возвращаемся к нужному экрану
+    console.log(`🔙 Закрытие результатов боя, контекст: ${this.battleContext}`);
+    
+    // Очищаем состояние боя
     this.resultShown = false;
     this.battleEnding = false;
-    
-    if (this.battleContext === 'movement' && window.game && window.game.systems.map) {
-        window.game.showHeroGameScreen();
-        setTimeout(() => window.game.systems.map.showOverlay('tactical-map'), 100);
-    } else if (window.game) {
-        window.game.showHeroGameScreen();
-    }
-    
     this.battleActive = false;
     this.currentMonsters = [];
     this.selectedTarget = null;
     this.pendingAction = null;
+    
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Возвращаемся к карте, если бой был с контекстом 'movement' или 'hunt'
+    if ((this.battleContext === 'movement' || this.battleContext === 'hunt') && window.game && window.game.systems.map) {
+        console.log("🗺️ Возвращаемся к тактической карте...");
+        
+        // Сначала скрываем все оверлеи
+        if (window.game.hideOverlay) {
+            window.game.hideOverlay();
+        }
+        
+        // Ждем немного и показываем карту снова
+        setTimeout(() => {
+            const mapSystem = window.game.systems.map;
+            
+            // Проверяем, был ли бой охотой
+            if (this.battleContext === 'hunt' && mapSystem.pendingAction) {
+                // Для охоты показываем карту с выделенной клеткой
+                const { row, col } = mapSystem.pendingAction;
+                const cellKey = `${col},${row}`;
+                const cell = mapSystem.currentTacticalMap?.cells[cellKey];
+                
+                if (cell) {
+                    console.log(`🏹 Возвращаемся к клетке охоты [${col},${row}]`);
+                    mapSystem.showOverlay('tactical-map');
+                    
+                    // Ждем инициализации карты
+                    setTimeout(() => {
+                        if (mapSystem.actionSystem) {
+                            mapSystem.actionSystem.updateCellActionsUI(cell);
+                            mapSystem.actionSystem.highlightSelectedCell(cell);
+                        }
+                    }, 300);
+                } else {
+                    mapSystem.showOverlay('tactical-map');
+                }
+            } else {
+                // Для обычного боя просто показываем карту
+                mapSystem.showOverlay('tactical-map');
+                
+                // Обновляем позицию героя на карте
+                setTimeout(() => {
+                    const cellKey = `${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}`;
+                    const currentCell = mapSystem.currentTacticalMap?.cells[cellKey];
+                    
+                    if (currentCell && mapSystem.actionSystem) {
+                        mapSystem.actionSystem.updateCellActionsUI(currentCell);
+                        mapSystem.actionSystem.highlightSelectedCell(currentCell);
+                    }
+                }, 300);
+            }
+        }, 100);
+    } else {
+        // Для других контекстов возвращаемся к экрану героя
+        console.log("🎮 Возвращаемся к экрану героя");
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
+    }
+    
+    // Очищаем контекст боя
+    this.battleContext = 'normal';
 }
+    
 
 
 // ⭐ НОВЫЙ МЕТОД: Сохранение состояния боя
