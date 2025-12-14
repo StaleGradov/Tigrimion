@@ -3,37 +3,19 @@
 class HuntAction {
     constructor(actionSystem) {
         this.actionSystem = actionSystem;
-        this.mapSystem = actionSystem ? actionSystem.mapSystem : null;
-        
-        // Конфигурация действий охоты
-        this.configs = {
-            'hunt': {
-                id: 'hunt',
-                icon: '🏹',
-                name: 'Охотиться',
-                description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
-                class: 'action-hunt',
-                triggers_monster: true,
-                monster_level_multiplier: 1.0,
-                always_monster: true,
-                double_loot: true,
-                requires_module: 'hunt'
-            },
-            'hunt_caravan': {
-                id: 'hunt_caravan',
-                icon: '🏹',
-                name: 'Охотиться на караван',
-                description: 'Подкараулить торговый караван для нападения',
-                class: 'action-hunt',
-                triggers_monster: true,
-                monster_level_multiplier: 1.5,
-                requires_module: 'hunt'
-            }
+        this.mapSystem = actionSystem.mapSystem;
+        this.config = {
+            id: 'hunt',
+            icon: '🏹',
+            name: 'Охотиться',
+            description: 'Выследить и добыть дичь. Приводит к бою с монстром. Награда: двойной лут с монстра',
+            class: 'action-hunt',
+            resource_type: 'loot',
+            triggers_monster: true,
+            monster_level_multiplier: 1.0,
+            always_monster: true,
+            double_loot: true
         };
-        
-        this.selectedResourceId = null;
-        this.selectedRow = null;
-        this.selectedCol = null;
         
         // Регистрируем модуль в ActionSystem
         if (actionSystem) {
@@ -42,14 +24,10 @@ class HuntAction {
         }
     }
 
-    // ========== МЕТОДЫ МОДУЛЯ ==========
+    // ========== ОСНОВНОЙ МЕТОД ВЫПОЛНЕНИЯ ==========
 
-    getSupportedActions() {
-        return Object.keys(this.configs);
-    }
-
-    async execute(actionKey, row, col) {
-        console.log(`🏹 HuntAction.execute(${actionKey}): Начало на [${col},${row}]`);
+    execute(actionKey, row, col) {
+        console.log(`🏹 HuntAction.execute(): ${actionKey} на [${col},${row}]`);
         
         if (!this.mapSystem) {
             console.error("❌ MapSystem не доступна");
@@ -57,15 +35,18 @@ class HuntAction {
             return;
         }
         
-        // Получаем клетку
+        // Получаем клетку из mapSystem
         const cellKey = `${col},${row}`;
         const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
         
         if (!cell) {
-            console.error("❌ Клетка не найдена");
+            console.error(`❌ Клетка ${cellKey} не найдена в MapSystem`);
+            console.log("Доступные клетки:", Object.keys(this.mapSystem.currentTacticalMap?.cells || {}));
             this.showNotification("❌ Клетка не найдена!", 'error');
             return;
         }
+        
+        console.log(`✅ Клетка найдена:`, cell);
         
         // Проверяем, исследована ли клетка
         if (cell.explored === true) {
@@ -81,18 +62,14 @@ class HuntAction {
             return;
         }
         
-        // Сохраняем выбранную клетку
-        this.selectedRow = row;
-        this.selectedCol = col;
-        
         // Показываем выбор трофея
-        await this.showHuntTargetSelection(cell, actionKey);
+        this.showHuntTargetSelection(cell, actionKey);
     }
 
     // ========== ВЫБОР ТРОФЕЯ ==========
 
-    async showHuntTargetSelection(cell, actionKey = 'hunt') {
-        console.log("🎯 Показываем выбор трофея для охоты");
+    showHuntTargetSelection(cell, actionKey = 'hunt') {
+        console.log(`🎯 Показываем выбор трофея для охоты на [${cell.col},${cell.row}]`);
         
         const actionsContainer = document.getElementById('cellActionsContainer');
         if (!actionsContainer) {
@@ -102,7 +79,7 @@ class HuntAction {
         
         // Проверяем есть ли ресурсы в ActionSystem
         const actionSystem = this.actionSystem;
-        const resources = actionSystem ? actionSystem.resources : {};
+        const resources = actionSystem.resources || {};
         
         // Категории охотничьих ресурсов
         const huntCategories = [
@@ -112,20 +89,21 @@ class HuntAction {
             { key: 'furs', name: '🦊 Меха', icon: '🦊' }
         ];
         
+        // Создаем HTML
         let html = `
             <div class="hunt-target-selection">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h3 style="color: #00ffcc; margin: 0;">
                         🏹 ВЫБЕРИТЕ ТРОФЕЙ ДЛЯ ОХОТЫ
                     </h3>
-                    <button class="btn-control" onclick="this.startQuickHunt(${cell.row}, ${cell.col}, '${actionKey}')" 
+                    <button class="btn-control" id="quickHuntBtn" 
                             style="padding: 5px 10px; font-size: 12px;">
                         🏹 Быстрая охота
                     </button>
                 </div>
                 
                 <p style="text-align: center; color: #aaa; margin-bottom: 20px;">
-                    Клетка [${cell.col}, ${cell.row}] - ${this.configs[actionKey].name}
+                    Клетка [${cell.col}, ${cell.row}] - ${this.config.name}
                 </p>
                 
                 <div class="hunt-categories">
@@ -150,8 +128,7 @@ class HuntAction {
                 // Показываем ресурсы из категории
                 categoryResources.slice(0, 3).forEach(resource => {
                     html += `
-                        <div class="hunt-target-item" 
-                             onclick="window.game.systems.action.actionModules.hunt.selectResource('${resource.id}', ${cell.row}, ${cell.col}, '${actionKey}')">
+                        <div class="hunt-target-item" data-resource-id="${resource.id}">
                             <div class="hunt-target-name" style="font-size: 16px; margin-bottom: 5px;">
                                 ${resource.name}
                             </div>
@@ -179,7 +156,7 @@ class HuntAction {
             html += `
                 <div style="text-align: center; padding: 20px; color: #ffaa00;">
                     <p>⚠️ Ресурсы не загружены</p>
-                    <button class="btn-control" onclick="this.startQuickHunt(${cell.row}, ${cell.col}, '${actionKey}')" 
+                    <button class="btn-control" id="quickHuntBtn2" 
                             style="margin-top: 10px;">
                         🏹 Начать быструю охоту
                     </button>
@@ -221,10 +198,10 @@ class HuntAction {
     }
 
     attachHuntEventListeners(cell, actionKey) {
-        // Используем setTimeout чтобы DOM успел обновиться
         setTimeout(() => {
             // Обработчик для быстрой охоты
-            const quickHuntBtn = actionsContainer.querySelector('.btn-control[onclick*="startQuickHunt"]');
+            const quickHuntBtn = document.getElementById('quickHuntBtn') || 
+                                document.getElementById('quickHuntBtn2');
             if (quickHuntBtn) {
                 quickHuntBtn.onclick = () => this.startQuickHunt(cell.row, cell.col, actionKey);
             }
@@ -232,15 +209,10 @@ class HuntAction {
             // Обработчики для выбора ресурсов
             const resourceItems = document.querySelectorAll('.hunt-target-item');
             resourceItems.forEach(item => {
-                const onclickAttr = item.getAttribute('onclick');
-                if (onclickAttr) {
-                    // Извлекаем параметры из onclick
-                    const match = onclickAttr.match(/selectResource\('([^']+)',\s*(\d+),\s*(\d+),\s*'([^']+)'\)/);
-                    if (match) {
-                        const [_, resourceId, row, col, action] = match;
-                        item.onclick = () => this.selectResource(resourceId, parseInt(row), parseInt(col), action);
-                    }
-                }
+                item.onclick = () => {
+                    const resourceId = item.getAttribute('data-resource-id');
+                    this.selectResource(resourceId, cell.row, cell.col, actionKey);
+                };
             });
         }, 50);
     }
@@ -260,7 +232,7 @@ class HuntAction {
 
     // ========== ВЫБОР МОНСТРА ==========
 
-    async showMonstersForResource(resourceId, row, col, actionKey = 'hunt') {
+    showMonstersForResource(resourceId, row, col, actionKey = 'hunt') {
         console.log(`🔍 Ищем монстров с ресурсом: ${resourceId} для действия ${actionKey}`);
         
         const actionsContainer = document.getElementById('cellActionsContainer');
@@ -304,7 +276,7 @@ class HuntAction {
                     <p style="text-align: center; color: #aaa;">
                         Для трофея "${resourceInfo?.name || resourceId}" нет монстров с гарантированным выпадением.
                     </p>
-                    <button class="btn-control" onclick="window.game.systems.action.actionModules.hunt.showHuntTargetSelection(${JSON.stringify({col: col, row: row})}, '${actionKey}')" 
+                    <button class="btn-control" id="backToResourcesBtn" 
                             style="margin-top: 20px; width: 100%;">
                         ↩️ Назад к выбору трофея
                     </button>
@@ -313,9 +285,12 @@ class HuntAction {
             
             // Добавляем обработчик
             setTimeout(() => {
-                const backBtn = actionsContainer.querySelector('.btn-control');
+                const backBtn = document.getElementById('backToResourcesBtn');
                 if (backBtn) {
-                    backBtn.onclick = () => this.showHuntTargetSelection({col, row}, actionKey);
+                    backBtn.onclick = () => {
+                        const cell = {col: this.selectedCol, row: this.selectedRow};
+                        this.showHuntTargetSelection(cell, actionKey);
+                    };
                 }
             }, 50);
             
@@ -336,7 +311,7 @@ class HuntAction {
                     <h3 style="color: #00ffcc; margin: 0;">
                         🎯 ВЫБЕРИТЕ МОНСТРА ДЛЯ ОХОТЫ
                     </h3>
-                    <button class="btn-control" onclick="window.game.systems.action.actionModules.hunt.showHuntTargetSelection(${JSON.stringify({col: col, row: row})}, '${actionKey}')" 
+                    <button class="btn-control" id="backToSelectionBtn" 
                             style="padding: 5px 10px; font-size: 12px;">
                         ↩️ Назад
                     </button>
@@ -383,7 +358,7 @@ class HuntAction {
             const resourceCount = lootItem?.quantity || 1;
             
             html += `
-                <div class="monster-card" data-monster-id="${monster.id}">
+                <div class="monster-card">
                     <div class="monster-header">
                         <div class="monster-name" style="font-size: 16px; font-weight: bold; color: #fff;">
                             ${monster.name}
@@ -470,14 +445,12 @@ class HuntAction {
     attachMonsterEventListeners() {
         setTimeout(() => {
             // Обработчик для кнопки назад
-            const backBtn = actionsContainer.querySelector('.btn-control[onclick*="showHuntTargetSelection"]');
+            const backBtn = document.getElementById('backToSelectionBtn');
             if (backBtn) {
-                const match = backBtn.getAttribute('onclick').match(/showHuntTargetSelection\((.*?), '(.*?)'\)/);
-                if (match) {
-                    const cellData = JSON.parse(match[1]);
-                    const actionKey = match[2];
-                    backBtn.onclick = () => this.showHuntTargetSelection(cellData, actionKey);
-                }
+                backBtn.onclick = () => {
+                    const cell = {col: this.selectedCol, row: this.selectedRow};
+                    this.showHuntTargetSelection(cell, this.currentActionKey);
+                };
             }
             
             // Обработчики для кнопок охоты
@@ -498,7 +471,7 @@ class HuntAction {
 
     // ========== ЗАПУСК ОХОТЫ ==========
 
-    async startHuntWithMonster(resourceId, monsterId, row, col, actionKey = 'hunt') {
+    startHuntWithMonster(resourceId, monsterId, row, col, actionKey = 'hunt') {
         console.log(`🏹 Начинаем охоту на монстра ${monsterId} за ресурс ${resourceId} на [${col},${row}]`);
         
         const battleSystem = window.game?.systems?.battle;
@@ -509,7 +482,7 @@ class HuntAction {
         }
         
         // Получаем героя
-        const hero = this.mapSystem ? this.mapSystem.currentHero : window.game?.currentHero;
+        const hero = this.mapSystem?.currentHero || window.game?.currentHero;
         if (!hero) {
             console.error("❌ Герой не найден");
             this.showNotification("❌ Герой не найден!", 'error');
@@ -558,7 +531,7 @@ class HuntAction {
 
     // ========== БЫСТРАЯ ОХОТА (без выбора) ==========
 
-    async startQuickHunt(row, col, actionKey = 'hunt') {
+    startQuickHunt(row, col, actionKey = 'hunt') {
         console.log(`🏹 Быстрая охота на [${col},${row}]`);
         
         const battleSystem = window.game?.systems?.battle;
@@ -569,7 +542,7 @@ class HuntAction {
         }
         
         // Получаем героя
-        const hero = this.mapSystem ? this.mapSystem.currentHero : window.game?.currentHero;
+        const hero = this.mapSystem?.currentHero || window.game?.currentHero;
         if (!hero) {
             console.error("❌ Герой не найден");
             this.showNotification("❌ Герой не найден!", 'error');
@@ -617,64 +590,6 @@ class HuntAction {
         battleSystem.startBattleWithSpecificMonster(hero, randomMonster, actionKey);
     }
 
-    // ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ==========
-
-    async completeHuntAfterBattle(victory, escape, doubleLoot = false, isQuickHunt = false) {
-        console.log(`🏹 Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}, быстрая=${isQuickHunt}`);
-        
-        if (!this.mapSystem || !this.mapSystem.pendingAction || 
-            (this.mapSystem.pendingAction.action !== 'hunt' && this.mapSystem.pendingAction.action !== 'hunt_caravan')) {
-            console.error("❌ Нет ожидающего действия охоты");
-            return;
-        }
-        
-        const { row, col, targetResource, wasSuccess, action } = this.mapSystem.pendingAction;
-        
-        if (victory && wasSuccess && targetResource) {
-            // Добавляем ресурс герою
-            await this.addResourceToHero(targetResource, doubleLoot ? 2 : 1);
-            
-            let message = `🎉 Успешная охота! Получен: ${targetResource.name}`;
-            if (doubleLoot) {
-                message += ' (двойной лут!)';
-            }
-            if (isQuickHunt) {
-                message = `🎉 Быстрая охота успешна! Получен: ${targetResource.name}`;
-            }
-            
-            this.showNotification(message, 'success');
-            
-            // Помечаем клетку как исследованную
-            const cellKey = `${col},${row}`;
-            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-            if (cell) {
-                cell.explored = true;
-            }
-        } else if (victory) {
-            this.showNotification("🎉 Победа в бою!", 'success');
-        } else if (escape) {
-            this.showNotification("🏃 Вы сбежали с поля боя", 'warning');
-        } else {
-            this.showNotification("💀 Вы проиграли бой", 'error');
-        }
-        
-        this.mapSystem.pendingAction = null;
-        
-        // Обновляем интерфейс
-        setTimeout(() => {
-            const cellKey = `${col},${row}`;
-            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-            if (cell && this.actionSystem) {
-                this.actionSystem.updateCellActionsUI(cell);
-            }
-        }, 500);
-        
-        // Сохраняем игру
-        if (window.game && window.game.saveGame) {
-            window.game.saveGame();
-        }
-    }
-
     // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
 
     calculateMonsterLevel(monster) {
@@ -682,23 +597,6 @@ class HuntAction {
         const armorLevel = Math.floor(monster.armor / 10);
         const damageLevel = Math.floor(monster.damage / 30);
         return Math.max(1, Math.min(10, Math.round((healthLevel + armorLevel + damageLevel) / 3)));
-    }
-
-    async addResourceToHero(resource, quantity = 1) {
-        if (!this.mapSystem || !this.mapSystem.currentHero) return;
-        
-        const actionSystem = this.actionSystem || window.game?.systems?.action;
-        if (!actionSystem || !actionSystem.addResourceToHero) return;
-        
-        actionSystem.addResourceToHero(resource.id, resource.name, quantity, this.getResourceType(resource));
-    }
-
-    getResourceType(resource) {
-        if (resource.id.includes('bone')) return 'bones';
-        if (resource.id.includes('leather')) return 'leathers';
-        if (resource.id.includes('hide')) return 'hides';
-        if (resource.id.includes('fur')) return 'furs';
-        return 'loot';
     }
 
     showNotification(message, type = 'info') {
@@ -774,11 +672,11 @@ class HuntAction {
 // Глобальная регистрация модуля
 if (typeof window !== 'undefined') {
     window.HuntAction = HuntAction;
-    console.log("📦 HuntAction модуль зарегистрирован глобально");
+    console.log("📦 HuntAction модуль загружен");
 }
 
 // Автоматическая регистрация в существующем ActionSystem
-if (window.game && window.game.systems && window.game.systems.action) {
+if (window.ActionSystem && window.game?.systems?.action) {
     setTimeout(() => {
         const actionSystem = window.game.systems.action;
         if (actionSystem && !actionSystem.actionModules['hunt']) {
