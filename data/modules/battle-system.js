@@ -2632,7 +2632,6 @@ showBattleResult(victory, escape = false) {
 
     let resultHTML = '';
     
-    // ⭐ ДОБАВЛЯЕМ ИНФОРМАЦИЮ О КОНТЕКСТЕ В ОТЛАДКУ
     console.log(`📊 Показ результатов боя (контекст: ${this.battleContext})`);
     
     if (victory) {
@@ -2643,13 +2642,10 @@ showBattleResult(victory, escape = false) {
         let resourcesList = "";
         const resourcesSystem = window.game?.systems?.resources;
         if (resourcesSystem) {
-            // Можно показать последние полученные ресурсы
-            // или просто общее количество
             const resourceCount = resourcesSystem.getTotalResourceCount ? resourcesSystem.getTotalResourceCount() : 0;
             resourcesList = `<p style="font-size: 16px; color: #4ade80;">📦 Всего ресурсов: ${resourceCount}</p>`;
         }
         
-        // ⭐ ДОБАВЛЯЕМ КОНТЕКСТ БОЯ В СООБЩЕНИЕ
         const contextInfo = this.battleContext === 'hunt' ? '<p style="font-size: 16px; color: #fbbf24;">🏹 Успешная охота!</p>' : '';
         
         resultHTML = `
@@ -2711,69 +2707,80 @@ showBattleResult(victory, escape = false) {
         }
     }
     
-    const existingOverlay = document.querySelector('.battle-result-overlay');
-    if (existingOverlay) existingOverlay.remove();
+    // ⭐ УДАЛЯЕМ СТАРЫЕ ОКНА ПЕРЕД ДОБАВЛЕНИЕМ НОВЫХ
+    this.removeAllBattleElements();
     
     app.insertAdjacentHTML('beforeend', resultHTML);
     
-    // ⭐ ДОБАВЛЯЕМ ЛОГИКУ ПРИНУДИТЕЛЬНОГО ЗАКРЫТИЯ ПО ESC
-    document.addEventListener('keydown', (e) => {
+    // Добавляем логику принудительного закрытия по ESC
+    const escHandler = (e) => {
         if (e.key === 'Escape') {
             this.closeBattleResult();
+            document.removeEventListener('keydown', escHandler);
         }
-    }, { once: true });
+    };
+    document.addEventListener('keydown', escHandler);
 }
-closeBattleResult() {
-    const overlay = document.querySelector('.battle-result-overlay');
-    if (overlay) overlay.remove();
+
     
-    // ⭐ ИСПРАВЛЕНИЕ: В зависимости от контекста боя возвращаемся к нужному экрану
+closeBattleResult() {
     console.log(`🔙 Закрытие результатов боя, контекст: ${this.battleContext}`);
     
-    // Очищаем состояние боя
+    // ⭐ 1. УДАЛЯЕМ ВСЕ ОКНА БОЯ ИЗ DOM
+    this.removeAllBattleElements();
+    
+    // ⭐ 2. ОЧИЩАЕМ СОСТОЯНИЕ БОЯ
     this.resultShown = false;
     this.battleEnding = false;
     this.battleActive = false;
     this.currentMonsters = [];
     this.selectedTarget = null;
     this.pendingAction = null;
+    this.battleLog = [];
+    this.battleRound = 0;
     
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Возвращаемся к карте, если бой был с контекстом 'movement' или 'hunt'
+    // ⭐ 3. ВОЗВРАЩАЕМСЯ К КАРТЕ ПО КОНТЕКСТУ
     if ((this.battleContext === 'movement' || this.battleContext === 'hunt') && window.game && window.game.systems.map) {
         console.log("🗺️ Возвращаемся к тактической карте...");
         
-        // Сначала скрываем все оверлеи
-        if (window.game.hideOverlay) {
-            window.game.hideOverlay();
+        const mapSystem = window.game.systems.map;
+        
+        // ⭐ 4. ГАРАНТИРУЕМ, ЧТО ОКНО БОЯ СКРЫТО
+        const battleOverlay = document.querySelector('.battle-result-overlay');
+        if (battleOverlay) {
+            battleOverlay.style.display = 'none';
+            battleOverlay.remove();
         }
         
-        // Ждем немного и показываем карту снова
+        const battleScreen = document.querySelector('.battle-screen-fullscreen');
+        if (battleScreen) {
+            battleScreen.style.display = 'none';
+            battleScreen.remove();
+        }
+        
+        // ⭐ 5. ЖДЕМ ОЧИСТКИ DOM И ПОКАЗЫВАЕМ КАРТУ
         setTimeout(() => {
-            const mapSystem = window.game.systems.map;
-            
-            // Проверяем, был ли бой охотой
+            // Проверяем, была ли охота
             if (this.battleContext === 'hunt' && mapSystem.pendingAction) {
-                // Для охоты показываем карту с выделенной клеткой
                 const { row, col } = mapSystem.pendingAction;
                 const cellKey = `${col},${row}`;
                 const cell = mapSystem.currentTacticalMap?.cells[cellKey];
                 
-                if (cell) {
-                    console.log(`🏹 Возвращаемся к клетке охоты [${col},${row}]`);
-                    mapSystem.showOverlay('tactical-map');
-                    
-                    // Ждем инициализации карты
-                    setTimeout(() => {
-                        if (mapSystem.actionSystem) {
-                            mapSystem.actionSystem.updateCellActionsUI(cell);
-                            mapSystem.actionSystem.highlightSelectedCell(cell);
-                        }
-                    }, 300);
-                } else {
-                    mapSystem.showOverlay('tactical-map');
-                }
+                console.log(`🏹 Возвращаемся к клетке охоты [${col},${row}]`);
+                
+                // Показываем карту
+                mapSystem.showOverlay('tactical-map');
+                
+                // Ждем инициализации и выделяем клетку
+                setTimeout(() => {
+                    if (mapSystem.actionSystem && cell) {
+                        mapSystem.actionSystem.updateCellActionsUI(cell);
+                        mapSystem.actionSystem.highlightSelectedCell(cell);
+                    }
+                }, 500);
+                
             } else {
-                // Для обычного боя просто показываем карту
+                // Обычный бой - просто показываем карту
                 mapSystem.showOverlay('tactical-map');
                 
                 // Обновляем позицию героя на карте
@@ -2785,19 +2792,63 @@ closeBattleResult() {
                         mapSystem.actionSystem.updateCellActionsUI(currentCell);
                         mapSystem.actionSystem.highlightSelectedCell(currentCell);
                     }
-                }, 300);
+                }, 500);
             }
         }, 100);
+        
     } else {
         // Для других контекстов возвращаемся к экрану героя
         console.log("🎮 Возвращаемся к экрану героя");
         if (window.game && window.game.showHeroGameScreen) {
-            window.game.showHeroGameScreen();
+            // Сначала очищаем DOM
+            this.removeAllBattleElements();
+            // Потом показываем экран героя
+            setTimeout(() => {
+                window.game.showHeroGameScreen();
+            }, 100);
         }
     }
     
-    // Очищаем контекст боя
+    // ⭐ 6. ОЧИЩАЕМ КОНТЕКСТ БОЯ
     this.battleContext = 'normal';
+    
+    console.log("✅ Результаты боя закрыты, DOM очищен");
+}
+
+// ⭐ 7. ДОБАВЛЯЕМ НОВЫЙ МЕТОД ДЛЯ ПОЛНОЙ ОЧИСТКИ DOM
+removeAllBattleElements() {
+    // Удаляем все элементы боя
+    const battleElements = [
+        '.battle-result-overlay',
+        '.battle-screen-fullscreen',
+        '.battle-overlay',
+        '.tactical-battle-container',
+        '#battleScreen',
+        '#battleResult'
+    ];
+    
+    battleElements.forEach(selector => {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(element => {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+    });
+    
+    // Также очищаем основной контейнер
+    const app = document.getElementById('app');
+    if (app) {
+        // Проверяем, нет ли элементов боя внутри app
+        const battleElementsInApp = app.querySelectorAll('.battle-screen-fullscreen, .battle-result-overlay');
+        battleElementsInApp.forEach(element => {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+    }
+    
+    console.log("🧹 Удалены все элементы боя из DOM");
 }
     
 
