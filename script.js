@@ -1321,17 +1321,11 @@ class SafeHeroGame {
                 <div class="top-action-bar">
                     <button class="btn-top" onclick="game.showOverlay('global-map')">🗺️ Глобальная карта</button>
                     <button class="btn-top" onclick="game.showOverlay('tactical-map')">🎲 Тактическая карта</button>
-                    <button class="btn-top" onclick="game.systems.map.showTacticalMapEditor()">🎯 Редактор карты</button>
-                    <button class="btn-top" onclick="game.systems.map.debugInfo()">🐛 Отладка карты</button>
                     <button class="btn-top" onclick="game.showOverlay('inventory')">🎒 Инвентарь</button>
                     <button class="btn-top" onclick="game.showOverlay('resources')">📦 Ресурсы</button>
                     <button class="btn-top" onclick="game.systems.hero.showHeroStory()">📖 История Героя</button>
                     <button class="btn-top" onclick="game.showHeroSelection()">🔁 Сменить героя</button>
                     <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()">🔄 Сбросить героя</button>
-                    <button class="btn-top" onclick="game.debugCrafting()">⚗️ Отладка крафта</button>
-                    <button class="btn-top" onclick="game.systems.action?.diagnoseHuntModule()">🔍 Диагностика охоты</button>
-                    <button class="btn-top" onclick="game.systems.action?.forceFixHuntModule()">🛠️ Исправить модуль</button>
-                    <button class="btn-top" onclick="game.systems.action?.testHuntSelection()">🧪 Тест охоты</button>
                 </div>
 
                 <!-- Основная область героя -->
