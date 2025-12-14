@@ -37,7 +37,7 @@ class HuntAction {
         
         // Регистрируем модуль в ActionSystem
         if (actionSystem) {
-            actionSystem.registerActionModule('hunt', this);
+            actionSystem.registerModule('hunt', this);
             console.log("✅ HuntAction зарегистрирован в ActionSystem");
         }
     }
