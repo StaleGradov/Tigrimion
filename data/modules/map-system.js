@@ -547,6 +547,8 @@ completeMovementAfterBattle(victory, escape = false, battleType = 'movement', do
 
 // ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
 
+// ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
+
 completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
@@ -564,9 +566,10 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
         // ГЕРОЙ ПОБЕДИЛ В БОЮ
         if (wasSuccess) {
             // УСПЕШНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем целевой ресурс
-            this.addResourceFromHunt(targetResource, doubleLoot);
+            this.processHuntResource(targetResource, doubleLoot);
             
-            this.showNotification(`🎉 Успешная охота! Получен: ${targetResource.name}${doubleLoot ? ' (двойной лут!)' : ''}`, 'success');
+            const bonusText = doubleLoot ? ' (двойной лут!)' : '';
+            this.showNotification(`🎉 Успешная охота! Получен: ${targetResource.name}${bonusText}`, 'success');
             
             // Отмечаем клетку как исследованную после успешной охоты
             if (cell) {
@@ -577,7 +580,7 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
             // НЕУДАЧНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем случайный ресурс
             const randomResource = this.getRandomHuntResource();
             if (randomResource) {
-                this.addResourceFromHunt(randomResource, false);
+                this.processHuntResource(randomResource, false);
                 this.showNotification(`🎉 Победа в бою! Получен случайный трофей: ${randomResource.name}`, 'success');
             }
         }
@@ -601,23 +604,168 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
         }
     }
     
+    // ⭐ ВАЖНО: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ ПОСЛЕ ОБРАБОТКИ ОХОТЫ
+    setTimeout(() => {
+        const battleSystem = window.game?.systems?.battle;
+        if (battleSystem && battleSystem.showBattleResult) {
+            battleSystem.showBattleResult(victory, escape);
+        } else {
+            console.error("❌ BattleSystem не доступна для показа результатов");
+        }
+    }, 100);
+    
     // Очищаем pendingAction
     this.pendingAction = null;
+}
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
+
+processHuntResource(resource, doubleLoot = false) {
+    if (!resource || !this.currentHero) return;
     
-    // Обновляем интерфейс клетки
-    setTimeout(() => {
-        if (cell && this.actionSystem) {
-            this.actionSystem.updateCellActionsUI(cell);
-            this.actionSystem.highlightSelectedCell(cell);
+    console.log(`🎁 Обработка ресурса охоты: ${resource.name}, двойной лут: ${doubleLoot}`);
+    
+    const count = doubleLoot ? 2 : 1;
+    
+    // Проверяем, есть ли система ресурсов
+    const resourcesSystem = window.game?.systems?.resources;
+    if (resourcesSystem) {
+        // Добавляем через ResourcesSystem
+        for (let i = 0; i < count; i++) {
+            this.addResourceToHero(resource.id, 1);
         }
-    }, 500);
-    
-    // Сохраняем игру
-    if (window.game && window.game.saveGame) {
-        window.game.saveGame();
+        console.log(`✅ Ресурс ${resource.name} добавлен через ResourcesSystem (количество: ${count})`);
+    } else {
+        // Запасной вариант
+        console.warn(`⚠️ ResourcesSystem не доступна, используем прямой метод`);
+        
+        // Сохраняем лут в battleLoot BattleSystem
+        const battleSystem = window.game?.systems?.battle;
+        if (battleSystem) {
+            for (let i = 0; i < count; i++) {
+                if (!battleSystem.battleLoot) battleSystem.battleLoot = [];
+                battleSystem.battleLoot.push({
+                    id: resource.id,
+                    name: resource.name,
+                    timestamp: Date.now(),
+                    doubleLoot: doubleLoot
+                });
+            }
+            console.log(`✅ Ресурс ${resource.name} добавлен в battleLoot (количество: ${count})`);
+        }
     }
 }
 
+getRandomHuntResource() {
+    // Получаем случайный ресурс для охоты
+    const resourcesSystem = window.game?.systems?.resources;
+    if (!resourcesSystem) return null;
+    
+    // Получаем все доступные ресурсы из категории "hides" (шкуры)
+    const hideResources = resourcesSystem.resources?.hides || [];
+    const leatherResources = resourcesSystem.resources?.leathers || [];
+    const furResources = resourcesSystem.resources?.furs || [];
+    
+    const allResources = [...hideResources, ...leatherResources, ...furResources];
+    
+    if (allResources.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * allResources.length);
+    return allResources[randomIndex];
+}
+
+applyDoubleHuntPenalty(cell) {
+    // Применяем штраф за неудачную охоту
+    if (!cell || !this.currentHero) return;
+    
+    console.log(`⚠️ Применение штрафа за неудачную охоту`);
+    
+    // Например, можно уменьшить здоровье героя
+    const heroSystem = window.game?.systems?.hero;
+    if (heroSystem) {
+        const stats = heroSystem.calculateHeroStats(this.currentHero);
+        const penalty = Math.floor(stats.maxHealth * 0.1); // 10% от макс. здоровья
+        this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth - penalty);
+        
+        this.showNotification(`⚠️ Неудачная охота! Потеряно ${penalty} здоровья`, 'warning');
+    }
+}
+
+// ========== МЕТОД ДОБАВЛЕНИЯ РЕСУРСОВ ГЕРОЮ ==========
+
+addResourceToHero(resourceId, amount = 1) {
+    if (!this.currentHero) return;
+    
+    // Используем sharedResources для хранения ресурсов
+    if (!window.game.sharedResources) {
+        window.game.sharedResources = {};
+    }
+    
+    if (!window.game.sharedResources.resources) {
+        window.game.sharedResources.resources = {};
+    }
+    
+    // Добавляем ресурс
+    if (!window.game.sharedResources.resources[resourceId]) {
+        window.game.sharedResources.resources[resourceId] = {
+            id: resourceId,
+            count: 0
+        };
+    }
+    
+    window.game.sharedResources.resources[resourceId].count += amount;
+    
+    // Также добавляем в текущего героя для совместимости
+    if (!this.currentHero.resources) {
+        this.currentHero.resources = {};
+    }
+    
+    if (!this.currentHero.resources[resourceId]) {
+        this.currentHero.resources[resourceId] = {
+            id: resourceId,
+            count: 0
+        };
+    }
+    
+    this.currentHero.resources[resourceId].count += amount;
+    
+    console.log(`📦 Ресурс ${resourceId} добавлен герою (количество: ${amount}, всего: ${this.currentHero.resources[resourceId].count})`);
+    
+    // Обновляем интерфейс ресурсов
+    if (this.actionSystem) {
+        this.actionSystem.updateHeroResourcesUI();
+    }
+}
+
+showNotification(message, type = 'info') {
+    if (window.game && window.game.showNotification) {
+        window.game.showNotification(message, type);
+    } else {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        // Создаем простую нотификацию
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
+            color: white;
+            border-radius: 6px;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+}
     
     // ========== СИСТЕМА ЛУТА ==========
 
@@ -3503,12 +3651,33 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
     }
 
-    showNotification(message, type = 'info') {
-        if (window.game && window.game.showNotification) {
-            window.game.showNotification(message, type);
-        } else {
-            console.log(`${type.toUpperCase()}: ${message}`);
-        }
+showNotification(message, type = 'info') {
+    if (window.game && window.game.showNotification) {
+        window.game.showNotification(message, type);
+    } else {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        // Создаем простую нотификацию
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
+            color: white;
+            border-radius: 6px;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 }
 
