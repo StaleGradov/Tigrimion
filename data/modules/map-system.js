@@ -2108,11 +2108,36 @@ moveOnTacticalMap(x, y) {
     }
 
     // === ПРОВЕРКА НА ИССЛЕДОВАННЫЕ КЛЕТКИ ===
-    if (cellData.explored) {
-        console.log(`✅ Клетка [${x},${y}] уже исследована, перемещение без боя`);
-        this.handlePeacefulMovement(x, y, cellData);
+// === ПРОВЕРКА НА ИССЛЕДОВАННЫЕ КЛЕТКИ ===
+if (cellData.explored) {
+    console.log(`✅ Клетка [${x},${y}] уже исследована, перемещение без боя`);
+    this.handlePeacefulMovement(x, y, cellData);
+    return;
+} else {
+    // Если клетка не исследована - проверяем, можно ли на неё перейти
+    if (!this.canMoveToHex(cellData)) {
+        console.log(`❌ Нельзя перейти на неисследованный гекс [${x},${y}]`);
+        
+        // Предлагаем исследовать текущий гекс
+        const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+        const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+        
+        if (currentCell && !currentCell.explored) {
+            if (window.game) {
+                const researchNow = window.confirm(
+                    `Чтобы перейти на новый гекс [${x},${y}], нужно сначала исследовать текущий.\n\n` +
+                    `Исследование требует ночёвки на текущем гексе.\n` +
+                    `Исследовать текущий гекс сейчас?`
+                );
+                
+                if (researchNow) {
+                    this.researchCurrentHex();
+                }
+            }
+        }
         return;
     }
+}
 
     // === ПРОВЕРКА НА ПЕРЕХОДЫ ===
     if (this.isTransitionCell(cellData)) {
@@ -2174,6 +2199,388 @@ moveOnTacticalMap(x, y) {
     console.log(`✅ Мирное перемещение на [${x}, ${y}]`);
     this.handlePeacefulMovement(x, y, cellData);
 }
+
+
+
+// ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
+
+/**
+ * Исследовать текущий гекс (переночевать на нём)
+ * @returns {boolean} Успешно ли исследован гекс
+ */
+researchCurrentHex() {
+    console.log(`🔍 MapSystem.researchCurrentHex вызывается для [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+    
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        this.showNotification("❌ Сначала выберите героя!", 'error');
+        return false;
+    }
+    
+    // Получаем текущую клетку
+    const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!currentCell) {
+        console.error("❌ Текущая клетка не найдена!");
+        return false;
+    }
+    
+    // Проверяем, исследована ли уже клетка
+    if (currentCell.explored) {
+        console.log("✅ Клетка уже исследована");
+        this.showNotification("Эта клетка уже исследована!", 'info');
+        return true;
+    }
+    
+    // === ПРОВЕРКА НОЧНОЙ ОПАСНОСТИ ===
+    if (this.timeSystem) {
+        const timeStatus = this.timeSystem.getTimeStatus();
+        
+        // Если сейчас день, нужно сначала дождаться ночи
+        if (timeStatus.isDay) {
+            console.log("☀️ Сейчас день, нужно дождаться ночи для исследования");
+            
+            // Ускоряем время до вечера для исследования
+            const hoursUntilNight = timeStatus.hoursUntilNight;
+            
+            if (window.game) {
+                const confirmResearch = window.confirm(
+                    `☀️ Сейчас день (${timeStatus.hour}:00).\n` +
+                    `Исследование гекса возможно только после ночёвки на нём.\n` +
+                    `Потратить ${hoursUntilNight} часов до вечера и переночевать?\n\n` +
+                    `⚠️ Внимание: без костра вероятность нападения ночью 90%!`
+                );
+                
+                if (!confirmResearch) {
+                    console.log("❌ Игрок отменил исследование");
+                    return false;
+                }
+            }
+            
+            // Тратим время до вечера
+            for (let i = 0; i < hoursUntilNight; i++) {
+                this.timeSystem.spendHourOnHex('wait_for_night');
+            }
+        }
+        
+        // Теперь ночь - начинаем ночёвку
+        console.log("🌙 Начинаем ночёвку для исследования гекса...");
+        
+        // Проверяем, есть ли на клетке костёр
+        const hasCampfire = this.checkForCampfire(currentCell);
+        
+        // Рассчитываем вероятность нападения
+        const attackProbability = hasCampfire ? 10 : 90; // С костром 10%, без - 90%
+        
+        console.log(`🏕️ Ночёвка: костёр = ${hasCampfire}, вероятность нападения = ${attackProbability}%`);
+        
+        // Ночёвка занимает до утра
+        const nightResult = this.spendNightOnHex(attackProbability);
+        
+        if (nightResult.survived) {
+            // Успешно пережили ночь - гекс исследован
+            currentCell.explored = true;
+            
+            // Открываем видимость соседних клеток
+            this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            
+            // Перерисовываем карту
+            this.drawTacticalMap();
+            
+            // Показываем результат
+            let message = "✅ Вы успешно переночевали и исследовали этот гекс!";
+            if (nightResult.monsterFought) {
+                message += `\n🏹 Вы победили ночного монстра и теперь чувствуете себя увереннее.`;
+            }
+            
+            this.showNotification(message, 'success');
+            console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
+            
+            // Автосохранение
+            if (window.game) {
+                window.game.saveGame();
+            }
+            
+            return true;
+            
+        } else {
+            // Не пережили ночь
+            this.showNotification("💀 Вы не пережили ночь на этом гексе!", 'error');
+            
+            // Если был бой и герой умер, обрабатываем смерть
+            if (nightResult.monsterFought && !nightResult.victory) {
+                this.handleHeroDeathAfterFailedNight();
+            }
+            
+            return false;
+        }
+    } else {
+        console.error("❌ TimeSystem не доступен");
+        this.showNotification("❌ Ошибка системы времени", 'error');
+        return false;
+    }
+}
+
+/**
+ * Провести ночь на текущем гексе
+ * @param {number} attackProbability - Вероятность нападения (0-100)
+ * @returns {Object} Результат ночёвки
+ */
+spendNightOnHex(attackProbability) {
+    console.log(`🌙 Проводим ночь на гексе с вероятностью нападения ${attackProbability}%`);
+    
+    const result = {
+        survived: false,
+        monsterFought: false,
+        victory: false,
+        messages: []
+    };
+    
+    // Переход к ночи (если ещё не ночь)
+    if (this.timeSystem) {
+        const timeStatus = this.timeSystem.getTimeStatus();
+        const dayLength = this.timeSystem.seasonalDayLength[timeStatus.season];
+        
+        if (timeStatus.isDay) {
+            // Переходим к ночи
+            const hoursToNight = dayLength - timeStatus.hour;
+            for (let i = 0; i < hoursToNight; i++) {
+                this.timeSystem.spendHourOnHex('transition_to_night');
+            }
+        }
+    }
+    
+    // Проверка нападения
+    const roll = Math.random() * 100;
+    const monsterAttack = roll <= attackProbability;
+    
+    if (monsterAttack) {
+        console.log("👹 Ночное нападение!");
+        result.monsterFought = true;
+        
+        // Начинаем бой с ночным монстром
+        const battleResult = this.startNightBattle();
+        
+        result.victory = battleResult.victory;
+        result.survived = battleResult.survived;
+        result.messages.push(battleResult.message);
+        
+    } else {
+        // Безопасная ночь
+        console.log("🕯️ Безопасная ночь, нападения не было");
+        
+        // Переходим к утру
+        this.advanceToMorning();
+        
+        result.survived = true;
+        result.messages.push("Вы спокойно провели ночь.");
+    }
+    
+    return result;
+}
+
+/**
+ * Начать ночной бой
+ * @returns {Object} Результат боя
+ */
+startNightBattle() {
+    console.log("⚔️ Начинаем ночной бой...");
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        return {
+            victory: false,
+            survived: false,
+            message: "❌ Система боя не доступна"
+        };
+    }
+    
+    // Получаем ночного монстра (более сильного)
+    const nightMonster = this.getNightMonster();
+    
+    // Сохраняем текущую позицию для возврата
+    const originalPosition = {...this.playerTacticalPosition};
+    
+    // Начинаем бой
+    battleSystem.startBattleWithSpecificMonster(
+        this.currentHero,
+        nightMonster,
+        'night_research'
+    );
+    
+    // Возвращаем результат боя
+    return {
+        victory: true, // Временное значение, реальное определится в BattleSystem
+        survived: true,
+        message: `Ночной бой с ${nightMonster.name}!`
+    };
+}
+
+/**
+ * Получить монстра для ночного боя
+ * @returns {Object} Ночной монстр
+ */
+getNightMonster() {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    const allMonsters = battleSystem.monsters || [];
+    if (allMonsters.length === 0) return null;
+    
+    // Ночью появляются более опасные монстры
+    const nightMonsters = allMonsters.filter(m => (m.level || 1) >= 2);
+    
+    if (nightMonsters.length > 0) {
+        // Увеличиваем сложность ночных монстров
+        const monster = nightMonsters[Math.floor(Math.random() * nightMonsters.length)];
+        return {
+            ...monster,
+            health: Math.floor(monster.health * 1.3), // +30% здоровья
+            damage: Math.floor(monster.damage * 1.2)  // +20% урона
+        };
+    }
+    
+    // Если нет специальных ночных, берём обычного и усиливаем
+    const baseMonster = allMonsters[Math.floor(Math.random() * allMonsters.length)];
+    return {
+        ...baseMonster,
+        health: Math.floor(baseMonster.health * 1.5),
+        damage: Math.floor(baseMonster.damage * 1.3)
+    };
+}
+
+/**
+ * Проверить наличие костра на клетке
+ * @param {Object} cell - Клетка для проверки
+ * @returns {boolean} Есть ли костёр
+ */
+checkForCampfire(cell) {
+    if (!cell) return false;
+    
+    // Проверяем тип клетки
+    if (cell.type === 'campfire') {
+        return true;
+    }
+    
+    // Проверяем, установлен ли костёр игроком
+    if (this.timeSystem?.camp?.exists) {
+        const campLocation = this.timeSystem.camp.location;
+        if (campLocation && 
+            campLocation.x === cell.col && 
+            campLocation.y === cell.row) {
+            return this.timeSystem.camp.protections.includes('basic_campfire');
+        }
+    }
+    
+    return false;
+}
+
+/**
+ * Перейти к утру
+ */
+advanceToMorning() {
+    if (!this.timeSystem) return;
+    
+    const currentHour = this.timeSystem.gameTime.hour;
+    
+    // Сколько часов до 7 утра
+    let hoursToMorning;
+    if (currentHour >= 7) {
+        hoursToMorning = (24 - currentHour) + 7;
+    } else {
+        hoursToMorning = 7 - currentHour;
+    }
+    
+    console.log(`🌅 Переход к утру: ${hoursToMorning} часов`);
+    
+    // Проходим часы до утра
+    for (let i = 0; i < hoursToMorning; i++) {
+        this.timeSystem.spendHourOnHex('sleep');
+    }
+    
+    // Восстанавливаем здоровье после сна
+    if (this.currentHero) {
+        const heroSystem = window.game?.systems?.hero;
+        if (heroSystem) {
+            const stats = heroSystem.calculateHeroStats(this.currentHero);
+            const healAmount = Math.floor(stats.maxHealth * 0.2); // 20% от максимума
+            this.currentHero.currentHealth = Math.min(
+                stats.maxHealth,
+                this.currentHero.currentHealth + healAmount
+            );
+            
+            console.log(`❤️ Восстановлено ${healAmount} здоровья после ночи`);
+        }
+    }
+}
+
+/**
+ * Обработка смерти героя после неудачной ночи
+ */
+handleHeroDeathAfterFailedNight() {
+    if (!this.currentHero) return;
+    
+    console.log(`💀 Обработка смерти героя ${this.currentHero.name} после неудачной ночи`);
+    
+    // Возвращаем на стартовую позицию
+    const startPosition = this.currentTacticalMap?.startPosition || {x: 0, y: 0};
+    this.playerTacticalPosition = {...startPosition};
+    
+    // Устанавливаем минимальное здоровье
+    this.currentHero.currentHealth = 1;
+    
+    // Увеличиваем счётчик смертей
+    this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
+    
+    // Показываем сообщение
+    this.showNotification(
+        `💀 ${this.currentHero.name} не пережил ночь! Возвращён на стартовую позицию с 1 HP.`,
+        'error'
+    );
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Сохраняем игру
+    if (window.game) {
+        window.game.saveGame();
+    }
+}
+
+/**
+ * Можно ли перейти на соседний гекс?
+ * @param {Object} targetCell - Целевая клетка
+ * @returns {boolean} Можно ли перейти
+ */
+canMoveToHex(targetCell) {
+    if (!targetCell) return false;
+    
+    // Если гекс уже исследован - можно переходить
+    if (targetCell.explored) {
+        return true;
+    }
+    
+    // Если не исследован - нужно сначала исследовать текущий
+    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+    
+    if (!currentCell) return false;
+    
+    if (!currentCell.explored) {
+        // Текущий гекс не исследован - нельзя переходить на новый
+        this.showNotification(
+            "❌ Сначала исследуйте текущий гекс (переночуйте на нём)!",
+            'warning'
+        );
+        return false;
+    }
+    
+    return true;
+}
+    
+
+    
 
 // В КЛАССЕ MapSystem метод handlePeacefulMovement:
 handlePeacefulMovement(targetX, targetY, cellData) {
