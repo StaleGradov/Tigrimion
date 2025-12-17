@@ -317,6 +317,89 @@ class TimeSystem {
             hoursUntilMorning: isNight ? (this.gameTime.hour < 7 ? 7 - this.gameTime.hour : (24 - this.gameTime.hour) + 7) : 0
         };
     }
+
+
+// ========== МЕТОДЫ ДЛЯ ИССЛЕДОВАНИЯ ГЕКСОВ ==========
+
+/**
+ * Провести ночь на гексе для его исследования
+ * @param {boolean} hasCampfire - Есть ли костёр
+ * @returns {Object} Результат ночёвки
+ */
+spendNightForResearch(hasCampfire = false) {
+    console.log(`🌙 Ночёвка для исследования: костёр = ${hasCampfire}`);
+    
+    const result = {
+        survived: false,
+        monsterFought: false,
+        victory: false,
+        messages: []
+    };
+    
+    // Вероятность нападения
+    const attackChance = hasCampfire ? 10 : 90;
+    
+    // Проверяем нападение
+    const roll = Math.random() * 100;
+    if (roll <= attackChance) {
+        // Ночное нападение
+        result.monsterFought = true;
+        result.messages.push("🌙 Ночное нападение!");
+        
+        // Здесь будет вызов боя через MapSystem
+        // Пока просто отмечаем, что был бой
+        const battleWon = Math.random() > 0.3; // 70% шанс победы
+        
+        if (battleWon) {
+            result.victory = true;
+            result.survived = true;
+            result.messages.push("✅ Вы победили ночного монстра!");
+        } else {
+            result.victory = false;
+            result.survived = false;
+            result.messages.push("💀 Монстр оказался сильнее...");
+        }
+        
+    } else {
+        // Безопасная ночь
+        result.survived = true;
+        result.messages.push("🕯️ Спокойная ночь, нападений не было.");
+    }
+    
+    // Переход к утру
+    this.advanceToMorning();
+    
+    return result;
+}
+
+/**
+ * Перейти к утру (7:00)
+ */
+advanceToMorning() {
+    const currentHour = this.gameTime.hour;
+    
+    // Сколько часов до 7 утра
+    let hoursToMorning;
+    if (currentHour >= 7) {
+        hoursToMorning = (24 - currentHour) + 7;
+    } else {
+        hoursToMorning = 7 - currentHour;
+    }
+    
+    console.log(`🌅 Переход к утру: ${hoursToMorning} часов`);
+    
+    // Проходим часы до утра
+    for (let i = 0; i < hoursToMorning; i++) {
+        this.gameTime.hour++;
+        if (this.gameTime.hour >= 24) {
+            this.gameTime.hour = 0;
+            this.gameTime.day++;
+        }
+    }
+    
+    console.log(`☀️ Наступило утро дня ${this.gameTime.day}, время: ${this.gameTime.hour}:00`);
+}
+
     
     // Сохранение состояния
     saveState() {
