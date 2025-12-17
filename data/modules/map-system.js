@@ -137,23 +137,24 @@ class MapSystem {
 
         // ========== УРОВНИ ВИДИМОСТИ ГЕКСОВ ==========
 
+// В конструкторе изменяем цвета тумана:
+this.fogColors = {
+    EXPLORED: 'rgba(0, 0, 0, 0)',        // Полностью прозрачный
+    PLAYER: 'rgba(0, 0, 0, 0)',          // Полностью прозрачный
+    ADJACENT: 'rgba(0, 0, 0, 0.2)',      // Очень лёгкий туман
+    VISIBLE: 'rgba(0, 0, 0, 0.5)',       // Средний туман
+    HIDDEN: 'rgba(0, 0, 0, 0.8)',        // Сильный туман
+    OBSCURED: 'rgba(0, 0, 0, 0.95)'      // Почти непрозрачный
+};
+
+// И увеличиваем прозрачность символов для лучшей видимости:
 this.visibilityLevels = {
     EXPLORED: 1.0,      // Полностью видимый (исследованный)
     PLAYER: 1.0,        // Полностью видимый (текущая позиция)
-    ADJACENT: 0.7,      // Частично видимый (соседний)
-    VISIBLE: 0.4,       // Слабо видимый (в поле зрения)
-    HIDDEN: 0.2,        // Едва видимый (не исследованный, не соседний)
+    ADJACENT: 0.9,      // Почти полностью видимый (соседний)
+    VISIBLE: 0.6,       // Хорошо видимый (в поле зрения)
+    HIDDEN: 0.3,        // Слабо видимый (не исследованный, не соседний)
     OBSCURED: 0.0       // Полностью скрытый (недоступен для просмотра)
-};
-
-// Цвета затемнения для разных уровней видимости
-this.fogColors = {
-    EXPLORED: 'rgba(0, 0, 0, 0)',
-    PLAYER: 'rgba(0, 0, 0, 0)',
-    ADJACENT: 'rgba(0, 0, 0, 0.3)',
-    VISIBLE: 'rgba(0, 0, 0, 0.6)',
-    HIDDEN: 'rgba(0, 0, 0, 0.8)',
-    OBSCURED: 'rgba(0, 0, 0, 0.95)'
 };
 
 // Радиус видимости от игрока (в клетках)
@@ -2336,60 +2337,63 @@ startTacticalBattleForMovement(x, y, cellData) {
         this.drawBackground();
     }
 
-    drawBackground() {
-        const map = this.currentTacticalMap;
+drawBackground() {
+    const map = this.currentTacticalMap;
+    
+    if (!map.image) {
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
-        if (!map.image) {
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            this.drawHexes();
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-            return;
+        this.drawHexes();
+        if (this.showGrid) {
+            this.drawHexGrid();
         }
-
-        const img = new Image();
-        img.onload = () => {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            this.ctx.drawImage(
-                img, 
-                0, 
-                0, 
-                this.canvas.width, 
-                this.canvas.height
-            );
-            
-            this.drawHexes();
-            
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-            
-            console.log("✅ Фон отрисован");
-        };
-        
-        img.onerror = () => {
-            console.error("❌ Ошибка загрузки фона карты");
-            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(1, '#16213e');
-            this.ctx.fillStyle = gradient;
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-            
-            this.drawHexes();
-            if (this.showGrid) {
-                this.drawHexGrid();
-            }
-        };
-        
-        img.src = map.image;
+        return;
     }
+
+    const img = new Image();
+    img.onload = () => {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Сначала рисуем фон карты ПОЛНОСТЬЮ
+        this.ctx.drawImage(
+            img, 
+            0, 
+            0, 
+            this.canvas.width, 
+            this.canvas.height
+        );
+        
+        // Затем рисуем гексы (они будут накладывать туман)
+        this.drawHexes();
+        
+        // Сетку рисуем поверх всего
+        if (this.showGrid) {
+            this.drawHexGrid();
+        }
+        
+        console.log("✅ Фон отрисован с учётом тумана войны");
+    };
+    
+    img.onerror = () => {
+        console.error("❌ Ошибка загрузки фона карты");
+        const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        this.ctx.fillStyle = gradient;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        this.drawHexes();
+        if (this.showGrid) {
+            this.drawHexGrid();
+        }
+    };
+    
+    img.src = map.image;
+}
 
     handleResize() {
         if (!this.canvasInitialized) return;
@@ -2439,20 +2443,26 @@ startTacticalBattleForMovement(x, y, cellData) {
     }
 
 drawHexes() {
-    const cells = Object.values(this.currentTacticalMap.cells);
+    if (!this.currentTacticalMap || !this.currentTacticalMap.cells) {
+        return;
+    }
     
     // Сначала обновляем видимость всех клеток
     this.updateAllCellsVisibility();
     
-    // Сортируем клетки для правильного наложения
-    // Сначала рисуем клетки с низкой видимостью, потом с высокой
+    const cells = Object.values(this.currentTacticalMap.cells);
+    
+    // Сортируем клетки: сначала те, что должны быть наверху (высокая видимость)
     const sortedCells = [...cells].sort((a, b) => {
         const visibilityA = a.visibilityLevel || this.visibilityLevels.HIDDEN;
         const visibilityB = b.visibilityLevel || this.visibilityLevels.HIDDEN;
+        // Теперь высокой видимости рисуем ПОСЛЕ (чтобы они были сверху)
         return visibilityA - visibilityB;
     });
     
+    // Рисуем все клетки
     sortedCells.forEach(cell => {
+        // Если клетка полностью невидима (OBSCURED) - не рисуем её
         if (cell.visibilityLevel > this.visibilityLevels.OBSCURED) {
             this.drawSingleHexWithVisibility(cell);
         }
@@ -2466,7 +2476,7 @@ drawHexes() {
 
 
 
-    drawSingleHexWithVisibility(cell) {
+ drawSingleHexWithVisibility(cell) {
     const hexSize = this.currentTacticalMap.cellSize || 40;
     const centerX = cell.x || cell.originalX || 0;
     const centerY = cell.y || cell.originalY || 0;
@@ -2478,60 +2488,9 @@ drawHexes() {
     
     this.ctx.save();
     
-    // Рисуем сам гекс
-    this.ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-        const angle = Math.PI / 3 * i + Math.PI / 6;
-        const x = centerX + hexSize * Math.cos(angle);
-        const y = centerY + hexSize * Math.sin(angle);
-        
-        if (i === 0) this.ctx.moveTo(x, y);
-        else this.ctx.lineTo(x, y);
-    }
-    this.ctx.closePath();
-    
-    // Заливка гекса (зависит от типа клетки)
-    let baseColor = '#2d3748'; // Базовый цвет для непроходимых клеток
-    
-    if (cell.passable !== false) {
-        // Проходимые клетки - градиент от темного к светлому
-        const gradient = this.ctx.createRadialGradient(
-            centerX, centerY, 0,
-            centerX, centerY, hexSize
-        );
-        
-        if (visibilityLevel === this.visibilityLevels.EXPLORED || 
-            visibilityLevel === this.visibilityLevels.PLAYER) {
-            // Полностью видимые клетки
-            gradient.addColorStop(0, '#4a5568');
-            gradient.addColorStop(1, '#2d3748');
-        } else if (visibilityLevel === this.visibilityLevels.ADJACENT) {
-            // Соседние клетки
-            gradient.addColorStop(0, '#4a5568');
-            gradient.addColorStop(0.7, '#2d3748');
-            gradient.addColorStop(1, '#1a202c');
-        } else {
-            // Дальние клетки
-            gradient.addColorStop(0, '#2d3748');
-            gradient.addColorStop(0.5, '#1a202c');
-            gradient.addColorStop(1, '#0f141e');
-        }
-        
-        this.ctx.fillStyle = gradient;
-    } else {
-        this.ctx.fillStyle = baseColor;
-    }
-    
-    this.ctx.fill();
-    
-    if (this.showGrid && visibilityLevel >= this.visibilityLevels.VISIBLE) {
-        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
-        this.ctx.lineWidth = 1;
-        this.ctx.stroke();
-    }
-    
-    // Накладываем туман в зависимости от видимости
+    // ТОЛЬКО если клетка не исследована и не полностью видима - рисуем туман
     if (visibilityLevel < this.visibilityLevels.EXPLORED) {
+        // Рисуем гекс с туманом
         this.ctx.beginPath();
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
@@ -2543,8 +2502,55 @@ drawHexes() {
         }
         this.ctx.closePath();
         
+        // Заливаем туманом
         this.ctx.fillStyle = fogColor;
         this.ctx.fill();
+        
+        // Если туман тёмный, можно добавить лёгкий градиент для объёма
+        if (visibilityLevel === this.visibilityLevels.HIDDEN) {
+            const gradient = this.ctx.createRadialGradient(
+                centerX, centerY, 0,
+                centerX, centerY, hexSize * 0.8
+            );
+            gradient.addColorStop(0, 'rgba(0, 0, 0, 0.95)');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0.85)');
+            
+            this.ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+                const angle = Math.PI / 3 * i + Math.PI / 6;
+                const x = centerX + hexSize * 0.8 * Math.cos(angle);
+                const y = centerY + hexSize * 0.8 * Math.sin(angle);
+                
+                if (i === 0) this.ctx.moveTo(x, y);
+                else this.ctx.lineTo(x, y);
+            }
+            this.ctx.closePath();
+            this.ctx.fillStyle = gradient;
+            this.ctx.fill();
+        }
+    }
+    
+    // Рисуем контур сетки (если включена)
+    if (this.showGrid && visibilityLevel >= this.visibilityLevels.VISIBLE) {
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + hexSize * Math.cos(angle);
+            const y = centerY + hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+        
+        // Цвет сетки зависит от видимости
+        let gridAlpha = 0.3;
+        if (visibilityLevel === this.visibilityLevels.ADJACENT) gridAlpha = 0.2;
+        if (visibilityLevel === this.visibilityLevels.VISIBLE) gridAlpha = 0.1;
+        
+        this.ctx.strokeStyle = `rgba(76, 201, 240, ${gridAlpha})`;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
     }
     
     // Рисуем контент гекса (если достаточно видим)
@@ -2569,10 +2575,9 @@ drawHexContentWithVisibility(cell) {
     if (!centerX || !centerY) return;
 
     const visibilityLevel = cell.visibilityLevel || this.visibilityLevels.HIDDEN;
+    const hexSize = this.currentTacticalMap.cellSize || 40;
     
     this.ctx.save();
-    
-    const hexSize = this.currentTacticalMap.cellSize || 40;
     
     // Подсветка выбранной клетки (только если достаточно видима)
     if (cell.isSelected && visibilityLevel >= this.visibilityLevels.VISIBLE) {
@@ -2611,127 +2616,174 @@ drawHexContentWithVisibility(cell) {
         this.ctx.closePath();
         
         if (this.isTransitionCell(cell)) {
-            this.ctx.fillStyle = cell.highlightColor || 'rgba(255, 215, 0, 0.4)';
+            this.ctx.fillStyle = cell.highlightColor || 'rgba(255, 215, 0, 0.3)';
         } else {
-            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.3)';
+            this.ctx.fillStyle = 'rgba(255, 255, 0, 0.2)';
         }
         this.ctx.fill();
     }
     
-    // Текст и символы (с разной прозрачностью в зависимости от видимости)
+    // Определяем символ и цвет в зависимости от типа клетки
+    let symbol = this.getCellSymbol(cell);
+    let color = this.getCellColor(cell);
+    let fontSize = this.getCellFontSize(cell);
+    
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
-
-    let fontSize = 16;
-    let symbol = '·';
-    let color = '#ffffff';
-
-    // Определяем символ и цвет
-    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-        symbol = '🎯';
-        fontSize = 20;
-        color = '#00ffff';
-    } 
-    else if (cell.hasLoot) {
-        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
-        symbol = this.getLootSymbol(lootLevel);
-        color = this.getLootColor(lootLevel);
-        fontSize = 18;
-    }
-    else {
-        if (cell.type === 'active' && !cell.objectType) {
-            symbol = '·';
-            color = '#ffffff';
-            fontSize = 24;
-        } else {
-            symbol = this.objectSymbols[cell.type] || '·';
-            
-            switch(cell.type) {
-                case 'monster':
-                case 'orc_camp':
-                case 'bandit_camp':
-                    color = '#ef4444';
-                    break;
-                case 'chest':
-                case 'weapon':
-                case 'armor':
-                case 'magic_crystal':
-                    color = '#f59e0b';
-                    break;
-                case 'npc':
-                case 'merchant':
-                case 'traveler':
-                    color = '#3b82f6';
-                    break;
-                case 'exit':
-                case 'portal':
-                case 'cave':
-                case 'dungeon':
-                    color = '#8b5cf6';
-                    break;
-                case 'tavern':
-                case 'shop':
-                case 'village':
-                case 'castle':
-                case 'temple':
-                    color = '#fbbf24';
-                    break;
-                case 'obstacle':
-                case 'tree':
-                case 'elegant_tree':
-                case 'black_monolith':
-                case 'mountain':
-                    color = '#6b7280';
-                    break;
-                case 'lava_crack':
-                case 'campfire':
-                    color = '#dc2626';
-                    break;
-                case 'graveyard_cross':
-                case 'ancient_rune':
-                    color = '#d6d3d1';
-                    break;
-                case 'water':
-                case 'bridge':
-                    color = '#0ea5e9';
-                    break;
-                case 'cart':
-                    color = '#78350f';
-                    break;
-                case 'inactive':
-                    color = '#ef4444';
-                    break;
-                default:
-                    color = '#ffffff';
-            }
-        }
-    }
-
-    fontSize = Math.max(8, Math.min(30, fontSize));
     
     // Устанавливаем прозрачность в зависимости от уровня видимости
     let alpha = 1.0;
     if (visibilityLevel === this.visibilityLevels.ADJACENT) {
-        alpha = 0.8;
+        alpha = 0.7; // Соседние клетки - почти полностью видимые символы
     } else if (visibilityLevel === this.visibilityLevels.VISIBLE) {
-        alpha = 0.6;
+        alpha = 0.4; // Дальние клетки - полупрозрачные символы
     } else if (visibilityLevel === this.visibilityLevels.HIDDEN) {
-        alpha = 0.3;
+        alpha = 0.1; // Едва видимые клетки - почти прозрачные символы
     }
     
-    this.ctx.font = `bold ${fontSize}px Arial`;
-    this.ctx.fillStyle = this.hexToRGBA(color, alpha);
-    this.ctx.fillText(symbol, centerX, centerY);
+    // Рисуем символ клетки
+    if (alpha > 0) {
+        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.fillStyle = this.hexToRGBA(color, alpha);
+        this.ctx.fillText(symbol, centerX, centerY);
+    }
     
-    // Галочка исследованной клетки (только если исследована и достаточно видима)
+    // Галочка исследованной клетки (если исследована и достаточно видима)
     if (cell.explored && visibilityLevel >= this.visibilityLevels.VISIBLE) {
         this.ctx.font = 'bold 14px Arial';
-        this.ctx.fillStyle = this.hexToRGBA('#00ffff', alpha * 0.7);
+        this.ctx.fillStyle = this.hexToRGBA('#00ff00', alpha * 0.8);
         this.ctx.fillText('✓', centerX + hexSize * 0.6, centerY - hexSize * 0.6);
+    }
+    
+    // Если клетка исследована, можно добавить дополнительный эффект
+    if (cell.explored && visibilityLevel >= this.visibilityLevels.EXPLORED) {
+        // Лёгкое свечение исследованной клетки
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = Math.PI / 3 * i + Math.PI / 6;
+            const x = centerX + hexSize * Math.cos(angle);
+            const y = centerY + hexSize * Math.sin(angle);
+            
+            if (i === 0) this.ctx.moveTo(x, y);
+            else this.ctx.lineTo(x, y);
+        }
+        this.ctx.closePath();
+        
+        this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.1)';
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
     }
     
     this.ctx.restore();
 }
+
+// Вспомогательные методы для получения символа, цвета и размера шрифта
+getCellSymbol(cell) {
+    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        return '🎯';
+    }
+    
+    if (cell.hasLoot) {
+        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+        return this.getLootSymbol(lootLevel);
+    }
+    
+    return this.objectSymbols[cell.type] || '·';
+}
+
+getCellColor(cell) {
+    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        return '#00ffff';
+    }
+    
+    if (cell.hasLoot) {
+        const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
+        return this.getLootColor(lootLevel);
+    }
+    
+    switch(cell.type) {
+        case 'monster':
+        case 'orc_camp':
+        case 'bandit_camp':
+            return '#ef4444';
+        case 'chest':
+        case 'weapon':
+        case 'armor':
+        case 'magic_crystal':
+            return '#f59e0b';
+        case 'npc':
+        case 'merchant':
+        case 'traveler':
+            return '#3b82f6';
+        case 'exit':
+        case 'portal':
+        case 'cave':
+        case 'dungeon':
+            return '#8b5cf6';
+        case 'tavern':
+        case 'shop':
+        case 'village':
+        case 'castle':
+        case 'temple':
+            return '#fbbf24';
+        case 'obstacle':
+        case 'tree':
+        case 'elegant_tree':
+        case 'black_monolith':
+        case 'mountain':
+            return '#6b7280';
+        case 'lava_crack':
+        case 'campfire':
+            return '#dc2626';
+        case 'graveyard_cross':
+        case 'ancient_rune':
+            return '#d6d3d1';
+        case 'water':
+        case 'bridge':
+            return '#0ea5e9';
+        case 'cart':
+            return '#78350f';
+        case 'inactive':
+            return '#ef4444';
+        default:
+            return '#ffffff';
+    }
+}
+
+getCellFontSize(cell) {
+    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+        return 20;
+    }
+    
+    if (cell.hasLoot) {
+        return 18;
+    }
+    
+    if (cell.type === 'active' && !cell.objectType) {
+        return 24;
+    }
+    
+    return Math.max(12, Math.min(20, 16));
+}
+
+
+getSymbolOpacityForVisibility(visibilityLevel) {
+    // Символы становятся более прозрачными по мере уменьшения видимости
+    switch(visibilityLevel) {
+        case this.visibilityLevels.EXPLORED:
+        case this.visibilityLevels.PLAYER:
+            return 1.0; // Полная видимость
+        case this.visibilityLevels.ADJACENT:
+            return 0.9; // Почти полная видимость
+        case this.visibilityLevels.VISIBLE:
+            return 0.7; // Хорошая видимость
+        case this.visibilityLevels.HIDDEN:
+            return 0.4; // Слабая видимость
+        default:
+            return 0.1; // Едва видимый
+    }
+}
+    
 
     getLootSymbol(lootLevel) {
         const symbols = ['💎', '⭐', '🔮', '👑', '🏆'];
