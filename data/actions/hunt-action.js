@@ -578,15 +578,50 @@ showHuntTargetSelection(cell) {
 
     // ========== СТИЛИЗАЦИЯ ==========
 
- styleHuntTargetSelection() {
+styleHuntTargetSelection() {
     setTimeout(() => {
+        // Получаем контейнер действий
+        const actionsContainer = document.getElementById('cellActionsContainer');
+        if (!actionsContainer) return;
+        
+        // Вычисляем 80% высоты контейнера действий
+        const containerHeight = actionsContainer.clientHeight;
+        const scrollHeight = Math.floor(containerHeight * 0.8);
+        
         // Настройка контейнера с прокруткой
         const categoriesContainer = document.querySelector('.hunt-categories-container');
         if (categoriesContainer) {
             categoriesContainer.style.cssText = `
-                max-height: 500px !important;
+                max-height: ${scrollHeight}px !important;
+                height: ${scrollHeight}px !important;
                 overflow-y: auto !important;
                 padding-right: 10px !important;
+                margin-bottom: 15px !important;
+            `;
+            
+            // Настройка скроллбара
+            categoriesContainer.style.cssText += `
+                /* Стилизация скроллбара */
+                scrollbar-width: thin !important;
+                scrollbar-color: #00aaff #1a1a2e !important;
+            `;
+            
+            // Для WebKit браузеров (Chrome, Safari)
+            categoriesContainer.style.cssText += `
+                ::-webkit-scrollbar {
+                    width: 8px !important;
+                }
+                ::-webkit-scrollbar-track {
+                    background: #1a1a2e !important;
+                    border-radius: 4px !important;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: #00aaff !important;
+                    border-radius: 4px !important;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: #00ffff !important;
+                }
             `;
         }
         
@@ -596,7 +631,7 @@ showHuntTargetSelection(cell) {
             grid.style.cssText = `
                 display: flex !important;
                 gap: 10px !important;
-                margin-bottom: 15px !important;
+                margin-bottom: 20px !important;
             `;
         });
         
@@ -618,21 +653,38 @@ showHuntTargetSelection(cell) {
                 background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9)) !important;
                 border: 1px solid #00aaff !important;
                 border-radius: 8px !important;
-                padding: 10px !important;
+                padding: 12px !important;
                 cursor: pointer !important;
                 transition: all 0.2s ease !important;
-                min-height: 70px !important;
+                min-height: 80px !important;
             `;
             
             item.onmouseenter = () => {
-                item.style.transform = 'translateY(-2px)';
-                item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+                item.style.transform = 'translateY(-3px) scale(1.02)';
+                item.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
+                item.style.zIndex = '10';
             };
             item.onmouseleave = () => {
-                item.style.transform = 'translateY(0)';
+                item.style.transform = 'translateY(0) scale(1)';
                 item.style.boxShadow = 'none';
+                item.style.zIndex = 'auto';
             };
         });
+        
+        // Настройка заголовков категорий
+        const categoryHeaders = document.querySelectorAll('.hunt-category-section h4');
+        categoryHeaders.forEach(header => {
+            header.style.cssText = `
+                color: #00ffff !important;
+                margin: 25px 0 15px 0 !important;
+                padding-bottom: 8px !important;
+                border-bottom: 2px solid rgba(0, 170, 255, 0.3) !important;
+                font-size: 16px !important;
+                font-weight: bold !important;
+            `;
+        });
+        
+        console.log(`✅ Контейнер прокрутки установлен на ${scrollHeight}px (80% от ${containerHeight}px)`);
     }, 50);
 }
 
