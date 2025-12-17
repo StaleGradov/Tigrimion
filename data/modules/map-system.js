@@ -2,29 +2,36 @@
 
 class MapSystem {
     constructor() {
+        // Массивы карт
         this.globalMaps = [];
         this.localMaps = [];
         this.tacticalMaps = [];
         
+        // Текущие карты
         this.currentGlobalMap = null;
         this.currentLocalMap = null;
         this.currentTacticalMap = null;
         
+        // Позиции игрока
         this.playerGlobalPosition = {x: 0, y: 0};
         this.playerLocalPosition = {x: 0, y: 0};
         this.playerTacticalPosition = {x: 0, y: 0};
         
+        // Текущий герой
         this.currentHero = null;
         
+        // Загруженные карты
         this.loadedJSONMaps = new Map();
         this.activeOverlay = null;
         
+        // Canvas и отрисовка
         this.canvas = null;
         this.ctx = null;
         this.hexSize = 40;
         this.showGrid = false;
         this.hoveredHex = null;
         
+        // Зум и перемещение
         this.zoomLevel = 1.0;
         this.minZoom = 0.1;
         this.maxZoom = 5.0;
@@ -33,20 +40,29 @@ class MapSystem {
         this.dragStart = { x: 0, y: 0 };
         this.mapOffset = { x: 0, y: 0 };
         
+        // Визуальные эффекты
         this.lastHoveredHex = null;
         this.animationFrame = null;
         
+        // Ожидающие действия
         this.pendingMovement = null;
         this.pendingAction = null;
         
+        // Состояние системы
         this.canvasInitialized = false;
-        
         this.mapStack = [];
         this.currentMapType = 'local';
         
-        // Ссылка на ActionSystem
+        // Системы
         this.actionSystem = null;
         
+        // Цвета для системы видимости
+        this.exploredColor = '#1a1a2e';
+        this.unexploredColor = '#0a0a15';
+        this.fogOfWarOpacity = 0.7;
+        this.visibleRange = 1;
+        
+        // Таблицы лута
         this.lootTables = {
             1: {
                 gold: { weight: 60, min: 5, max: 20 },
@@ -98,6 +114,7 @@ class MapSystem {
             }
         };
         
+        // Символы для объектов
         this.objectSymbols = {
             'player_start': '⭐',
             'monster': '👹',
@@ -134,12 +151,13 @@ class MapSystem {
             'mountain': '⛰️'
         };
         
+        // Элементы интерфейса
         this.tooltipElement = null;
         this.currentTooltip = null;
         this.tooltipTimeout = null;
         this.resizeTimeout = null;
         
-        console.log("✅ MapSystem инициализирован (упрощенная версия)");
+        console.log("✅ MapSystem инициализирован (полная версия)");
     }
 
     // ========== ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ ДЕЙСТВИЙ ==========
@@ -152,34 +170,30 @@ class MapSystem {
         return this.actionSystem;
     }
 
-
     // ========== МЕТОДЫ ДЛЯ МОДУЛЯ ОХОТЫ ==========
 
-getActionSystem() {
-    return this.actionSystem;
-}
-
-isHuntModuleLoaded() {
-    return this.actionSystem && 
-           this.actionSystem.actionModules && 
-           this.actionSystem.actionModules['hunt'];
-}
-
-executeHuntAction(row, col) {
-    if (this.isHuntModuleLoaded()) {
-        return this.actionSystem.actionModules['hunt'].execute(row, col);
-    } else {
-        console.error("❌ Модуль охоты не загружен");
-        if (window.game) {
-            window.game.showNotification("❌ Модуль охоты не загружен", 'error');
-        }
-        return false;
+    getActionSystem() {
+        return this.actionSystem;
     }
-}
 
+    isHuntModuleLoaded() {
+        return this.actionSystem && 
+               this.actionSystem.actionModules && 
+               this.actionSystem.actionModules['hunt'];
+    }
 
+    executeHuntAction(row, col) {
+        if (this.isHuntModuleLoaded()) {
+            return this.actionSystem.actionModules['hunt'].execute(row, col);
+        } else {
+            console.error("❌ Модуль охоты не загружен");
+            if (window.game) {
+                window.game.showNotification("❌ Модуль охоты не загружен", 'error');
+            }
+            return false;
+        }
+    }
 
-    
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
 
     handleMerchantClick(merchantCell) {
@@ -359,7 +373,6 @@ executeHuntAction(row, col) {
     }
 
     // ========== ПРОКСИ-МЕТОДЫ ДЛЯ ACTIONSYSTEM ==========
-    // Эти методы перенаправляют вызовы в ActionSystem
 
     async loadCellData() {
         if (this.actionSystem) {
@@ -441,331 +454,302 @@ executeHuntAction(row, col) {
         return isNeighbor;
     }
 
-completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
-    console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
-    
-    // Делегируем обработку охоты модулю охоты через ActionSystem
-    if (battleType === 'hunt' && this.actionSystem) {
-        return this.completeHuntAfterBattle(victory, escape, doubleLoot);
-    }
-    
-    // Обработка неудачных действий
-    if (battleType === 'action_failure' && this.pendingAction) {
-        const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
+    completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+        console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
         
-        if (victory) {
-            console.log(`✅ Победа над монстром после неудачного действия ${action}`);
-            this.showNotification(`✅ Вы победили монстра! Действие ${action} можно повторить.`, 'success');
-            
-            setTimeout(() => {
-                const cellKey = `${col},${row}`;
-                const cell = this.currentTacticalMap?.cells[cellKey];
-                
-                if (cell && this.actionSystem) {
-                    this.actionSystem.updateCellActionsUI(cell);
-                    this.actionSystem.highlightSelectedCell(cell);
-                }
-            }, 500);
-        } else {
-            console.log(`💀 Поражение от монстра после действия ${action}`);
-            if (this.actionSystem) {
-                this.actionSystem.markCellAsExplored(row, col);
-            }
-            this.showNotification(`💀 Вы были ранены монстром! Локация теперь считается опасной.`, 'error');
+        if (battleType === 'hunt' && this.actionSystem) {
+            return this.completeHuntAfterBattle(victory, escape, doubleLoot);
         }
         
-        this.pendingAction = null;
-        return;
-    }
-    
-    // Обработка обычного перемещения
-    if (this.pendingMovement) {
-        let targetX, targetY;
-        
-        if (victory) {
-            targetX = this.pendingMovement.x;
-            targetY = this.pendingMovement.y;
-            const oldPosition = {...this.playerTacticalPosition};
-            this.playerTacticalPosition = {x: targetX, y: targetY};
+        if (battleType === 'action_failure' && this.pendingAction) {
+            const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
             
-            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
-            
-            if (window.game) {
-                window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
-            }
-        } else {
-            if (escape) {
-                targetX = this.playerTacticalPosition.x;
-                targetY = this.playerTacticalPosition.y;
-                console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
+            if (victory) {
+                console.log(`✅ Победа над монстром после неудачного действия ${action}`);
+                this.showNotification(`✅ Вы победили монстра! Действие ${action} можно повторить.`, 'success');
                 
-                if (window.game) {
-                    window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
-                }
+                setTimeout(() => {
+                    const cellKey = `${col},${row}`;
+                    const cell = this.currentTacticalMap?.cells[cellKey];
+                    
+                    if (cell && this.actionSystem) {
+                        this.actionSystem.updateCellActionsUI(cell);
+                        this.actionSystem.highlightSelectedCell(cell);
+                    }
+                }, 500);
             } else {
-                const startPosition = this.currentTacticalMap.startPosition;
-                targetX = startPosition.x;
-                targetY = startPosition.y;
+                console.log(`💀 Поражение от монстра после действия ${action}`);
+                if (this.actionSystem) {
+                    this.actionSystem.markCellAsExplored(row, col);
+                }
+                this.showNotification(`💀 Вы были ранены монстром! Локация теперь считается опасной.`, 'error');
+            }
+            
+            this.pendingAction = null;
+            return;
+        }
+        
+        if (this.pendingMovement) {
+            let targetX, targetY;
+            
+            if (victory) {
+                targetX = this.pendingMovement.x;
+                targetY = this.pendingMovement.y;
                 const oldPosition = {...this.playerTacticalPosition};
                 this.playerTacticalPosition = {x: targetX, y: targetY};
                 
-                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
                 
                 if (window.game) {
-                    window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                    window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+                }
+            } else {
+                if (escape) {
+                    targetX = this.playerTacticalPosition.x;
+                    targetY = this.playerTacticalPosition.y;
+                    console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
+                    
+                    if (window.game) {
+                        window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                    }
+                } else {
+                    const startPosition = this.currentTacticalMap.startPosition;
+                    targetX = startPosition.x;
+                    targetY = startPosition.y;
+                    const oldPosition = {...this.playerTacticalPosition};
+                    this.playerTacticalPosition = {x: targetX, y: targetY};
+                    
+                    console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                    
+                    if (window.game) {
+                        window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                    }
                 }
             }
-        }
-        
-        this.pendingMovement = null;
-        
-        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
-            this.calculateCSSScale();
-            this.drawTacticalMap();
-            this.updateMovementInfo();
             
-            setTimeout(() => {
-                const cellKey = `${targetX},${targetY}`;
-                const currentCell = this.currentTacticalMap?.cells[cellKey];
+            this.pendingMovement = null;
+            
+            if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+                this.calculateCSSScale();
+                this.drawTacticalMap();
+                this.updateMovementInfo();
                 
-                if (currentCell && this.actionSystem) {
-                    console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
-                    this.actionSystem.updateCellActionsUI(currentCell);
-                    this.actionSystem.highlightSelectedCell(currentCell);
+                setTimeout(() => {
+                    const cellKey = `${targetX},${targetY}`;
+                    const currentCell = this.currentTacticalMap?.cells[cellKey];
+                    
+                    if (currentCell && this.actionSystem) {
+                        console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
+                        this.actionSystem.updateCellActionsUI(currentCell);
+                        this.actionSystem.highlightSelectedCell(currentCell);
+                    }
+                }, 500);
+            }
+            
+            if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+                window.game.systems.hero.currentHero = this.currentHero;
+                window.game.systems.hero.calculateHeroStats(this.currentHero);
+            }
+        }
+    }
+
+    // ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
+
+    completeHuntAfterBattle(victory, escape, doubleLoot = false) {
+        console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
+        
+        if (!this.pendingAction || this.pendingAction.action !== 'hunt') {
+            console.error("❌ Нет ожидающего действия охоты");
+            this.completeMovementAfterBattle(victory, escape);
+            return;
+        }
+        
+        const { row, col, targetResource, wasSuccess, wasFailure } = this.pendingAction;
+        const cellKey = `${col},${row}`;
+        const cell = this.currentTacticalMap?.cells[cellKey];
+        
+        if (victory) {
+            if (wasSuccess) {
+                this.processHuntResource(targetResource, doubleLoot);
+                
+                const bonusText = doubleLoot ? ' (двойной лут!)' : '';
+                this.showNotification(`🎉 Успешная охота! Получен: ${targetResource.name}${bonusText}`, 'success');
+                
+                if (cell) {
+                    cell.explored = true;
+                    cell.hasAction = false;
                 }
-            }, 500);
-        }
-        
-        if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
-            window.game.systems.hero.currentHero = this.currentHero;
-            window.game.systems.hero.calculateHeroStats(this.currentHero);
-        }
-    }
-}
-
-
-
-// ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
-
-// ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
-
-completeHuntAfterBattle(victory, escape, doubleLoot = false) {
-    console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
-    
-    if (!this.pendingAction || this.pendingAction.action !== 'hunt') {
-        console.error("❌ Нет ожидающего действия охоты");
-        this.completeMovementAfterBattle(victory, escape);
-        return;
-    }
-    
-    const { row, col, targetResource, wasSuccess, wasFailure } = this.pendingAction;
-    const cellKey = `${col},${row}`;
-    const cell = this.currentTacticalMap?.cells[cellKey];
-    
-    if (victory) {
-        // ГЕРОЙ ПОБЕДИЛ В БОЮ
-        if (wasSuccess) {
-            // УСПЕШНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем целевой ресурс
-            this.processHuntResource(targetResource, doubleLoot);
+            } else {
+                const randomResource = this.getRandomHuntResource();
+                if (randomResource) {
+                    this.processHuntResource(randomResource, false);
+                    this.showNotification(`🎉 Победа в бою! Получен случайный трофей: ${randomResource.name}`, 'success');
+                }
+            }
             
-            const bonusText = doubleLoot ? ' (двойной лут!)' : '';
-            this.showNotification(`🎉 Успешная охота! Получен: ${targetResource.name}${bonusText}`, 'success');
+            if (wasFailure && cell) {
+                this.applyDoubleHuntPenalty(cell);
+            }
             
-            // Отмечаем клетку как исследованную после успешной охоты
-            if (cell) {
-                cell.explored = true;
-                cell.hasAction = false;
-            }
         } else {
-            // НЕУДАЧНАЯ ОХОТА + ПОБЕДА В БОЮ = получаем случайный ресурс
-            const randomResource = this.getRandomHuntResource();
-            if (randomResource) {
-                this.processHuntResource(randomResource, false);
-                this.showNotification(`🎉 Победа в бою! Получен случайный трофей: ${randomResource.name}`, 'success');
+            if (escape) {
+                this.showNotification("🏃 Вы сбежали с поля боя", 'warning');
+            } else {
+                this.showNotification("💀 Вы проиграли бой", 'error');
+            }
+            
+            if (wasFailure && cell) {
+                this.applyDoubleHuntPenalty(cell);
             }
         }
-        
-        // Штраф уже применен в startHuntBattle если была неудача
-        if (wasFailure && cell) {
-            this.applyDoubleHuntPenalty(cell);
-        }
-        
-    } else {
-        // ГЕРОЙ ПРОИГРАЛ БОЙ ИЛИ СБЕЖАЛ
-        if (escape) {
-            this.showNotification("🏃 Вы сбежали с поля боя", 'warning');
-        } else {
-            this.showNotification("💀 Вы проиграли бой", 'error');
-        }
-        
-        // При поражении штраф удваивается
-        if (wasFailure && cell) {
-            this.applyDoubleHuntPenalty(cell);
-        }
-    }
-    
-    // ⭐ ВАЖНО: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ ПОСЛЕ ОБРАБОТКИ ОХОТЫ
-    setTimeout(() => {
-        const battleSystem = window.game?.systems?.battle;
-        if (battleSystem && battleSystem.showBattleResult) {
-            battleSystem.showBattleResult(victory, escape);
-        } else {
-            console.error("❌ BattleSystem не доступна для показа результатов");
-        }
-    }, 100);
-    
-    // Очищаем pendingAction
-    this.pendingAction = null;
-}
-
-// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
-
-processHuntResource(resource, doubleLoot = false) {
-    if (!resource || !this.currentHero) return;
-    
-    console.log(`🎁 Обработка ресурса охоты: ${resource.name}, двойной лут: ${doubleLoot}`);
-    
-    const count = doubleLoot ? 2 : 1;
-    
-    // Проверяем, есть ли система ресурсов
-    const resourcesSystem = window.game?.systems?.resources;
-    if (resourcesSystem) {
-        // Добавляем через ResourcesSystem
-        for (let i = 0; i < count; i++) {
-            this.addResourceToHero(resource.id, 1);
-        }
-        console.log(`✅ Ресурс ${resource.name} добавлен через ResourcesSystem (количество: ${count})`);
-    } else {
-        // Запасной вариант
-        console.warn(`⚠️ ResourcesSystem не доступна, используем прямой метод`);
-        
-        // Сохраняем лут в battleLoot BattleSystem
-        const battleSystem = window.game?.systems?.battle;
-        if (battleSystem) {
-            for (let i = 0; i < count; i++) {
-                if (!battleSystem.battleLoot) battleSystem.battleLoot = [];
-                battleSystem.battleLoot.push({
-                    id: resource.id,
-                    name: resource.name,
-                    timestamp: Date.now(),
-                    doubleLoot: doubleLoot
-                });
-            }
-            console.log(`✅ Ресурс ${resource.name} добавлен в battleLoot (количество: ${count})`);
-        }
-    }
-}
-
-getRandomHuntResource() {
-    // Получаем случайный ресурс для охоты
-    const resourcesSystem = window.game?.systems?.resources;
-    if (!resourcesSystem) return null;
-    
-    // Получаем все доступные ресурсы из категории "hides" (шкуры)
-    const hideResources = resourcesSystem.resources?.hides || [];
-    const leatherResources = resourcesSystem.resources?.leathers || [];
-    const furResources = resourcesSystem.resources?.furs || [];
-    
-    const allResources = [...hideResources, ...leatherResources, ...furResources];
-    
-    if (allResources.length === 0) return null;
-    
-    const randomIndex = Math.floor(Math.random() * allResources.length);
-    return allResources[randomIndex];
-}
-
-applyDoubleHuntPenalty(cell) {
-    // Применяем штраф за неудачную охоту
-    if (!cell || !this.currentHero) return;
-    
-    console.log(`⚠️ Применение штрафа за неудачную охоту`);
-    
-    // Например, можно уменьшить здоровье героя
-    const heroSystem = window.game?.systems?.hero;
-    if (heroSystem) {
-        const stats = heroSystem.calculateHeroStats(this.currentHero);
-        const penalty = Math.floor(stats.maxHealth * 0.1); // 10% от макс. здоровья
-        this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth - penalty);
-        
-        this.showNotification(`⚠️ Неудачная охота! Потеряно ${penalty} здоровья`, 'warning');
-    }
-}
-
-// ========== МЕТОД ДОБАВЛЕНИЯ РЕСУРСОВ ГЕРОЮ ==========
-
-addResourceToHero(resourceId, amount = 1) {
-    if (!this.currentHero) return;
-    
-    // Используем sharedResources для хранения ресурсов
-    if (!window.game.sharedResources) {
-        window.game.sharedResources = {};
-    }
-    
-    if (!window.game.sharedResources.resources) {
-        window.game.sharedResources.resources = {};
-    }
-    
-    // Добавляем ресурс
-    if (!window.game.sharedResources.resources[resourceId]) {
-        window.game.sharedResources.resources[resourceId] = {
-            id: resourceId,
-            count: 0
-        };
-    }
-    
-    window.game.sharedResources.resources[resourceId].count += amount;
-    
-    // Также добавляем в текущего героя для совместимости
-    if (!this.currentHero.resources) {
-        this.currentHero.resources = {};
-    }
-    
-    if (!this.currentHero.resources[resourceId]) {
-        this.currentHero.resources[resourceId] = {
-            id: resourceId,
-            count: 0
-        };
-    }
-    
-    this.currentHero.resources[resourceId].count += amount;
-    
-    console.log(`📦 Ресурс ${resourceId} добавлен герою (количество: ${amount}, всего: ${this.currentHero.resources[resourceId].count})`);
-    
-    // Обновляем интерфейс ресурсов
-    if (this.actionSystem) {
-        this.actionSystem.updateHeroResourcesUI();
-    }
-}
-
-showNotification(message, type = 'info') {
-    if (window.game && window.game.showNotification) {
-        window.game.showNotification(message, type);
-    } else {
-        console.log(`${type.toUpperCase()}: ${message}`);
-        // Создаем простую нотификацию
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
-            color: white;
-            border-radius: 6px;
-            z-index: 9999;
-            font-family: Arial, sans-serif;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
         
         setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem && battleSystem.showBattleResult) {
+                battleSystem.showBattleResult(victory, escape);
+            } else {
+                console.error("❌ BattleSystem не доступна для показа результатов");
             }
-        }, 3000);
+        }, 100);
+        
+        this.pendingAction = null;
     }
-}
+
+    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
+
+    processHuntResource(resource, doubleLoot = false) {
+        if (!resource || !this.currentHero) return;
+        
+        console.log(`🎁 Обработка ресурса охоты: ${resource.name}, двойной лут: ${doubleLoot}`);
+        
+        const count = doubleLoot ? 2 : 1;
+        
+        const resourcesSystem = window.game?.systems?.resources;
+        if (resourcesSystem) {
+            for (let i = 0; i < count; i++) {
+                this.addResourceToHero(resource.id, 1);
+            }
+            console.log(`✅ Ресурс ${resource.name} добавлен через ResourcesSystem (количество: ${count})`);
+        } else {
+            console.warn(`⚠️ ResourcesSystem не доступна, используем прямой метод`);
+            
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem) {
+                for (let i = 0; i < count; i++) {
+                    if (!battleSystem.battleLoot) battleSystem.battleLoot = [];
+                    battleSystem.battleLoot.push({
+                        id: resource.id,
+                        name: resource.name,
+                        timestamp: Date.now(),
+                        doubleLoot: doubleLoot
+                    });
+                }
+                console.log(`✅ Ресурс ${resource.name} добавлен в battleLoot (количество: ${count})`);
+            }
+        }
+    }
+
+    getRandomHuntResource() {
+        const resourcesSystem = window.game?.systems?.resources;
+        if (!resourcesSystem) return null;
+        
+        const hideResources = resourcesSystem.resources?.hides || [];
+        const leatherResources = resourcesSystem.resources?.leathers || [];
+        const furResources = resourcesSystem.resources?.furs || [];
+        
+        const allResources = [...hideResources, ...leatherResources, ...furResources];
+        
+        if (allResources.length === 0) return null;
+        
+        const randomIndex = Math.floor(Math.random() * allResources.length);
+        return allResources[randomIndex];
+    }
+
+    applyDoubleHuntPenalty(cell) {
+        if (!cell || !this.currentHero) return;
+        
+        console.log(`⚠️ Применение штрафа за неудачную охоту`);
+        
+        const heroSystem = window.game?.systems?.hero;
+        if (heroSystem) {
+            const stats = heroSystem.calculateHeroStats(this.currentHero);
+            const penalty = Math.floor(stats.maxHealth * 0.1);
+            this.currentHero.currentHealth = Math.max(1, this.currentHero.currentHealth - penalty);
+            
+            this.showNotification(`⚠️ Неудачная охота! Потеряно ${penalty} здоровья`, 'warning');
+        }
+    }
+
+    // ========== МЕТОД ДОБАВЛЕНИЯ РЕСУРСОВ ГЕРОЮ ==========
+
+    addResourceToHero(resourceId, amount = 1) {
+        if (!this.currentHero) return;
+        
+        if (!window.game.sharedResources) {
+            window.game.sharedResources = {};
+        }
+        
+        if (!window.game.sharedResources.resources) {
+            window.game.sharedResources.resources = {};
+        }
+        
+        if (!window.game.sharedResources.resources[resourceId]) {
+            window.game.sharedResources.resources[resourceId] = {
+                id: resourceId,
+                count: 0
+            };
+        }
+        
+        window.game.sharedResources.resources[resourceId].count += amount;
+        
+        if (!this.currentHero.resources) {
+            this.currentHero.resources = {};
+        }
+        
+        if (!this.currentHero.resources[resourceId]) {
+            this.currentHero.resources[resourceId] = {
+                id: resourceId,
+                count: 0
+            };
+        }
+        
+        this.currentHero.resources[resourceId].count += amount;
+        
+        console.log(`📦 Ресурс ${resourceId} добавлен герою (количество: ${amount}, всего: ${this.currentHero.resources[resourceId].count})`);
+        
+        if (this.actionSystem) {
+            this.actionSystem.updateHeroResourcesUI();
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        if (window.game && window.game.showNotification) {
+            window.game.showNotification(message, type);
+        } else {
+            console.log(`${type.toUpperCase()}: ${message}`);
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
+                color: white;
+                border-radius: 6px;
+                z-index: 9999;
+                font-family: Arial, sans-serif;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        }
+    }
     
     // ========== СИСТЕМА ЛУТА ==========
 
@@ -838,7 +822,6 @@ showNotification(message, type = 'info') {
         try {
             console.log("📥 MapSystem: Загружаем данные карт...");
             
-            // Инициализируем ActionSystem
             this.initializeActionSystem();
             
             await this.loadJSONMaps();
@@ -893,6 +876,7 @@ showNotification(message, type = 'info') {
                         if (cell.explored === undefined) cell.explored = false;
                         if (cell.hasAction === undefined) cell.hasAction = true;
                         if (cell.isSelected === undefined) cell.isSelected = false;
+                        if (cell.visible === undefined) cell.visible = false;
                     });
                 }
             });
@@ -925,6 +909,7 @@ showNotification(message, type = 'info') {
                     if (cell.explored === undefined) cell.explored = false;
                     if (cell.hasAction === undefined) cell.hasAction = true;
                     if (cell.isSelected === undefined) cell.isSelected = false;
+                    if (cell.visible === undefined) cell.visible = false;
                 });
             }
             
@@ -1194,6 +1179,7 @@ showNotification(message, type = 'info') {
                         if (cell.explored === undefined) cell.explored = false;
                         if (cell.hasAction === undefined) cell.hasAction = true;
                         if (cell.isSelected === undefined) cell.isSelected = false;
+                        if (cell.visible === undefined) cell.visible = false;
                     });
                 }
                 
@@ -1273,6 +1259,7 @@ showNotification(message, type = 'info') {
                 if (cell.explored === undefined) cell.explored = false;
                 if (cell.hasAction === undefined) cell.hasAction = true;
                 if (cell.isSelected === undefined) cell.isSelected = false;
+                if (cell.visible === undefined) cell.visible = false;
             });
         }
         
@@ -1324,7 +1311,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "3,2": {
                     type: "exit", 
@@ -1338,7 +1326,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "2,3": {
                     type: "npc", 
@@ -1352,7 +1341,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "4,3": {
                     type: "merchant", 
@@ -1369,7 +1359,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "3,4": {
                     type: "campfire", 
@@ -1383,7 +1374,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 }
             },
             cellSize: 40,
@@ -1419,7 +1411,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "4,3": {
                     type: "exit", 
@@ -1432,7 +1425,8 @@ showNotification(message, type = 'info') {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 }
             },
             cellSize: 40,
@@ -1461,6 +1455,7 @@ showNotification(message, type = 'info') {
                 if (cell.explored === undefined) cell.explored = false;
                 if (cell.hasAction === undefined) cell.hasAction = true;
                 if (cell.isSelected === undefined) cell.isSelected = false;
+                if (cell.visible === undefined) cell.visible = false;
             });
         }
         
@@ -1561,6 +1556,14 @@ showNotification(message, type = 'info') {
         
         console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
         
+        if (!this.isCellVisible(hex)) {
+            console.log("❌ Клетка не видима - нельзя взаимодействовать");
+            if (window.game) {
+                window.game.showNotification("❌ Эта область еще не исследована!", 'warning');
+            }
+            return;
+        }
+        
         if (hex.type === 'village' && hex.tacticalMap) {
             console.log("🍻 Клик по таверне - проверяем доступность...");
             
@@ -1611,9 +1614,15 @@ showNotification(message, type = 'info') {
                 this.moveOnTacticalMap(hex.col, hex.row);
             } else {
                 console.log(`❌ Клетка недостижима для перемещения`);
+                if (window.game) {
+                    window.game.showNotification("❌ Нельзя переместиться на эту клетку!", 'error');
+                }
             }
         } else {
             console.log(`❌ Клетка непроходима: ${hex.type}`);
+            if (window.game) {
+                window.game.showNotification("❌ Эта клетка непроходима!", 'error');
+            }
         }
         
         if (!this.isTransitionCell(hex)) {
@@ -1789,6 +1798,14 @@ showNotification(message, type = 'info') {
             return;
         }
 
+        if (!this.isCellVisible(cellData)) {
+            console.log("🚫 Клетка не видима");
+            if (window.game) {
+                window.game.showNotification("❌ Эта область еще не исследована!", 'warning');
+            }
+            return;
+        }
+
         if (this.isTransitionCell(cellData)) {
             this.handleTransitionClick(cellData);
             return;
@@ -1826,6 +1843,12 @@ showNotification(message, type = 'info') {
         this.playerTacticalPosition = {x: targetX, y: targetY};
         
         console.log(`✅ Перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+        
+        // Помечаем клетку как исследованную
+        this.markCellAsExplored(targetY, targetX);
+        
+        // Обновляем видимость вокруг игрока
+        this.updateVisibilityAroundPlayer();
         
         this.syncHeroWithOtherSystems();
         
@@ -2014,48 +2037,47 @@ showNotification(message, type = 'info') {
         }
     }
 
-startTacticalBattleForMovement(x, y, cellData) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) {
-        console.error("❌ BattleSystem не доступна");
-        return;
-    }
-
-    if (!this.currentHero) {
-        console.error("❌ Не могу начать бой: герой не выбран");
-        return;
-    }
-
-    this.pendingMovement = { x: x, y: y };
-    
-    const specificMonster = this.getMonsterFromCell(cellData);
-    
-    console.log("🎲 Начинаем бой поверх тактической карты...");
-    
-    if (specificMonster && cellData.monster_id) {
-        console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
-        battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
-    } else {
-        const randomMonster = this.getRandomMonster();
-        if (!randomMonster) {
-            console.error("❌ Не удалось начать бой: нет случайных монстров");
-            if (window.game) {
-                window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
-            }
+    startTacticalBattleForMovement(x, y, cellData) {
+        const battleSystem = window.game?.systems?.battle;
+        if (!battleSystem) {
+            console.error("❌ BattleSystem не доступна");
             return;
         }
+
+        if (!this.currentHero) {
+            console.error("❌ Не могу начать бой: герой не выбран");
+            return;
+        }
+
+        this.pendingMovement = { x: x, y: y };
         
-        console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+        const specificMonster = this.getMonsterFromCell(cellData);
         
-        // Проверяем, не была ли это охота
-        if (this.pendingAction && this.pendingAction.action === 'hunt') {
-            // Для охоты используем специальный тип боя
-            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'hunt');
+        console.log("🎲 Начинаем бой поверх тактической карты...");
+        
+        if (specificMonster && cellData.monster_id) {
+            console.log(`🎯 Бой с ЗАПРОГРАММИРОВАННЫМ монстром: ${specificMonster.name}`);
+            battleSystem.startBattleWithSpecificMonster(this.currentHero, specificMonster, 'movement');
         } else {
-            battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
+            const randomMonster = this.getRandomMonster();
+            if (!randomMonster) {
+                console.error("❌ Не удалось начать бой: нет случайных монстров");
+                if (window.game) {
+                    window.game.showNotification("❌ Нет доступных монстров для боя!", 'error');
+                }
+                return;
+            }
+            
+            console.log(`🎲 Бой со СЛУЧАЙНЫМ монстром: ${randomMonster.name}`);
+            
+            if (this.pendingAction && this.pendingAction.action === 'hunt') {
+                battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'hunt');
+            } else {
+                battleSystem.startBattleWithMonster(this.currentHero, randomMonster.id, 'movement');
+            }
         }
     }
-}
+
     getRandomMonster() {
         const battleSystem = window.game?.systems?.battle;
         if (!battleSystem || !battleSystem.getRandomMonsterForMovement) {
@@ -2120,6 +2142,114 @@ startTacticalBattleForMovement(x, y, cellData) {
         console.groupEnd();
         
         return isReachable;
+    }
+
+    // ========== СИСТЕМА ВИДИМОСТИ ==========
+
+    isCellVisible(cell) {
+        if (!cell) return false;
+        
+        // Исследованные клетки всегда видны
+        if (cell.explored) {
+            return true;
+        }
+        
+        // Соседние клетки видны
+        const distance = this.getHexDistance(
+            this.playerTacticalPosition.x,
+            this.playerTacticalPosition.y,
+            cell.col,
+            cell.row
+        );
+        
+        return distance <= this.visibleRange;
+    }
+    
+    getHexDistance(col1, row1, col2, row2) {
+        // Преобразуем офсетные координаты в кубические для шестиугольной сетки
+        const x1 = col1;
+        const z1 = row1 - Math.floor(col1 / 2);
+        const y1 = -x1 - z1;
+        
+        const x2 = col2;
+        const z2 = row2 - Math.floor(col2 / 2);
+        const y2 = -x2 - z2;
+        
+        // Вычисляем расстояние в кубических координатах
+        return Math.max(Math.abs(x1 - x2), Math.abs(y1 - y2), Math.abs(z1 - z2));
+    }
+    
+    updateVisibilityAroundPlayer() {
+        const currentRow = this.playerTacticalPosition.y;
+        const currentCol = this.playerTacticalPosition.x;
+        const neighbors = this.getHexNeighbors(currentRow, currentCol);
+        
+        // Делаем соседние клетки видимыми
+        neighbors.forEach(neighbor => {
+            const cellKey = `${neighbor.col},${neighbor.row}`;
+            const cell = this.currentTacticalMap.cells[cellKey];
+            if (cell) {
+                cell.visible = true;
+            }
+        });
+        
+        // Текущая клетка всегда исследована и видима
+        const currentKey = `${currentCol},${currentRow}`;
+        const currentCell = this.currentTacticalMap.cells[currentKey];
+        if (currentCell) {
+            currentCell.explored = true;
+            currentCell.visible = true;
+        }
+        
+        // Перерисовываем карту
+        if (this.canvasInitialized) {
+            this.drawTacticalMap();
+        }
+    }
+    
+    initializeVisibility() {
+        if (!this.currentTacticalMap) return;
+        
+        // Сначала скрываем все клетки
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            cell.visible = false;
+        });
+        
+        // Делаем видимыми все исследованные клетки
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
+            if (cell.explored) {
+                cell.visible = true;
+                
+                // И их соседей тоже делаем видимыми
+                const neighbors = this.getHexNeighbors(cell.row, cell.col);
+                neighbors.forEach(neighbor => {
+                    const neighborKey = `${neighbor.col},${neighbor.row}`;
+                    const neighborCell = this.currentTacticalMap.cells[neighborKey];
+                    if (neighborCell) {
+                        neighborCell.visible = true;
+                    }
+                });
+            }
+        });
+        
+        // Гарантируем, что клетка игрока и её соседи видны
+        const playerKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+        const playerCell = this.currentTacticalMap.cells[playerKey];
+        if (playerCell) {
+            playerCell.visible = true;
+            playerCell.explored = true;
+            
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            neighbors.forEach(neighbor => {
+                const neighborKey = `${neighbor.col},${neighbor.row}`;
+                const neighborCell = this.currentTacticalMap.cells[neighborKey];
+                if (neighborCell) {
+                    neighborCell.visible = true;
+                }
+            });
+        }
+        
+        console.log("🔦 Система видимости инициализирована");
     }
 
     // ========== CANVAS И ОТРИСОВКА ==========
@@ -2295,64 +2425,22 @@ startTacticalBattleForMovement(x, y, cellData) {
         img.src = map.image;
     }
 
-    handleResize() {
-        if (!this.canvasInitialized) return;
-        
-        console.log("🔄 Адаптация к изменению размеров окна");
-        
-        if (this.resizeTimeout) {
-            clearTimeout(this.resizeTimeout);
-        }
-        
-        this.resizeTimeout = setTimeout(() => {
-            this.calculateCSSScale();
-            this.drawTacticalMap();
-            this.updateMovementInfo();
-        }, 100);
-    }
-
-    drawHexGrid() {
-        const cells = Object.values(this.currentTacticalMap.cells);
-        const hexSize = this.currentTacticalMap.cellSize || 40;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
-        this.ctx.lineWidth = 1;
-        
-        cells.forEach(cell => {
-            if (cell.visible) {
-                const centerX = cell.x || cell.originalX || 0;
-                const centerY = cell.y || cell.originalY || 0;
-                
-                if (!centerX || !centerY) return;
-                
-                this.ctx.beginPath();
-                for (let i = 0; i < 6; i++) {
-                    const angle = Math.PI / 3 * i + Math.PI / 6;
-                    const x = centerX + hexSize * Math.cos(angle);
-                    const y = centerY + hexSize * Math.sin(angle);
-                    
-                    if (i === 0) this.ctx.moveTo(x, y);
-                    else this.ctx.lineTo(x, y);
-                }
-                this.ctx.closePath();
-                this.ctx.stroke();
-            }
-        });
-        this.ctx.restore();
-    }
-
     drawHexes() {
         const cells = Object.values(this.currentTacticalMap.cells);
         
+        // Сначала отрисовываем все клетки с их базовыми цветами
         cells.forEach(cell => {
-            if (cell.visible) {
-                this.drawSingleHex(cell);
+            this.drawSingleHex(cell);
+        });
+        
+        // Затем поверх рисуем контент только видимых клеток
+        cells.forEach(cell => {
+            if (this.isCellVisible(cell)) {
                 this.drawHexContent(cell);
             }
         });
     }
-
+    
     drawSingleHex(cell) {
         const hexSize = this.currentTacticalMap.cellSize || 40;
         
@@ -2364,6 +2452,7 @@ startTacticalBattleForMovement(x, y, cellData) {
         this.ctx.save();
         this.ctx.beginPath();
         
+        // Рисуем шестиугольник
         for (let i = 0; i < 6; i++) {
             const angle = Math.PI / 3 * i + Math.PI / 6;
             const x = centerX + hexSize * Math.cos(angle);
@@ -2373,11 +2462,37 @@ startTacticalBattleForMovement(x, y, cellData) {
             else this.ctx.lineTo(x, y);
         }
         this.ctx.closePath();
-
+        
+        // Определяем цвет в зависимости от статуса видимости
+        let fillColor = this.unexploredColor;
+        let strokeColor = 'rgba(76, 201, 240, 0.1)';
+        
+        if (this.isCellVisible(cell)) {
+            if (cell.explored) {
+                fillColor = this.exploredColor;
+                strokeColor = 'rgba(76, 201, 240, 0.3)';
+            } else {
+                // Клетка видима, но не исследована - полупрозрачная
+                fillColor = 'rgba(26, 26, 46, 0.6)';
+                strokeColor = 'rgba(76, 201, 240, 0.2)';
+            }
+        }
+        
+        // Заливка клетки
+        this.ctx.fillStyle = fillColor;
+        this.ctx.fill();
+        
+        // Сетка (если включена)
         if (this.showGrid) {
-            this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.3)';
+            this.ctx.strokeStyle = strokeColor;
             this.ctx.lineWidth = 1;
             this.ctx.stroke();
+        }
+        
+        // Рисуем "туман войны" для невидимых клеток
+        if (!this.isCellVisible(cell)) {
+            this.ctx.fillStyle = `rgba(0, 0, 0, ${this.fogOfWarOpacity})`;
+            this.ctx.fill();
         }
         
         this.ctx.restore();
@@ -2393,6 +2508,7 @@ startTacticalBattleForMovement(x, y, cellData) {
         
         const hexSize = this.currentTacticalMap.cellSize || 40;
         
+        // Подсветка для выделенных клеток
         if (cell.isHighlighted) {
             this.ctx.beginPath();
             for (let i = 0; i < 6; i++) {
@@ -2413,6 +2529,7 @@ startTacticalBattleForMovement(x, y, cellData) {
             this.ctx.fill();
         }
         
+        // Выделение для выбранных клеток
         if (cell.isSelected) {
             this.ctx.beginPath();
             for (let i = 0; i < 6; i++) {
@@ -2435,6 +2552,7 @@ startTacticalBattleForMovement(x, y, cellData) {
             this.ctx.shadowBlur = 0;
         }
         
+        // Рисуем символ клетки
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
 
@@ -2527,6 +2645,7 @@ startTacticalBattleForMovement(x, y, cellData) {
         this.ctx.fillStyle = color;
         this.ctx.fillText(symbol, centerX, centerY);
         
+        // Галочка для исследованных клеток
         if (cell.explored) {
             this.ctx.font = 'bold 14px Arial';
             this.ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
@@ -2534,6 +2653,53 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
         
         this.ctx.restore();
+    }
+
+    drawHexGrid() {
+        const cells = Object.values(this.currentTacticalMap.cells);
+        const hexSize = this.currentTacticalMap.cellSize || 40;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(76, 201, 240, 0.6)';
+        this.ctx.lineWidth = 1;
+        
+        cells.forEach(cell => {
+            if (cell.visible) {
+                const centerX = cell.x || cell.originalX || 0;
+                const centerY = cell.y || cell.originalY || 0;
+                
+                if (!centerX || !centerY) return;
+                
+                this.ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = Math.PI / 3 * i + Math.PI / 6;
+                    const x = centerX + hexSize * Math.cos(angle);
+                    const y = centerY + hexSize * Math.sin(angle);
+                    
+                    if (i === 0) this.ctx.moveTo(x, y);
+                    else this.ctx.lineTo(x, y);
+                }
+                this.ctx.closePath();
+                this.ctx.stroke();
+            }
+        });
+        this.ctx.restore();
+    }
+
+    handleResize() {
+        if (!this.canvasInitialized) return;
+        
+        console.log("🔄 Адаптация к изменению размеров окна");
+        
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+        }
+        
+        this.resizeTimeout = setTimeout(() => {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
+        }, 100);
     }
 
     getLootSymbol(lootLevel) {
@@ -2624,6 +2790,10 @@ startTacticalBattleForMovement(x, y, cellData) {
     
     getTooltipTextForHex(hex) {
         if (!hex.visible) return null;
+        
+        if (!this.isCellVisible(hex)) {
+            return "❓ Неизвестная территория\n(Приблизьтесь для исследования)";
+        }
 
         if (hex.tooltip) {
             return hex.tooltip;
@@ -2798,9 +2968,17 @@ startTacticalBattleForMovement(x, y, cellData) {
         const neighbors = this.getHexNeighbors(currentRow, currentCol);
         
         console.log(`📍 Текущая позиция: [${currentCol}, ${currentRow}]`);
-        console.log(`🎯 Доступные ходы:`, neighbors.map(n => `[${n.col}, ${n.row}]`));
         
-        return neighbors;
+        // Фильтруем только видимые клетки
+        const visibleNeighbors = neighbors.filter(neighbor => {
+            const cellKey = `${neighbor.col},${neighbor.row}`;
+            const cell = this.currentTacticalMap.cells[cellKey];
+            return cell && this.isCellVisible(cell);
+        });
+        
+        console.log(`🎯 Доступные ходы (видимые):`, visibleNeighbors.map(n => `[${n.col}, ${n.row}]`));
+        
+        return visibleNeighbors;
     }
 
     getHexGeometry(hexSize) {
@@ -3021,11 +3199,11 @@ startTacticalBattleForMovement(x, y, cellData) {
             localPosition: {x: 4, y: 4},
             description: "Извилистая тропа через древний лес",
             cells: {
-                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null},
-                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250, explored: false, hasAction: true, isSelected: false, cellType: null},
-                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null},
-                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null},
-                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350, explored: false, hasAction: true, isSelected: false, cellType: null}
+                "3,3": {type: "start", passable: true, row: 3, col: 3, visible: true, x: 300, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true},
+                "3,2": {type: "exit", passable: true, row: 2, col: 3, visible: true, x: 300, y: 250, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true},
+                "2,3": {type: "monster", passable: false, row: 3, col: 2, visible: true, x: 250, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true},
+                "4,3": {type: "chest", passable: true, row: 3, col: 4, visible: true, x: 350, y: 300, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true},
+                "3,4": {type: "npc", passable: true, row: 4, col: 3, visible: true, x: 300, y: 350, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true}
             }
         }];
     }
@@ -3060,7 +3238,7 @@ startTacticalBattleForMovement(x, y, cellData) {
             startPosition: {x: 1, y: 1},
             localPosition: {x: 2, y: 2},
             cells: {
-                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100, explored: false, hasAction: true, isSelected: false, cellType: null}
+                "1,1": {type: "start", passable: true, row: 1, col: 1, visible: true, x: 100, y: 100, explored: false, hasAction: true, isSelected: false, cellType: null, visible: true}
             }
         }];
     }
@@ -3216,6 +3394,7 @@ startTacticalBattleForMovement(x, y, cellData) {
             
             try {
                 this.initCanvas();
+                this.initializeVisibility(); // Инициализируем систему видимости
                 this.updateMovementInfo();
                 
                 if (this.actionSystem) {
@@ -3224,7 +3403,7 @@ startTacticalBattleForMovement(x, y, cellData) {
                 
                 console.log("🔍 Проверяем состояние клеток на карте:");
                 Object.values(this.currentTacticalMap.cells).forEach(cell => {
-                    console.log(`  [${cell.col},${cell.row}]: type=${cell.type}, explored=${cell.explored}, cellType=${cell.cellType}`);
+                    console.log(`  [${cell.col},${cell.row}]: type=${cell.type}, explored=${cell.explored}, visible=${cell.visible}, cellType=${cell.cellType}`);
                 });
                 
                 const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
@@ -3291,36 +3470,34 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
     }
 
-  hideOverlay() {
-    console.log("👋 MapSystem: Скрываем оверлей");
-    
-    const container = document.getElementById('overlay-container');
-    if (container) {
-        container.style.display = 'none';
-        container.innerHTML = '';
-        this.activeOverlay = null;
-        this.hoveredHex = null;
-        this.lastHoveredHex = null;
-        this.hideTooltip();
+    hideOverlay() {
+        console.log("👋 MapSystem: Скрываем оверлей");
         
-        if (this.animationFrame) {
-            cancelAnimationFrame(this.animationFrame);
-            this.animationFrame = null;
-        }
-        
-        console.log("✅ Оверлей скрыт, показываем главный экран героя");
-        
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Возвращаемся к главному экрану героя
-        if (window.game && window.game.showHeroGameScreen) {
-            // Небольшая задержка для гарантии очистки DOM
-            setTimeout(() => {
-                window.game.showHeroGameScreen();
-            }, 50);
-        } else {
-            console.error("❌ window.game.showHeroGameScreen не доступен");
+        const container = document.getElementById('overlay-container');
+        if (container) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            this.activeOverlay = null;
+            this.hoveredHex = null;
+            this.lastHoveredHex = null;
+            this.hideTooltip();
+            
+            if (this.animationFrame) {
+                cancelAnimationFrame(this.animationFrame);
+                this.animationFrame = null;
+            }
+            
+            console.log("✅ Оверлей скрыт, показываем главный экран героя");
+            
+            if (window.game && window.game.showHeroGameScreen) {
+                setTimeout(() => {
+                    window.game.showHeroGameScreen();
+                }, 50);
+            } else {
+                console.error("❌ window.game.showHeroGameScreen не доступен");
+            }
         }
     }
-}
 
     toggleGrid() {
         this.showGrid = !this.showGrid;
@@ -3484,7 +3661,8 @@ startTacticalBattleForMovement(x, y, cellData) {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "4,3": {
                     type: "exit", 
@@ -3497,7 +3675,8 @@ startTacticalBattleForMovement(x, y, cellData) {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 },
                 "3,4": {
                     type: "monster", 
@@ -3510,7 +3689,8 @@ startTacticalBattleForMovement(x, y, cellData) {
                     explored: false,
                     hasAction: true,
                     isSelected: false,
-                    cellType: null
+                    cellType: null,
+                    visible: true
                 }
             },
             cellSize: 40,
@@ -3666,7 +3846,6 @@ startTacticalBattleForMovement(x, y, cellData) {
             window.game.showNotification(message, type);
         } else {
             console.log(`${type.toUpperCase()}: ${message}`);
-            // Создаем простую нотификацию
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
@@ -3691,8 +3870,8 @@ startTacticalBattleForMovement(x, y, cellData) {
         }
     }
 
-} // <-- ЗАКРЫВАЕМ КЛАСС MapSystem ЗДЕСЬ
+} // <-- КОНЕЦ КЛАССА MapSystem
 
-// ЭТОТ КОД ДОЛЖЕН БЫТЬ ВНЕ КЛАССА:
+// Экспортируем класс в глобальную область видимости
 window.MapSystem = MapSystem;
-console.log("📦 MapSystem модуль загружен (упрощенная версия)");
+console.log("📦 MapSystem модуль загружен (полная версия с системой видимости)");
