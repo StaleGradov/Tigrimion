@@ -2580,6 +2580,38 @@ canMoveToHex(targetCell) {
 }
     
 
+/**
+ * Обновить интерфейс состояния исследования
+ */
+updateResearchStatus() {
+    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+    
+    if (!currentCell) return;
+    
+    const statusElement = document.getElementById('researchStatus');
+    if (!statusElement) return;
+    
+    if (currentCell.explored) {
+        statusElement.innerHTML = `
+            <div style="color: #00ff00; display: flex; align-items: center; gap: 5px;">
+                ✅ Исследован
+            </div>
+        `;
+    } else {
+        const hasCampfire = this.checkForCampfire(currentCell);
+        const safety = hasCampfire ? "относительно безопасно" : "очень опасно";
+        const safetyColor = hasCampfire ? "#f59e0b" : "#ef4444";
+        
+        statusElement.innerHTML = `
+            <div style="color: ${safetyColor}; display: flex; align-items: center; gap: 5px;">
+                ❓ Не исследован
+                <small style="color: #94a3b8;">(Ночёвка ${safety})</small>
+            </div>
+        `;
+    }
+}
+    
     
 
 // В КЛАССЕ MapSystem метод handlePeacefulMovement:
@@ -4352,6 +4384,12 @@ container.innerHTML = `
                         style="padding: 5px 10px; font-size: 12px;">
                     🌙 Переночевать
                 </button>
+                <button class="btn-control" 
+        onclick="if (game.systems.map) game.systems.map.researchCurrentHex()" 
+        title="Исследовать этот гекс (переночевать)"
+        style="padding: 5px 10px; font-size: 12px;">
+    🔍 Исследовать гекс
+</button>
             </div>
             
             <div class="map-controls-group" style="display: flex; align-items: center; gap: 10px;">
