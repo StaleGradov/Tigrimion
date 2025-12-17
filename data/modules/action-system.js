@@ -195,651 +195,174 @@ class ActionSystem {
         this.locationImages = {};
         this.locationImageCache = new Map();
         
-        // Модули действий (охоты, трав и т.д.)
+        // Модули действий (охоты)
         this.actionModules = {};
         
         // ДЕБАГ ИНФОРМАЦИЯ
         console.log("✅ ActionSystem инициализирован");
         console.log("   mapSystem:", mapSystem);
         console.log("   window.HuntAction:", window.HuntAction);
-        console.log("   window.HerbsAction:", window.HerbsAction);
+        
+        // НЕ вызываем инициализацию модулей здесь - они загрузятся позже
+        // setTimeout(() => {
+        //     this.initializeActionModules();
+        // }, 500);
     }
 
     // ========== ИНИЦИАЛИЗАЦИЯ МОДУЛЕЙ ДЕЙСТВИЙ ==========
 
-    async initializeActionModules() {
-        console.log("🔄 Инициализация модулей действий...");
-        
-        try {
-            // Проверяем наличие глобальных классов и создаем экземпляры
-            this.initializeAvailableModules();
+initializeActionModules() {
+    console.log("🔄 Инициализация модулей действий...");
+    
+    try {
+        // ВАЖНО: Проверяем, не является ли текущий модуль охоты заглушкой
+        const currentHuntModule = this.actionModules['hunt'];
+        if (currentHuntModule) {
+            // Проверяем признаки заглушки
+            const isStub = currentHuntModule.execute && 
+                          currentHuntModule.execute.toString().includes('Заглушка охоты');
             
-            // Загружаем отсутствующие модули
-            await this.loadMissingModules();
-            
-            // Проверяем результат загрузки
-            this.verifyModulesLoaded();
-            
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка инициализации модулей действий:", error);
-            
-            // Создаем базовые заглушки для критически важных модулей
-            this.createEssentialModuleStubs();
-            
-            // Пробуем перезагрузить важные модули
-            this.retryCriticalModules();
-            
-            return false;
-        }
-    }
-
-    initializeAvailableModules() {
-        console.log("🔍 Проверка доступных модулей...");
-        
-        // Модуль охоты
-        if (window.HuntAction && !this.actionModules['hunt']) {
-            console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
-            try {
-                this.actionModules['hunt'] = new window.HuntAction(this);
-                console.log("✅ Модуль охоты инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания HuntAction:", error);
+            if (isStub) {
+                console.log("⚠️ Обнаружена заглушка модуля охоты, удаляем её");
+                delete this.actionModules['hunt'];
+            } else if (currentHuntModule.showHuntTargetSelection) {
+                console.log("✅ Настоящий модуль охоты уже загружен");
+                return true;
             }
         }
         
-        // Модуль сбора трав
-        if (window.HerbsAction && !this.actionModules['search_herbs']) {
-            console.log("✅ Глобальный класс HerbsAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_herbs'] = new window.HerbsAction(this);
-                console.log("✅ Модуль сбора трав инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания HerbsAction:", error);
-            }
+        // Загружаем модуль охоты
+        console.log("🔄 Загружаем модуль охоты...");
+        return this.loadHuntModuleWithFallback();
+        
+    } catch (error) {
+        console.error("❌ Ошибка инициализации модулей действий:", error);
+        
+        // Только в крайнем случае создаем заглушку
+        // Но сначала проверяем, может настоящий модуль уже загружен
+        if (!this.actionModules['hunt'] || !this.actionModules['hunt'].showHuntTargetSelection) {
+            this.createHuntActionStub();
         }
         
-        // Модуль поиска воды
-        if (window.WaterAction && !this.actionModules['search_water']) {
-            console.log("✅ Глобальный класс WaterAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_water'] = new window.WaterAction(this);
-                console.log("✅ Модуль поиска воды инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания WaterAction:", error);
-            }
-        }
-        
-        // Модуль поиска ягод
-        if (window.BerriesAction && !this.actionModules['search_berries']) {
-            console.log("✅ Глобальный класс BerriesAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_berries'] = new window.BerriesAction(this);
-                console.log("✅ Модуль поиска ягод инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания BerriesAction:", error);
-            }
-        }
-        
-        // Модуль сбора грибов
-        if (window.MushroomsAction && !this.actionModules['search_mushrooms']) {
-            console.log("✅ Глобальный класс MushroomsAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_mushrooms'] = new window.MushroomsAction(this);
-                console.log("✅ Модуль сбора грибов инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания MushroomsAction:", error);
-            }
-        }
-        
-        // Модуль поиска руды
-        if (window.OreAction && !this.actionModules['search_ore']) {
-            console.log("✅ Глобальный класс OreAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_ore'] = new window.OreAction(this);
-                console.log("✅ Модуль поиска руды инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания OreAction:", error);
-            }
-        }
-        
-        // Модуль сбора камней
-        if (window.StoneAction && !this.actionModules['search_stone']) {
-            console.log("✅ Глобальный класс StoneAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_stone'] = new window.StoneAction(this);
-                console.log("✅ Модуль сбора камней инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания StoneAction:", error);
-            }
-        }
-        
-        // Модуль сбора дров
-        if (window.WoodAction && !this.actionModules['gather_wood']) {
-            console.log("✅ Глобальный класс WoodAction найден, создаем экземпляр");
-            try {
-                this.actionModules['gather_wood'] = new window.WoodAction(this);
-                console.log("✅ Модуль сбора дров инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания WoodAction:", error);
-            }
-        }
-        
-        // Модуль установки ловушки
-        if (window.TrapAction && !this.actionModules['set_trap']) {
-            console.log("✅ Глобальный класс TrapAction найден, создаем экземпляр");
-            try {
-                this.actionModules['set_trap'] = new window.TrapAction(this);
-                console.log("✅ Модуль установки ловушки инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания TrapAction:", error);
-            }
-        }
-        
-        // Модуль подготовки засады
-        if (window.AmbushAction && !this.actionModules['prepare_ambush']) {
-            console.log("✅ Глобальный класс AmbushAction найден, создаем экземпляр");
-            try {
-                this.actionModules['prepare_ambush'] = new window.AmbushAction(this);
-                console.log("✅ Модуль подготовки засады инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания AmbushAction:", error);
-            }
-        }
-        
-        // Модуль охоты на караван
-        if (window.CaravanHuntAction && !this.actionModules['hunt_caravan']) {
-            console.log("✅ Глобальный класс CaravanHuntAction найден, создаем экземпляр");
-            try {
-                this.actionModules['hunt_caravan'] = new window.CaravanHuntAction(this);
-                console.log("✅ Модуль охоты на караван инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания CaravanHuntAction:", error);
-            }
-        }
-        
-        // Модуль получения контракта на убийство
-        if (window.AssassinationAction && !this.actionModules['take_assassination_contract']) {
-            console.log("✅ Глобальный класс AssassinationAction найден, создаем экземпляр");
-            try {
-                this.actionModules['take_assassination_contract'] = new window.AssassinationAction(this);
-                console.log("✅ Модуль получения контракта на убийство инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания AssassinationAction:", error);
-            }
-        }
-        
-        // Модуль разжигания костра
-        if (window.CampfireAction && !this.actionModules['light_campfire']) {
-            console.log("✅ Глобальный класс CampfireAction найден, создаем экземпляр");
-            try {
-                this.actionModules['light_campfire'] = new window.CampfireAction(this);
-                console.log("✅ Модуль разжигания костра инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания CampfireAction:", error);
-            }
-        }
-        
-        // Модуль охраны каравана
-        if (window.GuardAction && !this.actionModules['guard_caravan']) {
-            console.log("✅ Глобальный класс GuardAction найден, создаем экземпляр");
-            try {
-                this.actionModules['guard_caravan'] = new window.GuardAction(this);
-                console.log("✅ Модуль охраны каравана инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания GuardAction:", error);
-            }
-        }
-        
-        // Модуль скрытного перемещения
-        if (window.StealthAction && !this.actionModules['stealth_movement']) {
-            console.log("✅ Глобальный класс StealthAction найден, создаем экземпляр");
-            try {
-                this.actionModules['stealth_movement'] = new window.StealthAction(this);
-                console.log("✅ Модуль скрытного перемещения инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания StealthAction:", error);
-            }
-        }
-        
-        // Модуль поиска сокровищ
-        if (window.TreasureAction && !this.actionModules['search_treasure']) {
-            console.log("✅ Глобальный класс TreasureAction найден, создаем экземпляр");
-            try {
-                this.actionModules['search_treasure'] = new window.TreasureAction(this);
-                console.log("✅ Модуль поиска сокровищ инициализирован");
-            } catch (error) {
-                console.error("❌ Ошибка создания TreasureAction:", error);
-            }
-        }
-        
-        console.log("📊 Загруженные модули:", Object.keys(this.actionModules).length, "модулей");
-        console.log("   Список:", Object.keys(this.actionModules));
-    }
-
-    async loadMissingModules() {
-        console.log("📥 Загрузка отсутствующих модулей...");
-        
-        const modulesToLoad = [];
-        
-        // Определяем какие модули нужно загрузить
-        if (!this.actionModules['hunt']) {
-            modulesToLoad.push({ 
-                name: 'hunt', 
-                className: 'HuntAction', 
-                file: 'hunt-action.js',
-                critical: true 
-            });
-        }
-        
-        if (!this.actionModules['search_herbs']) {
-            modulesToLoad.push({ 
-                name: 'search_herbs', 
-                className: 'HerbsAction', 
-                file: 'herbs-action.js',
-                critical: true 
-            });
-        }
-        
-        if (!this.actionModules['search_water']) {
-            modulesToLoad.push({ 
-                name: 'search_water', 
-                className: 'WaterAction', 
-                file: 'water-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['search_berries']) {
-            modulesToLoad.push({ 
-                name: 'search_berries', 
-                className: 'BerriesAction', 
-                file: 'berries-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['search_mushrooms']) {
-            modulesToLoad.push({ 
-                name: 'search_mushrooms', 
-                className: 'MushroomsAction', 
-                file: 'mushrooms-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['search_ore']) {
-            modulesToLoad.push({ 
-                name: 'search_ore', 
-                className: 'OreAction', 
-                file: 'ore-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['search_stone']) {
-            modulesToLoad.push({ 
-                name: 'search_stone', 
-                className: 'StoneAction', 
-                file: 'stone-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['gather_wood']) {
-            modulesToLoad.push({ 
-                name: 'gather_wood', 
-                className: 'WoodAction', 
-                file: 'wood-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['set_trap']) {
-            modulesToLoad.push({ 
-                name: 'set_trap', 
-                className: 'TrapAction', 
-                file: 'trap-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['prepare_ambush']) {
-            modulesToLoad.push({ 
-                name: 'prepare_ambush', 
-                className: 'AmbushAction', 
-                file: 'ambush-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['hunt_caravan']) {
-            modulesToLoad.push({ 
-                name: 'hunt_caravan', 
-                className: 'CaravanHuntAction', 
-                file: 'caravan-hunt-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['take_assassination_contract']) {
-            modulesToLoad.push({ 
-                name: 'take_assassination_contract', 
-                className: 'AssassinationAction', 
-                file: 'assassination-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['light_campfire']) {
-            modulesToLoad.push({ 
-                name: 'light_campfire', 
-                className: 'CampfireAction', 
-                file: 'campfire-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['guard_caravan']) {
-            modulesToLoad.push({ 
-                name: 'guard_caravan', 
-                className: 'GuardAction', 
-                file: 'guard-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['stealth_movement']) {
-            modulesToLoad.push({ 
-                name: 'stealth_movement', 
-                className: 'StealthAction', 
-                file: 'stealth-action.js',
-                critical: false 
-            });
-        }
-        
-        if (!this.actionModules['search_treasure']) {
-            modulesToLoad.push({ 
-                name: 'search_treasure', 
-                className: 'TreasureAction', 
-                file: 'treasure-action.js',
-                critical: false 
-            });
-        }
-        
-        if (modulesToLoad.length === 0) {
-            console.log("✅ Все модули уже загружены");
-            return;
-        }
-        
-        console.log(`📦 Модулей для загрузки: ${modulesToLoad.length}`);
-        console.log("   Критические:", modulesToLoad.filter(m => m.critical).map(m => m.name));
-        console.log("   Не критические:", modulesToLoad.filter(m => !m.critical).map(m => m.name));
-        
-        // Сначала загружаем критические модули
-        const criticalModules = modulesToLoad.filter(m => m.critical);
-        const nonCriticalModules = modulesToLoad.filter(m => !m.critical);
-        
-        if (criticalModules.length > 0) {
-            console.log("🔄 Загрузка критических модулей...");
-            const criticalPromises = criticalModules.map(module => this.loadModuleFile(module));
-            const criticalResults = await Promise.allSettled(criticalPromises);
-            
-            criticalResults.forEach((result, index) => {
-                const module = criticalModules[index];
-                if (result.status === 'fulfilled' && result.value) {
-                    console.log(`✅ Критический модуль ${module.name} загружен успешно`);
-                } else {
-                    console.error(`❌ Ошибка загрузки критического модуля ${module.name}:`, result.reason);
-                }
-            });
-        }
-        
-        // Затем загружаем некритические модули
-        if (nonCriticalModules.length > 0) {
-            console.log("🔄 Загрузка некритических модулей...");
-            const nonCriticalPromises = nonCriticalModules.map(module => this.loadModuleFile(module));
-            await Promise.allSettled(nonCriticalPromises);
-        }
-        
-        console.log("✅ Загрузка модулей завершена");
-    }
-
-    async loadModuleFile(moduleInfo) {
-        console.log(`🔄 Загружаем модуль: ${moduleInfo.name} (${moduleInfo.file})`);
-        
-        const paths = [
-            `data/actions/${moduleInfo.file}`,
-            `modules/actions/${moduleInfo.file}`,
-            `actions/${moduleInfo.file}`,
-            moduleInfo.file
-        ];
-        
-        for (const path of paths) {
-            try {
-                console.log(`   Пробуем путь: ${path}`);
-                const response = await fetch(path);
-                
-                if (response.ok) {
-                    const code = await response.text();
-                    const fileSize = code.length;
-                    
-                    // Проверяем содержимое файла
-                    if (code.includes(`class ${moduleInfo.className}`)) {
-                        console.log(`✅ Файл найден: ${path} (${fileSize} байт)`);
-                        
-                        // Выполняем код
-                        eval(code);
-                        
-                        // Ждем немного чтобы класс зарегистрировался
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        
-                        // Проверяем зарегистрировался ли класс глобально
-                        if (window[moduleInfo.className]) {
-                            console.log(`✅ Класс ${moduleInfo.className} зарегистрирован глобально`);
-                            
-                            try {
-                                // Создаем экземпляр
-                                this.actionModules[moduleInfo.name] = new window[moduleInfo.className](this);
-                                console.log(`✅ Модуль ${moduleInfo.name} создан и зарегистрирован`);
-                                
-                                // Проверяем методы модуля
-                                this.validateModuleMethods(moduleInfo.name);
-                                
-                                return true;
-                            } catch (error) {
-                                console.error(`❌ Ошибка создания экземпляра ${moduleInfo.className}:`, error);
-                            }
-                        } else {
-                            console.error(`❌ Класс ${moduleInfo.className} не зарегистрирован после загрузки`);
-                        }
-                    } else {
-                        console.log(`   ❌ Файл не содержит класс ${moduleInfo.className}`);
-                    }
-                } else {
-                    console.log(`   ❌ Не доступен: ${path} (статус: ${response.status})`);
-                }
-            } catch (error) {
-                console.log(`   ❌ Ошибка загрузки: ${error.message}`);
-            }
-        }
-        
-        console.error(`❌ Не удалось загрузить модуль ${moduleInfo.name}`);
         return false;
     }
+}
 
-    validateModuleMethods(moduleName) {
-        const module = this.actionModules[moduleName];
-        if (!module) return;
-        
-        console.log(`🔍 Проверка методов модуля ${moduleName}:`);
-        
-        const requiredMethods = ['execute'];
-        const optionalMethods = ['showSelection', 'completeAfterBattle', 'validate'];
-        
-        requiredMethods.forEach(method => {
-            if (typeof module[method] === 'function') {
-                console.log(`   ✅ Метод ${method}() найден`);
-            } else {
-                console.error(`   ❌ Требуемый метод ${method}() не найден в модуле ${moduleName}`);
-            }
-        });
-        
-        optionalMethods.forEach(method => {
-            if (typeof module[method] === 'function') {
-                console.log(`   📝 Опциональный метод ${method}() найден`);
-            }
-        });
+async loadHuntModuleWithFallback() {
+    console.log("🔄 Пытаемся загрузить модуль охоты...");
+    
+    // Пробуем несколько способов загрузки
+    
+    // 1. Если класс уже глобально доступен
+    if (window.HuntAction) {
+        console.log("✅ Глобальный класс HuntAction найден, создаем экземпляр");
+        this.actionModules['hunt'] = new window.HuntAction(this);
+        return true;
     }
-
-    verifyModulesLoaded() {
-        console.log("🔍 Проверка загруженности модулей...");
-        
-        const requiredModules = ['hunt', 'search_herbs'];
-        const allActionModules = Object.keys(this.actionModules);
-        
-        console.log(`📊 Всего загружено модулей: ${allActionModules.length}`);
-        console.log(`   Список: ${allActionModules.join(', ')}`);
-        
-        requiredModules.forEach(moduleName => {
-            if (this.actionModules[moduleName]) {
-                console.log(`✅ Обязательный модуль ${moduleName} загружен`);
-            } else {
-                console.error(`❌ Обязательный модуль ${moduleName} НЕ ЗАГРУЖЕН!`);
-            }
-        });
-        
-        // Проверяем есть ли у модулей необходимые методы
-        Object.keys(this.actionModules).forEach(moduleName => {
-            const module = this.actionModules[moduleName];
-            if (module && typeof module.execute !== 'function') {
-                console.warn(`⚠️ Модуль ${moduleName} не имеет метода execute()!`);
-            }
-        });
-    }
-
-    createEssentialModuleStubs() {
-        console.log("🛠️ Создаем заглушки для критических модулей...");
-        
-        // Заглушка для модуля охоты
-        if (!this.actionModules['hunt']) {
-            console.log("🔄 Создаем заглушку для модуля охоты");
-            this.actionModules['hunt'] = {
-                execute: (row, col) => {
-                    console.log(`🏹 Заглушка: охота на [${col},${row}]`);
-                    this.showNotification("⚠️ Модуль охоты не загружен. Используется базовая логика.", 'warning');
-                    
-                    const cellKey = `${col},${row}`;
-                    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-                    
-                    if (!cell) return;
-                    
-                    if (cell.explored === true) {
-                        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-                        return;
-                    }
-                    
-                    // Простой бой как заглушка
-                    const battleSystem = window.game?.systems?.battle;
-                    if (battleSystem) {
-                        const randomMonster = battleSystem.getRandomMonsterForMovement();
-                        if (randomMonster) {
-                            this.mapSystem.pendingAction = {
-                                action: 'hunt',
-                                row: row,
-                                col: col,
-                                wasSuccess: true,
-                                doubleLoot: true
-                            };
-                            battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
-                        }
-                    }
-                },
-                completeHuntAfterBattle: (victory, escape, doubleLoot) => {
-                    console.log(`🏹 Заглушка: обработка результата охоты`);
-                    this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
-                },
-                config: {
-                    id: 'hunt',
-                    icon: '🏹',
-                    name: 'Охотиться',
-                    description: 'Выследить и добыть дичь'
-                }
-            };
-        }
-        
-        // Заглушка для модуля сбора трав
-        if (!this.actionModules['search_herbs']) {
-            console.log("🔄 Создаем заглушку для модуля сбора трав");
-            this.actionModules['search_herbs'] = {
-                execute: (row, col) => {
-                    console.log(`🌿 Заглушка: сбор трав на [${col},${row}]`);
-                    this.showNotification("⚠️ Модуль сбора трав не загружен. Используется базовая логика.", 'warning');
-                    
-                    const cellKey = `${col},${row}`;
-                    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-                    if (!cell) return;
-                    
-                    // Простой сбор травы
-                    const herbs = this.resources?.herbs || [];
-                    if (herbs.length > 0) {
-                        const randomHerb = herbs[Math.floor(Math.random() * herbs.length)];
-                        const chance = 50; // Базовая вероятность
-                        const success = Math.random() * 100 <= chance;
-                        
-                        if (success) {
-                            this.addResourceToHero(randomHerb.id, randomHerb.name, 1, 'herbs');
-                            this.showNotification(`✅ Собрана трава: ${randomHerb.name}`, 'success');
-                            cell.explored = true;
-                        } else {
-                            this.showNotification("❌ Не удалось собрать траву", 'warning');
-                        }
-                    } else {
-                        this.showNotification("❌ На этой локации нет трав", 'warning');
-                    }
-                    
-                    // Обновляем интерфейс
-                    setTimeout(() => {
-                        if (cell && !cell.explored) {
-                            this.updateCellActionsUI(cell);
-                        }
-                    }, 1000);
-                }
-            };
-        }
-    }
-
-    retryCriticalModules() {
-        console.log("🔄 Повторная попытка загрузки критических модулей...");
-        
-        // Пробуем загрузить критически важные модули через короткую задержку
-        setTimeout(async () => {
-            try {
-                // Проверяем HuntAction
-                if (!this.actionModules['hunt'] && window.HuntAction) {
-                    console.log("🔄 Повторная загрузка модуля охоты...");
-                    this.actionModules['hunt'] = new window.HuntAction(this);
-                    console.log("✅ Модуль охоты загружен при повторной попытке");
-                }
+    
+    // 2. Пробуем загрузить из файла
+    const paths = [
+        'data/actions/hunt-action.js',
+        'modules/actions/hunt-action.js',
+        'hunt-action.js'
+    ];
+    
+    for (const path of paths) {
+        try {
+            console.log(`   Пробуем: ${path}`);
+            const response = await fetch(path);
+            if (response.ok) {
+                const code = await response.text();
                 
-                // Проверяем HerbsAction
-                if (!this.actionModules['search_herbs'] && window.HerbsAction) {
-                    console.log("🔄 Повторная загрузка модуля сбора трав...");
-                    this.actionModules['search_herbs'] = new window.HerbsAction(this);
-                    console.log("✅ Модуль сбора трав загружен при повторной попытке");
+                // Проверяем содержимое файла
+                if (code.includes('class HuntAction') && code.includes('showHuntTargetSelection')) {
+                    console.log(`✅ Файл найден: ${path}`);
+                    
+                    // Выполняем код
+                    eval(code);
+                    
+                    // Ждем немного чтобы класс зарегистрировался
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    if (window.HuntAction) {
+                        this.actionModules['hunt'] = new window.HuntAction(this);
+                        console.log(`✅ Модуль охоты загружен из ${path}`);
+                        return true;
+                    }
+                } else {
+                    console.log(`   ❌ Файл не содержит класс HuntAction: ${path}`);
                 }
-            } catch (error) {
-                console.error("❌ Ошибка при повторной загрузке модулей:", error);
+            } else {
+                console.log(`   ❌ Не доступен: ${path}`);
             }
-        }, 500);
+        } catch (error) {
+            console.log(`   ❌ Ошибка: ${error.message}`);
+        }
     }
-
-    // ========== РЕГИСТРАЦИЯ МОДУЛЕЙ ==========
+    
+    // 3. Только если все способы не сработали - заглушка
+    console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
+    console.log("⚠️ Создаем заглушку модуля охоты");
+    this.createHuntActionStub();
+    return false;
+}
 
     registerModule(moduleName, moduleInstance) {
         this.actionModules[moduleName] = moduleInstance;
         console.log(`✅ Модуль ${moduleName} зарегистрирован в ActionSystem`);
+    }
+
+    createHuntActionStub() {
+        console.log("🔄 Создаем заглушку для модуля охоты");
+        this.actionModules['hunt'] = {
+            execute: (row, col) => {
+                console.log(`🏹 Заглушка охоты: клетка [${col},${row}]`);
+                this.showNotification("⚠️ Модуль охоты не загружен. Заглушка активирована.", 'warning');
+                
+                // Базовая логика охоты как заглушка
+                const cellKey = `${col},${row}`;
+                const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+                
+                if (!cell) {
+                    this.showNotification("❌ Клетка не найдена!", 'error');
+                    return;
+                }
+                
+                if (cell.explored === true) {
+                    this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                    return;
+                }
+                
+                // Простой бой как заглушка
+                const battleSystem = window.game?.systems?.battle;
+                if (battleSystem) {
+                    const randomMonster = battleSystem.getRandomMonsterForMovement();
+                    if (randomMonster) {
+                        this.mapSystem.pendingAction = {
+                            action: 'hunt',
+                            row: row,
+                            col: col,
+                            wasSuccess: true,
+                            doubleLoot: true
+                        };
+                        battleSystem.startBattleWithSpecificMonster(this.mapSystem.currentHero, randomMonster, 'hunt');
+                        this.showNotification(`🏹 Простая охота на ${randomMonster.name}`, 'info');
+                    }
+                }
+            },
+            completeHuntAfterBattle: (victory, escape, doubleLoot) => {
+                console.log(`🏹 Заглушка: обработка результата охоты`);
+                this.mapSystem.completeMovementAfterBattle(victory, escape, 'hunt', doubleLoot);
+            },
+            config: {
+                id: 'hunt',
+                icon: '🏹',
+                name: 'Охотиться',
+                description: 'Выследить и добыть дичь'
+            }
+        };
+        
+        console.log("✅ Заглушка модуля охоты создана и зарегистрирована");
     }
 
     // ========== ПРОВЕРКА ЗАГРУЗКИ МОДУЛЕЙ ==========
@@ -858,7 +381,7 @@ class ActionSystem {
                 return true;
             } else {
                 console.error("❌ Глобальный класс HuntAction не найден");
-                this.createEssentialModuleStubs();
+                this.createHuntActionStub();
                 return false;
             }
         }
@@ -899,7 +422,7 @@ class ActionSystem {
         }
         
         // В крайнем случае создаем заглушку
-        this.createEssentialModuleStubs();
+        this.createHuntActionStub();
         console.log("⚠️ Используется заглушка модуля охоты");
         return false;
     }
@@ -961,7 +484,7 @@ class ActionSystem {
         }
         
         console.error("❌ Не удалось загрузить модуль охоты ни с одного пути");
-        this.createEssentialModuleStubs();
+        this.createHuntActionStub();
         return false;
     }
 
@@ -1284,70 +807,70 @@ class ActionSystem {
 
     // ========== МЕТОДЫ ДЛЯ ЗАГРУЗКИ ДАННЫХ ==========
 
-    async loadCellData() {
-        try {
-            console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
-            
-            // Используем Promise.all для параллельной загрузки
-            const [cellTypesResponse, resourcesResponse] = await Promise.all([
-                fetch('data/cell_types.json').catch(() => {
-                    console.warn("⚠️ cell_types.json не загружен, создаем базовые типы");
-                    return null;
-                }),
-                fetch('data/resources.json').catch(() => {
-                    console.warn("⚠️ resources.json не загружен, создаем базовые ресурсы");
-                    return null;
-                })
-            ]);
-            
-            // Загружаем типы клеток
-            if (cellTypesResponse && cellTypesResponse.ok) {
-                const cellData = await cellTypesResponse.json();
-                this.cellTypes = cellData.cell_types || {};
-                console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
-            } else {
-                console.warn("❌ cell_types.json не загружен, создаем базовые типы");
-                this.createDefaultCellTypes();
-            }
-            
-            // Загружаем ресурсы
-            if (resourcesResponse && resourcesResponse.ok) {
-                const resourcesData = await resourcesResponse.json();
-                this.resources = resourcesData;
-                console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
-            } else {
-                console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
-                this.createDefaultResources();
-            }
-            
-            // ВАЖНО: Инициализируем модули действий ПОСЛЕ загрузки данных
-            console.log("🔄 Инициализация модулей действий после загрузки данных...");
-            await this.initializeActionModules();
-            
-            // Загружаем картинки локаций (асинхронно, не ждем завершения)
-            this.loadLocationImages().catch(error => {
-                console.error("❌ Ошибка загрузки картинок локаций:", error);
-            });
-            
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных клеток:", error);
-            
-            // Создаем базовые данные при ошибке
+  async loadCellData() {
+    try {
+        console.log("📥 ActionSystem: Загружаем данные типов клеток и ресурсов...");
+        
+        // Используем Promise.all для параллельной загрузки
+        const [cellTypesResponse, resourcesResponse] = await Promise.all([
+            fetch('data/cell_types.json').catch(() => {
+                console.warn("⚠️ cell_types.json не загружен, создаем базовые типы");
+                return null;
+            }),
+            fetch('data/resources.json').catch(() => {
+                console.warn("⚠️ resources.json не загружен, создаем базовые ресурсы");
+                return null;
+            })
+        ]);
+        
+        // Загружаем типы клеток
+        if (cellTypesResponse && cellTypesResponse.ok) {
+            const cellData = await cellTypesResponse.json();
+            this.cellTypes = cellData.cell_types || {};
+            console.log(`✅ Загружено типов клеток: ${Object.keys(this.cellTypes).length}`);
+        } else {
+            console.warn("❌ cell_types.json не загружен, создаем базовые типы");
             this.createDefaultCellTypes();
-            this.createDefaultResources();
-            
-            // Пробуем инициализировать модули даже при ошибке
-            try {
-                await this.initializeActionModules();
-            } catch (moduleError) {
-                console.error("❌ Ошибка инициализации модулей:", moduleError);
-            }
-            
-            return false;
         }
+        
+        // Загружаем ресурсы
+        if (resourcesResponse && resourcesResponse.ok) {
+            const resourcesData = await resourcesResponse.json();
+            this.resources = resourcesData;
+            console.log(`✅ Загружено ресурсов: ${Object.keys(this.resources).length} категорий`);
+        } else {
+            console.warn("❌ resources.json не загружен, создаем базовые ресурсы");
+            this.createDefaultResources();
+        }
+        
+        // ВАЖНО: Инициализируем модули действий ПОСЛЕ загрузки данных
+        console.log("🔄 Инициализация модулей действий после загрузки данных...");
+        await this.initializeActionModules();
+        
+        // Загружаем картинки локаций (асинхронно, не ждем завершения)
+        this.loadLocationImages().catch(error => {
+            console.error("❌ Ошибка загрузки картинок локаций:", error);
+        });
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных клеток:", error);
+        
+        // Создаем базовые данные при ошибке
+        this.createDefaultCellTypes();
+        this.createDefaultResources();
+        
+        // Пробуем инициализировать модули даже при ошибке
+        try {
+            await this.initializeActionModules();
+        } catch (moduleError) {
+            console.error("❌ Ошибка инициализации модулей:", moduleError);
+        }
+        
+        return false;
     }
+}
 
     createDefaultCellTypes() {
         this.cellTypes = {
@@ -2495,23 +2018,68 @@ class ActionSystem {
     async performCellAction(action, row, col) {
         console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
         
-        // ========== ОБРАБОТКА ЧЕРЕЗ МОДУЛИ ==========
-        if (this.actionModules[action]) {
-            const module = this.actionModules[action];
-            console.log(`✅ Найден модуль для действия ${action}:`, module);
+        // ========== ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ==========
+        if (action === 'hunt') {
+            console.log(`🏹 === ОБРАБОТКА ОХОТЫ ===`);
             
-            if (typeof module.execute === 'function') {
-                try {
-                    console.log(`🔄 Вызываем module.execute(${row}, ${col})`);
-                    return await module.execute(row, col);
-                } catch (error) {
-                    console.error(`❌ Ошибка выполнения модуля ${action}:`, error);
-                    this.showNotification(`❌ Ошибка выполнения действия ${action}!`, 'error');
-                    return;
-                }
-            } else {
-                console.error(`❌ У модуля ${action} нет метода execute()`);
-                this.showNotification(`❌ Модуль действия поврежден!`, 'error');
+            // 1. Проверяем, загружен ли модуль охоты
+            if (!this.actionModules['hunt']) {
+                console.log("🔄 Модуль охоты не загружен, пробуем загрузить...");
+                await this.ensureHuntModuleLoaded();
+            }
+            
+            // 2. Получаем модуль охоты
+            const huntModule = this.actionModules['hunt'];
+            if (!huntModule) {
+                console.error("❌ Модуль охоты не найден даже после загрузки");
+                this.showNotification("❌ Система охоты не доступна!", 'error');
+                return;
+            }
+            
+            console.log("✅ Модуль охоты найден:", huntModule);
+            
+            // 3. Проверяем метод execute
+            if (typeof huntModule.execute !== 'function') {
+                console.error("❌ У модуля нет метода execute!");
+                this.showNotification("❌ Ошибка модуля охоты!", 'error');
+                return;
+            }
+            
+            // 4. Получаем клетку для проверки
+            const cellKey = `${col},${row}`;
+            const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+            
+            if (!cell) {
+                console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+                this.showNotification("❌ Клетка не найдена!", 'error');
+                return;
+            }
+            
+            if (cell.explored === true) {
+                console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+                this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+                return;
+            }
+            
+            // 5. Проверяем, достижима ли клетка
+            const isReachable = this.mapSystem.isCellReachable(cell);
+            if (!isReachable) {
+                console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+                this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
+                return;
+            }
+            
+            // 6. Вызываем execute модуля охоты
+            console.log(`✅ Вызываем huntModule.execute(${row}, ${col})`);
+            console.log("   - Модуль:", huntModule);
+            console.log("   - Метод execute:", huntModule.execute);
+            
+            try {
+                // Привязываем правильный контекст
+                return await huntModule.execute(row, col);
+            } catch (error) {
+                console.error("❌ Ошибка выполнения модуля охоты:", error);
+                this.showNotification("❌ Ошибка системы охоты!", 'error');
                 return;
             }
         }
