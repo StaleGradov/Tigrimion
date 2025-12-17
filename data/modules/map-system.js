@@ -4487,6 +4487,45 @@ decreaseVisibility() {
         }
     }
 
+// Вспомогательные методы для MapSystem:
+getExploredCellsData() {
+    const exploredData = {};
+    
+    if (this.systems.map && this.systems.map.currentTacticalMap) {
+        Object.values(this.systems.map.currentTacticalMap.cells).forEach(cell => {
+            if (cell.explored) {
+                const key = `${cell.col},${cell.row}`;
+                exploredData[key] = {
+                    explored: true,
+                    hasAction: cell.hasAction,
+                    cellType: cell.cellType
+                };
+            }
+        });
+    }
+    
+    return exploredData;
+}
+
+restoreExploredCells(exploredCellsData) {
+    if (!this.systems.map || !this.systems.map.currentTacticalMap) return;
+    
+    Object.entries(exploredCellsData).forEach(([key, data]) => {
+        const cell = this.systems.map.currentTacticalMap.cells[key];
+        if (cell) {
+            cell.explored = data.explored || false;
+            cell.hasAction = data.hasAction !== undefined ? data.hasAction : true;
+            if (data.cellType) {
+                cell.cellType = data.cellType;
+            }
+        }
+    });
+    
+    console.log(`✅ Восстановлено ${Object.keys(exploredCellsData).length} исследованных клеток`);
+}
+
+
+    
 } // <-- ЗАКРЫВАЕМ КЛАСС MapSystem ЗДЕСЬ
 
 // ЭТОТ КОД ДОЛЖЕН БЫТЬ ВНЕ КЛАССА:
