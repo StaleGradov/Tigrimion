@@ -46,6 +46,8 @@ class MapSystem {
         
         // Ссылка на ActionSystem
         this.actionSystem = null;
+        this.timeSystem = null;
+        
         
         this.lootTables = {
             1: {
@@ -877,51 +879,267 @@ showNotification(message, type = 'info') {
 
     // ========== ЗАГРУЗКА КАРТ ==========
 
-    async loadMapData() {
-        try {
-            console.log("📥 MapSystem: Загружаем данные карт...");
-            
-            // Инициализируем ActionSystem
-            this.initializeActionSystem();
-            
-            await this.loadJSONMaps();
-            
-            if (this.actionSystem) {
-                await this.actionSystem.loadCellData();
-                await this.actionSystem.loadLocationImages();
+   // В КЛАССЕ MapSystem метод loadMapData:
+async loadMapData() {
+    try {
+        console.log("📥 MapSystem: Загружаем данные карт...");
+        
+        // Инициализируем системы В ПОРЯДКЕ ВАЖНОСТИ
+        this.initializeTimeSystem(); // СНАЧАЛА TimeSystem
+        this.initializeActionSystem(); // ПОТОМ ActionSystem
+        
+        await this.loadJSONMaps();
+        
+        if (this.actionSystem) {
+            await this.actionSystem.loadCellData();
+            await this.actionSystem.loadLocationImages();
+        }
+        
+        this.debugLoadedMaps();
+        
+        if (this.actionSystem) {
+            await this.initializeCellSystem();
+        }
+        
+        // Инициализируем лагерь на стартовой позиции, если его нет
+        if (this.timeSystem && !this.timeSystem.camp.exists) {
+            const startHex = this.findStartHex();
+            if (startHex) {
+                this.playerTacticalPosition = {x: startHex.col, y: startHex.row};
+                this.timeSystem.camp.location = {...this.playerTacticalPosition};
+                this.timeSystem.camp.exists = true;
+                this.timeSystem.camp.protections = ['basic_campfire'];
+                this.timeSystem.camp.level = 1;
+                console.log(`🏕️ Автоматически создан лагерь на стартовой позиции [${startHex.col},${startHex.row}]`);
             }
-            
-            this.debugLoadedMaps();
-            
-            if (this.actionSystem) {
-                await this.initializeCellSystem();
-            }
-            
+        }
+        
+        if (this.localMaps.length > 0) {
+            this.forceSetLocalMap();
+        }
+        else if (this.tacticalMaps.length === 0 && this.localMaps.length === 0) {
+            console.log("⚠️ Нет загруженных карт, создаем тестовые...");
+            this.createTestMaps();
             if (this.localMaps.length > 0) {
                 this.forceSetLocalMap();
             }
-            else if (this.tacticalMaps.length === 0 && this.localMaps.length === 0) {
-                console.log("⚠️ Нет загруженных карт, создаем тестовые...");
-                this.createTestMaps();
-                if (this.localMaps.length > 0) {
-                    this.forceSetLocalMap();
+        }
+        
+        this.setStartPositions();
+        
+        console.log(`✅ Карты загружены: Глобальных=${this.globalMaps.length}, Локальных=${this.localMaps.length}, Тактических=${this.tacticalMaps.length}`);
+        
+        // Обновляем отображение времени
+        if (this.timeSystem) {
+            this.timeSystem.updateTimeDisplay();
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных карт:", error);
+        this.createFallbackMaps();
+        if (this.localMaps.length > 0) {
+            this.forceSetLocalMap();
+        }
+        
+        // Создаем лагерь даже при ошибке
+        if (this.timeSystem && !this.timeSystem.camp.exists) {
+            this.timeSystem.camp.location = {...this.playerTacticalPosition};
+            this.timeSystem.camp.exists = true;
+            this.timeSystem.camp.protections = ['basic_campfire'];
+            this.timeSystem.camp.level = 1;
+        }
+        
+        return true;
+    }
+}
+
+// НОВЫЙ МЕТОД в MapSystem (добавить после loadMapData):
+findStartHex() {
+    if (!this.currentTacticalMap || !this.currentTacticalMap.cells) {
+        return null;
+    }
+    
+    // Ищем клетку с типом player_start
+    for (const cell of Object.values(this.currentTacticalMap.cells)) {
+        if (cell.type === 'player_start') {
+            return cell;
+        }
+    }
+    
+    // Если нет player_start, берем первую доступную клетку
+    const firstCell = Object.values(this.currentTacticalMap.cells)[0];
+    if (firstCell) {
+        return firstCell;
+    }
+    
+    return null;
+}
+
+// НОВЫЙ МЕТОД в MapSystem (добавить в конструктор или отдельно):
+initializeTimeSystem() {
+    if (!this.timeSystem) {
+        // Пробуем загрузить модуль TimeSystem
+        if (typeof TimeSystem !== 'undefined') {
+            this.timeSystem = new TimeSystem(this);
+            console.log("✅ TimeSystem создан из глобального класса");
+        } else {
+            // Если нет глобального класса, создаем базовый
+            console.log("⚠️ TimeSystem не найден глобально, создаем базовый");
+            this.createBasicTimeSystem();
+        }
+    }
+    return this.timeSystem;
+}
+
+// НОВЫЙ МЕТОД для создания базового TimeSystem если модуль не загружен:
+createBasicTimeSystem() {
+    this.timeSystem = {
+        gameTime: { day: 1, hour: 7, season: 'summer' },
+        camp: { exists: false, location: null, protections: [], level: 0 },
+        currentHexTime: 0,
+        maxHexTime: 16,
+        seasonalDayLength: { summer: 20, autumn: 16, winter: 8, spring: 16 },
+        
+        spendHourOnHex: function(action) {
+            console.log(`🕐 [BASIC] Тратим час на: ${action}`);
+            this.currentHexTime++;
+            this.gameTime.hour++;
+            
+            if (this.gameTime.hour >= 24) {
+                this.gameTime.hour = 0;
+                this.gameTime.day++;
+            }
+            
+            this.updateTimeDisplay();
+            return true;
+        },
+        
+        updateTimeDisplay: function() {
+            const timeElement = document.getElementById('timeDisplay');
+            if (!timeElement) return;
+            
+            const hourDisplay = this.gameTime.hour.toString().padStart(2, '0');
+            const seasonNames = { summer: 'Лето', autumn: 'Осень', winter: 'Зима', spring: 'Весна' };
+            
+            timeElement.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #fbbf24; font-weight: bold;">
+                        ☀️ ${hourDisplay}:00
+                    </span>
+                    <span style="color: #94a3b8;">
+                        День ${this.gameTime.day} (${seasonNames[this.gameTime.season] || this.gameTime.season})
+                    </span>
+                    ${this.camp.exists ? '<span style="color: #10b981;">🏕️ Лагерь</span>' : ''}
+                </div>
+            `;
+        },
+        
+        isInCamp: function() {
+            if (!this.camp.exists || !this.camp.location) return false;
+            const heroPos = this.mapSystem.playerTacticalPosition;
+            return heroPos.x === this.camp.location.x && heroPos.y === this.camp.location.y;
+        },
+        
+        createCamp: function() {
+            const heroPos = this.mapSystem.playerTacticalPosition;
+            this.camp = {
+                exists: true,
+                location: {...heroPos},
+                protections: ['basic_campfire'],
+                level: 1,
+                createdDay: this.gameTime.day
+            };
+            console.log(`🏕️ Лагерь создан на [${heroPos.x}, ${heroPos.y}]`);
+            this.updateTimeDisplay();
+            
+            if (window.game) {
+                window.game.showNotification("🏕️ Лагерь создан!", 'success');
+            }
+            return true;
+        },
+        
+        returnToCamp: function() {
+            if (!this.camp.exists) {
+                console.log("❌ Лагерь не создан!");
+                return false;
+            }
+            
+            // Просто телепортируем в лагерь для простоты
+            this.mapSystem.playerTacticalPosition = {...this.camp.location};
+            this.mapSystem.drawTacticalMap();
+            
+            console.log(`🏕️ Возвращение в лагерь`);
+            
+            if (window.game) {
+                window.game.showNotification("🏕️ Вы вернулись в лагерь", 'success');
+            }
+            return true;
+        },
+        
+        spendNightInCamp: function() {
+            if (!this.isInCamp()) {
+                console.log("❌ Не в лагере!");
+                return false;
+            }
+            
+            // Переходим к утру (7:00)
+            this.gameTime.hour = 7;
+            this.gameTime.day++;
+            
+            // Восстанавливаем здоровье
+            if (this.mapSystem.currentHero) {
+                const heroSystem = window.game?.systems?.hero;
+                if (heroSystem) {
+                    const stats = heroSystem.calculateHeroStats(this.mapSystem.currentHero);
+                    this.mapSystem.currentHero.currentHealth = stats.maxHealth;
+                    console.log(`❤️ Здоровье восстановлено до максимума`);
                 }
             }
             
-            this.setStartPositions();
+            this.updateTimeDisplay();
             
-            console.log(`✅ Карты загружены: Глобальных=${this.globalMaps.length}, Локальных=${this.localMaps.length}, Тактических=${this.tacticalMaps.length}`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных карт:", error);
-            this.createFallbackMaps();
-            if (this.localMaps.length > 0) {
-                this.forceSetLocalMap();
+            if (window.game) {
+                window.game.showNotification(`🌅 Утро дня ${this.gameTime.day}. Вы хорошо отдохнули.`, 'success');
             }
+            
             return true;
+        },
+        
+        getTimeStatus: function() {
+            const dayLength = this.seasonalDayLength[this.gameTime.season];
+            const isDay = this.gameTime.hour >= 7 && this.gameTime.hour < dayLength;
+            
+            return {
+                hour: this.gameTime.hour,
+                day: this.gameTime.day,
+                season: this.gameTime.season,
+                isDay: isDay,
+                isNight: !isDay
+            };
+        },
+        
+        saveState: function() {
+            return {
+                gameTime: {...this.gameTime},
+                camp: {...this.camp},
+                currentHexTime: this.currentHexTime
+            };
+        },
+        
+        loadState: function(state) {
+            if (state.gameTime) this.gameTime = state.gameTime;
+            if (state.camp) this.camp = state.camp;
+            if (state.currentHexTime) this.currentHexTime = state.currentHexTime;
+            this.updateTimeDisplay();
         }
-    }
+    };
+    
+    // Привязываем MapSystem
+    this.timeSystem.mapSystem = this;
+    console.log("✅ Базовый TimeSystem создан");
+}
 
   async initializeCellSystem() {
     console.log("🔄 MapSystem: Инициализация системы клеток...");
@@ -1913,8 +2131,36 @@ showNotification(message, type = 'info') {
         this.handlePeacefulMovement(x, y, cellData);
     }
 
-  handlePeacefulMovement(targetX, targetY, cellData) {
+// В КЛАССЕ MapSystem метод handlePeacefulMovement:
+handlePeacefulMovement(targetX, targetY, cellData) {
     console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
+    
+    // === ПРОВЕРКА НА НОЧЬ ===
+    if (this.timeSystem) {
+        const timeStatus = this.timeSystem.getTimeStatus();
+        
+        // Если ночь и не в лагере - предупреждение
+        if (timeStatus.isNight && !this.timeSystem.isInCamp()) {
+            console.log("🌙 Попытка перемещения ночью вне лагеря");
+            
+            // Показываем предупреждение, но разрешаем перемещение
+            if (window.game) {
+                const confirmMove = window.confirm(
+                    "🌙 ОПАСНО! Ночью перемещаться очень рискованно.\n" +
+                    "Без костра вероятность нападения 90% каждый час.\n" +
+                    "Продолжить перемещение?"
+                );
+                
+                if (!confirmMove) {
+                    console.log("❌ Игрок отменил перемещение ночью");
+                    return;
+                }
+            }
+        }
+        
+        // Тратим 1 час на перемещение
+        this.timeSystem.spendHourOnHex('movement');
+    }
     
     const oldPosition = {...this.playerTacticalPosition};
     this.playerTacticalPosition = {x: targetX, y: targetY};
@@ -1922,7 +2168,7 @@ showNotification(message, type = 'info') {
     // Обновляем видимость
     this.updateVisibilityOnMove(targetX, targetY);
     
-    console.log(`✅ Перемещение героя ${this.currentHero.name} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
+    console.log(`✅ Перемещение героя ${this.currentHero?.name || 'неизвестно'} с [${oldPosition.x}, ${oldPosition.y}] на: [${targetX}, ${targetY}]`);
     
     this.syncHeroWithOtherSystems();
     
@@ -3628,14 +3874,27 @@ decreaseVisibility() {
             </div>
             
             <div class="tactical-map-controls">
+
+<div class="time-display" id="timeDisplay" style="margin-left: auto;">
+    ☀️ 07:00 День 1 (Лето)
+</div>
+
+<button class="btn-control" onclick="game.systems.map.timeSystem.createCamp()" 
+        title="Создать лагерь на этом гексе">
+    🏕️ Создать лагерь
+</button>
+
+<button class="btn-control" onclick="game.systems.map.timeSystem.returnToCamp()" 
+        title="Вернуться в лагерь" ${!this.timeSystem?.camp?.exists ? 'disabled' : ''}>
+    🏕️ В лагерь
+</button>
+
+<button class="btn-control" onclick="game.systems.map.timeSystem.spendNightInCamp()" 
+        title="Провести ночь в лагере" ${!this.timeSystem?.isInCamp() ? 'disabled' : ''}>
+    🌙 Переночевать
+</button>
                 <button class="btn-control" onclick="game.systems.map.toggleGrid()">
                     ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                </button>
-                <button class="btn-control" onclick="game.systems.map.debugInfo()">
-                    🐛 Отладка
-                </button>
-                <button class="btn-control" onclick="game.systems.map.testPeacefulMovement()">
-                    🧪 Тест перемещения
                 </button>
                 <button class="btn-control" onclick="game.systems.map.toggleVisibilitySystem()">
                     ${this.fogOfWarEnabled ? '👁️ Выкл. туман' : '👁️ Вкл. туман'}
