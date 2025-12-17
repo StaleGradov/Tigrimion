@@ -2204,10 +2204,6 @@ if (cellData.explored) {
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 
-/**
- * Исследовать текущий гекс (переночевать на нём)
- * @returns {boolean} Успешно ли исследован гекс
- */
 researchCurrentHex() {
     console.log(`🔍 MapSystem.researchCurrentHex вызывается для [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
     
@@ -2267,7 +2263,7 @@ researchCurrentHex() {
         // Теперь ночь - начинаем ночёвку
         console.log("🌙 Начинаем ночёвку для исследования гекса...");
         
-        // Проверяем, есть ли на клетке костёр
+        // Проверяем, есть ли на клетке костёр - ТОЛЬКО ОДИН РАЗ
         const hasCampfire = this.checkForCampfire(currentCell);
         
         // Рассчитываем вероятность нападения
@@ -2275,41 +2271,40 @@ researchCurrentHex() {
         
         console.log(`🏕️ Ночёвка: костёр = ${hasCampfire}, вероятность нападения = ${attackProbability}%`);
         
- // Ночёвка занимает до утра - используем TimeSystem
-const hasCampfire = this.checkForCampfire(currentCell);
-const nightResult = this.timeSystem.spendNightForResearch(hasCampfire);
+        // Ночёвка занимает до утра - используем TimeSystem
+        const nightResult = this.timeSystem.spendNightForResearch(hasCampfire);
         
-if (nightResult.survived) {
-    // Успешно пережили ночь - гекс исследован
-    currentCell.explored = true;
-    
-    // Открываем видимость соседних клеток
-    this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    
-    // Перерисовываем карту
-    this.drawTacticalMap();
-    
-    // Показываем результат
-    let message = nightResult.messages.join(' ');
-    if (nightResult.monsterFought && nightResult.victory) {
-        message += "\n✅ Гекс теперь исследован!";
-        
-        // Даём дополнительную награду за победу в ночном бою
-        if (this.currentHero) {
-            const heroSystem = window.game?.systems?.hero;
-            if (heroSystem) {
-                const stats = heroSystem.calculateHeroStats(this.currentHero);
-                const expBonus = Math.floor(stats.experienceForNextLevel * 0.1); // 10% от уровня
-                this.currentHero.experience += expBonus;
-                message += `\n🎯 +${expBonus} опыта за ночную победу!`;
+        if (nightResult.survived) {
+            // Успешно пережили ночь - гекс исследован
+            currentCell.explored = true;
+            
+            // Открываем видимость соседних клеток
+            this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            
+            // Перерисовываем карту
+            this.drawTacticalMap();
+            
+            // Показываем результат
+            let message = nightResult.messages.join(' ');
+            if (nightResult.monsterFought && nightResult.victory) {
+                message += "\n✅ Гекс теперь исследован!";
+                
+                // Даём дополнительную награду за победу в ночном бою
+                if (this.currentHero) {
+                    const heroSystem = window.game?.systems?.hero;
+                    if (heroSystem) {
+                        const stats = heroSystem.calculateHeroStats(this.currentHero);
+                        const expBonus = Math.floor(stats.experienceForNextLevel * 0.1); // 10% от уровня
+                        this.currentHero.experience += expBonus;
+                        message += `\n🎯 +${expBonus} опыта за ночную победу!`;
+                    }
+                }
+            } else if (nightResult.survived && !nightResult.monsterFought) {
+                message += "\n✅ Вы спокойно пережили ночь. Гекс исследован!";
             }
-        }
-    } else if (nightResult.survived && !nightResult.monsterFought) {
-        message += "\n✅ Вы спокойно пережили ночь. Гекс исследован!";
-    }
-    
-    this.showNotification(message, 'success');
-    console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
+            
+            this.showNotification(message, 'success');
+            console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
             
             // Автосохранение
             if (window.game) {
@@ -2335,7 +2330,6 @@ if (nightResult.survived) {
         return false;
     }
 }
-
 /**
  * Провести ночь на текущем гексе
  * @param {number} attackProbability - Вероятность нападения (0-100)
