@@ -2275,27 +2275,41 @@ researchCurrentHex() {
         
         console.log(`🏕️ Ночёвка: костёр = ${hasCampfire}, вероятность нападения = ${attackProbability}%`);
         
-        // Ночёвка занимает до утра
-        const nightResult = this.spendNightOnHex(attackProbability);
+ // Ночёвка занимает до утра - используем TimeSystem
+const hasCampfire = this.checkForCampfire(currentCell);
+const nightResult = this.timeSystem.spendNightForResearch(hasCampfire);
         
-        if (nightResult.survived) {
-            // Успешно пережили ночь - гекс исследован
-            currentCell.explored = true;
-            
-            // Открываем видимость соседних клеток
-            this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-            
-            // Перерисовываем карту
-            this.drawTacticalMap();
-            
-            // Показываем результат
-            let message = "✅ Вы успешно переночевали и исследовали этот гекс!";
-            if (nightResult.monsterFought) {
-                message += `\n🏹 Вы победили ночного монстра и теперь чувствуете себя увереннее.`;
+if (nightResult.survived) {
+    // Успешно пережили ночь - гекс исследован
+    currentCell.explored = true;
+    
+    // Открываем видимость соседних клеток
+    this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Показываем результат
+    let message = nightResult.messages.join(' ');
+    if (nightResult.monsterFought && nightResult.victory) {
+        message += "\n✅ Гекс теперь исследован!";
+        
+        // Даём дополнительную награду за победу в ночном бою
+        if (this.currentHero) {
+            const heroSystem = window.game?.systems?.hero;
+            if (heroSystem) {
+                const stats = heroSystem.calculateHeroStats(this.currentHero);
+                const expBonus = Math.floor(stats.experienceForNextLevel * 0.1); // 10% от уровня
+                this.currentHero.experience += expBonus;
+                message += `\n🎯 +${expBonus} опыта за ночную победу!`;
             }
-            
-            this.showNotification(message, 'success');
-            console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
+        }
+    } else if (nightResult.survived && !nightResult.monsterFought) {
+        message += "\n✅ Вы спокойно пережили ночь. Гекс исследован!";
+    }
+    
+    this.showNotification(message, 'success');
+    console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
             
             // Автосохранение
             if (window.game) {
@@ -2327,58 +2341,7 @@ researchCurrentHex() {
  * @param {number} attackProbability - Вероятность нападения (0-100)
  * @returns {Object} Результат ночёвки
  */
-spendNightOnHex(attackProbability) {
-    console.log(`🌙 Проводим ночь на гексе с вероятностью нападения ${attackProbability}%`);
-    
-    const result = {
-        survived: false,
-        monsterFought: false,
-        victory: false,
-        messages: []
-    };
-    
-    // Переход к ночи (если ещё не ночь)
-    if (this.timeSystem) {
-        const timeStatus = this.timeSystem.getTimeStatus();
-        const dayLength = this.timeSystem.seasonalDayLength[timeStatus.season];
-        
-        if (timeStatus.isDay) {
-            // Переходим к ночи
-            const hoursToNight = dayLength - timeStatus.hour;
-            for (let i = 0; i < hoursToNight; i++) {
-                this.timeSystem.spendHourOnHex('transition_to_night');
-            }
-        }
-    }
-    
-    // Проверка нападения
-    const roll = Math.random() * 100;
-    const monsterAttack = roll <= attackProbability;
-    
-    if (monsterAttack) {
-        console.log("👹 Ночное нападение!");
-        result.monsterFought = true;
-        
-        // Начинаем бой с ночным монстром
-        const battleResult = this.startNightBattle();
-        
-        result.victory = battleResult.victory;
-        result.survived = battleResult.survived;
-        result.messages.push(battleResult.message);
-        
-    } else {
-        // Безопасная ночь
-        console.log("🕯️ Безопасная ночь, нападения не было");
-        
-        // Переходим к утру
-        this.advanceToMorning();
-        
-        result.survived = true;
-        result.messages.push("Вы спокойно провели ночь.");
-    }
-    
-    return result;
-}
+
 
 /**
  * Начать ночной бой
