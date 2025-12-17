@@ -42,117 +42,159 @@ class HuntAction {
 
     // ========== ВЫБОР ТРОФЕЯ ==========
 
-    showHuntTargetSelection(cell) {
-        console.log("🎯 Показываем выбор трофея для охоты");
+  showHuntTargetSelection(cell) {
+    console.log("🎯 Показываем выбор трофея для охоты");
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    // Проверяем есть ли ресурсы в ActionSystem
+    const actionSystem = this.actionSystem;
+    const resources = actionSystem.resources || {};
+    
+    // Категории охотничьих ресурсов
+    const huntCategories = [
+        { key: 'bones', name: '🦴 Кости', icon: '🦴' },
+        { key: 'leathers', name: '🐂 Кожи', icon: '🐂' },
+        { key: 'hides', name: '🐅 Шкуры', icon: '🐅' },
+        { key: 'furs', name: '🦊 Меха', icon: '🦊' }
+    ];
+    
+    // Собираем все ресурсы в один массив с метаданными категории
+    const allResources = [];
+    
+    huntCategories.forEach(category => {
+        const categoryResources = resources[category.key] || [];
+        categoryResources.forEach(resource => {
+            allResources.push({
+                ...resource,
+                category: category.name,
+                categoryIcon: category.icon
+            });
+        });
+    });
+    
+    // Сортируем ресурсы по категориям для группировки
+    allResources.sort((a, b) => {
+        return huntCategories.findIndex(c => c.name === a.category) - 
+               huntCategories.findIndex(c => c.name === b.category);
+    });
+    
+    // Создаем HTML
+    let html = `
+        <div class="hunt-target-selection">
+            <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
+                🏹 ВЫБЕРИТЕ ТРОФЕЙ ДЛЯ ОХОТЫ
+            </h3>
+            <p style="text-align: center; color: #aaa; margin-bottom: 20px;">
+                Клетка [${cell.col}, ${cell.row}]
+            </p>
+            
+            <div class="hunt-resources-grid">
+    `;
+    
+    if (allResources.length > 0) {
+        // Разделяем ресурсы на две колонки
+        const midIndex = Math.ceil(allResources.length / 2);
+        const leftColumn = allResources.slice(0, midIndex);
+        const rightColumn = allResources.slice(midIndex);
         
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) return;
-        
-        // Проверяем есть ли ресурсы в ActionSystem
-        const actionSystem = this.actionSystem;
-        const resources = actionSystem.resources || {};
-        
-        // Категории охотничьих ресурсов
-        const huntCategories = [
-            { key: 'bones', name: '🦴 Кости', icon: '🦴' },
-            { key: 'leathers', name: '🐂 Кожи', icon: '🐂' },
-            { key: 'hides', name: '🐅 Шкуры', icon: '🐅' },
-            { key: 'furs', name: '🦊 Меха', icon: '🦊' }
-        ];
-        
-        // Собираем HTML
-        let html = `
-            <div class="hunt-target-selection">
-                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
-                    🏹 ВЫБЕРИТЕ ТРОФЕЙ ДЛЯ ОХОТЫ
-                </h3>
-                <p style="text-align: center; color: #aaa; margin-bottom: 20px;">
-                    Клетка [${cell.col}, ${cell.row}]
-                </p>
-                
-                <div class="hunt-categories">
+        html += `
+            <div class="hunt-columns">
+                <div class="hunt-column">
         `;
         
-        let hasResources = false;
-        
-        // Для каждой категории
-        huntCategories.forEach(category => {
-            const categoryResources = resources[category.key] || [];
-            
-            if (categoryResources.length > 0) {
-                hasResources = true;
-                html += `
-                    <div class="hunt-category">
-                        <h4 style="color: #00aaff; margin: 15px 0 10px 0;">
-                            ${category.icon} ${category.name}
-                        </h4>
-                        <div class="hunt-targets-grid">
-                `;
-                
-                // Показываем ресурсы из категории
-                categoryResources.slice(0, 3).forEach(resource => {
-                    html += `
-                        <div class="hunt-target-item" 
-                             onclick="window.game.systems.action.actionModules.hunt.selectResource('${resource.id}', ${cell.row}, ${cell.col})">
-                            <div class="hunt-target-name" style="font-size: 16px; margin-bottom: 5px;">
-                                ${resource.name}
-                            </div>
-                            <div class="hunt-target-description" style="font-size: 11px; color: #aaa;">
-                                ${resource.description || 'Охотничий трофей'}
-                            </div>
-                            ${resource.price ? `
-                                <div class="hunt-target-price" style="font-size: 10px; color: #f59e0b; margin-top: 5px;">
-                                    Цена: ${resource.price} золота
-                                </div>
-                            ` : ''}
-                        </div>
-                    `;
-                });
-                
-                html += `
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        
-        // Если нет ресурсов
-        if (!hasResources) {
+        // Левая колонка
+        leftColumn.forEach(resource => {
             html += `
-                <div style="text-align: center; padding: 20px; color: #ffaa00;">
-                    <p>⚠️ Ресурсы не загружены</p>
-                    <button class="btn-control" onclick="game.systems.action.loadCellData().then(() => {
-                        const cell = ${JSON.stringify(cell)};
-                        game.systems.action.actionModules.hunt.showHuntTargetSelection(cell);
-                    })" style="margin-top: 10px;">
-                        🔄 Загрузить ресурсы
-                    </button>
+                <div class="hunt-resource-item" 
+                     onclick="window.game.systems.action.actionModules.hunt.selectResource('${resource.id}', ${cell.row}, ${cell.col})">
+                    <div class="resource-category" style="color: #00aaff; font-size: 11px; margin-bottom: 3px;">
+                        ${resource.categoryIcon} ${resource.category}
+                    </div>
+                    <div class="resource-name" style="font-size: 14px; margin-bottom: 5px;">
+                        ${resource.name}
+                    </div>
+                    <div class="resource-description" style="font-size: 10px; color: #aaa; margin-bottom: 5px;">
+                        ${resource.description || 'Охотничий трофей'}
+                    </div>
+                    ${resource.price ? `
+                        <div class="resource-price" style="font-size: 9px; color: #f59e0b;">
+                            Цена: ${resource.price} золота
+                        </div>
+                    ` : ''}
                 </div>
             `;
-        }
+        });
         
         html += `
                 </div>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <button class="btn-control" onclick="game.systems.action.actionModules.hunt.startQuickHunt(${cell.row}, ${cell.col})"
-                            style="background: linear-gradient(135deg, #ff4444, #ff6666);">
-                        🏹 Быстрая охота (случайный трофей)
-                    </button>
+                <div class="hunt-column">
+        `;
+        
+        // Правая колонка
+        rightColumn.forEach(resource => {
+            html += `
+                <div class="hunt-resource-item" 
+                     onclick="window.game.systems.action.actionModules.hunt.selectResource('${resource.id}', ${cell.row}, ${cell.col})">
+                    <div class="resource-category" style="color: #00aaff; font-size: 11px; margin-bottom: 3px;">
+                        ${resource.categoryIcon} ${resource.category}
+                    </div>
+                    <div class="resource-name" style="font-size: 14px; margin-bottom: 5px;">
+                        ${resource.name}
+                    </div>
+                    <div class="resource-description" style="font-size: 10px; color: #aaa; margin-bottom: 5px;">
+                        ${resource.description || 'Охотничий трофей'}
+                    </div>
+                    ${resource.price ? `
+                        <div class="resource-price" style="font-size: 9px; color: #f59e0b;">
+                            Цена: ${resource.price} золота
+                        </div>
+                    ` : ''}
                 </div>
-                
-                <button class="btn-control" onclick="game.systems.action.updateCellActionsUI(${JSON.stringify(cell)})"
-                        style="margin-top: 20px; width: 100%;">
-                    ↩️ Назад к действиям
+            `;
+        });
+        
+        html += `
+                </div>
+            </div>
+        `;
+    } else {
+        html += `
+            <div style="text-align: center; padding: 20px; color: #ffaa00;">
+                <p>⚠️ Ресурсы не загружены</p>
+                <button class="btn-control" onclick="game.systems.action.loadCellData().then(() => {
+                    const cell = ${JSON.stringify(cell)};
+                    game.systems.action.actionModules.hunt.showHuntTargetSelection(cell);
+                })" style="margin-top: 10px;">
+                    🔄 Загрузить ресурсы
                 </button>
             </div>
         `;
-        
-        actionsContainer.innerHTML = html;
-        
-        // Стилизация
-        this.styleHuntTargetSelection();
     }
+    
+    html += `
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+                <button class="btn-control" onclick="game.systems.action.actionModules.hunt.startQuickHunt(${cell.row}, ${cell.col})"
+                        style="background: linear-gradient(135deg, #ff4444, #ff6666);">
+                    🏹 Быстрая охота (случайный трофей)
+                </button>
+            </div>
+            
+            <button class="btn-control" onclick="game.systems.action.updateCellActionsUI(${JSON.stringify(cell)})"
+                    style="margin-top: 20px; width: 100%;">
+                ↩️ Назад к действиям
+            </button>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = html;
+    
+    // Стилизация
+    this.styleHuntTargetSelection();
+}
 
     // ========== ВЫБОР МОНСТРА ДЛЯ ТРОФЕЯ ==========
 
@@ -540,40 +582,49 @@ class HuntAction {
 
     // ========== СТИЛИЗАЦИЯ ==========
 
-    styleHuntTargetSelection() {
-        setTimeout(() => {
-            const grid = document.querySelector('.hunt-targets-grid');
-            if (grid) {
-                grid.style.cssText = `
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 10px;
-                    margin-bottom: 15px;
-                `;
-            }
+  styleHuntTargetSelection() {
+    setTimeout(() => {
+        const columns = document.querySelector('.hunt-columns');
+        if (columns) {
+            columns.style.cssText = `
+                display: flex;
+                gap: 15px;
+                margin-bottom: 20px;
+            `;
+        }
+        
+        const columnElements = document.querySelectorAll('.hunt-column');
+        columnElements.forEach(column => {
+            column.style.cssText = `
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            `;
+        });
+        
+        const items = document.querySelectorAll('.hunt-resource-item');
+        items.forEach(item => {
+            item.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid #00aaff;
+                border-radius: 8px;
+                padding: 12px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
             
-            const items = document.querySelectorAll('.hunt-target-item');
-            items.forEach(item => {
-                item.style.cssText = `
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                    border: 1px solid #00aaff;
-                    border-radius: 8px;
-                    padding: 12px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                `;
-                
-                item.onmouseenter = () => {
-                    item.style.transform = 'translateY(-2px)';
-                    item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
-                };
-                item.onmouseleave = () => {
-                    item.style.transform = 'translateY(0)';
-                    item.style.boxShadow = 'none';
-                };
-            });
-        }, 50);
-    }
+            item.onmouseenter = () => {
+                item.style.transform = 'translateY(-2px)';
+                item.style.boxShadow = '0 5px 15px rgba(0, 170, 255, 0.3)';
+            };
+            item.onmouseleave = () => {
+                item.style.transform = 'translateY(0)';
+                item.style.boxShadow = 'none';
+            };
+        });
+    }, 50);
+}
 
     styleMonsterSelection() {
         setTimeout(() => {
