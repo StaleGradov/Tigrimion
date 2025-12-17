@@ -2079,57 +2079,101 @@ createBasicTimeSystem() {
         }
     }
 
-    moveOnTacticalMap(x, y) {
-        if (!this.currentHero) {
-            console.error("❌ Герой не выбран!");
-            if (window.game) {
-                window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
-            }
-            return;
+  // В КЛАССЕ MapSystem метод moveOnTacticalMap:
+moveOnTacticalMap(x, y) {
+    console.log("🎯 MapSystem.moveOnTacticalMap вызывается");
+    
+    if (!this.currentHero) {
+        console.error("❌ Герой не выбран!");
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
         }
-
-        if (!this.currentTacticalMap) return;
-
-        const cellKey = `${x},${y}`;
-        const cellData = this.currentTacticalMap.cells[cellKey];
-        
-        if (!cellData) {
-            console.log("🚫 Клетка не существует");
-            if (window.game) {
-                window.game.showNotification("Эта клетка не существует!", 'error');
-            }
-            return;
-        }
-
-        if (this.isTransitionCell(cellData)) {
-            this.handleTransitionClick(cellData);
-            return;
-        }
-
-        if (cellData.passable === false) {
-            console.log("🚫 Клетка непроходима");
-            if (window.game) {
-                window.game.showNotification("Эта клетка непроходима!", 'error');
-            }
-            return;
-        }
-
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        const isReachable = neighbors.some(neighbor => 
-            neighbor.row === y && neighbor.col === x
-        );
-
-        if (!isReachable) {
-            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-            if (window.game) {
-                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
-            }
-            return;
-        }
-
-        console.log(`✅ Мирное перемещение на [${x}, ${y}]`);
-        this.handlePeacefulMovement(x, y, cellData);
+        return;
     }
+
+    if (!this.currentTacticalMap) {
+        console.error("❌ Нет текущей тактической карты");
+        return;
+    }
+
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap.cells[cellKey];
+    
+    if (!cellData) {
+        console.log("🚫 Клетка не существует");
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
+        return;
+    }
+
+    // === ПРОВЕРКА НА ИССЛЕДОВАННЫЕ КЛЕТКИ ===
+    if (cellData.explored) {
+        console.log(`✅ Клетка [${x},${y}] уже исследована, перемещение без боя`);
+        this.handlePeacefulMovement(x, y, cellData);
+        return;
+    }
+
+    // === ПРОВЕРКА НА ПЕРЕХОДЫ ===
+    if (this.isTransitionCell(cellData)) {
+        console.log("🚪 Клик по переходу");
+        this.handleTransitionClick(cellData);
+        return;
+    }
+
+    // === ПРОВЕРКА НА ПРОХОДИМОСТЬ ===
+    if (cellData.passable === false) {
+        console.log("🚫 Клетка непроходима");
+        if (window.game) {
+            window.game.showNotification("Эта клетка непроходима!", 'error');
+        }
+        return;
+    }
+
+    // === ПРОВЕРКА НА ДОСТИЖИМОСТЬ ===
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // === ПРОВЕРКА НА НОЧЬ ===
+    if (this.timeSystem) {
+        const timeStatus = this.timeSystem.getTimeStatus();
+        
+        // Если ночь и цель не исследована
+        if (timeStatus.isNight && !cellData.explored) {
+            console.log("🌙 Попытка исследования нового гекса ночью");
+            
+            if (window.game) {
+                const confirmExplore = window.confirm(
+                    "🌙 Исследовать новый гекс ночью ОЧЕНЬ ОПАСНО!\n\n" +
+                    "Без костра: 90% шанс нападения каждый час\n" +
+                    "Рекомендуется:\n" +
+                    "1. Вернуться в лагерь (кнопка '🏕️ В лагерь')\n" +
+                    "2. Переночевать (кнопка '🌙 Переночевать')\n" +
+                    "3. Исследовать утром\n\n" +
+                    "Всё равно исследовать ночью?"
+                );
+                
+                if (!confirmExplore) {
+                    console.log("❌ Игрок отменил ночное исследование");
+                    return;
+                }
+            }
+        }
+    }
+
+    console.log(`✅ Мирное перемещение на [${x}, ${y}]`);
+    this.handlePeacefulMovement(x, y, cellData);
+}
 
 // В КЛАССЕ MapSystem метод handlePeacefulMovement:
 handlePeacefulMovement(targetX, targetY, cellData) {
