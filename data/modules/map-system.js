@@ -611,6 +611,79 @@ completeMovementAfterBattle(victory, escape = false, battleType = 'movement', do
     }
 }
 
+
+/**
+ * Обработка завершения специального действия (торговля, вода и т.д.)
+ * Важно: специальные клетки НЕ отмечаются как исследованные
+ */
+handleSpecialActionCompletion(cell, action) {
+    console.log(`🎯 Завершение специального действия ${action} на клетке ${cell.type}`);
+    
+    // Проверяем, является ли клетка специальной
+    const specialCellTypes = ['merchant', 'water', 'tavern', 'campfire'];
+    const isSpecialCell = specialCellTypes.includes(cell.type);
+    
+    if (isSpecialCell) {
+        console.log(`🔄 Клетка ${cell.type} остается доступной для повторного использования`);
+        // НЕ устанавливаем explored = true для специальных клеток
+        // Клетка остается в том же состоянии
+        cell.hasAction = true; // Гарантируем, что действия остаются доступными
+        
+        // Для торговца обновляем список товаров если нужно
+        if (cell.type === 'merchant' && cell.restockTimer) {
+            cell.restockTimer--;
+            if (cell.restockTimer <= 0) {
+                console.log("🔄 Торговец пополняет запасы");
+                this.restockMerchant(cell);
+                cell.restockTimer = 7; // Через 7 дней снова пополняет
+            }
+        }
+    } else {
+        // Для обычных клеток обычная логика
+        cell.explored = true;
+        cell.hasAction = false;
+    }
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Обновляем интерфейс действий
+    if (this.actionSystem) {
+        setTimeout(() => {
+            this.actionSystem.updateCellActionsUI(cell);
+        }, 300);
+    }
+    
+    return true;
+}
+
+/**
+ * Пополнение запасов торговца
+ */
+restockMerchant(merchantCell) {
+    if (!merchantCell.shopItems || merchantCell.shopItems.length === 0) {
+        console.warn("🛒 У торговца нет товаров для пополнения");
+        return;
+    }
+    
+    // Увеличиваем количество каждого товара
+    merchantCell.shopItems.forEach(item => {
+        if (item.quantity !== undefined) {
+            item.quantity = Math.min(item.maxQuantity || 10, item.quantity + (item.restockAmount || 1));
+        }
+    });
+    
+    console.log("✅ Запасы торговца пополнены");
+    
+    if (window.game) {
+        window.game.showNotification("🛒 Торговец пополнил запасы товаров", 'success');
+    }
+}
+
+
+
+
+    
 completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
