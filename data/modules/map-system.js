@@ -3263,8 +3263,6 @@ drawHexes() {
 }
 
 
-
-
 drawPeacefulMapIndicator() {
     if (!this.isPeacefulMap() || !this.canvas || !this.ctx) {
         console.log("❌ Не могу нарисовать индикатор мирной карты");
@@ -3312,7 +3310,7 @@ drawPeacefulMapIndicator() {
     } finally {
         this.ctx.restore();
     }
-}
+} // <-- ЗАКРЫТИЕ МЕТОДА drawPeacefulMapIndicator
 
 // Добавляем поддержку roundRect для старых браузеров
 if (!CanvasRenderingContext2D.prototype.roundRect) {
@@ -3329,7 +3327,6 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
         return this;
     };
 }
-
 
 
     
