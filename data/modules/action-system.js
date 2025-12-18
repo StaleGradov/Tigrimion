@@ -1794,8 +1794,7 @@ updateCellActionsUI(cell) {
             </div>
         `;
     }
-
- createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
+createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
     console.log(`🔍 Создание кнопок действий для клетки [${cell.col},${cell.row}], тип: ${cell.type}`);
     
     // Проверяем, является ли клетка специальной (торговец, вода и т.д.)
@@ -1834,15 +1833,24 @@ updateCellActionsUI(cell) {
         let isDisabled = false;
         let disabledReason = '';
         
-        if (!isReachable) {
-            isDisabled = true;
-            disabledReason = '❌ Клетка недоступна';
-        } else if (!isCurrentPosition && config.requires_player_here) {
-            isDisabled = true;
-            disabledReason = '❌ Нужно быть в клетке';
-        } else if (cell.explored && !config.allowed_on_explored) {
-            isDisabled = true;
-            disabledReason = '❌ Клетка уже исследована';
+        // ИСПРАВЛЕНИЕ: Для торговли и наполнения фляги проверяем только достижимость
+        if (action === 'trade' || action === 'fill_flask') {
+            if (!isReachable) {
+                isDisabled = true;
+                disabledReason = '❌ Подойдите ближе';
+            }
+        } else {
+            // Для остальных действий обычная логика
+            if (!isReachable) {
+                isDisabled = true;
+                disabledReason = '❌ Клетка недоступна';
+            } else if (!isCurrentPosition && config.requires_player_here) {
+                isDisabled = true;
+                disabledReason = '❌ Нужно быть в клетке';
+            } else if (cell.explored && !config.allowed_on_explored) {
+                isDisabled = true;
+                disabledReason = '❌ Клетка уже исследована';
+            }
         }
         
         // Специальные метки для действий
@@ -2039,9 +2047,7 @@ updateCellActionsUI(cell) {
     return html;
 }
 
-/**
- * Генерация HTML для специальных действий (торговец, вода и т.д.)
- */
+    
 generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
     console.log(`🎯 Генерация специальных действий для ${cell.type}`);
     
@@ -2122,7 +2128,8 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
             description: 'Специальное действие'
         };
         
-        // Для специальных действий всегда доступны (если достижимы)
+        // ИСПРАВЛЕНИЕ: Для специальных действий проверяем только достижимость
+        // Если игрок рядом (isReachable), то действие доступно
         const isDisabled = !isReachable;
         const disabledReason = isReachable ? '' : '❌ Подойдите ближе';
         
@@ -2304,9 +2311,7 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
     return html;
 }
 
-/**
- * Получение подсказки для специальных действий
- */
+    
 getSpecialActionHint(cellType) {
     const hints = {
         'merchant': 'Нажмите на действие "Торговать" для открытия магазина и покупки товаров',
