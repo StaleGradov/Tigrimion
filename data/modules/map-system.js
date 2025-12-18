@@ -214,32 +214,48 @@ executeHuntAction(row, col) {
     
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
 
-    handleMerchantClick(merchantCell) {
+handleMerchantClick(merchantCell) {
+    console.log(`🛒 handleMerchantClick вызван для клетки [${merchantCell.col},${merchantCell.row}]`);
+    
+    // Проверяем, стоит ли игрок на этой клетке
+    const isPlayerOnCell = (
+        merchantCell.col === this.playerTacticalPosition.x && 
+        merchantCell.row === this.playerTacticalPosition.y
+    );
+    
+    console.log(`   Игрок на клетке? ${isPlayerOnCell} (позиция игрока: [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}])`);
+    
+    // На мирных картах можно открывать магазин без проверки достижимости
+    if (!isPlayerOnCell && !this.isPeacefulMap()) {
+        // Для не-мирных карт проверяем достижимость
         if (!this.isPlayerAdjacentToTransition(merchantCell)) {
             this.showTransitionWarning(merchantCell);
             return;
         }
-
-        if (!merchantCell.shopItems || merchantCell.shopItems.length === 0) {
-            console.warn("🛒 Магазин пуст - нет товаров в shopItems");
-            if (window.game) {
-                window.game.showNotification("🛒 Магазин пуст!", 'warning');
-            }
-            return;
+    }
+    
+    // Проверяем данные магазина
+    if (!merchantCell.shopItems || merchantCell.shopItems.length === 0) {
+        console.warn("🛒 Магазин пуст - нет товаров в shopItems");
+        if (window.game) {
+            window.game.showNotification("🛒 Магазин пуст!", 'warning');
         }
-
-        const shopSystem = window.game?.systems?.shop;
-        if (shopSystem && shopSystem.openShop) {
-            console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}`);
-            shopSystem.openShop(merchantCell);
-        } else {
-            console.error("❌ ShopSystem не доступна или нет метода openShop");
-            if (window.game) {
-                window.game.showNotification("❌ Система магазинов недоступна", 'error');
-            }
-        }
+        return;
     }
 
+    console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}, товаров: ${merchantCell.shopItems.length}`);
+    
+    // Открываем через ShopSystem
+    const shopSystem = window.game?.systems?.shop;
+    if (shopSystem && shopSystem.openShop) {
+        shopSystem.openShop(merchantCell);
+    } else {
+        console.error("❌ ShopSystem не доступна или нет метода openShop");
+        if (window.game) {
+            window.game.showNotification("❌ Система магазинов недоступна", 'error');
+        }
+    }
+}
     handleTavernVisit(cell) {
         console.log("🍻 Начало обработки посещения таверны:", cell);
         
