@@ -1332,22 +1332,14 @@ getCellSpecificActions(cell) {
 
 
     
+
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
-    console.log(`Клетка: [${cell.col},${cell.row}], тип: ${cell.type}`);
-    console.log(`Игрок: [${this.mapSystem.playerTacticalPosition.x},${this.mapSystem.playerTacticalPosition.y}]`);
     
     // Проверяем, мирная ли карта
     if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
         console.log("🍻 Мирная карта - показываем специальный интерфейс");
         this.showPeacefulMapUI(cell);
-        
-        // Устанавливаем обработчики для мирной карты
-        setTimeout(() => {
-            this.setupSpecialActionEventListeners();
-        }, 200);
-        
-        console.log("=== КОНЕЦ updateCellActionsUI ===");
         return;
     }
     
@@ -1369,13 +1361,7 @@ updateCellActionsUI(cell) {
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден!");
         this.createActionsContainerFallback();
-        
-        // Пытаемся найти контейнер снова
-        const newContainer = document.getElementById('cellActionsContainer');
-        if (!newContainer) {
-            console.error("❌ Не удалось создать контейнер действий!");
-            return;
-        }
+        return;
     }
     
     const mapVisual = document.querySelector('.tactical-map-visual');
@@ -1509,10 +1495,6 @@ updateCellActionsUI(cell) {
     }
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
-    console.log(`   Тип клетки: ${cell.type}`);
-    console.log(`   isCurrentPosition: ${isCurrentPosition}`);
-    console.log(`   isReachable: ${isReachable}`);
-    console.log(`   isExplored: ${isExplored}`);
     
     // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
     let leftHTML = '';
@@ -1585,7 +1567,7 @@ updateCellActionsUI(cell) {
     
     actionsContainer.innerHTML = rightHTML;
     
-    // ========== ОПТИМИЗАЦИЯ И УСТАНОВКА ОБРАБОТЧИКОВ ==========
+    // ========== ОПТИМИЗАЦИЯ ==========
     setTimeout(() => {
         const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
         if (leftImageWrapper) {
@@ -1653,29 +1635,19 @@ updateCellActionsUI(cell) {
         
         console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
         
-        // ВАЖНО: Устанавливаем обработчики событий для специальных действий
-        if (cell.type === 'merchant' || cell.type === 'water' || 
-            cell.type === 'tavern' || cell.type === 'campfire') {
-            console.log(`🎯 Клетка типа ${cell.type} - устанавливаем обработчики специальных действий`);
-            this.setupSpecialActionEventListeners();
-        }
-        
-        // Также устанавливаем обработчики для обычных действий
-        if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
-            try {
-                this.setupActionEventListeners();
-            } catch (error) {
-                console.error("❌ Ошибка назначения обработчиков для обычных действий:", error);
-            }
-        }
-        
     }, 50);
+    
+    if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
+        try {
+            this.setupActionEventListeners();
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
+    }
     
     console.log("✅ Панели обновлены");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
-
-    
 
     createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
         return `
@@ -1822,9 +1794,7 @@ updateCellActionsUI(cell) {
             </div>
         `;
     }
-
-
-    createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
+createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
     console.log(`🔍 Создание кнопок действий для клетки [${cell.col},${cell.row}], тип: ${cell.type}`);
     
     // Проверяем, является ли клетка специальной (торговец, вода и т.д.)
@@ -1833,15 +1803,7 @@ updateCellActionsUI(cell) {
     
     // Для специальных клеток используем специальный интерфейс
     if (isSpecialCell && this.currentCellActions.length > 0) {
-        console.log(`🎯 Клетка ${cell.type} - используем специальный интерфейс`);
-        const html = this.generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable);
-        
-        // После возврата HTML, установим обработчики
-        setTimeout(() => {
-            this.setupSpecialActionEventListeners();
-        }, 100);
-        
-        return html;
+        return this.generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable);
     }
     
     // Для обычных клеток - стандартный интерфейс
@@ -1897,7 +1859,12 @@ updateCellActionsUI(cell) {
         const doubleLoot = config.double_loot ? '💰 Двойной лут' : '';
         const isSpecialAction = config.special ? `🎯 ${config.special.toUpperCase()}` : '';
         
-        // ИСПРАВЛЕНИЕ: Используем data-атрибуты вместо onclick
+        // Создаем обработчик клика
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
+        
         // Определяем иконку действия в зависимости от типа
         let actionIcon = config.icon || '⚡';
         if (action === 'trade') actionIcon = '🛒';
@@ -1906,23 +1873,19 @@ updateCellActionsUI(cell) {
         if (action === 'gather_info') actionIcon = '👂';
         
         html += `
-            <div class="action-card" 
-                 data-action="${action}" 
-                 data-cell-row="${cell.row}" 
-                 data-cell-col="${cell.col}"
-                 style="
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                    border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
-                    border-radius: 8px;
-                    padding: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    transition: all 0.2s ease;
-                    ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
-                    position: relative;
-                    overflow: hidden;
-                 ">
+            <div class="action-card" style="
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                transition: all 0.2s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
+                position: relative;
+                overflow: hidden;
+            " ${onClickHandler}>
                 
                 <!-- Фоновый эффект для редкости/особенностей -->
                 ${config.special ? `
@@ -2045,7 +2008,7 @@ updateCellActionsUI(cell) {
     
     html += `</div>`;
     
-    // Удаляем старый JavaScript для эффектов наведения и добавляем новый
+    // Добавляем JavaScript для эффектов наведения
     html += `
         <script>
             setTimeout(() => {
@@ -2085,9 +2048,6 @@ updateCellActionsUI(cell) {
 }
 
     
-/**
- * Генерация HTML для специальных действий (торговец, вода и т.д.)
- */
 generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
     console.log(`🎯 Генерация специальных действий для ${cell.type}`);
     
@@ -2169,12 +2129,18 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
         };
         
         // ИСПРАВЛЕНИЕ: Для специальных действий проверяем только достижимость
+        // Если игрок рядом (isReachable), то действие доступно
         const isDisabled = !isReachable;
         const disabledReason = isReachable ? '' : '❌ Подойдите ближе';
         
         // Шанс успеха для специальных действий всегда 100%
         const chancePercent = 100;
         const chanceColor = '#00ffaa';
+        
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
         
         // Определяем цвет карточки в зависимости от типа действия
         let cardBgColor = 'rgba(30, 30, 46, 0.95)';
@@ -2190,26 +2156,21 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
             cardBgColor = 'rgba(139, 92, 246, 0.1)';
         }
         
-        // ИСПРАВЛЕНИЕ: Используем data-атрибуты вместо onclick
         html += `
-            <div class="special-action-card" 
-                 data-action="${action}" 
-                 data-cell-row="${cell.row}" 
-                 data-cell-col="${cell.col}"
-                 style="
-                    background: linear-gradient(135deg, ${cardBgColor}, rgba(20, 25, 45, 0.95));
-                    border: 2px solid ${cardBorderColor};
-                    border-radius: 10px;
-                    padding: 20px;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    text-align: center;
-                    transition: all 0.3s ease;
-                    ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
-                    position: relative;
-                    overflow: hidden;
-                 ">
+            <div class="special-action-card" style="
+                background: linear-gradient(135deg, ${cardBgColor}, rgba(20, 25, 45, 0.95));
+                border: 2px solid ${cardBorderColor};
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                transition: all 0.3s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
+                position: relative;
+                overflow: hidden;
+            " ${onClickHandler}>
                 
                 <!-- Иконка действия -->
                 <div class="special-action-icon" style="
@@ -2316,59 +2277,40 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
                 <strong>💡 Подсказка:</strong> ${this.getSpecialActionHint(cell.type)}
             </div>
         </div>
+        
+        <script>
+            setTimeout(() => {
+                const specialCards = document.querySelectorAll('.special-action-card:not([style*="opacity: 0.6"])');
+                specialCards.forEach(card => {
+                    const hoverEffect = card.querySelector('.special-action-hover');
+                    const glowEffect = card.querySelector('.special-action-glow');
+                    const icon = card.querySelector('.special-action-icon');
+                    
+                    card.addEventListener('mouseenter', () => {
+                        card.style.transform = 'translateY(-5px) scale(1.05)';
+                        card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.4)';
+                        card.style.borderWidth = '3px';
+                        if (hoverEffect) hoverEffect.style.opacity = '1';
+                        if (glowEffect) glowEffect.style.opacity = '1';
+                        if (icon) icon.style.transform = 'scale(1.2) rotate(5deg)';
+                    });
+                    
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'translateY(0) scale(1)';
+                        card.style.boxShadow = 'none';
+                        card.style.borderWidth = '2px';
+                        if (hoverEffect) hoverEffect.style.opacity = '0';
+                        if (glowEffect) glowEffect.style.opacity = '0';
+                        if (icon) icon.style.transform = 'scale(1) rotate(0deg)';
+                    });
+                });
+            }, 50);
+        </script>
     `;
     
     return html;
 }
 
-
-
-/**
- * Установка обработчиков событий для специальных действий
- */
-setupSpecialActionEventListeners() {
-    console.log("🎯 Установка обработчиков для специальных действий");
-    
-    setTimeout(() => {
-        const specialCards = document.querySelectorAll('.special-action-card:not([style*="opacity: 0.6"])');
-        console.log(`Найдено ${specialCards.length} доступных карточек специальных действий`);
-        
-        specialCards.forEach(card => {
-            const action = card.dataset.action;
-            const row = parseInt(card.dataset.cellRow);
-            const col = parseInt(card.dataset.cellCol);
-            
-            if (!action || isNaN(row) || isNaN(col)) {
-                console.error("❌ Неверные данные в карточке:", card.dataset);
-                return;
-            }
-            
-            console.log(`Назначаем обработчик для ${action} на [${col},${row}]`);
-            
-            // Удаляем старые обработчики
-            card.replaceWith(card.cloneNode(true));
-            const newCard = card;
-            
-            // Добавляем новый обработчик
-            newCard.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log(`🎯 Клик по специальному действию: ${action} на клетке [${col},${row}]`);
-                
-                if (this.performCellAction) {
-                    this.performCellAction(action, row, col);
-                } else {
-                    console.error("❌ performCellAction не доступен");
-                    window.game?.showNotification("❌ Система действий не работает", 'error');
-                }
-            });
-        });
-    }, 100);
-}
-
-
-    
     
 getSpecialActionHint(cellType) {
     const hints = {
@@ -3281,6 +3223,7 @@ fillFlaskManually() {
 
 
 
+// В классе ActionSystem, метод showPeacefulMapUI (ЗАМЕНИТЬ ПОЛНОСТЬЮ):
 showPeacefulMapUI(cell) {
     console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты");
     
@@ -3292,27 +3235,26 @@ showPeacefulMapUI(cell) {
     const hasSpecialActions = specialActions.length > 0;
     
     if (hasSpecialActions) {
-        console.log(`🎯 Мирная карта: есть специальные действия для ${cell.type}:`, specialActions);
+        // Показываем специальные действия
+        actionsContainer.innerHTML = this.generateSpecialActionsHTML(cell, specialActions);
         
-        // Для мирных карт тоже нужно проверить достижимость
-        const isReachable = this.mapSystem.isCellReachable(cell);
-        const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
-                                   cell.row === this.mapSystem.playerTacticalPosition.y);
-        
-        console.log(`   Достижима: ${isReachable}, Текущая позиция: ${isCurrentPosition}`);
-        
-        // Используем generateSpecialActionsButtonsHTML вместо generateSpecialActionsHTML
-        actionsContainer.innerHTML = this.generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable);
-        
-        // Устанавливаем обработчики событий
+        // Привязываем обработчики событий
         setTimeout(() => {
-            this.setupSpecialActionEventListeners();
-        }, 200);
-        
-        console.log("✅ Интерфейс специальных действий показан для мирной карты");
+            const actionButtons = actionsContainer.querySelectorAll('.special-action-btn');
+            actionButtons.forEach(button => {
+                const action = button.dataset.action;
+                const row = parseInt(button.dataset.cellRow);
+                const col = parseInt(button.dataset.cellCol);
+                
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`🎯 Клик по специальному действию: ${action} на клетке [${col}, ${row}]`);
+                    this.performCellAction(action, row, col);
+                });
+            });
+        }, 50);
     } else {
-        console.log("🍻 Мирная карта без специальных действий");
-        
         // Показываем обычный интерфейс для мирной карты
         actionsContainer.innerHTML = `
             <div class="peaceful-map-ui">
