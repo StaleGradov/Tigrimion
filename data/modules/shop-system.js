@@ -981,73 +981,104 @@ class ShopSystem {
         }
     }
 
-    closeShop() {
-        this.currentShop = null;
-        this.currentCategory = 'all';
-        this.currentSubcategory = 'all';
-        this.searchQuery = '';
-        this.currentSort = 'name';
-        const container = document.getElementById('overlay-container');
-        if (container) {
-            container.style.display = 'none';
-            container.innerHTML = '';
-        }
-    }
-
-    leaveShop() {
-        this.closeShop();
-    }
-
-
-// В ShopSystem или в MapSystem добавляем метод
-/**
- * Закрыть магазин и вернуться на карту
- */
-closeShopAndReturnToMap() {
-    console.log("🛒 Закрытие магазина и возврат на карту");
-    
-    // Закрываем магазин
-    const shopContainer = document.getElementById('shopContainer');
-    if (shopContainer) {
-        shopContainer.style.display = 'none';
-        shopContainer.innerHTML = '';
-    }
-    
-    // Восстанавливаем карту
-    const mapSystem = window.game?.systems?.map;
-    if (mapSystem) {
-        // ВАЖНО: Восстанавливаем предыдущий оверлей
-        if (mapSystem.previousOverlayBeforeShop) {
-            console.log(`🔄 Возвращаемся к оверлею: ${mapSystem.previousOverlayBeforeShop}`);
-            mapSystem.activeOverlay = mapSystem.previousOverlayBeforeShop;
-            mapSystem.previousOverlayBeforeShop = null;
+      closeShop() {
+        console.log("=== SHOP SYSTEM CLOSE SHOP ===");
+        
+        // Скрываем интерфейс магазина
+        const shopContainer = document.getElementById('overlay-container');
+        if (shopContainer) {
+            shopContainer.style.display = 'none';
+            shopContainer.innerHTML = '';
         }
         
-        // Обновляем интерфейс карты
-        if (mapSystem.currentTacticalMap) {
+        // Восстанавливаем карту через MapSystem
+        const mapSystem = window.game?.systems?.map;
+        if (mapSystem && mapSystem.currentTacticalMap) {
+            // Обновляем активный оверлей
+            mapSystem.activeOverlay = 'tactical-map';
+            
             // Находим текущую клетку игрока
             const cellKey = `${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}`;
             const currentCell = mapSystem.currentTacticalMap.cells[cellKey];
             
-            // Обновляем интерфейс действий
+            // Обновляем интерфейс
             if (currentCell && mapSystem.actionSystem) {
-                console.log(`📍 Обновляем интерфейс действий для клетки [${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}]`);
-                
-                // Небольшая задержка для гарантии обновления DOM
                 setTimeout(() => {
+                    // Показываем интерфейс действий
                     mapSystem.actionSystem.updateCellActionsUI(currentCell);
                     mapSystem.actionSystem.highlightSelectedCell(currentCell);
                     
                     // Перерисовываем карту
                     mapSystem.drawTacticalMap();
-                }, 100);
+                    
+                    console.log("✅ Магазин закрыт, интерфейс карты восстановлен");
+                }, 50);
             }
         }
         
-        console.log("✅ Магазин закрыт, возвращено управление карте");
+        // Сбрасываем состояние магазина
+        this.currentShop = null;
+        this.currentCategory = 'all';
+        this.currentSubcategory = 'all';
+        this.searchQuery = '';
+        this.currentSort = 'name';
+        
+        console.log("⚠️ Магазин закрыт, НЕ вызывается game.hideOverlay()");
     }
-}
 
+
+    
+
+    /**
+     * Закрыть магазин и вернуться на карту (альтернативный метод)
+     */
+    closeShopAndReturnToMap() {
+        console.log("🛒 Закрытие магазина и возврат на карту");
+        
+        // Закрываем магазин
+        const shopContainer = document.getElementById('overlay-container');
+        if (shopContainer) {
+            shopContainer.style.display = 'none';
+            shopContainer.innerHTML = '';
+        }
+        
+        // Восстанавливаем карту
+        const mapSystem = window.game?.systems?.map;
+        if (mapSystem) {
+            // Обновляем активный оверлей
+            mapSystem.activeOverlay = 'tactical-map';
+            
+            // Обновляем интерфейс карты
+            if (mapSystem.currentTacticalMap) {
+                // Находим текущую клетку игрока
+                const cellKey = `${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}`;
+                const currentCell = mapSystem.currentTacticalMap.cells[cellKey];
+                
+                // Обновляем интерфейс действий
+                if (currentCell && mapSystem.actionSystem) {
+                    console.log(`📍 Обновляем интерфейс действий для клетки [${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}]`);
+                    
+                    // Небольшая задержка для гарантии обновления DOM
+                    setTimeout(() => {
+                        mapSystem.actionSystem.updateCellActionsUI(currentCell);
+                        mapSystem.actionSystem.highlightSelectedCell(currentCell);
+                        
+                        // Перерисовываем карту
+                        mapSystem.drawTacticalMap();
+                        
+                        console.log("✅ Магазин закрыт, возвращено управление карте");
+                    }, 100);
+                }
+            }
+        }
+        
+        // Сбрасываем состояние магазина
+        this.currentShop = null;
+        this.currentCategory = 'all';
+        this.currentSubcategory = 'all';
+        this.searchQuery = '';
+        this.currentSort = 'name';
+    }
 
     
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
