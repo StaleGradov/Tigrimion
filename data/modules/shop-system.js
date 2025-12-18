@@ -998,6 +998,58 @@ class ShopSystem {
         this.closeShop();
     }
 
+
+// В ShopSystem или в MapSystem добавляем метод
+/**
+ * Закрыть магазин и вернуться на карту
+ */
+closeShopAndReturnToMap() {
+    console.log("🛒 Закрытие магазина и возврат на карту");
+    
+    // Закрываем магазин
+    const shopContainer = document.getElementById('shopContainer');
+    if (shopContainer) {
+        shopContainer.style.display = 'none';
+        shopContainer.innerHTML = '';
+    }
+    
+    // Восстанавливаем карту
+    const mapSystem = window.game?.systems?.map;
+    if (mapSystem) {
+        // ВАЖНО: Восстанавливаем предыдущий оверлей
+        if (mapSystem.previousOverlayBeforeShop) {
+            console.log(`🔄 Возвращаемся к оверлею: ${mapSystem.previousOverlayBeforeShop}`);
+            mapSystem.activeOverlay = mapSystem.previousOverlayBeforeShop;
+            mapSystem.previousOverlayBeforeShop = null;
+        }
+        
+        // Обновляем интерфейс карты
+        if (mapSystem.currentTacticalMap) {
+            // Находим текущую клетку игрока
+            const cellKey = `${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}`;
+            const currentCell = mapSystem.currentTacticalMap.cells[cellKey];
+            
+            // Обновляем интерфейс действий
+            if (currentCell && mapSystem.actionSystem) {
+                console.log(`📍 Обновляем интерфейс действий для клетки [${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}]`);
+                
+                // Небольшая задержка для гарантии обновления DOM
+                setTimeout(() => {
+                    mapSystem.actionSystem.updateCellActionsUI(currentCell);
+                    mapSystem.actionSystem.highlightSelectedCell(currentCell);
+                    
+                    // Перерисовываем карту
+                    mapSystem.drawTacticalMap();
+                }, 100);
+            }
+        }
+        
+        console.log("✅ Магазин закрыт, возвращено управление карте");
+    }
+}
+
+
+    
     // ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     getInventorySpace() {
         if (!this.currentHero || !this.currentHero.inventory) {
