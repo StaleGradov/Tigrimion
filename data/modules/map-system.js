@@ -3288,7 +3288,7 @@ drawPeacefulMapIndicator() {
         // Рисуем фон с закругленными углами
         this.ctx.beginPath();
         
-        // Проверяем и добавляем поддержку roundRect при необходимости
+        // Полифил для roundRect ВНУТРИ метода
         if (!CanvasRenderingContext2D.prototype.roundRect) {
             CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
                 if (width < 2 * radius) radius = width / 2;
@@ -3326,7 +3326,7 @@ drawPeacefulMapIndicator() {
     } finally {
         this.ctx.restore();
     }
-}
+} 
 
     
 
@@ -5073,12 +5073,12 @@ showMapOverlay(overlayType, container) {
 
  }
 
-// Вспомогательные методы для MapSystem:
 getExploredCellsData() {
     const exploredData = {};
     
-    if (this.systems.map && this.systems.map.currentTacticalMap) {
-        Object.values(this.systems.map.currentTacticalMap.cells).forEach(cell => {
+    // ИСПРАВЛЕНИЕ: используем this вместо this.systems.map
+    if (this.currentTacticalMap) {
+        Object.values(this.currentTacticalMap.cells).forEach(cell => {
             if (cell.explored) {
                 const key = `${cell.col},${cell.row}`;
                 exploredData[key] = {
@@ -5094,10 +5094,11 @@ getExploredCellsData() {
 }
 
 restoreExploredCells(exploredCellsData) {
-    if (!this.systems.map || !this.systems.map.currentTacticalMap) return;
+    // ИСПРАВЛЕНИЕ: используем this вместо this.systems.map
+    if (!this.currentTacticalMap) return;
     
     Object.entries(exploredCellsData).forEach(([key, data]) => {
-        const cell = this.systems.map.currentTacticalMap.cells[key];
+        const cell = this.currentTacticalMap.cells[key];
         if (cell) {
             cell.explored = data.explored || false;
             cell.hasAction = data.hasAction !== undefined ? data.hasAction : true;
