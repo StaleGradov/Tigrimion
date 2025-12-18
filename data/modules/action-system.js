@@ -3281,7 +3281,6 @@ fillFlaskManually() {
 
 
 
-// В классе ActionSystem, метод showPeacefulMapUI (ЗАМЕНИТЬ ПОЛНОСТЬЮ):
 showPeacefulMapUI(cell) {
     console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты");
     
@@ -3293,26 +3292,27 @@ showPeacefulMapUI(cell) {
     const hasSpecialActions = specialActions.length > 0;
     
     if (hasSpecialActions) {
-        // Показываем специальные действия
-        actionsContainer.innerHTML = this.generateSpecialActionsHTML(cell, specialActions);
+        console.log(`🎯 Мирная карта: есть специальные действия для ${cell.type}:`, specialActions);
         
-        // Привязываем обработчики событий
+        // Для мирных карт тоже нужно проверить достижимость
+        const isReachable = this.mapSystem.isCellReachable(cell);
+        const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
+                                   cell.row === this.mapSystem.playerTacticalPosition.y);
+        
+        console.log(`   Достижима: ${isReachable}, Текущая позиция: ${isCurrentPosition}`);
+        
+        // Используем generateSpecialActionsButtonsHTML вместо generateSpecialActionsHTML
+        actionsContainer.innerHTML = this.generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+        
+        // Устанавливаем обработчики событий
         setTimeout(() => {
-            const actionButtons = actionsContainer.querySelectorAll('.special-action-btn');
-            actionButtons.forEach(button => {
-                const action = button.dataset.action;
-                const row = parseInt(button.dataset.cellRow);
-                const col = parseInt(button.dataset.cellCol);
-                
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log(`🎯 Клик по специальному действию: ${action} на клетке [${col}, ${row}]`);
-                    this.performCellAction(action, row, col);
-                });
-            });
-        }, 50);
+            this.setupSpecialActionEventListeners();
+        }, 200);
+        
+        console.log("✅ Интерфейс специальных действий показан для мирной карты");
     } else {
+        console.log("🍻 Мирная карта без специальных действий");
+        
         // Показываем обычный интерфейс для мирной карты
         actionsContainer.innerHTML = `
             <div class="peaceful-map-ui">
