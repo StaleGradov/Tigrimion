@@ -3262,7 +3262,6 @@ drawHexes() {
     });
 }
 
-
 drawPeacefulMapIndicator() {
     if (!this.isPeacefulMap() || !this.canvas || !this.ctx) {
         console.log("❌ Не могу нарисовать индикатор мирной карты");
@@ -3288,6 +3287,23 @@ drawPeacefulMapIndicator() {
         
         // Рисуем фон с закругленными углами
         this.ctx.beginPath();
+        
+        // Проверяем и добавляем поддержку roundRect при необходимости
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+                if (width < 2 * radius) radius = width / 2;
+                if (height < 2 * radius) radius = height / 2;
+                this.beginPath();
+                this.moveTo(x + radius, y);
+                this.arcTo(x + width, y, x + width, y + height, radius);
+                this.arcTo(x + width, y + height, x, y + height, radius);
+                this.arcTo(x, y + height, x, y, radius);
+                this.arcTo(x, y, x + width, y, radius);
+                this.closePath();
+                return this;
+            };
+        }
+        
         this.ctx.roundRect(x - 15, y - 25, textWidth + 30, 40, 10);
         this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
         this.ctx.fill();
@@ -3310,24 +3326,7 @@ drawPeacefulMapIndicator() {
     } finally {
         this.ctx.restore();
     }
-} // <-- ЗАКРЫТИЕ МЕТОДА drawPeacefulMapIndicator
-
-// Добавляем поддержку roundRect для старых браузеров
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
-        if (width < 2 * radius) radius = width / 2;
-        if (height < 2 * radius) radius = height / 2;
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.arcTo(x + width, y, x + width, y + height, radius);
-        this.arcTo(x + width, y + height, x, y + height, radius);
-        this.arcTo(x, y + height, x, y, radius);
-        this.arcTo(x, y, x + width, y, radius);
-        this.closePath();
-        return this;
-    };
 }
-
 
     
 
