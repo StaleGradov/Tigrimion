@@ -1839,7 +1839,6 @@ createBasicTimeSystem() {
 
     // ========== ПЕРЕМЕЩЕНИЕ ПО КАРТЕ ==========
 
-  // В КЛАССЕ MapSystem, метод handleCanvasClick:
 handleCanvasClick(e) {
     if (!this.currentTacticalMap) {
         console.error("❌ Нет текущей тактической карты");
@@ -1876,7 +1875,67 @@ handleCanvasClick(e) {
     if (this.isPeacefulMap()) {
         console.log("🍻 Обработка клика на мирной карте (таверна)");
         
-        // На мирных картах всегда можно кликать для перемещения
+        // === ОБРАБОТКА СПЕЦИАЛЬНЫХ КЛЕТОК НА МИРНОЙ КАРТЕ ===
+        if (hex.type === 'merchant' || hex.type === 'water' || 
+            hex.type === 'tavern' || hex.type === 'campfire' || 
+            hex.type === 'npc') {
+            console.log(`🎯 Клик по специальной клетке на мирной карте: ${hex.type}`);
+            
+            // Проверяем, достижима ли клетка
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                // Показываем действия для специальной клетки
+                console.log(`✅ Специальная клетка достижима, показываем действия`);
+                
+                if (this.actionSystem) {
+                    // Обновляем интерфейс с действиями для этой клетки
+                    this.actionSystem.updateCellActionsUI(hex);
+                    this.actionSystem.highlightSelectedCell(hex);
+                    
+                    // Также центрируем карту на этой клетке для лучшей видимости
+                    this.centerMapOnHex(hex);
+                }
+            } else {
+                console.log(`❌ Специальная клетка недостижима`);
+                
+                // Получаем направление к клетке
+                const direction = this.getDirectionToHex(hex);
+                
+                // Показываем сообщение с указанием направления
+                let message = '';
+                switch(hex.type) {
+                    case 'merchant':
+                        message = `🛒 Подойдите ${direction} к торговцу "${hex.merchantName || hex.shopName || 'торговцу'}"`;
+                        break;
+                    case 'water':
+                        message = `💧 Подойдите ${direction} к источнику воды`;
+                        break;
+                    case 'tavern':
+                        message = `🍻 Подойдите ${direction} к таверне`;
+                        break;
+                    case 'campfire':
+                        message = `🔥 Подойдите ${direction} к кострищу`;
+                        break;
+                    case 'npc':
+                        message = `🧙 Подойдите ${direction} к персонажу`;
+                        break;
+                    default:
+                        message = `Подойдите ${direction} к этой клетке`;
+                }
+                
+                this.showNotification(message, 'warning');
+                
+                // Подсвечиваем клетку
+                this.highlightUnreachableHex(hex);
+            }
+            return;
+        }
+        
+        // Для остальных клеток на мирных картах
         if (hex.passable !== false) {
             console.log("✅ Клик для перемещения на мирной карте");
             
@@ -1890,6 +1949,7 @@ handleCanvasClick(e) {
                 this.moveOnTacticalMap(hex.col, hex.row);
             } else {
                 console.log(`❌ Клетка недостижима для перемещения`);
+                this.showNotification("Чтобы переместиться, нужно подойти вплотную к соседней клетке!", 'warning');
             }
         }
         
@@ -1934,6 +1994,98 @@ handleCanvasClick(e) {
     }
 
     // === ОБЫЧНАЯ ОБРАБОТКА ДЛЯ НЕ-МИРНЫХ КАРТ ===
+    
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ КЛЕТОК НА ОБЫЧНЫХ КАРТАХ ===
+    if (hex.type === 'merchant' || hex.type === 'water' || 
+        hex.type === 'tavern' || hex.type === 'campfire' || 
+        hex.type === 'npc') {
+        console.log(`🎯 Клик по специальной клетке на обычной карте: ${hex.type}`);
+        
+        // Проверяем, достижима ли клетка
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            // Проверяем, исследована ли клетка
+            if (hex.explored) {
+                console.log(`✅ Специальная клетка исследована, показываем действия`);
+                
+                if (this.actionSystem) {
+                    this.actionSystem.updateCellActionsUI(hex);
+                    this.actionSystem.highlightSelectedCell(hex);
+                    this.centerMapOnHex(hex);
+                }
+            } else {
+                // Клетка не исследована - нужно сначала исследовать
+                console.log(`🔍 Специальная клетка не исследована`);
+                
+                if (window.game) {
+                    const confirmResearch = window.confirm(
+                        `Чтобы взаимодействовать с ${this.getCellTypeName(hex.type)}, нужно сначала исследовать эту клетку.\n\n` +
+                        `Исследование требует ночёвки на клетке.\n` +
+                        `Исследовать эту клетку сейчас?`
+                    );
+                    
+                    if (confirmResearch) {
+                        // Перемещаем героя на клетку
+                        const oldPosition = {...this.playerTacticalPosition};
+                        this.playerTacticalPosition = {x: hex.col, y: hex.row};
+                        
+                        // Обновляем видимость
+                        this.updateVisibilityOnMove(hex.col, hex.row);
+                        
+                        // Инициируем исследование
+                        this.researchCurrentHex();
+                        
+                        // После исследования показываем действия
+                        setTimeout(() => {
+                            if (hex.explored && this.actionSystem) {
+                                this.actionSystem.updateCellActionsUI(hex);
+                                this.actionSystem.highlightSelectedCell(hex);
+                            }
+                        }, 1500);
+                    }
+                }
+            }
+        } else {
+            console.log(`❌ Специальная клетка недостижима`);
+            
+            // Показываем направление
+            const direction = this.getDirectionToHex(hex);
+            let message = '';
+            
+            switch(hex.type) {
+                case 'merchant':
+                    message = `🛒 Подойдите ${direction} к торговцу`;
+                    if (hex.merchantName) message += ` "${hex.merchantName}"`;
+                    break;
+                case 'water':
+                    message = `💧 Подойдите ${direction} к источнику воды`;
+                    break;
+                case 'tavern':
+                    message = `🍻 Подойдите ${direction} к таверне`;
+                    break;
+                case 'campfire':
+                    message = `🔥 Подойдите ${direction} к кострищу`;
+                    break;
+                case 'npc':
+                    message = `🧙 Подойдите ${direction} к персонажу`;
+                    break;
+                default:
+                    message = `Подойдите ${direction} к этой клетке`;
+            }
+            
+            message += "\n\nℹ️ Сначала нужно исследовать текущую клетку (переночевать на ней).";
+            
+            this.showNotification(message, 'warning');
+            this.highlightUnreachableHex(hex);
+        }
+        return;
+    }
+    
+    // Обработка переходов (таверны)
     if (hex.type === 'village' && hex.tacticalMap) {
         console.log("🍻 Клик по таверне - проверяем доступность...");
         
@@ -1949,28 +2101,57 @@ handleCanvasClick(e) {
         return;
     }
     
+    // Обработка воды (отдельно, так как это может быть на любой карте)
     if (hex.type === 'water') {
         console.log("💧 Клик по воде");
-        if (!this.isPlayerAdjacentToWater(hex)) {
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            // Проверяем, исследована ли клетка с водой
+            if (hex.explored) {
+                this.handleWaterCell(hex);
+            } else {
+                this.showNotification("💧 Сначала исследуйте эту клетку (переночуйте на ней), чтобы использовать воду", 'warning');
+            }
+        } else {
             this.showNotification("❌ Подойдите ближе к воде!", 'warning');
-            return;
         }
-        this.handleWaterCell(hex);
         return;
     }
     
+    // Обработка магазинов (отдельно)
     if (hex.type === 'merchant') {
         console.log("🛒 Клик по магазину");
-        this.handleMerchantClick(hex);
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            if (hex.explored) {
+                this.handleMerchantClick(hex);
+            } else {
+                this.showNotification("🛒 Сначала исследуйте эту клетку (переночуйте на ней), чтобы торговать", 'warning');
+            }
+        } else {
+            this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
+        }
         return;
     }
     
+    // Обработка переходов между картами
     if (this.isTransitionCell(hex)) {
         console.log("🚪 Клик по переходу");
         this.handleTransitionClick(hex);
         return;
     }
     
+    // Обычная логика для перемещений и действий
     if (hex.passable !== false || hex.type === 'monster') {
         console.log("🎯 Клик для перемещения или действий");
         
@@ -1980,15 +2161,30 @@ handleCanvasClick(e) {
         );
         
         if (isReachable) {
-            console.log(`✅ Клетка достижима, начинаем перемещение`);
-            this.moveOnTacticalMap(hex.col, hex.row);
+            console.log(`✅ Клетка достижима, начинаем перемещение или действия`);
+            
+            // Если клетка исследована - мирное перемещение
+            if (hex.explored) {
+                this.moveOnTacticalMap(hex.col, hex.row);
+            } else {
+                // Если не исследована - проверяем можно ли перейти
+                if (this.canMoveToHex(hex)) {
+                    this.moveOnTacticalMap(hex.col, hex.row);
+                } else {
+                    // Предлагаем исследовать текущую клетку
+                    this.suggestResearchCurrentHex(hex);
+                }
+            }
         } else {
             console.log(`❌ Клетка недостижима для перемещения`);
+            this.showNotification("Чтобы переместиться, нужно подойти вплотную к соседней клетке!", 'warning');
         }
     } else {
         console.log(`❌ Клетка непроходима: ${hex.type}`);
+        this.showNotification(`Эта клетка непроходима (${this.getCellTypeName(hex.type)})`, 'error');
     }
     
+    // Обновляем интерфейс действий (если это не переход)
     if (!this.isTransitionCell(hex)) {
         console.log(`📋 Вызываем updateCellActionsUI для клетки [${hex.col}, ${hex.row}]`);
         if (this.actionSystem) {
@@ -2000,6 +2196,202 @@ handleCanvasClick(e) {
     }
 }
 
+// === ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ===
+
+/**
+ * Получить направление к клетке
+ */
+getDirectionToHex(targetHex) {
+    if (!this.playerTacticalPosition || !targetHex) return "";
+    
+    const dx = targetHex.col - this.playerTacticalPosition.x;
+    const dy = targetHex.row - this.playerTacticalPosition.y;
+    
+    if (dx === 0 && dy === 0) return "здесь же";
+    
+    let direction = "";
+    
+    if (dy < 0) direction += "северо-";
+    if (dy > 0) direction += "юго-";
+    if (dx > 0) direction += "восточнее";
+    if (dx < 0) direction += "западнее";
+    
+    // Убираем лишние дефисы
+    direction = direction.replace(/-восточнее$/, "-восток").replace(/-западнее$/, "-запад");
+    
+    // Упрощаем для близких направлений
+    if (Math.abs(dx) <= 1 && Math.abs(dy) <= 1) {
+        if (dx === 1 && dy === 0) return "восточнее";
+        if (dx === -1 && dy === 0) return "западнее";
+        if (dx === 0 && dy === -1) return "севернее";
+        if (dx === 0 && dy === 1) return "южнее";
+        if (dx === 1 && dy === -1) return "северо-восточнее";
+        if (dx === -1 && dy === -1) return "северо-западнее";
+        if (dx === 1 && dy === 1) return "юго-восточнее";
+        if (dx === -1 && dy === 1) return "юго-западнее";
+    }
+    
+    // Определяем расстояние
+    const distance = Math.sqrt(dx*dx + dy*dy);
+    let distanceText = "";
+    
+    if (distance <= 2) distanceText = "близко";
+    else if (distance <= 4) distanceText = "недалеко";
+    else if (distance <= 6) distanceText = "довольно далеко";
+    else distanceText = "далеко";
+    
+    return `${direction} (${distanceText})`;
+}
+
+/**
+ * Центрировать карту на указанной клетке
+ */
+centerMapOnHex(hex) {
+    if (!this.canvas || !hex) return;
+    
+    const centerX = hex.x || hex.originalX || 0;
+    const centerY = hex.y || hex.originalY || 0;
+    
+    if (!centerX || !centerY) return;
+    
+    const canvasWidth = this.canvas.width;
+    const canvasHeight = this.canvas.height;
+    
+    // Рассчитываем смещение для центрирования
+    const targetOffsetX = (canvasWidth / 2) - centerX;
+    const targetOffsetY = (canvasHeight / 2) - centerY;
+    
+    // Плавная анимация центрирования
+    const animateCenter = () => {
+        const dx = targetOffsetX - this.mapOffset.x;
+        const dy = targetOffsetY - this.mapOffset.y;
+        
+        // Если уже близко, останавливаем анимацию
+        if (Math.abs(dx) < 1 && Math.abs(dy) < 1) {
+            this.mapOffset.x = targetOffsetX;
+            this.mapOffset.y = targetOffsetY;
+            this.drawTacticalMap();
+            return;
+        }
+        
+        // Плавное движение
+        this.mapOffset.x += dx * 0.2;
+        this.mapOffset.y += dy * 0.2;
+        this.drawTacticalMap();
+        
+        requestAnimationFrame(animateCenter);
+    };
+    
+    animateCenter();
+}
+
+/**
+ * Подсветить недоступную клетку
+ */
+highlightUnreachableHex(hex) {
+    if (!hex) return;
+    
+    // Сохраняем оригинальный цвет
+    const originalHighlight = hex.isHighlighted;
+    const originalHighlightColor = hex.highlightColor;
+    
+    // Устанавливаем красную подсветку
+    hex.isHighlighted = true;
+    hex.highlightColor = '#ff4444';
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Через 1.5 секунды убираем подсветку
+    setTimeout(() => {
+        hex.isHighlighted = originalHighlight;
+        hex.highlightColor = originalHighlightColor;
+        this.drawTacticalMap();
+    }, 1500);
+}
+
+/**
+ * Предложить исследовать текущую клетку
+ */
+suggestResearchCurrentHex(targetHex) {
+    if (!this.currentHero) return;
+    
+    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+    
+    if (!currentCell) return;
+    
+    if (window.game) {
+        const confirmResearch = window.confirm(
+            `Чтобы перейти на новую клетку [${targetHex.col},${targetHex.row}], ` +
+            `нужно сначала исследовать текущую клетку [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}].\n\n` +
+            `Исследование требует ночёвки на текущей клетке.\n` +
+            `Исследовать текущую клетку сейчас?`
+        );
+        
+        if (confirmResearch) {
+            this.researchCurrentHex();
+        }
+    }
+}
+
+/**
+ * Получить читаемое название типа клетки
+ */
+getCellTypeName(cellType) {
+    const names = {
+        'merchant': '🛒 Торговец',
+        'water': '💧 Вода',
+        'tavern': '🍻 Таверна',
+        'campfire': '🔥 Кострище',
+        'npc': '🧙 Персонаж',
+        'monster': '👹 Монстр',
+        'chest': '📦 Сундук',
+        'exit': '🚪 Выход',
+        'obstacle': '🪨 Препятствие',
+        'tree': '🌲 Дерево',
+        'village': '🏘️ Деревня',
+        'castle': '🏰 Замок',
+        'portal': '🌀 Портал',
+        'player_start': '⭐ Старт',
+        'inactive': '🔴 Неактивно'
+    };
+    
+    return names[cellType] || cellType;
+}
+
+/**
+ * Показать уведомление
+ */
+showNotification(message, type = 'info') {
+    if (window.game && window.game.showNotification) {
+        window.game.showNotification(message, type);
+    } else {
+        console.log(`${type.toUpperCase()}: ${message}`);
+        // Создаем простую нотификацию
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
+            color: white;
+            border-radius: 6px;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
+    }
+}
     getHexAtLogicalPosition(x, y) {
         console.log(`🔍 Поиск клетки по координатам: [${x}, ${y}]`);
         
