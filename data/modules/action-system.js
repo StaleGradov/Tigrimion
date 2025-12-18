@@ -1429,36 +1429,26 @@ async loadHuntModuleWithFallback() {
                 </h3>
         `;
         
-        if (!isExplored && cell.hasAction !== false) {
-            if (this.currentCellActions.length > 0) {
-                try {
-                    rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
-                    
-                    rightHTML += `
-                        <div class="cell-completion-controls" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #475569;">
-                            <button class="btn-control complete-exploration-btn" 
-                                    onclick="game.systems.map.completeCellExploration(${cell.row}, ${cell.col})"
-                                    title="Отметить клетку как полностью исследованную"
-                                    style="width: 100%; padding: 12px; background: linear-gradient(135deg, #10b981, #059669);">
-                                ✓ Завершить исследование
-                            </button>
-                            <p class="hint" style="text-align: center; margin-top: 10px; color: #94a3b8; font-size: 12px;">
-                                После завершения исследования вы не сможете выполнять здесь действия
-                            </p>
-                        </div>
-                    `;
-                } catch (error) {
-                    console.error("❌ Ошибка создания списка действий:", error);
-                    rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
-                }
-            } else {
-                rightHTML += this.createNoActionsHTML();
-            }
-        } else if (isExplored) {
-            rightHTML += this.createExploredCellHTML();
-        } else if (cell.hasAction === false) {
-            rightHTML += this.createNoActionsHTML();
+if (!isExplored && cell.hasAction !== false) {
+    if (this.currentCellActions.length > 0) {
+        try {
+            rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            
+            // ❌ КНОПКА "ЗАВЕРШИТЬ ИССЛЕДОВАНИЕ" УБРАНА
+            // Исследование теперь завершается автоматически при наступлении темноты
+            
+        } catch (error) {
+            console.error("❌ Ошибка создания списка действий:", error);
+            rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
         }
+    } else {
+        rightHTML += this.createNoActionsHTML();
+    }
+} else if (isExplored) {
+    rightHTML += this.createExploredCellHTML();
+} else if (cell.hasAction === false) {
+    rightHTML += this.createNoActionsHTML();
+}
         
         rightHTML += `</div>`;
         
