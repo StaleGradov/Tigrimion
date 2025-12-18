@@ -2066,8 +2066,7 @@ handleCanvasClick(e) {
         console.log(`⏭️ Пропускаем показ действий для перехода`);
     }
 }
- * Получить направление к клетке
- */
+
 getDirectionToHex(targetHex) {
     if (!this.playerTacticalPosition || !targetHex) return "";
     
