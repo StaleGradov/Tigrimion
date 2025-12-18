@@ -2312,7 +2312,6 @@ moveOnTacticalMap(x, y) {
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 
-// В КЛАССЕ MapSystem, метод researchCurrentHex:
 researchCurrentHex() {
     // Если мы на мирной карте - не нужно исследовать
     if (this.isPeacefulMap()) {
@@ -2446,7 +2445,7 @@ researchCurrentHex() {
         return false;
     }
 }
- */
+
 startNightBattle() {
     console.log("⚔️ Начинаем ночной бой...");
     
