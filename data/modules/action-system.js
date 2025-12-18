@@ -2800,8 +2800,7 @@ async performCellAction(action, row, col) {
 
     
 
-    
-handleTradeAction(row, col) {
+ handleTradeAction(row, col) {
     console.log(`🛒 Обработка торговли на клетке [${col},${row}]`);
     
     const cellKey = `${col},${row}`;
@@ -2842,6 +2841,10 @@ handleTradeAction(row, col) {
         }
     }
     
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ отмечаем клетку как исследованную
+    // Клетка остается доступной для повторной торговли
+    console.log("✅ Магазин открыт, клетка остается доступной для повторного использования");
+    
     // Показываем сообщение об успешном открытии магазина
     this.showNotification("🛒 Магазин открыт!", 'success');
 }
@@ -2871,6 +2874,9 @@ handleFillFlaskAction(row, col) {
     if (this.mapSystem.handleWaterCell) {
         this.mapSystem.handleWaterCell(cell);
         
+        // ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ отмечаем клетку как исследованную
+        console.log("💧 Фляга наполнена, источник воды остается доступным");
+        
         // Обновляем интерфейс
         setTimeout(() => {
             if (cell) {
@@ -2880,6 +2886,16 @@ handleFillFlaskAction(row, col) {
     } else {
         // Ручная обработка
         this.fillFlaskManually(cell);
+        
+        // ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ отмечаем клетку как исследованную
+        console.log("💧 Фляга наполнена вручную, источник воды остается доступным");
+        
+        // Обновляем интерфейс
+        setTimeout(() => {
+            if (cell) {
+                this.updateCellActionsUI(cell);
+            }
+        }, 500);
     }
 }
 
@@ -3651,6 +3667,156 @@ getSpecialActionHint(cellType) {
     return hints[cellType] || 'Нажмите на действие для его выполнения';
 }
 
+
+/**
+ * Создает специальную панель для специальных клеток
+ */
+createSpecialCellUI(cell, specialActions) {
+    console.log(`🎨 Создаем специальный интерфейс для клетки ${cell.type}`);
+    
+    let html = `
+        <div class="special-cell-ui">
+            <div class="special-cell-header" style="
+                background: rgba(0, 170, 255, 0.1);
+                border: 2px solid #00aaff;
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <h3 style="color: #00ffcc; margin-bottom: 10px;">
+                    ${this.getSpecialCellTitle(cell)}
+                </h3>
+                <p style="color: #ccc; font-size: 14px;">
+                    ${this.getSpecialCellDescription(cell)}
+                </p>
+            </div>
+            
+            <div class="special-actions-container">
+                <h4 style="color: #00aaff; margin-bottom: 15px; text-align: center;">
+                    ⚡ Доступные действия
+                </h4>
+                
+                <div class="special-actions-grid" style="
+                    display: grid;
+                    grid-template-columns: repeat(${Math.min(specialActions.length, 2)}, 1fr);
+                    gap: 15px;
+                    margin-bottom: 20px;
+                ">
+    `;
+    
+    specialActions.forEach(action => {
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Специальное действие'
+        };
+        
+        html += `
+            <div class="special-action-card" 
+                 onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"
+                 style="
+                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
+                    border: 2px solid #00aaff;
+                    border-radius: 10px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    text-align: center;
+                 ">
+                <div class="special-action-icon" style="
+                    font-size: 32px;
+                    margin-bottom: 10px;
+                    color: #00ffcc;
+                ">
+                    ${config.icon}
+                </div>
+                
+                <div class="special-action-name" style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    margin-bottom: 8px;
+                ">
+                    ${config.name}
+                </div>
+                
+                <div class="special-action-description" style="
+                    font-size: 12px;
+                    color: #b0b0ff;
+                    line-height: 1.4;
+                    margin-bottom: 10px;
+                ">
+                    ${config.description}
+                </div>
+                
+                <div class="special-action-availability" style="
+                    font-size: 11px;
+                    color: #00ffaa;
+                    font-weight: bold;
+                ">
+                    ✅ Всегда доступно
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+                </div>
+                
+                <div class="special-cell-hint" style="
+                    background: rgba(0, 0, 0, 0.3);
+                    border-radius: 8px;
+                    padding: 12px;
+                    text-align: center;
+                    color: #94a3b8;
+                    font-size: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                ">
+                    <strong>💡 Особенность:</strong> ${this.getSpecialCellHint(cell)}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return html;
+}
+
+/**
+ * Вспомогательные методы для специальных клеток
+ */
+getSpecialCellTitle(cell) {
+    switch(cell.type) {
+        case 'merchant': return '🛒 Лавка торговца';
+        case 'water': return '💧 Источник воды';
+        case 'tavern': return '🍻 Таверна';
+        case 'campfire': return '🔥 Кострище';
+        default: return '⚡ Особое место';
+    }
+}
+
+getSpecialCellDescription(cell) {
+    switch(cell.type) {
+        case 'merchant': 
+            return cell.shopName ? `"${cell.shopName}" - ${cell.merchantName || 'Торговец'}` : 'Магазин';
+        case 'water': return 'Чистая питьевая вода';
+        case 'tavern': return 'Место для отдыха и общения';
+        case 'campfire': return 'Тепло и уют у огня';
+        default: return 'Особое место для взаимодействия';
+    }
+}
+
+getSpecialCellHint(cell) {
+    switch(cell.type) {
+        case 'merchant': return 'Можно торговать многократно, запасы пополняются со временем';
+        case 'water': return 'Источник воды никогда не иссякает, можно наполнять флягу сколько угодно раз';
+        case 'tavern': return 'В таверне можно отдыхать и собирать информацию многократно';
+        case 'campfire': return 'У костра можно отдыхать многократно, он не гаснет';
+        default: return 'Это место можно использовать многократно';
+    }
+}
+
+    
 
     
     calculateResourceProbabilities(resources, baseChance) {
