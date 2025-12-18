@@ -2314,7 +2314,15 @@ moveOnTacticalMap(x, y) {
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 
+// В КЛАССЕ MapSystem, метод researchCurrentHex:
 researchCurrentHex() {
+    // Если мы на мирной карте - не нужно исследовать
+    if (this.isPeacefulMap()) {
+        console.log("🍻 На мирной карте (таверна) исследование не требуется");
+        this.showNotification("🍻 В таверне не нужно исследовать клетки!", 'info');
+        return false;
+    }
+    
     console.log(`🔍 MapSystem.researchCurrentHex вызывается для [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
     
     if (!this.currentHero) {
@@ -2440,16 +2448,6 @@ researchCurrentHex() {
         return false;
     }
 }
-/**
- * Провести ночь на текущем гексе
- * @param {number} attackProbability - Вероятность нападения (0-100)
- * @returns {Object} Результат ночёвки
- */
-
-
-/**
- * Начать ночной бой
- * @returns {Object} Результат боя
  */
 startNightBattle() {
     console.log("⚔️ Начинаем ночной бой...");
