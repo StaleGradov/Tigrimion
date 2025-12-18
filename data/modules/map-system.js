@@ -211,7 +211,9 @@ executeHuntAction(row, col) {
 
 
 
-    
+    /**
+ * Обработка клика по магазину - исправленная версия
+ */
 handleMerchantClick(merchantCell) {
     console.log(`🛒 handleMerchantClick для торговца на [${merchantCell.col},${merchantCell.row}]`);
     
@@ -245,9 +247,16 @@ handleMerchantClick(merchantCell) {
 
     console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}, товаров: ${merchantCell.shopItems.length}`);
     
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: НЕ сохраняем текущую карту в стек при открытии магазина
+    // Магазин - это часть той же карты, а не отдельная карта
+    console.log("🔄 Магазин открывается в том же окне, без сохранения в стек карт");
+    
     // Открываем через ShopSystem
     const shopSystem = window.game?.systems?.shop;
     if (shopSystem && shopSystem.openShop) {
+        // Сохраняем текущий активный оверлей перед открытием магазина
+        this.previousOverlayBeforeShop = this.activeOverlay;
+        
         shopSystem.openShop(merchantCell);
         console.log("✅ Магазин успешно открыт через ShopSystem");
     } else {
@@ -257,6 +266,9 @@ handleMerchantClick(merchantCell) {
         }
     }
 }
+
+
+    
 
     
     handleTavernVisit(cell) {
