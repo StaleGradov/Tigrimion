@@ -3141,17 +3141,26 @@ startTacticalBattleForMovement(x, y, cellData) {
         console.log(`🔍 Масштаб изменен: ${Math.round(this.zoomLevel * 100)}%`);
     }
 
-    drawTacticalMap() {
-        if (!this.ctx || !this.currentTacticalMap) {
-            console.log("❌ Canvas context или карта не доступна");
-            return;
-        }
-
-        const canvas = this.canvas;
-        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        this.drawBackground();
+ // В КЛАССЕ MapSystem, метод drawTacticalMap:
+drawTacticalMap() {
+    if (!this.ctx || !this.currentTacticalMap) {
+        console.log("❌ Canvas context или карта не доступна");
+        return;
     }
+
+    const canvas = this.canvas;
+    this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    this.drawBackground();
+    
+    // Добавляем индикатор для мирных карт
+    if (this.isPeacefulMap()) {
+        console.log("🎯 Отрисовываем мирную карту с индикатором");
+        this.drawPeacefulMapIndicator();
+    }
+    
+    console.log("✅ Тактическая карта отрисована");
+}
 
 drawBackground() {
     const map = this.currentTacticalMap;
@@ -3284,6 +3293,82 @@ drawHexes() {
         }
     });
 }
+
+
+
+// В КЛАССЕ MapSystem, после метода drawHexes добавить:
+
+/**
+ * Нарисовать индикатор мирной карты на Canvas
+ */
+drawPeacefulMapIndicator() {
+    if (!this.isPeacefulMap() || !this.canvas || !this.ctx) {
+        console.log("❌ Не могу нарисовать индикатор мирной карты");
+        return;
+    }
+    
+    console.log("🎨 Рисуем индикатор мирной карты");
+    
+    this.ctx.save();
+    
+    try {
+        // Рисуем индикатор в верхнем правом углу
+        const indicatorText = "🍻 Мирная карта";
+        this.ctx.font = "bold 16px Arial";
+        
+        // Измеряем ширину текста
+        const textMetrics = this.ctx.measureText(indicatorText);
+        const textWidth = textMetrics.width;
+        
+        // Позиция индикатора
+        const x = this.canvas.width - textWidth - 30;
+        const y = 35;
+        
+        // Рисуем фон с закругленными углами
+        this.ctx.beginPath();
+        this.ctx.roundRect(x - 15, y - 25, textWidth + 30, 40, 10);
+        this.ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+        this.ctx.fill();
+        
+        // Обводка
+        this.ctx.strokeStyle = "#00aaff";
+        this.ctx.lineWidth = 2;
+        this.ctx.stroke();
+        
+        // Текст
+        this.ctx.fillStyle = "#00aaff";
+        this.ctx.fillText(indicatorText, x, y);
+        
+        // Добавляем иконку
+        this.ctx.font = "20px Arial";
+        this.ctx.fillText("🍻", x - 25, y);
+        
+    } catch (error) {
+        console.error("❌ Ошибка при рисовании индикатора мирной карты:", error);
+    } finally {
+        this.ctx.restore();
+    }
+}
+
+// Добавляем поддержку roundRect для старых браузеров
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        if (width < 2 * radius) radius = width / 2;
+        if (height < 2 * radius) radius = height / 2;
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.arcTo(x + width, y, x + width, y + height, radius);
+        this.arcTo(x + width, y + height, x, y + height, radius);
+        this.arcTo(x, y + height, x, y, radius);
+        this.arcTo(x, y, x + width, y, radius);
+        this.closePath();
+        return this;
+    };
+}
+
+
+
+    
 
  drawSingleHex(cell) {
     // Старый метод для совместимости, теперь используем drawSingleHexWithVisibility
@@ -4364,8 +4449,8 @@ decreaseVisibility() {
     }
 
     // ========== ОТОБРАЖЕНИЕ ОВЕРЛЕЯ КАРТЫ ==========
-
-  showMapOverlay(overlayType, container) {
+// В КЛАССЕ MapSystem, метод showMapOverlay:
+showMapOverlay(overlayType, container) {
     console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
     
     let targetMap = null;
@@ -4418,131 +4503,156 @@ decreaseVisibility() {
         this.currentMapType = 'tactical';
     }
     
-container.innerHTML = `
-    <div class="overlay-content tactical-map-overlay">
-        <div class="tactical-map-header">
-            <h4>${targetMap.name}</h4>
-            <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
-            
-            <div class="zoom-controls">
-                <button class="btn-control" onclick="game.systems.map.zoomOut()" title="Уменьшить">
-                    🔍−
-                </button>
-                <span class="zoom-info">${Math.round(this.zoomLevel * 100)}%</span>
-                <button class="btn-control" onclick="game.systems.map.zoomIn()" title="Увеличить">
-                    🔍+
-                </button>
-                <button class="btn-control" onclick="game.systems.map.resetZoom()" title="Сбросить масштаб">
-                    🔄
-                </button>
-                <button class="btn-control" onclick="game.systems.map.toggleFullscreen()" title="Полноэкранный режим">
-                    📱
-                </button>
-            </div>
-            
-            <button class="btn-close" onclick="game.hideOverlay()">✕</button>
-        </div>
-        
-        <div class="tactical-map-controls">
-            <div class="time-controls-group" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
-                <div class="time-display" id="timeDisplay" style="font-size: 14px;">
-                    ☀️ 07:00 День 1 (Лето)
+    container.innerHTML = `
+        <div class="overlay-content tactical-map-overlay">
+            <div class="tactical-map-header">
+                <h4>${targetMap.name}</h4>
+                
+                <!-- Индикатор мирной карты -->
+                ${this.isPeacefulMap() ? `
+                    <div class="peaceful-map-indicator" style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: rgba(0, 170, 255, 0.15);
+                        border: 2px solid #00aaff;
+                        border-radius: 8px;
+                        padding: 6px 12px;
+                        color: #00aaff;
+                        font-weight: bold;
+                        font-size: 14px;
+                        margin-left: 15px;
+                        vertical-align: middle;
+                        animation: peaceful-pulse 2s infinite;
+                    ">
+                        <span>🍻</span>
+                        <span>Мирная карта</span>
+                    </div>
+                ` : ''}
+                
+                <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
+                
+                <div class="zoom-controls">
+                    <button class="btn-control" onclick="game.systems.map.zoomOut()" title="Уменьшить">
+                        🔍−
+                    </button>
+                    <span class="zoom-info">${Math.round(this.zoomLevel * 100)}%</span>
+                    <button class="btn-control" onclick="game.systems.map.zoomIn()" title="Увеличить">
+                        🔍+
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.resetZoom()" title="Сбросить масштаб">
+                        🔄
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.toggleFullscreen()" title="Полноэкранный режим">
+                        📱
+                    </button>
                 </div>
                 
-                <button class="btn-control" 
-                        onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.createCamp()" 
-                        title="Создать лагерь на этом гексе"
-                        style="padding: 5px 10px; font-size: 12px;">
-                    🏕️ Создать лагерь
-                </button>
-                
-                <button class="btn-control" 
-                        onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.returnToCamp()" 
-                        title="Вернуться в лагерь"
-                        ${!this.timeSystem?.camp?.exists ? 'disabled' : ''}
-                        style="padding: 5px 10px; font-size: 12px;">
-                    🏕️ В лагерь
-                </button>
-                
-                <button class="btn-control" 
-                        onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.spendNightInCamp()" 
-                        title="Провести ночь в лагере"
-                        ${!this.timeSystem?.isInCamp?.() ? 'disabled' : ''}
-                        style="padding: 5px 10px; font-size: 12px;">
-                    🌙 Переночевать
-                </button>
-                <button class="btn-control" 
-        onclick="if (game.systems.map) game.systems.map.researchCurrentHex()" 
-        title="Исследовать этот гекс (переночевать)"
-        style="padding: 5px 10px; font-size: 12px;">
-    🔍 Исследовать гекс
-</button>
+                <button class="btn-close" onclick="game.hideOverlay()">✕</button>
             </div>
             
-            <div class="map-controls-group" style="display: flex; align-items: center; gap: 10px;">
-                <button class="btn-control" onclick="game.systems.map.toggleGrid()">
-                    ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
-                </button>
-                <button class="btn-control" onclick="game.systems.map.toggleVisibilitySystem()">
-                    ${this.fogOfWarEnabled ? '👁️ Выкл. туман' : '👁️ Вкл. туман'}
-                </button>
-                <button class="btn-control" onclick="game.systems.map.increaseVisibility()" title="Увеличить радиус видимости">
-                    👁️+
-                </button>
-                <button class="btn-control" onclick="game.systems.map.decreaseVisibility()" title="Уменьшить радиус видимости">
-                    👁️-
-                </button>
-                <div class="position-info" style="color: #94a3b8; font-size: 12px;">
-                    Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                    ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+            <div class="tactical-map-controls">
+                <div class="time-controls-group" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+                    <div class="time-display" id="timeDisplay" style="font-size: 14px;">
+                        ☀️ 07:00 День 1 (Лето)
+                    </div>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.createCamp()" 
+                            title="Создать лагерь на этом гексе"
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🏕️ Создать лагерь
+                    </button>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.returnToCamp()" 
+                            title="Вернуться в лагерь"
+                            ${!this.timeSystem?.camp?.exists ? 'disabled' : ''}
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🏕️ В лагерь
+                    </button>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.spendNightInCamp()" 
+                            title="Провести ночь в лагере"
+                            ${!this.timeSystem?.isInCamp?.() ? 'disabled' : ''}
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🌙 Переночевать
+                    </button>
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map) game.systems.map.researchCurrentHex()" 
+                            title="Исследовать этот гекс (переночевать)"
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🔍 Исследовать гекс
+                    </button>
                 </div>
-            </div>
-        </div>
-        
-        <div class="tactical-map-content-with-actions">
-            <div class="map-main-area">
-                <div class="tactical-map-visual">
-                    <!-- Canvas будет добавлен автоматически -->
+                
+                <div class="map-controls-group" style="display: flex; align-items: center; gap: 10px;">
+                    <button class="btn-control" onclick="game.systems.map.toggleGrid()">
+                        ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.toggleVisibilitySystem()">
+                        ${this.fogOfWarEnabled ? '👁️ Выкл. туман' : '👁️ Вкл. туман'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.increaseVisibility()" title="Увеличить радиус видимости">
+                        👁️+
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.decreaseVisibility()" title="Уменьшить радиус видимости">
+                        👁️-
+                    </button>
+                    <div class="position-info" style="color: #94a3b8; font-size: 12px;">
+                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                        ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+                    </div>
                 </div>
             </div>
             
-            <div class="cell-actions-panel">
-                <h4 class="actions-panel-title">⚡ Действия на клетке</h4>
-                <div class="cell-actions-container" id="cellActionsContainer">
-                    <div class="actions-placeholder">
-                        Выберите клетку для просмотра доступных действий
+            <div class="tactical-map-content-with-actions">
+                <div class="map-main-area">
+                    <div class="tactical-map-visual">
+                        <!-- Canvas будет добавлен автоматически -->
                     </div>
                 </div>
                 
-                <div class="cell-info-footer">
-                    <div class="action-hint">
-                        ℹ️ Каждая клетка позволяет совершить одно действие
+                <div class="cell-actions-panel">
+                    <h4 class="actions-panel-title">⚡ Действия на клетке</h4>
+                    <div class="cell-actions-container" id="cellActionsContainer">
+                        <div class="actions-placeholder">
+                            Выберите клетку для просмотра доступных действий
+                        </div>
                     </div>
-                    <div class="resource-info">
-                        <h5>📦 Ресурсы героя:</h5>
-                        <div class="resource-list" id="heroResourcesList">
-                            <!-- Ресурсы будут загружены динамически -->
+                    
+                    <div class="cell-info-footer">
+                        <div class="action-hint">
+                            ℹ️ Каждая клетка позволяет совершить одно действие
+                        </div>
+                        <div class="resource-info">
+                            <h5>📦 Ресурсы героя:</h5>
+                            <div class="resource-list" id="heroResourcesList">
+                                <!-- Ресурсы будут загружены динамически -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <div class="tactical-map-info">
-            <div class="map-description">
-                ${targetMap.description || 'Описание отсутствует'}
+            
+            <div class="tactical-map-info">
+                <div class="map-description">
+                    ${targetMap.description || 'Описание отсутствует'}
+                    ${this.isPeacefulMap() ? '<br><span style="color: #00aaff;">🍻 Мирная локация - свободное перемещение без затрат времени</span>' : ''}
+                </div>
+                <div class="map-stats">
+                    <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
+                    <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                    <span>Масштаб: <span id="currentZoom">${Math.round(this.zoomLevel * 100)}%</span></span>
+                    <span id="availableMoves">Доступных ходов: 0</span>
+                    <span>Радиус видимости: ${this.visibilityRadius}</span>
+                    <span>Туман войны: ${this.fogOfWarEnabled ? 'включен' : 'выключен'}</span>
+                    ${this.isPeacefulMap() ? '<span style="color: #00aaff;">🍻 Мирная</span>' : ''}
+                </div>
             </div>
-            <div class="map-stats">
-                <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
-                <span>Размер: ${targetMap.width}x${targetMap.height}</span>
-                <span>Масштаб: <span id="currentZoom">${Math.round(this.zoomLevel * 100)}%</span></span>
-                <span id="availableMoves">Доступных ходов: 0</span>
-                <span>Радиус видимости: ${this.visibilityRadius}</span>
-                <span>Туман войны: ${this.fogOfWarEnabled ? 'включен' : 'выключен'}</span>
-            </div>
         </div>
-    </div>
-`;
+    `;
     
     container.style.display = 'block';
     
