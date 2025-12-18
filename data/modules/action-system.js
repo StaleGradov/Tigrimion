@@ -1331,8 +1331,6 @@ getCellSpecificActions(cell) {
 }
 
 
-    
-
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
@@ -1485,16 +1483,25 @@ updateCellActionsUI(cell) {
                        cell.row === this.mapSystem.playerTacticalPosition.y);
     const isReachable = this.mapSystem.isCellReachable(cell);
     const isExplored = cell.explored === true;
+    const isSpecialCell = this.isSpecialCellForActions(cell);
     
-    if (cell.type === 'merchant' || cell.type === 'water') {
-        // Для специальных клеток используем cell-specific действия
+    // ========== ВАЖНОЕ ИСПРАВЛЕНИЕ: всегда показываем специальные действия для специальных клеток ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Это специальная клетка: ${cell.type}, показываем специальные действия всегда`);
         this.currentCellActions = this.getCellSpecificActions(cell);
+        
+        // ОСОБО ВАЖНО: для специальных клеток НЕ устанавливаем explored = true после использования
+        // Клетка остается доступной для повторного использования
+        if (isExplored && isSpecialCell) {
+            console.log(`🔄 Клетка ${cell.type} исследована, но специальные действия остаются доступными`);
+            // НЕ показываем "клетка исследована", показываем интерфейс с действиями
+        }
     } else {
         // Для обычных клеток используем обычную логику
         this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
     }
     
-    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт. (специальная клетка: ${isSpecialCell})`);
     
     // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
     let leftHTML = '';
@@ -1518,7 +1525,9 @@ updateCellActionsUI(cell) {
             </h3>
     `;
     
-    if (!isExplored && cell.hasAction !== false) {
+    // ========== ИСПРАВЛЕНИЕ: специальные клетки всегда показывают действия ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Показываем специальные действия для ${cell.type}`);
         if (this.currentCellActions.length > 0) {
             try {
                 rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
@@ -1529,7 +1538,20 @@ updateCellActionsUI(cell) {
         } else {
             rightHTML += this.createNoActionsHTML();
         }
-    } else if (isExplored) {
+    } 
+    // Обычные клетки с обычной логикой
+    else if (!isExplored && cell.hasAction !== false) {
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
+        }
+    } else if (isExplored && !isSpecialCell) {
         rightHTML += this.createExploredCellHTML();
     } else if (cell.hasAction === false) {
         rightHTML += this.createNoActionsHTML();
@@ -1537,24 +1559,27 @@ updateCellActionsUI(cell) {
     
     rightHTML += `</div>`;
     
-    rightHTML += `
-        <div class="chance-legend" style="
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 12px;
-            color: #ccc;
-            margin-top: 15px;
-        ">
-            <strong style="color: #00ffcc;">Легенда шансов:</strong>
-            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                <span style="color: #ff4444;">0-39% - Плохой</span>
-                <span style="color: #ffaa00;">40-69% - Средний</span>
-                <span style="color: #44ff44;">70-89% - Хороший</span>
-                <span style="color: #00ffaa;">90-100% - Отличный</span>
+    // Добавляем легенду шансов только для не-мирных карт и не-специальных клеток
+    if (!this.mapSystem.isPeacefulMap() && !isSpecialCell) {
+        rightHTML += `
+            <div class="chance-legend" style="
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 8px;
+                padding: 12px;
+                font-size: 12px;
+                color: #ccc;
+                margin-top: 15px;
+            ">
+                <strong style="color: #00ffcc;">Легенда шансов:</strong>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #ff4444;">0-39% - Плохой</span>
+                    <span style="color: #ffaa00;">40-69% - Средний</span>
+                    <span style="color: #44ff44;">70-89% - Хороший</span>
+                    <span style="color: #00ffaa;">90-100% - Отличный</span>
+                </div>
             </div>
-        </div>
-    `;
+        `;
+    }
     
     rightHTML += `
         <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
@@ -1637,7 +1662,8 @@ updateCellActionsUI(cell) {
         
     }, 50);
     
-    if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
+    if ((!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) || 
+        (isSpecialCell && this.currentCellActions.length > 0)) {
         try {
             this.setupActionEventListeners();
         } catch (error) {
@@ -1648,6 +1674,11 @@ updateCellActionsUI(cell) {
     console.log("✅ Панели обновлены");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
+
+
+
+
+    
 
     createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
         return `
@@ -2295,6 +2326,27 @@ getSpecialActionHint(cellType) {
     return hints[cellType] || 'Нажмите на действие для его выполнения';
 }
 
+
+/**
+ * Проверяет, является ли действие специальным (всегда доступным)
+ */
+isSpecialAction(action) {
+    const specialActions = ['trade', 'fill_flask', 'rest', 'gather_info'];
+    return specialActions.includes(action);
+}
+
+/**
+ * Проверяет, является ли клетка специальной для действий
+ */
+isSpecialCellForActions(cell) {
+    if (!cell) return false;
+    
+    const specialCellTypes = ['merchant', 'water', 'tavern', 'campfire'];
+    return specialCellTypes.includes(cell.type);
+}
+
+
+    
     createNoActionsHTML() {
         return `
             <div class="no-available-actions">
@@ -2457,7 +2509,6 @@ getSpecialActionHint(cellType) {
     }
 
 
-// В КЛАССЕ ActionSystem, метод performCellAction:
 async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
 
@@ -2486,7 +2537,7 @@ async performCellAction(action, row, col) {
         return;
     }
 
-    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) на обычных картах ===
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) ===
     if (action === 'trade') {
         this.handleTradeAction(row, col);
         return;
@@ -2534,7 +2585,8 @@ async performCellAction(action, row, col) {
             return;
         }
         
-        if (cell.explored === true) {
+        // ВАЖНОЕ ИСПРАВЛЕНИЕ: для охоты проверяем исследованность только если клетка не специальная
+        if (!this.isSpecialCellForActions(cell) && cell.explored === true) {
             console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
             this.showNotification("❌ Эта клетка уже исследована!", 'warning');
             return;
@@ -2609,15 +2661,15 @@ async performCellAction(action, row, col) {
         return;
     }
     
-    // Проверяем, исследована ли клетка
-    if (cell.explored === true) {
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: проверяем исследованность только для не-специальных действий
+    if (!this.isSpecialAction(action) && cell.explored === true) {
         console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
         this.showNotification("❌ Эта клетка уже исследована!", 'warning');
         return;
     }
     
     // Проверяем, есть ли у клетки действия
-    if (cell.hasAction === false) {
+    if (cell.hasAction === false && !this.isSpecialAction(action)) {
         console.warn(`⚠️ Клетка [${col}, ${row}] не имеет доступных действий`);
         this.showNotification("❌ На этой клетке нет доступных действий!", 'warning');
         return;
@@ -2630,7 +2682,7 @@ async performCellAction(action, row, col) {
             name: action.replace(/_/g, ' '),
             description: 'Выполняется действие...'
         };
-        const chance = this.getActionChance(action, this.currentCellType);
+        const chance = this.isSpecialAction(action) ? 100 : this.getActionChance(action, this.currentCellType);
         
         actionsContainer.innerHTML = `
             <div class="action-processing">
@@ -2694,7 +2746,7 @@ async performCellAction(action, row, col) {
     
     // Имитация выполнения действия с задержкой
     setTimeout(() => {
-        const chance = this.getActionChance(action, this.currentCellType);
+        const chance = this.isSpecialAction(action) ? 100 : this.getActionChance(action, this.currentCellType);
         const roll = Math.random() * 100;
         const success = roll <= chance;
         
@@ -2703,9 +2755,13 @@ async performCellAction(action, row, col) {
         if (success) {
             this.handleActionSuccess(action, row, col);
             
-            // Отмечаем клетку как исследованную после успешного действия
-            cell.explored = true;
-            cell.hasAction = false;
+            // ВАЖНОЕ ИСПРАВЛЕНИЕ: специальные клетки НЕ отмечаем как исследованные
+            // чтобы можно было использовать их многократно
+            if (!this.isSpecialAction(action)) {
+                // Отмечаем клетку как исследованную после успешного действия
+                cell.explored = true;
+                cell.hasAction = false;
+            }
         } else {
             const cellTypeData = this.cellTypes[this.currentCellType];
             
@@ -2740,6 +2796,9 @@ async performCellAction(action, row, col) {
         
     }, 800);
 }
+
+
+    
 
     
 handleTradeAction(row, col) {
