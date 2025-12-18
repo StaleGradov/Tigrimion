@@ -2485,16 +2485,16 @@ async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
 
     // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) ===
-if (action === 'trade') {
-    this.handleTradeAction(row, col);
-    return;
-}
+    if (action === 'trade') {
+        this.handleTradeAction(row, col);
+        return;
+    }
 
-if (action === 'fill_flask') {
-    this.handleFillFlaskAction(row, col);
-    return;
-}
-
+    if (action === 'fill_flask') {
+        this.handleFillFlaskAction(row, col);
+        return;
+    }
+    
     // === ПРОВЕРКА МИРНОЙ КАРТЫ ===
     if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
         console.log("🍻 На мирной карте действия отключены");
@@ -2708,12 +2708,7 @@ if (action === 'fill_flask') {
     }, 800);
 }
 
-
-// В классе ActionSystem, ДОБАВИТЬ после метода performCellAction:
-
-/**
- * Обработка действия торговли
- */
+    
 handleTradeAction(row, col) {
     console.log(`🛒 Обработка торговли на клетке [${col},${row}]`);
     
@@ -2726,18 +2721,18 @@ handleTradeAction(row, col) {
         return;
     }
     
-    // Проверяем, есть ли у клетки данные о магазине
-    if (!cell.shopItems || cell.shopItems.length === 0) {
-        console.warn("🛒 У торговца нет товаров в shopItems");
-        this.showNotification("🛒 У торговца нет товаров для продажи!", 'warning');
-        return;
-    }
-    
     // Проверяем, достижима ли клетка (игрок должен быть рядом)
     const isReachable = this.mapSystem.isCellReachable(cell);
     if (!isReachable) {
         console.warn(`⚠️ Клетка [${col}, ${row}] недостижима для торговли`);
         this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
+        return;
+    }
+    
+    // Проверяем, есть ли у клетки данные о магазине
+    if (!cell.shopItems || cell.shopItems.length === 0) {
+        console.warn("🛒 У торговца нет товаров в shopItems");
+        this.showNotification("🛒 У торговца нет товаров для продажи!", 'warning');
         return;
     }
     
@@ -2756,9 +2751,7 @@ handleTradeAction(row, col) {
     }
 }
 
-/**
- * Обработка действия наполнения фляги
- */
+    
 handleFillFlaskAction(row, col) {
     console.log(`💧 Обработка наполнения фляги на клетке [${col},${row}]`);
     
