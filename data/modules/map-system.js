@@ -1871,69 +1871,90 @@ handleCanvasClick(e) {
     
     console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
     
-    // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ МИРНЫХ КАРТ (ТАВЕРН) ===
-    if (this.isPeacefulMap()) {
-        console.log("🍻 Обработка клика на мирной карте (таверна)");
+   // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ МИРНЫХ КАРТ (ТАВЕРН) ===
+if (this.isPeacefulMap()) {
+    console.log("🍻 Обработка клика на мирной карте (таверна)");
+    
+    // ПРОВЕРКА: Убеждаемся, что клетка найдена правильно
+    if (!hex) {
+        console.error("❌ НЕ НАЙДЕНА КЛЕТКА ПО КООРДИНАТАМ!");
+        console.log("Логические координаты клика:", logicalX, logicalY);
+        // Показываем сообщение и выходим
+        this.showNotification("Не удалось определить клетку. Попробуйте кликнуть ближе к центру.", 'warning');
+        return;
+    }
+    
+    console.log(`🎯 Клик по клетке на мирной карте: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+    
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ КЛЕТОК (торговец, вода и т.д.) ===
+    const specialCellTypes = ['merchant', 'water', 'tavern', 'campfire', 'npc'];
+    if (specialCellTypes.includes(hex.type)) {
+        console.log(`🎯 Клик по специальной клетке: ${hex.type}`);
         
-        // === ОБРАБОТКА СПЕЦИАЛЬНЫХ КЛЕТОК НА МИРНОЙ КАРТЕ ===
-        if (hex.type === 'merchant' || hex.type === 'water' || 
-            hex.type === 'tavern' || hex.type === 'campfire' || 
-            hex.type === 'npc') {
-            console.log(`🎯 Клик по специальной клетке на мирной карте: ${hex.type}`);
+        // УПРОЩЕННАЯ ПРОВЕРКА ДОСТИЖИМОСТИ: Просто сравниваем координаты с соседями
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            console.log(`✅ Клетка достижима! Показываем интерфейс ActionSystem.`);
             
-            // Проверяем, достижима ли клетка
-            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-            const isReachable = neighbors.some(neighbor => 
-                neighbor.row === hex.row && neighbor.col === hex.col
-            );
-            
-            if (isReachable) {
-                // Показываем действия для специальной клетки
-                console.log(`✅ Специальная клетка достижима, показываем действия`);
-                
-                if (this.actionSystem) {
-                    // Обновляем интерфейс с действиями для этой клетки
-                    this.actionSystem.updateCellActionsUI(hex);
-                    this.actionSystem.highlightSelectedCell(hex);
-                    
-                    // Также центрируем карту на этой клетке для лучшей видимости
-                    this.centerMapOnHex(hex);
-                }
+            // НЕМЕДЛЕННО показываем интерфейс действий
+            if (this.actionSystem) {
+                this.actionSystem.updateCellActionsUI(hex);
+                this.actionSystem.highlightSelectedCell(hex);
             } else {
-                console.log(`❌ Специальная клетка недостижима`);
-                
-                // Получаем направление к клетке
-                const direction = this.getDirectionToHex(hex);
-                
-                // Показываем сообщение с указанием направления
-                let message = '';
-                switch(hex.type) {
-                    case 'merchant':
-                        message = `🛒 Подойдите ${direction} к торговцу "${hex.merchantName || hex.shopName || 'торговцу'}"`;
-                        break;
-                    case 'water':
-                        message = `💧 Подойдите ${direction} к источнику воды`;
-                        break;
-                    case 'tavern':
-                        message = `🍻 Подойдите ${direction} к таверне`;
-                        break;
-                    case 'campfire':
-                        message = `🔥 Подойдите ${direction} к кострищу`;
-                        break;
-                    case 'npc':
-                        message = `🧙 Подойдите ${direction} к персонажу`;
-                        break;
-                    default:
-                        message = `Подойдите ${direction} к этой клетке`;
-                }
-                
-                this.showNotification(message, 'warning');
-                
-                // Подсвечиваем клетку
-                this.highlightUnreachableHex(hex);
+                console.error("❌ ActionSystem не доступен!");
+                this.showNotification("Система действий не загружена", 'error');
             }
-            return;
+        } else {
+            console.log(`❌ Клетка недостижима для взаимодействия`);
+            
+            // Показываем понятное сообщение
+            let message = `Чтобы взаимодействовать, подойдите к клетке [${hex.col}, ${hex.row}]`;
+            if (hex.type === 'merchant') message = `🛒 Подойдите к торговцу [${hex.col}, ${hex.row}]`;
+            if (hex.type === 'water') message = `💧 Подойдите к источнику воды [${hex.col}, ${hex.row}]`;
+            
+            this.showNotification(message, 'warning');
+            
+            // Простая подсветка на 1 секунду
+            const originalColor = hex.highlightColor;
+            hex.highlightColor = '#ff4444';
+            hex.isHighlighted = true;
+            this.drawTacticalMap();
+            
+            setTimeout(() => {
+                hex.highlightColor = originalColor;
+                hex.isHighlighted = false;
+                this.drawTacticalMap();
+            }, 1000);
         }
+        return; // ВАЖНО: завершаем обработку для специальных клеток
+    }
+    
+    // === ОБЫЧНЫЕ ПРОХОДИМЫЕ КЛЕТКИ (для перемещения) ===
+    if (hex.passable !== false) {
+        console.log("✅ Клик для перемещения на мирной карте");
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            console.log(`✅ Клетка достижима, начинаем перемещение`);
+            this.moveOnTacticalMap(hex.col, hex.row);
+        } else {
+            console.log(`❌ Клетка недостижима для перемещения`);
+            this.showNotification("Чтобы переместиться, нужно подойти вплотную к соседней клетке!", 'warning');
+        }
+        return;
+    }
+    
+    console.log(`❌ Клетка непроходима или необрабатываемого типа: ${hex.type}`);
+    return;
+}
         
         // Для остальных клеток на мирных картах
         if (hex.passable !== false) {
