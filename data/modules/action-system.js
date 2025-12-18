@@ -1333,7 +1333,6 @@ getCellSpecificActions(cell) {
 
     
 
- // В КЛАССЕ ActionSystem, метод updateCellActionsUI:
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
@@ -1487,13 +1486,13 @@ updateCellActionsUI(cell) {
     const isReachable = this.mapSystem.isCellReachable(cell);
     const isExplored = cell.explored === true;
     
-   if (cell.type === 'merchant' || cell.type === 'water') {
-    // Для специальных клеток используем cell-specific действия
-    this.currentCellActions = this.getCellSpecificActions(cell);
-} else {
-    // Для обычных клеток используем обычную логику
-    this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
-}
+    if (cell.type === 'merchant' || cell.type === 'water') {
+        // Для специальных клеток используем cell-specific действия
+        this.currentCellActions = this.getCellSpecificActions(cell);
+    } else {
+        // Для обычных клеток используем обычную логику
+        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
+    }
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
@@ -1523,10 +1522,6 @@ updateCellActionsUI(cell) {
         if (this.currentCellActions.length > 0) {
             try {
                 rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
-                
-                // ❌ КНОПКА "ЗАВЕРШИТЬ ИССЛЕДОВАНИЕ" УБРАНА
-                // Исследование теперь завершается автоматически при наступлении темноты
-                
             } catch (error) {
                 console.error("❌ Ошибка создания списка действий:", error);
                 rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
