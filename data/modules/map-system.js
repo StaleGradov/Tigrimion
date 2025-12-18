@@ -488,20 +488,20 @@ markCellAsExplored(row, col) {
 
     // ========== МЕТОДЫ КОТОРЫЕ ОСТАЛИСЬ В MAPSYSTEM ==========
 
-isCellReachable(cell) {
-    if (!cell || !this.playerTacticalPosition) return false;
-    
-    if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
-        return true;
+    isCellReachable(cell) {
+        if (!cell || !this.playerTacticalPosition) return false;
+        
+        if (cell.col === this.playerTacticalPosition.x && cell.row === this.playerTacticalPosition.y) {
+            return true;
+        }
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isNeighbor = neighbors.some(neighbor => 
+            neighbor.row === cell.row && neighbor.col === cell.col
+        );
+        
+        return isNeighbor;
     }
-    
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    const isNeighbor = neighbors.some(neighbor => 
-        neighbor.row === cell.row && neighbor.col === cell.col
-    );
-    
-    return isNeighbor;
-}
 
 completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
     console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
