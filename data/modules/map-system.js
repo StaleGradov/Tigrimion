@@ -5071,7 +5071,6 @@ showMapOverlay(overlayType, container) {
         }
     }
 
- }
 
 getExploredCellsData() {
     const exploredData = {};
