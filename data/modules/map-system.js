@@ -592,8 +592,6 @@ completeMovementAfterBattle(victory, escape = false, battleType = 'movement', do
     }
 }
 
-// ========== ОБРАБОТКА РЕЗУЛЬТАТОВ ОХОТЫ ==========
-
 completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     console.log(`🏹 MapSystem: Завершение охоты: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
@@ -2482,10 +2480,7 @@ startNightBattle() {
     };
 }
 
-/**
- * Получить монстра для ночного боя
- * @returns {Object} Ночной монстр
- */
+
 getNightMonster() {
     const battleSystem = window.game?.systems?.battle;
     if (!battleSystem) return null;
@@ -2515,11 +2510,7 @@ getNightMonster() {
     };
 }
 
-/**
- * Проверить наличие костра на клетке
- * @param {Object} cell - Клетка для проверки
- * @returns {boolean} Есть ли костёр
- */
+
 checkForCampfire(cell) {
     if (!cell) return false;
     
@@ -2541,9 +2532,7 @@ checkForCampfire(cell) {
     return false;
 }
 
-/**
- * Перейти к утру
- */
+
 advanceToMorning() {
     if (!this.timeSystem) return;
     
@@ -2580,9 +2569,7 @@ advanceToMorning() {
     }
 }
 
-/**
- * Обработка смерти героя после неудачной ночи
- */
+
 handleHeroDeathAfterFailedNight() {
     if (!this.currentHero) return;
     
@@ -2647,9 +2634,7 @@ canMoveToHex(targetCell) {
 }
     
 
-/**
- * Обновить интерфейс состояния исследования
- */
+
 updateResearchStatus() {
     const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
     const currentCell = this.currentTacticalMap?.cells[currentCellKey];
@@ -3296,11 +3281,7 @@ drawHexes() {
 
 
 
-// В КЛАССЕ MapSystem, после метода drawHexes добавить:
 
-/**
- * Нарисовать индикатор мирной карты на Canvas
- */
 drawPeacefulMapIndicator() {
     if (!this.isPeacefulMap() || !this.canvas || !this.ctx) {
         console.log("❌ Не могу нарисовать индикатор мирной карты");
