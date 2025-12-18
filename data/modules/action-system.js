@@ -62,7 +62,9 @@ class ActionSystem {
             'light_campfire',
             'guard_caravan',
             'gather_wood',
-            'stealth_movement'
+            'stealth_movement',
+           'trade',        // <-- НОВОЕ: Торговля
+           'fill_flask'    // <-- НОВОЕ: Наполнить флягу
         ];
         
         // Конфигурация действий
@@ -189,7 +191,23 @@ class ActionSystem {
                 class: 'action-stealth',
                 requires_player_here: true,
                 special: 'movement'
-            }
+            }, 
+        'trade': {
+        icon: '🛒',
+        name: 'Торговать',
+        description: 'Просмотреть товары торговца и совершить покупки',
+        class: 'action-trade',
+        requires_player_here: true,
+        special: 'shop'
+    },
+    'fill_flask': {
+        icon: '💧',
+        name: 'Наполнить флягу',
+        description: 'Наполнить флягу водой из источника',
+        class: 'action-water',
+        requires_player_here: true,
+        special: 'water'
+    }
         };
         
         this.locationImages = {};
@@ -1242,20 +1260,78 @@ async loadHuntModuleWithFallback() {
         return baseChance;
     }
 
-    getAvailableActionsForCellType(cellType) {
-        const cellTypeData = this.cellTypes[cellType];
-        if (!cellTypeData || !cellTypeData.action_chances) {
-            return this.allActions.filter(action => (this.baseActionChances[action] || 25) > 0);
-        }
-        
-        const availableActions = Object.keys(cellTypeData.action_chances)
-            .filter(action => cellTypeData.action_chances[action] > 0)
-            .sort((a, b) => cellTypeData.action_chances[b] - cellTypeData.action_chances[a]);
-        
-        return availableActions;
-    }
+// В классе ActionSystem, ДОБАВИТЬ после метода getActionChance:
+getChanceColor(chance) {
+    if (chance >= 90) return '#00ffaa';
+    if (chance >= 70) return '#44ff44';
+    if (chance >= 40) return '#ffaa00';
+    return '#ff4444';
+}
 
-    // ========== МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА ==========
+
+    
+getAvailableActionsForCellType(cellType, cell) {
+    // Если клетка специальная (торговец или вода), возвращаем соответствующие действия
+    if (cell) {
+        if (cell.type === 'merchant') {
+            return ['trade']; // Только действие торговли
+        }
+        if (cell.type === 'water') {
+            return ['fill_flask']; // Только действие наполнения фляги
+        }
+    }
+    
+    // Для обычных клеток - обычная логика
+    const cellTypeData = this.cellTypes[cellType];
+    if (!cellTypeData || !cellTypeData.action_chances) {
+        return this.allActions.filter(action => (this.baseActionChances[action] || 25) > 0);
+    }
+    
+    const availableActions = Object.keys(cellTypeData.action_chances)
+        .filter(action => cellTypeData.action_chances[action] > 0)
+        .sort((a, b) => cellTypeData.action_chances[b] - cellTypeData.action_chances[a]);
+    
+    return availableActions;
+}
+
+
+// В классе ActionSystem, ДОБАВИТЬ после метода getAvailableActionsForCellType:
+getCellSpecificActions(cell) {
+    if (!cell) return [];
+    
+    const actions = [];
+    
+    // Проверяем тип клетки и добавляем соответствующие действия
+    switch (cell.type) {
+        case 'merchant':
+            actions.push('trade');
+            break;
+            
+        case 'water':
+            actions.push('fill_flask');
+            break;
+            
+        case 'tavern':
+            actions.push('rest');
+            actions.push('gather_info');
+            break;
+            
+        case 'campfire':
+            actions.push('rest');
+            actions.push('cook');
+            break;
+            
+        default:
+            // Для обычных клеток возвращаем пустой массив
+            // обычные действия будут определены через getAvailableActionsForCellType
+            break;
+    }
+    
+    return actions;
+}
+
+
+    
 
  // В КЛАССЕ ActionSystem, метод updateCellActionsUI:
 updateCellActionsUI(cell) {
@@ -1411,7 +1487,13 @@ updateCellActionsUI(cell) {
     const isReachable = this.mapSystem.isCellReachable(cell);
     const isExplored = cell.explored === true;
     
-    this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
+   if (cell.type === 'merchant' || cell.type === 'water') {
+    // Для специальных клеток используем cell-specific действия
+    this.currentCellActions = this.getCellSpecificActions(cell);
+} else {
+    // Для обычных клеток используем обычную логику
+    this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
+}
     
     console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
     
@@ -1718,139 +1800,528 @@ updateCellActionsUI(cell) {
         `;
     }
 
-    createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
-        let html = `<div class="actions-grid" style="
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        ">`;
+ createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
+    console.log(`🔍 Создание кнопок действий для клетки [${cell.col},${cell.row}], тип: ${cell.type}`);
+    
+    // Проверяем, является ли клетка специальной (торговец, вода и т.д.)
+    const isSpecialCell = cell.type === 'merchant' || cell.type === 'water' || 
+                          cell.type === 'tavern' || cell.type === 'campfire';
+    
+    // Для специальных клеток используем специальный интерфейс
+    if (isSpecialCell && this.currentCellActions.length > 0) {
+        return this.generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+    }
+    
+    // Для обычных клеток - стандартный интерфейс
+    let html = `<div class="actions-grid" style="
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+    ">`;
+    
+    this.currentCellActions.forEach((action, index) => {
+        const chance = this.getActionChance(action, this.currentCellType);
+        const chancePercent = Math.round(chance);
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Неизвестное действие'
+        };
         
-        this.currentCellActions.forEach((action, index) => {
-            const chance = this.getActionChance(action, this.currentCellType);
-            const chancePercent = Math.round(chance);
-            const config = this.actionConfigs[action] || {
-                icon: '❓',
-                name: action.replace(/_/g, ' '),
-                description: 'Неизвестное действие'
-            };
-            
-            let chanceColor = '#ff4444';
-            if (chance >= 40) chanceColor = '#ffaa00';
-            if (chance >= 70) chanceColor = '#44ff44';
-            if (chance >= 90) chanceColor = '#00ffaa';
-            
-            let isDisabled = false;
-            let disabledReason = '';
-            
-            if (!isReachable) {
-                isDisabled = true;
-                disabledReason = 'Клетка недоступна';
-            } else if (!isCurrentPosition && config.requires_player_here) {
-                isDisabled = true;
-                disabledReason = 'Нужно быть в клетке';
-            }
-            
-            const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
-            const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою' : '';
-            
-            // Создаем обработчик клика
-            let onClickHandler = '';
-            if (!isDisabled) {
-                onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
-            }
-            
-            html += `
-                <div class="action-card" style="
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
-                    border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
-                    border-radius: 8px;
-                    padding: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    transition: all 0.2s ease;
-                    ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6;'}
-                " ${onClickHandler}>
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <div class="action-icon" style="
-                            font-size: 20px;
-                            margin-right: 10px;
-                            color: ${chanceColor};
-                            flex-shrink: 0;
-                        ">
-                            ${config.icon || '⚡'}
-                        </div>
-                        <div class="action-name" style="
-                            font-weight: bold;
-                            color: ${isDisabled ? '#888' : '#ffffff'};
-                            font-size: 13px;
-                            flex: 1;
-                        ">
-                            ${config.name}
-                        </div>
+        // Определяем цвет шанса
+        let chanceColor = '#ff4444'; // Плохой (0-39%)
+        if (chance >= 40) chanceColor = '#ffaa00'; // Средний (40-69%)
+        if (chance >= 70) chanceColor = '#44ff44'; // Хороший (70-89%)
+        if (chance >= 90) chanceColor = '#00ffaa'; // Отличный (90-100%)
+        
+        // Проверяем доступность действия
+        let isDisabled = false;
+        let disabledReason = '';
+        
+        if (!isReachable) {
+            isDisabled = true;
+            disabledReason = '❌ Клетка недоступна';
+        } else if (!isCurrentPosition && config.requires_player_here) {
+            isDisabled = true;
+            disabledReason = '❌ Нужно быть в клетке';
+        } else if (cell.explored && !config.allowed_on_explored) {
+            isDisabled = true;
+            disabledReason = '❌ Клетка уже исследована';
+        }
+        
+        // Специальные метки для действий
+        const triggersMonster = config.triggers_monster ? '⚠️ Может вызвать монстра!' : '';
+        const alwaysMonster = config.always_monster ? '🏹 Всегда приводит к бою' : '';
+        const doubleLoot = config.double_loot ? '💰 Двойной лут' : '';
+        const isSpecialAction = config.special ? `🎯 ${config.special.toUpperCase()}` : '';
+        
+        // Создаем обработчик клика
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
+        
+        // Определяем иконку действия в зависимости от типа
+        let actionIcon = config.icon || '⚡';
+        if (action === 'trade') actionIcon = '🛒';
+        if (action === 'fill_flask') actionIcon = '💧';
+        if (action === 'rest') actionIcon = '😴';
+        if (action === 'gather_info') actionIcon = '👂';
+        
+        html += `
+            <div class="action-card" style="
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.9), rgba(20, 25, 45, 0.9));
+                border: 1px solid ${isDisabled ? '#666' : '#00aaff'};
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                transition: all 0.2s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
+                position: relative;
+                overflow: hidden;
+            " ${onClickHandler}>
+                
+                <!-- Фоновый эффект для редкости/особенностей -->
+                ${config.special ? `
+                    <div class="action-special-badge" style="
+                        position: absolute;
+                        top: 5px;
+                        right: 5px;
+                        background: rgba(0, 170, 255, 0.2);
+                        color: #00aaff;
+                        font-size: 10px;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        border: 1px solid rgba(0, 170, 255, 0.3);
+                    ">
+                        ${isSpecialAction}
                     </div>
-                    
-                    <div class="action-description" style="
-                        color: ${isDisabled ? '#777' : '#b0b0ff'};
-                        font-size: 11px;
-                        margin-bottom: 10px;
-                        line-height: 1.3;
+                ` : ''}
+                
+                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                    <div class="action-icon" style="
+                        font-size: 20px;
+                        margin-right: 10px;
+                        color: ${isDisabled ? '#888' : chanceColor};
+                        flex-shrink: 0;
+                        filter: ${isDisabled ? 'grayscale(1)' : 'none'};
+                    ">
+                        ${actionIcon}
+                    </div>
+                    <div class="action-name" style="
+                        font-weight: bold;
+                        color: ${isDisabled ? '#888' : '#ffffff'};
+                        font-size: 13px;
                         flex: 1;
                     ">
-                        ${config.description}
-                        ${triggersMonster ? `<br><small style="color: #ff4444;">${triggersMonster}</small>` : ''}
-                        ${alwaysMonster ? `<br><small style="color: #ffaa00;">${alwaysMonster}</small>` : ''}
+                        ${config.name}
                     </div>
-                    
-                    <div class="action-chance-display" style="
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        font-size: 11px;
-                        margin-top: auto;
-                    ">
-                        <span style="color: #aaa;">Шанс:</span>
-                        <div style="display: flex; align-items: center;">
-                            <div style="
-                                width: 40px;
-                                height: 6px;
-                                background: #333;
-                                border-radius: 3px;
-                                margin-right: 8px;
-                                overflow: hidden;
-                            ">
-                                <div style="
-                                    width: ${chancePercent}%;
-                                    height: 100%;
-                                    background: ${chanceColor};
-                                    border-radius: 3px;
-                                "></div>
-                            </div>
-                            <span style="color: ${chanceColor}; font-weight: bold;">
-                                ${chancePercent}%
-                            </span>
-                        </div>
-                    </div>
-                    
-                    ${isDisabled ? `
-                        <div style="
-                            font-size: 10px;
-                            color: #ff6666;
-                            margin-top: 8px;
-                            padding-top: 8px;
-                            border-top: 1px dashed #444;
-                        ">
-                            ${disabledReason}
-                        </div>
-                    ` : ''}
                 </div>
-            `;
-        });
-        
-        html += `</div>`;
-        return html;
+                
+                <div class="action-description" style="
+                    color: ${isDisabled ? '#777' : '#b0b0ff'};
+                    font-size: 11px;
+                    margin-bottom: 10px;
+                    line-height: 1.3;
+                    flex: 1;
+                ">
+                    ${config.description}
+                    
+                    <!-- Показываем особые свойства действий -->
+                    ${triggersMonster ? `<br><small style="color: #ff4444; font-size: 9px;">${triggersMonster}</small>` : ''}
+                    ${alwaysMonster ? `<br><small style="color: #ffaa00; font-size: 9px;">${alwaysMonster}</small>` : ''}
+                    ${doubleLoot ? `<br><small style="color: #f59e0b; font-size: 9px;">${doubleLoot}</small>` : ''}
+                    ${isSpecialAction ? `<br><small style="color: #00aaff; font-size: 9px;">${isSpecialAction}</small>` : ''}
+                </div>
+                
+                <!-- Показ шанса успеха -->
+                <div class="action-chance-display" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 11px;
+                    margin-top: auto;
+                    padding-top: 10px;
+                    border-top: 1px solid ${isDisabled ? '#444' : 'rgba(255, 255, 255, 0.1)'};
+                ">
+                    <span style="color: ${isDisabled ? '#777' : '#aaa'};">Шанс успеха:</span>
+                    <div style="display: flex; align-items: center;">
+                        <div style="
+                            width: 40px;
+                            height: 6px;
+                            background: ${isDisabled ? '#444' : '#333'};
+                            border-radius: 3px;
+                            margin-right: 8px;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                width: ${chancePercent}%;
+                                height: 100%;
+                                background: ${isDisabled ? '#666' : chanceColor};
+                                border-radius: 3px;
+                                transition: width 0.3s ease;
+                            "></div>
+                        </div>
+                        <span style="color: ${isDisabled ? '#888' : chanceColor}; font-weight: bold;">
+                            ${chancePercent}%
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Причина недоступности -->
+                ${isDisabled ? `
+                    <div style="
+                        font-size: 10px;
+                        color: #ff6666;
+                        margin-top: 8px;
+                        padding-top: 8px;
+                        border-top: 1px dashed #444;
+                        text-align: center;
+                    ">
+                        ${disabledReason}
+                    </div>
+                ` : ''}
+                
+                <!-- Эффект при наведении (только для доступных действий) -->
+                ${!isDisabled ? `
+                    <div class="action-hover-effect" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(45deg, transparent, rgba(0, 170, 255, 0.05), transparent);
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                        pointer-events: none;
+                    "></div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
+    
+    // Добавляем JavaScript для эффектов наведения
+    html += `
+        <script>
+            setTimeout(() => {
+                const actionCards = document.querySelectorAll('.action-card:not([style*="opacity: 0.6"])');
+                actionCards.forEach(card => {
+                    const hoverEffect = card.querySelector('.action-hover-effect');
+                    
+                    card.addEventListener('mouseenter', () => {
+                        card.style.transform = 'translateY(-3px) scale(1.02)';
+                        card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
+                        card.style.borderColor = '#00ffcc';
+                        if (hoverEffect) hoverEffect.style.opacity = '1';
+                        
+                        // Анимация полоски шанса
+                        const chanceFill = card.querySelector('div[style*="width:"]');
+                        if (chanceFill) {
+                            const originalWidth = chanceFill.style.width;
+                            chanceFill.style.width = '0%';
+                            setTimeout(() => {
+                                chanceFill.style.width = originalWidth;
+                            }, 10);
+                        }
+                    });
+                    
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'translateY(0) scale(1)';
+                        card.style.boxShadow = 'none';
+                        card.style.borderColor = '#00aaff';
+                        if (hoverEffect) hoverEffect.style.opacity = '0';
+                    });
+                });
+            }, 50);
+        </script>
+    `;
+    
+    return html;
+}
+
+/**
+ * Генерация HTML для специальных действий (торговец, вода и т.д.)
+ */
+generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
+    console.log(`🎯 Генерация специальных действий для ${cell.type}`);
+    
+    // Определяем заголовок и описание в зависимости от типа клетки
+    let title = '';
+    let subtitle = '';
+    let bgColor = 'rgba(0, 170, 255, 0.1)';
+    let borderColor = '#00aaff';
+    
+    switch(cell.type) {
+        case 'merchant':
+            title = '🛒 Торговец';
+            subtitle = cell.merchantName || 'Торговец';
+            bgColor = 'rgba(251, 191, 36, 0.1)';
+            borderColor = '#fbbf24';
+            break;
+            
+        case 'water':
+            title = '💧 Источник воды';
+            subtitle = 'Чистая питьевая вода';
+            bgColor = 'rgba(59, 130, 246, 0.1)';
+            borderColor = '#3b82f6';
+            break;
+            
+        case 'tavern':
+            title = '🍻 Таверна';
+            subtitle = 'Место для отдыха и новостей';
+            bgColor = 'rgba(220, 38, 38, 0.1)';
+            borderColor = '#dc2626';
+            break;
+            
+        case 'campfire':
+            title = '🔥 Кострище';
+            subtitle = 'Тепло и уют у огня';
+            bgColor = 'rgba(245, 158, 11, 0.1)';
+            borderColor = '#f59e0b';
+            break;
+            
+        default:
+            title = '⚡ Особые действия';
+            subtitle = 'Доступные взаимодействия';
     }
+    
+    let html = `
+        <div class="special-actions-section" style="margin-bottom: 20px;">
+            <div class="special-actions-header" style="
+                background: ${bgColor};
+                border: 2px solid ${borderColor};
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <h3 style="color: ${borderColor}; margin-bottom: 8px; font-size: 18px;">
+                    ${title}
+                </h3>
+                <p style="color: #ccc; font-size: 14px; margin-bottom: 5px;">
+                    ${subtitle}
+                </p>
+                <p style="color: #94a3b8; font-size: 12px;">
+                    Позиция: [${cell.col}, ${cell.row}]
+                </p>
+            </div>
+            
+            <div class="special-actions-grid" style="
+                display: grid;
+                grid-template-columns: repeat(${this.currentCellActions.length}, 1fr);
+                gap: 15px;
+                margin-bottom: 20px;
+            ">
+    `;
+    
+    // Генерируем кнопки для каждого специального действия
+    this.currentCellActions.forEach((action, index) => {
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Специальное действие'
+        };
+        
+        // Для специальных действий всегда доступны (если достижимы)
+        const isDisabled = !isReachable;
+        const disabledReason = isReachable ? '' : '❌ Подойдите ближе';
+        
+        // Шанс успеха для специальных действий всегда 100%
+        const chancePercent = 100;
+        const chanceColor = '#00ffaa';
+        
+        let onClickHandler = '';
+        if (!isDisabled) {
+            onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
+        }
+        
+        // Определяем цвет карточки в зависимости от типа действия
+        let cardBgColor = 'rgba(30, 30, 46, 0.95)';
+        let cardBorderColor = isDisabled ? '#666' : borderColor;
+        
+        if (action === 'trade') {
+            cardBgColor = 'rgba(251, 191, 36, 0.1)';
+        } else if (action === 'fill_flask') {
+            cardBgColor = 'rgba(59, 130, 246, 0.1)';
+        } else if (action === 'rest') {
+            cardBgColor = 'rgba(220, 38, 38, 0.1)';
+        } else if (action === 'gather_info') {
+            cardBgColor = 'rgba(139, 92, 246, 0.1)';
+        }
+        
+        html += `
+            <div class="special-action-card" style="
+                background: linear-gradient(135deg, ${cardBgColor}, rgba(20, 25, 45, 0.95));
+                border: 2px solid ${cardBorderColor};
+                border-radius: 10px;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                transition: all 0.3s ease;
+                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
+                position: relative;
+                overflow: hidden;
+            " ${onClickHandler}>
+                
+                <!-- Иконка действия -->
+                <div class="special-action-icon" style="
+                    font-size: 32px;
+                    margin-bottom: 15px;
+                    color: ${isDisabled ? '#888' : borderColor};
+                    transition: transform 0.3s ease;
+                ">
+                    ${config.icon}
+                </div>
+                
+                <!-- Название действия -->
+                <div class="special-action-name" style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: ${isDisabled ? '#888' : '#ffffff'};
+                    margin-bottom: 10px;
+                ">
+                    ${config.name}
+                </div>
+                
+                <!-- Описание действия -->
+                <div class="special-action-description" style="
+                    color: ${isDisabled ? '#777' : '#b0b0ff'};
+                    font-size: 12px;
+                    line-height: 1.4;
+                    margin-bottom: 15px;
+                    flex: 1;
+                ">
+                    ${config.description}
+                </div>
+                
+                <!-- Шанс успеха (всегда 100% для специальных действий) -->
+                <div class="special-action-chance" style="
+                    background: ${isDisabled ? '#444' : 'rgba(0, 255, 170, 0.1)'};
+                    border: 1px solid ${isDisabled ? '#666' : '#00ffaa'};
+                    border-radius: 20px;
+                    padding: 5px 15px;
+                    font-size: 12px;
+                    color: ${isDisabled ? '#888' : '#00ffaa'};
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                ">
+                    🎯 Шанс: ${chancePercent}%
+                </div>
+                
+                <!-- Причина недоступности -->
+                ${isDisabled ? `
+                    <div style="
+                        font-size: 11px;
+                        color: #ff6666;
+                        padding-top: 10px;
+                        border-top: 1px dashed #444;
+                        width: 100%;
+                    ">
+                        ${disabledReason}
+                    </div>
+                ` : ''}
+                
+                <!-- Эффект при наведении -->
+                ${!isDisabled ? `
+                    <div class="special-action-hover" style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                        pointer-events: none;
+                    "></div>
+                    
+                    <div class="special-action-glow" style="
+                        position: absolute;
+                        top: -10px;
+                        left: -10px;
+                        width: calc(100% + 20px);
+                        height: calc(100% + 20px);
+                        background: radial-gradient(circle at center, ${borderColor}20, transparent 70%);
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+                        pointer-events: none;
+                    "></div>
+                ` : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+            
+            <!-- Подсказка -->
+            <div class="special-actions-hint" style="
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 12px;
+                text-align: center;
+                color: #94a3b8;
+                font-size: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                margin-top: 10px;
+            ">
+                <strong>💡 Подсказка:</strong> ${this.getSpecialActionHint(cell.type)}
+            </div>
+        </div>
+        
+        <script>
+            setTimeout(() => {
+                const specialCards = document.querySelectorAll('.special-action-card:not([style*="opacity: 0.6"])');
+                specialCards.forEach(card => {
+                    const hoverEffect = card.querySelector('.special-action-hover');
+                    const glowEffect = card.querySelector('.special-action-glow');
+                    const icon = card.querySelector('.special-action-icon');
+                    
+                    card.addEventListener('mouseenter', () => {
+                        card.style.transform = 'translateY(-5px) scale(1.05)';
+                        card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.4)';
+                        card.style.borderWidth = '3px';
+                        if (hoverEffect) hoverEffect.style.opacity = '1';
+                        if (glowEffect) glowEffect.style.opacity = '1';
+                        if (icon) icon.style.transform = 'scale(1.2) rotate(5deg)';
+                    });
+                    
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'translateY(0) scale(1)';
+                        card.style.boxShadow = 'none';
+                        card.style.borderWidth = '2px';
+                        if (hoverEffect) hoverEffect.style.opacity = '0';
+                        if (glowEffect) glowEffect.style.opacity = '0';
+                        if (icon) icon.style.transform = 'scale(1) rotate(0deg)';
+                    });
+                });
+            }, 50);
+        </script>
+    `;
+    
+    return html;
+}
+
+/**
+ * Получение подсказки для специальных действий
+ */
+getSpecialActionHint(cellType) {
+    const hints = {
+        'merchant': 'Нажмите на действие "Торговать" для открытия магазина и покупки товаров',
+        'water': 'Нажмите на действие "Наполнить флягу" для пополнения запасов воды и восстановления здоровья',
+        'tavern': 'Отдых восстановит здоровье и силы, а сбор информации может открыть новые возможности',
+        'campfire': 'Отдых у костра восстановит здоровье и даст временные бонусы'
+    };
+    
+    return hints[cellType] || 'Нажмите на действие для его выполнения';
+}
 
     createNoActionsHTML() {
         return `
@@ -2013,11 +2484,22 @@ updateCellActionsUI(cell) {
         });
     }
 
- // В КЛАССЕ ActionSystem метод performCellAction:
+
 // В КЛАССЕ ActionSystem, метод performCellAction:
 async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
-    
+
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) ===
+if (action === 'trade') {
+    this.handleTradeAction(row, col);
+    return;
+}
+
+if (action === 'fill_flask') {
+    this.handleFillFlaskAction(row, col);
+    return;
+}
+
     // === ПРОВЕРКА МИРНОЙ КАРТЫ ===
     if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
         console.log("🍻 На мирной карте действия отключены");
@@ -2231,6 +2713,140 @@ async performCellAction(action, row, col) {
     }, 800);
 }
 
+
+// В классе ActionSystem, ДОБАВИТЬ после метода performCellAction:
+
+/**
+ * Обработка действия торговли
+ */
+handleTradeAction(row, col) {
+    console.log(`🛒 Обработка торговли на клетке [${col},${row}]`);
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    // Проверяем, есть ли у клетки данные о магазине
+    if (!cell.shopItems || cell.shopItems.length === 0) {
+        console.warn("🛒 У торговца нет товаров в shopItems");
+        this.showNotification("🛒 У торговца нет товаров для продажи!", 'warning');
+        return;
+    }
+    
+    // Проверяем, достижима ли клетка (игрок должен быть рядом)
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима для торговли`);
+        this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
+        return;
+    }
+    
+    // Используем MapSystem для открытия магазина
+    if (this.mapSystem.handleMerchantClick) {
+        this.mapSystem.handleMerchantClick(cell);
+    } else {
+        // Альтернатива через ShopSystem
+        const shopSystem = window.game?.systems?.shop;
+        if (shopSystem && shopSystem.openShop) {
+            shopSystem.openShop(cell);
+        } else {
+            console.error("❌ ShopSystem не доступна или нет метода openShop");
+            this.showNotification("❌ Система магазинов недоступна", 'error');
+        }
+    }
+}
+
+/**
+ * Обработка действия наполнения фляги
+ */
+handleFillFlaskAction(row, col) {
+    console.log(`💧 Обработка наполнения фляги на клетке [${col},${row}]`);
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    // Проверяем, достижима ли клетка (игрок должен быть рядом)
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима для использования воды`);
+        this.showNotification("❌ Подойдите ближе к воде!", 'warning');
+        return;
+    }
+    
+    // Используем MapSystem для обработки воды
+    if (this.mapSystem.handleWaterCell) {
+        this.mapSystem.handleWaterCell(cell);
+        
+        // Обновляем интерфейс
+        setTimeout(() => {
+            if (cell) {
+                this.updateCellActionsUI(cell);
+            }
+        }, 500);
+    } else {
+        // Ручная обработка
+        this.fillFlaskManually();
+    }
+}
+
+/**
+ * Ручное наполнение фляги (если MapSystem не имеет метода)
+ */
+fillFlaskManually() {
+    if (!this.mapSystem.currentHero) {
+        this.showNotification("❌ Нет текущего героя!", 'error');
+        return;
+    }
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem && battleSystem.flask) {
+        const oldCharges = battleSystem.flask.currentCharges;
+        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
+        battleSystem.flask.content = 'water';
+        
+        if (battleSystem.updateFlaskUI) {
+            battleSystem.updateFlaskUI();
+        }
+        if (battleSystem.updateFlaskChargesDisplay) {
+            battleSystem.updateFlaskChargesDisplay();
+        }
+        
+        this.showNotification(`💧 Фляга наполнена водой: ${oldCharges}→${battleSystem.flask.capacity} зарядов!`, 'success');
+        
+        // Также восстанавливаем здоровье героя
+        const heroSystem = window.game?.systems?.hero;
+        if (heroSystem) {
+            const stats = heroSystem.calculateHeroStats(this.mapSystem.currentHero);
+            const oldHealth = this.mapSystem.currentHero.currentHealth;
+            this.mapSystem.currentHero.currentHealth = stats.maxHealth;
+            
+            this.showNotification(`❤️ Здоровье восстановлено: ${oldHealth} → ${stats.maxHealth}`, 'success');
+        }
+        
+        // Сохраняем игру
+        if (window.game) {
+            window.game.saveGame();
+        }
+    } else {
+        this.showNotification("❌ Фляга не найдена в системе боя!", 'error');
+    }
+}
+
+
+
+
+    
     handleHuntActionSuccess(row, col) {
         console.log(`🏹 Обработка успешной охоты на клетке [${col},${row}]`);
         
@@ -2614,26 +3230,133 @@ async performCellAction(action, row, col) {
 
 
 
-// В КЛАССЕ ActionSystem, после метода showResourceChanceWindow добавить:
-
-/**
- * Показать интерфейс для мирной карты (без действий)
- * @param {Object} cell - Клетка на мирной карте
- */
+// В классе ActionSystem, метод showPeacefulMapUI (ЗАМЕНИТЬ ПОЛНОСТЬЮ):
 showPeacefulMapUI(cell) {
     console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты");
     
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) return;
     
-    // На мирных картах показываем только информацию
-    actionsContainer.innerHTML = `
-        <div class="peaceful-map-ui">
+    // Проверяем, есть ли специальные действия для этой клетки
+    const specialActions = this.getCellSpecificActions(cell);
+    const hasSpecialActions = specialActions.length > 0;
+    
+    if (hasSpecialActions) {
+        // Показываем специальные действия
+        actionsContainer.innerHTML = this.generateSpecialActionsHTML(cell, specialActions);
+        
+        // Привязываем обработчики событий
+        setTimeout(() => {
+            const actionButtons = actionsContainer.querySelectorAll('.special-action-btn');
+            actionButtons.forEach(button => {
+                const action = button.dataset.action;
+                const row = parseInt(button.dataset.cellRow);
+                const col = parseInt(button.dataset.cellCol);
+                
+                button.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log(`🎯 Клик по специальному действию: ${action} на клетке [${col}, ${row}]`);
+                    this.performCellAction(action, row, col);
+                });
+            });
+        }, 50);
+    } else {
+        // Показываем обычный интерфейс для мирной карты
+        actionsContainer.innerHTML = `
+            <div class="peaceful-map-ui">
+                <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
+                    🍻 Мирная локация
+                </h3>
+                
+                <div class="peaceful-info" style="
+                    background: rgba(0, 170, 255, 0.1);
+                    border: 1px solid #00aaff;
+                    border-radius: 8px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                ">
+                    <p style="color: #00aaff; font-size: 16px; margin-bottom: 10px;">
+                        🏰 ${this.mapSystem.currentTacticalMap?.name || 'Таверна'}
+                    </p>
+                    <p style="color: #ccc; font-size: 14px;">
+                        Здесь можно свободно перемещаться.<br>
+                        Время не тратится, монстры не нападают.
+                    </p>
+                </div>
+                
+                <div class="cell-info" style="
+                    background: rgba(0, 0, 0, 0.3);
+                    border-radius: 8px;
+                    padding: 15px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                ">
+                    <div class="cell-position" style="
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 10px;
+                    ">
+                        <span style="color: #94a3b8;">Позиция:</span>
+                        <span style="color: #00ffcc; font-weight: bold;">
+                            [${cell.col}, ${cell.row}]
+                        </span>
+                    </div>
+                    
+                    ${cell.type === 'player_start' ? `
+                        <div class="special-cell" style="
+                            color: #f59e0b;
+                            margin-top: 10px;
+                            padding-top: 10px;
+                            border-top: 1px dashed rgba(245, 158, 11, 0.3);
+                        ">
+                            ⭐ Стартовая позиция
+                        </div>
+                    ` : ''}
+                    
+                    ${cell.type === 'exit' ? `
+                        <div class="special-cell" style="
+                            color: #8b5cf6;
+                            margin-top: 10px;
+                            padding-top: 10px;
+                            border-top: 1px dashed rgba(139, 92, 246, 0.3);
+                        ">
+                            🚪 Выход из таверны
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="peaceful-hint" style="
+                    margin-top: 20px;
+                    padding: 15px;
+                    background: rgba(0, 255, 0, 0.05);
+                    border: 1px solid rgba(0, 255, 0, 0.2);
+                    border-radius: 8px;
+                    color: #00ff00;
+                    font-size: 12px;
+                    text-align: center;
+                ">
+                    <strong>💡 Подсказка:</strong><br>
+                    На мирных картах можно свободно перемещаться.<br>
+                    Кликайте на соседние клетки для перемещения.
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Генерация HTML для специальных действий
+ */
+generateSpecialActionsHTML(cell, specialActions) {
+    let html = `
+        <div class="special-actions-ui">
             <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
-                🍻 Мирная локация
+                ${this.getSpecialActionTitle(cell.type)}
             </h3>
             
-            <div class="peaceful-info" style="
+            <div class="special-action-info" style="
                 background: rgba(0, 170, 255, 0.1);
                 border: 1px solid #00aaff;
                 border-radius: 8px;
@@ -2642,71 +3365,139 @@ showPeacefulMapUI(cell) {
                 text-align: center;
             ">
                 <p style="color: #00aaff; font-size: 16px; margin-bottom: 10px;">
-                    🏰 ${this.mapSystem.currentTacticalMap?.name || 'Таверна'}
+                    ${this.getSpecialActionSubtitle(cell.type)}
                 </p>
                 <p style="color: #ccc; font-size: 14px;">
-                    Здесь можно свободно перемещаться.<br>
-                    Время не тратится, монстры не нападают.
+                    ${this.getSpecialActionDescription(cell.type)}
                 </p>
             </div>
             
-            <div class="cell-info" style="
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                padding: 15px;
-                border: 1px solid rgba(255, 255, 255, 0.1);
+            <div class="special-actions-grid" style="
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                margin-bottom: 20px;
             ">
-                <div class="cell-position" style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
+    `;
+    
+    specialActions.forEach(action => {
+        const config = this.actionConfigs[action] || {
+            icon: '❓',
+            name: action.replace(/_/g, ' '),
+            description: 'Специальное действие'
+        };
+        
+        html += `
+            <div class="special-action-card" data-action="${action}" 
+                 data-cell-row="${cell.row}" data-cell-col="${cell.col}"
+                 style="
+                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
+                    border: 2px solid #00aaff;
+                    border-radius: 10px;
+                    padding: 20px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    text-align: center;
+                 ">
+                <div class="special-action-icon" style="
+                    font-size: 32px;
                     margin-bottom: 10px;
+                    color: #00ffcc;
                 ">
-                    <span style="color: #94a3b8;">Позиция:</span>
-                    <span style="color: #00ffcc; font-weight: bold;">
-                        [${cell.col}, ${cell.row}]
-                    </span>
+                    ${config.icon}
                 </div>
                 
-                ${cell.type === 'player_start' ? `
-                    <div class="special-cell" style="
-                        color: #f59e0b;
-                        margin-top: 10px;
-                        padding-top: 10px;
-                        border-top: 1px dashed rgba(245, 158, 11, 0.3);
-                    ">
-                        ⭐ Стартовая позиция
-                    </div>
-                ` : ''}
+                <div class="special-action-name" style="
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    margin-bottom: 8px;
+                ">
+                    ${config.name}
+                </div>
                 
-                ${cell.type === 'exit' ? `
-                    <div class="special-cell" style="
-                        color: #8b5cf6;
-                        margin-top: 10px;
-                        padding-top: 10px;
-                        border-top: 1px dashed rgba(139, 92, 246, 0.3);
-                    ">
-                        🚪 Выход из таверны
-                    </div>
-                ` : ''}
+                <div class="special-action-description" style="
+                    font-size: 12px;
+                    color: #b0b0ff;
+                    line-height: 1.4;
+                ">
+                    ${config.description}
+                </div>
+                
+                <div class="special-action-hint" style="
+                    margin-top: 10px;
+                    font-size: 10px;
+                    color: #00ffaa;
+                    font-style: italic;
+                ">
+                    🎯 Шанс успеха: 100%
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
             </div>
             
-            <div class="peaceful-hint" style="
-                margin-top: 20px;
+            <div class="special-action-footer" style="
                 padding: 15px;
-                background: rgba(0, 255, 0, 0.05);
-                border: 1px solid rgba(0, 255, 0, 0.2);
+                background: rgba(0, 0, 0, 0.3);
                 border-radius: 8px;
-                color: #00ff00;
-                font-size: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 text-align: center;
+                color: #94a3b8;
+                font-size: 12px;
             ">
                 <strong>💡 Подсказка:</strong><br>
-                На мирных картах можно свободно перемещаться.<br>
-                Кликайте на соседние клетки для перемещения.
+                ${this.getSpecialActionHint(cell.type)}
             </div>
         </div>
     `;
+    
+    return html;
+}
+
+/**
+ * Вспомогательные методы для текстов специальных действий
+ */
+getSpecialActionTitle(cellType) {
+    const titles = {
+        'merchant': '🛒 Лавка торговца',
+        'water': '💧 Источник воды',
+        'tavern': '🍻 Таверна',
+        'campfire': '🔥 Кострище'
+    };
+    return titles[cellType] || '⚡ Доступные действия';
+}
+
+getSpecialActionSubtitle(cellType) {
+    const subtitles = {
+        'merchant': 'Выберите действие с торговцем',
+        'water': 'Используйте источник воды',
+        'tavern': 'Отдохните и соберите информацию',
+        'campfire': 'Отдохните у костра'
+    };
+    return subtitles[cellType] || 'Доступные действия';
+}
+
+getSpecialActionDescription(cellType) {
+    const descriptions = {
+        'merchant': 'Торговец предлагает различные товары по разумным ценам',
+        'water': 'Чистая вода для питья и наполнения фляги',
+        'tavern': 'Место для отдыха, сбора слухов и восстановления сил',
+        'campfire': 'Уютное место для отдыха и приготовления пищи'
+    };
+    return descriptions[cellType] || 'Выберите действие для выполнения';
+}
+
+getSpecialActionHint(cellType) {
+    const hints = {
+        'merchant': 'Нажмите на действие для открытия магазина',
+        'water': 'Нажмите для наполнения фляги и восстановления здоровья',
+        'tavern': 'Отдых восстановит здоровье, а слухи могут дать полезную информацию',
+        'campfire': 'Отдых у костра восстановит здоровье и силы'
+    };
+    return hints[cellType] || 'Нажмите на действие для его выполнения';
 }
 
 
