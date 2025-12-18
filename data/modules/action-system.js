@@ -2014,8 +2014,16 @@ updateCellActionsUI(cell) {
     }
 
  // В КЛАССЕ ActionSystem метод performCellAction:
+// В КЛАССЕ ActionSystem, метод performCellAction:
 async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
+    
+    // === ПРОВЕРКА МИРНОЙ КАРТЫ ===
+    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log("🍻 На мирной карте действия отключены");
+        this.showNotification("🍻 На мирной карте действия не требуются", 'info');
+        return;
+    }
     
     // === ПРОВЕРКА И ТРАТА ВРЕМЕНИ ===
     if (this.mapSystem.timeSystem) {
