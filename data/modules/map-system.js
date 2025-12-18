@@ -230,7 +230,7 @@ handleMerchantClick(merchantCell) {
     // Торговля разрешена если игрок НА клетке или РЯДОМ
     if (!isPlayerOnCell && !isPlayerAdjacent) {
         console.log(`❌ Торговец недоступен: игрок слишком далеко`);
-        this.showTransitionWarning(merchantCell);
+        this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
         return;
     }
     
@@ -2035,7 +2035,7 @@ handleCanvasClick(e) {
     
     // Обработка магазинов (отдельно)
     if (hex.type === 'merchant') {
-        console.log("🛒 Клик по магазину");
+        console.log("🛒 Клик по магазине");
         
         const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
         const isReachable = neighbors.some(neighbor => 
@@ -2426,14 +2426,14 @@ showNotification(message, type = 'info') {
         await this.activateTransition(transitionCell);
     }
 
-    isPlayerAdjacentToTransition(transitionCell) {
-        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-        
-        return neighbors.some(neighbor => 
-            neighbor.row === transitionCell.row && 
-            neighbor.col === transitionCell.col
-        );
-    }
+ isPlayerAdjacentToTransition(transitionCell) {
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    return neighbors.some(neighbor => 
+        neighbor.row === transitionCell.row && 
+        neighbor.col === transitionCell.col
+    );
+}
 
     getLocationNameFromPath(filePath) {
         if (!filePath) return null;
