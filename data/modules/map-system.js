@@ -213,25 +213,26 @@ executeHuntAction(row, col) {
 
     
     // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
-
 handleMerchantClick(merchantCell) {
-    console.log(`🛒 handleMerchantClick вызван для клетки [${merchantCell.col},${merchantCell.row}]`);
+    console.log(`🛒 handleMerchantClick для торговца на [${merchantCell.col},${merchantCell.row}]`);
     
-    // Проверяем, стоит ли игрок на этой клетке
+    // 1. Игрок на клетке торговца?
     const isPlayerOnCell = (
         merchantCell.col === this.playerTacticalPosition.x && 
         merchantCell.row === this.playerTacticalPosition.y
     );
     
-    console.log(`   Игрок на клетке? ${isPlayerOnCell} (позиция игрока: [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}])`);
+    // 2. Игрок рядом с торговцем?
+    const isPlayerAdjacent = this.isPlayerAdjacentToTransition(merchantCell);
     
-    // На мирных картах можно открывать магазин без проверки достижимости
-    if (!isPlayerOnCell && !this.isPeacefulMap()) {
-        // Для не-мирных карт проверяем достижимость
-        if (!this.isPlayerAdjacentToTransition(merchantCell)) {
-            this.showTransitionWarning(merchantCell);
-            return;
-        }
+    console.log(`   Игрок на клетке: ${isPlayerOnCell}, рядом: ${isPlayerAdjacent}`);
+    
+    // Торговля разрешена если:
+    // - Игрок НА клетке торговца ИЛИ
+    // - Игрок РЯДОМ с торговцем
+    if (!isPlayerOnCell && !isPlayerAdjacent) {
+        this.showTransitionWarning(merchantCell);
+        return;
     }
     
     // Проверяем данные магазина
@@ -243,7 +244,7 @@ handleMerchantClick(merchantCell) {
         return;
     }
 
-    console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}, товаров: ${merchantCell.shopItems.length}`);
+    console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}`);
     
     // Открываем через ShopSystem
     const shopSystem = window.game?.systems?.shop;
@@ -256,6 +257,8 @@ handleMerchantClick(merchantCell) {
         }
     }
 }
+
+    
     handleTavernVisit(cell) {
         console.log("🍻 Начало обработки посещения таверны:", cell);
         
