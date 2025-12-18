@@ -2159,3 +2159,183 @@
     font-size: 12px;
     font-weight: bold;
 }
+
+/* ========== СТИЛИ ДЛЯ МИРНЫХ КАРТ (ТАВЕРН) ========== */
+.peaceful-map-ui {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.peaceful-info {
+    animation: peaceful-pulse 2s infinite;
+    background: rgba(0, 170, 255, 0.1);
+    border: 2px solid #00aaff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+@keyframes peaceful-pulse {
+    0% { 
+        box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+        opacity: 0.9; 
+    }
+    50% { 
+        box-shadow: 0 0 20px rgba(0, 170, 255, 0.6);
+        opacity: 1; 
+    }
+    100% { 
+        box-shadow: 0 0 10px rgba(0, 170, 255, 0.3);
+        opacity: 0.9; 
+    }
+}
+
+.peaceful-hint {
+    margin-top: auto;
+    padding: 15px;
+    background: rgba(0, 255, 0, 0.05);
+    border: 2px solid rgba(0, 255, 0, 0.2);
+    border-radius: 8px;
+    color: #00ff00;
+    font-size: 12px;
+    text-align: center;
+}
+
+.special-cell {
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 5px 0;
+}
+
+.cell-info {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 15px;
+}
+
+.cell-position {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Стили для кнопок на мирных картах */
+.peaceful-btn {
+    background: linear-gradient(135deg, #00aaff, #0088cc);
+    border: 1px solid #00aaff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.peaceful-btn:hover {
+    background: linear-gradient(135deg, #0088cc, #006699);
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.4);
+}
+
+/* Стили для отображения мирной карты */
+.peaceful-map-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 170, 255, 0.2);
+    border: 2px solid #00aaff;
+    border-radius: 8px;
+    padding: 8px 15px;
+    color: #00aaff;
+    font-weight: bold;
+    font-size: 14px;
+    z-index: 1000;
+}
+
+/* Анимация для мирных клеток */
+@keyframes peaceful-glow {
+    0% { background-color: rgba(0, 170, 255, 0.1); }
+    50% { background-color: rgba(0, 170, 255, 0.2); }
+    100% { background-color: rgba(0, 170, 255, 0.1); }
+}
+
+.peaceful-hex-glow {
+    animation: peaceful-glow 3s infinite;
+}
+
+/* Стили для информации о таверне */
+.tavern-info {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.1));
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+    color: #ffd700;
+}
+
+.tavern-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* Стили для кнопок в таверне */
+.tavern-action-btn {
+    background: linear-gradient(135deg, #ffd700, #ffa500);
+    border: 2px solid #ffd700;
+    color: #8b4513;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin: 8px 0;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    width: 100%;
+}
+
+.tavern-action-btn:hover {
+    background: linear-gradient(135deg, #ffa500, #ff8c00);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Стили для напитков в таверне */
+.tavern-drink {
+    background: rgba(139, 69, 19, 0.2);
+    border: 1px solid #8b4513;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px 0;
+    color: #ffd700;
+}
+
+.tavern-drink-name {
+    font-weight: bold;
+    color: #ffa500;
+}
+
+/* Стили для мирного движения */
+.peaceful-movement-hint {
+    background: rgba(0, 255, 0, 0.1);
+    border: 2px solid #00ff00;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 15px 0;
+    color: #00ff00;
+    font-size: 13px;
+    text-align: center;
+}
