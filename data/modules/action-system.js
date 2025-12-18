@@ -1257,312 +1257,320 @@ async loadHuntModuleWithFallback() {
 
     // ========== МЕТОДЫ ДЛЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА ==========
 
-    updateCellActionsUI(cell) {
-        console.log("=== НАЧАЛО updateCellActionsUI ===");
-        
-        const mapContent = document.querySelector('.tactical-map-content-with-actions');
-        if (!mapContent) {
-            console.error("❌ Основной контейнер карты не найден!");
-            return;
-        }
-        
-        // Создаем левую панель если ее нет
-        let leftPanel = document.querySelector('.cell-info-left-panel');
-        if (!leftPanel) {
-            leftPanel = document.createElement('div');
-            leftPanel.className = 'cell-info-left-panel';
-            mapContent.insertBefore(leftPanel, mapContent.firstChild);
-        }
-        
-        const actionsContainer = document.getElementById('cellActionsContainer');
-        if (!actionsContainer) {
-            console.error("❌ Контейнер действий не найден!");
-            this.createActionsContainerFallback();
-            return;
-        }
-        
-        const mapVisual = document.querySelector('.tactical-map-visual');
-        const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
-        
-        const panelWidth = 1150;
-        const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
-        
-        console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
-        
-        // ========== ЛЕВАЯ ПАНЕЛЬ ==========
-        leftPanel.style.cssText = `
+ // В КЛАССЕ ActionSystem, метод updateCellActionsUI:
+updateCellActionsUI(cell) {
+    console.log("=== НАЧАЛО updateCellActionsUI ===");
+    
+    // Проверяем, мирная ли карта
+    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log("🍻 Мирная карта - показываем специальный интерфейс");
+        this.showPeacefulMapUI(cell);
+        return;
+    }
+    
+    const mapContent = document.querySelector('.tactical-map-content-with-actions');
+    if (!mapContent) {
+        console.error("❌ Основной контейнер карты не найден!");
+        return;
+    }
+    
+    // Создаем левую панель если ее нет
+    let leftPanel = document.querySelector('.cell-info-left-panel');
+    if (!leftPanel) {
+        leftPanel = document.createElement('div');
+        leftPanel.className = 'cell-info-left-panel';
+        mapContent.insertBefore(leftPanel, mapContent.firstChild);
+    }
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден!");
+        this.createActionsContainerFallback();
+        return;
+    }
+    
+    const mapVisual = document.querySelector('.tactical-map-visual');
+    const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
+    
+    const panelWidth = 1150;
+    const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
+    
+    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
+    
+    // ========== ЛЕВАЯ ПАНЕЛЬ ==========
+    leftPanel.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffcc !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-right: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    // ========== ПРАВАЯ ПАНЕЛЬ ==========
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-left: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    const panel = actionsContainer.closest('.cell-actions-panel');
+    if (panel) {
+        panel.style.cssText = `
             display: flex !important;
             flex-direction: column !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            height: ${panelHeight}px !important;
-            max-height: ${panelHeight}px !important;
-            min-height: ${panelHeight}px !important;
-            width: ${panelWidth}px !important;
-            max-width: ${panelWidth}px !important;
-            min-width: ${panelWidth}px !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
-            border: 2px solid #00ffcc !important;
-            border-radius: 10px !important;
-            padding: 20px !important;
-            margin-right: 20px !important;
-            position: relative !important;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
-            flex-shrink: 0 !important;
-            align-self: flex-start !important;
-        `;
-        
-        // ========== ПРАВАЯ ПАНЕЛЬ ==========
-        actionsContainer.style.cssText = `
-            display: flex !important;
-            flex-direction: column !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            height: ${panelHeight}px !important;
-            max-height: ${panelHeight}px !important;
-            min-height: ${panelHeight}px !important;
-            width: ${panelWidth}px !important;
-            max-width: ${panelWidth}px !important;
-            min-width: ${panelWidth}px !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
-            border: 2px solid #00ffff !important;
-            border-radius: 10px !important;
-            padding: 20px !important;
+            height: ${panelHeight + 30}px !important;
+            max-height: ${panelHeight + 30}px !important;
+            min-height: ${panelHeight + 30}px !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
             margin-left: 20px !important;
-            position: relative !important;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
-            flex-shrink: 0 !important;
             align-self: flex-start !important;
+            flex-shrink: 0 !important;
         `;
-        
-        const panel = actionsContainer.closest('.cell-actions-panel');
-        if (panel) {
-            panel.style.cssText = `
-                display: flex !important;
-                flex-direction: column !important;
-                height: ${panelHeight + 30}px !important;
-                max-height: ${panelHeight + 30}px !important;
-                min-height: ${panelHeight + 30}px !important;
-                width: ${panelWidth + 30}px !important;
-                max-width: ${panelWidth + 30}px !important;
-                min-width: ${panelWidth + 30}px !important;
-                margin-left: 20px !important;
-                align-self: flex-start !important;
-                flex-shrink: 0 !important;
-            `;
-        }
-        
-        mapContent.style.cssText = `
+    }
+    
+    mapContent.style.cssText = `
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        height: ${panelHeight + 40}px !important;
+        gap: 20px !important;
+        padding: 0 20px !important;
+        overflow: visible !important;
+        width: 100% !important;
+    `;
+    
+    const mapMainArea = document.querySelector('.map-main-area');
+    if (mapMainArea) {
+        mapMainArea.style.cssText = `
+            flex: 1 !important;
             display: flex !important;
-            flex-direction: row !important;
-            justify-content: space-between !important;
-            align-items: flex-start !important;
-            height: ${panelHeight + 40}px !important;
-            gap: 20px !important;
-            padding: 0 20px !important;
-            overflow: visible !important;
-            width: 100% !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: ${panelHeight}px !important;
+            min-width: 600px !important;
+            max-width: 800px !important;
+            margin: 0 20px !important;
         `;
-        
-        const mapMainArea = document.querySelector('.map-main-area');
-        if (mapMainArea) {
-            mapMainArea.style.cssText = `
-                flex: 1 !important;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                height: ${panelHeight}px !important;
-                min-width: 600px !important;
-                max-width: 800px !important;
-                margin: 0 20px !important;
-            `;
+    }
+    
+    if (cell.explored === undefined) cell.explored = false;
+    if (cell.hasAction === undefined) cell.hasAction = true;
+    
+    this.selectedCell = cell;
+    this.currentCellType = this.determineCellType(cell);
+    const cellTypeData = this.cellTypes[this.currentCellType];
+    
+    if (!cellTypeData) {
+        console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
+        leftPanel.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        return;
+    }
+    
+    const cellIcon = this.mapSystem.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+    
+    const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
+                       cell.row === this.mapSystem.playerTacticalPosition.y);
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    const isExplored = cell.explored === true;
+    
+    this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
+    
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
+    
+    // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
+    let leftHTML = '';
+    
+    try {
+        leftHTML = this.createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    } catch (error) {
+        console.error("❌ Ошибка создания информации о клетке:", error);
+        leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+    }
+    
+    leftPanel.innerHTML = leftHTML;
+    
+    // ========== HTML ПРАВОЙ ПАНЕЛИ ==========
+    let rightHTML = '';
+    
+    rightHTML += `
+        <div class="actions-section" style="margin-bottom: 20px;">
+            <h3 style="color: #00ffff; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
+    `;
+    
+    if (!isExplored && cell.hasAction !== false) {
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+                
+                // ❌ КНОПКА "ЗАВЕРШИТЬ ИССЛЕДОВАНИЕ" УБРАНА
+                // Исследование теперь завершается автоматически при наступлении темноты
+                
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
         }
-        
-        if (cell.explored === undefined) cell.explored = false;
-        if (cell.hasAction === undefined) cell.hasAction = true;
-        
-        this.selectedCell = cell;
-        this.currentCellType = this.determineCellType(cell);
-        const cellTypeData = this.cellTypes[this.currentCellType];
-        
-        if (!cellTypeData) {
-            console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-            leftPanel.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
-            actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
-            return;
-        }
-        
-        const cellIcon = this.mapSystem.objectSymbols[cell.type] || cellTypeData.icon || '❓';
-        
-        const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
-                           cell.row === this.mapSystem.playerTacticalPosition.y);
-        const isReachable = this.mapSystem.isCellReachable(cell);
-        const isExplored = cell.explored === true;
-        
-        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType);
-        
-        console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт.`);
-        
-        // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
-        let leftHTML = '';
-        
-        try {
-            leftHTML = this.createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
-        } catch (error) {
-            console.error("❌ Ошибка создания информации о клетке:", error);
-            leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
-        }
-        
-        leftPanel.innerHTML = leftHTML;
-        
-        // ========== HTML ПРАВОЙ ПАНЕЛИ ==========
-        let rightHTML = '';
-        
-        rightHTML += `
-            <div class="actions-section" style="margin-bottom: 20px;">
-                <h3 style="color: #00ffff; margin-bottom: 15px; text-align: center;">
-                    ⚔️ Доступные действия
-                </h3>
-        `;
-        
-if (!isExplored && cell.hasAction !== false) {
-    if (this.currentCellActions.length > 0) {
-        try {
-            rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
-            
-            // ❌ КНОПКА "ЗАВЕРШИТЬ ИССЛЕДОВАНИЕ" УБРАНА
-            // Исследование теперь завершается автоматически при наступлении темноты
-            
-        } catch (error) {
-            console.error("❌ Ошибка создания списка действий:", error);
-            rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
-        }
-    } else {
+    } else if (isExplored) {
+        rightHTML += this.createExploredCellHTML();
+    } else if (cell.hasAction === false) {
         rightHTML += this.createNoActionsHTML();
     }
-} else if (isExplored) {
-    rightHTML += this.createExploredCellHTML();
-} else if (cell.hasAction === false) {
-    rightHTML += this.createNoActionsHTML();
-}
-        
-        rightHTML += `</div>`;
-        
-        rightHTML += `
-            <div class="chance-legend" style="
-                background: rgba(0, 0, 0, 0.4);
-                border-radius: 8px;
-                padding: 12px;
-                font-size: 12px;
-                color: #ccc;
-                margin-top: 15px;
-            ">
-                <strong style="color: #00ffcc;">Легенда шансов:</strong>
-                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <span style="color: #ff4444;">0-39% - Плохой</span>
-                    <span style="color: #ffaa00;">40-69% - Средний</span>
-                    <span style="color: #44ff44;">70-89% - Хороший</span>
-                    <span style="color: #00ffaa;">90-100% - Отличный</span>
-                </div>
+    
+    rightHTML += `</div>`;
+    
+    rightHTML += `
+        <div class="chance-legend" style="
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 15px;
+        ">
+            <strong style="color: #00ffcc;">Легенда шансов:</strong>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <span style="color: #ff4444;">0-39% - Плохой</span>
+                <span style="color: #ffaa00;">40-69% - Средний</span>
+                <span style="color: #44ff44;">70-89% - Хороший</span>
+                <span style="color: #00ffaa;">90-100% - Отличный</span>
             </div>
-        `;
-        
-        rightHTML += `
-            <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
-                <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
-                <div class="resource-list" id="heroResourcesListRight">
-                    <!-- Ресурсы будут загружены динамически -->
-                </div>
+        </div>
+    `;
+    
+    rightHTML += `
+        <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
+            <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
+            <div class="resource-list" id="heroResourcesListRight">
+                <!-- Ресурсы будут загружены динамически -->
             </div>
-        `;
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = rightHTML;
+    
+    // ========== ОПТИМИЗАЦИЯ ==========
+    setTimeout(() => {
+        const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
+        if (leftImageWrapper) {
+            leftImageWrapper.style.cssText = `
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
+                overflow: hidden !important;
+                margin: 0 auto 20px auto !important;
+                position: relative !important;
+                border: 2px solid #00ffcc !important;
+                border-radius: 10px !important;
+                align-self: center !important;
+            `;
+        }
         
-        actionsContainer.innerHTML = rightHTML;
-        
-        // ========== ОПТИМИЗАЦИЯ ==========
-        setTimeout(() => {
-            const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
-            if (leftImageWrapper) {
-                leftImageWrapper.style.cssText = `
-                    height: 300px !important;
-                    width: 300px !important;
-                    max-height: 300px !important;
-                    max-width: 300px !important;
-                    min-height: 300px !important;
-                    min-width: 300px !important;
-                    overflow: hidden !important;
-                    margin: 0 auto 20px auto !important;
-                    position: relative !important;
-                    border: 2px solid #00ffcc !important;
-                    border-radius: 10px !important;
-                    align-self: center !important;
-                `;
-            }
-            
-            if (cellTypeData) {
-                try {
-                    this.displayRealLocationImage(cellTypeData, leftPanel);
-                } catch (error) {
-                    console.error("❌ Ошибка загрузки картинки:", error);
-                }
-            }
-            
-            const actionCards = actionsContainer.querySelectorAll('.action-card');
-            actionCards.forEach(card => {
-                card.style.cssText = `
-                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
-                    border: 1px solid #00aaff !important;
-                    border-radius: 8px !important;
-                    padding: 12px !important;
-                    display: flex !important;
-                    flex-direction: column !important;
-                    height: 100% !important;
-                    transition: all 0.2s ease !important;
-                    margin: 0 !important;
-                `;
-                
-                if (!card.style.opacity || card.style.opacity !== '0.6') {
-                    card.onmouseenter = () => {
-                        card.style.transform = 'translateY(-3px) scale(1.02)';
-                        card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
-                    };
-                    card.onmouseleave = () => {
-                        card.style.transform = 'translateY(0) scale(1)';
-                        card.style.boxShadow = 'none';
-                    };
-                }
-            });
-            
-            const actionsGrid = actionsContainer.querySelector('.actions-grid');
-            if (actionsGrid) {
-                actionsGrid.style.cssText = `
-                    display: grid !important;
-                    grid-template-columns: repeat(3, 1fr) !important;
-                    gap: 12px !important;
-                    margin-bottom: 20px !important;
-                `;
-            }
-            
-            this.updateHeroResourcesUI('heroResourcesListRight');
-            
-            console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
-            
-        }, 50);
-        
-        if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
+        if (cellTypeData) {
             try {
-                this.setupActionEventListeners();
+                this.displayRealLocationImage(cellTypeData, leftPanel);
             } catch (error) {
-                console.error("❌ Ошибка назначения обработчиков:", error);
+                console.error("❌ Ошибка загрузки картинки:", error);
             }
         }
         
-        console.log("✅ Панели обновлены");
-        console.log("=== КОНЕЦ updateCellActionsUI ===");
+        const actionCards = actionsContainer.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
+                border: 1px solid #00aaff !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important;
+                transition: all 0.2s ease !important;
+                margin: 0 !important;
+            `;
+            
+            if (!card.style.opacity || card.style.opacity !== '0.6') {
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-3px) scale(1.02)';
+                    card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.boxShadow = 'none';
+                };
+            }
+        });
+        
+        const actionsGrid = actionsContainer.querySelector('.actions-grid');
+        if (actionsGrid) {
+            actionsGrid.style.cssText = `
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 12px !important;
+                margin-bottom: 20px !important;
+            `;
+        }
+        
+        this.updateHeroResourcesUI('heroResourcesListRight');
+        
+        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
+        
+    }, 50);
+    
+    if (!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) {
+        try {
+            this.setupActionEventListeners();
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
     }
+    
+    console.log("✅ Панели обновлены");
+    console.log("=== КОНЕЦ updateCellActionsUI ===");
+}
 
     createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored) {
         return `
@@ -2596,6 +2604,105 @@ async performCellAction(action, row, col) {
         actionsContainer.innerHTML = html;
     }
 
+
+
+// В КЛАССЕ ActionSystem, после метода showResourceChanceWindow добавить:
+
+/**
+ * Показать интерфейс для мирной карты (без действий)
+ * @param {Object} cell - Клетка на мирной карте
+ */
+showPeacefulMapUI(cell) {
+    console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты");
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    // На мирных картах показываем только информацию
+    actionsContainer.innerHTML = `
+        <div class="peaceful-map-ui">
+            <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
+                🍻 Мирная локация
+            </h3>
+            
+            <div class="peaceful-info" style="
+                background: rgba(0, 170, 255, 0.1);
+                border: 1px solid #00aaff;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 20px;
+                text-align: center;
+            ">
+                <p style="color: #00aaff; font-size: 16px; margin-bottom: 10px;">
+                    🏰 ${this.mapSystem.currentTacticalMap?.name || 'Таверна'}
+                </p>
+                <p style="color: #ccc; font-size: 14px;">
+                    Здесь можно свободно перемещаться.<br>
+                    Время не тратится, монстры не нападают.
+                </p>
+            </div>
+            
+            <div class="cell-info" style="
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 15px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+                <div class="cell-position" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 10px;
+                ">
+                    <span style="color: #94a3b8;">Позиция:</span>
+                    <span style="color: #00ffcc; font-weight: bold;">
+                        [${cell.col}, ${cell.row}]
+                    </span>
+                </div>
+                
+                ${cell.type === 'player_start' ? `
+                    <div class="special-cell" style="
+                        color: #f59e0b;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        border-top: 1px dashed rgba(245, 158, 11, 0.3);
+                    ">
+                        ⭐ Стартовая позиция
+                    </div>
+                ` : ''}
+                
+                ${cell.type === 'exit' ? `
+                    <div class="special-cell" style="
+                        color: #8b5cf6;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        border-top: 1px dashed rgba(139, 92, 246, 0.3);
+                    ">
+                        🚪 Выход из таверны
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="peaceful-hint" style="
+                margin-top: 20px;
+                padding: 15px;
+                background: rgba(0, 255, 0, 0.05);
+                border: 1px solid rgba(0, 255, 0, 0.2);
+                border-radius: 8px;
+                color: #00ff00;
+                font-size: 12px;
+                text-align: center;
+            ">
+                <strong>💡 Подсказка:</strong><br>
+                На мирных картах можно свободно перемещаться.<br>
+                Кликайте на соседние клетки для перемещения.
+            </div>
+        </div>
+    `;
+}
+
+
+    
     calculateResourceProbabilities(resources, baseChance) {
         const sortedResources = [...resources].sort((a, b) => {
             const priceA = a.price || a.value || 0;
