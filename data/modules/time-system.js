@@ -32,12 +32,15 @@ class TimeSystem {
         console.log("🕐 TimeSystem инициализирован");
     }
     
-    // === МЕТОДЫ ДЛЯ ВСТАВКИ В MapSystem ===
-    
-    // Этот метод вызывается при ЛЮБОМ действии на гексе
-// В КЛАССЕ TimeSystem, метод spendHourOnHex:
+    // В КЛАССЕ TimeSystem, метод spendHourOnHex:
 spendHourOnHex(action) {
     console.log(`🕐 TimeSystem: Тратим час на действие: ${action}`);
+    
+    // Проверяем, находимся ли мы на мирной карте
+    if (this.mapSystem && this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log("🍻 На мирной карте время не тратится");
+        return false; // Не тратим время на мирных картах
+    }
     
     this.currentHexTime++;
     this.gameTime.hour++;
@@ -71,24 +74,25 @@ spendHourOnHex(action) {
                heroPos.y === this.camp.location.y;
     }
     
-    // Обработка ночной опасности
-    handleNightDanger() {
-        console.log("⚠️ Опасно! Ночь застала вне лагеря!");
+
+handleNightDanger() {
+    console.log("⚠️ Опасно! Ночь застала вне лагеря!");
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return;
+    
+    // Базовая вероятность нападения 90%
+    const attackChance = 90;
+    const roll = Math.random() * 100;
+    
+    if (roll <= attackChance) {
+        console.log("👹 Ночное нападение!");
         
-        const battleSystem = window.game?.systems?.battle;
-        if (!battleSystem) return;
-        
-        // Базовая вероятность нападения 90%
-        const attackChance = 90;
-        const roll = Math.random() * 100;
-        
-        if (roll <= attackChance) {
-            console.log("👹 Ночное нападение!");
-            
-            // Начинаем бой с монстром
-            const randomMonster = this.getRandomMonsterForNight();
-            if (randomMonster) {
-                // Сохраняем текущую позицию для возврата после боя
+        // Начинаем бой с монстром
+        const randomMonster = this.getRandomMonsterForNight();
+        if (randomMonster) {
+            // Сохраняем текущую позицию для возврата после боя
+            if (this.mapSystem) {
                 this.mapSystem.pendingMovement = {
                     x: this.mapSystem.playerTacticalPosition.x,
                     y: this.mapSystem.playerTacticalPosition.y
@@ -106,13 +110,14 @@ spendHourOnHex(action) {
                     window.game.showNotification("🌙 Ночное нападение! Без костра вас легко нашли...", 'warning');
                 }
             }
-        } else {
-            console.log("🕯️ Вам повезло - этой ночью нападения не было");
-            if (window.game) {
-                window.game.showNotification("🌙 Страшная ночь прошла без нападений... на этот раз.", 'info');
-            }
+        }
+    } else {
+        console.log("🕯️ Вам повезло - этой ночью нападения не было");
+        if (window.game) {
+            window.game.showNotification("🌙 Страшная ночь прошла без нападений... на этот раз.", 'info');
         }
     }
+}
     
     // Получаем монстра для ночной атаки (более сильные ночью)
     getRandomMonsterForNight() {
@@ -375,9 +380,27 @@ spendNightForResearch(hasCampfire = false) {
     return result;
 }
 
-/**
- * Перейти к утру (7:00)
- */
+
+
+
+getTimeStatus() {
+    const dayLength = this.seasonalDayLength[this.gameTime.season];
+    const isNight = this.gameTime.hour < 7 || this.gameTime.hour >= 20;
+    const isDay = !isNight;
+    
+    return {
+        hour: this.gameTime.hour,
+        day: this.gameTime.day,
+        season: this.gameTime.season,
+        isDay: isDay,
+        isNight: isNight,
+        hoursUntilNight: isDay ? 20 - this.gameTime.hour : 0,
+        hoursUntilMorning: isNight ? (this.gameTime.hour < 7 ? 7 - this.gameTime.hour : (24 - this.gameTime.hour) + 7) : 0
+    };
+}
+
+
+
 advanceToMorning() {
     const currentHour = this.gameTime.hour;
     
