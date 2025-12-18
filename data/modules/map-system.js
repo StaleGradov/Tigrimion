@@ -212,25 +212,24 @@ executeHuntAction(row, col) {
 
 
     
-    // ========== МЕТОДЫ ДЛЯ МАГАЗИНОВ ==========
 handleMerchantClick(merchantCell) {
     console.log(`🛒 handleMerchantClick для торговца на [${merchantCell.col},${merchantCell.row}]`);
     
-    // 1. Игрок на клетке торговца?
+    // Проверяем, стоит ли игрок на клетке торговца
     const isPlayerOnCell = (
         merchantCell.col === this.playerTacticalPosition.x && 
         merchantCell.row === this.playerTacticalPosition.y
     );
     
-    // 2. Игрок рядом с торговцем?
+    // Проверяем, рядом ли игрок с торговцем
     const isPlayerAdjacent = this.isPlayerAdjacentToTransition(merchantCell);
     
     console.log(`   Игрок на клетке: ${isPlayerOnCell}, рядом: ${isPlayerAdjacent}`);
+    console.log(`   Позиция игрока: [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`);
     
-    // Торговля разрешена если:
-    // - Игрок НА клетке торговца ИЛИ
-    // - Игрок РЯДОМ с торговцем
+    // Торговля разрешена если игрок НА клетке или РЯДОМ
     if (!isPlayerOnCell && !isPlayerAdjacent) {
+        console.log(`❌ Торговец недоступен: игрок слишком далеко`);
         this.showTransitionWarning(merchantCell);
         return;
     }
@@ -244,12 +243,13 @@ handleMerchantClick(merchantCell) {
         return;
     }
 
-    console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}`);
+    console.log(`🛒 Открываем магазин: ${merchantCell.shopName || 'Неизвестный магазин'}, товаров: ${merchantCell.shopItems.length}`);
     
     // Открываем через ShopSystem
     const shopSystem = window.game?.systems?.shop;
     if (shopSystem && shopSystem.openShop) {
         shopSystem.openShop(merchantCell);
+        console.log("✅ Магазин успешно открыт через ShopSystem");
     } else {
         console.error("❌ ShopSystem не доступна или нет метода openShop");
         if (window.game) {
@@ -1951,6 +1951,25 @@ handleCanvasClick(e) {
             return; // ВАЖНО: завершаем обработку для специальных клеток
         }
         
+        // === ОБРАБОТКА ВЫХОДА ИЗ ТАВЕРНЫ ===
+        if (hex.type === 'exit') {
+            console.log("🚪 Клик по выходу из таверны");
+            
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                console.log("✅ Выход достижим, выходим из таверны...");
+                this.exitToPreviousMap();
+            } else {
+                console.log("❌ Выход недостижим");
+                this.showNotification("❌ Подойдите ближе к выходу!", 'warning');
+            }
+            return;
+        }
+        
         // === ОБЫЧНЫЕ ПРОХОДИМЫЕ КЛЕТКИ (для перемещения) ===
         if (hex.passable !== false) {
             console.log("✅ Клик для перемещения на мирной карте");
@@ -1979,15 +1998,6 @@ handleCanvasClick(e) {
     // Обработка переходов (таверны)
     if (hex.type === 'tavern' && hex.tacticalMap) {
         console.log("🍻 Клик по таверне - проверяем доступность...");
-        
-        // ДОБАВИТЬ ЭТОТ КОД ДЛЯ ДИАГНОСТИКИ:
-        console.log("🍻 ДИАГНОСТИКА ТАВЕРНЫ:", {
-            hexPosition: [hex.col, hex.row],
-            playerPosition: [this.playerTacticalPosition.x, this.playerTacticalPosition.y],
-            reachable: this.isPlayerAdjacentToTransition(hex),
-            tacticalMap: hex.tacticalMap,
-            explored: hex.explored
-        });
         
         const isAdjacent = this.isPlayerAdjacentToTransition(hex);
         if (!isAdjacent) {
@@ -2096,11 +2106,8 @@ handleCanvasClick(e) {
     }
 }
 
-// ДОБАВИТЬ ЭТИ ДВА МЕТОДА:
 
-/**
- * Проверяет, может ли игрок перейти на указанный гекс
- */
+    
 canMoveToHex(targetCell) {
     if (!targetCell) return false;
     
@@ -2683,7 +2690,6 @@ moveOnTacticalMap(x, y) {
 }
 
 
-
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 researchCurrentHex() {
     // Если мы на мирной карте - не нужно исследовать
@@ -3043,7 +3049,6 @@ shouldResearchCell(cell) {
     
     
 
-// В КЛАССЕ MapSystem метод handlePeacefulMovement:
 handlePeacefulMovement(targetX, targetY, cellData) {
     console.log(`🌿 Мирное перемещение на [${targetX}, ${targetY}]`);
     
