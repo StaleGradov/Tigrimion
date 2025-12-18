@@ -2048,8 +2048,11 @@ createActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
 }
 
     
+/**
+ * Генерация кнопок специальных действий для не-мирных карт
+ */
 generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
-    console.log(`🎯 Генерация специальных действий для ${cell.type}`);
+    console.log(`🎯 Генерация специальных действий для ${cell.type} на обычной карте`);
     
     // Определяем заголовок и описание в зависимости от типа клетки
     let title = '';
@@ -2128,8 +2131,7 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
             description: 'Специальное действие'
         };
         
-        // ИСПРАВЛЕНИЕ: Для специальных действий проверяем только достижимость
-        // Если игрок рядом (isReachable), то действие доступно
+        // Проверяем доступность действия
         const isDisabled = !isReachable;
         const disabledReason = isReachable ? '' : '❌ Подойдите ближе';
         
@@ -2137,6 +2139,7 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
         const chancePercent = 100;
         const chanceColor = '#00ffaa';
         
+        // Создаем обработчик клика
         let onClickHandler = '';
         if (!isDisabled) {
             onClickHandler = `onclick="window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})"`;
@@ -2157,20 +2160,21 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
         }
         
         html += `
-            <div class="special-action-card" style="
-                background: linear-gradient(135deg, ${cardBgColor}, rgba(20, 25, 45, 0.95));
-                border: 2px solid ${cardBorderColor};
-                border-radius: 10px;
-                padding: 20px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-                transition: all 0.3s ease;
-                ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
-                position: relative;
-                overflow: hidden;
-            " ${onClickHandler}>
+            <div class="special-action-card" ${onClickHandler}
+                 style="
+                    background: linear-gradient(135deg, ${cardBgColor}, rgba(20, 25, 45, 0.95));
+                    border: 2px solid ${cardBorderColor};
+                    border-radius: 10px;
+                    padding: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                    transition: all 0.3s ease;
+                    ${!isDisabled ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
+                    position: relative;
+                    overflow: hidden;
+                 ">
                 
                 <!-- Иконка действия -->
                 <div class="special-action-icon" style="
@@ -2229,33 +2233,6 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
                         ${disabledReason}
                     </div>
                 ` : ''}
-                
-                <!-- Эффект при наведении -->
-                ${!isDisabled ? `
-                    <div class="special-action-hover" style="
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-                        pointer-events: none;
-                    "></div>
-                    
-                    <div class="special-action-glow" style="
-                        position: absolute;
-                        top: -10px;
-                        left: -10px;
-                        width: calc(100% + 20px);
-                        height: calc(100% + 20px);
-                        background: radial-gradient(circle at center, ${borderColor}20, transparent 70%);
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-                        pointer-events: none;
-                    "></div>
-                ` : ''}
             </div>
         `;
     });
@@ -2279,19 +2256,16 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
         </div>
         
         <script>
+            // JavaScript для анимации кнопок
             setTimeout(() => {
                 const specialCards = document.querySelectorAll('.special-action-card:not([style*="opacity: 0.6"])');
                 specialCards.forEach(card => {
-                    const hoverEffect = card.querySelector('.special-action-hover');
-                    const glowEffect = card.querySelector('.special-action-glow');
                     const icon = card.querySelector('.special-action-icon');
                     
                     card.addEventListener('mouseenter', () => {
                         card.style.transform = 'translateY(-5px) scale(1.05)';
                         card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.4)';
                         card.style.borderWidth = '3px';
-                        if (hoverEffect) hoverEffect.style.opacity = '1';
-                        if (glowEffect) glowEffect.style.opacity = '1';
                         if (icon) icon.style.transform = 'scale(1.2) rotate(5deg)';
                     });
                     
@@ -2299,8 +2273,6 @@ generateSpecialActionsButtonsHTML(cell, isCurrentPosition, isReachable) {
                         card.style.transform = 'translateY(0) scale(1)';
                         card.style.boxShadow = 'none';
                         card.style.borderWidth = '2px';
-                        if (hoverEffect) hoverEffect.style.opacity = '0';
-                        if (glowEffect) glowEffect.style.opacity = '0';
                         if (icon) icon.style.transform = 'scale(1) rotate(0deg)';
                     });
                 });
@@ -2489,7 +2461,32 @@ getSpecialActionHint(cellType) {
 async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
 
-    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) ===
+    // === ПРОВЕРКА НА МИРНУЮ КАРТУ ===
+    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log(`🍻 На мирной карте выполняется действие: ${action}`);
+        
+        // Для мирных карт особые правила
+        if (action === 'trade') {
+            this.handleTradeAction(row, col);
+            return;
+        }
+
+        if (action === 'fill_flask') {
+            this.handleFillFlaskAction(row, col);
+            return;
+        }
+        
+        // Для других действий на мирной карте просто показываем сообщение
+        const config = this.actionConfigs[action] || {
+            icon: '⚡',
+            name: action.replace(/_/g, ' '),
+            description: 'Действие выполнено'
+        };
+        this.showNotification(`${config.icon} ${config.name} выполнено на мирной карте`, 'success');
+        return;
+    }
+
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) на обычных картах ===
     if (action === 'trade') {
         this.handleTradeAction(row, col);
         return;
@@ -2500,41 +2497,7 @@ async performCellAction(action, row, col) {
         return;
     }
     
-    // === ПРОВЕРКА МИРНОЙ КАРТЫ ===
-    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
-        console.log("🍻 На мирной карте действия отключены");
-        this.showNotification("🍻 На мирной карте действия не требуются", 'info');
-        return;
-    }
-    
-    // === ПРОВЕРКА И ТРАТА ВРЕМЕНИ ===
-    if (this.mapSystem.timeSystem) {
-        const timeStatus = this.mapSystem.timeSystem.getTimeStatus();
-        
-        // Проверка на ночь
-        if (timeStatus.isNight && !this.mapSystem.timeSystem.isInCamp()) {
-            console.log("🌙 Попытка действия ночью вне лагеря");
-            
-            // Показываем предупреждение
-            if (window.game) {
-                const confirmAction = window.confirm(
-                    "🌙 Ночью выполнять действия очень опасно!\n" +
-                    "Шум и свет привлекут монстров.\n" +
-                    "Продолжить?"
-                );
-                
-                if (!confirmAction) {
-                    console.log("❌ Игрок отменил действие ночью");
-                    return;
-                }
-            }
-        }
-        
-        // Тратим 1 час на действие
-        this.mapSystem.timeSystem.spendHourOnHex(action);
-    }
-    
-    // ========== ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ==========
+    // === ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ===
     if (action === 'hunt') {
         console.log(`🏹 === ОБРАБОТКА ОХОТЫ ===`);
         
@@ -2597,7 +2560,7 @@ async performCellAction(action, row, col) {
         }
     }
     
-    // ========== СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ==========
+    // === СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ===
     if (action === 'stealth_movement') {
         const cellKey = `${col},${row}`;
         const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
@@ -2615,7 +2578,7 @@ async performCellAction(action, row, col) {
         return;
     }
     
-    // ========== РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ==========
+    // === РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ===
     const resourceActions = [
         'search_treasure', 'search_water', 'search_berries', 
         'search_mushrooms', 'search_herbs', 'search_ore', 
@@ -2635,6 +2598,28 @@ async performCellAction(action, row, col) {
     const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
     if (!cell) {
         console.error(`❌ Клетка не найдена`);
+        return;
+    }
+    
+    // Проверяем доступность клетки
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+        this.showNotification("❌ Клетка недостижима для действия!", 'warning');
+        return;
+    }
+    
+    // Проверяем, исследована ли клетка
+    if (cell.explored === true) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+        return;
+    }
+    
+    // Проверяем, есть ли у клетки действия
+    if (cell.hasAction === false) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] не имеет доступных действий`);
+        this.showNotification("❌ На этой клетке нет доступных действий!", 'warning');
         return;
     }
     
@@ -2673,6 +2658,40 @@ async performCellAction(action, row, col) {
         }, 50);
     }
     
+    // === ПРОВЕРКА НА НОЧЬ ===
+    if (this.mapSystem.timeSystem) {
+        const timeStatus = this.mapSystem.timeSystem.getTimeStatus();
+        
+        // Если ночь и не в лагере - предупреждение
+        if (timeStatus.isNight && !this.mapSystem.timeSystem.isInCamp()) {
+            console.log("🌙 Выполнение действия ночью вне лагеря");
+            
+            // Показываем предупреждение
+            if (window.game) {
+                const confirmAction = window.confirm(
+                    "🌙 Ночью выполнять действия очень опасно!\n" +
+                    "Шум и свет привлекут монстров.\n" +
+                    "Продолжить?"
+                );
+                
+                if (!confirmAction) {
+                    console.log("❌ Игрок отменил действие ночью");
+                    
+                    // Восстанавливаем интерфейс
+                    setTimeout(() => {
+                        if (cell) {
+                            this.updateCellActionsUI(cell);
+                        }
+                    }, 100);
+                    return;
+                }
+            }
+        }
+        
+        // Тратим 1 час на действие
+        this.mapSystem.timeSystem.spendHourOnHex(action);
+    }
+    
     // Имитация выполнения действия с задержкой
     setTimeout(() => {
         const chance = this.getActionChance(action, this.currentCellType);
@@ -2683,6 +2702,10 @@ async performCellAction(action, row, col) {
         
         if (success) {
             this.handleActionSuccess(action, row, col);
+            
+            // Отмечаем клетку как исследованную после успешного действия
+            cell.explored = true;
+            cell.hasAction = false;
         } else {
             const cellTypeData = this.cellTypes[this.currentCellType];
             
@@ -2705,8 +2728,13 @@ async performCellAction(action, row, col) {
         
         // Обновляем интерфейс клетки после завершения действия
         setTimeout(() => {
-            if (cell && !cell.explored) {
+            if (cell) {
                 this.updateCellActionsUI(cell);
+            }
+            
+            // Сохраняем игру
+            if (window.game) {
+                window.game.saveGame();
             }
         }, 1000);
         
@@ -2754,6 +2782,9 @@ handleTradeAction(row, col) {
             this.showNotification("❌ Система магазинов недоступна", 'error');
         }
     }
+    
+    // Показываем сообщение об успешном открытии магазина
+    this.showNotification("🛒 Магазин открыт!", 'success');
 }
 
     
@@ -2789,14 +2820,17 @@ handleFillFlaskAction(row, col) {
         }, 500);
     } else {
         // Ручная обработка
-        this.fillFlaskManually();
+        this.fillFlaskManually(cell);
     }
 }
 
 /**
  * Ручное наполнение фляги (если MapSystem не имеет метода)
  */
-fillFlaskManually() {
+/**
+ * Ручное наполнение фляги (если MapSystem не имеет метода)
+ */
+fillFlaskManually(cell) {
     if (!this.mapSystem.currentHero) {
         this.showNotification("❌ Нет текущего героя!", 'error');
         return;
@@ -2830,6 +2864,12 @@ fillFlaskManually() {
         // Сохраняем игру
         if (window.game) {
             window.game.saveGame();
+        }
+        
+        // Отмечаем клетку как исследованную
+        if (cell) {
+            cell.explored = true;
+            this.mapSystem.drawTacticalMap();
         }
     } else {
         this.showNotification("❌ Фляга не найдена в системе боя!", 'error');
@@ -3223,39 +3263,73 @@ fillFlaskManually() {
 
 
 
-// В классе ActionSystem, метод showPeacefulMapUI (ЗАМЕНИТЬ ПОЛНОСТЬЮ):
+/**
+ * Показываем интерфейс для мирной карты
+ */
 showPeacefulMapUI(cell) {
-    console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты");
+    console.log("🍻 ActionSystem: Показываем интерфейс для мирной карты", cell);
     
     const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден");
+        return;
+    }
     
     // Проверяем, есть ли специальные действия для этой клетки
     const specialActions = this.getCellSpecificActions(cell);
     const hasSpecialActions = specialActions.length > 0;
     
+    console.log(`🔍 Специальные действия для клетки ${cell.type}:`, specialActions);
+    
     if (hasSpecialActions) {
         // Показываем специальные действия
+        console.log(`✅ Есть специальные действия для ${cell.type}, показываем интерфейс`);
         actionsContainer.innerHTML = this.generateSpecialActionsHTML(cell, specialActions);
         
-        // Привязываем обработчики событий
+        // Добавляем стили для сетки
         setTimeout(() => {
-            const actionButtons = actionsContainer.querySelectorAll('.special-action-btn');
-            actionButtons.forEach(button => {
-                const action = button.dataset.action;
-                const row = parseInt(button.dataset.cellRow);
-                const col = parseInt(button.dataset.cellCol);
+            const grid = actionsContainer.querySelector('.special-actions-grid');
+            if (grid) {
+                grid.style.cssText = `
+                    display: grid !important;
+                    grid-template-columns: repeat(2, 1fr) !important;
+                    gap: 15px !important;
+                    margin-bottom: 20px !important;
+                `;
+            }
+            
+            // Анимация для карточек
+            const actionCards = actionsContainer.querySelectorAll('.special-action-card');
+            actionCards.forEach(card => {
+                card.style.cssText = `
+                    background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
+                    border: 2px solid #00aaff !important;
+                    border-radius: 10px !important;
+                    padding: 20px !important;
+                    cursor: pointer !important;
+                    transition: all 0.3s ease !important;
+                    text-align: center !important;
+                `;
                 
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log(`🎯 Клик по специальному действию: ${action} на клетке [${col}, ${row}]`);
-                    this.performCellAction(action, row, col);
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px) scale(1.05)';
+                    card.style.boxShadow = '0 15px 30px rgba(0, 170, 255, 0.4)';
+                    card.style.borderColor = '#00ffcc';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.boxShadow = 'none';
+                    card.style.borderColor = '#00aaff';
                 });
             });
+            
+            console.log(`✅ Интерфейс специальных действий отрисован, карточек: ${actionCards.length}`);
+            
         }, 50);
     } else {
         // Показываем обычный интерфейс для мирной карты
+        console.log(`ℹ️ Нет специальных действий для ${cell.type}, показываем общий интерфейс`);
         actionsContainer.innerHTML = `
             <div class="peaceful-map-ui">
                 <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
@@ -3342,6 +3416,9 @@ showPeacefulMapUI(cell) {
 /**
  * Генерация HTML для специальных действий
  */
+/**
+ * Генерация HTML для специальных действий с правильными обработчиками
+ */
 generateSpecialActionsHTML(cell, specialActions) {
     let html = `
         <div class="special-actions-ui">
@@ -3380,9 +3457,11 @@ generateSpecialActionsHTML(cell, specialActions) {
             description: 'Специальное действие'
         };
         
+        // Создаем правильный обработчик onclick
+        const onClickCode = `window.game.systems.action.performCellAction('${action}', ${cell.row}, ${cell.col})`;
+        
         html += `
-            <div class="special-action-card" data-action="${action}" 
-                 data-cell-row="${cell.row}" data-cell-col="${cell.col}"
+            <div class="special-action-card" onclick="${onClickCode}"
                  style="
                     background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
                     border: 2px solid #00aaff;
@@ -3445,6 +3524,26 @@ generateSpecialActionsHTML(cell, specialActions) {
                 ${this.getSpecialActionHint(cell.type)}
             </div>
         </div>
+        
+        <script>
+            // JavaScript для анимации кнопок
+            setTimeout(() => {
+                const actionCards = document.querySelectorAll('.special-action-card');
+                actionCards.forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-5px) scale(1.05)';
+                        this.style.boxShadow = '0 15px 30px rgba(0, 170, 255, 0.4)';
+                        this.style.borderColor = '#00ffcc';
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                        this.style.boxShadow = 'none';
+                        this.style.borderColor = '#00aaff';
+                    });
+                });
+            }, 50);
+        </script>
     `;
     
     return html;
