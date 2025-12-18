@@ -2311,7 +2311,6 @@ moveOnTacticalMap(x, y) {
 
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
-
 researchCurrentHex() {
     // Если мы на мирной карте - не нужно исследовать
     if (this.isPeacefulMap()) {
@@ -2344,106 +2343,91 @@ researchCurrentHex() {
         return true;
     }
     
-    // === ПРОВЕРКА НОЧНОЙ ОПАСНОСТИ ===
-    if (this.timeSystem) {
-        const timeStatus = this.timeSystem.getTimeStatus();
+    // Проверяем систему времени
+    if (!this.timeSystem) {
+        console.error("❌ TimeSystem не доступен");
+        return false;
+    }
+    
+    const timeStatus = this.timeSystem.getTimeStatus();
+    
+    // Если сейчас день, нужно сначала дождаться ночи
+    if (timeStatus.isDay) {
+        console.log("☀️ Сейчас день, нужно дождаться ночи для исследования");
         
-        // Если сейчас день, нужно сначала дождаться ночи
-        if (timeStatus.isDay) {
-            console.log("☀️ Сейчас день, нужно дождаться ночи для исследования");
+        // Ускоряем время до вечера для исследования
+        const hoursUntilNight = 20 - timeStatus.hour; // упрощенный расчет
+        
+        if (window.game) {
+            const confirmResearch = window.confirm(
+                `☀️ Сейчас день (${timeStatus.hour}:00).\n` +
+                `Исследование гекса возможно только после ночёвки на нём.\n` +
+                `Потратить ${hoursUntilNight} часов до вечера и переночевать?\n\n` +
+                `⚠️ Внимание: без костра вероятность нападения ночью 90%!`
+            );
             
-            // Ускоряем время до вечера для исследования
-            const hoursUntilNight = timeStatus.hoursUntilNight;
-            
-            if (window.game) {
-                const confirmResearch = window.confirm(
-                    `☀️ Сейчас день (${timeStatus.hour}:00).\n` +
-                    `Исследование гекса возможно только после ночёвки на нём.\n` +
-                    `Потратить ${hoursUntilNight} часов до вечера и переночевать?\n\n` +
-                    `⚠️ Внимание: без костра вероятность нападения ночью 90%!`
-                );
-                
-                if (!confirmResearch) {
-                    console.log("❌ Игрок отменил исследование");
-                    return false;
-                }
-            }
-            
-            // Тратим время до вечера
-            for (let i = 0; i < hoursUntilNight; i++) {
-                this.timeSystem.spendHourOnHex('wait_for_night');
+            if (!confirmResearch) {
+                console.log("❌ Игрок отменил исследование");
+                return false;
             }
         }
         
-        // Теперь ночь - начинаем ночёвку
-        console.log("🌙 Начинаем ночёвку для исследования гекса...");
+        // Тратим время до вечера
+        for (let i = 0; i < hoursUntilNight; i++) {
+            this.timeSystem.spendHourOnHex('wait_for_night');
+        }
+    }
+    
+    // Теперь ночь - начинаем ночёвку
+    console.log("🌙 Начинаем ночёвку для исследования гекса...");
+    
+    // Проверяем, есть ли на клетке костёр
+    const hasCampfire = this.checkForCampfire(currentCell);
+    
+    // Рассчитываем вероятность нападения
+    const attackProbability = hasCampfire ? 10 : 90; // С костром 10%, без - 90%
+    
+    console.log(`🏕️ Ночёвка: костёр = ${hasCampfire}, вероятность нападения = ${attackProbability}%`);
+    
+    // Ночёвка занимает до утра
+    const randomValue = Math.random() * 100;
+    const willBeAttacked = randomValue <= attackProbability;
+    
+    if (willBeAttacked) {
+        console.log("⚔️ Ночное нападение монстра!");
+        // Запускаем ночной бой
+        const battleResult = this.startNightBattle();
         
-        // Проверяем, есть ли на клетке костёр - ТОЛЬКО ОДИН РАЗ
-        const hasCampfire = this.checkForCampfire(currentCell);
-        
-        // Рассчитываем вероятность нападения
-        const attackProbability = hasCampfire ? 10 : 90; // С костром 10%, без - 90%
-        
-        console.log(`🏕️ Ночёвка: костёр = ${hasCampfire}, вероятность нападения = ${attackProbability}%`);
-        
-        // Ночёвка занимает до утра - используем TimeSystem
-        const nightResult = this.timeSystem.spendNightForResearch(hasCampfire);
-        
-        if (nightResult.survived) {
-            // Успешно пережили ночь - гекс исследован
-            currentCell.explored = true;
-            
-            // Открываем видимость соседних клеток
-            this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-            
-            // Перерисовываем карту
-            this.drawTacticalMap();
-            
-            // Показываем результат
-            let message = nightResult.messages.join(' ');
-            if (nightResult.monsterFought && nightResult.victory) {
-                message += "\n✅ Гекс теперь исследован!";
-                
-                // Даём дополнительную награду за победу в ночном бою
-                if (this.currentHero) {
-                    const heroSystem = window.game?.systems?.hero;
-                    if (heroSystem) {
-                        const stats = heroSystem.calculateHeroStats(this.currentHero);
-                        const expBonus = Math.floor(stats.experienceForNextLevel * 0.1); // 10% от уровня
-                        this.currentHero.experience += expBonus;
-                        message += `\n🎯 +${expBonus} опыта за ночную победу!`;
-                    }
-                }
-            } else if (nightResult.survived && !nightResult.monsterFought) {
-                message += "\n✅ Вы спокойно пережили ночь. Гекс исследован!";
-            }
-            
-            this.showNotification(message, 'success');
-            console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
-            
-            // Автосохранение
-            if (window.game) {
-                window.game.saveGame();
-            }
-            
-            return true;
-            
-        } else {
-            // Не пережили ночь
-            this.showNotification("💀 Вы не пережили ночь на этом гексе!", 'error');
-            
-            // Если был бой и герой умер, обрабатываем смерть
-            if (nightResult.monsterFought && !nightResult.victory) {
-                this.handleHeroDeathAfterFailedNight();
-            }
-            
+        if (!battleResult || !battleResult.victory) {
+            // Герой не пережил ночь
+            this.handleHeroDeathAfterFailedNight();
             return false;
         }
     } else {
-        console.error("❌ TimeSystem не доступен");
-        this.showNotification("❌ Ошибка системы времени", 'error');
-        return false;
+        console.log("🌙 Спокойная ночь");
+        this.showNotification("🌙 Вы спокойно пережили ночь на этом гексе", 'success');
     }
+    
+    // Переходим к утру
+    this.advanceToMorning();
+    
+    // Отмечаем клетку как исследованную
+    currentCell.explored = true;
+    
+    // Открываем видимость соседних клеток
+    this.revealAdjacentCells(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    console.log(`✅ Гекс [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}] исследован!`);
+    
+    // Автосохранение
+    if (window.game) {
+        window.game.saveGame();
+    }
+    
+    return true;
 }
 
 startNightBattle() {
@@ -5091,35 +5075,7 @@ showMapOverlay(overlayType, container) {
         }
     }
 
-    showNotification(message, type = 'info') {
-        if (window.game && window.game.showNotification) {
-            window.game.showNotification(message, type);
-        } else {
-            console.log(`${type.toUpperCase()}: ${message}`);
-            // Создаем простую нотификацию
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : type === 'success' ? '#10b981' : '#3b82f6'};
-                color: white;
-                border-radius: 6px;
-                z-index: 9999;
-                font-family: Arial, sans-serif;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 3000);
-        }
-    }
+ }
 
 // Вспомогательные методы для MapSystem:
 getExploredCellsData() {
