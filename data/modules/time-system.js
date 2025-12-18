@@ -35,31 +35,32 @@ class TimeSystem {
     // === МЕТОДЫ ДЛЯ ВСТАВКИ В MapSystem ===
     
     // Этот метод вызывается при ЛЮБОМ действии на гексе
-    spendHourOnHex(action) {
-        console.log(`🕐 TimeSystem: Тратим час на действие: ${action}`);
-        
-        this.currentHexTime++;
-        this.gameTime.hour++;
-        
-        // Проверка перехода через полночь
-        if (this.gameTime.hour >= 24) {
-            this.gameTime.hour = 0;
-            this.gameTime.day++;
-            console.log(`🌅 Наступил день ${this.gameTime.day}`);
-        }
-        
-        // Проверка наступления ночи
-        const dayLength = this.seasonalDayLength[this.gameTime.season];
-        const isNight = this.gameTime.hour >= dayLength || this.gameTime.hour < 7;
-        
-        if (isNight && !this.isInCamp()) {
-            console.log("🌙 НАСТУПИЛА НОЧЬ вне лагеря!");
-            this.handleNightDanger();
-        }
-        
-        this.updateTimeDisplay();
-        return true;
+// В КЛАССЕ TimeSystem, метод spendHourOnHex:
+spendHourOnHex(action) {
+    console.log(`🕐 TimeSystem: Тратим час на действие: ${action}`);
+    
+    this.currentHexTime++;
+    this.gameTime.hour++;
+    
+    // Проверка перехода через полночь
+    if (this.gameTime.hour >= 24) {
+        this.gameTime.hour = 0;
+        this.gameTime.day++;
+        console.log(`🌅 Наступил день ${this.gameTime.day}`);
     }
+    
+    // ⚠️ ИСПРАВЛЯЕМ: Правильно определяем ночь
+    const dayLength = this.seasonalDayLength[this.gameTime.season];
+    const isNight = this.gameTime.hour < 7 || this.gameTime.hour >= 20;
+    
+    if (isNight && !this.isInCamp()) {
+        console.log("🌙 НАСТУПИЛА НОЧЬ вне лагеря!");
+        this.handleNightDanger();
+    }
+    
+    this.updateTimeDisplay();
+    return true;
+}
     
     // Проверка, находится ли герой в лагере
     isInCamp() {
@@ -131,36 +132,38 @@ class TimeSystem {
         return allMonsters[Math.floor(Math.random() * allMonsters.length)];
     }
     
-    // Обновление отображения времени
-    updateTimeDisplay() {
-        const timeElement = document.getElementById('timeDisplay');
-        if (!timeElement) return;
-        
-        const seasonNames = {
-            summer: 'Лето',
-            autumn: 'Осень', 
-            winter: 'Зима',
-            spring: 'Весна'
-        };
-        
-        const hourDisplay = this.gameTime.hour.toString().padStart(2, '0');
-        const isNight = this.gameTime.hour >= this.seasonalDayLength[this.gameTime.season] || 
-                       this.gameTime.hour < 7;
-        
-        timeElement.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="color: ${isNight ? '#a78bfa' : '#fbbf24'}; font-weight: bold;">
-                    ${isNight ? '🌙' : '☀️'} ${hourDisplay}:00
-                </span>
-                <span style="color: #94a3b8;">
-                    День ${this.gameTime.day} (${seasonNames[this.gameTime.season] || this.gameTime.season})
-                </span>
-                ${this.camp.exists ? '<span style="color: #10b981;">🏕️ Лагерь</span>' : ''}
-            </div>
-        `;
-    }
+ // В КЛАССЕ TimeSystem, метод updateTimeDisplay:
+updateTimeDisplay() {
+    const timeElement = document.getElementById('timeDisplay');
+    if (!timeElement) return;
     
-    // === МЕТОДЫ ДЛЯ СОЗДАНИЯ/УПРАВЛЕНИЯ ЛАГЕРЕМ ===
+    const seasonNames = {
+        summer: 'Лето',
+        autumn: 'Осень', 
+        winter: 'Зима',
+        spring: 'Весна'
+    };
+    
+    const hourDisplay = this.gameTime.hour.toString().padStart(2, '0');
+    const dayLength = this.seasonalDayLength[this.gameTime.season];
+    const isNight = this.gameTime.hour >= dayLength || this.gameTime.hour < 7;
+    
+    // ⚠️ ИСПРАВЛЯЕМ: Проверяем именно ночные часы
+    const actualIsNight = this.gameTime.hour < 7 || this.gameTime.hour >= 20;
+    
+    timeElement.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: ${actualIsNight ? '#a78bfa' : '#fbbf24'}; font-weight: bold;">
+                ${actualIsNight ? '🌙' : '☀️'} ${hourDisplay}:00
+            </span>
+            <span style="color: #94a3b8;">
+                День ${this.gameTime.day} (${seasonNames[this.gameTime.season] || this.gameTime.season})
+            </span>
+            ${this.camp.exists ? '<span style="color: #10b981;">🏕️ Лагерь</span>' : ''}
+            ${actualIsNight ? '<span style="color: #a78bfa;">🌙 Ночь</span>' : '<span style="color: #fbbf24;">☀️ День</span>'}
+        </div>
+    `;
+}
     
     // Создать лагерь на текущем гексе
     createCamp() {
