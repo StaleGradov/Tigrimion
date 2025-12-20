@@ -7,8 +7,10 @@
       "background": "images/locations/forest_crossroads.jpg",
       "difficulty": "green",
       "color": "#4ade80",
-      "power_range": [50, 100],
-      "time_limit": 12,
+      "time_cost_multiplier": -1,
+      "resource_chance_bonus": 15,
+      "monster_power_multiplier": 0.7,
+      
       "resources": [
         {
           "id": "elderberry",
@@ -16,9 +18,10 @@
           "name": "🫐 Бузина",
           "icon": "🫐",
           "position": { "x": 150, "y": 200 },
-          "chance": 85,
-          "time_cost": 2,
-          "description": "Тёмные ягоды, укрепляющие иммунитет и бодрящие."
+          "base_chance": 85,
+          "base_time": 2,
+          "description": "Тёмные ягоды, укрепляющие иммунитет и бодрящие. Восстанавливает 10 здоровья.",
+          "effect": { "type": "heal", "value": 10 }
         },
         {
           "id": "fresh_water",
@@ -26,8 +29,8 @@
           "name": "💧 Пресная вода",
           "icon": "💧",
           "position": { "x": 300, "y": 150 },
-          "chance": 90,
-          "time_cost": 2,
+          "base_chance": 90,
+          "base_time": 2,
           "description": "Чистая питьевая вода. Восстанавливает 15 здоровья.",
           "effect": { "type": "heal", "value": 15 }
         },
@@ -37,9 +40,10 @@
           "name": "🌿 Трава",
           "icon": "🌿",
           "position": { "x": 400, "y": 250 },
-          "chance": 95,
-          "time_cost": 1,
-          "description": "Обычная трава. Основа для плетения верёвок и ниток."
+          "base_chance": 95,
+          "base_time": 2,
+          "description": "Обычная трава. Основа для плетения верёвок и ниток.",
+          "effect": { "type": "resource", "value": 1 }
         },
         {
           "id": "small_bone",
@@ -47,284 +51,32 @@
           "name": "🦴 Кость",
           "icon": "🦴",
           "position": { "x": 100, "y": 300 },
-          "chance": 80,
-          "time_cost": 3,
-          "description": "Мелкая кость (птичья или грызуна). Используется в ремесле и алхимии."
+          "base_chance": 80,
+          "base_time": 2,
+          "description": "Мелкая кость (птичья или грызуна). Используется в ремесле и алхимии.",
+          "effect": { "type": "resource", "value": 1 }
         }
       ],
+      
       "water_enhancements": [
         {
           "id": "mineral_water",
           "name": "💎 Минеральная вода",
           "icon": "💎",
           "position": { "x": 250, "y": 350 },
-          "time_cost": 3,
+          "base_time": 2,
           "description": "Вода с полезными минералами. Дает +10% к броне на следующий бой.",
-          "effect": { "type": "buff", "stat": "armor", "value": 0.1, "duration": 1 }
+          "effect": { 
+            "type": "buff", 
+            "stat": "armor", 
+            "value": 0.1, 
+            "duration": 1 
+          }
         }
       ],
+      
+      "monster_appearance_time": 20,
       "special_notes": "Зелёная зона — можно собрать всё и легко победить."
-    },
-
-    "rocky_outcrop_yellow": {
-      "id": "rocky_outcrop_yellow",
-      "name": "Каменный выступ",
-      "description": "Возвышенность с видом на окрестности. Камни покрыты мхом, ветер свистит в расщелинах.",
-      "background": "images/locations/rocky_outcrop.jpg",
-      "difficulty": "yellow",
-      "color": "#fbbf24",
-      "power_range": [101, 200],
-      "time_limit": 10,
-      "resources": [
-        {
-          "id": "iron_ore",
-          "type": "ores",
-          "name": "⛏️ Железная руда",
-          "icon": "⛏️",
-          "position": { "x": 180, "y": 180 },
-          "chance": 60,
-          "time_cost": 4,
-          "description": "Прочная руда, основа для надёжного оружия, доспехов и инструментов."
-        },
-        {
-          "id": "healing_water",
-          "type": "water",
-          "name": "💧 Целебная вода",
-          "icon": "💧",
-          "position": { "x": 350, "y": 120 },
-          "chance": 70,
-          "time_cost": 2,
-          "description": "Вода с целебными свойствами. Восстанавливает 25 здоровья.",
-          "effect": { "type": "heal", "value": 25 }
-        },
-        {
-          "id": "flint",
-          "type": "stones",
-          "name": "✨ Кремний",
-          "icon": "✨",
-          "position": { "x": 420, "y": 280 },
-          "chance": 65,
-          "time_cost": 3,
-          "description": "Твёрдый минерал с острыми краями. Используется для розжига огня и первобытных орудий."
-        },
-        {
-          "id": "common_wood",
-          "type": "woods",
-          "name": "🪵 Дерево",
-          "icon": "🪵",
-          "position": { "x": 80, "y": 320 },
-          "chance": 75,
-          "time_cost": 2,
-          "description": "Обычная древесина для строительства, инструментов и топлива."
-        }
-      ],
-      "water_enhancements": [
-        {
-          "id": "enchanted_water",
-          "name": "✨ Зачарованная вода",
-          "icon": "✨",
-          "position": { "x": 280, "y": 380 },
-          "time_cost": 4,
-          "description": "Магически заряженная вода. Увеличивает урон на 15% на следующий бой.",
-          "effect": { "type": "buff", "stat": "damage", "value": 0.15, "duration": 1 }
-        }
-      ],
-      "special_notes": "Жёлтая зона — нужно выбирать, что собрать, от чего отказаться."
-    },
-
-    "haunted_cemetery_red": {
-      "id": "haunted_cemetery_red",
-      "name": "Проклятое кладбище",
-      "description": "Заброшенное кладбище с покосившимися надгробиями. Воздух холоден даже в полдень, а из-за деревьев доносятся странные шепоты.",
-      "background": "images/locations/haunted_cemetery.jpg",
-      "difficulty": "red",
-      "color": "#ef4444",
-      "power_range": [201, 350],
-      "time_limit": 8,
-      "resources": [
-        {
-          "id": "silver_ore",
-          "type": "ores",
-          "name": "⛏️ Серебряная руда",
-          "icon": "⛏️",
-          "position": { "x": 220, "y": 160 },
-          "chance": 40,
-          "time_cost": 5,
-          "description": "Благородный металл. Особенно эффективен против нежити и используется в магии."
-        },
-        {
-          "id": "holy_water",
-          "type": "water",
-          "name": "✨ Святая вода",
-          "icon": "✨",
-          "position": { "x": 380, "y": 100 },
-          "chance": 35,
-          "time_cost": 3,
-          "description": "Освященная вода. Наносит на 25% больше урона нежити на следующем бою.",
-          "effect": { "type": "buff", "stat": "damage_vs_undead", "value": 0.25, "duration": 1 }
-        },
-        {
-          "id": "mammoth_bone",
-          "type": "bones",
-          "name": "🦴 Кость мамонта",
-          "icon": "🦴",
-          "position": { "x": 450, "y": 260 },
-          "chance": 30,
-          "time_cost": 6,
-          "description": "Ископаемая кость исполинского существа. Материал для монументальных построек и оружия."
-        },
-        {
-          "id": "bear_hide",
-          "type": "hides",
-          "name": "🐻 Медвежья шкура",
-          "icon": "🐻",
-          "position": { "x": 90, "y": 340 },
-          "chance": 45,
-          "time_cost": 5,
-          "description": "Огромная, невероятно тёплая и устрашающая шкура. Для вождей и героев."
-        }
-      ],
-      "water_enhancements": [
-        {
-          "id": "cursed_water",
-          "name": "☠️ Проклятая вода",
-          "icon": "☠️",
-          "position": { "x": 300, "y": 400 },
-          "time_cost": 5,
-          "description": "Вода из проклятого источника. Увеличивает весь урон на 30%, но отнимает 20 здоровья.",
-          "effect": { 
-            "type": "mixed", 
-            "buff": { "stat": "damage", "value": 0.3, "duration": 1 },
-            "penalty": { "type": "health_cost", "value": 20 }
-          }
-        }
-      ],
-      "special_notes": "Красная зона — жёсткие ограничения, нужна оптимизация каждого действия."
-    },
-
-    "crystal_cave_blue": {
-      "id": "crystal_cave_blue",
-      "name": "Хрустальная пещера",
-      "description": "Подземная полость, стены которой покрыты светящимися кристаллами. Воздух наполнен статическим электричеством.",
-      "background": "images/locations/crystal_cave.jpg",
-      "difficulty": "blue",
-      "color": "#3b82f6",
-      "power_range": [351, 500],
-      "time_limit": 6,
-      "resources": [
-        {
-          "id": "meteorite_ore",
-          "type": "ores",
-          "name": "💎 Метеоритная руда",
-          "icon": "💎",
-          "position": { "x": 250, "y": 150 },
-          "chance": 25,
-          "time_cost": 7,
-          "description": "Внеземной металл, упавший со звёзд. Обладает уникальными магическими и физическими свойствами."
-        },
-        {
-          "id": "crystal_water",
-          "type": "water",
-          "name": "💠 Кристальная вода",
-          "icon": "💠",
-          "position": { "x": 400, "y": 90 },
-          "chance": 30,
-          "time_cost": 4,
-          "description": "Вода, насыщенная магией кристаллов. Полностью восстанавливает здоровье.",
-          "effect": { "type": "full_heal" }
-        },
-        {
-          "id": "dragon_bone",
-          "type": "bones",
-          "name": "🦴 Драконья кость",
-          "icon": "🦴",
-          "position": { "x": 480, "y": 240 },
-          "chance": 20,
-          "time_cost": 8,
-          "description": "Кость древнего дракона, пропитанная магией. Величайший материал для создания артефактов."
-        }
-      ],
-      "water_enhancements": [
-        {
-          "id": "dragon_tear_water",
-          "name": "🐉 Вода драконьей слезы",
-          "icon": "🐉",
-          "position": { "x": 320, "y": 380 },
-          "time_cost": 6,
-          "description": "Вода, смешанная со слезой дракона. Увеличивает все характеристики на 20% на следующий бой.",
-          "effect": { "type": "buff", "stat": "all_stats", "value": 0.2, "duration": 1 }
-        }
-      ],
-      "special_notes": "Синяя зона — эпические битвы. Каждое действие критически важно."
-    },
-
-    "ancient_forest_green": {
-      "id": "ancient_forest_green",
-      "name": "Древний лес",
-      "description": "Густой первобытный лес с деревьями-великанами. Воздух наполнен ароматом хвои и влажной земли.",
-      "background": "images/locations/ancient_forest.jpg",
-      "difficulty": "green",
-      "color": "#4ade80",
-      "power_range": [50, 100],
-      "time_limit": 12,
-      "resources": [
-        {
-          "id": "rosehip",
-          "type": "berries",
-          "name": "🌰 Шиповник",
-          "icon": "🌰",
-          "position": { "x": 170, "y": 220 },
-          "chance": 80,
-          "time_cost": 2,
-          "description": "Плоды шиповника, богатые витаминами, отличный тонизатор."
-        },
-        {
-          "id": "arnica",
-          "type": "herbs",
-          "name": "🌿 Арника",
-          "icon": "🌿",
-          "position": { "x": 320, "y": 170 },
-          "chance": 85,
-          "time_cost": 2,
-          "description": "Лечебная трава, известная своими заживляющими свойствами."
-        },
-        {
-          "id": "flexible_branch",
-          "type": "woods",
-          "name": "🪵 Гибкая ветвь",
-          "icon": "🪵",
-          "position": { "x": 420, "y": 270 },
-          "chance": 70,
-          "time_cost": 3,
-          "description": "Особо гибкая и прочная ветвь, идеальна для изготовления луков и древков стрел."
-        },
-        {
-          "id": "wolf_bone",
-          "type": "bones",
-          "name": "🦴 Волчья кость",
-          "icon": "🦴",
-          "position": { "x": 110, "y": 320 },
-          "chance": 75,
-          "time_cost": 3,
-          "description": "Прочная кость хищника. Подходит для рукоятей инструментов и амулетов."
-        }
-      ],
-      "water_enhancements": [
-        {
-          "id": "forest_spring_water",
-          "name": "🌲 Вода лесного родника",
-          "icon": "🌲",
-          "position": { "x": 260, "y": 360 },
-          "time_cost": 3,
-          "description": "Чистейшая вода из лесного родника. Восстанавливает 30 здоровья и снимает все негативные эффекты.",
-          "effect": { 
-            "type": "complex", 
-            "heal": 30,
-            "cleanse": true
-          }
-        }
-      ],
-      "special_notes": "Зелёная зона — можно собрать все ресурсы без спешки."
     }
   },
 
@@ -332,87 +84,37 @@
     "green": {
       "name": "Легкий",
       "description": "Можно собрать всё и легко победить",
-      "monster_power_multiplier": 0.7,
-      "time_bonus": 2,
-      "max_resources": 4,
-      "resource_chance_bonus": 15
+      "time_cost_multiplier": -1,
+      "resource_chance_bonus": 15,
+      "monster_power_multiplier": 0.7
     },
     "yellow": {
       "name": "Средний",
       "description": "Нужно выбирать — что собрать, от чего отказаться",
-      "monster_power_multiplier": 1.0,
-      "time_bonus": 0,
-      "max_resources": 3,
-      "resource_chance_bonus": 0
+      "time_cost_multiplier": 0,
+      "resource_chance_bonus": 0,
+      "monster_power_multiplier": 1.0
     },
     "red": {
       "name": "Сложный",
       "description": "Жёсткие ограничения, нужна оптимизация каждого действия",
-      "monster_power_multiplier": 1.5,
-      "time_bonus": -2,
-      "max_resources": 2,
-      "resource_chance_bonus": -10
+      "time_cost_multiplier": 2,
+      "resource_chance_bonus": -10,
+      "monster_power_multiplier": 1.5
     },
     "blue": {
       "name": "Эпический",
       "description": "Только для подготовленных героев",
-      "monster_power_multiplier": 2.0,
-      "time_bonus": -4,
-      "max_resources": 1,
-      "resource_chance_bonus": -20
+      "time_cost_multiplier": 1,
+      "resource_chance_bonus": -15,
+      "monster_power_multiplier": 2.0
     }
   },
 
-  "resource_categories": {
-    "herbs": {
-      "name": "Травы",
-      "color": "#16a34a",
-      "icon": "🌿"
-    },
-    "berries": {
-      "name": "Ягоды",
-      "color": "#dc2626",
-      "icon": "🫐"
-    },
-    "woods": {
-      "name": "Древесина",
-      "color": "#78350f",
-      "icon": "🪵"
-    },
-    "stones": {
-      "name": "Камни",
-      "color": "#78716c",
-      "icon": "🪨"
-    },
-    "ores": {
-      "name": "Руды",
-      "color": "#f59e0b",
-      "icon": "⛏️"
-    },
-    "bones": {
-      "name": "Кости",
-      "color": "#d6d3d1",
-      "icon": "🦴"
-    },
-    "leathers": {
-      "name": "Кожи",
-      "color": "#92400e",
-      "icon": "🐂"
-    },
-    "hides": {
-      "name": "Шкуры",
-      "color": "#7c2d12",
-      "icon": "🐻"
-    },
-    "furs": {
-      "name": "Меха",
-      "color": "#fbbf24",
-      "icon": "🦊"
-    },
-    "water": {
-      "name": "Вода",
-      "color": "#3b82f6",
-      "icon": "💧"
-    }
+  "game_constants": {
+    "day_start_hour": 7,
+    "night_start_hour": 20,
+    "default_resource_time": 2,
+    "max_resources_per_hex": 4
   }
 }
