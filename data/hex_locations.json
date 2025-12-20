@@ -1,15 +1,14 @@
 {
   "hex_locations": {
-    "forest_crossroads_green": {
-      "id": "forest_crossroads_green",
+    "forest_crossroads": {
+      "id": "forest_crossroads",
       "name": "Лесная развилка",
       "description": "Место, где охотничья тропа пересекается с более натоптанной дорогой. На дереве вбит указатель с едва читаемыми символами.",
       "background": "images/locations/forest_crossroads.jpg",
+      "width": 600,
+      "height": 400,
       "difficulty": "green",
       "color": "#4ade80",
-      "time_cost_multiplier": -1,
-      "resource_chance_bonus": 15,
-      "monster_power_multiplier": 0.7,
       
       "resources": [
         {
@@ -58,28 +57,56 @@
         }
       ],
       
-      "water_enhancements": [
+      "monster": {
+        "position": { "x": 450, "y": 100 },
+        "monster_id": "wolf",
+        "scale_multiplier": 1.0
+      }
+    },
+    
+    "rocky_outcrop": {
+      "id": "rocky_outcrop",
+      "name": "Скальный выступ",
+      "description": "Высокий скалистый выступ с видом на долину. Камни покрыты мхом и лишайниками.",
+      "background": "images/locations/rocky_outcrop.jpg",
+      "width": 600,
+      "height": 400,
+      "difficulty": "yellow",
+      "color": "#fbbf24",
+      
+      "resources": [
         {
-          "id": "mineral_water",
-          "name": "💎 Минеральная вода",
-          "icon": "💎",
-          "position": { "x": 250, "y": 350 },
+          "id": "iron_ore",
+          "type": "ores",
+          "name": "⛏️ Железная руда",
+          "icon": "⛏️",
+          "position": { "x": 200, "y": 180 },
+          "base_chance": 70,
+          "base_time": 3,
+          "description": "Кусок железной руды. Пригодится для ковки оружия.",
+          "effect": { "type": "resource", "value": 1 }
+        },
+        {
+          "id": "flint",
+          "type": "stones",
+          "name": "🔥 Кремень",
+          "icon": "🔥",
+          "position": { "x": 350, "y": 220 },
+          "base_chance": 80,
           "base_time": 2,
-          "description": "Вода с полезными минералами. Дает +10% к броне на следующий бой.",
-          "effect": { 
-            "type": "buff", 
-            "stat": "armor", 
-            "value": 0.1, 
-            "duration": 1 
-          }
+          "description": "Кремень для разжигания огня.",
+          "effect": { "type": "resource", "value": 1 }
         }
       ],
       
-      "monster_appearance_time": 20,
-      "special_notes": "Зелёная зона — можно собрать всё и легко победить."
+      "monster": {
+        "position": { "x": 500, "y": 150 },
+        "monster_id": "bear",
+        "scale_multiplier": 1.2
+      }
     }
   },
-
+  
   "difficulty_settings": {
     "green": {
       "name": "Легкий",
@@ -101,20 +128,14 @@
       "time_cost_multiplier": 2,
       "resource_chance_bonus": -10,
       "monster_power_multiplier": 1.5
-    },
-    "blue": {
-      "name": "Эпический",
-      "description": "Только для подготовленных героев",
-      "time_cost_multiplier": 1,
-      "resource_chance_bonus": -15,
-      "monster_power_multiplier": 2.0
     }
   },
-
+  
   "game_constants": {
     "day_start_hour": 7,
     "night_start_hour": 20,
     "default_resource_time": 2,
-    "max_resources_per_hex": 4
+    "max_resources_per_hex": 4,
+    "monster_appearance_hour": 20
   }
 }
