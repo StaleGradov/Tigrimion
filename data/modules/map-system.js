@@ -47,8 +47,6 @@ class MapSystem {
         // Ссылка на ActionSystem
         this.actionSystem = null;
         this.timeSystem = null;
-        this.hexGameplay = null;
-        this.pendingHexCompletion = null;
         
         
         this.lootTables = {
@@ -518,76 +516,113 @@ markCellAsExplored(row, col) {
     }
 
 completeMovementAfterBattle(victory, escape = false, battleType = 'movement', doubleLoot = false) {
-    console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}`);
+    console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}, двойной лут=${doubleLoot}`);
     
-    if (battleType === 'hex_night_battle' && this.pendingHexCompletion) {
-        // Завершаем гекс после ночного боя
+    // Делегируем обработку охоты модулю охоты через ActionSystem
+    if (battleType === 'hunt' && this.actionSystem) {
+        return this.completeHuntAfterBattle(victory, escape, doubleLoot);
+    }
+    
+    // Обработка неудачных действий
+    if (battleType === 'action_failure' && this.pendingAction) {
+        const { action, row, col, cellTypeData, wasFailure } = this.pendingAction;
+        
         if (victory) {
-            console.log("✅ Победа в ночном бою на гексе");
+            console.log(`✅ Победа над монстром после неудачного действия ${action}`);
+            this.showNotification(`✅ Вы победили монстра! Действие ${action} можно повторить.`, 'success');
             
-            // Отмечаем гекс как исследованный
-            const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
-            const cell = this.currentTacticalMap?.cells[cellKey];
-            if (cell) {
-                cell.explored = true;
-                cell.hasAction = false;
-            }
-            
-            // Разблокируем соседние гексы
-            this.unlockAdjacentHexes();
-            
-            this.pendingHexCompletion.victoryCallback();
+            setTimeout(() => {
+                const cellKey = `${col},${row}`;
+                const cell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (cell && this.actionSystem) {
+                    this.actionSystem.updateCellActionsUI(cell);
+                    this.actionSystem.highlightSelectedCell(cell);
+                }
+            }, 500);
         } else {
-            console.log("💀 Поражение в ночном бою на гексе");
-            
-            // Возвращаем на стартовую позицию
-            const startPosition = this.currentTacticalMap?.startPosition || {x: 0, y: 0};
-            this.playerTacticalPosition = {...startPosition};
-            
-            this.pendingHexCompletion.defeatCallback();
+            console.log(`💀 Поражение от монстра после действия ${action}`);
+            if (this.actionSystem) {
+                this.actionSystem.markCellAsExplored(row, col);
+            }
+            this.showNotification(`💀 Вы были ранены монстром! Локация теперь считается опасной.`, 'error');
         }
         
-        this.pendingHexCompletion = null;
-        
-        // Перерисовываем карту
-        this.drawTacticalMap();
-        this.updateMovementInfo();
-        
+        this.pendingAction = null;
         return;
     }
     
-    // Старая логика для охоты и других боев
-    if (battleType === 'hunt' && window.game?.systems?.action?.actionModules?.hunt) {
-        window.game.systems.action.actionModules.hunt.completeHuntAfterBattle(victory, escape, doubleLoot);
-        return;
-    }
-    
-    console.log(`📝 Старая логика завершения боя (тип: ${battleType})`);
-    this.showNotification(`Бой завершен: ${victory ? 'победа' : 'поражение'}`, victory ? 'success' : 'error');
-}
-
-
-    unlockAdjacentHexes() {
-    if (!this.currentTacticalMap || !this.playerTacticalPosition) return;
-    
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    let unlockedCount = 0;
-    
-    neighbors.forEach(neighbor => {
-        const cellKey = `${neighbor.col},${neighbor.row}`;
-        const cell = this.currentTacticalMap.cells[cellKey];
+    // Обработка обычного перемещения
+    if (this.pendingMovement) {
+        let targetX, targetY;
         
-        if (cell && cell.passable !== false && cell.explored === undefined) {
-            cell.hasAction = true; // Теперь можно переходить
-            unlockedCount++;
+        if (victory) {
+            targetX = this.pendingMovement.x;
+            targetY = this.pendingMovement.y;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            // Обновляем видимость
+            this.updateVisibilityOnMove(targetX, targetY);
+            
+            console.log(`✅ Успешное перемещение героя ${this.currentHero.name} после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+            
+            if (window.game) {
+                window.game.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+            }
+        } else {
+            if (escape) {
+                targetX = this.playerTacticalPosition.x;
+                targetY = this.playerTacticalPosition.y;
+                console.log(`🏃 Побег! Герой ${this.currentHero.name} остался на позиции: [${targetX}, ${targetY}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`🏃 Побег успешен! Герой остался на своей позиции.`, 'warning');
+                }
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                targetX = startPosition.x;
+                targetY = startPosition.y;
+                const oldPosition = {...this.playerTacticalPosition};
+                this.playerTacticalPosition = {x: targetX, y: targetY};
+                
+                // Обновляем видимость
+                this.updateVisibilityOnMove(targetX, targetY);
+                
+                console.log(`💀 Поражение! Возврат героя ${this.currentHero.name} на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                
+                if (window.game) {
+                    window.game.showNotification(`💀 Поражение! Возврат на стартовую позицию.`, 'error');
+                }
+            }
         }
-    });
-    
-    console.log(`🔓 Разблокировано ${unlockedCount} соседних гексов`);
-    
-    // Перерисовываем карту, чтобы показать доступные гексы
-    this.drawTacticalMap();
+        
+        this.pendingMovement = null;
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
+            
+            setTimeout(() => {
+                const cellKey = `${targetX},${targetY}`;
+                const currentCell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (currentCell && this.actionSystem) {
+                    console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
+                    this.actionSystem.updateCellActionsUI(currentCell);
+                    this.actionSystem.highlightSelectedCell(currentCell);
+                }
+            }, 500);
+        }
+        
+        if (this.currentHero && window.game && window.game.systems && window.game.systems.hero) {
+            window.game.systems.hero.currentHero = this.currentHero;
+            window.game.systems.hero.calculateHeroStats(this.currentHero);
+        }
+    }
 }
+
 
 /**
  * Обработка завершения специального действия (торговля, вода и т.д.)
@@ -730,82 +765,6 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     this.pendingAction = null;
 }
 
-
-
-/**
- * Завершить исследование текущего гекса
- * @param {boolean} victory - Победа или поражение
- * @param {Object} hexData - Данные гекса (опционально)
- */
-completeHex(victory = true, hexData = null) {
-    console.log(`🎯 MapSystem.completeHex: victory=${victory}`);
-    
-    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
-    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
-    
-    if (!currentCell) {
-        console.error("❌ Текущая клетка не найдена");
-        this.showNotification("❌ Ошибка: текущая клетка не найдена", 'error');
-        return false;
-    }
-    
-    if (victory) {
-        console.log(`✅ Победа на гексе [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`);
-        
-        // Отмечаем гекс как исследованный
-        currentCell.explored = true;
-        currentCell.hasAction = false;
-        
-        // Разблокируем соседние гексы
-        this.unlockAdjacentHexes();
-        
-        // Если есть hexData и hexGameplay, обрабатываем ресурсы
-        if (hexData && this.hexGameplay && this.hexGameplay.processCollectedResources) {
-            this.hexGameplay.processCollectedResources();
-        }
-        
-        this.showNotification("🎉 Гекс исследован! Можно переходить дальше.", 'success');
-        
-        // Автосохранение
-        if (window.game) {
-            window.game.saveGame();
-        }
-        
-    } else {
-        console.log(`💀 Поражение на гексе [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`);
-        
-        // Возвращаем на стартовую позицию
-        const startPosition = this.currentTacticalMap?.startPosition || {x: 0, y: 0};
-        this.playerTacticalPosition = {...startPosition};
-        
-        // Частично сохраняем ресурсы если есть hexGameplay
-        if (hexData && this.hexGameplay && this.hexGameplay.partialResourceSave) {
-            this.hexGameplay.partialResourceSave();
-        }
-        
-        this.showNotification("💀 Вы проиграли! Возврат на стартовую позицию.", 'error');
-    }
-    
-    // Перерисовываем карту
-    this.drawTacticalMap();
-    
-    // Возвращаемся к обычному интерфейсу
-    setTimeout(() => {
-        if (this.actionSystem && currentCell) {
-            this.actionSystem.updateCellActionsUI(currentCell);
-        }
-        
-        // Закрываем интерфейс гекса если он открыт
-        if (this.hexGameplay && this.hexGameplay.resetHexState) {
-            this.hexGameplay.resetHexState();
-        }
-    }, 300);
-    
-    return true;
-}
-
-
-    
 // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
 
 processHuntResource(resource, doubleLoot = false) {
@@ -1022,6 +981,7 @@ showNotification(message, type = 'info') {
 
     // ========== ЗАГРУЗКА КАРТ ==========
 
+   // В КЛАССЕ MapSystem метод loadMapData:
 async loadMapData() {
     try {
         console.log("📥 MapSystem: Загружаем данные карт...");
@@ -1029,9 +989,6 @@ async loadMapData() {
         // Инициализируем системы В ПОРЯДКЕ ВАЖНОСТИ
         this.initializeTimeSystem(); // СНАЧАЛА TimeSystem
         this.initializeActionSystem(); // ПОТОМ ActionSystem
-        
-        // Инициализируем систему гексов
-        this.initializeHexGameplay();
         
         await this.loadJSONMaps();
         
@@ -1138,60 +1095,6 @@ initializeTimeSystem() {
     return this.timeSystem;
 }
 
-
-/**
- * Инициализация системы геймплея гексов
- */
-initializeHexGameplay() {
-    console.log("🔄 MapSystem: Инициализация HexGameplaySystem...");
-    
-    if (typeof HexGameplaySystem !== 'undefined' && !this.hexGameplay) {
-        try {
-            this.hexGameplay = new HexGameplaySystem(this);
-            console.log("✅ HexGameplaySystem инициализирован в MapSystem");
-            
-            // Связываем обработчик результатов боя
-            const battleSystem = window.game?.systems?.battle;
-            if (battleSystem && this.hexGameplay.handleBattleResult) {
-                console.log("🔗 Связываем HexGameplaySystem с BattleSystem");
-                
-                // Сохраняем оригинальный обработчик если есть
-                const originalOnBattleComplete = battleSystem.onBattleComplete;
-                
-                // Создаем новый обработчик
-                battleSystem.onBattleComplete = (victory, battleType) => {
-                    console.log(`🎲 HexGameplay обработчик: victory=${victory}, type=${battleType}`);
-                    
-                    // Если это ночной бой на гексе
-                    if (battleType === 'hex_night_battle' && this.hexGameplay) {
-                        this.hexGameplay.handleBattleResult(victory);
-                    }
-                    
-                    // Вызываем оригинальный обработчик если есть
-                    if (originalOnBattleComplete) {
-                        originalOnBattleComplete(victory, battleType);
-                    }
-                };
-            }
-            
-            return this.hexGameplay;
-            
-        } catch (error) {
-            console.error("❌ Ошибка создания HexGameplaySystem:", error);
-            this.hexGameplay = null;
-            return null;
-        }
-    } else if (!this.hexGameplay) {
-        console.error("❌ HexGameplaySystem не найден глобально");
-        return null;
-    }
-    
-    console.log("✅ HexGameplaySystem уже инициализирован");
-    return this.hexGameplay;
-}
-
-
-    
 // НОВЫЙ МЕТОД для создания базового TimeSystem если модуль не загружен:
 createBasicTimeSystem() {
     this.timeSystem = {
@@ -2043,10 +1946,11 @@ handleCanvasClick(e) {
         console.error("❌ Нет текущей тактической карты");
         return;
     }
-    
+
     console.log("🎯 ОБРАБОТКА КЛИКА ПО КАРТЕ");
-    
+
     const canvasRect = this.canvas.getBoundingClientRect();
+    
     const computedStyle = getComputedStyle(this.canvas);
     const transform = computedStyle.transform;
     let scale = 1;
@@ -2059,34 +1963,232 @@ handleCanvasClick(e) {
     const logicalX = (e.clientX - canvasRect.left) / scale;
     const logicalY = (e.clientY - canvasRect.top) / scale;
     
+    console.log(`🎯 Клик: экран [${e.clientX}, ${e.clientY}] -> логические [${logicalX}, ${logicalY}] scale: ${scale}`);
+    
     const hex = this.getHexAtLogicalPosition(logicalX, logicalY);
     if (!hex) {
         console.log("❌ Клетка не найдена по координатам");
         return;
     }
     
-    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} explored: ${hex.explored}`);
+    console.log(`🎲 Клик по клетке: [${hex.col}, ${hex.row}] тип: ${hex.type} tacticalMap: ${hex.tacticalMap}`);
     
-    // Обработка специальных клеток (торговец, вода)
-    if (hex.type === 'merchant' || hex.type === 'water') {
+    // === СПЕЦИАЛЬНАЯ ОБРАБОТКА ДЛЯ МИРНЫХ КАРТ (ТАВЕРН) ===
+    if (this.isPeacefulMap()) {
+        console.log("🍻 Обработка клика на мирной карте (таверна)");
+        
+        // ПРОВЕРКА: Убеждаемся, что клетка найдена правильно
+        if (!hex) {
+            console.error("❌ НЕ НАЙДЕНА КЛЕТКА ПО КООРДИНАТАМ!");
+            console.log("Логические координаты клика:", logicalX, logicalY);
+            // Показываем сообщение и выходим
+            this.showNotification("Не удалось определить клетку. Попробуйте кликнуть ближе к центру.", 'warning');
+            return;
+        }
+        
+        console.log(`🎯 Клик по клетке на мирной карте: [${hex.col}, ${hex.row}] тип: ${hex.type}`);
+        
+        // === ОБРАБОТКА СПЕЦИАЛЬНЫХ КЛЕТОК (торговец, вода и т.д.) ===
+        const specialCellTypes = ['merchant', 'water', 'tavern', 'campfire', 'npc'];
+        if (specialCellTypes.includes(hex.type)) {
+            console.log(`🎯 Клик по специальной клетке: ${hex.type}`);
+            
+            // УПРОЩЕННАЯ ПРОВЕРКА ДОСТИЖИМОСТИ: Просто сравниваем координаты с соседями
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                console.log(`✅ Клетка достижима! Показываем интерфейс ActionSystem.`);
+                
+                // НЕМЕДЛЕННО показываем интерфейс действий
+                if (this.actionSystem) {
+                    this.actionSystem.updateCellActionsUI(hex);
+                    this.actionSystem.highlightSelectedCell(hex);
+                } else {
+                    console.error("❌ ActionSystem не доступен!");
+                    this.showNotification("Система действий не загружена", 'error');
+                }
+            } else {
+                console.log(`❌ Клетка недостижима для взаимодействия`);
+                
+                // Показываем понятное сообщение
+                let message = `Чтобы взаимодействовать, подойдите к клетке [${hex.col}, ${hex.row}]`;
+                if (hex.type === 'merchant') message = `🛒 Подойдите к торговцу [${hex.col}, ${hex.row}]`;
+                if (hex.type === 'water') message = `💧 Подойдите к источнику воды [${hex.col}, ${hex.row}]`;
+                if (hex.type === 'tavern') message = `🍻 Подойдите к таверне [${hex.col}, ${hex.row}]`;
+                
+                this.showNotification(message, 'warning');
+                
+                // Простая подсветка на 1 секунду
+                const originalColor = hex.highlightColor;
+                hex.highlightColor = '#ff4444';
+                hex.isHighlighted = true;
+                this.drawTacticalMap();
+                
+                setTimeout(() => {
+                    hex.highlightColor = originalColor;
+                    hex.isHighlighted = false;
+                    this.drawTacticalMap();
+                }, 1000);
+            }
+            return; // ВАЖНО: завершаем обработку для специальных клеток
+        }
+        
+        // === ОБРАБОТКА ВЫХОДА ИЗ ТАВЕРНЫ ===
+        if (hex.type === 'exit') {
+            console.log("🚪 Клик по выходу из таверны");
+            
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                console.log("✅ Выход достижим, выходим из таверны...");
+                this.exitToPreviousMap();
+            } else {
+                console.log("❌ Выход недостижим");
+                this.showNotification("❌ Подойдите ближе к выходу!", 'warning');
+            }
+            return;
+        }
+        
+        // === ОБЫЧНЫЕ ПРОХОДИМЫЕ КЛЕТКИ (для перемещения) ===
+        if (hex.passable !== false) {
+            console.log("✅ Клик для перемещения на мирной карте");
+            
+            const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+            const isReachable = neighbors.some(neighbor => 
+                neighbor.row === hex.row && neighbor.col === hex.col
+            );
+            
+            if (isReachable) {
+                console.log(`✅ Клетка достижима, начинаем перемещение`);
+                this.moveOnTacticalMap(hex.col, hex.row);
+            } else {
+                console.log(`❌ Клетка недостижима для перемещения`);
+                this.showNotification("Чтобы переместиться, нужно подойти вплотную к соседней клетке!", 'warning');
+            }
+            return;
+        }
+        
+        console.log(`❌ Клетка непроходима или необрабатываемого типа: ${hex.type}`);
+        return;
+    }
+    
+    // === ОБЫЧНАЯ ОБРАБОТКА ДЛЯ НЕ-МИРНЫХ КАРТ ===
+    
+    // Обработка переходов (таверны)
+    if (hex.type === 'tavern' && hex.tacticalMap) {
+        console.log("🍻 Клик по таверне - проверяем доступность...");
+        
+        const isAdjacent = this.isPlayerAdjacentToTransition(hex);
+        if (!isAdjacent) {
+            console.log("❌ Герой не рядом с таверной");
+            this.showTransitionWarning(hex);
+            return;
+        }
+        
+        console.log("✅ Герой рядом с таверной, активируем переход...");
+        this.activateTransition(hex);
+        return;
+    }
+    
+    // Обработка воды (отдельно, так как это может быть на любой карте)
+    if (hex.type === 'water') {
+        console.log("💧 Клик по воде");
+        
         const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
         const isReachable = neighbors.some(neighbor => 
             neighbor.row === hex.row && neighbor.col === hex.col
         );
         
         if (isReachable) {
-            // Используем ActionSystem для специальных клеток
-            if (window.game?.systems?.action) {
-                window.game.systems.action.updateCellActionsUI(hex);
+            // Проверяем, исследована ли клетка с водой
+            if (hex.explored) {
+                this.handleWaterCell(hex);
+            } else {
+                this.showNotification("💧 Сначала исследуйте эту клетку (переночуйте на ней), чтобы использовать воду", 'warning');
             }
         } else {
-            this.showNotification("❌ Подойдите ближе!", 'warning');
+            this.showNotification("❌ Подойдите ближе к воде!", 'warning');
         }
         return;
     }
     
-    // Для обычных клеток - перемещение
-    this.moveOnTacticalMap(hex.col, hex.row);
+    // Обработка магазинов (отдельно)
+    if (hex.type === 'merchant') {
+        console.log("🛒 Клик по магазине");
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            if (hex.explored) {
+                this.handleMerchantClick(hex);
+            } else {
+                this.showNotification("🛒 Сначала исследуйте эту клетку (переночуйте на ней), чтобы торговать", 'warning');
+            }
+        } else {
+            this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
+        }
+        return;
+    }
+    
+    // Обработка переходов между картами
+    if (this.isTransitionCell(hex)) {
+        console.log("🚪 Клик по переходу");
+        this.handleTransitionClick(hex);
+        return;
+    }
+    
+    // Обычная логика для перемещений и действий
+    if (hex.passable !== false || hex.type === 'monster') {
+        console.log("🎯 Клик для перемещения или действий");
+        
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === hex.row && neighbor.col === hex.col
+        );
+        
+        if (isReachable) {
+            console.log(`✅ Клетка достижима, начинаем перемещение или действия`);
+            
+            // Если клетка исследована - мирное перемещение
+            if (hex.explored) {
+                this.moveOnTacticalMap(hex.col, hex.row);
+            } else {
+                // Если не исследована - проверяем можно ли перейти
+                if (this.canMoveToHex(hex)) {
+                    this.moveOnTacticalMap(hex.col, hex.row);
+                } else {
+                    // Предлагаем исследовать текущую клетку
+                    this.suggestResearchCurrentHex(hex);
+                }
+            }
+        } else {
+            console.log(`❌ Клетка недостижима для перемещения`);
+            this.showNotification("Чтобы переместиться, нужно подойти вплотную к соседней клетке!", 'warning');
+        }
+    } else {
+        console.log(`❌ Клетка непроходима: ${hex.type}`);
+        this.showNotification(`Эта клетка непроходима (${this.getCellTypeName(hex.type)})`, 'error');
+    }
+    
+    // Обновляем интерфейс действий (если это не переход)
+    if (!this.isTransitionCell(hex)) {
+        console.log(`📋 Вызываем updateCellActionsUI для клетки [${hex.col}, ${hex.row}]`);
+        if (this.actionSystem) {
+            this.actionSystem.updateCellActionsUI(hex);
+            this.actionSystem.highlightSelectedCell(hex);
+        }
+    } else {
+        console.log(`⏭️ Пропускаем показ действий для перехода`);
+    }
 }
 
 
@@ -2504,115 +2606,174 @@ showNotification(message, type = 'info') {
         }
     }
 
+
 moveOnTacticalMap(x, y) {
     console.log("🎯 MapSystem.moveOnTacticalMap вызывается");
     
     if (!this.currentHero) {
         console.error("❌ Герой не выбран!");
-        this.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+        if (window.game) {
+            window.game.showNotification("❌ Герой не выбран! Пожалуйста, выберите героя сначала.", 'error');
+        }
         return;
     }
-    
+
     if (!this.currentTacticalMap) {
         console.error("❌ Нет текущей тактической карты");
         return;
     }
-    
+
     const cellKey = `${x},${y}`;
     const cellData = this.currentTacticalMap.cells[cellKey];
     
     if (!cellData) {
         console.log("🚫 Клетка не существует");
-        this.showNotification("Эта клетка не существует!", 'error');
+        if (window.game) {
+            window.game.showNotification("Эта клетка не существует!", 'error');
+        }
         return;
     }
-    
-    // Проверка на проходимость
-    if (cellData.passable === false) {
-        console.log("🚫 Клетка непроходима");
-        this.showNotification("Эта клетка непроходима!", 'error');
-        return;
-    }
-    
-    // Проверка на достижимость (только соседние клетки)
-    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === y && neighbor.col === x
-    );
-    
-    if (!isReachable) {
-        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
-        this.showNotification("Нельзя переместиться на эту клетку!", 'error');
-        return;
-    }
-    
-    // Если клетка исследована - обычное перемещение
-    if (cellData.explored) {
-        console.log(`✅ Клетка уже исследована, просто перемещаемся`);
+
+    // === СПЕЦИАЛЬНАЯ ОБРАБОТКА МИРНЫХ КАРТ (ТАВЕРН) ===
+    if (this.isPeacefulMap()) {
+        console.log("🍻 Мирная карта (таверна) - свободное перемещение");
+        
+        // Проверяем достижимость
+        const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+        const isReachable = neighbors.some(neighbor => 
+            neighbor.row === y && neighbor.col === x
+        );
+
+        if (!isReachable) {
+            console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+            if (window.game) {
+                window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+            }
+            return;
+        }
+
+        // На мирных картах время не тратится и нет исследования
         const oldPosition = {...this.playerTacticalPosition};
         this.playerTacticalPosition = {x: x, y: y};
+        
+        console.log(`🍻 Свободное перемещение в таверне: [${oldPosition.x}, ${oldPosition.y}] → [${x}, ${y}]`);
         
         // Обновляем видимость
         this.updateVisibilityOnMove(x, y);
         
-        this.drawTacticalMap();
-        this.updateMovementInfo();
+        if (window.game) {
+            window.game.showNotification(`✅ Перемещение на [${x}, ${y}]`, 'success');
+        }
         
-        this.showNotification(`✅ Перемещение на [${x}, ${y}]`, 'success');
-        
-        // Обновляем интерфейс действий
-        setTimeout(() => {
-            if (window.game?.systems?.action) {
-                const currentCell = this.currentTacticalMap.cells[cellKey];
-                if (currentCell) {
-                    window.game.systems.action.updateCellActionsUI(currentCell);
+        // Обновляем интерфейс
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            
+            setTimeout(() => {
+                if (this.actionSystem) {
+                    this.actionSystem.updateCellActionsUI(cellData);
+                    this.actionSystem.highlightSelectedCell(cellData);
                 }
-            }
-        }, 300);
+            }, 300);
+        }
         
         return;
     }
-    
-    // Если клетка не исследована - запускаем геймплей гекса
-    console.log(`🏞️ Входим на неисследованный гекс [${x}, ${y}]`);
-    
-    // Обновляем позицию игрока
-    this.playerTacticalPosition = {x: x, y: y};
-    
-    // Перерисовываем карту (ставим иконку игрока на новом гексе)
-    this.drawTacticalMap();
-    
-    // Проверяем и инициализируем систему гексов
-    if (!this.hexGameplay) {
-        console.log("🔄 HexGameplaySystem не инициализирован, инициализируем...");
-        this.initializeHexGameplay();
-    }
-    
-    if (this.hexGameplay && this.hexGameplay.enterHex) {
-        console.log(`🎮 Запускаем геймплей гекса через HexGameplaySystem`);
-        this.hexGameplay.enterHex(cellData);
+
+    // === ОБЫЧНАЯ ОБРАБОТКА ДЛЯ НЕ-МИРНЫХ КАРТ ===
+    // === ПРОВЕРКА НА ИССЛЕДОВАННЫЕ КЛЕТКИ ===
+    if (cellData.explored) {
+        console.log(`✅ Клетка [${x},${y}] уже исследована, перемещение без боя`);
+        this.handlePeacefulMovement(x, y, cellData);
+        return;
     } else {
-        console.error("❌ HexGameplaySystem не инициализирован или нет метода enterHex");
-        this.showNotification("❌ Система геймплея гексов не загружена", 'error');
-        
-        // Альтернатива: просто отмечаем как исследованную
-        cellData.explored = true;
-        this.showNotification(`✅ Гекс [${x}, ${y}] отмечен как исследованный`, 'success');
-        this.drawTacticalMap();
-        
-        // Обновляем интерфейс действий
-        setTimeout(() => {
-            if (window.game?.systems?.action) {
-                const currentCell = this.currentTacticalMap.cells[cellKey];
-                if (currentCell) {
-                    window.game.systems.action.updateCellActionsUI(currentCell);
+        // Если клетка не исследована - проверяем, можно ли на неё перейти
+        if (!this.canMoveToHex(cellData)) {
+            console.log(`❌ Нельзя перейти на неисследованный гекс [${x},${y}]`);
+            
+            // Предлагаем исследовать текущий гекс
+            const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+            const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+            
+            if (currentCell && !currentCell.explored) {
+                if (window.game) {
+                    const researchNow = window.confirm(
+                        `Чтобы перейти на новый гекс [${x},${y}], нужно сначала исследовать текущий.\n\n` +
+                        `Исследование требует ночёвки на текущем гексе.\n` +
+                        `Исследовать текущий гекс сейчас?`
+                    );
+                    
+                    if (researchNow) {
+                        this.researchCurrentHex();
+                    }
                 }
             }
-        }, 300);
+            return;
+        }
     }
-    
-    this.updateMovementInfo();
+
+    // === ПРОВЕРКА НА ПЕРЕХОДЫ ===
+    if (this.isTransitionCell(cellData)) {
+        console.log("🚪 Клик по переходу");
+        this.handleTransitionClick(cellData);
+        return;
+    }
+
+    // === ПРОВЕРКА НА ПРОХОДИМОСТЬ ===
+    if (cellData.passable === false) {
+        console.log("🚫 Клетка непроходима");
+        if (window.game) {
+            window.game.showNotification("Эта клетка непроходима!", 'error');
+        }
+        return;
+    }
+
+    // === ПРОВЕРКА НА ДОСТИЖИМОСТЬ ===
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+
+    if (!isReachable) {
+        console.log("🚫 Нельзя переместиться на эту клетку - она недоступна");
+        if (window.game) {
+            window.game.showNotification("Нельзя переместиться на эту клетку!", 'error');
+        }
+        return;
+    }
+
+    // === ПРОВЕРКА НА НОЧЬ ===
+    if (this.timeSystem) {
+        const timeStatus = this.timeSystem.getTimeStatus();
+        
+        // Если ночь и цель не исследована
+        if (timeStatus.isNight && !cellData.explored) {
+            console.log("🌙 Попытка исследования нового гекса ночью");
+            
+            if (window.game) {
+                const confirmExplore = window.confirm(
+                    "🌙 Исследовать новый гекс ночью ОЧЕНЬ ОПАСНО!\n\n" +
+                    "Без костра: 90% шанс нападения каждый час\n" +
+                    "Рекомендуется:\n" +
+                    "1. Вернуться в лагерь (кнопка '🏕️ В лагерь')\n" +
+                    "2. Переночевать (кнопка '🌙 Переночевать')\n" +
+                    "3. Исследовать утром\n\n" +
+                    "Всё равно исследовать ночью?"
+                );
+                
+                if (!confirmExplore) {
+                    console.log("❌ Игрок отменил ночное исследование");
+                    return;
+                }
+            }
+        }
+    }
+
+    console.log(`✅ Мирное перемещение на [${x}, ${y}]`);
+    this.handlePeacefulMovement(x, y, cellData);
 }
+
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 researchCurrentHex() {
@@ -4711,6 +4872,8 @@ decreaseVisibility() {
         }];
     }
 
+    // ========== ОТОБРАЖЕНИЕ ОВЕРЛЕЯ КАРТЫ ==========
+// В КЛАССЕ MapSystem, метод showMapOverlay:
 showMapOverlay(overlayType, container) {
     console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
     
@@ -4720,6 +4883,12 @@ showMapOverlay(overlayType, container) {
     if (overlayType === 'local-map') {
         targetMap = this.currentLocalMap;
         displayName = '📍 Локальная карта';
+        
+        if (!targetMap && this.localMaps.length > 0) {
+            targetMap = this.localMaps[0];
+            this.currentLocalMap = targetMap;
+            console.log(`🔄 Автоматически установлена локальная карта: ${targetMap.name}`);
+        }
     } else {
         targetMap = this.currentTacticalMap;
         displayName = '🎲 Тактическая карта';
@@ -4727,53 +4896,138 @@ showMapOverlay(overlayType, container) {
     
     if (!targetMap) {
         console.error(`❌ ${overlayType} карта не загружена`);
-        container.innerHTML = `<div class="map-error">Карта не загружена</div>`;
+        container.innerHTML = `
+            <div class="overlay-content tactical-map-overlay">
+                <div class="tactical-map-header">
+                    <h4>${displayName}</h4>
+                    <button class="btn-close" onclick="game.hideOverlay()">✕</button>
+                </div>
+                <div class="map-error" style="padding: 20px; text-align: center;">
+                    Карта не загружена. Возможно, нужно создать тестовые карты.
+                    <br><br>
+                    <button class="btn-control" onclick="game.systems.map.createFallbackMaps(); game.systems.map.showOverlay('${overlayType}')">
+                        🛠️ Создать тестовые карты
+                    </button>
+                </div>
+            </div>
+        `;
         container.style.display = 'block';
         return;
     }
+    
+    console.log(`✅ Показываем карту: ${targetMap.name} (тип: ${overlayType}, клеток: ${Object.keys(targetMap.cells).length})`);
     
     this.currentTacticalMap = targetMap;
     
     if (overlayType === 'local-map') {
         this.currentMapType = 'local';
         this.playerTacticalPosition = {...this.playerLocalPosition};
+        this.currentLocalMap = targetMap;
     } else {
         this.currentMapType = 'tactical';
-    }
-    
-    // Инициализируем hexGameplay если нужно
-    if (!this.hexGameplay) {
-        this.initializeHexGameplay();
     }
     
     container.innerHTML = `
         <div class="overlay-content tactical-map-overlay">
             <div class="tactical-map-header">
                 <h4>${targetMap.name}</h4>
+                
+                <!-- Индикатор мирной карты -->
+                ${this.isPeacefulMap() ? `
+                    <div class="peaceful-map-indicator" style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: rgba(0, 170, 255, 0.15);
+                        border: 2px solid #00aaff;
+                        border-radius: 8px;
+                        padding: 6px 12px;
+                        color: #00aaff;
+                        font-weight: bold;
+                        font-size: 14px;
+                        margin-left: 15px;
+                        vertical-align: middle;
+                        animation: peaceful-pulse 2s infinite;
+                    ">
+                        <span>🍻</span>
+                        <span>Мирная карта</span>
+                    </div>
+                ` : ''}
+                
                 <div class="map-type-badge">${overlayType === 'local-map' ? '📍 Локальная' : '🎲 Тактическая'}</div>
+                
                 <div class="zoom-controls">
-                    <button class="btn-control" onclick="game.systems.map.zoomOut()">🔍−</button>
+                    <button class="btn-control" onclick="game.systems.map.zoomOut()" title="Уменьшить">
+                        🔍−
+                    </button>
                     <span class="zoom-info">${Math.round(this.zoomLevel * 100)}%</span>
-                    <button class="btn-control" onclick="game.systems.map.zoomIn()">🔍+</button>
-                    <button class="btn-control" onclick="game.systems.map.resetZoom()">🔄</button>
+                    <button class="btn-control" onclick="game.systems.map.zoomIn()" title="Увеличить">
+                        🔍+
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.resetZoom()" title="Сбросить масштаб">
+                        🔄
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.toggleFullscreen()" title="Полноэкранный режим">
+                        📱
+                    </button>
                 </div>
+                
                 <button class="btn-close" onclick="game.hideOverlay()">✕</button>
             </div>
             
             <div class="tactical-map-controls">
-                <div class="position-info">
-                    Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
-                    ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+                <div class="time-controls-group" style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+                    <div class="time-display" id="timeDisplay" style="font-size: 14px;">
+                        ☀️ 07:00 День 1 (Лето)
+                    </div>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.createCamp()" 
+                            title="Создать лагерь на этом гексе"
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🏕️ Создать лагерь
+                    </button>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.returnToCamp()" 
+                            title="Вернуться в лагерь"
+                            ${!this.timeSystem?.camp?.exists ? 'disabled' : ''}
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🏕️ В лагерь
+                    </button>
+                    
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map.timeSystem) game.systems.map.timeSystem.spendNightInCamp()" 
+                            title="Провести ночь в лагере"
+                            ${!this.timeSystem?.isInCamp?.() ? 'disabled' : ''}
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🌙 Переночевать
+                    </button>
+                    <button class="btn-control" 
+                            onclick="if (game.systems.map) game.systems.map.researchCurrentHex()" 
+                            title="Исследовать этот гекс (переночевать)"
+                            style="padding: 5px 10px; font-size: 12px;">
+                        🔍 Исследовать гекс
+                    </button>
                 </div>
-                <div class="map-controls-group">
+                
+                <div class="map-controls-group" style="display: flex; align-items: center; gap: 10px;">
                     <button class="btn-control" onclick="game.systems.map.toggleGrid()">
                         ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
                     </button>
-                    ${this.hexGameplay ? `
-                        <button class="btn-control" onclick="game.systems.map.testHexGameplay()">
-                            🎮 Тест гекса
-                        </button>
-                    ` : ''}
+                    <button class="btn-control" onclick="game.systems.map.toggleVisibilitySystem()">
+                        ${this.fogOfWarEnabled ? '👁️ Выкл. туман' : '👁️ Вкл. туман'}
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.increaseVisibility()" title="Увеличить радиус видимости">
+                        👁️+
+                    </button>
+                    <button class="btn-control" onclick="game.systems.map.decreaseVisibility()" title="Уменьшить радиус видимости">
+                        👁️-
+                    </button>
+                    <div class="position-info" style="color: #94a3b8; font-size: 12px;">
+                        Позиция: [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]
+                        ${overlayType === 'local-map' ? ' (локальная)' : ' (тактическая)'}
+                    </div>
                 </div>
             </div>
             
@@ -4791,17 +5045,34 @@ showMapOverlay(overlayType, container) {
                             Выберите клетку для просмотра доступных действий
                         </div>
                     </div>
+                    
+                    <div class="cell-info-footer">
+                        <div class="action-hint">
+                            ℹ️ Каждая клетка позволяет совершить одно действие
+                        </div>
+                        <div class="resource-info">
+                            <h5>📦 Ресурсы героя:</h5>
+                            <div class="resource-list" id="heroResourcesList">
+                                <!-- Ресурсы будут загружены динамически -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="tactical-map-info">
                 <div class="map-description">
                     ${targetMap.description || 'Описание отсутствует'}
+                    ${this.isPeacefulMap() ? '<br><span style="color: #00aaff;">🍻 Мирная локация - свободное перемещение без затрат времени</span>' : ''}
                 </div>
                 <div class="map-stats">
                     <span>Клеток: ${Object.keys(targetMap.cells).length}</span>
                     <span>Размер: ${targetMap.width}x${targetMap.height}</span>
+                    <span>Масштаб: <span id="currentZoom">${Math.round(this.zoomLevel * 100)}%</span></span>
                     <span id="availableMoves">Доступных ходов: 0</span>
+                    <span>Радиус видимости: ${this.visibilityRadius}</span>
+                    <span>Туман войны: ${this.fogOfWarEnabled ? 'включен' : 'выключен'}</span>
+                    ${this.isPeacefulMap() ? '<span style="color: #00aaff;">🍻 Мирная</span>' : ''}
                 </div>
             </div>
         </div>
@@ -4810,8 +5081,42 @@ showMapOverlay(overlayType, container) {
     container.style.display = 'block';
     
     setTimeout(() => {
-        this.initCanvas();
-        this.updateMovementInfo();
+        console.log("🎨 Инициализируем Canvas для карты...");
+        
+        if (!this.currentTacticalMap) {
+            console.error("❌ currentTacticalMap не установлена для Canvas");
+            return;
+        }
+        
+        try {
+            this.initCanvas();
+            this.updateMovementInfo();
+            
+            if (this.actionSystem) {
+                this.actionSystem.updateHeroResourcesUI();
+            }
+            
+            console.log("🔍 Проверяем состояние клеток на карте:");
+            Object.values(this.currentTacticalMap.cells).forEach(cell => {
+                console.log(`  [${cell.col},${cell.row}]: type=${cell.type}, explored=${cell.explored}, cellType=${cell.cellType}, visibility=${cell.visibilityLevel}`);
+            });
+            
+            const cellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+            const currentCell = this.currentTacticalMap.cells[cellKey];
+            
+            if (currentCell && this.actionSystem) {
+                console.log(`📍 Автоматически показываем описание текущей клетки [${this.playerTacticalPosition.x}, ${this.playerTacticalPosition.y}]`);
+                setTimeout(() => {
+                    this.actionSystem.updateCellActionsUI(currentCell);
+                    this.actionSystem.highlightSelectedCell(currentCell);
+                }, 100);
+            }
+            
+            console.log("✅ Canvas успешно инициализирован");
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации Canvas:", error);
+        }
     }, 50);
 }
     
@@ -4952,36 +5257,6 @@ showMapOverlay(overlayType, container) {
         console.groupEnd();
     }
 
-
-
-/**
- * Тест системы геймплея гексов
- */
-testHexGameplay() {
-    console.log("🧪 Тестирование HexGameplaySystem");
-    
-    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
-    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
-    
-    if (!currentCell) {
-        this.showNotification("❌ Нет текущей клетки для теста", 'error');
-        return;
-    }
-    
-    if (!this.hexGameplay) {
-        this.initializeHexGameplay();
-    }
-    
-    if (this.hexGameplay && this.hexGameplay.enterHex) {
-        this.showNotification("🎮 Запуск теста геймплея гекса...", 'info');
-        this.hexGameplay.enterHex(currentCell);
-    } else {
-        this.showNotification("❌ HexGameplaySystem не доступен", 'error');
-    }
-}
-
-
-    
     testPeacefulMovement() {
         if (!this.currentTacticalMap) {
             console.error("❌ Нет текущей карты");
