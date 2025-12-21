@@ -2634,80 +2634,105 @@ showBattleResult(victory, escape = false) {
     
     console.log(`📊 Показ результатов боя (контекст: ${this.battleContext})`);
     
-    if (victory) {
-        const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
-        const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
-        
-        // Получаем список полученных ресурсов
-        let resourcesList = "";
-        const resourcesSystem = window.game?.systems?.resources;
-        if (resourcesSystem) {
-            const resourceCount = resourcesSystem.getTotalResourceCount ? resourcesSystem.getTotalResourceCount() : 0;
-            resourcesList = `<p style="font-size: 16px; color: #4ade80;">📦 Всего ресурсов: ${resourceCount}</p>`;
-        }
-        
-        const contextInfo = this.battleContext === 'hunt' ? '<p style="font-size: 16px; color: #fbbf24;">🏹 Успешная охота!</p>' : '';
-        
-        resultHTML = `
-            <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                <div class="battle-result-modal victory" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #00ff00; text-align: center; max-width: 500px; width: 90%;">
-                    <h3 style="color: #00ff00; margin-bottom: 20px; font-size: 28px;">🎉 ПОБЕДА!</h3>
-                    <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                        ${contextInfo}
-                        <p style="font-size: 18px;">Убито монстров: ${this.currentMonsters.length}</p>
-                        <p style="font-size: 18px; color: gold;">💰 +${totalReward} золота</p>
-                        <p style="font-size: 18px; color: #3b82f6;">🌟 +${totalExperience} опыта</p>
-                        ${resourcesList}
-                        <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
-                    </div>
-                    <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                            style="padding: 12px 30px; font-size: 18px; background: #00ff00; color: black; border: none; border-radius: 8px; cursor: pointer;">
-                        Продолжить
-                    </button>
-                </div>
-            </div>
-        `;
-    } else {
-        if (escape) {
+    // Обработка ночного боя на гексе
+    if (this.battleContext === 'hex_night_battle') {
+        if (victory) {
             resultHTML = `
-                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                    <div class="battle-result-modal escape" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ffaa00; text-align: center; max-width: 500px; width: 90%;">
-                        <h3 style="color: #ffaa00; margin-bottom: 20px; font-size: 28px;">🏃 УСПЕШНЫЙ ПОБЕГ</h3>
-                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                            <p style="font-size: 18px;">Герой успешно сбежал с поля боя</p>
-                            <p style="font-size: 18px; color: #ef4444;">Потеряно 50% здоровья</p>
-                            <p style="font-size: 18px;">Герой остался на своей позиции</p>
-                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal victory">
+                        <h3>🎉 ПОБЕДА НА ГЕКСЕ!</h3>
+                        <div class="result-details">
+                            <p>🌙 Вы пережили ночь и победили монстра</p>
+                            <p style="color: #00ff00;">✅ Гекс теперь исследован</p>
+                            <p>🔓 Соседние клетки разблокированы</p>
+                            <p style="color: gold;">💰 Получены все собранные ресурсы</p>
                         </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                                style="padding: 12px 30px; font-size: 18px; background: #ffaa00; color: black; border: none; border-radius: 8px; cursor: pointer;">
-                            Продолжить
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Продолжить исследование
                         </button>
                     </div>
                 </div>
             `;
         } else {
             resultHTML = `
-                <div class="battle-result-overlay" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000;">
-                    <div class="battle-result-modal defeat" style="background: #1a1a2e; padding: 30px; border-radius: 15px; border: 3px solid #ef4444; text-align: center; max-width: 500px; width: 90%;">
-                        <h3 style="color: #ef4444; margin-bottom: 20px; font-size: 28px;">💀 ПОРАЖЕНИЕ</h3>
-                        <div class="result-details" style="margin-bottom: 25px; line-height: 1.6;">
-                            <p style="font-size: 18px;">Герой повержен в бою</p>
-                            <p style="font-size: 18px; color: #00ff00;">Здоровье восстановлено до 1</p>
-                            <p style="font-size: 18px;">Возврат на стартовую позицию</p>
-                            <p style="font-size: 16px;">Раундов: ${this.battleRound}</p>
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal defeat">
+                        <h3>💀 ПОРАЖЕНИЕ НА ГЕКСЕ</h3>
+                        <div class="result-details">
+                            <p>🌙 Ночь оказалась слишком опасной</p>
+                            <p style="color: #ff4444;">❌ Вы проиграли ночной бой</p>
+                            <p>🏃 Возврат на стартовую позицию</p>
+                            <p style="color: #ffaa00;">📦 Часть ресурсов потеряна</p>
                         </div>
-                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()" 
-                                style="padding: 12px 30px; font-size: 18px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                            Продолжить
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Попробовать снова
                         </button>
                     </div>
                 </div>
             `;
         }
+    } else {
+        // Старая логика для других боев
+        if (victory) {
+            const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
+            const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
+            
+            resultHTML = `
+                <div class="battle-result-overlay">
+                    <div class="battle-result-modal victory">
+                        <h3>🎉 ПОБЕДА!</h3>
+                        <div class="result-details">
+                            <p>Убито монстров: ${this.currentMonsters.length}</p>
+                            <p style="color: gold;">💰 +${totalReward} золота</p>
+                            <p style="color: #3b82f6;">🌟 +${totalExperience} опыта</p>
+                            <p>Раундов: ${this.battleRound}</p>
+                        </div>
+                        <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+            `;
+        } else {
+            if (escape) {
+                resultHTML = `
+                    <div class="battle-result-overlay">
+                        <div class="battle-result-modal escape">
+                            <h3>🏃 УСПЕШНЫЙ ПОБЕГ</h3>
+                            <div class="result-details">
+                                <p>Герой успешно сбежал с поля боя</p>
+                                <p style="color: #ef4444;">Потеряно 50% здоровья</p>
+                                <p>Герой остался на своей позиции</p>
+                                <p>Раундов: ${this.battleRound}</p>
+                            </div>
+                            <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                                Продолжить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultHTML = `
+                    <div class="battle-result-overlay">
+                        <div class="battle-result-modal defeat">
+                            <h3>💀 ПОРАЖЕНИЕ</h3>
+                            <div class="result-details">
+                                <p>Герой повержен в бою</p>
+                                <p style="color: #00ff00;">Здоровье восстановлено до 1</p>
+                                <p>Возврат на стартовую позицию</p>
+                                <p>Раундов: ${this.battleRound}</p>
+                            </div>
+                            <button class="btn-primary" onclick="game.systems.battle.closeBattleResult()">
+                                Продолжить
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
     }
     
-    // ⭐ УДАЛЯЕМ СТАРЫЕ ОКНА ПЕРЕД ДОБАВЛЕНИЕМ НОВЫХ
+    // Удаляем старые окна
     this.removeAllBattleElements();
     
     app.insertAdjacentHTML('beforeend', resultHTML);
@@ -2724,96 +2749,69 @@ showBattleResult(victory, escape = false) {
 
     
 closeBattleResult() {
-    console.log(`🔙 Закрытие результатов боя, контекст: ${this.battleContext}`);
+    console.log("🎮 Закрытие результатов боя");
     
-    // ⭐ 1. УДАЛЯЕМ ВСЕ ОКНА БОЯ ИЗ DOM
-    this.removeAllBattleElements();
-    
-    // ⭐ 2. ОЧИЩАЕМ СОСТОЯНИЕ БОЯ
-    this.resultShown = false;
-    this.battleEnding = false;
-    this.battleActive = false;
-    this.currentMonsters = [];
-    this.selectedTarget = null;
-    this.pendingAction = null;
-    this.battleLog = [];
-    this.battleRound = 0;
-    
-    // ⭐ 3. ВОЗВРАЩАЕМСЯ К КАРТЕ ПО КОНТЕКСТУ
-    if ((this.battleContext === 'movement' || this.battleContext === 'hunt') && window.game && window.game.systems.map) {
-        console.log("🗺️ Возвращаемся к тактической карте...");
-        
-        const mapSystem = window.game.systems.map;
-        
-        // ⭐ 4. ГАРАНТИРУЕМ, ЧТО ОКНО БОЯ СКРЫТО
-        const battleOverlay = document.querySelector('.battle-result-overlay');
-        if (battleOverlay) {
-            battleOverlay.style.display = 'none';
-            battleOverlay.remove();
-        }
-        
-        const battleScreen = document.querySelector('.battle-screen-fullscreen');
-        if (battleScreen) {
-            battleScreen.style.display = 'none';
-            battleScreen.remove();
-        }
-        
-        // ⭐ 5. ЖДЕМ ОЧИСТКИ DOM И ПОКАЗЫВАЕМ КАРТУ
-        setTimeout(() => {
-            // Проверяем, была ли охота
-            if (this.battleContext === 'hunt' && mapSystem.pendingAction) {
-                const { row, col } = mapSystem.pendingAction;
-                const cellKey = `${col},${row}`;
-                const cell = mapSystem.currentTacticalMap?.cells[cellKey];
-                
-                console.log(`🏹 Возвращаемся к клетке охоты [${col},${row}]`);
-                
-                // Показываем карту
-                mapSystem.showOverlay('tactical-map');
-                
-                // Ждем инициализации и выделяем клетку
-                setTimeout(() => {
-                    if (mapSystem.actionSystem && cell) {
-                        mapSystem.actionSystem.updateCellActionsUI(cell);
-                        mapSystem.actionSystem.highlightSelectedCell(cell);
-                    }
-                }, 500);
-                
-            } else {
-                // Обычный бой - просто показываем карту
-                mapSystem.showOverlay('tactical-map');
-                
-                // Обновляем позицию героя на карте
-                setTimeout(() => {
-                    const cellKey = `${mapSystem.playerTacticalPosition.x},${mapSystem.playerTacticalPosition.y}`;
-                    const currentCell = mapSystem.currentTacticalMap?.cells[cellKey];
-                    
-                    if (currentCell && mapSystem.actionSystem) {
-                        mapSystem.actionSystem.updateCellActionsUI(currentCell);
-                        mapSystem.actionSystem.highlightSelectedCell(currentCell);
-                    }
-                }, 500);
-            }
-        }, 100);
-        
-    } else {
-        // Для других контекстов возвращаемся к экрану героя
-        console.log("🎮 Возвращаемся к экрану героя");
-        if (window.game && window.game.showHeroGameScreen) {
-            // Сначала очищаем DOM
-            this.removeAllBattleElements();
-            // Потом показываем экран героя
-            setTimeout(() => {
-                window.game.showHeroGameScreen();
-            }, 100);
-        }
+    const overlay = document.querySelector('.battle-result-overlay');
+    if (overlay) {
+        overlay.remove();
     }
     
-    // ⭐ 6. ОЧИЩАЕМ КОНТЕКСТ БОЯ
-    this.battleContext = 'normal';
+    // Очищаем состояние боя
+    this.resetBattleState();
     
-    console.log("✅ Результаты боя закрыты, DOM очищен");
+    // Для ночного боя на гексе передаем результат в MapSystem
+    if (this.battleContext === 'hex_night_battle') {
+        const victory = this.currentHero?.currentHealth > 0;
+        
+        setTimeout(() => {
+            if (window.game?.systems?.map?.completeMovementAfterBattle) {
+                window.game.systems.map.completeMovementAfterBattle(victory, false, 'hex_night_battle');
+            }
+        }, 500);
+    }
+    
+    // Для охоты и других боев
+    if (this.battleContext === 'hunt' || this.battleContext === 'movement') {
+        const victory = this.currentHero?.currentHealth > 0;
+        const escape = false; // TODO: определить был ли побег
+        
+        setTimeout(() => {
+            if (window.game?.systems?.map?.completeMovementAfterBattle) {
+                window.game.systems.map.completeMovementAfterBattle(victory, escape, this.battleContext);
+            }
+        }, 500);
+    }
+    
+    this.battleContext = null;
 }
+
+
+resetBattleState() {
+    console.log("🔄 Сброс состояния боя");
+    
+    this.currentHero = null;
+    this.currentMonsters = [];
+    this.battleRound = 1;
+    this.battleLog = [];
+    this.heroPositionBeforeBattle = null;
+    
+    // НЕ сбрасываем battleContext здесь - он нужен для обработки результата
+    // this.battleContext = null;
+    
+    // Очищаем интерфейс
+    const battleInterface = document.getElementById('battleInterface');
+    if (battleInterface) {
+        battleInterface.remove();
+    }
+    
+    const battleLog = document.getElementById('battleLog');
+    if (battleLog) {
+        battleLog.remove();
+    }
+    
+    console.log("✅ Состояние боя сброшено");
+}
+    
 
 // ⭐ 7. ДОБАВЛЯЕМ НОВЫЙ МЕТОД ДЛЯ ПОЛНОЙ ОЧИСТКИ DOM
 removeAllBattleElements() {
