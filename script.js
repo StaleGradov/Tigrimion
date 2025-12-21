@@ -81,67 +81,101 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
-    async loadModule(moduleName) {
-        if (this.loadedModules.has(moduleName)) {
-            console.log(`✅ Модуль ${moduleName} уже загружен`);
-            return true;
-        }
+ async loadModule(moduleName) {
+    if (this.loadedModules.has(moduleName)) {
+        console.log(`✅ Модуль ${moduleName} уже загружен`);
+        return true;
+    }
 
-        try {
-            let modulePath;
-            if (moduleName === 'crafting-system') {
-                modulePath = 'crafting-system.js';
-            } else if (moduleName === 'action-modules-loader') {
-                modulePath = 'action-modules-loader.js';
-            } else {
-                modulePath = `data/modules/${moduleName}.js`;
-            }
+    try {
+        let modulePath;
+        
+        // ОСОБЫЙ СЛУЧАЙ ДЛЯ hex-gameplay-system
+        if (moduleName === 'hex-gameplay-system') {
+            modulePath = 'data/modules/hex-gameplay-system.js';
+            console.log(`📥 Загружаем модуль hex-gameplay-system по пути: ${modulePath}`);
+        } else if (moduleName === 'crafting-system') {
+            modulePath = 'crafting-system.js';
+        } else if (moduleName === 'action-modules-loader') {
+            modulePath = 'action-modules-loader.js';
+        } else {
+            modulePath = `data/modules/${moduleName}.js`;
+        }
+        
+        console.log(`📥 Загружаем модуль: ${modulePath}`);
+        
+        const response = await fetch(modulePath);
+        if (!response.ok) {
+            const altPath = `modules/${moduleName}.js`;
+            console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+            const altResponse = await fetch(altPath);
             
-            console.log(`📥 Загружаем модуль: ${modulePath}`);
-            
-            const response = await fetch(modulePath);
-            if (!response.ok) {
-                const altPath = `modules/${moduleName}.js`;
-                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
-                const altResponse = await fetch(altPath);
-                
-                if (!altResponse.ok) {
+            if (!altResponse.ok) {
+                // Для hex-gameplay-system пробуем больше путей
+                if (moduleName === 'hex-gameplay-system') {
+                    console.log(`🔄 Пробуем дополнительные пути для hex-gameplay-system`);
+                    const additionalPaths = [
+                        'hex-gameplay-system.js',
+                        'data/hex-gameplay-system.js',
+                        'modules/hex-gameplay-system.js'
+                    ];
+                    
+                    for (const additionalPath of additionalPaths) {
+                        try {
+                            const additionalResponse = await fetch(additionalPath);
+                            if (additionalResponse.ok) {
+                                console.log(`✅ Найден по пути: ${additionalPath}`);
+                                modulePath = additionalPath;
+                                break;
+                            }
+                        } catch (e) {
+                            console.log(`   ❌ ${additionalPath}: ${e.message}`);
+                        }
+                    }
+                } else {
                     throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
                 }
-                
+            } else {
                 modulePath = altPath;
             }
-            
-            const moduleCode = await response.text();
-            
-            const blob = new Blob([moduleCode], { type: 'application/javascript' });
-            const url = URL.createObjectURL(blob);
-            
-            await new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = url;
-                script.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve();
-                };
-                script.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-                };
-                document.head.appendChild(script);
-            });
-            
-            this.loadedModules.add(moduleName);
-            console.log(`✅ Модуль ${moduleName} успешно загружен`);
-            return true;
-            
-        } catch (error) {
-            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-            
-            this.createStubModule(moduleName);
-            return false;
         }
+        
+        const moduleCode = await response.text();
+        
+        const blob = new Blob([moduleCode], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = url;
+            script.onload = () => {
+                URL.revokeObjectURL(url);
+                resolve();
+            };
+            script.onerror = () => {
+                URL.revokeObjectURL(url);
+                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+            };
+            document.head.appendChild(script);
+        });
+        
+        this.loadedModules.add(moduleName);
+        console.log(`✅ Модуль ${moduleName} успешно загружен`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+        
+        // Для hex-gameplay-system создаем заглушку
+        if (moduleName === 'hex-gameplay-system') {
+            console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
+            this.createHexGameplayStub();
+        } else {
+            this.createStubModule(moduleName);
+        }
+        return false;
     }
+}
 
     createStubModule(moduleName) {
         console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
