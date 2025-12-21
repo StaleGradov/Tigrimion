@@ -279,31 +279,33 @@ class ModuleLoader {
         throw new Error(`Модули не загрузились за ${maxAttempts * checkInterval / 1000} секунд. Не загружены: ${failedModules.join(', ')}`);
     }
 
-    async loadAllModules() {
-        console.log("🚀 Начинаем загрузку модулей...");
-        
-        await this.loadStyles();
-        
-        const loadPromises = this.requiredModules.map(async (moduleName) => {
-            if (!this.isModuleAvailable(moduleName)) {
-                return await this.loadModule(moduleName);
-            }
-            return true;
-        });
-        
-        const results = await Promise.allSettled(loadPromises);
-        
-        const failedModules = results
-            .map((result, index) => ({ result, module: this.requiredModules[index] }))
-            .filter(({ result }) => result.status === 'rejected' || result.value === false);
-        
-        if (failedModules.length > 0) {
-            console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
-            console.log("🔄 Продолжаем с доступными модулями...");
+  async loadAllModules() {
+    console.log("🚀 Начинаем загрузку модулей...");
+    
+    await this.loadStyles();
+    
+    // Включаем hex-gameplay-system в загрузку
+    const allModules = [...this.requiredModules, 'hex-gameplay-system'];
+    
+    const loadPromises = allModules.map(async (moduleName) => {
+        if (!this.isModuleAvailable(moduleName)) {
+            return await this.loadModule(moduleName);
         }
-        
-        return await this.waitForAllModules();
+        return true;
+    });
+    
+    const results = await Promise.allSettled(loadPromises);
+    
+    const failedModules = results
+        .map((result, index) => ({ result, module: allModules[index] }))
+        .filter(({ result }) => result.status === 'rejected' || result.value === false);
+    
+    if (failedModules.length > 0) {
+        console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
+        console.log("🔄 Продолжаем с доступными модулями...");
     }
+    
+    return await this.waitForAllModules();
 }
 
 // ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ ==========
