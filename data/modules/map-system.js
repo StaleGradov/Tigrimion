@@ -47,6 +47,8 @@ class MapSystem {
         // Ссылка на ActionSystem
         this.actionSystem = null;
         this.timeSystem = null;
+        this.hexGameplay = null;
+        this.pendingHexCompletion = null;
         
         
         this.lootTables = {
@@ -728,6 +730,82 @@ completeHuntAfterBattle(victory, escape, doubleLoot = false) {
     this.pendingAction = null;
 }
 
+
+
+/**
+ * Завершить исследование текущего гекса
+ * @param {boolean} victory - Победа или поражение
+ * @param {Object} hexData - Данные гекса (опционально)
+ */
+completeHex(victory = true, hexData = null) {
+    console.log(`🎯 MapSystem.completeHex: victory=${victory}`);
+    
+    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+    
+    if (!currentCell) {
+        console.error("❌ Текущая клетка не найдена");
+        this.showNotification("❌ Ошибка: текущая клетка не найдена", 'error');
+        return false;
+    }
+    
+    if (victory) {
+        console.log(`✅ Победа на гексе [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`);
+        
+        // Отмечаем гекс как исследованный
+        currentCell.explored = true;
+        currentCell.hasAction = false;
+        
+        // Разблокируем соседние гексы
+        this.unlockAdjacentHexes();
+        
+        // Если есть hexData и hexGameplay, обрабатываем ресурсы
+        if (hexData && this.hexGameplay && this.hexGameplay.processCollectedResources) {
+            this.hexGameplay.processCollectedResources();
+        }
+        
+        this.showNotification("🎉 Гекс исследован! Можно переходить дальше.", 'success');
+        
+        // Автосохранение
+        if (window.game) {
+            window.game.saveGame();
+        }
+        
+    } else {
+        console.log(`💀 Поражение на гексе [${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}]`);
+        
+        // Возвращаем на стартовую позицию
+        const startPosition = this.currentTacticalMap?.startPosition || {x: 0, y: 0};
+        this.playerTacticalPosition = {...startPosition};
+        
+        // Частично сохраняем ресурсы если есть hexGameplay
+        if (hexData && this.hexGameplay && this.hexGameplay.partialResourceSave) {
+            this.hexGameplay.partialResourceSave();
+        }
+        
+        this.showNotification("💀 Вы проиграли! Возврат на стартовую позицию.", 'error');
+    }
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Возвращаемся к обычному интерфейсу
+    setTimeout(() => {
+        if (this.actionSystem && currentCell) {
+            this.actionSystem.updateCellActionsUI(currentCell);
+        }
+        
+        // Закрываем интерфейс гекса если он открыт
+        if (this.hexGameplay && this.hexGameplay.resetHexState) {
+            this.hexGameplay.resetHexState();
+        }
+    }, 300);
+    
+    return true;
+}
+
+
+    
 // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ОХОТЫ ==========
 
 processHuntResource(resource, doubleLoot = false) {
@@ -944,7 +1022,6 @@ showNotification(message, type = 'info') {
 
     // ========== ЗАГРУЗКА КАРТ ==========
 
-   // В КЛАССЕ MapSystem метод loadMapData:
 async loadMapData() {
     try {
         console.log("📥 MapSystem: Загружаем данные карт...");
@@ -952,6 +1029,9 @@ async loadMapData() {
         // Инициализируем системы В ПОРЯДКЕ ВАЖНОСТИ
         this.initializeTimeSystem(); // СНАЧАЛА TimeSystem
         this.initializeActionSystem(); // ПОТОМ ActionSystem
+        
+        // Инициализируем систему гексов
+        this.initializeHexGameplay();
         
         await this.loadJSONMaps();
         
@@ -1058,6 +1138,60 @@ initializeTimeSystem() {
     return this.timeSystem;
 }
 
+
+/**
+ * Инициализация системы геймплея гексов
+ */
+initializeHexGameplay() {
+    console.log("🔄 MapSystem: Инициализация HexGameplaySystem...");
+    
+    if (typeof HexGameplaySystem !== 'undefined' && !this.hexGameplay) {
+        try {
+            this.hexGameplay = new HexGameplaySystem(this);
+            console.log("✅ HexGameplaySystem инициализирован в MapSystem");
+            
+            // Связываем обработчик результатов боя
+            const battleSystem = window.game?.systems?.battle;
+            if (battleSystem && this.hexGameplay.handleBattleResult) {
+                console.log("🔗 Связываем HexGameplaySystem с BattleSystem");
+                
+                // Сохраняем оригинальный обработчик если есть
+                const originalOnBattleComplete = battleSystem.onBattleComplete;
+                
+                // Создаем новый обработчик
+                battleSystem.onBattleComplete = (victory, battleType) => {
+                    console.log(`🎲 HexGameplay обработчик: victory=${victory}, type=${battleType}`);
+                    
+                    // Если это ночной бой на гексе
+                    if (battleType === 'hex_night_battle' && this.hexGameplay) {
+                        this.hexGameplay.handleBattleResult(victory);
+                    }
+                    
+                    // Вызываем оригинальный обработчик если есть
+                    if (originalOnBattleComplete) {
+                        originalOnBattleComplete(victory, battleType);
+                    }
+                };
+            }
+            
+            return this.hexGameplay;
+            
+        } catch (error) {
+            console.error("❌ Ошибка создания HexGameplaySystem:", error);
+            this.hexGameplay = null;
+            return null;
+        }
+    } else if (!this.hexGameplay) {
+        console.error("❌ HexGameplaySystem не найден глобально");
+        return null;
+    }
+    
+    console.log("✅ HexGameplaySystem уже инициализирован");
+    return this.hexGameplay;
+}
+
+
+    
 // НОВЫЙ МЕТОД для создания базового TimeSystem если модуль не загружен:
 createBasicTimeSystem() {
     this.timeSystem = {
@@ -2370,7 +2504,6 @@ showNotification(message, type = 'info') {
         }
     }
 
-
 moveOnTacticalMap(x, y) {
     console.log("🎯 MapSystem.moveOnTacticalMap вызывается");
     
@@ -2449,17 +2582,37 @@ moveOnTacticalMap(x, y) {
     // Перерисовываем карту (ставим иконку игрока на новом гексе)
     this.drawTacticalMap();
     
-    // Запускаем геймплей гекса
-    if (this.hexGameplay) {
+    // Проверяем и инициализируем систему гексов
+    if (!this.hexGameplay) {
+        console.log("🔄 HexGameplaySystem не инициализирован, инициализируем...");
+        this.initializeHexGameplay();
+    }
+    
+    if (this.hexGameplay && this.hexGameplay.enterHex) {
+        console.log(`🎮 Запускаем геймплей гекса через HexGameplaySystem`);
         this.hexGameplay.enterHex(cellData);
     } else {
-        console.error("❌ HexGameplaySystem не инициализирован");
+        console.error("❌ HexGameplaySystem не инициализирован или нет метода enterHex");
         this.showNotification("❌ Система геймплея гексов не загружена", 'error');
+        
+        // Альтернатива: просто отмечаем как исследованную
+        cellData.explored = true;
+        this.showNotification(`✅ Гекс [${x}, ${y}] отмечен как исследованный`, 'success');
+        this.drawTacticalMap();
+        
+        // Обновляем интерфейс действий
+        setTimeout(() => {
+            if (window.game?.systems?.action) {
+                const currentCell = this.currentTacticalMap.cells[cellKey];
+                if (currentCell) {
+                    window.game.systems.action.updateCellActionsUI(currentCell);
+                }
+            }
+        }, 300);
     }
     
     this.updateMovementInfo();
 }
-
 
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 researchCurrentHex() {
@@ -4558,7 +4711,6 @@ decreaseVisibility() {
         }];
     }
 
-    // ========== ОТОБРАЖЕНИЕ ОВЕРЛЕЯ КАРТЫ ==========
 showMapOverlay(overlayType, container) {
     console.log(`🗺️ MapSystem: Показываем ${overlayType}`);
     
@@ -4589,6 +4741,11 @@ showMapOverlay(overlayType, container) {
         this.currentMapType = 'tactical';
     }
     
+    // Инициализируем hexGameplay если нужно
+    if (!this.hexGameplay) {
+        this.initializeHexGameplay();
+    }
+    
     container.innerHTML = `
         <div class="overlay-content tactical-map-overlay">
             <div class="tactical-map-header">
@@ -4612,6 +4769,11 @@ showMapOverlay(overlayType, container) {
                     <button class="btn-control" onclick="game.systems.map.toggleGrid()">
                         ${this.showGrid ? '🔲 Скрыть сетку' : '🔳 Показать сетку'}
                     </button>
+                    ${this.hexGameplay ? `
+                        <button class="btn-control" onclick="game.systems.map.testHexGameplay()">
+                            🎮 Тест гекса
+                        </button>
+                    ` : ''}
                 </div>
             </div>
             
@@ -4790,6 +4952,36 @@ showMapOverlay(overlayType, container) {
         console.groupEnd();
     }
 
+
+
+/**
+ * Тест системы геймплея гексов
+ */
+testHexGameplay() {
+    console.log("🧪 Тестирование HexGameplaySystem");
+    
+    const currentCellKey = `${this.playerTacticalPosition.x},${this.playerTacticalPosition.y}`;
+    const currentCell = this.currentTacticalMap?.cells[currentCellKey];
+    
+    if (!currentCell) {
+        this.showNotification("❌ Нет текущей клетки для теста", 'error');
+        return;
+    }
+    
+    if (!this.hexGameplay) {
+        this.initializeHexGameplay();
+    }
+    
+    if (this.hexGameplay && this.hexGameplay.enterHex) {
+        this.showNotification("🎮 Запуск теста геймплея гекса...", 'info');
+        this.hexGameplay.enterHex(currentCell);
+    } else {
+        this.showNotification("❌ HexGameplaySystem не доступен", 'error');
+    }
+}
+
+
+    
     testPeacefulMovement() {
         if (!this.currentTacticalMap) {
             console.error("❌ Нет текущей карты");
