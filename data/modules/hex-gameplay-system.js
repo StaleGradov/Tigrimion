@@ -991,4 +991,7 @@ class HexGameplaySystem {
 }
 
 // Регистрация глобально
-window.HexGameplaySystem = HexGameplaySystem;
+if (typeof window !== 'undefined') {
+    window.HexGameplaySystem = HexGameplaySystem;
+    console.log("📦 HexGameplaySystem зарегистрирован глобально");
+};
