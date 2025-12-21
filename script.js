@@ -15,8 +15,7 @@ class ModuleLoader {
             'action-system',
             'shop-system',
             'resources-system',
-            'crafting-system',
-            'hex-gameplay-system'
+            'crafting-system'
         ];
     }
 
@@ -81,101 +80,67 @@ class ModuleLoader {
         console.log("🔄 Загружены резервные стили");
     }
 
- async loadModule(moduleName) {
-    if (this.loadedModules.has(moduleName)) {
-        console.log(`✅ Модуль ${moduleName} уже загружен`);
-        return true;
-    }
-
-    try {
-        let modulePath;
-        
-        // ОСОБЫЙ СЛУЧАЙ ДЛЯ hex-gameplay-system
-        if (moduleName === 'hex-gameplay-system') {
-            modulePath = 'data/modules/hex-gameplay-system.js';
-            console.log(`📥 Загружаем модуль hex-gameplay-system по пути: ${modulePath}`);
-        } else if (moduleName === 'crafting-system') {
-            modulePath = 'crafting-system.js';
-        } else if (moduleName === 'action-modules-loader') {
-            modulePath = 'action-modules-loader.js';
-        } else {
-            modulePath = `data/modules/${moduleName}.js`;
+    async loadModule(moduleName) {
+        if (this.loadedModules.has(moduleName)) {
+            console.log(`✅ Модуль ${moduleName} уже загружен`);
+            return true;
         }
-        
-        console.log(`📥 Загружаем модуль: ${modulePath}`);
-        
-        const response = await fetch(modulePath);
-        if (!response.ok) {
-            const altPath = `modules/${moduleName}.js`;
-            console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
-            const altResponse = await fetch(altPath);
+
+        try {
+            let modulePath;
+            if (moduleName === 'crafting-system') {
+                modulePath = 'crafting-system.js';
+            } else if (moduleName === 'action-modules-loader') {
+                modulePath = 'action-modules-loader.js';
+            } else {
+                modulePath = `data/modules/${moduleName}.js`;
+            }
             
-            if (!altResponse.ok) {
-                // Для hex-gameplay-system пробуем больше путей
-                if (moduleName === 'hex-gameplay-system') {
-                    console.log(`🔄 Пробуем дополнительные пути для hex-gameplay-system`);
-                    const additionalPaths = [
-                        'hex-gameplay-system.js',
-                        'data/hex-gameplay-system.js',
-                        'modules/hex-gameplay-system.js'
-                    ];
-                    
-                    for (const additionalPath of additionalPaths) {
-                        try {
-                            const additionalResponse = await fetch(additionalPath);
-                            if (additionalResponse.ok) {
-                                console.log(`✅ Найден по пути: ${additionalPath}`);
-                                modulePath = additionalPath;
-                                break;
-                            }
-                        } catch (e) {
-                            console.log(`   ❌ ${additionalPath}: ${e.message}`);
-                        }
-                    }
-                } else {
+            console.log(`📥 Загружаем модуль: ${modulePath}`);
+            
+            const response = await fetch(modulePath);
+            if (!response.ok) {
+                const altPath = `modules/${moduleName}.js`;
+                console.log(`🔄 Пробуем альтернативный путь: ${altPath}`);
+                const altResponse = await fetch(altPath);
+                
+                if (!altResponse.ok) {
                     throw new Error(`Не удалось загрузить модуль ${moduleName} с путей: ${modulePath}, ${altPath}`);
                 }
-            } else {
+                
                 modulePath = altPath;
             }
-        }
-        
-        const moduleCode = await response.text();
-        
-        const blob = new Blob([moduleCode], { type: 'application/javascript' });
-        const url = URL.createObjectURL(blob);
-        
-        await new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = url;
-            script.onload = () => {
-                URL.revokeObjectURL(url);
-                resolve();
-            };
-            script.onerror = () => {
-                URL.revokeObjectURL(url);
-                reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
-            };
-            document.head.appendChild(script);
-        });
-        
-        this.loadedModules.add(moduleName);
-        console.log(`✅ Модуль ${moduleName} успешно загружен`);
-        return true;
-        
-    } catch (error) {
-        console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
-        
-        // Для hex-gameplay-system создаем заглушку
-        if (moduleName === 'hex-gameplay-system') {
-            console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
-            this.createHexGameplayStub();
-        } else {
+            
+            const moduleCode = await response.text();
+            
+            const blob = new Blob([moduleCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            await new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = url;
+                script.onload = () => {
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+                script.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    reject(new Error(`Ошибка выполнения модуля ${moduleName}`));
+                };
+                document.head.appendChild(script);
+            });
+            
+            this.loadedModules.add(moduleName);
+            console.log(`✅ Модуль ${moduleName} успешно загружен`);
+            return true;
+            
+        } catch (error) {
+            console.error(`❌ Ошибка загрузки модуля ${moduleName}:`, error);
+            
             this.createStubModule(moduleName);
+            return false;
         }
-        return false;
     }
-}
 
     createStubModule(moduleName) {
         console.log(`🔄 Создаю заглушку для модуля ${moduleName}`);
@@ -236,8 +201,7 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem',
-            'hex-gameplay-system': 'HexGameplaySystem'  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
+            'crafting-system': 'CraftingSystem'
 
         };
         return classMap[moduleName] || moduleName;
@@ -279,33 +243,31 @@ class ModuleLoader {
         throw new Error(`Модули не загрузились за ${maxAttempts * checkInterval / 1000} секунд. Не загружены: ${failedModules.join(', ')}`);
     }
 
-  async loadAllModules() {
-    console.log("🚀 Начинаем загрузку модулей...");
-    
-    await this.loadStyles();
-    
-    // Включаем hex-gameplay-system в загрузку
-    const allModules = [...this.requiredModules, 'hex-gameplay-system'];
-    
-    const loadPromises = allModules.map(async (moduleName) => {
-        if (!this.isModuleAvailable(moduleName)) {
-            return await this.loadModule(moduleName);
+    async loadAllModules() {
+        console.log("🚀 Начинаем загрузку модулей...");
+        
+        await this.loadStyles();
+        
+        const loadPromises = this.requiredModules.map(async (moduleName) => {
+            if (!this.isModuleAvailable(moduleName)) {
+                return await this.loadModule(moduleName);
+            }
+            return true;
+        });
+        
+        const results = await Promise.allSettled(loadPromises);
+        
+        const failedModules = results
+            .map((result, index) => ({ result, module: this.requiredModules[index] }))
+            .filter(({ result }) => result.status === 'rejected' || result.value === false);
+        
+        if (failedModules.length > 0) {
+            console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
+            console.log("🔄 Продолжаем с доступными модулями...");
         }
-        return true;
-    });
-    
-    const results = await Promise.allSettled(loadPromises);
-    
-    const failedModules = results
-        .map((result, index) => ({ result, module: allModules[index] }))
-        .filter(({ result }) => result.status === 'rejected' || result.value === false);
-    
-    if (failedModules.length > 0) {
-        console.error("❌ Не удалось загрузить модули:", failedModules.map(f => f.module));
-        console.log("🔄 Продолжаем с доступными модулями...");
+        
+        return await this.waitForAllModules();
     }
-    
-    return await this.waitForAllModules();
 }
 
 // ========== МОДУЛЬ 2: ОСНОВНОЙ КЛАСС ИГРЫ ==========
@@ -395,154 +357,95 @@ class SafeHeroGame {
         }
     }
 
-  async initializeSystems() {
-    console.log("⚙️ Инициализация игровых систем...");
-    
-    try {
-        // Инициализируем все основные системы
-        this.systems.bonus = new BonusSystem();
-        this.systems.level = new LevelSystem();
-        this.systems.battle = new BattleSystem();
-        this.systems.equipment = new EquipmentSystem();
-        this.systems.hero = new HeroSystem();
+    async initializeSystems() {
+        console.log("⚙️ Инициализация игровых систем...");
         
-        // Создаем MapSystem первым (важно для зависимостей)
-        this.systems.map = new MapSystem();
-        
-        // Создаем ActionSystem и передаем MapSystem
-        this.systems.action = new ActionSystem(this.systems.map);
-        
-        // Инициализируем ActionSystem в MapSystem
-        this.systems.map.initializeActionSystem();
-        
-        // Создаем остальные системы
-        this.systems.shop = new ShopSystem();
-        this.systems.resources = new ResourcesSystem();
-        this.systems.crafting = new CraftingSystem(this);
-        
-        // ГАРАНТИРУЕМ, что hexGameplay инициализирован в MapSystem
-        console.log("🔄 Инициализация HexGameplaySystem...");
-        if (this.systems.map && this.systems.map.initializeHexGameplay) {
-            const hexGameplay = this.systems.map.initializeHexGameplay();
-            if (hexGameplay) {
-                console.log("✅ HexGameplaySystem успешно инициализирован в MapSystem");
-            } else {
-                console.warn("⚠️ HexGameplaySystem не удалось инициализировать в MapSystem");
-            }
-        } else {
-            console.error("❌ MapSystem не имеет метода initializeHexGameplay");
-        }
-        
-        console.log("✅ Все базовые системы инициализированы");
-        
-        // ========== Инициализация модулей действий ==========
-        await this.initializeActionModules();
-        
-        // ========== Проверка всех систем ==========
-        console.log("🔍 Проверка состояния всех систем:");
-        console.log("1. MapSystem:", !!this.systems.map);
-        console.log("2. ActionSystem:", !!this.systems.action);
-        console.log("3. HexGameplaySystem в MapSystem:", !!this.systems.map?.hexGameplay);
-        console.log("4. Метод enterHex в HexGameplaySystem:", this.systems.map?.hexGameplay?.enterHex ? "✅ Есть" : "❌ Нет");
-        console.log("5. BattleSystem:", !!this.systems.battle);
-        console.log("6. HeroSystem:", !!this.systems.hero);
-        
-        if (this.systems.map?.hexGameplay) {
-            console.log("✅ HexGameplaySystem успешно инициализирован и готов к работе");
-        } else {
-            console.warn("⚠️ Внимание: HexGameplaySystem не инициализирован в MapSystem");
-            console.warn("   При переходе на неисследованные гексы будет использоваться упрощенная логика");
-        }
-        
-        // ========== Инициализация системы крафта ==========
-        console.log("🔨 Инициализация системы крафта...");
-        console.log("Состояние системы крафта:", {
-            hasSystem: !!this.systems.crafting,
-            recipes: this.systems.crafting?.recipes,
-            recipesCount: this.systems.crafting?.recipes ? Object.keys(this.systems.crafting.recipes).length : 0,
-            stations: this.systems.crafting?.recipes?.stations,
-            stationsCount: this.systems.crafting?.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
-        });
-        
-        if (!this.systems.crafting) {
-            console.error("❌ Система крафта не инициализирована");
-            this.showNotification("❌ Система крафта не доступна", "error");
-        } else if (this.systems.crafting.recipes && Object.keys(this.systems.crafting.recipes).length > 0) {
-            console.log("✅ Рецепты крафта найдены и загружены");
-            
-            // Разблокируем базовые станции крафта
-            this.systems.crafting.unlockStation('campfire');
-            this.systems.crafting.unlockStation('workbench');
-            
-            console.log("🎉 Базовые станции крафта разблокированы");
-            
-            // Добавляем кнопку крафта в интерфейс ресурсов
-            if (this.systems.crafting.addCraftingToResources) {
-                setTimeout(() => {
-                    this.systems.crafting.addCraftingToResources();
-                    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
-                }, 1000);
-            }
-            
-        } else {
-            console.warn("⚠️ Рецепты крафта не найдены, создаем резервные...");
-            
-            this.systems.crafting.createFallbackRecipes();
-            
-            if (this.systems.crafting.addCraftingToResources) {
-                setTimeout(() => {
-                    this.systems.crafting.addCraftingToResources();
-                    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов (резервные рецепты)");
-                }, 1000);
-            }
-            
-            this.showNotification("⚠️ Используются базовые рецепты крафта", "warning");
-        }
-        
-        // ========== Проверка загрузки модулей действий ==========
-        console.log("🔍 Проверка модулей действий:");
-        console.log("Загруженные модули:", Object.keys(this.systems.action?.actionModules || {}));
-        
-        if (this.systems.action?.actionModules?.hunt) {
-            console.log("✅ Модуль охоты загружен:", this.systems.action.actionModules.hunt);
-        } else {
-            console.warn("⚠️ Модуль охоты не загружен");
-            console.log("Попытка принудительной загрузки...");
-            try {
-                if (this.systems.action.ensureHuntModuleLoaded) {
-                    await this.systems.action.ensureHuntModuleLoaded();
-                }
-            } catch (error) {
-                console.error("❌ Ошибка загрузки модуля охоты:", error);
-            }
-        }
-        
-        console.log("🎉 Все системы инициализированы и готовы к работе!");
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Ошибка инициализации систем:", error);
-        console.error("Стек ошибки:", error.stack);
-        
-        // Пытаемся восстановить хотя бы базовые системы
         try {
-            console.log("🔄 Попытка восстановления базовых систем...");
+            this.systems.bonus = new BonusSystem();
+            this.systems.level = new LevelSystem();
+            this.systems.battle = new BattleSystem();
+            this.systems.equipment = new EquipmentSystem();
+            this.systems.hero = new HeroSystem();
             
-            // Обязательные системы
-            if (!this.systems.hero) this.systems.hero = new HeroSystem();
-            if (!this.systems.map) this.systems.map = new MapSystem();
-            if (!this.systems.battle) this.systems.battle = new BattleSystem();
+            // Создаем MapSystem первым
+            this.systems.map = new MapSystem();
             
-            console.log("✅ Базовые системы восстановлены");
+            // Создаем ActionSystem и передаем MapSystem
+            this.systems.action = new ActionSystem(this.systems.map);
             
-        } catch (recoveryError) {
-            console.error("💀 Критическая ошибка восстановления:", recoveryError);
-            throw new Error(`Ошибка инициализации систем: ${error.message}. Не удалось восстановить базовые системы.`);
+            // Инициализируем ActionSystem в MapSystem
+            this.systems.map.initializeActionSystem();
+            
+            this.systems.shop = new ShopSystem();
+            
+            this.systems.resources = new ResourcesSystem();
+            
+            this.systems.crafting = new CraftingSystem(this);
+            
+            console.log("✅ Все системы инициализированы");
+            
+            // ========== ДОБАВИТЬ: Инициализация модулей действий ==========
+            await this.initializeActionModules();
+            
+            console.log("🔍 Детальная проверка системы крафта:");
+            console.log("1. Система крафта создана:", !!this.systems.crafting);
+            console.log("2. Объект системы:", this.systems.crafting);
+            console.log("3. Метод loadRecipes существует:", typeof this.systems.crafting.loadRecipes);
+            
+            if (this.systems.crafting && this.systems.crafting.loadRecipes) {
+                console.log("📋 Загрузка рецептов крафта...");
+                
+                const recipesLoaded = await this.systems.crafting.loadRecipes().catch(error => {
+                    console.error("❌ Ошибка при загрузке рецептов:", error);
+                    return false;
+                });
+                
+                console.log("4. Результат загрузки рецептов:", recipesLoaded);
+                console.log("5. Рецепты после загрузки:", this.systems.crafting.recipes);
+                
+                if (recipesLoaded && this.systems.crafting.recipes) {
+                    console.log("✅ Рецепты крафта загружены успешно");
+                    console.log("6. Структура рецептов:", Object.keys(this.systems.crafting.recipes));
+                    
+                    for (const key in this.systems.crafting.recipes) {
+                        console.log(`   - ${key}:`, 
+                            Array.isArray(this.systems.crafting.recipes[key]) 
+                                ? `массив из ${this.systems.crafting.recipes[key].length} элементов`
+                                : typeof this.systems.crafting.recipes[key] === 'object'
+                                    ? `объект с ${Object.keys(this.systems.crafting.recipes[key]).length} ключами`
+                                    : typeof this.systems.crafting.recipes[key]
+                        );
+                    }
+                    
+                    this.systems.crafting.unlockStation('campfire');
+                    this.systems.crafting.unlockStation('workbench');
+                    
+                    console.log("🎉 Базовые станции крафта разблокированы");
+                    
+                    if (this.systems.crafting.addCraftingToResources) {
+                        setTimeout(() => {
+                            this.systems.crafting.addCraftingToResources();
+                            console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+                        }, 1000);
+                    }
+                    
+                } else {
+                    console.warn("⚠️ Не удалось загрузить рецепты крафта");
+                    console.warn("Причина: recipesLoaded =", recipesLoaded);
+                    console.warn("recipes =", this.systems.crafting.recipes);
+                    
+                    this.systems.crafting.createFallbackRecipes();
+                    console.log("🔄 Созданы резервные рецепты для тестирования");
+                }
+            } else {
+                console.error("❌ Система крафта не инициализирована правильно");
+            }
+            
+        } catch (error) {
+            console.error("❌ Ошибка инициализации систем:", error);
+            throw new Error(`Ошибка инициализации систем: ${error.message}`);
         }
-        
-        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
-}
 
 
     // ========== НОВЫЙ МЕТОД: Инициализация модулей действий ==========
