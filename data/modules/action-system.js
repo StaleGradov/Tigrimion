@@ -1334,94 +1334,347 @@ getCellSpecificActions(cell) {
 updateCellActionsUI(cell) {
     console.log("=== НАЧАЛО updateCellActionsUI ===");
     
-    // Проверяем, включен ли геймплей гекса
-    if (window.game?.systems?.map?.hexGameplay?.currentHex && 
-        window.game.systems.map.hexGameplay.currentHex === cell) {
-        console.log("🎮 Клетка в процессе исследования - показываем интерфейс гекса");
-        // HexGameplaySystem сам покажет свой интерфейс
+    // Проверяем, мирная ли карта
+    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log("🍻 Мирная карта - показываем специальный интерфейс");
+        this.showPeacefulMapUI(cell);
         return;
+    }
+    
+    const mapContent = document.querySelector('.tactical-map-content-with-actions');
+    if (!mapContent) {
+        console.error("❌ Основной контейнер карты не найден!");
+        return;
+    }
+    
+    // Создаем левую панель если ее нет
+    let leftPanel = document.querySelector('.cell-info-left-panel');
+    if (!leftPanel) {
+        leftPanel = document.createElement('div');
+        leftPanel.className = 'cell-info-left-panel';
+        mapContent.insertBefore(leftPanel, mapContent.firstChild);
     }
     
     const actionsContainer = document.getElementById('cellActionsContainer');
     if (!actionsContainer) {
         console.error("❌ Контейнер действий не найден!");
+        this.createActionsContainerFallback();
         return;
     }
     
+    const mapVisual = document.querySelector('.tactical-map-visual');
+    const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
+    
+    const panelWidth = 1150;
+    const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
+    
+    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
+    
+    // ========== ЛЕВАЯ ПАНЕЛЬ ==========
+    leftPanel.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffcc !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-right: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    // ========== ПРАВАЯ ПАНЕЛЬ ==========
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-left: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    const panel = actionsContainer.closest('.cell-actions-panel');
+    if (panel) {
+        panel.style.cssText = `
+            display: flex !important;
+            flex-direction: column !important;
+            height: ${panelHeight + 30}px !important;
+            max-height: ${panelHeight + 30}px !important;
+            min-height: ${panelHeight + 30}px !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
+            margin-left: 20px !important;
+            align-self: flex-start !important;
+            flex-shrink: 0 !important;
+        `;
+    }
+    
+    mapContent.style.cssText = `
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        height: ${panelHeight + 40}px !important;
+        gap: 20px !important;
+        padding: 0 20px !important;
+        overflow: visible !important;
+        width: 100% !important;
+    `;
+    
+    const mapMainArea = document.querySelector('.map-main-area');
+    if (mapMainArea) {
+        mapMainArea.style.cssText = `
+            flex: 1 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: ${panelHeight}px !important;
+            min-width: 600px !important;
+            max-width: 800px !important;
+            margin: 0 20px !important;
+        `;
+    }
+    
     if (cell.explored === undefined) cell.explored = false;
+    if (cell.hasAction === undefined) cell.hasAction = true;
     
     this.selectedCell = cell;
+    this.currentCellType = this.determineCellType(cell);
+    const cellTypeData = this.cellTypes[this.currentCellType];
     
-    // Только для исследованных или специальных клеток
-    if (cell.explored || cell.type === 'merchant' || cell.type === 'water' || cell.type === 'tavern') {
-        this.currentCellType = this.determineCellType(cell);
-        const cellTypeData = this.cellTypes[this.currentCellType];
+    if (!cellTypeData) {
+        console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
+        leftPanel.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        return;
+    }
+    
+    const cellIcon = this.mapSystem.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+    
+    const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
+                       cell.row === this.mapSystem.playerTacticalPosition.y);
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    const isExplored = cell.explored === true;
+    const isSpecialCell = this.isSpecialCellForActions(cell);
+    
+    // ========== ВАЖНОЕ ИСПРАВЛЕНИЕ: всегда показываем специальные действия для специальных клеток ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Это специальная клетка: ${cell.type}, показываем специальные действия всегда`);
+        this.currentCellActions = this.getCellSpecificActions(cell);
         
-        let html = `
-            <div class="cell-info">
-                <h4 style="color: #00ffcc;">${cellTypeData?.name || 'Клетка'}</h4>
-                <p style="color: #94a3b8; font-size: 14px;">
-                    ${cellTypeData?.description || 'Описание отсутствует'}
-                </p>
-        `;
-        
-        // Для исследованных клеток
-        if (cell.explored) {
-            html += `
-                <div class="explored-cell-info">
-                    <div style="color: #00ff00; margin: 10px 0;">
-                        ✅ Клетка исследована
-                    </div>
-                    <div style="color: #94a3b8; font-size: 12px;">
-                        Можно переходить на соседние клетки
-                    </div>
-                </div>
-            `;
+        // ОСОБО ВАЖНО: для специальных клеток НЕ устанавливаем explored = true после использования
+        // Клетка остается доступной для повторного использования
+        if (isExplored && isSpecialCell) {
+            console.log(`🔄 Клетка ${cell.type} исследована, но специальные действия остаются доступными`);
+            // НЕ показываем "клетка исследована", показываем интерфейс с действиями
         }
-        
-        // Для специальных клеток
-        if (cell.type === 'merchant') {
-            html += `
-                <div class="special-cell-actions">
-                    <button class="btn-action" onclick="game.systems.action.handleMerchantAction(${cell.row}, ${cell.col})"
-                            style="background: #fbbf24; color: black; padding: 10px 20px; margin: 10px 0;">
-                        🛒 Торговать
-                    </button>
-                </div>
-            `;
-        } else if (cell.type === 'water') {
-            html += `
-                <div class="special-cell-actions">
-                    <button class="btn-action" onclick="game.systems.action.handleWaterAction(${cell.row}, ${cell.col})"
-                            style="background: #3b82f6; color: white; padding: 10px 20px; margin: 10px 0;">
-                        💧 Наполнить флягу
-                    </button>
-                </div>
-            `;
-        }
-        
-        html += `</div>`;
-        actionsContainer.innerHTML = html;
-        
     } else {
-        // Для неисследованных клеток - простая информация
-        actionsContainer.innerHTML = `
-            <div class="unexplored-cell-info">
-                <h4 style="color: #ffaa00;">❓ Неисследованная клетка</h4>
-                <p style="color: #94a3b8; font-size: 14px;">
-                    Кликните на клетку чтобы начать исследование
-                </p>
-                <div style="margin-top: 20px;">
-                    <div style="color: #aaa; font-size: 12px;">
-                        ❗ Исследование займет время и может привести к бою
-                    </div>
+        // Для обычных клеток используем обычную логику
+        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
+    }
+    
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт. (специальная клетка: ${isSpecialCell})`);
+    
+    // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
+    let leftHTML = '';
+    
+    try {
+        leftHTML = this.createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    } catch (error) {
+        console.error("❌ Ошибка создания информации о клетке:", error);
+        leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+    }
+    
+    leftPanel.innerHTML = leftHTML;
+    
+    // ========== HTML ПРАВОЙ ПАНЕЛИ ==========
+    let rightHTML = '';
+    
+    rightHTML += `
+        <div class="actions-section" style="margin-bottom: 20px;">
+            <h3 style="color: #00ffff; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
+    `;
+    
+    // ========== ИСПРАВЛЕНИЕ: специальные клетки всегда показывают действия ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Показываем специальные действия для ${cell.type}`);
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
+        }
+    } 
+    // Обычные клетки с обычной логикой
+    else if (!isExplored && cell.hasAction !== false) {
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
+        }
+    } else if (isExplored && !isSpecialCell) {
+        rightHTML += this.createExploredCellHTML();
+    } else if (cell.hasAction === false) {
+        rightHTML += this.createNoActionsHTML();
+    }
+    
+    rightHTML += `</div>`;
+    
+    // Добавляем легенду шансов только для не-мирных карт и не-специальных клеток
+    if (!this.mapSystem.isPeacefulMap() && !isSpecialCell) {
+        rightHTML += `
+            <div class="chance-legend" style="
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 8px;
+                padding: 12px;
+                font-size: 12px;
+                color: #ccc;
+                margin-top: 15px;
+            ">
+                <strong style="color: #00ffcc;">Легенда шансов:</strong>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #ff4444;">0-39% - Плохой</span>
+                    <span style="color: #ffaa00;">40-69% - Средний</span>
+                    <span style="color: #44ff44;">70-89% - Хороший</span>
+                    <span style="color: #00ffaa;">90-100% - Отличный</span>
                 </div>
             </div>
         `;
     }
     
+    rightHTML += `
+        <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
+            <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
+            <div class="resource-list" id="heroResourcesListRight">
+                <!-- Ресурсы будут загружены динамически -->
+            </div>
+        </div>
+    `;
+    
+    actionsContainer.innerHTML = rightHTML;
+    
+    // ========== ОПТИМИЗАЦИЯ ==========
+    setTimeout(() => {
+        const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
+        if (leftImageWrapper) {
+            leftImageWrapper.style.cssText = `
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
+                overflow: hidden !important;
+                margin: 0 auto 20px auto !important;
+                position: relative !important;
+                border: 2px solid #00ffcc !important;
+                border-radius: 10px !important;
+                align-self: center !important;
+            `;
+        }
+        
+        if (cellTypeData) {
+            try {
+                this.displayRealLocationImage(cellTypeData, leftPanel);
+            } catch (error) {
+                console.error("❌ Ошибка загрузки картинки:", error);
+            }
+        }
+        
+        const actionCards = actionsContainer.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
+                border: 1px solid #00aaff !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important;
+                transition: all 0.2s ease !important;
+                margin: 0 !important;
+            `;
+            
+            if (!card.style.opacity || card.style.opacity !== '0.6') {
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-3px) scale(1.02)';
+                    card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.boxShadow = 'none';
+                };
+            }
+        });
+        
+        const actionsGrid = actionsContainer.querySelector('.actions-grid');
+        if (actionsGrid) {
+            actionsGrid.style.cssText = `
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 12px !important;
+                margin-bottom: 20px !important;
+            `;
+        }
+        
+        this.updateHeroResourcesUI('heroResourcesListRight');
+        
+        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
+        
+    }, 50);
+    
+    if ((!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) || 
+        (isSpecialCell && this.currentCellActions.length > 0)) {
+        try {
+            this.setupActionEventListeners();
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
+    }
+    
+    console.log("✅ Панели обновлены");
     console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
+
 
 
 
@@ -2256,30 +2509,292 @@ isSpecialCellForActions(cell) {
     }
 
 
-performCellAction(action, row, col) {
+async performCellAction(action, row, col) {
     console.log(`🎯 ActionSystem.performCellAction: ${action} на [${col},${row}]`);
+
+    // === ПРОВЕРКА НА МИРНУЮ КАРТУ ===
+    if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
+        console.log(`🍻 На мирной карте выполняется действие: ${action}`);
+        
+        // Для мирных карт особые правила
+        if (action === 'trade') {
+            this.handleTradeAction(row, col);
+            return;
+        }
+
+        if (action === 'fill_flask') {
+            this.handleFillFlaskAction(row, col);
+            return;
+        }
+        
+        // Для других действий на мирной карте просто показываем сообщение
+        const config = this.actionConfigs[action] || {
+            icon: '⚡',
+            name: action.replace(/_/g, ' '),
+            description: 'Действие выполнено'
+        };
+        this.showNotification(`${config.icon} ${config.name} выполнено на мирной карте`, 'success');
+        return;
+    }
+
+    // === ОБРАБОТКА СПЕЦИАЛЬНЫХ ДЕЙСТВИЙ (торговля, вода) ===
+    if (action === 'trade') {
+        this.handleTradeAction(row, col);
+        return;
+    }
+
+    if (action === 'fill_flask') {
+        this.handleFillFlaskAction(row, col);
+        return;
+    }
     
+    // === ДИАГНОСТИКА И ИСПРАВЛЕНИЕ ПЕРЕД ОХОТОЙ ===
+    if (action === 'hunt') {
+        console.log(`🏹 === ОБРАБОТКА ОХОТЫ ===`);
+        
+        // 1. Проверяем, загружен ли модуль охоты
+        if (!this.actionModules['hunt']) {
+            console.log("🔄 Модуль охоты не загружен, пробуем загрузить...");
+            await this.ensureHuntModuleLoaded();
+        }
+        
+        // 2. Получаем модуль охоты
+        const huntModule = this.actionModules['hunt'];
+        if (!huntModule) {
+            console.error("❌ Модуль охоты не найден даже после загрузки");
+            this.showNotification("❌ Система охоты не доступна!", 'error');
+            return;
+        }
+        
+        console.log("✅ Модуль охоты найден:", huntModule);
+        
+        // 3. Проверяем метод execute
+        if (typeof huntModule.execute !== 'function') {
+            console.error("❌ У модуля нет метода execute!");
+            this.showNotification("❌ Ошибка модуля охоты!", 'error');
+            return;
+        }
+        
+        // 4. Получаем клетку для проверки
+        const cellKey = `${col},${row}`;
+        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+        
+        if (!cell) {
+            console.error(`❌ Клетка [${col}, ${row}] не найдена`);
+            this.showNotification("❌ Клетка не найдена!", 'error');
+            return;
+        }
+        
+        // ВАЖНОЕ ИСПРАВЛЕНИЕ: для охоты проверяем исследованность только если клетка не специальная
+        if (!this.isSpecialCellForActions(cell) && cell.explored === true) {
+            console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+            this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+            return;
+        }
+        
+        // 5. Проверяем, достижима ли клетка
+        const isReachable = this.mapSystem.isCellReachable(cell);
+        if (!isReachable) {
+            console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+            this.showNotification("❌ Клетка недостижима для охоты!", 'warning');
+            return;
+        }
+        
+        // 6. Вызываем execute модуля охоты
+        console.log(`✅ Вызываем huntModule.execute(${row}, ${col})`);
+        
+        try {
+            return await huntModule.execute(row, col);
+        } catch (error) {
+            console.error("❌ Ошибка выполнения модуля охоты:", error);
+            this.showNotification("❌ Ошибка системы охоты!", 'error');
+            return;
+        }
+    }
+    
+    // === СКРЫТНОЕ ПЕРЕМЕЩЕНИЕ - обрабатываем отдельно ===
+    if (action === 'stealth_movement') {
+        const cellKey = `${col},${row}`;
+        const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+        if (!cell) {
+            console.error(`❌ Клетка не найдена`);
+            return;
+        }
+        
+        if (!this.mapSystem.isCellReachable(cell)) {
+            console.warn(`⚠️ Клетка недостижима для скрытного перемещения`);
+            this.showNotification("❌ Клетка недостижима!", 'warning');
+            return;
+        }
+        this.handleStealthMovement(cell);
+        return;
+    }
+    
+    // === РЕСУРСНЫЕ ДЕЙСТВИЯ с отображением вероятностей ===
+    const resourceActions = [
+        'search_treasure', 'search_water', 'search_berries', 
+        'search_mushrooms', 'search_herbs', 'search_ore', 
+        'search_stone', 'gather_wood', 'set_trap'
+    ];
+    
+    if (resourceActions.includes(action)) {
+        console.log(`📊 Показываем вероятности для ${action}`);
+        this.performResourceAction(action, row, col);
+        return;
+    }
+    
+    // ========== СТАНДАРТНАЯ ОБРАБОТКА ОСТАЛЬНЫХ ДЕЙСТВИЙ ==========
+    
+    // Получаем клетку
     const cellKey = `${col},${row}`;
     const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
     if (!cell) {
-        console.error("❌ Клетка не найдена");
+        console.error(`❌ Клетка не найдена`);
         return;
     }
     
-    // Только для специальных действий
-    if (action === 'trade') {
-        this.handleMerchantAction(row, col);
+    // Проверяем доступность клетки
+    const isReachable = this.mapSystem.isCellReachable(cell);
+    if (!isReachable) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] недостижима`);
+        this.showNotification("❌ Клетка недостижима для действия!", 'warning');
         return;
     }
     
-    if (action === 'fill_flask') {
-        this.handleWaterAction(row, col);
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: проверяем исследованность только для не-специальных действий
+    if (!this.isSpecialAction(action) && cell.explored === true) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] уже исследована`);
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
         return;
     }
     
-    console.log(`⚠️ Действие ${action} не поддерживается в новой системе`);
-    this.showNotification("❌ Это действие больше не поддерживается", 'warning');
+    // Проверяем, есть ли у клетки действия
+    if (cell.hasAction === false && !this.isSpecialAction(action)) {
+        console.warn(`⚠️ Клетка [${col}, ${row}] не имеет доступных действий`);
+        this.showNotification("❌ На этой клетке нет доступных действий!", 'warning');
+        return;
+    }
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (actionsContainer) {
+        const config = this.actionConfigs[action] || {
+            icon: '⚡',
+            name: action.replace(/_/g, ' '),
+            description: 'Выполняется действие...'
+        };
+        const chance = this.isSpecialAction(action) ? 100 : this.getActionChance(action, this.currentCellType);
+        
+        actionsContainer.innerHTML = `
+            <div class="action-processing">
+                <div class="processing-icon">${config.icon || '⚡'}</div>
+                <h4>Выполняется действие...</h4>
+                <p>${config.name} на клетке [${col}, ${row}]</p>
+                <div class="chance-display-processing">
+                    <span class="chance-label">Шанс успеха:</span>
+                    <span class="chance-value">${chance}%</span>
+                </div>
+                <div class="processing-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="processing-hint">Результат зависит от удачи и особенностей местности</div>
+            </div>
+        `;
+        
+        setTimeout(() => {
+            const progressFill = actionsContainer.querySelector('.progress-fill');
+            if (progressFill) {
+                progressFill.style.width = '100%';
+            }
+        }, 50);
+    }
+    
+    // === ПРОВЕРКА НА НОЧЬ ===
+    if (this.mapSystem.timeSystem) {
+        const timeStatus = this.mapSystem.timeSystem.getTimeStatus();
+        
+        // Если ночь и не в лагере - предупреждение
+        if (timeStatus.isNight && !this.mapSystem.timeSystem.isInCamp()) {
+            console.log("🌙 Выполнение действия ночью вне лагеря");
+            
+            // Показываем предупреждение
+            if (window.game) {
+                const confirmAction = window.confirm(
+                    "🌙 Ночью выполнять действия очень опасно!\n" +
+                    "Шум и свет привлекут монстров.\n" +
+                    "Продолжить?"
+                );
+                
+                if (!confirmAction) {
+                    console.log("❌ Игрок отменил действие ночью");
+                    
+                    // Восстанавливаем интерфейс
+                    setTimeout(() => {
+                        if (cell) {
+                            this.updateCellActionsUI(cell);
+                        }
+                    }, 100);
+                    return;
+                }
+            }
+        }
+        
+        // Тратим 1 час на действие
+        this.mapSystem.timeSystem.spendHourOnHex(action);
+    }
+    
+    // Имитация выполнения действия с задержкой
+    setTimeout(() => {
+        const chance = this.isSpecialAction(action) ? 100 : this.getActionChance(action, this.currentCellType);
+        const roll = Math.random() * 100;
+        const success = roll <= chance;
+        
+        console.log(`🎲 Бросок удачи: ${roll.toFixed(1)}/${chance} - ${success ? 'УСПЕХ' : 'ПРОВАЛ'}`);
+        
+        if (success) {
+            this.handleActionSuccess(action, row, col);
+            
+            // ВАЖНОЕ ИСПРАВЛЕНИЕ: специальные клетки НЕ отмечаем как исследованные
+            // чтобы можно было использовать их многократно
+            if (!this.isSpecialAction(action)) {
+                // Отмечаем клетку как исследованную после успешного действия
+                cell.explored = true;
+                cell.hasAction = false;
+            }
+        } else {
+            const cellTypeData = this.cellTypes[this.currentCellType];
+            
+            let monsterChance = cellTypeData?.failure_monster_chance || 50;
+            
+            const config = this.actionConfigs[action];
+            if (config && config.triggers_monster) {
+                monsterChance *= (config.monster_level_multiplier || 1);
+            }
+            
+            const monsterRoll = Math.random() * 100;
+            
+            if (monsterRoll <= monsterChance) {
+                console.log(`👹 Неудача вызвала появление монстра! Шанс: ${monsterChance}%, Выпало: ${monsterRoll}`);
+                this.handleActionFailureWithMonster(action, row, col, cellTypeData);
+            } else {
+                this.handleActionFailure(action);
+            }
+        }
+        
+        // Обновляем интерфейс клетки после завершения действия
+        setTimeout(() => {
+            if (cell) {
+                this.updateCellActionsUI(cell);
+            }
+            
+            // Сохраняем игру
+            if (window.game) {
+                window.game.saveGame();
+            }
+        }, 1000);
+        
+    }, 800);
 }
 
 
@@ -2332,97 +2847,6 @@ performCellAction(action, row, col) {
     
     // Показываем сообщение об успешном открытии магазина
     this.showNotification("🛒 Магазин открыт!", 'success');
-}
-
-
-handleMerchantAction(row, col) {
-    console.log(`🛒 Обработка торговли на клетке [${col},${row}]`);
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
-        return;
-    }
-    
-    // Проверяем достижимость
-    const neighbors = this.mapSystem.getHexNeighbors(
-        this.mapSystem.playerTacticalPosition.y,
-        this.mapSystem.playerTacticalPosition.x
-    );
-    
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === row && neighbor.col === col
-    );
-    
-    if (!isReachable) {
-        this.showNotification("❌ Подойдите ближе к торговцу!", 'warning');
-        return;
-    }
-    
-    // Открываем магазин
-    const shopSystem = window.game?.systems?.shop;
-    if (shopSystem && shopSystem.openShop) {
-        shopSystem.openShop(cell);
-    } else {
-        this.showNotification("❌ Система магазинов не доступна", 'error');
-    }
-}
-    
-
-
-handleWaterAction(row, col) {
-    console.log(`💧 Обработка воды на клетке [${col},${row}]`);
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        console.error(`❌ Клетка [${col}, ${row}] не найдена`);
-        return;
-    }
-    
-    // Проверяем достижимость
-    const neighbors = this.mapSystem.getHexNeighbors(
-        this.mapSystem.playerTacticalPosition.y,
-        this.mapSystem.playerTacticalPosition.x
-    );
-    
-    const isReachable = neighbors.some(neighbor => 
-        neighbor.row === row && neighbor.col === col
-    );
-    
-    if (!isReachable) {
-        this.showNotification("❌ Подойдите ближе к воде!", 'warning');
-        return;
-    }
-    
-    // Пополняем флягу
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem && battleSystem.flask) {
-        const oldCharges = battleSystem.flask.currentCharges;
-        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
-        battleSystem.flask.content = 'water';
-        
-        if (battleSystem.updateFlaskUI) {
-            battleSystem.updateFlaskUI();
-        }
-        
-        this.showNotification(`💧 Фляга наполнена: ${oldCharges}→${battleSystem.flask.capacity}`, 'success');
-        
-        // Восстанавливаем здоровье
-        if (this.mapSystem.currentHero) {
-            const heroSystem = window.game?.systems?.hero;
-            if (heroSystem) {
-                const stats = heroSystem.calculateHeroStats(this.mapSystem.currentHero);
-                this.mapSystem.currentHero.currentHealth = stats.maxHealth;
-                this.showNotification(`❤️ Здоровье восстановлено: ${stats.maxHealth}`, 'success');
-            }
-        }
-    } else {
-        this.showNotification("❌ Фляга не найдена", 'error');
-    }
 }
 
     
