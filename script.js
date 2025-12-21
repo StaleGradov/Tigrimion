@@ -15,7 +15,8 @@ class ModuleLoader {
             'action-system',
             'shop-system',
             'resources-system',
-            'crafting-system'
+            'crafting-system',
+            'hex-gameplay-system'
         ];
     }
 
@@ -201,7 +202,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
+            'crafting-system': 'CraftingSystem',
+            'hex-gameplay-system': 'HexGameplaySystem'  // <-- ДОБАВИТЬ ЭТУ СТРОКУ
 
         };
         return classMap[moduleName] || moduleName;
@@ -357,95 +359,154 @@ class SafeHeroGame {
         }
     }
 
-    async initializeSystems() {
-        console.log("⚙️ Инициализация игровых систем...");
+  async initializeSystems() {
+    console.log("⚙️ Инициализация игровых систем...");
+    
+    try {
+        // Инициализируем все основные системы
+        this.systems.bonus = new BonusSystem();
+        this.systems.level = new LevelSystem();
+        this.systems.battle = new BattleSystem();
+        this.systems.equipment = new EquipmentSystem();
+        this.systems.hero = new HeroSystem();
         
-        try {
-            this.systems.bonus = new BonusSystem();
-            this.systems.level = new LevelSystem();
-            this.systems.battle = new BattleSystem();
-            this.systems.equipment = new EquipmentSystem();
-            this.systems.hero = new HeroSystem();
-            
-            // Создаем MapSystem первым
-            this.systems.map = new MapSystem();
-            
-            // Создаем ActionSystem и передаем MapSystem
-            this.systems.action = new ActionSystem(this.systems.map);
-            
-            // Инициализируем ActionSystem в MapSystem
-            this.systems.map.initializeActionSystem();
-            
-            this.systems.shop = new ShopSystem();
-            
-            this.systems.resources = new ResourcesSystem();
-            
-            this.systems.crafting = new CraftingSystem(this);
-            
-            console.log("✅ Все системы инициализированы");
-            
-            // ========== ДОБАВИТЬ: Инициализация модулей действий ==========
-            await this.initializeActionModules();
-            
-            console.log("🔍 Детальная проверка системы крафта:");
-            console.log("1. Система крафта создана:", !!this.systems.crafting);
-            console.log("2. Объект системы:", this.systems.crafting);
-            console.log("3. Метод loadRecipes существует:", typeof this.systems.crafting.loadRecipes);
-            
-            if (this.systems.crafting && this.systems.crafting.loadRecipes) {
-                console.log("📋 Загрузка рецептов крафта...");
-                
-                const recipesLoaded = await this.systems.crafting.loadRecipes().catch(error => {
-                    console.error("❌ Ошибка при загрузке рецептов:", error);
-                    return false;
-                });
-                
-                console.log("4. Результат загрузки рецептов:", recipesLoaded);
-                console.log("5. Рецепты после загрузки:", this.systems.crafting.recipes);
-                
-                if (recipesLoaded && this.systems.crafting.recipes) {
-                    console.log("✅ Рецепты крафта загружены успешно");
-                    console.log("6. Структура рецептов:", Object.keys(this.systems.crafting.recipes));
-                    
-                    for (const key in this.systems.crafting.recipes) {
-                        console.log(`   - ${key}:`, 
-                            Array.isArray(this.systems.crafting.recipes[key]) 
-                                ? `массив из ${this.systems.crafting.recipes[key].length} элементов`
-                                : typeof this.systems.crafting.recipes[key] === 'object'
-                                    ? `объект с ${Object.keys(this.systems.crafting.recipes[key]).length} ключами`
-                                    : typeof this.systems.crafting.recipes[key]
-                        );
-                    }
-                    
-                    this.systems.crafting.unlockStation('campfire');
-                    this.systems.crafting.unlockStation('workbench');
-                    
-                    console.log("🎉 Базовые станции крафта разблокированы");
-                    
-                    if (this.systems.crafting.addCraftingToResources) {
-                        setTimeout(() => {
-                            this.systems.crafting.addCraftingToResources();
-                            console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
-                        }, 1000);
-                    }
-                    
-                } else {
-                    console.warn("⚠️ Не удалось загрузить рецепты крафта");
-                    console.warn("Причина: recipesLoaded =", recipesLoaded);
-                    console.warn("recipes =", this.systems.crafting.recipes);
-                    
-                    this.systems.crafting.createFallbackRecipes();
-                    console.log("🔄 Созданы резервные рецепты для тестирования");
-                }
+        // Создаем MapSystem первым (важно для зависимостей)
+        this.systems.map = new MapSystem();
+        
+        // Создаем ActionSystem и передаем MapSystem
+        this.systems.action = new ActionSystem(this.systems.map);
+        
+        // Инициализируем ActionSystem в MapSystem
+        this.systems.map.initializeActionSystem();
+        
+        // Создаем остальные системы
+        this.systems.shop = new ShopSystem();
+        this.systems.resources = new ResourcesSystem();
+        this.systems.crafting = new CraftingSystem(this);
+        
+        // ГАРАНТИРУЕМ, что hexGameplay инициализирован в MapSystem
+        console.log("🔄 Инициализация HexGameplaySystem...");
+        if (this.systems.map && this.systems.map.initializeHexGameplay) {
+            const hexGameplay = this.systems.map.initializeHexGameplay();
+            if (hexGameplay) {
+                console.log("✅ HexGameplaySystem успешно инициализирован в MapSystem");
             } else {
-                console.error("❌ Система крафта не инициализирована правильно");
+                console.warn("⚠️ HexGameplaySystem не удалось инициализировать в MapSystem");
+            }
+        } else {
+            console.error("❌ MapSystem не имеет метода initializeHexGameplay");
+        }
+        
+        console.log("✅ Все базовые системы инициализированы");
+        
+        // ========== Инициализация модулей действий ==========
+        await this.initializeActionModules();
+        
+        // ========== Проверка всех систем ==========
+        console.log("🔍 Проверка состояния всех систем:");
+        console.log("1. MapSystem:", !!this.systems.map);
+        console.log("2. ActionSystem:", !!this.systems.action);
+        console.log("3. HexGameplaySystem в MapSystem:", !!this.systems.map?.hexGameplay);
+        console.log("4. Метод enterHex в HexGameplaySystem:", this.systems.map?.hexGameplay?.enterHex ? "✅ Есть" : "❌ Нет");
+        console.log("5. BattleSystem:", !!this.systems.battle);
+        console.log("6. HeroSystem:", !!this.systems.hero);
+        
+        if (this.systems.map?.hexGameplay) {
+            console.log("✅ HexGameplaySystem успешно инициализирован и готов к работе");
+        } else {
+            console.warn("⚠️ Внимание: HexGameplaySystem не инициализирован в MapSystem");
+            console.warn("   При переходе на неисследованные гексы будет использоваться упрощенная логика");
+        }
+        
+        // ========== Инициализация системы крафта ==========
+        console.log("🔨 Инициализация системы крафта...");
+        console.log("Состояние системы крафта:", {
+            hasSystem: !!this.systems.crafting,
+            recipes: this.systems.crafting?.recipes,
+            recipesCount: this.systems.crafting?.recipes ? Object.keys(this.systems.crafting.recipes).length : 0,
+            stations: this.systems.crafting?.recipes?.stations,
+            stationsCount: this.systems.crafting?.recipes?.stations ? Object.keys(this.systems.crafting.recipes.stations).length : 0
+        });
+        
+        if (!this.systems.crafting) {
+            console.error("❌ Система крафта не инициализирована");
+            this.showNotification("❌ Система крафта не доступна", "error");
+        } else if (this.systems.crafting.recipes && Object.keys(this.systems.crafting.recipes).length > 0) {
+            console.log("✅ Рецепты крафта найдены и загружены");
+            
+            // Разблокируем базовые станции крафта
+            this.systems.crafting.unlockStation('campfire');
+            this.systems.crafting.unlockStation('workbench');
+            
+            console.log("🎉 Базовые станции крафта разблокированы");
+            
+            // Добавляем кнопку крафта в интерфейс ресурсов
+            if (this.systems.crafting.addCraftingToResources) {
+                setTimeout(() => {
+                    this.systems.crafting.addCraftingToResources();
+                    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов");
+                }, 1000);
             }
             
-        } catch (error) {
-            console.error("❌ Ошибка инициализации систем:", error);
-            throw new Error(`Ошибка инициализации систем: ${error.message}`);
+        } else {
+            console.warn("⚠️ Рецепты крафта не найдены, создаем резервные...");
+            
+            this.systems.crafting.createFallbackRecipes();
+            
+            if (this.systems.crafting.addCraftingToResources) {
+                setTimeout(() => {
+                    this.systems.crafting.addCraftingToResources();
+                    console.log("✅ Кнопка крафта добавлена в интерфейс ресурсов (резервные рецепты)");
+                }, 1000);
+            }
+            
+            this.showNotification("⚠️ Используются базовые рецепты крафта", "warning");
         }
+        
+        // ========== Проверка загрузки модулей действий ==========
+        console.log("🔍 Проверка модулей действий:");
+        console.log("Загруженные модули:", Object.keys(this.systems.action?.actionModules || {}));
+        
+        if (this.systems.action?.actionModules?.hunt) {
+            console.log("✅ Модуль охоты загружен:", this.systems.action.actionModules.hunt);
+        } else {
+            console.warn("⚠️ Модуль охоты не загружен");
+            console.log("Попытка принудительной загрузки...");
+            try {
+                if (this.systems.action.ensureHuntModuleLoaded) {
+                    await this.systems.action.ensureHuntModuleLoaded();
+                }
+            } catch (error) {
+                console.error("❌ Ошибка загрузки модуля охоты:", error);
+            }
+        }
+        
+        console.log("🎉 Все системы инициализированы и готовы к работе!");
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка инициализации систем:", error);
+        console.error("Стек ошибки:", error.stack);
+        
+        // Пытаемся восстановить хотя бы базовые системы
+        try {
+            console.log("🔄 Попытка восстановления базовых систем...");
+            
+            // Обязательные системы
+            if (!this.systems.hero) this.systems.hero = new HeroSystem();
+            if (!this.systems.map) this.systems.map = new MapSystem();
+            if (!this.systems.battle) this.systems.battle = new BattleSystem();
+            
+            console.log("✅ Базовые системы восстановлены");
+            
+        } catch (recoveryError) {
+            console.error("💀 Критическая ошибка восстановления:", recoveryError);
+            throw new Error(`Ошибка инициализации систем: ${error.message}. Не удалось восстановить базовые системы.`);
+        }
+        
+        throw new Error(`Ошибка инициализации систем: ${error.message}`);
     }
+}
 
 
     // ========== НОВЫЙ МЕТОД: Инициализация модулей действий ==========
