@@ -6,10 +6,27 @@
       "suggestion": "Любое пересечение путей притягивает как путников, так и тех, кто на них охотится.",
       "icon": "🚸",
       "image": "images/locations/forest_crossroads.jpg",
-      "possible_events": ["monster", "monster_group", "hunt", "berry_gathering", "assassin_contract"],
-      "guard_chance": 70,
-      "monster_level": 2,
-      "resource_abundance": "medium"
+      "action_chances": {
+        "search_treasure": 20,
+        "search_water": 30,
+        "search_berries": 35,
+        "search_mushrooms": 30,
+        "search_herbs": 25,
+        "search_ore": 5,
+        "search_stone": 25,
+        "set_trap": 75,
+        "prepare_ambush": 90,
+        "hunt_caravan": 80,
+        "take_assassination_contract": 50,
+        "light_campfire": 65,
+        "guard_caravan": 85,
+        "hunt": 70,
+        "stealth_movement": 85,
+        "gather_wood": 60
+      },
+      "special_notes": "Идеальное место для засады на движущиеся цели. Шанс встретить других путников.",
+      "failure_monster_chance": 65,
+      "monster_level": 2
     },
 
     "cave_entrance": {
@@ -18,10 +35,27 @@
       "suggestion": "Глубина пещеры неизвестна. Может служить логовом или вести к древним подземельям.",
       "icon": "🕸️",
       "image": "images/locations/cave_entrance.jpg",
-      "possible_events": ["monster", "monster_group", "ore_gathering", "mushroom_gathering", "treasure"],
-      "guard_chance": 90,
-      "monster_level": 3,
-      "resource_abundance": "high"
+      "action_chances": {
+        "search_treasure": 70,
+        "search_water": 60,
+        "search_berries": 5,
+        "search_mushrooms": 80,
+        "search_herbs": 20,
+        "search_ore": 85,
+        "search_stone": 90,
+        "set_trap": 50,
+        "prepare_ambush": 70,
+        "hunt_caravan": 15,
+        "take_assassination_contract": 25,
+        "light_campfire": 40,
+        "guard_caravan": 10,
+        "hunt": 30,
+        "stealth_movement": 40,
+        "gather_wood": 10
+      },
+      "special_notes": "Высокий шанс найти руду и редкие грибы, но риск встречи с подземными обитателями крайне велик.",
+      "failure_monster_chance": 95,
+      "monster_level": 3
     },
 
     "lonely_watchtower": {
@@ -30,10 +64,27 @@
       "suggestion": "С верхней площадки открывается вид на окрестности. Хороший пункт для долговременной стоянки.",
       "icon": "🗼",
       "image": "images/locations/lonely_watchtower.jpg",
-      "possible_events": ["assassin_contract", "treasure", "monster", "weapon_find"],
-      "guard_chance": 60,
-      "monster_level": 2,
-      "resource_abundance": "low"
+      "action_chances": {
+        "search_treasure": 50,
+        "search_water": 40,
+        "search_berries": 20,
+        "search_mushrooms": 25,
+        "search_herbs": 35,
+        "search_ore": 15,
+        "search_stone": 70,
+        "set_trap": 30,
+        "prepare_ambush": 85,
+        "hunt_caravan": 60,
+        "take_assassination_contract": 75,
+        "light_campfire": 95,
+        "guard_caravan": 90,
+        "hunt": 45,
+        "stealth_movement": 70,
+        "gather_wood": 55
+      },
+      "special_notes": "Тактическое преимущество для наблюдения и защиты. Возможны находки старых припасов.",
+      "failure_monster_chance": 55,
+      "monster_level": 2
     },
 
     "mossy_boulder_field": {
@@ -42,10 +93,27 @@
       "suggestion": "Среди этих камней легко спрятаться и легко заблудиться. Возможно, это древнее мегалитическое сооружение.",
       "icon": "🪨",
       "image": "images/locations/mossy_boulder_field.jpg",
-      "possible_events": ["stone_gathering", "monster", "monster_group", "ore_gathering"],
-      "guard_chance": 65,
-      "monster_level": 2,
-      "resource_abundance": "high"
+      "action_chances": {
+        "search_treasure": 40,
+        "search_water": 25,
+        "search_berries": 10,
+        "search_mushrooms": 70,
+        "search_herbs": 65,
+        "search_ore": 50,
+        "search_stone": 95,
+        "set_trap": 60,
+        "prepare_ambush": 80,
+        "hunt_caravan": 25,
+        "take_assassination_contract": 30,
+        "light_campfire": 50,
+        "guard_caravan": 35,
+        "hunt": 30,
+        "stealth_movement": 80,
+        "gather_wood": 20
+      },
+      "special_notes": "Отличный источник строительного камня и тенелюбивых растений. Лабиринт для засад.",
+      "failure_monster_chance": 60,
+      "monster_level": 2
     },
 
     "hidden_meadow": {
@@ -54,10 +122,27 @@
       "suggestion": "Идеальное место для безопасного привала, скрытое от чужих глаз.",
       "icon": "🌿",
       "image": "images/locations/hidden_meadow.jpg",
-      "possible_events": ["herb_gathering", "berry_gathering", "water_source", "hunt"],
-      "guard_chance": 30,
-      "monster_level": 1,
-      "resource_abundance": "medium"
+      "action_chances": {
+        "search_treasure": 15,
+        "search_water": 20,
+        "search_berries": 75,
+        "search_mushrooms": 60,
+        "search_herbs": 85,
+        "search_ore": 0,
+        "search_stone": 10,
+        "set_trap": 90,
+        "prepare_ambush": 40,
+        "hunt_caravan": 5,
+        "take_assassination_contract": 10,
+        "light_campfire": 95,
+        "guard_caravan": 50,
+        "hunt": 80,
+        "stealth_movement": 95,
+        "gather_wood": 70
+      },
+      "special_notes": "Богатая флора, безопасность. Отличное место для отдыха и сбора припасов.",
+      "failure_monster_chance": 20,
+      "monster_level": 1
     },
 
     "ford": {
@@ -66,10 +151,27 @@
       "suggestion": "Ключевая точка на пути любого каравана. Место оживленное, но и предсказуемое.",
       "icon": "🚶‍♂️💧",
       "image": "images/locations/ford.jpg",
-      "possible_events": ["attack_caravan", "defend_caravan", "water_source", "monster"],
-      "guard_chance": 50,
-      "monster_level": 2,
-      "resource_abundance": "medium"
+      "action_chances": {
+        "search_treasure": 25,
+        "search_water": 100,
+        "search_berries": 30,
+        "search_mushrooms": 15,
+        "search_herbs": 40,
+        "search_ore": 20,
+        "search_stone": 60,
+        "set_trap": 50,
+        "prepare_ambush": 75,
+        "hunt_caravan": 85,
+        "take_assassination_contract": 40,
+        "light_campfire": 80,
+        "guard_caravan": 95,
+        "hunt": 50,
+        "stealth_movement": 65,
+        "gather_wood": 35
+      },
+      "special_notes": "Гарантированная вода и высокая вероятность встретить торговцев (или тех, кто на них охотится).",
+      "failure_monster_chance": 50,
+      "monster_level": 2
     },
 
     "burnt_farm": {
@@ -78,10 +180,27 @@
       "suggestion": "Трагедия случилась недавно. Кто-то мог спрятать ценности, прежде чем бежать.",
       "icon": "🔥🏚️",
       "image": "images/locations/burnt_farm.jpg",
-      "possible_events": ["treasure", "monster", "wood_gathering", "stone_gathering"],
-      "guard_chance": 75,
-      "monster_level": 2,
-      "resource_abundance": "low"
+      "action_chances": {
+        "search_treasure": 65,
+        "search_water": 40,
+        "search_berries": 20,
+        "search_mushrooms": 10,
+        "search_herbs": 30,
+        "search_ore": 5,
+        "search_stone": 45,
+        "set_trap": 35,
+        "prepare_ambush": 55,
+        "hunt_caravan": 30,
+        "take_assassination_contract": 60,
+        "light_campfire": 70,
+        "guard_caravan": 20,
+        "hunt": 40,
+        "stealth_movement": 55,
+        "gather_wood": 45
+      },
+      "special_notes": "Шанс найти спрятанные семейные ценности или узнать контракт на месть.",
+      "failure_monster_chance": 70,
+      "monster_level": 2
     },
 
     "hunter_blind": {
@@ -90,10 +209,27 @@
       "suggestion": "Профессионально построенное укрытие. Охотник может вернуться в любой момент.",
       "icon": "🎯",
       "image": "images/locations/hunter_blind.jpg",
-      "possible_events": ["hunt", "monster", "assassin_contract", "berry_gathering"],
-      "guard_chance": 45,
-      "monster_level": 1,
-      "resource_abundance": "low"
+      "action_chances": {
+        "search_treasure": 30,
+        "search_water": 15,
+        "search_berries": 25,
+        "search_mushrooms": 20,
+        "search_herbs": 45,
+        "search_ore": 5,
+        "search_stone": 10,
+        "set_trap": 95,
+        "prepare_ambush": 90,
+        "hunt_caravan": 40,
+        "take_assassination_contract": 50,
+        "light_campfire": 30,
+        "guard_caravan": 60,
+        "hunt": 95,
+        "stealth_movement": 90,
+        "gather_wood": 40
+      },
+      "special_notes": "Идеальная позиция для скрытого наблюдения, установки ловушек или засады.",
+      "failure_monster_chance": 45,
+      "monster_level": 1
     },
 
     "sunk_trading_post": {
@@ -102,22 +238,56 @@
       "suggestion": "Такие посты бросали из-за набегов или чумы. В подвале могут остаться товары.",
       "icon": "🏪",
       "image": "images/locations/sunk_trading_post.jpg",
-      "possible_events": ["treasure", "assassin_contract", "monster_group", "weapon_find"],
-      "guard_chance": 85,
-      "monster_level": 3,
-      "resource_abundance": "medium"
+      "action_chances": {
+        "search_treasure": 80,
+        "search_water": 60,
+        "search_berries": 10,
+        "search_mushrooms": 30,
+        "search_herbs": 20,
+        "search_ore": 15,
+        "search_stone": 50,
+        "set_trap": 40,
+        "prepare_ambush": 65,
+        "hunt_caravan": 70,
+        "take_assassination_contract": 85,
+        "light_campfire": 95,
+        "guard_caravan": 75,
+        "hunt": 30,
+        "stealth_movement": 60,
+        "gather_wood": 50
+      },
+      "special_notes": "Одно из лучших мест для поиска ценностей и получения информации о контрактах.",
+      "failure_monster_chance": 85,
+      "monster_level": 3
     },
 
     "old_battlefield": {
       "name": "Заросшее поле битвы",
       "description": "Холмы и впадины, скрывающие старые окопы. Из земли кое-где торчат обломки оружия и ржавые доспехи.",
-      "suggestion": "Земля, пропитанная кровью и смертью. Местные обходят его стороной, рассказывая о призраков.",
+      "suggestion": "Земля, пропитанная кровью и смертью. Местные обходят его стороной, рассказывая о призраках.",
       "icon": "⚔️💀",
       "image": "images/locations/old_battlefield.jpg",
-      "possible_events": ["weapon_find", "armor_find", "monster_group", "treasure"],
-      "guard_chance": 90,
-      "monster_level": 4,
-      "resource_abundance": "low"
+      "action_chances": {
+        "search_treasure": 70,
+        "search_water": 30,
+        "search_berries": 5,
+        "search_mushrooms": 15,
+        "search_herbs": 10,
+        "search_ore": 40,
+        "search_stone": 30,
+        "set_trap": 20,
+        "prepare_ambush": 50,
+        "hunt_caravan": 25,
+        "take_assassination_contract": 45,
+        "light_campfire": 40,
+        "guard_caravan": 15,
+        "hunt": 15,
+        "stealth_movement": 40,
+        "gather_wood": 10
+      },
+      "special_notes": "Можно найти ценное, но проклятое оружие или реликвии. Очень высокая опасность сверхъестественных угроз.",
+      "failure_monster_chance": 90,
+      "monster_level": 4
     },
 
     "hermit_hut": {
@@ -126,10 +296,27 @@
       "suggestion": "Отшельник может быть мудрецом, безумцем или тем и другим одновременно. Подход требует осторожности.",
       "icon": "🏡",
       "image": "images/locations/hermit_hut.jpg",
-      "possible_events": ["herb_gathering", "water_source", "mushroom_gathering", "assassin_contract"],
-      "guard_chance": 30,
-      "monster_level": 1,
-      "resource_abundance": "high"
+      "action_chances": {
+        "search_treasure": 25,
+        "search_water": 70,
+        "search_berries": 50,
+        "search_mushrooms": 80,
+        "search_herbs": 95,
+        "search_ore": 10,
+        "search_stone": 20,
+        "set_trap": 30,
+        "prepare_ambush": 15,
+        "hunt_caravan": 5,
+        "take_assassination_contract": 10,
+        "light_campfire": 90,
+        "guard_caravan": 40,
+        "hunt": 65,
+        "stealth_movement": 35,
+        "gather_wood": 70
+      },
+      "special_notes": "Уникальный источник редких знаний и могущественных трав. Конфликт маловероятен, если проявить уважение.",
+      "failure_monster_chance": 30,
+      "monster_level": 1
     },
 
     "caravan_camp": {
@@ -138,10 +325,27 @@
       "suggestion": "Караваны регулярно используют это место. Можно подобрать оброненные вещи или дождаться следующего.",
       "icon": "🐪🔥",
       "image": "images/locations/caravan_camp.jpg",
-      "possible_events": ["attack_caravan", "defend_caravan", "monster", "treasure"],
-      "guard_chance": 75,
-      "monster_level": 2,
-      "resource_abundance": "medium"
+      "action_chances": {
+        "search_treasure": 40,
+        "search_water": 50,
+        "search_berries": 25,
+        "search_mushrooms": 20,
+        "search_herbs": 35,
+        "search_ore": 5,
+        "search_stone": 25,
+        "set_trap": 55,
+        "prepare_ambush": 80,
+        "hunt_caravan": 95,
+        "take_assassination_contract": 70,
+        "light_campfire": 100,
+        "guard_caravan": 90,
+        "hunt": 55,
+        "stealth_movement": 75,
+        "gather_wood": 60
+      },
+      "special_notes": "Естественная точка притяжения для торговцев и разбойников. Можно легко встроиться в охрану или подготовить нападение.",
+      "failure_monster_chance": 75,
+      "monster_level": 2
     },
 
     "glowing_pool": {
@@ -150,34 +354,27 @@
       "suggestion": "Вода обладает магическими свойствами. Может исцелять, давать видения... или мутировать.",
       "icon": "🔵",
       "image": "images/locations/glowing_pool.jpg",
-      "possible_events": ["water_source", "treasure", "monster", "herb_gathering"],
-      "guard_chance": 60,
-      "monster_level": 3,
-      "resource_abundance": "high"
-    },
-
-    "bandit_camp": {
-      "name": "Лагерь разбойников",
-      "description": "Временное укрытие бандитов с потухшими кострами и наспех собранными шалашами.",
-      "suggestion": "Опасное место, но можно попробовать договориться или атаковать первым.",
-      "icon": "⚔️",
-      "image": "images/locations/bandit_camp.jpg",
-      "possible_events": ["robber_camp", "monster_group", "treasure"],
-      "guard_chance": 100,
-      "monster_level": 2,
-      "resource_abundance": "medium"
-    },
-
-    "orc_camp": {
-      "name": "Лагерь орков",
-      "description": "Грязное поселение орков со зловонными ямами и грубыми тотемами из костей.",
-      "suggestion": "Орки редко принимают гостей мирно. Будьте готовы к бою или быстрому отступлению.",
-      "icon": "👹",
-      "image": "images/locations/orc_camp.jpg",
-      "possible_events": ["orc_camp", "monster_group", "weapon_find"],
-      "guard_chance": 100,
-      "monster_level": 3,
-      "resource_abundance": "low"
+      "action_chances": {
+        "search_treasure": 30,
+        "search_water": 100,
+        "search_berries": 15,
+        "search_mushrooms": 65,
+        "search_herbs": 90,
+        "search_ore": 25,
+        "search_stone": 20,
+        "set_trap": 40,
+        "prepare_ambush": 30,
+        "hunt_caravan": 10,
+        "take_assassination_contract": 20,
+        "light_campfire": 70,
+        "guard_caravan": 25,
+        "hunt": 40,
+        "stealth_movement": 50,
+        "gather_wood": 45
+      },
+      "special_notes": "Источник уникальной магической воды и алхимических компонентов. Привлекает необычных существ.",
+      "failure_monster_chance": 60,
+      "monster_level": 3
     }
   }
 }
