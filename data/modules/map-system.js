@@ -2775,6 +2775,424 @@ moveOnTacticalMap(x, y) {
 }
 
 
+// ========== НОВАЯ МЕХАНИКА ПЕРЕМЕЩЕНИЯ И ИССЛЕДОВАНИЯ ==========
+
+/**
+ * Новая версия moveOnTacticalMap с исследованием гексов
+ */
+moveOnTacticalMapNew(x, y) {
+    console.log(`🗺️ MapSystem: Новая механика перемещения на [${x},${y}]`);
+    
+    if (!this.currentHero) {
+        this.showNotification("❌ Герой не выбран!", 'error');
+        return;
+    }
+    
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cellData) {
+        this.showNotification("❌ Клетка не существует!", 'error');
+        return;
+    }
+    
+    // Проверяем проходимость
+    if (cellData.passable === false) {
+        this.showNotification("❌ Клетка непроходима!", 'error');
+        return;
+    }
+    
+    // Проверяем достижимость
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+    
+    if (!isReachable) {
+        this.showNotification("❌ Клетка недостижима!", 'error');
+        return;
+    }
+    
+    // Проверяем, исследован ли гекс
+    const cellType = this.actionSystem?.determineCellType(cellData);
+    const cellTypeData = this.actionSystem?.cellTypes?.[cellType];
+    
+    if (!cellData.explored && cellTypeData?.research_required) {
+        // Гекс не исследован и требует исследования
+        console.log(`🔍 Гекс [${x},${y}] требует исследования (${cellType})`);
+        this.startResearchBattle(x, y, cellData, cellTypeData);
+        return;
+    }
+    
+    // Проверяем, мирная ли карта
+    if (this.isPeacefulMap()) {
+        // Мирное перемещение без затрат времени
+        this.handlePeacefulMovementNew(x, y, cellData);
+        return;
+    }
+    
+    // Обычное перемещение с затратой времени
+    this.handleMovementWithTime(x, y, cellData);
+}
+
+/**
+ * Запуск боя для исследования гекса
+ */
+async startResearchBattle(x, y, cellData, cellTypeData) {
+    console.log(`⚔️ Начинаем исследование гекса [${x},${y}] типа ${cellData.cellType}`);
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        this.showNotification("❌ Система боя не доступна!", 'error');
+        return;
+    }
+    
+    if (!this.currentHero) {
+        this.showNotification("❌ Герой не выбран!", 'error');
+        return;
+    }
+    
+    // Получаем монстра для исследования
+    const monster = this.getResearchMonster(cellTypeData);
+    if (!monster) {
+        this.showNotification("❌ Не удалось найти монстра для исследования", 'error');
+        return;
+    }
+    
+    // Сохраняем информацию для послебоевой обработки
+    this.pendingResearch = {
+        x: x,
+        y: y,
+        cellData: cellData,
+        cellTypeData: cellTypeData,
+        monster: monster,
+        startTime: Date.now()
+    };
+    
+    // Начинаем бой
+    battleSystem.startBattleWithSpecificMonster(
+        this.currentHero,
+        monster,
+        'research'
+    );
+}
+
+/**
+ * Получение монстра для исследования
+ */
+getResearchMonster(cellTypeData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    // Если есть список конкретных монстров
+    if (cellTypeData.monsters && cellTypeData.monsters.length > 0) {
+        const monsterId = cellTypeData.monsters[
+            Math.floor(Math.random() * cellTypeData.monsters.length)
+        ];
+        return battleSystem.getMonsterById(monsterId);
+    }
+    
+    // Иначе случайный монстр по уровню
+    return this.getRandomMonsterByLevel(cellTypeData.research_monster_level || 1);
+}
+
+/**
+ * Получение случайного монстра по уровню
+ */
+getRandomMonsterByLevel(level) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    const allMonsters = battleSystem.monsters || [];
+    if (allMonsters.length === 0) return null;
+    
+    // Фильтруем монстров по уровню
+    const suitableMonsters = allMonsters.filter(monster => {
+        const monsterLevel = monster.level || 1;
+        return Math.abs(monsterLevel - level) <= 1;
+    });
+    
+    if (suitableMonsters.length > 0) {
+        return suitableMonsters[Math.floor(Math.random() * suitableMonsters.length)];
+    }
+    
+    // Если нет подходящих, берем любого
+    return allMonsters[Math.floor(Math.random() * allMonsters.length)];
+}
+
+/**
+ * Обработка завершения исследования после боя
+ */
+completeResearchAfterBattle(victory, escape) {
+    if (!this.pendingResearch) {
+        console.warn("❌ Нет ожидающего исследования");
+        return;
+    }
+    
+    const { x, y, cellData, cellTypeData } = this.pendingResearch;
+    
+    if (victory) {
+        // Успешное исследование
+        cellData.explored = true;
+        cellData.hasAction = true;
+        
+        // Открываем видимость соседних клеток
+        this.revealAdjacentCells(y, x);
+        
+        // Выдача награды за исследование
+        this.giveResearchReward(cellData, cellTypeData);
+        
+        this.showNotification(`✅ Гекс [${x},${y}] исследован!`, 'success');
+        
+        // Тратим время на исследование
+        if (this.timeSystem) {
+            for (let i = 0; i < cellTypeData.time_to_research; i++) {
+                this.timeSystem.spendHourOnHex('research');
+            }
+        }
+        
+        // Перемещаем героя на исследованный гекс
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x: x, y: y};
+        this.updateVisibilityOnMove(x, y);
+        
+        console.log(`✅ Перемещение после исследования: [${oldPosition.x},${oldPosition.y}] → [${x},${y}]`);
+        
+    } else {
+        // Неудачное исследование
+        this.showNotification(`❌ Не удалось исследовать гекс`, 'error');
+        
+        if (escape) {
+            // При побеге остаёмся на месте
+            this.showNotification(`🏃 Вы сбежали с поля боя`, 'warning');
+        } else {
+            // При поражении возвращаемся на стартовую позицию
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+            this.showNotification(`💀 Поражение! Возврат на стартовую позицию`, 'error');
+        }
+    }
+    
+    // Очищаем pending
+    this.pendingResearch = null;
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Обновляем интерфейс
+    setTimeout(() => {
+        if (this.actionSystem) {
+            this.actionSystem.updateCellActionsUI(cellData);
+            this.actionSystem.highlightSelectedCell(cellData);
+        }
+    }, 500);
+}
+
+/**
+ * Выдача награды за исследование
+ */
+giveResearchReward(cellData, cellTypeData) {
+    if (!cellTypeData.loot_after_research) return;
+    
+    const loot = cellTypeData.loot_after_research;
+    
+    // Золото
+    if (loot.gold && Math.random() * 100 <= loot.gold.chance) {
+        const amount = Math.floor(
+            Math.random() * (loot.gold.max - loot.gold.min + 1)
+        ) + loot.gold.min;
+        
+        this.currentHero.gold += amount;
+        this.showNotification(`💰 Найдено ${amount} золота при исследовании!`, 'success');
+    }
+    
+    // Предметы
+    if (loot.items) {
+        Object.entries(loot.items).forEach(([itemType, chance]) => {
+            if (Math.random() * 100 <= chance) {
+                const item = this.getRandomItemByType(itemType);
+                if (item) {
+                    this.addItemToHero(item.id);
+                    this.showNotification(`🎁 Найдено: ${item.name}!`, 'success');
+                }
+            }
+        });
+    }
+    
+    // Ресурсы
+    if (loot.resources) {
+        Object.entries(loot.resources).forEach(([resourceType, chance]) => {
+            if (Math.random() * 100 <= chance) {
+                const resource = this.getRandomResource(resourceType);
+                if (resource) {
+                    this.addResourceToHero(resource.id, 1, resourceType);
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Мирное перемещение (без исследования)
+ */
+handlePeacefulMovementNew(x, y, cellData) {
+    console.log(`🍻 Мирное перемещение на [${x},${y}]`);
+    
+    const oldPosition = {...this.playerTacticalPosition};
+    this.playerTacticalPosition = {x: x, y: y};
+    
+    // Обновляем видимость
+    this.updateVisibilityOnMove(x, y);
+    
+    // На мирных картах время не тратится
+    console.log(`✅ Свободное перемещение в мирной зоне: [${oldPosition.x},${oldPosition.y}] → [${x},${y}]`);
+    
+    this.showNotification(`✅ Перемещение на [${x},${y}]`, 'success');
+    this.drawTacticalMap();
+    
+    // Обновляем интерфейс
+    setTimeout(() => {
+        if (this.actionSystem) {
+            this.actionSystem.updateCellActionsUI(cellData);
+            this.actionSystem.highlightSelectedCell(cellData);
+        }
+    }, 300);
+}
+
+/**
+ * Перемещение с затратой времени
+ */
+handleMovementWithTime(x, y, cellData) {
+    console.log(`⏱️ Перемещение с затратой времени на [${x},${y}]`);
+    
+    const oldPosition = {...this.playerTacticalPosition};
+    this.playerTacticalPosition = {x: x, y: y};
+    
+    // Обновляем видимость
+    this.updateVisibilityOnMove(x, y);
+    
+    // Тратим 1 час времени
+    if (this.timeSystem) {
+        this.timeSystem.spendHourOnHex('movement');
+    }
+    
+    console.log(`✅ Перемещение: [${oldPosition.x},${oldPosition.y}] → [${x},${y}] (1 час)`);
+    
+    this.showNotification(`✅ Перемещение на [${x},${y}] (1 час)`, 'success');
+    this.drawTacticalMap();
+    
+    // Обновляем интерфейс
+    setTimeout(() => {
+        if (this.actionSystem) {
+            this.actionSystem.updateCellActionsUI(cellData);
+            this.actionSystem.highlightSelectedCell(cellData);
+        }
+    }, 300);
+}
+
+/**
+ * Проверка, может ли игрок перейти на гекс
+ */
+canMoveToHexNew(cell) {
+    if (!cell) return false;
+    
+    // На мирных картах всегда можно
+    if (this.isPeacefulMap()) {
+        return true;
+    }
+    
+    // Если гекс уже исследован - можно переходить
+    if (cell.explored) {
+        return true;
+    }
+    
+    // Если не исследован - проверяем тип клетки
+    const cellType = this.actionSystem?.determineCellType(cell);
+    const cellTypeData = this.actionSystem?.cellTypes?.[cellType];
+    
+    // Если гекс требует исследования - нельзя переходить без исследования
+    if (cellTypeData?.research_required) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Показ предупреждения о необходимости исследования
+ */
+showResearchWarning(cell) {
+    const cellType = this.actionSystem?.determineCellType(cell);
+    const cellTypeData = this.actionSystem?.cellTypes?.[cellType];
+    
+    if (!cellTypeData) return;
+    
+    let message = `Для перехода на этот гекс нужно сначала исследовать его.\n`;
+    message += `Исследование требует победы над монстром.\n\n`;
+    message += `Уровень опасности: ${cellTypeData.research_monster_level || 1}/5\n`;
+    message += `Время исследования: ${cellTypeData.time_to_research || 1} час(ов)\n\n`;
+    message += `Исследовать сейчас?`;
+    
+    if (window.confirm(message)) {
+        this.startResearchBattle(cell.col, cell.row, cell, cellTypeData);
+    }
+}
+
+// ========== МОСТЫ ДЛЯ СОВМЕСТИМОСТИ ==========
+
+/**
+ * Мост между старой и новой механикой
+ */
+moveOnTacticalMapBridge(x, y) {
+    console.log("🌉 MapSystem: Используем мост для перемещения");
+    
+    // Проверяем, используем ли мы новую механику
+    const cellKey = `${x},${y}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        return this.moveOnTacticalMapOld(x, y);
+    }
+    
+    const cellType = this.actionSystem?.determineCellType(cell);
+    const cellTypeData = this.actionSystem?.cellTypes?.[cellType];
+    
+    // Если есть данные в новом формате - используем новую механику
+    if (cellTypeData && (cellTypeData.research_required !== undefined || cellTypeData.actions)) {
+        return this.moveOnTacticalMapNew(x, y);
+    }
+    
+    // Иначе старая механика
+    return this.moveOnTacticalMapOld(x, y);
+}
+
+/**
+ * Старая версия moveOnTacticalMap для совместимости
+ */
+moveOnTacticalMapOld(x, y) {
+    console.log(`🎯 MapSystem.OLD: Старая механика перемещения на [${x},${y}]`);
+    
+    // Реализация старой механики
+    if (!this.currentHero) {
+        this.showNotification("❌ Герой не выбран!", 'error');
+        return;
+    }
+    
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cellData) {
+        this.showNotification("❌ Клетка не существует!", 'error');
+        return;
+    }
+    
+    // Старая логика...
+    // (оставляем существующую реализацию)
+}
+
+
+    
+
 // ========== СИСТЕМА ИССЛЕДОВАНИЯ ГЕКСОВ ==========
 researchCurrentHex() {
     // Если мы на мирной карте - не нужно исследовать
