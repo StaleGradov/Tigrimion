@@ -2842,6 +2842,123 @@ async performCellActionNew(action, row, col) {
     this.showActionInterface(actionData, successChance, monsterChance, row, col, isDay);
 }
 
+
+
+// ========== МОСТЫ ДЛЯ СОВМЕСТИМОСТИ ==========
+
+/**
+ * Мост между старой и новой механикой действий
+ * Разместить ПОСЛЕ performCellActionNew
+ */
+performCellActionBridge(action, row, col) {
+    console.log("🌉 ActionSystem: Используем мост для действия", action);
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error("❌ Клетка не найдена");
+        return this.performCellActionOld(action, row, col);
+    }
+    
+    // Определяем тип клетки
+    const cellType = cell.cellType || this.determineCellType(cell);
+    const cellTypeData = this.cellTypes[cellType];
+    
+    // Проверяем, есть ли данные в новом формате
+    const hasNewFormat = cellTypeData && 
+                        cellTypeData.actions && 
+                        Array.isArray(cellTypeData.actions);
+    
+    if (hasNewFormat) {
+        console.log("✅ Используем новую механику действий");
+        
+        // Находим действие в новом формате
+        const actionData = cellTypeData.actions.find(a => a.type === action);
+        if (actionData) {
+            return this.performCellActionNew(action, row, col);
+        } else {
+            console.warn("⚠️ Действие не найдено в новом формате, пробуем старую механику");
+        }
+    }
+    
+    // Используем старую механику для обратной совместимости
+    console.log("🔄 Используем старую механику для совместимости");
+    return this.performCellActionOld(action, row, col);
+}
+
+/**
+ * Старая версия performCellAction для обратной совместимости
+ * Разместить ПОСЛЕ performCellActionBridge
+ */
+performCellActionOld(action, row, col) {
+    console.log(`🎯 ActionSystem.OLD: Старая механика действия ${action} на [${col},${row}]`);
+    
+    // Сохраняем старую логику, но с улучшениями
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+    
+    // Проверяем исследованность
+    if (cell.explored && !this.isSpecialAction(action)) {
+        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
+        return;
+    }
+    
+    // Для торговли и воды - старая логика
+    if (action === 'trade') {
+        return this.handleTradeAction(row, col);
+    }
+    
+    if (action === 'fill_flask') {
+        return this.handleFillFlaskAction(row, col);
+    }
+    
+    // Для охоты - старая логика
+    if (action === 'hunt') {
+        if (this.actionModules['hunt']) {
+            return this.actionModules['hunt'].execute(row, col);
+        }
+    }
+    
+    // Остальные действия - упрощённая старая логика
+    const chance = this.getActionChanceOld(action, cell.cellType);
+    const roll = Math.random() * 100;
+    const success = roll <= chance;
+    
+    if (success) {
+        this.showNotification(`✅ ${action} успешно!`, 'success');
+        cell.explored = true;
+        cell.hasAction = false;
+    } else {
+        this.showNotification(`❌ ${action} не удалось`, 'warning');
+    }
+    
+    // Обновляем интерфейс
+    setTimeout(() => {
+        this.updateCellActionsUI(cell);
+    }, 500);
+}
+
+/**
+ * Старая версия getActionChance для совместимости
+ */
+getActionChanceOld(action, cellType) {
+    const cellTypeData = this.cellTypes[cellType];
+    
+    if (cellTypeData && cellTypeData.action_chances) {
+        return cellTypeData.action_chances[action] || 50;
+    }
+    
+    return this.baseActionChances[action] || 50;
+}
+
+
+    
 /**
  * Показ интерфейса для действия
  */
