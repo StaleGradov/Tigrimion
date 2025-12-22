@@ -3398,6 +3398,198 @@ moveToUnexploredHex(x, y) {
     }
 }
 
+
+// ========== МОСТЫ ДЛЯ СОВМЕСТИМОСТИ ==========
+
+/**
+ * Мост между старой и новой механикой перемещения
+ * Разместить ПОСЛЕ moveToUnexploredHex
+ */
+moveOnTacticalMapBridge(x, y) {
+    console.log("🌉 MapSystem: Используем мост для перемещения", {x, y});
+    
+    const cellKey = `${x},${y}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        console.error("❌ Клетка не найдена");
+        return this.moveOnTacticalMapOld(x, y);
+    }
+    
+    // Проверяем, есть ли данные в новом формате
+    const cellType = cell.cellType;
+    const cellTypeData = this.actionSystem?.cellTypes[cellType];
+    
+    const hasNewFormat = cellTypeData && 
+                        (cellTypeData.research_required !== undefined ||
+                         cellTypeData.actions);
+    
+    if (hasNewFormat) {
+        console.log("✅ Используем новую механику перемещения");
+        return this.moveToUnexploredHex(x, y);
+    }
+    
+    // Используем старую механику
+    console.log("🔄 Используем старую механику перемещения");
+    return this.moveOnTacticalMapOld(x, y);
+}
+
+/**
+ * Старая версия moveOnTacticalMap для обратной совместимости
+ * Разместить ПОСЛЕ moveOnTacticalMapBridge
+ */
+moveOnTacticalMapOld(x, y) {
+    console.log(`🎯 MapSystem.OLD: Старая механика перемещения на [${x},${y}]`);
+    
+    if (!this.currentHero) {
+        this.showNotification("❌ Герой не выбран!", 'error');
+        return;
+    }
+    
+    const cellKey = `${x},${y}`;
+    const cellData = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cellData) {
+        this.showNotification("❌ Клетка не существует!", 'error');
+        return;
+    }
+    
+    // Проверяем проходимость
+    if (cellData.passable === false) {
+        this.showNotification("❌ Клетка непроходима!", 'error');
+        return;
+    }
+    
+    // Проверяем достижимость
+    const neighbors = this.getHexNeighbors(this.playerTacticalPosition.y, this.playerTacticalPosition.x);
+    const isReachable = neighbors.some(neighbor => 
+        neighbor.row === y && neighbor.col === x
+    );
+    
+    if (!isReachable) {
+        this.showNotification("❌ Клетка недостижима!", 'error');
+        return;
+    }
+    
+    // Мирная карта - свободное перемещение
+    if (this.isPeacefulMap()) {
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x, y};
+        this.updateVisibilityOnMove(x, y);
+        
+        this.showNotification(`✅ Перемещение на [${x}, ${y}]`, 'success');
+        this.drawTacticalMap();
+        return;
+    }
+    
+    // Проверяем исследованность
+    if (cellData.explored) {
+        // Мирное перемещение
+        const oldPosition = {...this.playerTacticalPosition};
+        this.playerTacticalPosition = {x, y};
+        this.updateVisibilityOnMove(x, y);
+        
+        if (this.timeSystem) {
+            this.timeSystem.spendHourOnHex('movement');
+        }
+        
+        this.showNotification(`✅ Мирное перемещение на [${x}, ${y}]`, 'success');
+        this.drawTacticalMap();
+    } else {
+        // Не исследовано - начинаем бой
+        this.startTacticalBattleForMovement(x, y, cellData);
+    }
+}
+
+/**
+ * Мост для completeMovementAfterBattle
+ */
+completeMovementAfterBattleBridge(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+    console.log("🌉 MapSystem: Мост для завершения боя", {victory, battleType});
+    
+    // Для исследований используем новую механику
+    if (battleType === 'research' || this.pendingResearch) {
+        return this.completeResearchAfterBattle(victory, escape);
+    }
+    
+    // Для действий используем новую механику
+    if (battleType === 'action' || (this.pendingAction && this.pendingAction.requiresResearch !== undefined)) {
+        return this.completeActionAfterBattle(victory, escape);
+    }
+    
+    // Для охоты - старая логика
+    if (battleType === 'hunt') {
+        return this.completeHuntAfterBattle(victory, escape, doubleLoot);
+    }
+    
+    // Остальное - старая логика
+    return this.completeMovementAfterBattleOld(victory, escape, battleType, doubleLoot);
+}
+
+/**
+ * Старая версия completeMovementAfterBattle
+ */
+completeMovementAfterBattleOld(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+    console.log(`🎯 MapSystem.OLD: Старая механика завершения боя`);
+    
+    if (this.pendingMovement) {
+        let targetX, targetY;
+        
+        if (victory) {
+            targetX = this.pendingMovement.x;
+            targetY = this.pendingMovement.y;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            this.updateVisibilityOnMove(targetX, targetY);
+            this.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+        } else {
+            if (escape) {
+                this.showNotification("🏃 Побег успешен!", 'warning');
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                targetX = startPosition.x;
+                targetY = startPosition.y;
+                this.playerTacticalPosition = {x: targetX, y: targetY};
+                this.showNotification("💀 Поражение! Возврат на старт", 'error');
+            }
+        }
+        
+        this.pendingMovement = null;
+        this.drawTacticalMap();
+    }
+}
+
+/**
+ * Мост для canMoveToHex
+ */
+canMoveToHexBridge(cell) {
+    console.log("🌉 MapSystem: Мост для проверки перемещения");
+    
+    if (!cell) return false;
+    
+    // Мирные карты - всегда можно
+    if (this.isPeacefulMap()) {
+        return true;
+    }
+    
+    // Проверяем новую логику
+    return this.isActionAvailableOnHex(cell);
+}
+
+/**
+ * Мост для handlePeacefulMovement
+ */
+handlePeacefulMovementBridge(x, y, cellData) {
+    console.log("🌉 MapSystem: Мост для мирного перемещения");
+    
+    // Просто вызываем новую логику
+    return this.moveToUnexploredHex(x, y);
+}
+
+
+
+    
 /**
  * Проверка доступности действий на гексе
  */
