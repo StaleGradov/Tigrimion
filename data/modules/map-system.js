@@ -3197,6 +3197,306 @@ handlePeacefulMovement(targetX, targetY, cellData) {
     this.updateMovementInfo();
 }
 
+
+// ========== НОВАЯ МЕХАНИКА ИССЛЕДОВАНИЯ ==========
+
+/**
+ * Исследование гекса (бой с монстром)
+ */
+async researchHex(row, col) {
+    console.log(`🔍 Исследование гекса [${col},${row}]`);
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        this.showNotification("❌ Гекс не найден", 'error');
+        return;
+    }
+    
+    if (cell.explored) {
+        this.showNotification("✅ Этот гекс уже исследован", 'info');
+        return;
+    }
+    
+    const cellTypeData = this.actionSystem?.cellTypes[cell.cellType];
+    if (!cellTypeData?.research_required) {
+        this.showNotification("❌ Этот гекс не требует исследования", 'warning');
+        return;
+    }
+    
+    // Начинаем исследование (бой с монстром)
+    await this.startResearchBattle(cell, cellTypeData);
+}
+
+/**
+ * Запуск боя для исследования
+ */
+async startResearchBattle(cell, cellTypeData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) {
+        this.showNotification("❌ Система боя не доступна", 'error');
+        return;
+    }
+    
+    // Получение монстра для исследования
+    const monster = this.getResearchMonster(cellTypeData);
+    if (!monster) {
+        this.showNotification("❌ Не удалось найти монстра для исследования", 'error');
+        return;
+    }
+    
+    // Сохраняем информацию для послебоевой обработки
+    this.pendingResearch = {
+        cell: cell,
+        cellTypeData: cellTypeData,
+        monster: monster,
+        startTime: Date.now()
+    };
+    
+    // Начинаем бой
+    battleSystem.startBattleWithSpecificMonster(
+        this.currentHero,
+        monster,
+        'research'
+    );
+}
+
+/**
+ * Завершение исследования после боя
+ */
+completeResearchAfterBattle(victory, escape) {
+    if (!this.pendingResearch) return;
+    
+    const { cell, cellTypeData } = this.pendingResearch;
+    
+    if (victory) {
+        // Успешное исследование
+        cell.explored = true;
+        cell.hasAction = true;
+        
+        // Открываем видимость соседних клеток
+        this.revealAdjacentCells(cell.row, cell.col);
+        
+        // Выдача награды за исследование
+        this.giveResearchReward(cell, cellTypeData);
+        
+        this.showNotification(`✅ Гекс [${cell.col},${cell.row}] исследован!`, 'success');
+        
+        // Тратим время на исследование
+        if (this.timeSystem) {
+            for (let i = 0; i < cellTypeData.time_to_research; i++) {
+                this.timeSystem.spendHourOnHex('research');
+            }
+        }
+    } else {
+        // Неудачное исследование
+        this.showNotification(`❌ Не удалось исследовать гекс`, 'error');
+        
+        if (escape) {
+            // При побеге остаёмся на месте
+            this.showNotification(`🏃 Вы сбежали с поля боя`, 'warning');
+        } else {
+            // При поражении возвращаемся на стартовую позицию
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+            this.showNotification(`💀 Поражение! Возврат на стартовую позицию`, 'error');
+        }
+    }
+    
+    // Очищаем pending
+    this.pendingResearch = null;
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+}
+
+/**
+ * Выдача награды за исследование
+ */
+giveResearchReward(cell, cellTypeData) {
+    if (!cellTypeData.loot_after_research) return;
+    
+    const loot = cellTypeData.loot_after_research;
+    
+    // Только для автоматической выдачи (без выбора игрока)
+    if (loot.gold && Math.random() * 100 <= loot.gold.chance) {
+        const amount = Math.floor(
+            Math.random() * (loot.gold.max - loot.gold.min + 1)
+        ) + loot.gold.min;
+        
+        this.currentHero.gold += amount;
+        this.showNotification(`💰 Найдено ${amount} золота при исследовании!`, 'success');
+    }
+    
+    // Можно добавить автоматическую выдачу базовых ресурсов
+    if (loot.resources) {
+        Object.entries(loot.resources).forEach(([resourceType, chance]) => {
+            if (Math.random() * 100 <= chance) {
+                // Базовая награда за исследование
+                console.log(`Исследование дало доступ к ресурсам: ${resourceType}`);
+            }
+        });
+    }
+}
+
+/**
+ * Получение монстра для исследования
+ */
+getResearchMonster(cellTypeData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return null;
+    
+    // Если есть список конкретных монстров
+    if (cellTypeData.monsters && cellTypeData.monsters.length > 0) {
+        const monsterId = cellTypeData.monsters[
+            Math.floor(Math.random() * cellTypeData.monsters.length)
+        ];
+        return battleSystem.getMonsterById(monsterId);
+    }
+    
+    // Иначе случайный монстр по уровню
+    return this.getRandomMonsterByLevel(cellTypeData.research_monster_level || 1);
+}
+
+/**
+ * Перемещение на неисследованный гекс
+ */
+moveToUnexploredHex(x, y) {
+    const cellKey = `${x},${y}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        this.showNotification("❌ Гекс не найден", 'error');
+        return;
+    }
+    
+    // Если гекс исследован - обычное перемещение
+    if (cell.explored) {
+        this.handlePeacefulMovement(x, y, cell);
+        return;
+    }
+    
+    // Если не исследован - предлагаем исследовать
+    const cellTypeData = this.actionSystem?.cellTypes[cell.cellType];
+    
+    if (cellTypeData?.research_required) {
+        if (window.game) {
+            const confirmResearch = window.confirm(
+                `Этот гекс [${x},${y}] не исследован.\n` +
+                `Для перемещения нужно сначала исследовать его (победить монстра).\n\n` +
+                `Исследовать сейчас?`
+            );
+            
+            if (confirmResearch) {
+                this.researchHex(cell.row, cell.col);
+            }
+        }
+    } else {
+        // Гекс не требует исследования - обычное перемещение
+        this.handlePeacefulMovement(x, y, cell);
+    }
+}
+
+/**
+ * Проверка доступности действий на гексе
+ */
+isActionAvailableOnHex(cell) {
+    if (!cell) return false;
+    
+    // Если гекс не исследован и требует исследования
+    if (!cell.explored) {
+        const cellTypeData = this.actionSystem?.cellTypes[cell.cellType];
+        if (cellTypeData?.research_required) {
+            return false;
+        }
+    }
+    
+    // Проверка, есть ли доступные действия
+    if (cell.hasAction === false) {
+        return false;
+    }
+    
+    // Проверка типа клетки (некоторые не имеют действий)
+    const noActionTypes = ['obstacle', 'mountain', 'tree', 'elegant_tree'];
+    if (noActionTypes.includes(cell.type)) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Получение доступных действий для гекса
+ */
+getAvailableActionsForHex(cell) {
+    if (!this.isActionAvailableOnHex(cell)) {
+        return [];
+    }
+    
+    const cellTypeData = this.actionSystem?.cellTypes[cell.cellType];
+    if (!cellTypeData?.actions) {
+        return [];
+    }
+    
+    // Фильтрация действий по условиям
+    return cellTypeData.actions.filter(action => {
+        // Проверка исследования
+        if (action.requires_research && !cell.explored) {
+            return false;
+        }
+        
+        // Проверка навыков (если есть)
+        if (action.requires_skill && !this.hasHeroSkill(action.requires_skill)) {
+            return false;
+        }
+        
+        return true;
+    });
+}
+
+/**
+ * Проверка навыков героя
+ */
+hasHeroSkill(skill) {
+    if (!this.currentHero || !this.currentHero.skills) {
+        return false;
+    }
+    
+    return this.currentHero.skills.includes(skill);
+}
+
+/**
+ * Обновление интерфейса действий для гекса
+ */
+updateHexActionsUI(cell) {
+    if (!this.actionSystem) return;
+    
+    // Получаем доступные действия
+    const availableActions = this.getAvailableActionsForHex(cell);
+    
+    if (availableActions.length === 0) {
+        this.actionSystem.showNoActionsAvailable(cell);
+        return;
+    }
+    
+    // Если только одно действие - показываем его сразу
+    if (availableActions.length === 1) {
+        const action = availableActions[0];
+        this.actionSystem.showActionInterface(
+            action,
+            cell.row,
+            cell.col
+        );
+    } else {
+        // Показываем выбор действия
+        this.actionSystem.showActionSelection(availableActions, cell);
+    }
+}
+
+
+
+    
     collectLoot(cellData, col, row) {
         const lootLevel = this.currentTacticalMap?.jsonData?.meta?.lootLevel || 1;
         
