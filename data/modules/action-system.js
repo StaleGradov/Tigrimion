@@ -1331,11 +1331,8 @@ getCellSpecificActions(cell) {
 }
 
 
-/**
- * Обновленная версия updateCellActionsUI с поддержкой новой механики
- */
 updateCellActionsUI(cell) {
-    console.log("=== НАЧАЛО updateCellActionsUI НОВАЯ ===");
+    console.log("=== НАЧАЛО updateCellActionsUI ===");
     
     // Проверяем, мирная ли карта
     if (this.mapSystem.isPeacefulMap && this.mapSystem.isPeacefulMap()) {
@@ -1350,373 +1347,332 @@ updateCellActionsUI(cell) {
         return;
     }
     
-    // Определяем тип клетки
+    // Создаем левую панель если ее нет
+    let leftPanel = document.querySelector('.cell-info-left-panel');
+    if (!leftPanel) {
+        leftPanel = document.createElement('div');
+        leftPanel.className = 'cell-info-left-panel';
+        mapContent.insertBefore(leftPanel, mapContent.firstChild);
+    }
+    
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) {
+        console.error("❌ Контейнер действий не найден!");
+        this.createActionsContainerFallback();
+        return;
+    }
+    
+    const mapVisual = document.querySelector('.tactical-map-visual');
+    const mapRect = mapVisual ? mapVisual.getBoundingClientRect() : null;
+    
+    const panelWidth = 1150;
+    const panelHeight = mapRect ? mapRect.height - 30 : window.innerHeight * 0.8;
+    
+    console.log(`📐 Размеры панелей: ${panelWidth}x${panelHeight}px`);
+    
+    // ========== ЛЕВАЯ ПАНЕЛЬ ==========
+    leftPanel.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+        border: 2px solid #00ffcc !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-right: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    // ========== ПРАВАЯ ПАНЕЛЬ ==========
+    actionsContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: ${panelHeight}px !important;
+        max-height: ${panelHeight}px !important;
+        min-height: ${panelHeight}px !important;
+        width: ${panelWidth}px !important;
+        max-width: ${panelWidth}px !important;
+        min-width: ${panelWidth}px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        background: linear-gradient(135deg, #16213e, #1a1a2e) !important;
+        border: 2px solid #00ffff !important;
+        border-radius: 10px !important;
+        padding: 20px !important;
+        margin-left: 20px !important;
+        position: relative !important;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.4) !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    `;
+    
+    const panel = actionsContainer.closest('.cell-actions-panel');
+    if (panel) {
+        panel.style.cssText = `
+            display: flex !important;
+            flex-direction: column !important;
+            height: ${panelHeight + 30}px !important;
+            max-height: ${panelHeight + 30}px !important;
+            min-height: ${panelHeight + 30}px !important;
+            width: ${panelWidth + 30}px !important;
+            max-width: ${panelWidth + 30}px !important;
+            min-width: ${panelWidth + 30}px !important;
+            margin-left: 20px !important;
+            align-self: flex-start !important;
+            flex-shrink: 0 !important;
+        `;
+    }
+    
+    mapContent.style.cssText = `
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: flex-start !important;
+        height: ${panelHeight + 40}px !important;
+        gap: 20px !important;
+        padding: 0 20px !important;
+        overflow: visible !important;
+        width: 100% !important;
+    `;
+    
+    const mapMainArea = document.querySelector('.map-main-area');
+    if (mapMainArea) {
+        mapMainArea.style.cssText = `
+            flex: 1 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            height: ${panelHeight}px !important;
+            min-width: 600px !important;
+            max-width: 800px !important;
+            margin: 0 20px !important;
+        `;
+    }
+    
+    if (cell.explored === undefined) cell.explored = false;
+    if (cell.hasAction === undefined) cell.hasAction = true;
+    
     this.selectedCell = cell;
     this.currentCellType = this.determineCellType(cell);
     const cellTypeData = this.cellTypes[this.currentCellType];
     
     if (!cellTypeData) {
         console.error(`❌ Данные типа клетки не найдены: ${this.currentCellType}`);
-        this.showErrorUI(cell);
+        leftPanel.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
+        actionsContainer.innerHTML = `<div class="cell-error">Ошибка загрузки типа клетки</div>`;
         return;
     }
     
-    // Проверяем исследованность
+    const cellIcon = this.mapSystem.objectSymbols[cell.type] || cellTypeData.icon || '❓';
+    
+    const isCurrentPosition = (cell.col === this.mapSystem.playerTacticalPosition.x && 
+                       cell.row === this.mapSystem.playerTacticalPosition.y);
+    const isReachable = this.mapSystem.isCellReachable(cell);
     const isExplored = cell.explored === true;
-    const requiresResearch = cellTypeData.research_required;
-    const isSpecialLocation = cellTypeData.is_special_location;
+    const isSpecialCell = this.isSpecialCellForActions(cell);
     
-    // Для специальных локаций или исследованных клеток показываем действия
-    if (isSpecialLocation || (isExplored && !requiresResearch) || (!requiresResearch && !isExplored)) {
-        console.log(`✅ Показываем действия для клетки ${this.currentCellType}`);
-        this.showActionsUI(cell, cellTypeData, isExplored);
-    } else if (!isExplored && requiresResearch) {
-        // Требуется исследование
-        this.showResearchRequiredUI(cell, cellTypeData);
-    } else {
-        // Клетка исследована и не имеет действий
-        this.showExploredCellUI(cell);
-    }
-}
-
-/**
- * Показ интерфейса действий
- */
-showActionsUI(cell, cellTypeData, isExplored) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
-    
-    const actions = cellTypeData.actions || [];
-    const hasActions = actions.length > 0;
-    
-    let html = `
-        <div class="cell-actions-ui">
-            <h3 style="color: #00ffcc; text-align: center; margin-bottom: 15px;">
-                ${cellTypeData.icon || '📍'} ${cellTypeData.name}
-            </h3>
-            
-            <div class="cell-description" style="
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                padding: 15px;
-                margin-bottom: 20px;
-                border-left: 3px solid #00ffcc;
-            ">
-                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.5;">
-                    ${cellTypeData.description}
-                </p>
-                
-                ${cellTypeData.suggestion ? `
-                    <div style="margin-top: 10px; padding: 10px; background: rgba(251, 191, 36, 0.1); border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);">
-                        <strong style="color: #fbbf24;">💡 Совет:</strong>
-                        <p style="color: #fcd34d; margin-top: 5px; font-size: 13px;">${cellTypeData.suggestion}</p>
-                    </div>
-                ` : ''}
-            </div>
-    `;
-    
-    if (hasActions) {
-        html += `
-            <div class="available-actions">
-                <h4 style="color: #00aaff; margin-bottom: 15px; text-align: center;">
-                    ⚡ Доступные действия
-                </h4>
-                
-                <div class="actions-grid" style="
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 15px;
-                    margin-bottom: 20px;
-                ">
-        `;
+    // ========== ВАЖНОЕ ИСПРАВЛЕНИЕ: всегда показываем специальные действия для специальных клеток ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Это специальная клетка: ${cell.type}, показываем специальные действия всегда`);
+        this.currentCellActions = this.getCellSpecificActions(cell);
         
-        actions.forEach(action => {
-            // Проверяем доступность действия
-            const canPerform = !action.requires_research || isExplored;
-            const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-            const isDay = timeStatus?.isDay ?? true;
-            const successChance = isDay ? action.day_success_chance : action.night_success_chance;
-            const monsterChance = isDay ? 0 : action.night_monster_chance;
-            
-            html += `
-                <div class="action-card-new" ${canPerform ? `onclick="window.game.systems.action.showActionInterfaceForAction('${action.type}', ${cell.row}, ${cell.col})"` : ''}
-                     style="
-                        background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95));
-                        border: 2px solid ${canPerform ? '#00aaff' : '#666'};
-                        border-radius: 10px;
-                        padding: 15px;
-                        ${canPerform ? 'cursor: pointer;' : 'opacity: 0.6; cursor: not-allowed;'}
-                        transition: all 0.3s ease;
-                     ">
-                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                        <div style="font-size: 24px; margin-right: 10px; color: ${canPerform ? '#00ffcc' : '#888'};">
-                            ${action.icon}
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: bold; color: ${canPerform ? '#ffffff' : '#888'}; font-size: 14px;">
-                                ${action.name}
-                            </div>
-                            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                                <span style="font-size: 11px; color: ${this.getChanceColor(successChance)};">
-                                    🎯 ${successChance}%
-                                </span>
-                                ${monsterChance > 0 ? `
-                                    <span style="font-size: 11px; color: #ff4444;">
-                                        👹 ${monsterChance}%
-                                    </span>
-                                ` : ''}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="color: ${canPerform ? '#b0b0ff' : '#777'}; font-size: 12px; line-height: 1.4; margin-bottom: 10px;">
-                        ${action.description}
-                    </div>
-                    
-                    ${!canPerform ? `
-                        <div style="font-size: 11px; color: #ff4444; text-align: center; padding-top: 10px; border-top: 1px dashed #444;">
-                            ❌ Требуется исследование гекса
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-        
-        html += `
-                </div>
-            </div>
-        `;
+        // ОСОБО ВАЖНО: для специальных клеток НЕ устанавливаем explored = true после использования
+        // Клетка остается доступной для повторного использования
+        if (isExplored && isSpecialCell) {
+            console.log(`🔄 Клетка ${cell.type} исследована, но специальные действия остаются доступными`);
+            // НЕ показываем "клетка исследована", показываем интерфейс с действиями
+        }
     } else {
-        html += `
-            <div class="no-actions" style="
-                text-align: center;
-                padding: 30px;
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                color: #94a3b8;
-            ">
-                <div style="font-size: 48px; margin-bottom: 15px;">🚫</div>
-                <h4 style="color: #94a3b8; margin-bottom: 10px;">Нет доступных действий</h4>
-                <p>Эта локация не предлагает взаимодействий</p>
-            </div>
-        `;
+        // Для обычных клеток используем обычную логику
+        this.currentCellActions = this.getAvailableActionsForCellType(this.currentCellType, cell);
     }
     
-    html += `
-            <div class="cell-info-footer" style="
-                margin-top: 20px;
-                padding-top: 20px;
-                border-top: 1px solid rgba(255, 255, 255, 0.1);
-            ">
-                <div class="position-info" style="
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    font-size: 12px;
-                    color: #94a3b8;
-                ">
-                    <span>Позиция: [${cell.col}, ${cell.row}]</span>
-                    ${isExplored ? '<span style="color: #00ff00;">✓ Исследовано</span>' : '<span style="color: #ffaa00;">❓ Не исследовано</span>'}
-                </div>
-            </div>
-        </div>
+    console.log(`🎯 Доступные действия: ${this.currentCellActions.length} шт. (специальная клетка: ${isSpecialCell})`);
+    
+    // ========== HTML ЛЕВОЙ ПАНЕЛИ ==========
+    let leftHTML = '';
+    
+    try {
+        leftHTML = this.createLeftPanelHTML(cell, cellTypeData, cellIcon, isCurrentPosition, isExplored);
+    } catch (error) {
+        console.error("❌ Ошибка создания информации о клетке:", error);
+        leftHTML = `<div style="color: red; padding: 10px;">Ошибка: ${error.message}</div>`;
+    }
+    
+    leftPanel.innerHTML = leftHTML;
+    
+    // ========== HTML ПРАВОЙ ПАНЕЛИ ==========
+    let rightHTML = '';
+    
+    rightHTML += `
+        <div class="actions-section" style="margin-bottom: 20px;">
+            <h3 style="color: #00ffff; margin-bottom: 15px; text-align: center;">
+                ⚔️ Доступные действия
+            </h3>
     `;
     
-    actionsContainer.innerHTML = html;
+    // ========== ИСПРАВЛЕНИЕ: специальные клетки всегда показывают действия ==========
+    if (isSpecialCell) {
+        console.log(`🎯 Показываем специальные действия для ${cell.type}`);
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
+        }
+    } 
+    // Обычные клетки с обычной логикой
+    else if (!isExplored && cell.hasAction !== false) {
+        if (this.currentCellActions.length > 0) {
+            try {
+                rightHTML += this.createActionsButtonsHTML(cell, isCurrentPosition, isReachable);
+            } catch (error) {
+                console.error("❌ Ошибка создания списка действий:", error);
+                rightHTML += `<div style="color: red; padding: 5px;">Ошибка действий</div>`;
+            }
+        } else {
+            rightHTML += this.createNoActionsHTML();
+        }
+    } else if (isExplored && !isSpecialCell) {
+        rightHTML += this.createExploredCellHTML();
+    } else if (cell.hasAction === false) {
+        rightHTML += this.createNoActionsHTML();
+    }
     
-    // Добавляем эффекты наведения
-    setTimeout(() => {
-        const actionCards = document.querySelectorAll('.action-card-new[style*="cursor: pointer"]');
-        actionCards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px) scale(1.05)';
-                this.style.boxShadow = '0 10px 25px rgba(0, 170, 255, 0.3)';
-                this.style.borderColor = '#00ffcc';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-                this.style.boxShadow = 'none';
-                this.style.borderColor = '#00aaff';
-            });
-        });
-    }, 50);
-}
-
-/**
- * Показ интерфейса действия
- */
-showActionInterfaceForAction(actionType, row, col) {
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    const actionData = cellTypeData?.actions?.find(a => a.type === actionType);
+    rightHTML += `</div>`;
     
-    if (!actionData) return;
-    
-    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-    const isDay = timeStatus?.isDay ?? true;
-    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
-    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
-    
-    this.showActionInterface(actionData, successChance, monsterChance, row, col, isDay);
-}
-
-/**
- * Показ интерфейса требующего исследования
- */
-showResearchRequiredUI(cell, cellTypeData) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
-    
-    const html = `
-        <div class="research-required-ui">
-            <h3 style="color: #ffaa00; text-align: center; margin-bottom: 15px;">
-                ⚠️ Требуется исследование
-            </h3>
-            
-            <div class="research-info" style="
-                background: rgba(245, 158, 11, 0.1);
-                border: 2px solid #f59e0b;
-                border-radius: 10px;
-                padding: 20px;
-                margin-bottom: 20px;
-            ">
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <div style="font-size: 48px; color: #f59e0b;">🔍</div>
-                    <h4 style="color: #fbbf24; margin: 10px 0;">${cellTypeData.name}</h4>
-                </div>
-                
-                <p style="color: #fcd34d; font-size: 14px; line-height: 1.5; margin-bottom: 15px;">
-                    ${cellTypeData.description}
-                </p>
-                
-                <div class="research-details" style="
-                    background: rgba(0, 0, 0, 0.3);
-                    border-radius: 8px;
-                    padding: 15px;
-                    margin-bottom: 20px;
-                ">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: #94a3b8;">Уровень опасности:</span>
-                        <span style="color: #ff6666; font-weight: bold;">
-                            ${cellTypeData.research_monster_level || 1}/5
-                        </span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span style="color: #94a3b8;">Время исследования:</span>
-                        <span style="color: #00ffcc; font-weight: bold;">
-                            ${cellTypeData.time_to_research || 1} час(ов)
-                        </span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #94a3b8;">Монстры:</span>
-                        <span style="color: #ffaa00;">
-                            ${cellTypeData.monsters ? cellTypeData.monsters.length : 'случайные'}
-                        </span>
-                    </div>
-                </div>
-                
-                <div style="text-align: center;">
-                    <button class="btn-control" 
-                            onclick="window.game.systems.map.startResearchBattle(${cell.col}, ${cell.row}, window.game.systems.map.currentTacticalMap.cells['${cell.col},${cell.row}'], window.game.systems.action.cellTypes['${this.currentCellType}'])"
-                            style="padding: 15px 30px; font-size: 16px; background: linear-gradient(135deg, #f59e0b, #d97706); border: none;">
-                        ⚔️ Начать исследование
-                    </button>
-                </div>
-            </div>
-            
-            <div class="research-warning" style="
-                background: rgba(255, 100, 100, 0.1);
-                border: 1px solid rgba(255, 100, 100, 0.3);
+    // Добавляем легенду шансов только для не-мирных карт и не-специальных клеток
+    if (!this.mapSystem.isPeacefulMap() && !isSpecialCell) {
+        rightHTML += `
+            <div class="chance-legend" style="
+                background: rgba(0, 0, 0, 0.4);
                 border-radius: 8px;
                 padding: 12px;
-                color: #ffcccc;
                 font-size: 12px;
-                text-align: center;
+                color: #ccc;
+                margin-top: 15px;
             ">
-                <strong>⚠️ Внимание:</strong> Исследование требует победы над монстром. 
-                При поражении вы вернётесь на стартовую позицию.
-            </div>
-        </div>
-    `;
-    
-    actionsContainer.innerHTML = html;
-}
-
-/**
- * Показ интерфейса исследованной клетки
- */
-showExploredCellUI(cell) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
-    
-    const html = `
-        <div class="explored-cell-ui">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 64px; color: #00ff00;">✓</div>
-                <h3 style="color: #00ff00; margin: 10px 0;">Местность исследована</h3>
-            </div>
-            
-            <div style="
-                background: rgba(0, 255, 0, 0.1);
-                border: 1px solid rgba(0, 255, 0, 0.3);
-                border-radius: 8px;
-                padding: 20px;
-                margin-bottom: 20px;
-                text-align: center;
-            ">
-                <p style="color: #a7f3d0; font-size: 14px; line-height: 1.5;">
-                    Вы полностью исследовали эту местность и собрали все доступные ресурсы.
-                </p>
-                
-                <div style="margin-top: 15px; color: #86efac; font-size: 12px;">
-                    Позиция: [${cell.col}, ${cell.row}]
+                <strong style="color: #00ffcc;">Легенда шансов:</strong>
+                <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                    <span style="color: #ff4444;">0-39% - Плохой</span>
+                    <span style="color: #ffaa00;">40-69% - Средний</span>
+                    <span style="color: #44ff44;">70-89% - Хороший</span>
+                    <span style="color: #00ffaa;">90-100% - Отличный</span>
                 </div>
             </div>
-            
-            <div style="text-align: center;">
-                <button class="btn-control" 
-                        onclick="window.game.systems.map.moveOnTacticalMapBridge(${cell.col}, ${cell.row})"
-                        style="padding: 12px 24px; font-size: 14px;">
-                    🚶 Перейти на эту клетку
-                </button>
-            </div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; font-size: 12px; color: #94a3b8; text-align: center;">
-                <strong>💡 Подсказка:</strong><br>
-                Исследованные гексы безопасны для перемещения днём.
+        `;
+    }
+    
+    rightHTML += `
+        <div class="resource-info" style="margin-top: auto; padding-top: 20px; border-top: 1px solid #475569;">
+            <h5 style="color: #00ffff; margin-bottom: 10px; text-align: center;">📦 Ресурсы героя:</h5>
+            <div class="resource-list" id="heroResourcesListRight">
+                <!-- Ресурсы будут загружены динамически -->
             </div>
         </div>
     `;
     
-    actionsContainer.innerHTML = html;
-}
-
-/**
- * Показ интерфейса ошибки
- */
-showErrorUI(cell) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
+    actionsContainer.innerHTML = rightHTML;
     
-    const html = `
-        <div class="error-ui" style="text-align: center; padding: 30px;">
-            <div style="font-size: 48px; color: #ff4444;">❌</div>
-            <h3 style="color: #ff4444; margin: 15px 0;">Ошибка загрузки</h3>
-            <p style="color: #ff9999; margin-bottom: 20px;">
-                Не удалось загрузить данные типа клетки: ${this.currentCellType}
-            </p>
-            <div style="color: #94a3b8; font-size: 12px;">
-                Позиция: [${cell.col}, ${cell.row}]
-            </div>
-        </div>
-    `;
+    // ========== ОПТИМИЗАЦИЯ ==========
+    setTimeout(() => {
+        const leftImageWrapper = leftPanel.querySelector('.location-visual-container');
+        if (leftImageWrapper) {
+            leftImageWrapper.style.cssText = `
+                height: 300px !important;
+                width: 300px !important;
+                max-height: 300px !important;
+                max-width: 300px !important;
+                min-height: 300px !important;
+                min-width: 300px !important;
+                overflow: hidden !important;
+                margin: 0 auto 20px auto !important;
+                position: relative !important;
+                border: 2px solid #00ffcc !important;
+                border-radius: 10px !important;
+                align-self: center !important;
+            `;
+        }
+        
+        if (cellTypeData) {
+            try {
+                this.displayRealLocationImage(cellTypeData, leftPanel);
+            } catch (error) {
+                console.error("❌ Ошибка загрузки картинки:", error);
+            }
+        }
+        
+        const actionCards = actionsContainer.querySelectorAll('.action-card');
+        actionCards.forEach(card => {
+            card.style.cssText = `
+                background: linear-gradient(135deg, rgba(30, 30, 46, 0.95), rgba(20, 25, 45, 0.95)) !important;
+                border: 1px solid #00aaff !important;
+                border-radius: 8px !important;
+                padding: 12px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                height: 100% !important;
+                transition: all 0.2s ease !important;
+                margin: 0 !important;
+            `;
+            
+            if (!card.style.opacity || card.style.opacity !== '0.6') {
+                card.onmouseenter = () => {
+                    card.style.transform = 'translateY(-3px) scale(1.02)';
+                    card.style.boxShadow = '0 8px 20px rgba(0, 170, 255, 0.4)';
+                };
+                card.onmouseleave = () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.boxShadow = 'none';
+                };
+            }
+        });
+        
+        const actionsGrid = actionsContainer.querySelector('.actions-grid');
+        if (actionsGrid) {
+            actionsGrid.style.cssText = `
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 12px !important;
+                margin-bottom: 20px !important;
+            `;
+        }
+        
+        this.updateHeroResourcesUI('heroResourcesListRight');
+        
+        console.log(`✅ Панели созданы: левая ${panelWidth}x${panelHeight}px, карта по центру, правая ${panelWidth}x${panelHeight}px`);
+        
+    }, 50);
     
-    actionsContainer.innerHTML = html;
+    if ((!isExplored && cell.hasAction !== false && this.currentCellActions.length > 0) || 
+        (isSpecialCell && this.currentCellActions.length > 0)) {
+        try {
+            this.setupActionEventListeners();
+        } catch (error) {
+            console.error("❌ Ошибка назначения обработчиков:", error);
+        }
+    }
+    
+    console.log("✅ Панели обновлены");
+    console.log("=== КОНЕЦ updateCellActionsUI ===");
 }
 
 
@@ -2842,1161 +2798,6 @@ async performCellAction(action, row, col) {
 }
 
 
-
-// ========== НОВАЯ МЕХАНИКА ДЕЙСТВИЙ ==========
-
-/**
- * Показ интерфейса действия с учётом времени суток
- */
-showActionInterface(actionData, successChance, monsterChance, row, col, isDay) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
-    
-    const timeText = isDay ? '☀️ День' : '🌙 Ночь';
-    const successColor = this.getChanceColor(successChance);
-    const monsterColor = monsterChance > 0 ? '#ff4444' : '#00ff00';
-    
-    actionsContainer.innerHTML = `
-        <div class="action-interface">
-            <h3 style="color: #00ffcc; text-align: center;">
-                ${actionData.icon} ${actionData.name}
-            </h3>
-            
-            <div class="action-info" style="
-                background: rgba(0, 0, 0, 0.4);
-                border-radius: 8px;
-                padding: 15px;
-                margin: 15px 0;
-            ">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span style="color: #94a3b8;">Время:</span>
-                    <span style="color: ${isDay ? '#fbbf24' : '#3b82f6'};">${timeText}</span>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span style="color: #94a3b8;">Шанс успеха:</span>
-                    <span style="color: ${successColor}; font-weight: bold;">${successChance}%</span>
-                </div>
-                
-                ${monsterChance > 0 ? `
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #94a3b8;">Шанс монстра:</span>
-                        <span style="color: ${monsterColor}; font-weight: bold;">${monsterChance}%</span>
-                    </div>
-                ` : ''}
-                
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <p style="color: #cbd5e1; font-size: 14px;">${actionData.description}</p>
-                </div>
-            </div>
-            
-            <div class="action-requirements" style="
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                padding: 10px;
-                margin-bottom: 20px;
-                font-size: 12px;
-                color: #94a3b8;
-            ">
-                ${actionData.requires_research ? '✓ Требуется исследование гекса' : '✓ Доступно сразу'}
-                ${actionData.triggers_battle ? '<br>⚠️ Вызывает бой' : ''}
-                ${actionData.requires_stealth ? '<br>👣 Требуется скрытность' : ''}
-                ${actionData.is_peaceful ? '<br>🍻 Мирное действие' : ''}
-            </div>
-            
-            <div style="text-align: center;">
-                <button class="btn-control" 
-                        onclick="window.game.systems.action.executeActionNew('${actionData.type}', ${row}, ${col})"
-                        style="padding: 15px 30px; font-size: 16px;">
-                    🎲 Выполнить действие
-                </button>
-            </div>
-            
-            <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
-                <em>Действие займёт 1 час времени</em>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Выполнение действия с учётом всех факторов
- */
-async executeActionNew(actionType, row, col) {
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    const actionData = cellTypeData?.actions?.find(a => a.type === actionType);
-    
-    if (!cell || !actionData) {
-        this.showNotification("❌ Действие недоступно", 'error');
-        return;
-    }
-    
-    // Проверка исследованности
-    if (actionData.requires_research && !cell.explored) {
-        this.showNotification("❌ Сначала исследуйте этот гекс!", 'warning');
-        return;
-    }
-    
-    // Тратим 1 час времени
-    if (this.mapSystem.timeSystem) {
-        this.mapSystem.timeSystem.spendHourOnHex(actionType);
-    }
-    
-    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-    const isDay = timeStatus?.isDay ?? true;
-    
-    // Проверка успеха
-    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
-    const successRoll = Math.random() * 100;
-    const isSuccess = successRoll <= successChance;
-    
-    // Проверка появления монстра
-    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
-    const monsterRoll = Math.random() * 100;
-    const hasMonster = monsterRoll <= monsterChance;
-    
-    if (isSuccess) {
-        // Успешное выполнение действия
-        await this.handleActionSuccessNew(actionData, cell, row, col);
-        
-        // Если ночью и есть шанс монстра
-        if (hasMonster && actionData.night_monster_chance > 0) {
-            // Вызов боя с монстром
-            await this.startBattleForAction(cell, actionData);
-        }
-    } else {
-        // Неудачное выполнение
-        this.handleActionFailureNew(actionData, cell);
-        
-        // При неудаче всегда вызываем бой ночью
-        if (!isDay && actionData.night_monster_chance > 0) {
-            await this.startBattleForAction(cell, actionData);
-        }
-    }
-    
-    // Если это было последнее действие на гексе
-    if (!cellTypeData?.reusable_after_research) {
-        cell.hasAction = false;
-    }
-    
-    // Обновление интерфейса
-    setTimeout(() => {
-        if (cell) {
-            this.updateCellActionsUI(cell);
-        }
-    }, 1000);
-}
-
-/**
- * Обработка успешного выполнения действия
- */
-async handleActionSuccessNew(actionData, cell, row, col) {
-    console.log(`✅ Успешное выполнение: ${actionData.name}`);
-    
-    // Награда в зависимости от типа действия
-    switch(actionData.resource_type) {
-        case 'treasure':
-            this.giveTreasureReward(cell);
-            break;
-        case 'gold':
-            this.giveGoldReward(actionData);
-            break;
-        case 'weapon':
-        case 'armor':
-            this.giveItemReward(actionData.resource_type);
-            break;
-        case 'hunting':
-            this.giveHuntingReward(cell);
-            break;
-        case 'water':
-            this.fillFlask();
-            break;
-        case 'shop':
-            this.openShop(cell);
-            break;
-        case 'information':
-            this.giveInformation(cell);
-            break;
-        case 'contract':
-            this.giveAssassinationContract();
-            break;
-        default:
-            // Сбор ресурсов
-            this.giveResourceReward(actionData);
-    }
-    
-    this.showNotification(`✅ ${actionData.name} успешно выполнено!`, 'success');
-}
-
-/**
- * Обработка неудачного выполнения действия
- */
-handleActionFailureNew(actionData, cell) {
-    console.log(`❌ Неудачное выполнение: ${actionData.name}`);
-    
-    const failureMessages = {
-        'hunt': "🏹 Не удалось найти дичь для охоты",
-        'gather_wood': "🪵 Не найдено подходящих дров",
-        'search_berries': "🫐 Ягоды оказались неспелыми",
-        'search_mushrooms': "🍄 Грибы оказались несъедобными",
-        'search_herbs': "🌿 Травы оказались бесполезными",
-        'search_ore': "⛏️ Руда слишком бедная",
-        'search_stone': "🪨 Камни слишком хрупкие",
-        'set_trap': "🪤 Ловушка сломалась",
-        'prepare_ambush': "🎯 Позиция оказалась неподходящей",
-        'light_campfire': "🔥 Дрова оказались сырыми",
-        'search_treasure': "💰 Ничего ценного не найдено"
-    };
-    
-    const message = failureMessages[actionData.type] || "❌ Действие не увенчалось успехом";
-    this.showNotification(message, 'warning');
-}
-
-/**
- * Запуск боя для действия
- */
-async startBattleForAction(cell, actionData) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return;
-    
-    // Получение монстра в зависимости от типа действия
-    let monster = null;
-    
-    if (actionData.battle_type === 'boss') {
-        monster = this.getBossMonster(cell.cellTypeData?.research_monster_level);
-    } else if (actionData.battle_type === 'group') {
-        // Бой с группой монстров
-        await this.startGroupBattle(cell, actionData.group_size);
-        return;
-    } else if (actionData.battle_type === 'hunt') {
-        // Охотничий бой
-        await this.startHuntBattle(cell);
-        return;
-    } else {
-        // Случайный монстр из списка
-        monster = this.getRandomMonsterForCell(cell);
-    }
-    
-    if (monster) {
-        this.mapSystem.pendingAction = {
-            action: actionData.type,
-            row: cell.row,
-            col: cell.col,
-            wasSuccess: true,
-            requiresResearch: cell.cellTypeData?.research_required
-        };
-        
-        battleSystem.startBattleWithSpecificMonster(
-            this.mapSystem.currentHero,
-            monster,
-            'action'
-        );
-    }
-}
-
-/**
- * Получение случайного монстра для клетки
- */
-getRandomMonsterForCell(cell) {
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    if (!cellTypeData?.monsters || cellTypeData.monsters.length === 0) {
-        return this.mapSystem.getRandomMonsterByLevel(cellTypeData?.research_monster_level || 1);
-    }
-    
-    const monsterId = cellTypeData.monsters[
-        Math.floor(Math.random() * cellTypeData.monsters.length)
-    ];
-    
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem) {
-        return battleSystem.getMonsterById(monsterId);
-    }
-    
-    return null;
-}
-
-/**
- * Получение босс-монстра
- */
-getBossMonster(level = 5) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return null;
-    
-    const allMonsters = battleSystem.monsters || [];
-    const bossMonsters = allMonsters.filter(m => (m.level || 1) >= 4);
-    
-    if (bossMonsters.length > 0) {
-        const boss = bossMonsters[Math.floor(Math.random() * bossMonsters.length)];
-        return {
-            ...boss,
-            health: Math.floor(boss.health * 2),
-            damage: Math.floor(boss.damage * 1.5),
-            armor: Math.floor(boss.armor * 1.5),
-            isBoss: true
-        };
-    }
-    
-    return this.mapSystem.getRandomMonsterByLevel(level);
-}
-
-/**
- * Бой с группой монстров
- */
-async startGroupBattle(cell, groupSize) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return;
-    
-    const monsters = [];
-    for (let i = 0; i < groupSize; i++) {
-        const monster = this.getRandomMonsterForCell(cell);
-        if (monster) {
-            monsters.push(monster);
-        }
-    }
-    
-    if (monsters.length > 0) {
-        this.mapSystem.pendingAction = {
-            action: 'group_battle',
-            row: cell.row,
-            col: cell.col,
-            monsters: monsters,
-            requiresResearch: cell.cellTypeData?.research_required
-        };
-        
-        // Запуск группового боя
-        battleSystem.startGroupBattle(this.mapSystem.currentHero, monsters, 'group');
-    }
-}
-
-/**
- * Охотничий бой
- */
-async startHuntBattle(cell) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return;
-    
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    
-    if (!cellTypeData?.huntable_monsters || cellTypeData.huntable_monsters.length === 0) {
-        this.showNotification("❌ Нет дичи для охоты", 'warning');
-        return;
-    }
-    
-    // Выбор монстра для охоты
-    const monsterId = cellTypeData.huntable_monsters[
-        Math.floor(Math.random() * cellTypeData.huntable_monsters.length)
-    ];
-    
-    const monster = battleSystem.getMonsterById(monsterId);
-    if (!monster) return;
-    
-    this.mapSystem.pendingAction = {
-        action: 'hunt',
-        row: cell.row,
-        col: cell.col,
-        wasSuccess: true,
-        requiresResearch: cell.cellTypeData?.research_required
-    };
-    
-    battleSystem.startBattleWithSpecificMonster(
-        this.mapSystem.currentHero,
-        monster,
-        'hunt'
-    );
-}
-
-/**
- * Выдача награды за сокровища
- */
-giveTreasureReward(cell) {
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    if (!cellTypeData?.loot_after_research) return;
-    
-    const loot = cellTypeData.loot_after_research;
-    
-    // Золото
-    if (loot.gold && Math.random() * 100 <= loot.gold.chance) {
-        const amount = Math.floor(
-            Math.random() * (loot.gold.max - loot.gold.min + 1)
-        ) + loot.gold.min;
-        
-        this.mapSystem.currentHero.gold += amount;
-        this.showNotification(`💰 Найдено ${amount} золота!`, 'success');
-    }
-    
-    // Предметы
-    if (loot.items) {
-        Object.entries(loot.items).forEach(([itemType, chance]) => {
-            if (Math.random() * 100 <= chance) {
-                const item = this.getRandomItemByType(itemType);
-                if (item) {
-                    this.addItemToHero(item.id);
-                    this.showNotification(`🎁 Найдено: ${item.name}!`, 'success');
-                }
-            }
-        });
-    }
-    
-    // Ресурсы
-    if (loot.resources) {
-        Object.entries(loot.resources).forEach(([resourceType, chance]) => {
-            if (Math.random() * 100 <= chance) {
-                const resource = this.getRandomResource(resourceType);
-                if (resource) {
-                    this.addResourceToHero(resource.id, resource.name, 1, resourceType);
-                }
-            }
-        });
-    }
-}
-
-/**
- * Выдача награды за охоту
- */
-giveHuntingReward(cell) {
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    if (!cellTypeData?.huntable_monsters) return;
-    
-    // Выбор трофея
-    const trophyTypes = ['bones', 'leathers', 'hides', 'furs', 'food'];
-    const trophyType = trophyTypes[Math.floor(Math.random() * trophyTypes.length)];
-    
-    const resources = this.resources[trophyType];
-    if (resources && resources.length > 0) {
-        const resource = resources[Math.floor(Math.random() * resources.length)];
-        const quantity = Math.floor(Math.random() * 3) + 1;
-        
-        this.addResourceToHero(resource.id, resource.name, quantity, trophyType);
-        this.showNotification(`🏹 Охота удалась! Получено: ${resource.name} x${quantity}`, 'success');
-    }
-}
-
-/**
- * Выдача золотой награды
- */
-giveGoldReward(actionData) {
-    const min = actionData.payment?.min || 10;
-    const max = actionData.payment?.max || 50;
-    const amount = Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    this.mapSystem.currentHero.gold += amount;
-    this.showNotification(`💰 Получено ${amount} золота!`, 'success');
-}
-
-/**
- * Выдача предмета
- */
-giveItemReward(itemType) {
-    const item = this.getRandomItemByType(itemType);
-    if (item) {
-        this.addItemToHero(item.id);
-        this.showNotification(`🎁 Получено: ${item.name}!`, 'success');
-    }
-}
-
-/**
- * Получение случайного предмета по типу
- */
-getRandomItemByType(itemType) {
-    const itemSystem = window.game?.systems?.equipment;
-    if (!itemSystem) return null;
-    
-    const allItems = itemSystem.items || [];
-    const typeItems = allItems.filter(item => item.type === itemType);
-    
-    if (typeItems.length === 0) return null;
-    
-    return typeItems[Math.floor(Math.random() * typeItems.length)];
-}
-
-/**
- * Получение случайного ресурса
- */
-getRandomResource(resourceType) {
-    const resources = this.resources[resourceType];
-    if (!resources || resources.length === 0) return null;
-    
-    return resources[Math.floor(Math.random() * resources.length)];
-}
-
-/**
- * Выдача ресурсной награды
- */
-giveResourceReward(actionData) {
-    const resourceType = actionData.resource_type;
-    const min = actionData.resource_amount?.min || 1;
-    const max = actionData.resource_amount?.max || 3;
-    const quantity = Math.floor(Math.random() * (max - min + 1)) + min;
-    
-    const resource = this.getRandomResource(resourceType);
-    if (resource) {
-        this.addResourceToHero(resource.id, resource.name, quantity, resourceType);
-        this.showNotification(`📦 Получено: ${resource.name} x${quantity}!`, 'success');
-    }
-}
-
-/**
- * Наполнение фляги
- */
-fillFlask() {
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem && battleSystem.flask) {
-        const oldCharges = battleSystem.flask.currentCharges;
-        battleSystem.flask.currentCharges = battleSystem.flask.capacity;
-        battleSystem.flask.content = 'water';
-        
-        if (battleSystem.updateFlaskUI) {
-            battleSystem.updateFlaskUI();
-        }
-        
-        this.showNotification(`💧 Фляга наполнена: ${oldCharges}→${battleSystem.flask.capacity}`, 'success');
-    }
-}
-
-/**
- * Открытие магазина
- */
-openShop(cell) {
-    if (cell.shopItems && cell.shopItems.length > 0) {
-        const shopSystem = window.game?.systems?.shop;
-        if (shopSystem && shopSystem.openShop) {
-            shopSystem.openShop(cell);
-        }
-    }
-}
-
-/**
- * Выдача информации
- */
-giveInformation(cell) {
-    const informations = [
-        "Вы узнали о скрытом проходе в горах",
-        "Местный житель рассказал о подозрительной активности в лесу",
-        "Вы нашли старую карту с отметкой тайника",
-        "Надпись на стене: 'Остерегайтесь теней ночью'",
-        "Записка: 'Сокровище спрятано под старым дубом'"
-    ];
-    
-    const info = informations[Math.floor(Math.random() * informations.length)];
-    this.showNotification(`💡 ${info}`, 'info');
-}
-
-/**
- * Выдача контракта на убийство
- */
-giveAssassinationContract() {
-    const contracts = [
-        { target: "Вождь орков", reward: 200, location: "Лагерь орков" },
-        { target: "Капитан разбойников", reward: 150, location: "Лагерь разбойников" },
-        { target: "Древний тролль", reward: 300, location: "Пещера тролля" }
-    ];
-    
-    const contract = contracts[Math.floor(Math.random() * contracts.length)];
-    
-    if (!this.mapSystem.currentHero.contracts) {
-        this.mapSystem.currentHero.contracts = [];
-    }
-    
-    this.mapSystem.currentHero.contracts.push(contract);
-    this.showNotification(`🗡️ Получен контракт: ${contract.target} (Награда: ${contract.reward} золота)`, 'success');
-}
-
-// ========== МОСТЫ ДЛЯ СОВМЕСТИМОСТИ ==========
-
-/**
- * Мост между старой и новой механикой действий
- */
-performCellActionBridge(action, row, col) {
-    console.log("🌉 ActionSystem: Используем мост для действия", action);
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        return this.performCellActionOld(action, row, col);
-    }
-    
-    const cellType = this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    
-    // Проверяем, есть ли данные в новом формате
-    const hasNewFormat = cellTypeData && 
-                        cellTypeData.actions && 
-                        Array.isArray(cellTypeData.actions);
-    
-    if (hasNewFormat) {
-        console.log("✅ Используем новую механику действий");
-        
-        // Находим действие в новом формате
-        const actionData = cellTypeData.actions.find(a => a.type === action);
-        if (actionData) {
-            // Показываем интерфейс действия
-            const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-            const isDay = timeStatus?.isDay ?? true;
-            const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
-            const monsterChance = isDay ? 0 : actionData.night_monster_chance;
-            
-            this.showActionInterface(actionData, successChance, monsterChance, row, col, isDay);
-            return;
-        }
-    }
-    
-    // Используем старую механику
-    console.log("🔄 Используем старую механику для совместимости");
-    return this.performCellActionOld(action, row, col);
-}
-
-/**
- * Старая версия performCellAction для обратной совместимости
- */
-performCellActionOld(action, row, col) {
-    console.log(`🎯 ActionSystem.OLD: Старая механика действия ${action} на [${col},${row}]`);
-    
-    // Старая логика с минимальными изменениями
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        this.showNotification("❌ Клетка не найдена!", 'error');
-        return;
-    }
-    
-    // Для специальных действий - старая логика
-    if (action === 'trade') {
-        return this.handleTradeAction(row, col);
-    }
-    
-    if (action === 'fill_flask') {
-        return this.handleFillFlaskAction(row, col);
-    }
-    
-    // Старая логика для остальных действий
-    const chance = this.getActionChance(action, this.determineCellType(cell));
-    const roll = Math.random() * 100;
-    const success = roll <= chance;
-    
-    if (success) {
-        this.showNotification(`✅ ${action} успешно!`, 'success');
-        cell.explored = true;
-        cell.hasAction = false;
-    } else {
-        this.showNotification(`❌ ${action} не удалось`, 'warning');
-    }
-    
-    // Обновляем интерфейс
-    setTimeout(() => {
-        this.updateCellActionsUI(cell);
-    }, 500);
-}
-
-
-
-
-
-    
-// ========== НОВАЯ МЕХАНИКА ДЕЙСТВИЙ ==========
-
-/**
- * Выполнение действия с учётом времени суток
- */
-async performCellActionNew(action, row, col) {
-    console.log(`🎯 НОВОЕ выполнение действия: ${action} на [${col},${row}]`);
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        this.showNotification("❌ Клетка не найдена!", 'error');
-        return;
-    }
-
-    // Проверка исследованности
-    if (!cell.explored && cell.cellTypeData?.research_required) {
-        this.showNotification("❌ Сначала исследуйте этот гекс!", 'warning');
-        return;
-    }
-
-    // Проверка, что действие доступно
-    const cellTypeData = this.cellTypes[cell.cellType];
-    const actionData = cellTypeData?.actions?.find(a => a.type === action);
-    
-    if (!actionData) {
-        this.showNotification("❌ Это действие недоступно на этом гексе!", 'error');
-        return;
-    }
-
-    // Проверка времени суток
-    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-    const isDay = timeStatus?.isDay ?? true;
-    
-    // Получение шанса успеха
-    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
-    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
-    
-    // Показ интерфейса действия
-    this.showActionInterface(actionData, successChance, monsterChance, row, col, isDay);
-}
-
-
-
-// ========== МОСТЫ ДЛЯ СОВМЕСТИМОСТИ ==========
-
-/**
- * Мост между старой и новой механикой действий
- * Разместить ПОСЛЕ performCellActionNew
- */
-performCellActionBridge(action, row, col) {
-    console.log("🌉 ActionSystem: Используем мост для действия", action);
-    
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        console.error("❌ Клетка не найдена");
-        return this.performCellActionOld(action, row, col);
-    }
-    
-    // Определяем тип клетки
-    const cellType = cell.cellType || this.determineCellType(cell);
-    const cellTypeData = this.cellTypes[cellType];
-    
-    // Проверяем, есть ли данные в новом формате
-    const hasNewFormat = cellTypeData && 
-                        cellTypeData.actions && 
-                        Array.isArray(cellTypeData.actions);
-    
-    if (hasNewFormat) {
-        console.log("✅ Используем новую механику действий");
-        
-        // Находим действие в новом формате
-        const actionData = cellTypeData.actions.find(a => a.type === action);
-        if (actionData) {
-            return this.performCellActionNew(action, row, col);
-        } else {
-            console.warn("⚠️ Действие не найдено в новом формате, пробуем старую механику");
-        }
-    }
-    
-    // Используем старую механику для обратной совместимости
-    console.log("🔄 Используем старую механику для совместимости");
-    return this.performCellActionOld(action, row, col);
-}
-
-/**
- * Старая версия performCellAction для обратной совместимости
- * Разместить ПОСЛЕ performCellActionBridge
- */
-performCellActionOld(action, row, col) {
-    console.log(`🎯 ActionSystem.OLD: Старая механика действия ${action} на [${col},${row}]`);
-    
-    // Сохраняем старую логику, но с улучшениями
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    
-    if (!cell) {
-        this.showNotification("❌ Клетка не найдена!", 'error');
-        return;
-    }
-    
-    // Проверяем исследованность
-    if (cell.explored && !this.isSpecialAction(action)) {
-        this.showNotification("❌ Эта клетка уже исследована!", 'warning');
-        return;
-    }
-    
-    // Для торговли и воды - старая логика
-    if (action === 'trade') {
-        return this.handleTradeAction(row, col);
-    }
-    
-    if (action === 'fill_flask') {
-        return this.handleFillFlaskAction(row, col);
-    }
-    
-    // Для охоты - старая логика
-    if (action === 'hunt') {
-        if (this.actionModules['hunt']) {
-            return this.actionModules['hunt'].execute(row, col);
-        }
-    }
-    
-    // Остальные действия - упрощённая старая логика
-    const chance = this.getActionChanceOld(action, cell.cellType);
-    const roll = Math.random() * 100;
-    const success = roll <= chance;
-    
-    if (success) {
-        this.showNotification(`✅ ${action} успешно!`, 'success');
-        cell.explored = true;
-        cell.hasAction = false;
-    } else {
-        this.showNotification(`❌ ${action} не удалось`, 'warning');
-    }
-    
-    // Обновляем интерфейс
-    setTimeout(() => {
-        this.updateCellActionsUI(cell);
-    }, 500);
-}
-
-/**
- * Старая версия getActionChance для совместимости
- */
-getActionChanceOld(action, cellType) {
-    const cellTypeData = this.cellTypes[cellType];
-    
-    if (cellTypeData && cellTypeData.action_chances) {
-        return cellTypeData.action_chances[action] || 50;
-    }
-    
-    return this.baseActionChances[action] || 50;
-}
-
-
-    
-/**
- * Показ интерфейса для действия
- */
-showActionInterface(actionData, successChance, monsterChance, row, col, isDay) {
-    const actionsContainer = document.getElementById('cellActionsContainer');
-    if (!actionsContainer) return;
-    
-    const timeText = isDay ? '☀️ День' : '🌙 Ночь';
-    const successColor = this.getChanceColor(successChance);
-    const monsterColor = monsterChance > 0 ? '#ff4444' : '#00ff00';
-    
-    actionsContainer.innerHTML = `
-        <div class="action-interface">
-            <h3 style="color: #00ffcc; text-align: center;">
-                ${actionData.icon} ${actionData.name}
-            </h3>
-            
-            <div class="action-info" style="
-                background: rgba(0, 0, 0, 0.4);
-                border-radius: 8px;
-                padding: 15px;
-                margin: 15px 0;
-            ">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span style="color: #94a3b8;">Время:</span>
-                    <span style="color: ${isDay ? '#fbbf24' : '#3b82f6'};">${timeText}</span>
-                </div>
-                
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span style="color: #94a3b8;">Шанс успеха:</span>
-                    <span style="color: ${successColor}; font-weight: bold;">${successChance}%</span>
-                </div>
-                
-                ${monsterChance > 0 ? `
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #94a3b8;">Шанс монстра:</span>
-                        <span style="color: ${monsterColor}; font-weight: bold;">${monsterChance}%</span>
-                    </div>
-                ` : ''}
-                
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-                    <p style="color: #cbd5e1; font-size: 14px;">${actionData.description}</p>
-                </div>
-            </div>
-            
-            <div class="action-requirements" style="
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 8px;
-                padding: 10px;
-                margin-bottom: 20px;
-                font-size: 12px;
-                color: #94a3b8;
-            ">
-                ${actionData.requires_research ? '✓ Требуется исследование гекса' : '✓ Доступно сразу'}
-                ${actionData.triggers_battle ? '<br>⚠️ Вызывает бой' : ''}
-                ${actionData.requires_stealth ? '<br>👣 Требуется скрытность' : ''}
-                ${actionData.is_peaceful ? '<br>🍻 Мирное действие' : ''}
-            </div>
-            
-            <div style="text-align: center;">
-                <button class="btn-control" 
-                        onclick="window.game.systems.action.executeActionNew('${actionData.type}', ${row}, ${col})"
-                        style="padding: 15px 30px; font-size: 16px;">
-                    🎲 Выполнить действие
-                </button>
-            </div>
-            
-            <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
-                <em>Действие займёт 1 час времени</em>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Выполнение действия с учётом всех факторов
- */
-async executeActionNew(actionType, row, col) {
-    const cellKey = `${col},${row}`;
-    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
-    const cellTypeData = this.cellTypes[cell.cellType];
-    const actionData = cellTypeData?.actions?.find(a => a.type === actionType);
-    
-    if (!cell || !actionData) return;
-    
-    // Тратим 1 час времени
-    if (this.mapSystem.timeSystem) {
-        this.mapSystem.timeSystem.spendHourOnHex(actionType);
-    }
-    
-    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
-    const isDay = timeStatus?.isDay ?? true;
-    
-    // Проверка успеха
-    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
-    const successRoll = Math.random() * 100;
-    const isSuccess = successRoll <= successChance;
-    
-    // Проверка появления монстра
-    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
-    const monsterRoll = Math.random() * 100;
-    const hasMonster = monsterRoll <= monsterChance;
-    
-    if (isSuccess) {
-        // Успешное выполнение действия
-        await this.handleActionSuccessNew(actionData, cell, row, col);
-        
-        // Если ночью и есть шанс монстра
-        if (hasMonster && actionData.night_monster_chance > 0) {
-            // Вызов боя с монстром
-            await this.startBattleForAction(cell, actionData);
-        }
-    } else {
-        // Неудачное выполнение
-        this.handleActionFailureNew(actionData, cell);
-        
-        // При неудаче всегда вызываем бой ночью
-        if (!isDay && actionData.night_monster_chance > 0) {
-            await this.startBattleForAction(cell, actionData);
-        }
-    }
-    
-    // Обновление интерфейса
-    setTimeout(() => {
-        if (cell) {
-            this.updateCellActionsUI(cell);
-        }
-    }, 1000);
-}
-
-/**
- * Обработка успешного выполнения действия
- */
-async handleActionSuccessNew(actionData, cell, row, col) {
-    console.log(`✅ Успешное выполнение: ${actionData.name}`);
-    
-    // Награда в зависимости от типа действия
-    switch(actionData.resource_type) {
-        case 'treasure':
-            this.giveTreasureReward(cell);
-            break;
-        case 'gold':
-            this.giveGoldReward(actionData);
-            break;
-        case 'weapon':
-        case 'armor':
-            this.giveItemReward(actionData.resource_type);
-            break;
-        case 'hunting':
-            this.giveHuntingReward(cell);
-            break;
-        case 'water':
-            this.fillFlask();
-            break;
-        case 'shop':
-            this.openShop(cell);
-            break;
-        case 'information':
-            this.giveInformation(cell);
-            break;
-        case 'contract':
-            this.giveAssassinationContract();
-            break;
-        default:
-            // Сбор ресурсов
-            this.giveResourceReward(actionData);
-    }
-    
-    // Если это было последнее действие на гексе
-    if (!cell.cellTypeData?.reusable_after_research) {
-        cell.hasAction = false;
-    }
-    
-    this.showNotification(`✅ ${actionData.name} успешно выполнено!`, 'success');
-}
-
-/**
- * Запуск боя для действия
- */
-async startBattleForAction(cell, actionData) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return;
-    
-    // Получение монстра в зависимости от типа действия
-    let monster = null;
-    
-    if (actionData.battle_type === 'boss') {
-        monster = this.getBossMonster(cell.cellTypeData?.research_monster_level);
-    } else if (actionData.battle_type === 'group') {
-        // Бой с группой монстров
-        await this.startGroupBattle(cell, actionData.group_size);
-        return;
-    } else if (actionData.battle_type === 'hunt') {
-        // Охотничий бой
-        await this.startHuntBattle(cell);
-        return;
-    } else {
-        // Случайный монстр из списка
-        monster = this.getRandomMonsterForCell(cell);
-    }
-    
-    if (monster) {
-        this.mapSystem.pendingAction = {
-            action: actionData.type,
-            row: cell.row,
-            col: cell.col,
-            wasSuccess: true,
-            requiresResearch: cell.cellTypeData?.research_required
-        };
-        
-        battleSystem.startBattleWithSpecificMonster(
-            this.mapSystem.currentHero,
-            monster,
-            'action'
-        );
-    }
-}
-
-/**
- * Получение случайного монстра для клетки
- */
-getRandomMonsterForCell(cell) {
-    const cellTypeData = this.cellTypes[cell.cellType];
-    if (!cellTypeData?.monsters || cellTypeData.monsters.length === 0) {
-        return this.getRandomMonsterByLevel(cellTypeData?.research_monster_level || 1);
-    }
-    
-    const monsterId = cellTypeData.monsters[
-        Math.floor(Math.random() * cellTypeData.monsters.length)
-    ];
-    
-    const battleSystem = window.game?.systems?.battle;
-    if (battleSystem) {
-        return battleSystem.getMonsterById(monsterId);
-    }
-    
-    return null;
-}
-
-/**
- * Бой с группой монстров
- */
-async startGroupBattle(cell, groupSize) {
-    const battleSystem = window.game?.systems?.battle;
-    if (!battleSystem) return;
-    
-    const monsters = [];
-    for (let i = 0; i < groupSize; i++) {
-        const monster = this.getRandomMonsterForCell(cell);
-        if (monster) {
-            monsters.push(monster);
-        }
-    }
-    
-    if (monsters.length > 0) {
-        this.mapSystem.pendingAction = {
-            action: 'group_battle',
-            row: cell.row,
-            col: cell.col,
-            monsters: monsters,
-            requiresResearch: cell.cellTypeData?.research_required
-        };
-        
-        // Запуск группового боя
-        battleSystem.startGroupBattle(this.mapSystem.currentHero, monsters, 'group');
-    }
-}
-
-/**
- * Выдача награды за сокровища
- */
-giveTreasureReward(cell) {
-    const cellTypeData = this.cellTypes[cell.cellType];
-    if (!cellTypeData?.loot_after_research) return;
-    
-    const loot = cellTypeData.loot_after_research;
-    
-    // Золото
-    if (loot.gold && Math.random() * 100 <= loot.gold.chance) {
-        const amount = Math.floor(
-            Math.random() * (loot.gold.max - loot.gold.min + 1)
-        ) + loot.gold.min;
-        
-        this.mapSystem.currentHero.gold += amount;
-        this.showNotification(`💰 Найдено ${amount} золота!`, 'success');
-    }
-    
-    // Предметы
-    if (loot.items) {
-        Object.entries(loot.items).forEach(([itemType, chance]) => {
-            if (Math.random() * 100 <= chance) {
-                const item = this.getRandomItemByType(itemType);
-                if (item) {
-                    this.addItemToHero(item.id);
-                    this.showNotification(`🎁 Найдено: ${item.name}!`, 'success');
-                }
-            }
-        });
-    }
-    
-    // Ресурсы
-    if (loot.resources) {
-        Object.entries(loot.resources).forEach(([resourceType, chance]) => {
-            if (Math.random() * 100 <= chance) {
-                const resource = this.getRandomResource(resourceType);
-                if (resource) {
-                    this.addResourceToHero(resource.id, resource.name, 1, resourceType);
-                }
-            }
-        });
-    }
-}
-
-/**
- * Выдача награды за охоту
- */
-giveHuntingReward(cell) {
-    const cellTypeData = this.cellTypes[cell.cellType];
-    if (!cellTypeData?.huntable_monsters) return;
-    
-    // Выбор трофея
-    const trophyTypes = ['bones', 'leathers', 'hides', 'furs', 'food'];
-    const trophyType = trophyTypes[Math.floor(Math.random() * trophyTypes.length)];
-    
-    const resources = this.resources[trophyType];
-    if (resources && resources.length > 0) {
-        const resource = resources[Math.floor(Math.random() * resources.length)];
-        const quantity = Math.floor(Math.random() * 3) + 1;
-        
-        this.addResourceToHero(resource.id, resource.name, quantity, trophyType);
-        this.showNotification(`🏹 Охота удалась! Получено: ${resource.name} x${quantity}`, 'success');
-    }
-}
-
-
-    
     
 
  handleTradeAction(row, col) {
