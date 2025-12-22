@@ -2798,6 +2798,386 @@ async performCellAction(action, row, col) {
 }
 
 
+
+// ========== НОВАЯ МЕХАНИКА ДЕЙСТВИЙ ==========
+
+/**
+ * Выполнение действия с учётом времени суток
+ */
+async performCellActionNew(action, row, col) {
+    console.log(`🎯 НОВОЕ выполнение действия: ${action} на [${col},${row}]`);
+    
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    
+    if (!cell) {
+        this.showNotification("❌ Клетка не найдена!", 'error');
+        return;
+    }
+
+    // Проверка исследованности
+    if (!cell.explored && cell.cellTypeData?.research_required) {
+        this.showNotification("❌ Сначала исследуйте этот гекс!", 'warning');
+        return;
+    }
+
+    // Проверка, что действие доступно
+    const cellTypeData = this.cellTypes[cell.cellType];
+    const actionData = cellTypeData?.actions?.find(a => a.type === action);
+    
+    if (!actionData) {
+        this.showNotification("❌ Это действие недоступно на этом гексе!", 'error');
+        return;
+    }
+
+    // Проверка времени суток
+    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
+    const isDay = timeStatus?.isDay ?? true;
+    
+    // Получение шанса успеха
+    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
+    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
+    
+    // Показ интерфейса действия
+    this.showActionInterface(actionData, successChance, monsterChance, row, col, isDay);
+}
+
+/**
+ * Показ интерфейса для действия
+ */
+showActionInterface(actionData, successChance, monsterChance, row, col, isDay) {
+    const actionsContainer = document.getElementById('cellActionsContainer');
+    if (!actionsContainer) return;
+    
+    const timeText = isDay ? '☀️ День' : '🌙 Ночь';
+    const successColor = this.getChanceColor(successChance);
+    const monsterColor = monsterChance > 0 ? '#ff4444' : '#00ff00';
+    
+    actionsContainer.innerHTML = `
+        <div class="action-interface">
+            <h3 style="color: #00ffcc; text-align: center;">
+                ${actionData.icon} ${actionData.name}
+            </h3>
+            
+            <div class="action-info" style="
+                background: rgba(0, 0, 0, 0.4);
+                border-radius: 8px;
+                padding: 15px;
+                margin: 15px 0;
+            ">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #94a3b8;">Время:</span>
+                    <span style="color: ${isDay ? '#fbbf24' : '#3b82f6'};">${timeText}</span>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: #94a3b8;">Шанс успеха:</span>
+                    <span style="color: ${successColor}; font-weight: bold;">${successChance}%</span>
+                </div>
+                
+                ${monsterChance > 0 ? `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #94a3b8;">Шанс монстра:</span>
+                        <span style="color: ${monsterColor}; font-weight: bold;">${monsterChance}%</span>
+                    </div>
+                ` : ''}
+                
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <p style="color: #cbd5e1; font-size: 14px;">${actionData.description}</p>
+                </div>
+            </div>
+            
+            <div class="action-requirements" style="
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 8px;
+                padding: 10px;
+                margin-bottom: 20px;
+                font-size: 12px;
+                color: #94a3b8;
+            ">
+                ${actionData.requires_research ? '✓ Требуется исследование гекса' : '✓ Доступно сразу'}
+                ${actionData.triggers_battle ? '<br>⚠️ Вызывает бой' : ''}
+                ${actionData.requires_stealth ? '<br>👣 Требуется скрытность' : ''}
+                ${actionData.is_peaceful ? '<br>🍻 Мирное действие' : ''}
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn-control" 
+                        onclick="window.game.systems.action.executeActionNew('${actionData.type}', ${row}, ${col})"
+                        style="padding: 15px 30px; font-size: 16px;">
+                    🎲 Выполнить действие
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; color: #888; font-size: 12px; text-align: center;">
+                <em>Действие займёт 1 час времени</em>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Выполнение действия с учётом всех факторов
+ */
+async executeActionNew(actionType, row, col) {
+    const cellKey = `${col},${row}`;
+    const cell = this.mapSystem.currentTacticalMap?.cells[cellKey];
+    const cellTypeData = this.cellTypes[cell.cellType];
+    const actionData = cellTypeData?.actions?.find(a => a.type === actionType);
+    
+    if (!cell || !actionData) return;
+    
+    // Тратим 1 час времени
+    if (this.mapSystem.timeSystem) {
+        this.mapSystem.timeSystem.spendHourOnHex(actionType);
+    }
+    
+    const timeStatus = this.mapSystem.timeSystem?.getTimeStatus();
+    const isDay = timeStatus?.isDay ?? true;
+    
+    // Проверка успеха
+    const successChance = isDay ? actionData.day_success_chance : actionData.night_success_chance;
+    const successRoll = Math.random() * 100;
+    const isSuccess = successRoll <= successChance;
+    
+    // Проверка появления монстра
+    const monsterChance = isDay ? 0 : actionData.night_monster_chance;
+    const monsterRoll = Math.random() * 100;
+    const hasMonster = monsterRoll <= monsterChance;
+    
+    if (isSuccess) {
+        // Успешное выполнение действия
+        await this.handleActionSuccessNew(actionData, cell, row, col);
+        
+        // Если ночью и есть шанс монстра
+        if (hasMonster && actionData.night_monster_chance > 0) {
+            // Вызов боя с монстром
+            await this.startBattleForAction(cell, actionData);
+        }
+    } else {
+        // Неудачное выполнение
+        this.handleActionFailureNew(actionData, cell);
+        
+        // При неудаче всегда вызываем бой ночью
+        if (!isDay && actionData.night_monster_chance > 0) {
+            await this.startBattleForAction(cell, actionData);
+        }
+    }
+    
+    // Обновление интерфейса
+    setTimeout(() => {
+        if (cell) {
+            this.updateCellActionsUI(cell);
+        }
+    }, 1000);
+}
+
+/**
+ * Обработка успешного выполнения действия
+ */
+async handleActionSuccessNew(actionData, cell, row, col) {
+    console.log(`✅ Успешное выполнение: ${actionData.name}`);
+    
+    // Награда в зависимости от типа действия
+    switch(actionData.resource_type) {
+        case 'treasure':
+            this.giveTreasureReward(cell);
+            break;
+        case 'gold':
+            this.giveGoldReward(actionData);
+            break;
+        case 'weapon':
+        case 'armor':
+            this.giveItemReward(actionData.resource_type);
+            break;
+        case 'hunting':
+            this.giveHuntingReward(cell);
+            break;
+        case 'water':
+            this.fillFlask();
+            break;
+        case 'shop':
+            this.openShop(cell);
+            break;
+        case 'information':
+            this.giveInformation(cell);
+            break;
+        case 'contract':
+            this.giveAssassinationContract();
+            break;
+        default:
+            // Сбор ресурсов
+            this.giveResourceReward(actionData);
+    }
+    
+    // Если это было последнее действие на гексе
+    if (!cell.cellTypeData?.reusable_after_research) {
+        cell.hasAction = false;
+    }
+    
+    this.showNotification(`✅ ${actionData.name} успешно выполнено!`, 'success');
+}
+
+/**
+ * Запуск боя для действия
+ */
+async startBattleForAction(cell, actionData) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return;
+    
+    // Получение монстра в зависимости от типа действия
+    let monster = null;
+    
+    if (actionData.battle_type === 'boss') {
+        monster = this.getBossMonster(cell.cellTypeData?.research_monster_level);
+    } else if (actionData.battle_type === 'group') {
+        // Бой с группой монстров
+        await this.startGroupBattle(cell, actionData.group_size);
+        return;
+    } else if (actionData.battle_type === 'hunt') {
+        // Охотничий бой
+        await this.startHuntBattle(cell);
+        return;
+    } else {
+        // Случайный монстр из списка
+        monster = this.getRandomMonsterForCell(cell);
+    }
+    
+    if (monster) {
+        this.mapSystem.pendingAction = {
+            action: actionData.type,
+            row: cell.row,
+            col: cell.col,
+            wasSuccess: true,
+            requiresResearch: cell.cellTypeData?.research_required
+        };
+        
+        battleSystem.startBattleWithSpecificMonster(
+            this.mapSystem.currentHero,
+            monster,
+            'action'
+        );
+    }
+}
+
+/**
+ * Получение случайного монстра для клетки
+ */
+getRandomMonsterForCell(cell) {
+    const cellTypeData = this.cellTypes[cell.cellType];
+    if (!cellTypeData?.monsters || cellTypeData.monsters.length === 0) {
+        return this.getRandomMonsterByLevel(cellTypeData?.research_monster_level || 1);
+    }
+    
+    const monsterId = cellTypeData.monsters[
+        Math.floor(Math.random() * cellTypeData.monsters.length)
+    ];
+    
+    const battleSystem = window.game?.systems?.battle;
+    if (battleSystem) {
+        return battleSystem.getMonsterById(monsterId);
+    }
+    
+    return null;
+}
+
+/**
+ * Бой с группой монстров
+ */
+async startGroupBattle(cell, groupSize) {
+    const battleSystem = window.game?.systems?.battle;
+    if (!battleSystem) return;
+    
+    const monsters = [];
+    for (let i = 0; i < groupSize; i++) {
+        const monster = this.getRandomMonsterForCell(cell);
+        if (monster) {
+            monsters.push(monster);
+        }
+    }
+    
+    if (monsters.length > 0) {
+        this.mapSystem.pendingAction = {
+            action: 'group_battle',
+            row: cell.row,
+            col: cell.col,
+            monsters: monsters,
+            requiresResearch: cell.cellTypeData?.research_required
+        };
+        
+        // Запуск группового боя
+        battleSystem.startGroupBattle(this.mapSystem.currentHero, monsters, 'group');
+    }
+}
+
+/**
+ * Выдача награды за сокровища
+ */
+giveTreasureReward(cell) {
+    const cellTypeData = this.cellTypes[cell.cellType];
+    if (!cellTypeData?.loot_after_research) return;
+    
+    const loot = cellTypeData.loot_after_research;
+    
+    // Золото
+    if (loot.gold && Math.random() * 100 <= loot.gold.chance) {
+        const amount = Math.floor(
+            Math.random() * (loot.gold.max - loot.gold.min + 1)
+        ) + loot.gold.min;
+        
+        this.mapSystem.currentHero.gold += amount;
+        this.showNotification(`💰 Найдено ${amount} золота!`, 'success');
+    }
+    
+    // Предметы
+    if (loot.items) {
+        Object.entries(loot.items).forEach(([itemType, chance]) => {
+            if (Math.random() * 100 <= chance) {
+                const item = this.getRandomItemByType(itemType);
+                if (item) {
+                    this.addItemToHero(item.id);
+                    this.showNotification(`🎁 Найдено: ${item.name}!`, 'success');
+                }
+            }
+        });
+    }
+    
+    // Ресурсы
+    if (loot.resources) {
+        Object.entries(loot.resources).forEach(([resourceType, chance]) => {
+            if (Math.random() * 100 <= chance) {
+                const resource = this.getRandomResource(resourceType);
+                if (resource) {
+                    this.addResourceToHero(resource.id, resource.name, 1, resourceType);
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Выдача награды за охоту
+ */
+giveHuntingReward(cell) {
+    const cellTypeData = this.cellTypes[cell.cellType];
+    if (!cellTypeData?.huntable_monsters) return;
+    
+    // Выбор трофея
+    const trophyTypes = ['bones', 'leathers', 'hides', 'furs', 'food'];
+    const trophyType = trophyTypes[Math.floor(Math.random() * trophyTypes.length)];
+    
+    const resources = this.resources[trophyType];
+    if (resources && resources.length > 0) {
+        const resource = resources[Math.floor(Math.random() * resources.length)];
+        const quantity = Math.floor(Math.random() * 3) + 1;
+        
+        this.addResourceToHero(resource.id, resource.name, quantity, trophyType);
+        this.showNotification(`🏹 Охота удалась! Получено: ${resource.name} x${quantity}`, 'success');
+    }
+}
+
+
+    
     
 
  handleTradeAction(row, col) {
