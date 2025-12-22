@@ -624,6 +624,178 @@ completeMovementAfterBattle(victory, escape = false, battleType = 'movement', do
 }
 
 
+// ========== ОБНОВЛЕНИЕ completeMovementAfterBattle ==========
+
+/**
+ * Обновленная версия completeMovementAfterBattle с поддержкой исследования
+ */
+completeMovementAfterBattleNew(victory, escape = false, battleType = 'movement', doubleLoot = false) {
+    console.log(`🎲 MapSystem: Завершение ${battleType} боя: победа=${victory}, побег=${escape}`);
+    
+    // Обработка исследования
+    if (battleType === 'research' || this.pendingResearch) {
+        return this.completeResearchAfterBattle(victory, escape);
+    }
+    
+    // Обработка действий
+    if (battleType === 'action' || (this.pendingAction && this.pendingAction.requiresResearch !== undefined)) {
+        return this.completeActionAfterBattle(victory, escape);
+    }
+    
+    // Обработка охоты
+    if (battleType === 'hunt') {
+        return this.completeHuntAfterBattle(victory, escape, doubleLoot);
+    }
+    
+    // Обработка обычного перемещения
+    if (this.pendingMovement) {
+        let targetX, targetY;
+        
+        if (victory) {
+            targetX = this.pendingMovement.x;
+            targetY = this.pendingMovement.y;
+            const oldPosition = {...this.playerTacticalPosition};
+            this.playerTacticalPosition = {x: targetX, y: targetY};
+            
+            // Обновляем видимость
+            this.updateVisibilityOnMove(targetX, targetY);
+            
+            console.log(`✅ Успешное перемещение после боя: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+            
+            this.showNotification(`✅ Успешное перемещение на [${targetX}, ${targetY}]`, 'success');
+        } else {
+            if (escape) {
+                targetX = this.playerTacticalPosition.x;
+                targetY = this.playerTacticalPosition.y;
+                console.log(`🏃 Побег! Герой остался на позиции: [${targetX}, ${targetY}]`);
+                this.showNotification(`🏃 Побег успешен!`, 'warning');
+            } else {
+                const startPosition = this.currentTacticalMap.startPosition;
+                targetX = startPosition.x;
+                targetY = startPosition.y;
+                const oldPosition = {...this.playerTacticalPosition};
+                this.playerTacticalPosition = {x: targetX, y: targetY};
+                
+                // Обновляем видимость
+                this.updateVisibilityOnMove(targetX, targetY);
+                
+                console.log(`💀 Поражение! Возврат на стартовую позицию: [${oldPosition.x}, ${oldPosition.y}] → [${targetX}, ${targetY}]`);
+                this.showNotification(`💀 Поражение! Возврат на стартовую позицию`, 'error');
+            }
+        }
+        
+        this.pendingMovement = null;
+        
+        if (this.activeOverlay === 'tactical-map' || this.activeOverlay === 'local-map') {
+            this.calculateCSSScale();
+            this.drawTacticalMap();
+            this.updateMovementInfo();
+            
+            setTimeout(() => {
+                const cellKey = `${targetX},${targetY}`;
+                const currentCell = this.currentTacticalMap?.cells[cellKey];
+                
+                if (currentCell && this.actionSystem) {
+                    console.log(`🎯 После боя показываем действия для клетки [${targetX}, ${targetY}]`);
+                    this.actionSystem.updateCellActionsUI(currentCell);
+                    this.actionSystem.highlightSelectedCell(currentCell);
+                }
+            }, 500);
+        }
+    }
+}
+
+/**
+ * Обработка завершения действия после боя
+ */
+completeActionAfterBattle(victory, escape) {
+    if (!this.pendingAction) {
+        console.warn("❌ Нет ожидающего действия");
+        return;
+    }
+    
+    const { action, row, col, wasSuccess, requiresResearch } = this.pendingAction;
+    const cellKey = `${col},${row}`;
+    const cell = this.currentTacticalMap?.cells[cellKey];
+    
+    if (victory) {
+        if (wasSuccess) {
+            this.showNotification(`✅ Вы победили монстра и завершили действие ${action}!`, 'success');
+        } else {
+            this.showNotification(`✅ Вы победили монстра после неудачи!`, 'success');
+        }
+        
+        // Если требовалось исследование - отмечаем как исследованное
+        if (requiresResearch && cell) {
+            cell.explored = true;
+        }
+    } else {
+        if (escape) {
+            this.showNotification(`🏃 Вы сбежали с поля боя`, 'warning');
+        } else {
+            this.showNotification(`💀 Вы проиграли бой`, 'error');
+            
+            // При поражении возвращаемся на стартовую позицию
+            const startPosition = this.currentTacticalMap.startPosition;
+            this.playerTacticalPosition = {...startPosition};
+        }
+    }
+    
+    this.pendingAction = null;
+    
+    // Перерисовываем карту
+    this.drawTacticalMap();
+    
+    // Обновляем интерфейс
+    if (cell && this.actionSystem) {
+        setTimeout(() => {
+            this.actionSystem.updateCellActionsUI(cell);
+        }, 500);
+    }
+}
+
+// ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
+
+/**
+ * Добавление предмета герою
+ */
+addItemToHero(itemId) {
+    if (!this.currentHero) return;
+    
+    const itemSystem = window.game?.systems?.equipment;
+    if (itemSystem && itemSystem.addItemToHero) {
+        return itemSystem.addItemToHero(this.currentHero, itemId);
+    }
+    
+    return false;
+}
+
+/**
+ * Добавление ресурса герою
+ */
+addResourceToHero(resourceId, quantity = 1, resourceType = 'misc') {
+    if (!this.currentHero) return;
+    
+    // Создаем структуру ресурсов если её нет
+    if (!this.currentHero.resources) {
+        this.currentHero.resources = {};
+    }
+    
+    if (!this.currentHero.resources[resourceId]) {
+        this.currentHero.resources[resourceId] = {
+            id: resourceId,
+            count: 0,
+            type: resourceType
+        };
+    }
+    
+    this.currentHero.resources[resourceId].count += quantity;
+    
+    console.log(`📦 Добавлен ресурс ${resourceId}: x${quantity} (всего: ${this.currentHero.resources[resourceId].count})`);
+    
+    return true;
+}
+    
 /**
  * Обработка завершения специального действия (торговля, вода и т.д.)
  * Важно: специальные клетки НЕ отмечаются как исследованные
