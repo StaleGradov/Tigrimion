@@ -6,689 +6,375 @@
       "suggestion": "Любое пересечение путей притягивает как путников, так и тех, кто на них охотится.",
       "icon": "🚸",
       "image": "images/locations/forest_crossroads.jpg",
-      "actions": [
-        {
-          "type": "set_trap",
-          "name": "Установить ловушку",
-          "description": "Установить ловушку для мелкой дичи",
-          "icon": "🪤",
-          "day_success_chance": 100,
-          "night_success_chance": 60,
-          "night_monster_chance": 100,
-          "resource_type": "traps",
-          "requires_research": true
-        },
-        {
-          "type": "prepare_ambush",
-          "name": "Подготовить засаду",
-          "description": "Подготовить позицию для неожиданной атаки",
-          "icon": "🎯",
-          "day_success_chance": 100,
-          "night_success_chance": 75,
-          "night_monster_chance": 100,
-          "resource_type": "ambush",
-          "requires_research": true
-        },
-        {
-          "type": "hunt_caravan",
-          "name": "Охотиться на караван",
-          "description": "Подкараулить торговый караван",
-          "icon": "🏹",
-          "day_success_chance": 80,
-          "night_success_chance": 50,
-          "night_monster_chance": 100,
-          "resource_type": "loot",
-          "requires_research": true,
-          "triggers_battle": true
-        }
-      ],
-      "monsters": ["bandit", "wolf", "giant_spider"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "gold": { "min": 10, "max": 30, "chance": 40 },
-        "resources": { "traps": 20, "ambush": 30, "loot": 15 }
+      "action_chances": {
+        "search_treasure": 20,
+        "search_water": 30,
+        "search_berries": 35,
+        "search_mushrooms": 30,
+        "search_herbs": 25,
+        "search_ore": 5,
+        "search_stone": 25,
+        "set_trap": 75,
+        "prepare_ambush": 90,
+        "hunt_caravan": 80,
+        "take_assassination_contract": 50,
+        "light_campfire": 65,
+        "guard_caravan": 85,
+        "hunt": 70,
+        "stealth_movement": 85,
+        "gather_wood": 60
       },
-      "time_to_research": 1,
-      "reusable_after_research": false
+      "special_notes": "Идеальное место для засады на движущиеся цели. Шанс встретить других путников.",
+      "failure_monster_chance": 65,
+      "monster_level": 2
     },
 
-    "bandit_camp": {
-      "name": "Лагерь разбойников",
-      "description": "Временное пристанище бандитов. Видны потухшие костры и брошенное снаряжение.",
-      "suggestion": "Будьте осторожны - разбойники могут вернуться в любой момент.",
-      "icon": "⚔️",
-      "image": "images/locations/bandit_camp.jpg",
-      "actions": [
-        {
-          "type": "attack_bandits",
-          "name": "Атаковать разбойников",
-          "description": "Напасть на лагерь и забрать добычу",
-          "icon": "⚔️",
-          "day_success_chance": 70,
-          "night_success_chance": 40,
-          "night_monster_chance": 100,
-          "resource_type": "loot",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "group",
-          "group_size": 3
-        },
-        {
-          "type": "steal_supplies",
-          "name": "Украсть припасы",
-          "description": "Тихо пробраться и украсть припасы",
-          "icon": "🎒",
-          "day_success_chance": 85,
-          "night_success_chance": 60,
-          "night_monster_chance": 100,
-          "resource_type": "food",
-          "requires_research": false,
-          "requires_stealth": true
-        }
-      ],
-      "monsters": ["bandit", "bandit_leader", "rogue"],
-      "research_required": false,
-      "research_monster_level": 3,
-      "loot_after_research": {
-        "gold": { "min": 50, "max": 150, "chance": 80 },
-        "items": { "weapon": 40, "armor": 30, "potion": 50 },
-        "resources": { "food": 70, "tools": 40 }
+    "cave_entrance": {
+      "name": "Темный вход в пещеру",
+      "description": "Зияющее отверстие в скале, из которого веет сыростью и запахом гнили. Камни у входа обронены слюдой.",
+      "suggestion": "Глубина пещеры неизвестна. Может служить логовом или вести к древним подземельям.",
+      "icon": "🕸️",
+      "image": "images/locations/cave_entrance.jpg",
+      "action_chances": {
+        "search_treasure": 70,
+        "search_water": 60,
+        "search_berries": 5,
+        "search_mushrooms": 80,
+        "search_herbs": 20,
+        "search_ore": 85,
+        "search_stone": 90,
+        "set_trap": 50,
+        "prepare_ambush": 70,
+        "hunt_caravan": 15,
+        "take_assassination_contract": 25,
+        "light_campfire": 40,
+        "guard_caravan": 10,
+        "hunt": 30,
+        "stealth_movement": 40,
+        "gather_wood": 10
       },
-      "time_to_research": 2,
-      "reusable_after_research": false,
-      "is_special_location": true
+      "special_notes": "Высокий шанс найти руду и редкие грибы, но риск встречи с подземными обитателями крайне велик.",
+      "failure_monster_chance": 95,
+      "monster_level": 3
     },
 
-    "orc_camp": {
-      "name": "Лагерь орков",
-      "description": "Примитивное поселение орков с тотемами и костями трофеев.",
-      "suggestion": "Орки агрессивны и хорошо организованы. Нужна подготовка.",
-      "icon": "👹",
-      "image": "images/locations/orc_camp.jpg",
-      "actions": [
-        {
-          "type": "attack_orcs",
-          "name": "Атаковать орков",
-          "description": "Напасть на лагерь орков",
-          "icon": "⚔️",
-          "day_success_chance": 60,
-          "night_success_chance": 30,
-          "night_monster_chance": 100,
-          "resource_type": "loot",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "group",
-          "group_size": 4
-        },
-        {
-          "type": "scout_camp",
-          "name": "Разведать лагерь",
-          "description": "Тайно разведать силы орков",
-          "icon": "👁️",
-          "day_success_chance": 90,
-          "night_success_chance": 70,
-          "night_monster_chance": 100,
-          "resource_type": "information",
-          "requires_research": false,
-          "requires_stealth": true
-        }
-      ],
-      "monsters": ["orc", "orc_warrior", "orc_shaman", "troll"],
-      "research_required": false,
-      "research_monster_level": 4,
-      "loot_after_research": {
-        "gold": { "min": 80, "max": 200, "chance": 90 },
-        "items": { "weapon": 60, "armor": 50, "magic": 20 },
-        "resources": { "ores": 60, "bones": 80 }
+    "lonely_watchtower": {
+      "name": "Одинокая сторожевая башня",
+      "description": "Деревянная башня на каменном фундаменте, когда-то использовавшаяся для наблюдения за долиной. Лестница наверх шатается.",
+      "suggestion": "С верхней площадки открывается вид на окрестности. Хороший пункт для долговременной стоянки.",
+      "icon": "🗼",
+      "image": "images/locations/lonely_watchtower.jpg",
+      "action_chances": {
+        "search_treasure": 50,
+        "search_water": 40,
+        "search_berries": 20,
+        "search_mushrooms": 25,
+        "search_herbs": 35,
+        "search_ore": 15,
+        "search_stone": 70,
+        "set_trap": 30,
+        "prepare_ambush": 85,
+        "hunt_caravan": 60,
+        "take_assassination_contract": 75,
+        "light_campfire": 95,
+        "guard_caravan": 90,
+        "hunt": 45,
+        "stealth_movement": 70,
+        "gather_wood": 55
       },
-      "time_to_research": 3,
-      "reusable_after_research": false,
-      "is_special_location": true
+      "special_notes": "Тактическое преимущество для наблюдения и защиты. Возможны находки старых припасов.",
+      "failure_monster_chance": 55,
+      "monster_level": 2
     },
 
-    "caravan": {
-      "name": "Торговый караван",
-      "description": "Группа торговцев с охраной, остановившаяся на привал.",
-      "suggestion": "Можно торговать, наняться в охрану или напасть.",
-      "icon": "🐪",
-      "image": "images/locations/caravan.jpg",
-      "actions": [
-        {
-          "type": "trade",
-          "name": "Торговать",
-          "description": "Купить или продать товары",
-          "icon": "🛒",
-          "day_success_chance": 100,
-          "night_success_chance": 100,
-          "night_monster_chance": 0,
-          "resource_type": "shop",
-          "requires_research": false,
-          "is_peaceful": true
-        },
-        {
-          "type": "guard_caravan",
-          "name": "Охранять караван",
-          "description": "Наняться в охрану на время перехода",
-          "icon": "🛡️",
-          "day_success_chance": 100,
-          "night_success_chance": 80,
-          "night_monster_chance": 60,
-          "resource_type": "gold",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "random",
-          "payment": { "min": 25, "max": 75 }
-        },
-        {
-          "type": "attack_caravan",
-          "name": "Напасть на караван",
-          "description": "Ограбить торговцев",
-          "icon": "🏹",
-          "day_success_chance": 70,
-          "night_success_chance": 40,
-          "night_monster_chance": 100,
-          "resource_type": "loot",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "guarded",
-          "guard_strength": 2
-        }
-      ],
-      "monsters": ["mercenary", "guard", "knight"],
-      "research_required": false,
-      "is_special_location": true,
-      "reusable_after_research": true
-    },
-
-    "traveler": {
-      "name": "Путник",
-      "description": "Одинокий путешественник на дороге.",
-      "suggestion": "Может дать полезную информацию или задание.",
-      "icon": "🚶",
-      "image": "images/locations/traveler.jpg",
-      "actions": [
-        {
-          "type": "talk",
-          "name": "Поговорить",
-          "description": "Узнать местные новости и слухи",
-          "icon": "💬",
-          "day_success_chance": 100,
-          "night_success_chance": 100,
-          "night_monster_chance": 0,
-          "resource_type": "information",
-          "requires_research": false,
-          "is_peaceful": true
-        },
-        {
-          "type": "assassination_contract",
-          "name": "Взять контракт",
-          "description": "Получить задание на убийство цели",
-          "icon": "🗡️",
-          "day_success_chance": 40,
-          "night_success_chance": 20,
-          "night_monster_chance": 30,
-          "resource_type": "contract",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "assassination",
-          "target_level": 3
-        }
-      ],
-      "research_required": false,
-      "is_special_location": true,
-      "reusable_after_research": true
-    },
-
-    "hunting_grounds": {
-      "name": "Охотничьи угодья",
-      "description": "Богатая дичью местность со следами животных.",
-      "suggestion": "Идеальное место для охоты, но будьте осторожны с хищниками.",
-      "icon": "🏹",
-      "image": "images/locations/hunting_grounds.jpg",
-      "actions": [
-        {
-          "type": "hunt",
-          "name": "Охотиться",
-          "description": "Выследить и добыть дичь",
-          "icon": "🏹",
-          "day_success_chance": 100,
-          "night_success_chance": 70,
-          "night_monster_chance": 100,
-          "resource_type": "hunting",
-          "requires_research": true,
-          "triggers_battle": true,
-          "battle_type": "hunt",
-          "hunt_steps": 3
-        }
-      ],
-      "monsters": ["wolf", "bear", "boar", "deer"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "resources": { 
-          "bones": 80, 
-          "leathers": 70, 
-          "hides": 60, 
-          "furs": 40,
-          "food": 90 
-        }
+    "mossy_boulder_field": {
+      "name": "Поле замшелых валунов",
+      "description": "Десятки огромных, покрытых толстым мхом камней, разбросанных по поляне, будто брошенных великаном.",
+      "suggestion": "Среди этих камней легко спрятаться и легко заблудиться. Возможно, это древнее мегалитическое сооружение.",
+      "icon": "🪨",
+      "image": "images/locations/mossy_boulder_field.jpg",
+      "action_chances": {
+        "search_treasure": 40,
+        "search_water": 25,
+        "search_berries": 10,
+        "search_mushrooms": 70,
+        "search_herbs": 65,
+        "search_ore": 50,
+        "search_stone": 95,
+        "set_trap": 60,
+        "prepare_ambush": 80,
+        "hunt_caravan": 25,
+        "take_assassination_contract": 30,
+        "light_campfire": 50,
+        "guard_caravan": 35,
+        "hunt": 30,
+        "stealth_movement": 80,
+        "gather_wood": 20
       },
-      "time_to_research": 1,
-      "reusable_after_research": false,
-      "huntable_monsters": ["deer", "boar", "wolf", "bear"]
+      "special_notes": "Отличный источник строительного камня и тенелюбивых растений. Лабиринт для засад.",
+      "failure_monster_chance": 60,
+      "monster_level": 2
     },
 
-    "forest": {
-      "name": "Лес",
-      "description": "Густой лес с высокими деревьями и подлеском.",
-      "suggestion": "Богат ресурсами, но полон опасностей.",
-      "icon": "🌲",
-      "image": "images/locations/forest.jpg",
-      "actions": [
-        {
-          "type": "gather_wood",
-          "name": "Собирать дрова",
-          "description": "Найти и собрать сухие ветки",
-          "icon": "🪵",
-          "day_success_chance": 100,
-          "night_success_chance": 60,
-          "night_monster_chance": 100,
-          "resource_type": "woods",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 3 }
-        },
-        {
-          "type": "search_berries",
-          "name": "Собирать ягоды",
-          "description": "Найти и собрать съедобные ягоды",
-          "icon": "🫐",
-          "day_success_chance": 100,
-          "night_success_chance": 50,
-          "night_monster_chance": 100,
-          "resource_type": "berries",
-          "requires_research": true,
-          "resource_amount": { "min": 2, "max": 5 }
-        },
-        {
-          "type": "search_mushrooms",
-          "name": "Собирать грибы",
-          "description": "Найти и собрать грибы",
-          "icon": "🍄",
-          "day_success_chance": 100,
-          "night_success_chance": 40,
-          "night_monster_chance": 100,
-          "resource_type": "mushrooms",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 4 }
-        },
-        {
-          "type": "search_herbs",
-          "name": "Собирать травы",
-          "description": "Найти лекарственные растения",
-          "icon": "🌿",
-          "day_success_chance": 100,
-          "night_success_chance": 50,
-          "night_monster_chance": 100,
-          "resource_type": "herbs",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 3 }
-        }
-      ],
-      "monsters": ["wolf", "spider", "goblin", "bandit"],
-      "research_required": true,
-      "research_monster_level": 1,
-      "loot_after_research": {
-        "resources": { 
-          "woods": 90, 
-          "berries": 70, 
-          "mushrooms": 60, 
-          "herbs": 50 
-        }
-      },
-      "time_to_research": 1,
-      "reusable_after_research": false
-    },
-
-    "river": {
-      "name": "Река",
-      "description": "Быстрая река с чистой водой.",
-      "suggestion": "Источник воды и место водопоя животных.",
-      "icon": "💧",
-      "image": "images/locations/river.jpg",
-      "actions": [
-        {
-          "type": "fill_flask",
-          "name": "Наполнить флягу",
-          "description": "Наполнить флягу чистой водой",
-          "icon": "💧",
-          "day_success_chance": 100,
-          "night_success_chance": 100,
-          "night_monster_chance": 70,
-          "resource_type": "water",
-          "requires_research": false,
-          "is_peaceful": true,
-          "heal_amount": 20
-        },
-        {
-          "type": "fish",
-          "name": "Рыбачить",
-          "description": "Поймать рыбу для пропитания",
-          "icon": "🎣",
-          "day_success_chance": 80,
-          "night_success_chance": 40,
-          "night_monster_chance": 100,
-          "resource_type": "food",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 2 }
-        },
-        {
-          "type": "set_trap",
-          "name": "Установить ловушку",
-          "description": "Установить ловушку у водопоя",
-          "icon": "🪤",
-          "day_success_chance": 90,
-          "night_success_chance": 60,
-          "night_monster_chance": 100,
-          "resource_type": "traps",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 2 }
-        }
-      ],
-      "monsters": ["river_monster", "crocodile", "bandit"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "resources": { "food": 80, "traps": 40 }
-      },
-      "time_to_research": 1,
-      "reusable_after_research": false
-    },
-
-    "mountains": {
-      "name": "Горная местность",
-      "description": "Скалистая местность с крутыми склонами.",
-      "suggestion": "Богата минералами, но труднодоступна.",
-      "icon": "⛰️",
-      "image": "images/locations/mountains.jpg",
-      "actions": [
-        {
-          "type": "search_ore",
-          "name": "Искать руду",
-          "description": "Поиск металлических руд",
-          "icon": "⛏️",
-          "day_success_chance": 70,
-          "night_success_chance": 30,
-          "night_monster_chance": 100,
-          "resource_type": "ores",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 2 }
-        },
-        {
-          "type": "search_stone",
-          "name": "Собирать камни",
-          "description": "Найти полезные камни",
-          "icon": "🪨",
-          "day_success_chance": 90,
-          "night_success_chance": 50,
-          "night_monster_chance": 100,
-          "resource_type": "stones",
-          "requires_research": true,
-          "resource_amount": { "min": 2, "max": 5 }
-        },
-        {
-          "type": "search_treasure",
-          "name": "Искать сокровища",
-          "description": "Поиск спрятанных ценностей",
-          "icon": "💰",
-          "day_success_chance": 30,
-          "night_success_chance": 10,
-          "night_monster_chance": 100,
-          "resource_type": "treasure",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 1 }
-        }
-      ],
-      "monsters": ["mountain_troll", "eagle", "golem", "bandit"],
-      "research_required": true,
-      "research_monster_level": 3,
-      "loot_after_research": {
-        "gold": { "min": 20, "max": 100, "chance": 30 },
-        "resources": { "ores": 80, "stones": 90, "treasure": 20 }
-      },
-      "time_to_research": 2,
-      "reusable_after_research": false
-    },
-
-    "abandoned_camp": {
-      "name": "Заброшенный лагерь",
-      "description": "Старый лагерь, брошенный в спешке.",
-      "suggestion": "Может содержать забытые припасы или ловушки.",
-      "icon": "🏕️",
-      "image": "images/locations/abandoned_camp.jpg",
-      "actions": [
-        {
-          "type": "light_campfire",
-          "name": "Разжечь костёр",
-          "description": "Восстановить старый лагерь",
-          "icon": "🔥",
-          "day_success_chance": 100,
-          "night_success_chance": 80,
-          "night_monster_chance": 50,
-          "resource_type": "shelter",
-          "requires_research": true,
-          "grants_bonus": "night_safety"
-        },
-        {
-          "type": "search_treasure",
-          "name": "Обыскать лагерь",
-          "description": "Поиск оставленных ценностей",
-          "icon": "💰",
-          "day_success_chance": 60,
-          "night_success_chance": 30,
-          "night_monster_chance": 100,
-          "resource_type": "treasure",
-          "requires_research": true,
-          "resource_amount": { "min": 1, "max": 2 }
-        }
-      ],
-      "monsters": ["ghost", "bandit", "wild_animal"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "gold": { "min": 10, "max": 50, "chance": 60 },
-        "items": { "potion": 40, "tool": 30 },
-        "resources": { "shelter": 100 }
-      },
-      "time_to_research": 1,
-      "reusable_after_research": false
-    },
-
-    "monster_lair": {
-      "name": "Логово монстра",
-      "description": "Убежище опасного существа.",
-      "suggestion": "Очень опасно, но может содержать ценные трофеи.",
-      "icon": "👹",
-      "image": "images/locations/monster_lair.jpg",
-      "actions": [
-        {
-          "type": "attack_monster",
-          "name": "Атаковать монстра",
-          "description": "Напасть на обитателя логова",
-          "icon": "⚔️",
-          "day_success_chance": 50,
-          "night_success_chance": 20,
-          "night_monster_chance": 100,
-          "resource_type": "loot",
-          "requires_research": false,
-          "triggers_battle": true,
-          "battle_type": "boss",
-          "boss_level": 4
-        },
-        {
-          "type": "steal_egg",
-          "name": "Украсть яйцо/детёныша",
-          "description": "Попытаться украсть ценную добычу",
-          "icon": "🥚",
-          "day_success_chance": 30,
-          "night_success_chance": 10,
-          "night_monster_chance": 100,
-          "resource_type": "special",
-          "requires_research": false,
-          "requires_stealth": true,
-          "value_multiplier": 3
-        }
-      ],
-      "monsters": ["dragon", "giant", "basilisk", "chimera"],
-      "research_required": false,
-      "research_monster_level": 5,
-      "loot_after_research": {
-        "gold": { "min": 200, "max": 500, "chance": 100 },
-        "items": { "legendary": 50, "epic": 80, "rare": 100 },
-        "resources": { "special": 100 }
-      },
-      "time_to_research": 3,
-      "reusable_after_research": false,
-      "is_boss_location": true
-    },
-
-    "treasure_cache": {
-      "name": "Тайник с сокровищами",
-      "description": "Спрятанное хранилище ценностей.",
-      "suggestion": "Может быть охраняемо или заколдовано.",
-      "icon": "📦",
-      "image": "images/locations/treasure_cache.jpg",
-      "actions": [
-        {
-          "type": "open_treasure",
-          "name": "Открыть тайник",
-          "description": "Попытаться вскрыть хранилище",
-          "icon": "💰",
-          "day_success_chance": 80,
-          "night_success_chance": 40,
-          "night_monster_chance": 80,
-          "resource_type": "treasure",
-          "requires_research": true,
-          "resource_amount": { "min": 3, "max": 8 }
-        },
-        {
-          "type": "disarm_traps",
-          "name": "Обезвредить ловушки",
-          "description": "Аккуратно обезвредить защиту",
-          "icon": "⚠️",
-          "day_success_chance": 70,
-          "night_success_chance": 30,
-          "night_monster_chance": 60,
-          "resource_type": "traps",
-          "requires_research": true,
-          "requires_skill": "trap_disarming"
-        }
-      ],
-      "monsters": ["guardian", "golem", "trap"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "gold": { "min": 100, "max": 300, "chance": 100 },
-        "items": { "rare": 70, "magic": 40 },
-        "resources": { "treasure": 100, "gems": 60 }
-      },
-      "time_to_research": 2,
-      "reusable_after_research": false
-    },
-
-    "herb_garden": {
-      "name": "Заросли целебных трав",
-      "description": "Участок с редкими лекарственными растениями.",
-      "suggestion": "Ценный источник алхимических компонентов.",
+    "hidden_meadow": {
+      "name": "Скрытая лесная лужайка",
+      "description": "Уединенная поляна, окруженная густым кольцом кустарника и молодых деревьев. Трава мягкая и высокая.",
+      "suggestion": "Идеальное место для безопасного привала, скрытое от чужих глаз.",
       "icon": "🌿",
-      "image": "images/locations/herb_garden.jpg",
-      "actions": [
-        {
-          "type": "search_herbs",
-          "name": "Собирать травы",
-          "description": "Собрать редкие целебные растения",
-          "icon": "🌿",
-          "day_success_chance": 100,
-          "night_success_chance": 60,
-          "night_monster_chance": 80,
-          "resource_type": "herbs",
-          "requires_research": true,
-          "resource_amount": { "min": 3, "max": 7 },
-          "quality": "high"
-        },
-        {
-          "type": "search_mushrooms",
-          "name": "Искать грибы",
-          "description": "Поиск редких магических грибов",
-          "icon": "🍄",
-          "day_success_chance": 70,
-          "night_success_chance": 40,
-          "night_monster_chance": 80,
-          "resource_type": "mushrooms",
-          "requires_research": true,
-          "resource_amount": { "min": 2, "max": 4 },
-          "quality": "magic"
-        }
-      ],
-      "monsters": ["plant_monster", "spirit", "herbalist"],
-      "research_required": true,
-      "research_monster_level": 2,
-      "loot_after_research": {
-        "resources": { 
-          "herbs": 100, 
-          "mushrooms": 80,
-          "magic_herbs": 40
-        }
+      "image": "images/locations/hidden_meadow.jpg",
+      "action_chances": {
+        "search_treasure": 15,
+        "search_water": 20,
+        "search_berries": 75,
+        "search_mushrooms": 60,
+        "search_herbs": 85,
+        "search_ore": 0,
+        "search_stone": 10,
+        "set_trap": 90,
+        "prepare_ambush": 40,
+        "hunt_caravan": 5,
+        "take_assassination_contract": 10,
+        "light_campfire": 95,
+        "guard_caravan": 50,
+        "hunt": 80,
+        "stealth_movement": 95,
+        "gather_wood": 70
       },
-      "time_to_research": 1,
-      "reusable_after_research": false,
-      "regrowth_time": 7
+      "special_notes": "Богатая флора, безопасность. Отличное место для отдыха и сбора припасов.",
+      "failure_monster_chance": 20,
+      "monster_level": 1
     },
 
-    "weapon_cache": {
-      "name": "Склад оружия",
-      "description": "Спрятанное хранилище оружия и доспехов.",
-      "suggestion": "Может принадлежать бандитам или быть заброшенным.",
-      "icon": "⚔️",
-      "image": "images/locations/weapon_cache.jpg",
-      "actions": [
-        {
-          "type": "take_weapon",
-          "name": "Взять оружие",
-          "description": "Забрать оружие из склада",
-          "icon": "⚔️",
-          "day_success_chance": 90,
-          "night_success_chance": 50,
-          "night_monster_chance": 90,
-          "resource_type": "weapon",
-          "requires_research": true,
-          "item_quality": "random"
-        },
-        {
-          "type": "take_armor",
-          "name": "Взять броню",
-          "description": "Забрать доспехи из склада",
-          "icon": "🛡️",
-          "day_success_chance": 80,
-          "night_success_chance": 40,
-          "night_monster_chance": 90,
-          "resource_type": "armor",
-          "requires_research": true,
-          "item_quality": "random"
-        }
-      ],
-      "monsters": ["guard", "animated_armor", "bandit"],
-      "research_required": true,
-      "research_monster_level": 3,
-      "loot_after_research": {
-        "items": { 
-          "weapon": 100, 
-          "armor": 80,
-          "shield": 60 
-        }
+    "ford": {
+      "name": "Брод через реку",
+      "description": "Мелководный участок реки с каменистым дном, где можно перейти на другой берег. На песке видны следы копыт и телег.",
+      "suggestion": "Ключевая точка на пути любого каравана. Место оживленное, но и предсказуемое.",
+      "icon": "🚶‍♂️💧",
+      "image": "images/locations/ford.jpg",
+      "action_chances": {
+        "search_treasure": 25,
+        "search_water": 100,
+        "search_berries": 30,
+        "search_mushrooms": 15,
+        "search_herbs": 40,
+        "search_ore": 20,
+        "search_stone": 60,
+        "set_trap": 50,
+        "prepare_ambush": 75,
+        "hunt_caravan": 85,
+        "take_assassination_contract": 40,
+        "light_campfire": 80,
+        "guard_caravan": 95,
+        "hunt": 50,
+        "stealth_movement": 65,
+        "gather_wood": 35
       },
-      "time_to_research": 2,
-      "reusable_after_research": false
+      "special_notes": "Гарантированная вода и высокая вероятность встретить торговцев (или тех, кто на них охотится).",
+      "failure_monster_chance": 50,
+      "monster_level": 2
+    },
+
+    "burnt_farm": {
+      "name": "Сгоревшая ферма",
+      "description": "Обугленные бревна дома, сломанная телега и заросшее бурьяном поле. В воздухе все еще пахнет пеплом.",
+      "suggestion": "Трагедия случилась недавно. Кто-то мог спрятать ценности, прежде чем бежать.",
+      "icon": "🔥🏚️",
+      "image": "images/locations/burnt_farm.jpg",
+      "action_chances": {
+        "search_treasure": 65,
+        "search_water": 40,
+        "search_berries": 20,
+        "search_mushrooms": 10,
+        "search_herbs": 30,
+        "search_ore": 5,
+        "search_stone": 45,
+        "set_trap": 35,
+        "prepare_ambush": 55,
+        "hunt_caravan": 30,
+        "take_assassination_contract": 60,
+        "light_campfire": 70,
+        "guard_caravan": 20,
+        "hunt": 40,
+        "stealth_movement": 55,
+        "gather_wood": 45
+      },
+      "special_notes": "Шанс найти спрятанные семейные ценности или узнать контракт на месть.",
+      "failure_monster_chance": 70,
+      "monster_level": 2
+    },
+
+    "hunter_blind": {
+      "name": "Охотничий лабаз",
+      "description": "Небольшая, искусно замаскированная платформа на деревьях, откуда открывается вид на тропу к водопою.",
+      "suggestion": "Профессионально построенное укрытие. Охотник может вернуться в любой момент.",
+      "icon": "🎯",
+      "image": "images/locations/hunter_blind.jpg",
+      "action_chances": {
+        "search_treasure": 30,
+        "search_water": 15,
+        "search_berries": 25,
+        "search_mushrooms": 20,
+        "search_herbs": 45,
+        "search_ore": 5,
+        "search_stone": 10,
+        "set_trap": 95,
+        "prepare_ambush": 90,
+        "hunt_caravan": 40,
+        "take_assassination_contract": 50,
+        "light_campfire": 30,
+        "guard_caravan": 60,
+        "hunt": 95,
+        "stealth_movement": 90,
+        "gather_wood": 40
+      },
+      "special_notes": "Идеальная позиция для скрытого наблюдения, установки ловушек или засады.",
+      "failure_monster_chance": 45,
+      "monster_level": 1
+    },
+
+    "sunk_trading_post": {
+      "name": "Заброшенная торговая застава",
+      "description": "Небольшой укрепленный дом у дороги с заколоченными ставнями. Вывеска со скрипом раскачивается на ветру.",
+      "suggestion": "Такие посты бросали из-за набегов или чумы. В подвале могут остаться товары.",
+      "icon": "🏪",
+      "image": "images/locations/sunk_trading_post.jpg",
+      "action_chances": {
+        "search_treasure": 80,
+        "search_water": 60,
+        "search_berries": 10,
+        "search_mushrooms": 30,
+        "search_herbs": 20,
+        "search_ore": 15,
+        "search_stone": 50,
+        "set_trap": 40,
+        "prepare_ambush": 65,
+        "hunt_caravan": 70,
+        "take_assassination_contract": 85,
+        "light_campfire": 95,
+        "guard_caravan": 75,
+        "hunt": 30,
+        "stealth_movement": 60,
+        "gather_wood": 50
+      },
+      "special_notes": "Одно из лучших мест для поиска ценностей и получения информации о контрактах.",
+      "failure_monster_chance": 85,
+      "monster_level": 3
+    },
+
+    "old_battlefield": {
+      "name": "Заросшее поле битвы",
+      "description": "Холмы и впадины, скрывающие старые окопы. Из земли кое-где торчат обломки оружия и ржавые доспехи.",
+      "suggestion": "Земля, пропитанная кровью и смертью. Местные обходят его стороной, рассказывая о призраках.",
+      "icon": "⚔️💀",
+      "image": "images/locations/old_battlefield.jpg",
+      "action_chances": {
+        "search_treasure": 70,
+        "search_water": 30,
+        "search_berries": 5,
+        "search_mushrooms": 15,
+        "search_herbs": 10,
+        "search_ore": 40,
+        "search_stone": 30,
+        "set_trap": 20,
+        "prepare_ambush": 50,
+        "hunt_caravan": 25,
+        "take_assassination_contract": 45,
+        "light_campfire": 40,
+        "guard_caravan": 15,
+        "hunt": 15,
+        "stealth_movement": 40,
+        "gather_wood": 10
+      },
+      "special_notes": "Можно найти ценное, но проклятое оружие или реликвии. Очень высокая опасность сверхъестественных угроз.",
+      "failure_monster_chance": 90,
+      "monster_level": 4
+    },
+
+    "hermit_hut": {
+      "name": "Хижина отшельника",
+      "description": "Крохотная, но крепкая избушка на курьих ножках, затерянная в чаще. Из трубы идет дымок.",
+      "suggestion": "Отшельник может быть мудрецом, безумцем или тем и другим одновременно. Подход требует осторожности.",
+      "icon": "🏡",
+      "image": "images/locations/hermit_hut.jpg",
+      "action_chances": {
+        "search_treasure": 25,
+        "search_water": 70,
+        "search_berries": 50,
+        "search_mushrooms": 80,
+        "search_herbs": 95,
+        "search_ore": 10,
+        "search_stone": 20,
+        "set_trap": 30,
+        "prepare_ambush": 15,
+        "hunt_caravan": 5,
+        "take_assassination_contract": 10,
+        "light_campfire": 90,
+        "guard_caravan": 40,
+        "hunt": 65,
+        "stealth_movement": 35,
+        "gather_wood": 70
+      },
+      "special_notes": "Уникальный источник редких знаний и могущественных трав. Конфликт маловероятен, если проявить уважение.",
+      "failure_monster_chance": 30,
+      "monster_level": 1
+    },
+
+    "caravan_camp": {
+      "name": "Привал каравана",
+      "description": "Кольцо из потухших кострищ, вбитые в землю колья для лошадей и следы множества повозок.",
+      "suggestion": "Караваны регулярно используют это место. Можно подобрать оброненные вещи или дождаться следующего.",
+      "icon": "🐪🔥",
+      "image": "images/locations/caravan_camp.jpg",
+      "action_chances": {
+        "search_treasure": 40,
+        "search_water": 50,
+        "search_berries": 25,
+        "search_mushrooms": 20,
+        "search_herbs": 35,
+        "search_ore": 5,
+        "search_stone": 25,
+        "set_trap": 55,
+        "prepare_ambush": 80,
+        "hunt_caravan": 95,
+        "take_assassination_contract": 70,
+        "light_campfire": 100,
+        "guard_caravan": 90,
+        "hunt": 55,
+        "stealth_movement": 75,
+        "gather_wood": 60
+      },
+      "special_notes": "Естественная точка притяжения для торговцев и разбойников. Можно легко встроиться в охрану или подготовить нападение.",
+      "failure_monster_chance": 75,
+      "monster_level": 2
+    },
+
+    "glowing_pool": {
+      "name": "Светящийся лесной водоем",
+      "description": "Небольшое озерцо, вода в котором отливает мягким бирюзовым светом. На дне видны светящиеся голубые водоросли.",
+      "suggestion": "Вода обладает магическими свойствами. Может исцелять, давать видения... или мутировать.",
+      "icon": "🔵",
+      "image": "images/locations/glowing_pool.jpg",
+      "action_chances": {
+        "search_treasure": 30,
+        "search_water": 100,
+        "search_berries": 15,
+        "search_mushrooms": 65,
+        "search_herbs": 90,
+        "search_ore": 25,
+        "search_stone": 20,
+        "set_trap": 40,
+        "prepare_ambush": 30,
+        "hunt_caravan": 10,
+        "take_assassination_contract": 20,
+        "light_campfire": 70,
+        "guard_caravan": 25,
+        "hunt": 40,
+        "stealth_movement": 50,
+        "gather_wood": 45
+      },
+      "special_notes": "Источник уникальной магической воды и алхимических компонентов. Привлекает необычных существ.",
+      "failure_monster_chance": 60,
+      "monster_level": 3
     }
   }
 }
