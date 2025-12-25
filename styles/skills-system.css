@@ -562,3 +562,112 @@
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
+
+/* ========== УВЕЛИЧЕННАЯ ПАНЕЛЬ ========== */
+.hero-game-screen {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+}
+
+.skills-overlay {
+    max-width: 98vw !important;
+    width: 98vw !important;
+    margin: 10px auto !important;
+    padding: 15px !important;
+}
+
+.skills-header {
+    width: 100% !important;
+    margin-bottom: 20px !important;
+    padding: 15px 25px !important;
+}
+
+.skills-grid-container {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.skills-info-panel {
+    width: 100% !important;
+    margin-bottom: 25px !important;
+    padding: 20px !important;
+}
+
+.skills-help {
+    width: 100% !important;
+    margin-top: 20px !important;
+    padding: 20px !important;
+}
+
+/* ========== АДАПТИВНАЯ СЕТКА ========== */
+.skills-matrix-container {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 700px !important;
+}
+
+/* Увеличиваем сетку для больших экранов */
+@media (min-width: 1200px) {
+    .skills-grid-header,
+    .skills-grid-row {
+        grid-template-columns: 150px repeat(8, 120px) !important;
+        gap: 15px !important;
+    }
+    
+    .skill-cell {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .skill-cell-icon {
+        font-size: 3rem !important;
+    }
+}
+
+@media (min-width: 1400px) {
+    .skills-grid-header,
+    .skills-grid-row {
+        grid-template-columns: 180px repeat(8, 140px) !important;
+        gap: 20px !important;
+    }
+    
+    .skill-cell {
+        width: 140px !important;
+        height: 140px !important;
+    }
+    
+    .skill-cell-icon {
+        font-size: 3.5rem !important;
+    }
+}
+
+/* Полоса прокрутки для горизонтальной прокрутки */
+.skills-matrix-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding: 20px 0;
+    background: rgba(31, 41, 55, 0.9);
+    border-radius: 15px;
+    margin-bottom: 25px;
+}
+
+/* ========== УВЕЛИЧЕННЫЙ ШРИФТ ========== */
+.skills-overlay h2 {
+    font-size: 2rem !important;
+}
+
+.skill-path-title {
+    font-size: 1.2rem !important;
+}
+
+/* ========== БОЛЕЕ ШИРОКИЕ КОЛОНКИ БОНУСОВ ========== */
+.bonus-grid {
+    grid-template-columns: repeat(8, 1fr) !important;
+    gap: 10px !important;
+}
+
+.bonus-item {
+    padding: 15px 10px !important;
+    text-align: center !important;
+}
