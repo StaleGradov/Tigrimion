@@ -502,98 +502,179 @@ class SkillsSystem {
         return false;
     }
 
-    // ========== ИНТЕРФЕЙС ==========
-    showSkillsScreen() {
-        const app = document.getElementById('app');
-        if (!app) return;
+showSkillsScreen() {
+    const app = document.getElementById('app');
+    if (!app) return;
 
-        // Обновляем очки навыков на основе уровня героя
-        this.updateSkillPointsFromHeroLevel();
-        
-        // Получаем текущего героя
-        const hero = this.game.currentHero;
-        if (!hero) {
-            this.showNotification("❌ Герой не выбран", "error");
-            return;
-        }
-
-        // Генерируем матрицу навыков
-        const skillsMatrix = this.generateSkillsMatrix();
-        const selectedSkillInfo = this.selectedSkill ? this.generateSelectedSkillInfo() : this.generateEmptySkillInfo();
-        const totalBonuses = this.calculateTotalBonuses();
-
-        app.innerHTML = `
-            <div class="hero-game-screen">
-                <div class="top-action-bar">
-                    <button class="btn-top" onclick="game.showHeroGameScreen()">
-                        ← Назад к герою
-                    </button>
-                    <button class="btn-top" onclick="game.systems.skills.resetSkills()" 
-                            style="background: #ef4444;">
-                        🔄 Сбросить навыки
-                    </button>
-                </div>
-
-                <div class="skills-overlay overlay-content">
-                    <div class="skills-header">
-                        <h2>🌟 Древо Навыков</h2>
-                        <div class="skills-info">
-                            <div class="skill-points-display ${this.availableSkillPoints === 0 ? 'low' : ''}">
-                                ✨ Очков навыков: ${this.availableSkillPoints}
-                            </div>
-                            <div style="color: #9ca3af;">
-                                Уровень героя: ${hero.level}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="skills-grid-container">
-                        <!-- Панель информации о выбранном навыке -->
-                        <div class="skills-info-panel">
-                            ${selectedSkillInfo}
-                        </div>
-                        
-                        <!-- Матрица навыков -->
-                        <div class="skills-matrix">
-                            ${skillsMatrix}
-                        </div>
-                    </div>
-                    
-                    <!-- Общая информация о бонусах -->
-                    <div class="skills-help">
-                        <h4>📊 Итоговые бонусы от изученных навыков:</h4>
-                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
-                            ${Object.entries(totalBonuses).map(([type, value]) => `
-                                <div style="background: #1f2937; padding: 10px; border-radius: 6px; border-left: 4px solid ${this.getBonusColor(type)};">
-                                    <div style="font-size: 0.9rem; color: #9ca3af;">${this.getBonusName(type)}</div>
-                                    <div style="font-size: 1.2rem; font-weight: bold; color: ${this.getBonusColor(type)};">
-                                        +${value.toFixed(1)}%
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    
-                    <!-- Справка -->
-                    <div class="skills-help">
-                        <h4>📖 Как работает система навыков:</h4>
-                        <ul>
-                            <li>Каждый уровень героя дает 1 очко навыков</li>
-                            <li>Навыки расположены в виде матрицы 8x8 (8 уровней, 8 типов бонусов)</li>
-                            <li>Для изучения навыка нужен соответствующий уровень героя</li>
-                            <li>Некоторые навыки требуют изучения предыдущих навыков</li>
-                            <li>На уровнях 1, 2, 4 и 8 нужно делать выбор между альтернативными путями</li>
-                            <li>Красная рамка - нельзя изучить, зеленая - можно, синяя - уже изучен</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Добавляем обработчики событий для навыков
-        this.attachSkillEventHandlers();
+    // Обновляем очки навыков на основе уровня героя
+    this.updateSkillPointsFromHeroLevel();
+    
+    // Получаем текущего героя
+    const hero = this.game.currentHero;
+    if (!hero) {
+        this.showNotification("❌ Герой не выбран", "error");
+        return;
     }
 
+    // Генерируем матрицу навыков в виде сетки 8x8
+    const skillsMatrix = this.generateSkillsMatrix();
+    const selectedSkillInfo = this.selectedSkill ? this.generateSelectedSkillInfo() : this.generateEmptySkillInfo();
+    const totalBonuses = this.calculateTotalBonuses();
+
+    app.innerHTML = `
+        <div class="hero-game-screen">
+            <div class="top-action-bar">
+                <button class="btn-top" onclick="game.showHeroGameScreen()">
+                    ← Назад к герою
+                </button>
+                <button class="btn-top" onclick="game.systems.skills.resetSkills()" 
+                        style="background: #ef4444;">
+                    🔄 Сбросить навыки
+                </button>
+            </div>
+
+            <div class="skills-overlay overlay-content">
+                <div class="skills-header">
+                    <h2>🎯 Древо Навыков (8x8)</h2>
+                    <div class="skills-info">
+                        <div class="skill-points-display ${this.availableSkillPoints === 0 ? 'low' : ''}">
+                            ✨ Очков навыков: ${this.availableSkillPoints}
+                        </div>
+                        <div style="color: #9ca3af;">
+                            Уровень героя: ${hero.level}
+                        </div>
+                        <div style="color: #9ca3af;">
+                            Изучено: ${this.unlockedSkills.size}/64
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="skill-path-info">
+                    <div class="skill-path-title">📖 Как работает матрица навыков:</div>
+                    <div class="skill-path-description">
+                        • Строки (1-8) - требуемый уровень героя<br>
+                        • Колонки - тип бонуса: ❤️ Здоровье, ⚔️ Урон, 🎯 Крит и т.д.<br>
+                        • На уровнях 1, 2, 4 и 8 нужно выбрать только один навык в строке<br>
+                        • Для изучения навыка нужны предыдущие навыки в том же столбце<br>
+                        • Зеленый ✓ - изучен, Серый - доступен, Красный - недоступен
+                    </div>
+                </div>
+                
+                <div class="skills-grid-container">
+                    <!-- Панель информации о выбранном навыке -->
+                    <div class="skills-info-panel">
+                        ${selectedSkillInfo}
+                    </div>
+                    
+                    <!-- Шахматная доска 8x8 -->
+                    <div class="skills-matrix">
+                        ${skillsMatrix}
+                    </div>
+                </div>
+                
+                <!-- Общая информация о бонусах -->
+                <div class="skills-help">
+                    <h4>📊 Итоговые бонусы от изученных навыков:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+                        ${Object.entries(totalBonuses).map(([type, value]) => `
+                            <div style="background: #1f2937; padding: 10px; border-radius: 6px; border-left: 4px solid ${this.getBonusColor(type)};">
+                                <div style="font-size: 0.9rem; color: #9ca3af;">${this.getBonusName(type)}</div>
+                                <div style="font-size: 1.2rem; font-weight: bold; color: ${this.getBonusColor(type)};">
+                                    +${value.toFixed(1)}%
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Ключевые правила -->
+                <div class="skills-help">
+                    <h4>🎮 Правила выбора навыков:</h4>
+                    <ul>
+                        <li><span style="color: #10b981;">Уровень 1:</span> Выберите 1 из 8 навыков для старта</li>
+                        <li><span style="color: #10b981;">Уровень 2:</span> Выберите 2 навыка (по одному в каждой группе из 2)</li>
+                        <li><span style="color: #10b981;">Уровень 4:</span> Специальный выбор - можно взять до 4 навыков</li>
+                        <li><span style="color: #10b981;">Уровень 8:</span> Финальный выбор - можно взять до 8 навыков</li>
+                        <li>На уровнях 3, 5, 6, 7 можно изучать все доступные навыки</li>
+                        <li>Для изучения навыка на уровне N нужен хотя бы один навык на уровне N-1</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем обработчики событий для навыков
+    this.attachSkillEventHandlers();
+    
+    // Добавляем линии связей между навыками
+    setTimeout(() => this.drawSkillConnections(), 100);
+}
+
+// Метод для рисования линий связей между навыками
+drawSkillConnections() {
+    // Этот метод можно реализовать для визуализации зависимостей между навыками
+    // Например, показать линии от изученных навыков к доступным для изучения
+    const container = document.querySelector('.skills-matrix');
+    if (!container) return;
+    
+    // Очищаем предыдущие линии
+    const existingLines = container.querySelectorAll('.skill-dependency-line');
+    existingLines.forEach(line => line.remove());
+    
+    // Рисуем линии только для изученных навыков
+    Array.from(this.unlockedSkills).forEach(skillId => {
+        const skill = this.getSkillById(skillId);
+        if (!skill || skill.row >= 8) return; // Не рисуем для последнего уровня
+        
+        // Находим DOM элемент навыка
+        const skillElement = container.querySelector(`[data-skill-id="${skillId}"]`);
+        if (!skillElement) return;
+        
+        const skillRect = skillElement.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        // Находим доступные для изучения навыки в следующей строке
+        const nextRowSkills = this.skills.filter(s => 
+            s.row === skill.row + 1 && 
+            this.canLearnSkill(s.id) &&
+            Math.abs(s.column - skill.column) <= 1 // Только соседние колонки
+        );
+        
+        // Рисуем линии к доступным навыкам
+        nextRowSkills.forEach(nextSkill => {
+            const nextElement = container.querySelector(`[data-skill-id="${nextSkill.id}"]`);
+            if (!nextElement) return;
+            
+            const nextRect = nextElement.getBoundingClientRect();
+            
+            // Создаем линию
+            const line = document.createElement('div');
+            line.className = 'skill-dependency-line';
+            
+            // Рассчитываем координаты
+            const startX = skillRect.left - containerRect.left + skillRect.width / 2;
+            const startY = skillRect.top - containerRect.top + skillRect.height;
+            const endX = nextRect.left - containerRect.left + nextRect.width / 2;
+            const endY = nextRect.top - containerRect.top;
+            
+            // Устанавливаем позицию и размер
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            
+            line.style.position = 'absolute';
+            line.style.left = `${startX}px`;
+            line.style.top = `${startY}px`;
+            line.style.width = `${length}px`;
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.transformOrigin = '0 0';
+            line.style.height = '3px';
+            line.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            line.style.zIndex = '1';
+            
+            container.appendChild(line);
+        });
+    });
+}
   // ========== ОБНОВЛЕННЫЙ МЕТОД ДЛЯ ШАХМАТНОГО ПОЛЯ 8x8 ==========
 generateSkillsMatrix() {
     let matrixHTML = '';
@@ -728,118 +809,101 @@ getSkillByPosition(row, column) {
     return this.skills.find(skill => skill.row === row && skill.column === column);
 }
 
-    generateSelectedSkillInfo() {
-        const skill = this.selectedSkill;
-        if (!skill) return this.generateEmptySkillInfo();
-        
-        const isUnlocked = this.unlockedSkills.has(skill.id);
-        const canLearn = this.canLearnSkill(skill.id);
-        const hero = this.game.currentHero;
-        
-        // Проверяем требования
-        const levelMet = hero && hero.level >= skill.requirements.heroLevel;
-        const pointsMet = this.availableSkillPoints >= skill.requirements.skillPoints;
-        
-        // Проверяем зависимости
-        const dependenciesMet = skill.dependencies.length === 0 || 
-            skill.dependencies.some(depId => this.unlockedSkills.has(depId));
-        
-        // Проверяем альтернативы (для выборочных нод)
-        let alternativesInfo = '';
-        if (skill.isChoiceNode && skill.alternatives.length > 0) {
-            const alternativeSkills = skill.alternatives
-                .map(id => this.getSkillById(id))
-                .filter(s => s);
-            
-            if (alternativeSkills.length > 0) {
-                alternativesInfo = `
-                    <div style="margin-top: 15px; padding: 10px; background: #374151; border-radius: 6px;">
-                        <div style="font-weight: bold; color: #fbbf24; margin-bottom: 5px;">
-                            ⚠️ Альтернативные пути:
-                        </div>
-                        ${alternativeSkills.map(alt => `
-                            <div style="font-size: 0.9rem; color: ${this.unlockedSkills.has(alt.id) ? '#34d399' : '#9ca3af'};">
-                                ${this.unlockedSkills.has(alt.id) ? '✓ ' : '○ '}${alt.name}
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-        }
-        
-        return `
-            <div class="selected-skill-info">
-                <div class="selected-skill-header">
-                    <div class="selected-skill-icon">
-                        ${skill.icon}
-                    </div>
-                    <div class="selected-skill-name">
-                        ${skill.name}
-                    </div>
-                    <div class="selected-skill-type">
-                        ${this.getBonusName(skill.type)} • Уровень ${skill.level}
-                    </div>
+generateSelectedSkillInfo() {
+    const skill = this.selectedSkill;
+    if (!skill) return this.generateEmptySkillInfo();
+    
+    const isUnlocked = this.unlockedSkills.has(skill.id);
+    const canLearn = this.canLearnSkill(skill.id);
+    const hero = this.game.currentHero;
+    
+    // Определяем позицию в сетке
+    const positionText = `Строка ${skill.row}, Колонка ${skill.column}`;
+    
+    // Определяем тип позиции
+    let positionType = "Обычный навык";
+    if (skill.row === 1) positionType = "Стартовый выбор (только 1)";
+    else if (skill.row === 2) positionType = "Выбор 2 уровня (1 из 2 в группе)";
+    else if (skill.row === 4) positionType = "Специальный выбор (до 4 навыков)";
+    else if (skill.row === 8) positionType = "Финальный выбор (до 8 навыков)";
+    
+    return `
+        <div class="selected-skill-info">
+            <div class="selected-skill-header">
+                <div class="selected-skill-icon" style="font-size: 48px; color: ${this.getBonusColor(skill.type)};">
+                    ${skill.icon}
                 </div>
-                
-                <div class="selected-skill-description">
-                    ${skill.description}
+                <div class="selected-skill-name">
+                    ${skill.name}
                 </div>
-                
-                <div class="selected-skill-bonus">
-                    <div style="font-weight: bold; margin-bottom: 5px;">Бонус:</div>
-                    <div class="bonus-value skill-bonus-${skill.type}">
-                        +${skill.bonusValue}% к ${this.getBonusName(skill.type).toLowerCase()}
-                    </div>
+                <div class="selected-skill-type">
+                    ${positionType}
                 </div>
-                
-                <div class="selected-skill-requirements">
-                    <div style="font-weight: bold; margin-bottom: 10px;">Требования:</div>
-                    
-                    <div class="requirement-item">
-                        <span>Уровень героя:</span>
-                        <span class="${levelMet ? 'requirement-met' : 'requirement-not-met'}">
-                            ${hero?.level || 0}/${skill.requirements.heroLevel}
-                        </span>
-                    </div>
-                    
-                    <div class="requirement-item">
-                        <span>Очков навыков:</span>
-                        <span class="${pointsMet ? 'requirement-met' : 'requirement-not-met'}">
-                            ${this.availableSkillPoints}/${skill.requirements.skillPoints}
-                        </span>
-                    </div>
-                    
-                    ${skill.dependencies.length > 0 ? `
-                        <div class="requirement-item">
-                            <span>Предыдущие навыки:</span>
-                            <span class="${dependenciesMet ? 'requirement-met' : 'requirement-not-met'}">
-                                ${dependenciesMet ? '✓ Выполнено' : '❌ Не выполнено'}
-                            </span>
-                        </div>
-                    ` : ''}
-                </div>
-                
-                ${alternativesInfo}
-                
-                <div class="skill-actions">
-                    ${isUnlocked ? `
-                        <button class="btn-learn-skill" disabled style="background: #10b981;">
-                            ✅ Уже изучен
-                        </button>
-                    ` : canLearn ? `
-                        <button class="btn-learn-skill" 
-                                onclick="game.systems.skills.learnSkill(${skill.id})">
-                            ✨ Изучить навык (${skill.requirements.skillPoints} очков)
-                        </button>
-                    ` : `
-                        <button class="btn-learn-skill" disabled>
-                            ❌ Требования не выполнены
-                        </button>
-                    `}
+                <div class="selected-skill-position" style="color: #9ca3af; font-size: 0.9rem;">
+                    ${positionText}
                 </div>
             </div>
-        `;
-    }
+            
+            <div class="selected-skill-description">
+                ${skill.description}
+            </div>
+            
+            <!-- Индикаторы требований -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
+                <div style="background: #374151; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #9ca3af;">Требуемый уровень</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: ${hero && hero.level >= skill.requirements.heroLevel ? '#10b981' : '#ef4444'}">
+                        ${skill.requirements.heroLevel}
+                    </div>
+                </div>
+                
+                <div style="background: #374151; padding: 10px; border-radius: 6px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #9ca3af;">Стоимость</div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: ${this.availableSkillPoints >= skill.requirements.skillPoints ? '#10b981' : '#ef4444'}">
+                        ${skill.requirements.skillPoints} очков
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопка изучения -->
+            <div class="skill-actions">
+                ${isUnlocked ? `
+                    <button class="btn-learn-skill" disabled style="background: #10b981;">
+                        ✅ Уже изучен
+                    </button>
+                ` : canLearn ? `
+                    <button class="btn-learn-skill" 
+                            onclick="game.systems.skills.learnSkill(${skill.id})"
+                            style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                        ✨ Изучить навык
+                    </button>
+                ` : `
+                    <button class="btn-learn-skill" disabled>
+                        ❌ Требования не выполнены
+                    </button>
+                `}
+            </div>
+            
+            <!-- Информация о бонусе -->
+            <div style="margin-top: 20px; padding: 15px; background: rgba(31, 41, 55, 0.5); border-radius: 8px; border-left: 4px solid ${this.getBonusColor(skill.type)};">
+                <div style="font-weight: bold; margin-bottom: 10px;">Бонус навыка:</div>
+                <div style="font-size: 1.3rem; color: ${this.getBonusColor(skill.type)}; font-weight: bold;">
+                    +${skill.bonusValue}% к ${this.getBonusName(skill.type).toLowerCase()}
+                </div>
+            </div>
+            
+            <!-- Зависимости -->
+            ${skill.dependencies.length > 0 ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(55, 65, 81, 0.5); border-radius: 8px;">
+                    <div style="font-weight: bold; margin-bottom: 10px;">🔗 Требуются предыдущие навыки:</div>
+                    <div style="font-size: 0.9rem; color: #d1d5db;">
+                        Нужен хотя бы один навык на уровне ${skill.row - 1}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
 
     generateEmptySkillInfo() {
         return `
