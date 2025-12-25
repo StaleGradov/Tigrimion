@@ -675,6 +675,10 @@ drawSkillConnections() {
         });
     });
 }
+
+
+    
+// ========== ОБНОВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ СЕТКИ 8x8 ==========
 generateSkillsMatrix() {
     let matrixHTML = '';
     
@@ -682,13 +686,20 @@ generateSkillsMatrix() {
     const bonusIcons = ['❤️', '⚔️', '🎯', '🩸', '🛡️', '💰', '⚡', '💥'];
     const bonusNames = ['Здоровье', 'Урон', 'Крит', 'Вампир', 'Броня', 'Золото', 'Реген', 'Пробитие'];
     
-    // Заголовки колонок
+    // Цвета для границ каждой колонки
+    const columnColors = [
+        '#ef4444', '#f59e0b', '#ec4899', '#dc2626', 
+        '#3b82f6', '#fbbf24', '#10b981', '#8b5cf6'
+    ];
+    
+    // Заголовки колонок с уникальными цветами границ
     matrixHTML += `
         <div class="skills-matrix-container">
             <div class="skills-grid-header">
                 <div class="grid-header-spacer"></div>
                 ${bonusTypes.map((type, index) => `
-                    <div class="grid-column-header skill-bonus-${type}">
+                    <div class="grid-column-header skill-bonus-${type}" 
+                         style="border-color: ${columnColors[index]} !important;">
                         ${bonusIcons[index]}
                         <div class="column-name">${bonusNames[index]}</div>
                     </div>
@@ -698,91 +709,149 @@ generateSkillsMatrix() {
             <div class="skills-grid-rows">
     `;
     
-    // Генерируем 8 строк
+    // Генерируем 8 строк (уровней)
     for (let row = 1; row <= 8; row++) {
         matrixHTML += `<div class="skills-grid-row">`;
         
-        // Заголовок строки
+        // Заголовок строки (уровень) с градиентной рамкой
+        const levelGradient = row === 1 ? '#dc2626' : 
+                             row === 2 ? '#ea580c' : 
+                             row === 3 ? '#d97706' : 
+                             row === 4 ? '#f59e0b' : 
+                             row === 5 ? '#fbbf24' : 
+                             row === 6 ? '#10b981' : 
+                             row === 7 ? '#3b82f6' : 
+                             '#8b5cf6';
+        
         matrixHTML += `
-            <div class="grid-row-header">
+            <div class="grid-row-header" style="border-color: ${levelGradient} !important;">
                 <div class="level-badge">${row}</div>
                 <div class="level-label">Уровень ${row}</div>
             </div>
         `;
         
-        // Генерируем 8 ячеек
+        // Генерируем 8 ячеек (по одной на каждый тип бонуса)
         for (let col = 1; col <= 8; col++) {
             const skill = this.getSkillByPosition(row, col);
             if (!skill) {
-                matrixHTML += `<div class="skill-cell empty"></div>`;
+                matrixHTML += `<div class="skill-cell empty" data-column="${col}"></div>`;
                 continue;
             }
             
             const isUnlocked = this.unlockedSkills.has(skill.id);
             const canLearn = this.canLearnSkill(skill.id);
             const isSelected = this.selectedSkill?.id === skill.id;
+            const hero = this.game.currentHero;
             
+            // Определяем состояние ячейки
             let cellClass = 'skill-cell';
+            let cellTitle = skill.name;
+            
             if (isUnlocked) {
                 cellClass += ' unlocked';
+                cellTitle += ' (Изучено)';
             } else if (canLearn) {
                 cellClass += ' available';
+                cellTitle += ' (Доступно)';
             } else {
                 cellClass += ' locked';
                 
-                const hero = this.game.currentHero;
+                // Проверяем требования
                 if (hero && hero.level < skill.requirements.heroLevel) {
                     cellClass += ' requirements-not-met';
+                    cellTitle += ' (Требуется уровень ' + skill.requirements.heroLevel + ')';
+                } else if (this.availableSkillPoints < skill.requirements.skillPoints) {
+                    cellTitle += ' (Нужно ' + skill.requirements.skillPoints + ' очков)';
+                } else {
+                    cellTitle += ' (Требуются предыдущие навыки)';
                 }
             }
             
             if (isSelected) {
                 cellClass += ' selected';
+                cellTitle += ' (Выбрано)';
             }
             
-            const bonusColor = this.getBonusColor(skill.type);
+            // Определяем является ли это выборочной нодой
             const isChoiceNode = row === 1 || row === 2 || row === 4 || row === 8;
+            if (isChoiceNode) {
+                cellTitle += ' (Выбор пути)';
+            }
+            
+            // Цвет для этой колонки
+            const columnColor = columnColors[col - 1];
+            const bonusColor = this.getBonusColor(skill.type);
             
             matrixHTML += `
                 <div class="${cellClass} skill-bonus-${skill.type}" 
                      data-skill-id="${skill.id}"
+                     data-column="${col}"
+                     data-row="${row}"
+                     data-type="${skill.type}"
+                     data-is-choice="${isChoiceNode}"
                      onclick="game.systems.skills.selectSkill(${skill.id})"
-                     title="${skill.name}
+                     title="${cellTitle}
+                     
 ${skill.description}
-Требуется: Уровень ${skill.requirements.heroLevel}, ${skill.requirements.skillPoints} очков"
-                     style="border-color: ${bonusColor} !important;">
+                     
+📊 Бонус: +${skill.bonusValue}% к ${this.getBonusName(skill.type).toLowerCase()}
+⚡ Требуется: Уровень ${skill.requirements.heroLevel}
+🎯 Стоимость: ${skill.requirements.skillPoints} очков навыков"
+                     style="border-color: ${columnColor} !important;">
                     
                     <div class="skill-cell-content">
-                        <div class="skill-cell-icon">
+                        <!-- Основная иконка навыка -->
+                        <div class="skill-cell-icon" style="color: ${bonusColor} !important;">
                             ${skill.icon}
                         </div>
                         
-                        <div class="skill-cell-bonus">
+                        <!-- Значение бонуса -->
+                        <div class="skill-cell-bonus" style="color: ${bonusColor} !important;">
                             +${skill.bonusValue}%
                         </div>
                         
+                        <!-- Индикатор выборочной ноды (для уровней 1, 2, 4, 8) -->
                         ${isChoiceNode ? `
-                            <div class="choice-indicator">
+                            <div class="choice-indicator" style="border-color: ${bonusColor} !important;">
                                 ⚡
                             </div>
                         ` : ''}
                         
+                        <!-- Индикатор изученности -->
                         ${isUnlocked ? `
                             <div class="unlocked-indicator">
                                 ✓
                             </div>
                         ` : ''}
                         
-                        ${!isUnlocked && !canLearn ? `
+                        <!-- Требуемый уровень (только если не доступно и не изучено) -->
+                        ${!isUnlocked && !canLearn && hero && hero.level < skill.requirements.heroLevel ? `
                             <div class="level-requirement">
                                 ${skill.requirements.heroLevel}
                             </div>
                         ` : ''}
+                        
+                        <!-- Индикатор стоимости для доступных навыков -->
+                        ${!isUnlocked && canLearn ? `
+                            <div class="cost-indicator" style="position: absolute; bottom: 5px; left: 5px; background: rgba(59, 130, 246, 0.9); color: white; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #3b82f6;">
+                                ${skill.requirements.skillPoints}
+                            </div>
+                        ` : ''}
                     </div>
                     
+                    <!-- Эффект выбора (только для выбранной ячейки) -->
                     ${isSelected ? `
-                        <div class="selection-effect" style="border-color: ${bonusColor} !important;"></div>
+                        <div class="selection-effect" style="border-color: ${columnColor} !important;"></div>
+                        
+                        <!-- Дополнительный эффект свечения -->
+                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 14px; box-shadow: inset 0 0 20px ${columnColor}; pointer-events: none; z-index: 1;"></div>
                     ` : ''}
+                    
+                    <!-- Эффект при наведении -->
+                    <div class="hover-effect" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%); opacity: 0; transition: opacity 0.3s; pointer-events: none;"></div>
+                    
+                    <!-- Фоновый градиент -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%); border-radius: 14px; pointer-events: none;"></div>
                 </div>
             `;
         }
@@ -793,9 +862,244 @@ ${skill.description}
     matrixHTML += `
             </div>
         </div>
+        
+        <!-- Скрипт для обработки наведения -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const skillCells = document.querySelectorAll('.skill-cell:not(.empty)');
+                
+                skillCells.forEach(cell => {
+                    // Эффект при наведении
+                    cell.addEventListener('mouseenter', function() {
+                        const hoverEffect = this.querySelector('.hover-effect');
+                        if (hoverEffect) hoverEffect.style.opacity = '1';
+                        
+                        // Подсветка ячеек в той же колонке
+                        const column = this.getAttribute('data-column');
+                        const sameColumnCells = document.querySelectorAll('.skill-cell[data-column="' + column + '"]:not(.empty)');
+                        sameColumnCells.forEach(c => {
+                            if (c !== this) {
+                                c.style.filter = 'brightness(1.3)';
+                            }
+                        });
+                    });
+                    
+                    cell.addEventListener('mouseleave', function() {
+                        const hoverEffect = this.querySelector('.hover-effect');
+                        if (hoverEffect) hoverEffect.style.opacity = '0';
+                        
+                        // Сброс подсветки
+                        const column = this.getAttribute('data-column');
+                        const sameColumnCells = document.querySelectorAll('.skill-cell[data-column="' + column + '"]:not(.empty)');
+                        sameColumnCells.forEach(c => {
+                            c.style.filter = 'brightness(1)';
+                        });
+                    });
+                    
+                    // Клик для выбора
+                    cell.addEventListener('click', function() {
+                        // Убираем выделение со всех ячеек
+                        skillCells.forEach(c => {
+                            c.classList.remove('selected');
+                            const selectionEffect = c.querySelector('.selection-effect');
+                            if (selectionEffect) selectionEffect.style.display = 'none';
+                        });
+                        
+                        // Добавляем выделение текущей
+                        this.classList.add('selected');
+                        const selectionEffect = this.querySelector('.selection-effect');
+                        if (selectionEffect) selectionEffect.style.display = 'block';
+                        
+                        // Обновляем информацию о выбранном навыке
+                        const skillId = this.getAttribute('data-skill-id');
+                        if (skillId && window.game && window.game.systems && window.game.systems.skills) {
+                            window.game.systems.skills.selectSkill(parseInt(skillId));
+                        }
+                    });
+                });
+                
+                // Добавляем CSS для hover эффектов
+                const style = document.createElement('style');
+                style.textContent = \`
+                    .skill-cell:not(.empty):hover {
+                        transform: scale(1.1) !important;
+                        z-index: 100 !important;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+                    }
+                    
+                    .skill-cell.available:hover {
+                        animation: shake-available 0.5s ease !important;
+                    }
+                    
+                    .skill-cell.unlocked:hover {
+                        animation: shake-unlocked 0.5s ease !important;
+                    }
+                    
+                    @keyframes shake-available {
+                        0%, 100% { transform: translateX(0) scale(1.1); }
+                        25% { transform: translateX(-2px) scale(1.1); }
+                        75% { transform: translateX(2px) scale(1.1); }
+                    }
+                    
+                    @keyframes shake-unlocked {
+                        0%, 100% { transform: translateY(0) scale(1.1); }
+                        25% { transform: translateY(-2px) scale(1.1); }
+                        75% { transform: translateY(2px) scale(1.1); }
+                    }
+                \`;
+                document.head.appendChild(style);
+            });
+        </script>
     `;
     
     return matrixHTML;
+}
+
+// ========== ДОПОЛНИТЕЛЬНЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ СТИЛЕЙ ИЗ КОНСОЛИ ==========
+applyEnhancedStyles() {
+    // Создаем или обновляем стили
+    const styleId = 'skills-enhanced-styles';
+    let styleElement = document.getElementById(styleId);
+    
+    if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
+    }
+    
+    styleElement.textContent = `
+        /* Увеличенные размеры */
+        .skills-grid-header,
+        .skills-grid-row {
+            grid-template-columns: 120px repeat(8, 100px) !important;
+            gap: 12px !important;
+            min-width: 1200px !important;
+        }
+        
+        .skill-cell {
+            width: 100px !important;
+            height: 100px !important;
+            border-width: 4px !important;
+            border-radius: 14px !important;
+        }
+        
+        .skill-cell-icon {
+            font-size: 2.8rem !important;
+        }
+        
+        .skill-cell-bonus {
+            font-size: 1.1rem !important;
+        }
+        
+        .skills-overlay {
+            max-width: 1600px !important;
+            max-height: 95vh !important;
+        }
+        
+        /* Уникальные границы для колонок */
+        .skill-cell[data-column="1"] { border-color: #ef4444 !important; }
+        .skill-cell[data-column="2"] { border-color: #f59e0b !important; }
+        .skill-cell[data-column="3"] { border-color: #ec4899 !important; }
+        .skill-cell[data-column="4"] { border-color: #dc2626 !important; }
+        .skill-cell[data-column="5"] { border-color: #3b82f6 !important; }
+        .skill-cell[data-column="6"] { border-color: #fbbf24 !important; }
+        .skill-cell[data-column="7"] { border-color: #10b981 !important; }
+        .skill-cell[data-column="8"] { border-color: #8b5cf6 !important; }
+        
+        /* Эффект градиентной границы при наведении */
+        .skill-cell:not(.empty):hover::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 16px;
+            background: conic-gradient(
+                from 0deg,
+                var(--border-start),
+                var(--border-middle),
+                var(--border-end),
+                var(--border-middle),
+                var(--border-start)
+            );
+            z-index: -1;
+            opacity: 1;
+            animation: rotate-border 3s linear infinite;
+        }
+        
+        /* Градиенты для каждой колонки */
+        .skill-cell[data-column="1"]:hover::before {
+            --border-start: #ef4444;
+            --border-middle: #f87171;
+            --border-end: #fca5a5;
+        }
+        
+        .skill-cell[data-column="2"]:hover::before {
+            --border-start: #f59e0b;
+            --border-middle: #fbbf24;
+            --border-end: #fde68a;
+        }
+        
+        .skill-cell[data-column="3"]:hover::before {
+            --border-start: #ec4899;
+            --border-middle: #f472b6;
+            --border-end: #f9a8d4;
+        }
+        
+        .skill-cell[data-column="4"]:hover::before {
+            --border-start: #dc2626;
+            --border-middle: #ef4444;
+            --border-end: #f87171;
+        }
+        
+        .skill-cell[data-column="5"]:hover::before {
+            --border-start: #3b82f6;
+            --border-middle: #60a5fa;
+            --border-end: #93c5fd;
+        }
+        
+        .skill-cell[data-column="6"]:hover::before {
+            --border-start: #fbbf24;
+            --border-middle: #fcd34d;
+            --border-end: #fde68a;
+        }
+        
+        .skill-cell[data-column="7"]:hover::before {
+            --border-start: #10b981;
+            --border-middle: #34d399;
+            --border-end: #6ee7b7;
+        }
+        
+        .skill-cell[data-column="8"]:hover::before {
+            --border-start: #8b5cf6;
+            --border-middle: #a78bfa;
+            --border-end: #c4b5fd;
+        }
+        
+        @keyframes rotate-border {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Эффект выбора */
+        .skill-cell.selected {
+            box-shadow: 
+                0 0 20px rgba(59, 130, 246, 0.6),
+                0 0 40px rgba(59, 130, 246, 0.3),
+                inset 0 0 20px rgba(255, 255, 255, 0.1) !important;
+            animation: pulse-selected 2s infinite !important;
+        }
+        
+        @keyframes pulse-selected {
+            0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.5), inset 0 0 30px rgba(255, 255, 255, 0.2); }
+            100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.3), inset 0 0 20px rgba(255, 255, 255, 0.1); }
+        }
+    `;
+    
+    console.log('✅ Улучшенные стили с уникальными границами применены!');
+    return true;
 }
 
     
