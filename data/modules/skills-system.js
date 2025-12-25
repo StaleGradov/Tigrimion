@@ -678,282 +678,390 @@ drawSkillConnections() {
 
 
     
-// ========== ОБНОВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ СЕТКИ 8x8 ==========
+// ========== ИСПРАВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ СЕТКИ ==========
 generateSkillsMatrix() {
-    let matrixHTML = '';
+    console.log('🔄 Генерация сетки 8x8...');
     
     const bonusTypes = ['health', 'damage', 'crit', 'vampire', 'armor', 'gold', 'regen', 'penetration'];
     const bonusIcons = ['❤️', '⚔️', '🎯', '🩸', '🛡️', '💰', '⚡', '💥'];
     const bonusNames = ['Здоровье', 'Урон', 'Крит', 'Вампир', 'Броня', 'Золото', 'Реген', 'Пробитие'];
+    const columnColors = ['#ef4444', '#f59e0b', '#ec4899', '#dc2626', '#3b82f6', '#fbbf24', '#10b981', '#8b5cf6'];
     
-    // Цвета для границ каждой колонки
-    const columnColors = [
-        '#ef4444', '#f59e0b', '#ec4899', '#dc2626', 
-        '#3b82f6', '#fbbf24', '#10b981', '#8b5cf6'
-    ];
-    
-    // Заголовки колонок с уникальными цветами границ
-    matrixHTML += `
-        <div class="skills-matrix-container">
-            <div class="skills-grid-header">
-                <div class="grid-header-spacer"></div>
-                ${bonusTypes.map((type, index) => `
-                    <div class="grid-column-header skill-bonus-${type}" 
-                         style="border-color: ${columnColors[index]} !important;">
-                        ${bonusIcons[index]}
-                        <div class="column-name">${bonusNames[index]}</div>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <div class="skills-grid-rows">
+    // Создаем HTML для сетки
+    let html = `
+        <div class="skills-grid-debug" style="
+            display: grid;
+            grid-template-columns: repeat(8, 100px);
+            grid-template-rows: repeat(8, 100px);
+            gap: 10px;
+            margin: 20px auto;
+            width: fit-content;
+            padding: 25px;
+            background: rgba(31, 41, 55, 0.95);
+            border-radius: 15px;
+            border: 3px solid #374151;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        ">
     `;
     
-    // Генерируем 8 строк (уровней)
+    // Генерируем 64 ячейки (8x8)
     for (let row = 1; row <= 8; row++) {
-        matrixHTML += `<div class="skills-grid-row">`;
-        
-        // Заголовок строки (уровень) с градиентной рамкой
-        const levelGradient = row === 1 ? '#dc2626' : 
-                             row === 2 ? '#ea580c' : 
-                             row === 3 ? '#d97706' : 
-                             row === 4 ? '#f59e0b' : 
-                             row === 5 ? '#fbbf24' : 
-                             row === 6 ? '#10b981' : 
-                             row === 7 ? '#3b82f6' : 
-                             '#8b5cf6';
-        
-        matrixHTML += `
-            <div class="grid-row-header" style="border-color: ${levelGradient} !important;">
-                <div class="level-badge">${row}</div>
-                <div class="level-label">Уровень ${row}</div>
-            </div>
-        `;
-        
-        // Генерируем 8 ячеек (по одной на каждый тип бонуса)
         for (let col = 1; col <= 8; col++) {
             const skill = this.getSkillByPosition(row, col);
+            const columnColor = columnColors[col - 1];
+            
             if (!skill) {
-                matrixHTML += `<div class="skill-cell empty" data-column="${col}"></div>`;
+                html += `<div style="
+                    width: 100px;
+                    height: 100px;
+                    background: rgba(55, 65, 81, 0.5);
+                    border-radius: 10px;
+                    border: 2px dashed #4b5563;
+                "></div>`;
                 continue;
             }
             
             const isUnlocked = this.unlockedSkills.has(skill.id);
             const canLearn = this.canLearnSkill(skill.id);
             const isSelected = this.selectedSkill?.id === skill.id;
-            const hero = this.game.currentHero;
             
-            // Определяем состояние ячейки
-            let cellClass = 'skill-cell';
-            let cellTitle = skill.name;
+            // Определяем стили ячейки
+            let backgroundColor = '#374151';
+            let borderColor = columnColor;
+            let borderWidth = '3px';
+            let borderStyle = 'solid';
+            let opacity = '1';
+            let cursor = 'pointer';
+            let transform = '';
+            let boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
             
             if (isUnlocked) {
-                cellClass += ' unlocked';
-                cellTitle += ' (Изучено)';
+                backgroundColor = '#10b981';
+                borderColor = '#34d399';
+                boxShadow = '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3)';
+                transform = 'scale(1.05)';
             } else if (canLearn) {
-                cellClass += ' available';
-                cellTitle += ' (Доступно)';
+                backgroundColor = '#6b7280';
+                borderColor = '#9ca3af';
+                boxShadow = '0 0 15px rgba(156, 163, 175, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)';
             } else {
-                cellClass += ' locked';
-                
-                // Проверяем требования
-                if (hero && hero.level < skill.requirements.heroLevel) {
-                    cellClass += ' requirements-not-met';
-                    cellTitle += ' (Требуется уровень ' + skill.requirements.heroLevel + ')';
-                } else if (this.availableSkillPoints < skill.requirements.skillPoints) {
-                    cellTitle += ' (Нужно ' + skill.requirements.skillPoints + ' очков)';
-                } else {
-                    cellTitle += ' (Требуются предыдущие навыки)';
-                }
+                opacity = '0.7';
+                cursor = 'not-allowed';
+                backgroundColor = '#1f2937';
             }
             
             if (isSelected) {
-                cellClass += ' selected';
-                cellTitle += ' (Выбрано)';
+                borderWidth = '4px';
+                boxShadow = '0 0 30px rgba(59, 130, 246, 0.7), 0 4px 20px rgba(0, 0, 0, 0.4)';
+                transform = 'scale(1.1)';
             }
             
-            // Определяем является ли это выборочной нодой
-            const isChoiceNode = row === 1 || row === 2 || row === 4 || row === 8;
-            if (isChoiceNode) {
-                cellTitle += ' (Выбор пути)';
-            }
-            
-            // Цвет для этой колонки
-            const columnColor = columnColors[col - 1];
-            const bonusColor = this.getBonusColor(skill.type);
-            
-            matrixHTML += `
-                <div class="${cellClass} skill-bonus-${skill.type}" 
-                     data-skill-id="${skill.id}"
-                     data-column="${col}"
-                     data-row="${row}"
-                     data-type="${skill.type}"
-                     data-is-choice="${isChoiceNode}"
-                     onclick="game.systems.skills.selectSkill(${skill.id})"
-                     title="${cellTitle}
-                     
+            // Создаем ячейку
+            html += `
+                <div class="skill-cell-${skill.id}" 
+                     onclick="${isUnlocked || !canLearn ? '' : `game.systems.skills.selectSkill(${skill.id}); game.systems.skills.learnSkill(${skill.id})`}"
+                     style="
+                        width: 100px;
+                        height: 100px;
+                        background: ${backgroundColor};
+                        border: ${borderWidth} ${borderStyle} ${borderColor};
+                        border-radius: 12px;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: ${cursor};
+                        opacity: ${opacity};
+                        transform: ${transform};
+                        box-shadow: ${boxShadow};
+                        transition: all 0.3s ease;
+                        position: relative;
+                        overflow: hidden;
+                     "
+                     onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px ${borderColor}80, 0 6px 20px rgba(0,0,0,0.4)'"
+                     onmouseout="this.style.transform='${transform}'; this.style.boxShadow='${boxShadow}'"
+                     title="${skill.name}
 ${skill.description}
-                     
-📊 Бонус: +${skill.bonusValue}% к ${this.getBonusName(skill.type).toLowerCase()}
+📊 Бонус: +${skill.bonusValue}%
 ⚡ Требуется: Уровень ${skill.requirements.heroLevel}
-🎯 Стоимость: ${skill.requirements.skillPoints} очков навыков"
-                     style="border-color: ${columnColor} !important;">
+🎯 Стоимость: ${skill.requirements.skillPoints} очков">
                     
-                    <div class="skill-cell-content">
-                        <!-- Основная иконка навыка -->
-                        <div class="skill-cell-icon" style="color: ${bonusColor} !important;">
-                            ${skill.icon}
-                        </div>
-                        
-                        <!-- Значение бонуса -->
-                        <div class="skill-cell-bonus" style="color: ${bonusColor} !important;">
-                            +${skill.bonusValue}%
-                        </div>
-                        
-                        <!-- Индикатор выборочной ноды (для уровней 1, 2, 4, 8) -->
-                        ${isChoiceNode ? `
-                            <div class="choice-indicator" style="border-color: ${bonusColor} !important;">
-                                ⚡
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Индикатор изученности -->
-                        ${isUnlocked ? `
-                            <div class="unlocked-indicator">
-                                ✓
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Требуемый уровень (только если не доступно и не изучено) -->
-                        ${!isUnlocked && !canLearn && hero && hero.level < skill.requirements.heroLevel ? `
-                            <div class="level-requirement">
-                                ${skill.requirements.heroLevel}
-                            </div>
-                        ` : ''}
-                        
-                        <!-- Индикатор стоимости для доступных навыков -->
-                        ${!isUnlocked && canLearn ? `
-                            <div class="cost-indicator" style="position: absolute; bottom: 5px; left: 5px; background: rgba(59, 130, 246, 0.9); color: white; font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #3b82f6;">
-                                ${skill.requirements.skillPoints}
-                            </div>
-                        ` : ''}
+                    <!-- Иконка навыка -->
+                    <div style="font-size: 2.2rem; margin-bottom: 5px; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                        ${skill.icon}
                     </div>
                     
-                    <!-- Эффект выбора (только для выбранной ячейки) -->
-                    ${isSelected ? `
-                        <div class="selection-effect" style="border-color: ${columnColor} !important;"></div>
-                        
-                        <!-- Дополнительный эффект свечения -->
-                        <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 14px; box-shadow: inset 0 0 20px ${columnColor}; pointer-events: none; z-index: 1;"></div>
+                    <!-- Значение бонуса -->
+                    <div style="font-size: 0.9rem; font-weight: bold; color: white; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">
+                        +${skill.bonusValue}%
+                    </div>
+                    
+                    <!-- Индикатор изученности -->
+                    ${isUnlocked ? `
+                        <div style="position: absolute; top: 5px; right: 5px; background: #34d399; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;">
+                            ✓
+                        </div>
                     ` : ''}
                     
-                    <!-- Эффект при наведении -->
-                    <div class="hover-effect" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 70%); opacity: 0; transition: opacity 0.3s; pointer-events: none;"></div>
+                    <!-- Индикатор выборочной ноды -->
+                    ${(row === 1 || row === 2 || row === 4 || row === 8) ? `
+                        <div style="position: absolute; top: 5px; left: 5px; background: #f59e0b; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">
+                            ⚡
+                        </div>
+                    ` : ''}
                     
-                    <!-- Фоновый градиент -->
-                    <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%); border-radius: 14px; pointer-events: none;"></div>
+                    <!-- Требуемый уровень -->
+                    ${!isUnlocked && !canLearn ? `
+                        <div style="position: absolute; bottom: 5px; left: 5px; background: #ef4444; color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; font-weight: bold;">
+                            ${skill.requirements.heroLevel}
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Стоимость для доступных навыков -->
+                    ${!isUnlocked && canLearn ? `
+                        <div style="position: absolute; bottom: 5px; right: 5px; background: #3b82f6; color: white; font-size: 0.7rem; padding: 2px 5px; border-radius: 3px; font-weight: bold;">
+                            ${skill.requirements.skillPoints}
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }
-        
-        matrixHTML += `</div>`;
     }
     
-    matrixHTML += `
-            </div>
+    html += `</div>`;
+    
+    // Добавляем заголовки колонок
+    const headersHtml = `
+        <div style="
+            display: grid;
+            grid-template-columns: 120px repeat(8, 100px);
+            gap: 10px;
+            margin: 0 auto 15px auto;
+            width: fit-content;
+            padding: 0 25px;
+        ">
+            <div style="width: 120px;"></div>
+            ${bonusTypes.map((type, index) => `
+                <div style="
+                    width: 100px;
+                    height: 60px;
+                    background: ${columnColors[index]};
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    border: 2px solid ${columnColors[index]}80;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                ">
+                    <div style="font-size: 1.5rem;">${bonusIcons[index]}</div>
+                    <div style="font-size: 0.8rem; margin-top: 5px;">${bonusNames[index]}</div>
+                </div>
+            `).join('')}
         </div>
-        
-        <!-- Скрипт для обработки наведения -->
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const skillCells = document.querySelectorAll('.skill-cell:not(.empty)');
-                
-                skillCells.forEach(cell => {
-                    // Эффект при наведении
-                    cell.addEventListener('mouseenter', function() {
-                        const hoverEffect = this.querySelector('.hover-effect');
-                        if (hoverEffect) hoverEffect.style.opacity = '1';
-                        
-                        // Подсветка ячеек в той же колонке
-                        const column = this.getAttribute('data-column');
-                        const sameColumnCells = document.querySelectorAll('.skill-cell[data-column="' + column + '"]:not(.empty)');
-                        sameColumnCells.forEach(c => {
-                            if (c !== this) {
-                                c.style.filter = 'brightness(1.3)';
-                            }
-                        });
-                    });
-                    
-                    cell.addEventListener('mouseleave', function() {
-                        const hoverEffect = this.querySelector('.hover-effect');
-                        if (hoverEffect) hoverEffect.style.opacity = '0';
-                        
-                        // Сброс подсветки
-                        const column = this.getAttribute('data-column');
-                        const sameColumnCells = document.querySelectorAll('.skill-cell[data-column="' + column + '"]:not(.empty)');
-                        sameColumnCells.forEach(c => {
-                            c.style.filter = 'brightness(1)';
-                        });
-                    });
-                    
-                    // Клик для выбора
-                    cell.addEventListener('click', function() {
-                        // Убираем выделение со всех ячеек
-                        skillCells.forEach(c => {
-                            c.classList.remove('selected');
-                            const selectionEffect = c.querySelector('.selection-effect');
-                            if (selectionEffect) selectionEffect.style.display = 'none';
-                        });
-                        
-                        // Добавляем выделение текущей
-                        this.classList.add('selected');
-                        const selectionEffect = this.querySelector('.selection-effect');
-                        if (selectionEffect) selectionEffect.style.display = 'block';
-                        
-                        // Обновляем информацию о выбранном навыке
-                        const skillId = this.getAttribute('data-skill-id');
-                        if (skillId && window.game && window.game.systems && window.game.systems.skills) {
-                            window.game.systems.skills.selectSkill(parseInt(skillId));
-                        }
-                    });
-                });
-                
-                // Добавляем CSS для hover эффектов
-                const style = document.createElement('style');
-                style.textContent = \`
-                    .skill-cell:not(.empty):hover {
-                        transform: scale(1.1) !important;
-                        z-index: 100 !important;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
-                    }
-                    
-                    .skill-cell.available:hover {
-                        animation: shake-available 0.5s ease !important;
-                    }
-                    
-                    .skill-cell.unlocked:hover {
-                        animation: shake-unlocked 0.5s ease !important;
-                    }
-                    
-                    @keyframes shake-available {
-                        0%, 100% { transform: translateX(0) scale(1.1); }
-                        25% { transform: translateX(-2px) scale(1.1); }
-                        75% { transform: translateX(2px) scale(1.1); }
-                    }
-                    
-                    @keyframes shake-unlocked {
-                        0%, 100% { transform: translateY(0) scale(1.1); }
-                        25% { transform: translateY(-2px) scale(1.1); }
-                        75% { transform: translateY(2px) scale(1.1); }
-                    }
-                \`;
-                document.head.appendChild(style);
-            });
-        </script>
     `;
     
-    return matrixHTML;
+    // Добавляем заголовки строк
+    const rowsHeadersHtml = `
+        <div style="
+            position: absolute;
+            left: 25px;
+            top: 85px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        ">
+            ${Array.from({length: 8}, (_, i) => i + 1).map(level => `
+                <div style="
+                    width: 110px;
+                    height: 100px;
+                    background: linear-gradient(135deg, #1e40af, #3b82f6);
+                    border-radius: 10px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    border: 2px solid #60a5fa;
+                    margin-bottom: 10px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                ">
+                    <div style="font-size: 1.8rem; color: #fbbf24;">${level}</div>
+                    <div style="font-size: 0.9rem;">Уровень</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    // Финальный HTML
+    const finalHtml = `
+        <div style="position: relative; width: 100%;">
+            ${headersHtml}
+            ${rowsHeadersHtml}
+            ${html}
+        </div>
+        
+        <style>
+            /* Инлайн стили чтобы гарантированно работали */
+            .skills-grid-debug {
+                display: grid !important;
+                grid-template-columns: repeat(8, 100px) !important;
+                grid-template-rows: repeat(8, 100px) !important;
+                gap: 10px !important;
+                margin: 20px auto !important;
+                width: fit-content !important;
+                padding: 25px !important;
+                background: rgba(31, 41, 55, 0.95) !important;
+                border-radius: 15px !important;
+                border: 3px solid #374151 !important;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            }
+            
+            /* Анимация при наведении */
+            .skills-grid-debug > div:not([style*="dashed"]) {
+                transition: all 0.3s ease !important;
+            }
+            
+            .skills-grid-debug > div:not([style*="dashed"]):hover {
+                transform: scale(1.1) !important;
+                z-index: 10 !important;
+            }
+            
+            /* Анимация для изученных навыков */
+            @keyframes pulse-green {
+                0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+                50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.8); }
+                100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+            }
+            
+            .skills-grid-debug > div[style*="background: #10b981"] {
+                animation: pulse-green 2s infinite !important;
+            }
+            
+            /* Анимация для выбранных навыков */
+            @keyframes pulse-blue {
+                0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+                50% { box-shadow: 0 0 35px rgba(59, 130, 246, 0.9); }
+                100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+            }
+            
+            .skills-grid-debug > div[style*="box-shadow: 0 0 30px rgba(59, 130, 246, 0.7)"] {
+                animation: pulse-blue 1.5s infinite !important;
+            }
+        </style>
+    `;
+    
+    console.log('✅ Сетка 8x8 сгенерирована');
+    return finalHtml;
 }
+
+// ========== МЕТОД ДЛЯ ПРИМЕНЕНИЯ СТИЛЕЙ ИЗ КОНСОЛИ ==========
+applyFixedStyles() {
+    const style = document.createElement('style');
+    style.id = 'skills-fixed-styles';
+    style.textContent = `
+        /* ГАРАНТИРОВАННЫЕ СТИЛИ ДЛЯ СЕТКИ */
+        .skills-grid-debug,
+        .skills-matrix-container,
+        .skills-grid-container > div {
+            display: grid !important;
+            grid-template-columns: repeat(8, 100px) !important;
+            grid-template-rows: repeat(8, 100px) !important;
+            gap: 10px !important;
+            margin: 20px auto !important;
+            width: fit-content !important;
+            padding: 25px !important;
+            background: rgba(31, 41, 55, 0.95) !important;
+            border-radius: 15px !important;
+            border: 3px solid #374151 !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+            position: relative !important;
+        }
+        
+        /* Сброс всех возможных переопределений */
+        .skill-cell,
+        .skills-grid-row,
+        .skills-grid-header,
+        .grid-column-header,
+        .grid-row-header {
+            all: unset !important;
+        }
+        
+        /* Ячейки навыков */
+        div[class*="skill-cell"],
+        .skills-grid-debug > div {
+            width: 100px !important;
+            height: 100px !important;
+            min-width: 100px !important;
+            min-height: 100px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 12px !important;
+            border: 3px solid !important;
+            cursor: pointer !important;
+            position: relative !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        /* Запрещаем флекс-бокс ломать сетку */
+        .skills-overlay,
+        .overlay-content,
+        .overlay-body,
+        .skills-grid-container {
+            display: block !important;
+        }
+        
+        /* Отключаем все мешающие стили */
+        * {
+            box-sizing: border-box;
+        }
+        
+        /* Принудительная сетка */
+        .skills-grid-fixed {
+            display: grid !important;
+            grid-template-columns: repeat(8, 100px) !important;
+            grid-template-rows: repeat(8, 100px) !important;
+            gap: 10px !important;
+        }
+    `;
+    
+    // Удаляем старые стили если есть
+    const oldStyle = document.getElementById('skills-fixed-styles');
+    if (oldStyle) oldStyle.remove();
+    
+    document.head.appendChild(style);
+    console.log('✅ Гарантированные стили применены');
+    
+    // Также добавляем инлайн стили в body для надежности
+    const inlineStyle = document.createElement('div');
+    inlineStyle.style.cssText = `
+        position: fixed;
+        pointer-events: none;
+        opacity: 0;
+    `;
+    inlineStyle.innerHTML = `
+        <style>
+            /* Последняя попытка - !important везде */
+            .skills-matrix-container { display: grid !important; }
+            .skills-grid-rows { display: contents !important; }
+            .skills-grid-row { display: contents !important; }
+            .skill-cell { 
+                display: block !important; 
+                float: none !important;
+                clear: none !important;
+            }
+        </style>
+    `;
+    document.body.appendChild(inlineStyle);
+    
+    return true;
+}
+
+// Добавь этот метод в класс SkillsSystem
 
 // ========== ДОПОЛНИТЕЛЬНЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ СТИЛЕЙ ИЗ КОНСОЛИ ==========
 applyEnhancedStyles() {
