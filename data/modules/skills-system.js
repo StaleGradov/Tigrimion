@@ -749,32 +749,32 @@ drawSkillConnections() {
 }
 
 
-// ========== ИСПРАВЛЕННЫЙ МЕТОД ГЕНЕРАЦИИ СЕТКИ С УВЕЛИЧЕННЫМИ ЯЧЕЙКАМИ ==========
+// ========== ИСПРАВЛЕННЫЙ МЕТОД С ПРАВИЛЬНЫМИ ОТСТУПАМИ ==========
 generateSkillsMatrix() {
-    console.log('🔄 Генерация сетки 8x8 с увеличенными ячейками...');
+    console.log('🔄 Генерация сетки 8x8 с исправленными отступами...');
     
     const bonusTypes = ['health', 'damage', 'crit', 'vampire', 'armor', 'gold', 'regen', 'penetration'];
     const bonusIcons = ['❤️', '⚔️', '🎯', '🩸', '🛡️', '💰', '⚡', '💥'];
     const bonusNames = ['Здоровье', 'Урон', 'Крит', 'Вампир', 'Броня', 'Золото', 'Реген', 'Пробитие'];
     const columnColors = ['#ef4444', '#f59e0b', '#ec4899', '#dc2626', '#3b82f6', '#fbbf24', '#10b981', '#8b5cf6'];
     
-    // Увеличенные размеры ячеек
-    const cellWidth = 140; // Увеличено с 100px
-    const cellHeight = 140; // Увеличено с 100px
-    const gapSize = 15; // Увеличено с 10px
+    // Немного уменьшим ячейки для лучшего отображения
+    const cellWidth = 130; // Уменьшено с 140px для лучшего размещения
+    const cellHeight = 130; // Уменьшено с 140px
+    const gapSize = 12; // Уменьшено с 15px
     
-    // Создаем HTML для сетки с увеличенными ячейками
+    // Создаем HTML для сетки
     let html = `
-        <div class="skills-grid-large" style="
+        <div class="skills-grid-fixed" style="
             display: grid;
             grid-template-columns: repeat(8, ${cellWidth}px);
             grid-template-rows: repeat(8, ${cellHeight}px);
             gap: ${gapSize}px;
-            margin: 25px auto;
+            margin: 20px auto;
             width: fit-content;
-            padding: 35px;
+            padding: 30px 35px;
             background: rgba(31, 41, 55, 0.97);
-            border-radius: 18px;
+            border-radius: 16px;
             border: 4px solid #374151;
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
         ">
@@ -791,8 +791,8 @@ generateSkillsMatrix() {
                     width: ${cellWidth}px;
                     height: ${cellHeight}px;
                     background: rgba(55, 65, 81, 0.6);
-                    border-radius: 12px;
-                    border: 3px dashed #4b5563;
+                    border-radius: 10px;
+                    border: 2px dashed #4b5563;
                 "></div>`;
                 continue;
             }
@@ -804,24 +804,24 @@ generateSkillsMatrix() {
             // Определяем стили ячейки
             let backgroundColor = '#374151';
             let borderColor = columnColor;
-            let borderWidth = '4px';
+            let borderWidth = '3px';
             let borderStyle = 'solid';
             let opacity = '1';
             let cursor = 'pointer';
             let transform = '';
-            let boxShadow = '0 6px 18px rgba(0, 0, 0, 0.4)';
+            let boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
             let textColor = 'white';
             
             if (isUnlocked) {
                 backgroundColor = '#10b981';
                 borderColor = '#34d399';
-                boxShadow = '0 0 25px rgba(16, 185, 129, 0.6), 0 6px 18px rgba(0, 0, 0, 0.4)';
-                transform = 'scale(1.05)';
+                boxShadow = '0 0 20px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3)';
+                transform = 'scale(1.03)';
                 textColor = '#ffffff';
             } else if (canLearn) {
                 backgroundColor = '#6b7280';
                 borderColor = '#9ca3af';
-                boxShadow = '0 0 20px rgba(156, 163, 175, 0.5), 0 6px 18px rgba(0, 0, 0, 0.4)';
+                boxShadow = '0 0 15px rgba(156, 163, 175, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)';
                 textColor = '#f3f4f6';
             } else {
                 opacity = '0.7';
@@ -831,25 +831,25 @@ generateSkillsMatrix() {
             }
             
             if (isSelected) {
-                borderWidth = '6px';
-                boxShadow = '0 0 35px rgba(59, 130, 246, 0.8), 0 8px 25px rgba(0, 0, 0, 0.5)';
-                transform = 'scale(1.12)';
+                borderWidth = '4px';
+                boxShadow = '0 0 25px rgba(59, 130, 246, 0.7), 0 6px 18px rgba(0, 0, 0, 0.4)';
+                transform = 'scale(1.08)';
             }
             
-            // Создаем ячейку с увеличенными размерами
+            // Создаем ячейку с правильными отступами
             html += `
-                <div class="skill-cell-large skill-cell-${skill.id}" 
+                <div class="skill-cell-fixed skill-cell-${skill.id}" 
                      onclick="${isUnlocked || !canLearn ? '' : `game.systems.skills.selectSkill(${skill.id}); game.systems.skills.learnSkill(${skill.id})`}"
                      style="
                         width: ${cellWidth}px;
                         height: ${cellHeight}px;
                         background: ${backgroundColor};
                         border: ${borderWidth} ${borderStyle} ${borderColor};
-                        border-radius: 14px;
+                        border-radius: 12px;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
-                        justify-content: center;
+                        justify-content: space-between;
                         cursor: ${cursor};
                         opacity: ${opacity};
                         transform: ${transform};
@@ -858,10 +858,12 @@ generateSkillsMatrix() {
                         position: relative;
                         overflow: hidden;
                         color: ${textColor};
+                        padding: 8px 4px;
+                        box-sizing: border-box;
                      "
                      onmouseover="if('${cursor}' === 'pointer') { 
-                         this.style.transform='scale(1.15)'; 
-                         this.style.boxShadow='0 0 30px ${borderColor}aa, 0 8px 25px rgba(0,0,0,0.5)';
+                         this.style.transform='scale(1.1)'; 
+                         this.style.boxShadow='0 0 25px ${borderColor}aa, 0 6px 20px rgba(0,0,0,0.4)';
                      }"
                      onmouseout="this.style.transform='${transform}'; this.style.boxShadow='${boxShadow}'"
                      title="${skill.name}
@@ -870,52 +872,154 @@ ${skill.description}
 ⚡ Требуется: Уровень ${skill.requirements.heroLevel}
 🎯 Стоимость: ${skill.requirements.skillPoints} очков">
                     
-                    <!-- Иконка навыка (увеличенная) -->
-                    <div style="font-size: 2.8rem; margin-bottom: 8px; color: inherit; text-shadow: 0 3px 8px rgba(0,0,0,0.6);">
-                        ${skill.icon}
+                    <!-- Верхняя строка: уровень и индикаторы -->
+                    <div style="
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        padding: 0 4px;
+                        box-sizing: border-box;
+                    ">
+                        <!-- Индикатор выборочной ноды слева -->
+                        ${(row === 1 || row === 2 || row === 4 || row === 8) ? `
+                            <div style="
+                                background: #f59e0b;
+                                color: white;
+                                width: 18px;
+                                height: 18px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 0.7rem;
+                                border: 1px solid #fbbf24;
+                                flex-shrink: 0;
+                            ">
+                                ⚡
+                            </div>
+                        ` : '<div style="width: 18px;"></div>'}
+                        
+                        <!-- Уровень навыка по центру -->
+                        <div style="
+                            background: rgba(0,0,0,0.3);
+                            color: white;
+                            font-size: 0.75rem;
+                            padding: 2px 8px;
+                            border-radius: 10px;
+                            font-weight: bold;
+                            border: 1px solid rgba(255,255,255,0.2);
+                            margin: 0 4px;
+                        ">
+                            ${row}
+                        </div>
+                        
+                        <!-- Индикатор изученности справа -->
+                        ${isUnlocked ? `
+                            <div style="
+                                background: #34d399;
+                                color: white;
+                                width: 18px;
+                                height: 18px;
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                font-size: 0.7rem;
+                                font-weight: bold;
+                                border: 1px solid #6ee7b7;
+                                flex-shrink: 0;
+                            ">
+                                ✓
+                            </div>
+                        ` : '<div style="width: 18px;"></div>'}
                     </div>
                     
-                    <!-- Значение бонуса (увеличенное) -->
-                    <div style="font-size: 1.1rem; font-weight: bold; color: inherit; background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);">
-                        +${skill.bonusValue}%
+                    <!-- Основной контент: иконка и бонус -->
+                    <div style="
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        flex-grow: 1;
+                        width: 100%;
+                        padding: 5px 0;
+                    ">
+                        <!-- Иконка навыка -->
+                        <div style="
+                            font-size: 2.2rem;
+                            margin-bottom: 6px;
+                            color: inherit;
+                            text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+                            line-height: 1;
+                        ">
+                            ${skill.icon}
+                        </div>
+                        
+                        <!-- Значение бонуса -->
+                        <div style="
+                            font-size: 0.95rem;
+                            font-weight: bold;
+                            color: inherit;
+                            background: rgba(0,0,0,0.3);
+                            padding: 3px 8px;
+                            border-radius: 6px;
+                            border: 1px solid rgba(255,255,255,0.15);
+                            text-align: center;
+                            line-height: 1.2;
+                        ">
+                            +${skill.bonusValue}%
+                        </div>
                     </div>
                     
-                    <!-- Название навыка (новое) -->
-                    <div style="font-size: 0.85rem; margin-top: 6px; color: inherit; opacity: 0.9; font-weight: 500;">
-                        ${bonusNames[col - 1]}
-                    </div>
-                    
-                    <!-- Индикатор изученности (увеличенный) -->
-                    ${isUnlocked ? `
-                        <div style="position: absolute; top: 8px; right: 8px; background: #34d399; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: bold; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid #6ee7b7;">
-                            ✓
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Индикатор выборочной ноды (увеличенный) -->
-                    ${(row === 1 || row === 2 || row === 4 || row === 8) ? `
-                        <div style="position: absolute; top: 8px; left: 8px; background: #f59e0b; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid #fbbf24;">
-                            ⚡
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Требуемый уровень (увеличенный) -->
-                    ${!isUnlocked && !canLearn ? `
-                        <div style="position: absolute; bottom: 8px; left: 8px; background: #ef4444; color: white; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid #f87171;">
-                            Lvl ${skill.requirements.heroLevel}
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Стоимость для доступных навыков (увеличенная) -->
-                    ${!isUnlocked && canLearn ? `
-                        <div style="position: absolute; bottom: 8px; right: 8px; background: #3b82f6; color: white; font-size: 0.9rem; padding: 4px 8px; border-radius: 6px; font-weight: bold; box-shadow: 0 3px 8px rgba(0,0,0,0.4); border: 2px solid #93c5fd;">
-                            ${skill.requirements.skillPoints}pt
-                        </div>
-                    ` : ''}
-                    
-                    <!-- Уровень навыка (новый индикатор) -->
-                    <div style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); color: white; font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);">
-                        ${row}
+                    <!-- Нижняя строка: требования и стоимость -->
+                    <div style="
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-end;
+                        padding: 0 4px;
+                        box-sizing: border-box;
+                    ">
+                        <!-- Требуемый уровень -->
+                        ${!isUnlocked && !canLearn ? `
+                            <div style="
+                                background: #ef4444;
+                                color: white;
+                                font-size: 0.7rem;
+                                padding: 2px 6px;
+                                border-radius: 4px;
+                                font-weight: bold;
+                                border: 1px solid #f87171;
+                                flex-shrink: 0;
+                                max-width: 45%;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            ">
+                                Lvl ${skill.requirements.heroLevel}
+                            </div>
+                        ` : '<div style="width: 45%;"></div>'}
+                        
+                        <!-- Стоимость для доступных навыков -->
+                        ${!isUnlocked && canLearn ? `
+                            <div style="
+                                background: #3b82f6;
+                                color: white;
+                                font-size: 0.7rem;
+                                padding: 2px 6px;
+                                border-radius: 4px;
+                                font-weight: bold;
+                                border: 1px solid #93c5fd;
+                                flex-shrink: 0;
+                                max-width: 45%;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            ">
+                                ${skill.requirements.skillPoints}pt
+                            </div>
+                        ` : '<div style="width: 45%;"></div>'}
                     </div>
                 </div>
             `;
@@ -924,22 +1028,66 @@ ${skill.description}
     
     html += `</div>`;
     
-    // Добавляем заголовки колонок (увеличенные)
+    // Заголовки колонок (немного уменьшены)
     const headersHtml = `
         <div style="
             display: grid;
-            grid-template-columns: ${cellWidth + 40}px repeat(8, ${cellWidth}px);
+            grid-template-columns: ${cellWidth + 30}px repeat(8, ${cellWidth}px);
             gap: ${gapSize}px;
-            margin: 0 auto 20px auto;
+            margin: 0 auto 15px auto;
             width: fit-content;
             padding: 0 35px;
+            min-height: 70px;
         ">
-            <div style="width: ${cellWidth + 40}px;"></div>
+            <div style="width: ${cellWidth + 30}px;"></div>
             ${bonusTypes.map((type, index) => `
                 <div style="
                     width: ${cellWidth}px;
-                    height: 80px;
+                    height: 70px;
                     background: ${columnColors[index]};
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: bold;
+                    border: 2px solid ${columnColors[index]}cc;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                    position: relative;
+                    overflow: hidden;
+                    padding: 8px 4px;
+                    box-sizing: border-box;
+                ">
+                    <div style="font-size: 1.5rem; margin-bottom: 4px; line-height: 1;">${bonusIcons[index]}</div>
+                    <div style="
+                        font-size: 0.85rem; 
+                        text-align: center; 
+                        line-height: 1.1;
+                        max-width: 100%;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    ">${bonusNames[index]}</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    // Заголовки строк (немного уменьшены)
+    const rowsHeadersHtml = `
+        <div style="
+            position: absolute;
+            left: 35px;
+            top: ${35 + 70 + 15}px;
+            display: flex;
+            flex-direction: column;
+            gap: ${gapSize}px;
+        ">
+            ${Array.from({length: 8}, (_, i) => i + 1).map(level => `
+                <div style="
+                    width: ${cellWidth + 30}px;
+                    height: ${cellHeight}px;
+                    background: linear-gradient(135deg, #1e40af, #3b82f6);
                     border-radius: 10px;
                     display: flex;
                     flex-direction: column;
@@ -947,48 +1095,36 @@ ${skill.description}
                     justify-content: center;
                     color: white;
                     font-weight: bold;
-                    border: 3px solid ${columnColors[index]}cc;
-                    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+                    border: 2px solid #60a5fa;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
                     position: relative;
                     overflow: hidden;
+                    padding: 10px 5px;
+                    box-sizing: border-box;
                 ">
-                    <div style="font-size: 1.8rem; margin-bottom: 8px;">${bonusIcons[index]}</div>
-                    <div style="font-size: 0.95rem; text-align: center; padding: 0 5px;">${bonusNames[index]}</div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    
-    // Добавляем заголовки строк (увеличенные)
-    const rowsHeadersHtml = `
-        <div style="
-            position: absolute;
-            left: 35px;
-            top: ${35 + 80 + 20}px;
-            display: flex;
-            flex-direction: column;
-            gap: ${gapSize}px;
-        ">
-            ${Array.from({length: 8}, (_, i) => i + 1).map(level => `
-                <div style="
-                    width: ${cellWidth + 40}px;
-                    height: ${cellHeight}px;
-                    background: linear-gradient(135deg, #1e40af, #3b82f6);
-                    border-radius: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-weight: bold;
-                    border: 3px solid #60a5fa;
-                    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-                    position: relative;
-                    overflow: hidden;
-                ">
-                    <div style="font-size: 2.2rem; color: #fbbf24; font-weight: 800; margin-bottom: 8px;">${level}</div>
-                    <div style="font-size: 1.1rem;">Уровень</div>
-                    <div style="position: absolute; bottom: 8px; font-size: 0.85rem; color: #dbeafe;">
+                    <div style="
+                        font-size: 1.8rem; 
+                        color: #fbbf24; 
+                        font-weight: 800; 
+                        margin-bottom: 6px;
+                        line-height: 1;
+                    ">${level}</div>
+                    <div style="
+                        font-size: 0.95rem;
+                        text-align: center;
+                        line-height: 1.1;
+                        margin-bottom: 4px;
+                    ">Уровень</div>
+                    <div style="
+                        position: absolute; 
+                        bottom: 6px; 
+                        font-size: 0.75rem; 
+                        color: #dbeafe;
+                        text-align: center;
+                        width: 100%;
+                        padding: 0 5px;
+                        box-sizing: border-box;
+                    ">
                         ${level === 1 ? 'Старт' : 
                           level === 2 ? 'Выбор' : 
                           level === 4 ? 'Спец.' : 
@@ -999,127 +1135,129 @@ ${skill.description}
         </div>
     `;
     
-    // Финальный HTML с увеличенными размерами
+    // Финальный HTML
     const finalHtml = `
-        <div style="position: relative; width: 100%; min-width: ${(cellWidth * 8) + (gapSize * 7) + 200}px;">
+        <div style="
+            position: relative; 
+            width: 100%; 
+            min-width: ${(cellWidth * 8) + (gapSize * 7) + 170}px;
+            padding-right: 20px;
+        ">
             ${headersHtml}
             ${rowsHeadersHtml}
             ${html}
+            
+            <style>
+                /* Гарантированные стили для правильного отображения */
+                .skills-grid-fixed {
+                    display: grid !important;
+                    grid-template-columns: repeat(8, ${cellWidth}px) !important;
+                    grid-template-rows: repeat(8, ${cellHeight}px) !important;
+                    gap: ${gapSize}px !important;
+                    margin: 20px auto !important;
+                    width: fit-content !important;
+                    padding: 30px 35px !important;
+                    background: rgba(31, 41, 55, 0.97) !important;
+                    border-radius: 16px !important;
+                    border: 4px solid #374151 !important;
+                    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6) !important;
+                }
+                
+                .skill-cell-fixed {
+                    width: ${cellWidth}px !important;
+                    height: ${cellHeight}px !important;
+                    padding: 8px 4px !important;
+                    box-sizing: border-box !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    justify-content: space-between !important;
+                }
+                
+                /* Убираем все возможные конфликты отступов */
+                .skill-cell-fixed > div {
+                    margin: 0 !important;
+                    padding: 0 !important;
+                }
+                
+                /* Фиксируем размеры текста */
+                .skill-cell-fixed .skill-icon {
+                    font-size: 2.2rem !important;
+                    line-height: 1 !important;
+                }
+                
+                .skill-cell-fixed .skill-bonus {
+                    font-size: 0.95rem !important;
+                    line-height: 1.2 !important;
+                }
+                
+                .skill-cell-fixed .skill-level {
+                    font-size: 0.75rem !important;
+                    line-height: 1 !important;
+                }
+                
+                /* Анимации */
+                @keyframes pulse-green-fixed {
+                    0% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.5); }
+                    50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.8); }
+                    100% { box-shadow: 0 0 12px rgba(16, 185, 129, 0.5); }
+                }
+                
+                .skills-grid-fixed > div[style*="background: #10b981"]:not([style*="scale(1.08)"]) {
+                    animation: pulse-green-fixed 2s infinite !important;
+                }
+                
+                @keyframes pulse-blue-fixed {
+                    0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+                    50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.9); }
+                    100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+                }
+                
+                .skills-grid-fixed > div[style*="box-shadow: 0 0 25px rgba(59, 130, 246, 0.7)"] {
+                    animation: pulse-blue-fixed 1.5s infinite !important;
+                }
+                
+                /* Предотвращаем переполнение текста */
+                .skill-cell-fixed div {
+                    overflow: hidden !important;
+                    text-overflow: ellipsis !important;
+                    white-space: nowrap !important;
+                }
+                
+                .skill-cell-fixed .skill-bonus,
+                .skill-cell-fixed .skill-level {
+                    white-space: normal !important;
+                    word-break: break-word !important;
+                    overflow-wrap: break-word !important;
+                }
+                
+                /* Адаптивность */
+                @media (max-width: 1600px) {
+                    .skills-grid-fixed {
+                        grid-template-columns: repeat(8, 115px) !important;
+                        grid-template-rows: repeat(8, 115px) !important;
+                        padding: 25px 30px !important;
+                        gap: 10px !important;
+                    }
+                    
+                    .skill-cell-fixed {
+                        width: 115px !important;
+                        height: 115px !important;
+                        padding: 6px 3px !important;
+                    }
+                    
+                    .skill-cell-fixed .skill-icon {
+                        font-size: 1.9rem !important;
+                    }
+                    
+                    .skill-cell-fixed .skill-bonus {
+                        font-size: 0.85rem !important;
+                    }
+                }
+            </style>
         </div>
-        
-        <style>
-            /* Инлайн стили чтобы гарантированно работали */
-            .skills-grid-large {
-                display: grid !important;
-                grid-template-columns: repeat(8, ${cellWidth}px) !important;
-                grid-template-rows: repeat(8, ${cellHeight}px) !important;
-                gap: ${gapSize}px !important;
-                margin: 25px auto !important;
-                width: fit-content !important;
-                padding: 35px !important;
-                background: rgba(31, 41, 55, 0.97) !important;
-                border-radius: 18px !important;
-                border: 4px solid #374151 !important;
-                box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6) !important;
-            }
-            
-            /* Анимация при наведении */
-            .skills-grid-large > div[onclick]:hover {
-                transform: scale(1.15) !important;
-                z-index: 10 !important;
-                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-            }
-            
-            /* Анимация для изученных навыков */
-            @keyframes pulse-green-large {
-                0% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
-                50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.9); }
-                100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
-            }
-            
-            .skills-grid-large > div[style*="background: #10b981"] {
-                animation: pulse-green-large 2.5s infinite !important;
-            }
-            
-            /* Анимация для выбранных навыков */
-            @keyframes pulse-blue-large {
-                0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.7); }
-                50% { box-shadow: 0 0 40px rgba(59, 130, 246, 1); }
-                100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.7); }
-            }
-            
-            .skills-grid-large > div[style*="box-shadow: 0 0 35px rgba(59, 130, 246, 0.8)"] {
-                animation: pulse-blue-large 2s infinite !important;
-            }
-            
-            /* Анимация для доступных навыков */
-            @keyframes pulse-gray-large {
-                0% { box-shadow: 0 0 15px rgba(156, 163, 175, 0.5); }
-                50% { box-shadow: 0 0 25px rgba(156, 163, 175, 0.8); }
-                100% { box-shadow: 0 0 15px rgba(156, 163, 175, 0.5); }
-            }
-            
-            .skills-grid-large > div[style*="background: #6b7280"]:not([style*="scale(1.12)"]) {
-                animation: pulse-gray-large 3s infinite !important;
-            }
-            
-            /* Градиентные границы при наведении */
-            .skill-cell-large:hover::after {
-                content: '';
-                position: absolute;
-                top: -4px;
-                left: -4px;
-                right: -4px;
-                bottom: -4px;
-                border-radius: 16px;
-                background: conic-gradient(
-                    from 0deg,
-                    var(--hover-color-1, currentColor),
-                    var(--hover-color-2, currentColor),
-                    var(--hover-color-3, currentColor),
-                    var(--hover-color-4, currentColor)
-                );
-                z-index: -1;
-                opacity: 0.7;
-                animation: rotate-hover 3s linear infinite;
-            }
-            
-            @keyframes rotate-hover {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-            
-            /* Адаптивность для разных экранов */
-            @media (max-width: 1600px) {
-                .skills-grid-large {
-                    grid-template-columns: repeat(8, 120px) !important;
-                    grid-template-rows: repeat(8, 120px) !important;
-                    padding: 30px !important;
-                }
-                
-                .skills-grid-large > div {
-                    width: 120px !important;
-                    height: 120px !important;
-                }
-            }
-            
-            @media (max-width: 1400px) {
-                .skills-grid-large {
-                    grid-template-columns: repeat(8, 110px) !important;
-                    grid-template-rows: repeat(8, 110px) !important;
-                    padding: 25px !important;
-                    gap: 12px !important;
-                }
-                
-                .skills-grid-large > div {
-                    width: 110px !important;
-                    height: 110px !important;
-                }
-            }
-        </style>
     `;
     
-    console.log('✅ Сетка 8x8 с увеличенными ячейками сгенерирована');
+    console.log('✅ Сетка с исправленными отступами сгенерирована');
     return finalHtml;
 }
 
