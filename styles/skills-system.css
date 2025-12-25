@@ -1,123 +1,130 @@
-/* ========== SKILLS SYSTEM STYLES - ИСПРАВЛЕННАЯ ВЕРСИЯ ========== */
+/* ========== SKILLS SYSTEM STYLES - УЛУЧШЕННАЯ ВЕРСИЯ ========== */
 
 .skills-overlay {
-    max-width: 1400px !important; /* Увеличили ширину */
-    width: 95% !important;
-    max-height: 90vh !important;
+    max-width: 1600px !important; /* Еще шире */
+    width: 98% !important;
+    max-height: 95vh !important; /* Выше */
     overflow-y: auto !important;
-    margin: 20px auto !important;
+    margin: 10px auto !important;
+    padding: 20px !important;
+    background: rgba(17, 24, 39, 0.95);
+    border-radius: 16px;
+    border: 3px solid #374151;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
 .skills-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding: 15px 20px;
-    background: rgba(31, 41, 55, 0.8);
-    border-radius: 12px;
-    border: 2px solid #374151;
+    margin-bottom: 30px;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+    border-radius: 16px;
+    border: 3px solid #3b82f6;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
 .skills-info {
     display: flex;
-    gap: 20px;
+    gap: 30px;
     align-items: center;
 }
 
 .skill-points-display {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    padding: 10px 20px;
-    border-radius: 10px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    padding: 12px 25px;
+    border-radius: 12px;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     color: white;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 6px 15px rgba(245, 158, 11, 0.4);
+    border: 2px solid #fbbf24;
 }
 
-.skill-points-display.low {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-/* ========== СЕТКА 8x8 ========== */
+/* ========== УВЕЛИЧЕННАЯ СЕТКА 8x8 ========== */
 
 .skills-grid-container {
     display: flex;
-    flex-direction: column; /* Изменено на column */
-    gap: 20px;
-    margin: 20px 0;
+    flex-direction: column;
+    gap: 25px;
+    margin: 25px 0;
     width: 100%;
 }
 
-/* Основной контейнер матрицы */
 .skills-matrix-container {
     width: 100%;
     overflow-x: auto;
-    padding: 20px;
-    background: rgba(17, 24, 39, 0.7);
-    border-radius: 12px;
-    border: 2px solid #374151;
-    margin-bottom: 20px;
+    padding: 25px;
+    background: rgba(31, 41, 55, 0.9);
+    border-radius: 16px;
+    border: 3px solid #4b5563;
+    margin-bottom: 25px;
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.3);
+    min-height: 600px; /* Минимальная высота */
 }
 
-/* Заголовок колонок */
+/* Заголовок колонок - увеличен */
 .skills-grid-header {
     display: grid;
-    grid-template-columns: 100px repeat(8, 80px); /* Фиксированные размеры */
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 0 10px;
-    min-width: 900px; /* Минимальная ширина */
-}
-
-.grid-header-spacer {
-    height: 40px;
+    grid-template-columns: 120px repeat(8, 100px); /* Увеличили размеры */
+    gap: 12px;
+    margin-bottom: 15px;
+    padding: 0 15px;
+    min-width: 1200px;
 }
 
 .grid-column-header {
     text-align: center;
-    padding: 12px 8px;
-    background: linear-gradient(135deg, #1e40af, #1d4ed8);
-    border-radius: 10px;
-    border: 2px solid #3b82f6;
-    font-size: 1.4rem;
+    padding: 15px 10px;
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    border-radius: 12px;
+    border: 3px solid;
+    font-size: 1.8rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 80px;
+    min-height: 100px;
     color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-.grid-column-header:hover {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-}
+/* Уникальные границы для каждого типа бонуса */
+.grid-column-header:nth-child(2) { border-color: #ef4444 !important; } /* Здоровье */
+.grid-column-header:nth-child(3) { border-color: #f59e0b !important; } /* Урон */
+.grid-column-header:nth-child(4) { border-color: #ec4899 !important; } /* Крит */
+.grid-column-header:nth-child(5) { border-color: #dc2626 !important; } /* Вампир */
+.grid-column-header:nth-child(6) { border-color: #3b82f6 !important; } /* Броня */
+.grid-column-header:nth-child(7) { border-color: #fbbf24 !important; } /* Золото */
+.grid-column-header:nth-child(8) { border-color: #10b981 !important; } /* Реген */
+.grid-column-header:nth-child(9) { border-color: #8b5cf6 !important; } /* Пробитие */
 
 .column-name {
-    font-size: 0.9rem;
-    margin-top: 8px;
-    color: #d1d5db;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    color: #f3f4f6;
     font-weight: bold;
     white-space: nowrap;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Строки с навыками */
+/* Строки с навыками - увеличены */
 .skills-grid-rows {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    min-width: 900px;
+    gap: 12px;
+    min-width: 1200px;
 }
 
 .skills-grid-row {
     display: grid;
-    grid-template-columns: 100px repeat(8, 80px); /* Фиксированные размеры */
-    gap: 8px;
-    padding: 0 10px;
-    height: 80px; /* Фиксированная высота строки */
+    grid-template-columns: 120px repeat(8, 100px); /* Увеличили размеры */
+    gap: 12px;
+    padding: 0 15px;
+    height: 100px; /* Увеличили высоту строки */
 }
 
 .grid-row-header {
@@ -126,108 +133,149 @@
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg, #7c2d12, #9a3412);
-    border-radius: 10px;
-    padding: 10px;
-    border: 2px solid #ea580c;
+    border-radius: 12px;
+    padding: 15px;
+    border: 3px solid #ea580c;
     color: white;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     font-weight: bold;
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-row-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ea580c, #f97316);
 }
 
 .level-badge {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: bold;
-    color: #fbbf24;
-    margin-bottom: 5px;
+    color: #fde68a;
+    margin-bottom: 8px;
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .level-label {
-    font-size: 1rem;
-    color: #fde68a;
+    font-size: 1.2rem;
+    color: #fed7aa;
+    font-weight: bold;
 }
 
-/* Ячейки навыков */
+/* ========== УЛУЧШЕННЫЕ ЯЧЕЙКИ НАВЫКОВ С УНИКАЛЬНЫМИ ГРАНИЦАМИ ========== */
+
 .skill-cell {
-    width: 80px !important; /* Фиксированная ширина */
-    height: 80px !important; /* Фиксированная высота */
-    background: rgba(31, 41, 55, 0.9);
-    border-radius: 12px;
-    border: 3px solid transparent;
+    width: 100px !important; /* Увеличили ширину */
+    height: 100px !important; /* Увеличили высоту */
+    background: rgba(31, 41, 55, 0.95);
+    border-radius: 14px;
+    border: 4px solid transparent; /* Более толстая граница */
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
-.skill-cell:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    z-index: 10;
+/* Градиентные границы для ячеек */
+.skill-cell::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 16px;
+    background: conic-gradient(from 0deg, 
+        var(--border-color-1, #6b7280),
+        var(--border-color-2, #9ca3af),
+        var(--border-color-3, #d1d5db),
+        var(--border-color-4, #9ca3af),
+        var(--border-color-1, #6b7280));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s;
 }
 
+.skill-cell:hover::before {
+    opacity: 1;
+    animation: rotate-border 3s linear infinite;
+}
+
+/* Уникальные цвета границ для каждой колонки */
+.skill-cell[data-column="1"] { --border-color-1: #ef4444; --border-color-2: #f87171; --border-color-3: #fca5a5; --border-color-4: #f87171; }
+.skill-cell[data-column="2"] { --border-color-1: #f59e0b; --border-color-2: #fbbf24; --border-color-3: #fde68a; --border-color-4: #fbbf24; }
+.skill-cell[data-column="3"] { --border-color-1: #ec4899; --border-color-2: #f472b6; --border-color-3: #f9a8d4; --border-color-4: #f472b6; }
+.skill-cell[data-column="4"] { --border-color-1: #dc2626; --border-color-2: #ef4444; --border-color-3: #f87171; --border-color-4: #ef4444; }
+.skill-cell[data-column="5"] { --border-color-1: #3b82f6; --border-color-2: #60a5fa; --border-color-3: #93c5fd; --border-color-4: #60a5fa; }
+.skill-cell[data-column="6"] { --border-color-1: #fbbf24; --border-color-2: #fcd34d; --border-color-3: #fde68a; --border-color-4: #fcd34d; }
+.skill-cell[data-column="7"] { --border-color-1: #10b981; --border-color-2: #34d399; --border-color-3: #6ee7b7; --border-color-4: #34d399; }
+.skill-cell[data-column="8"] { --border-color-1: #8b5cf6; --border-color-2: #a78bfa; --border-color-3: #c4b5fd; --border-color-4: #a78bfa; }
+
+@keyframes rotate-border {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Состояния ячеек */
 .skill-cell.available {
-    background: linear-gradient(135deg, #4b5563, #6b7280);
+    background: linear-gradient(135deg, #374151, #4b5563);
     border-color: #9ca3af;
     animation: pulse-available 3s infinite;
 }
 
 .skill-cell.available:hover {
-    background: linear-gradient(135deg, #6b7280, #9ca3af);
+    background: linear-gradient(135deg, #4b5563, #6b7280);
     border-color: #d1d5db;
+    transform: scale(1.12) rotate(2deg);
 }
 
 .skill-cell.unlocked {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
     border-color: #10b981;
     animation: pulse-unlocked 2s infinite;
 }
 
 .skill-cell.unlocked:hover {
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.9), rgba(16, 185, 129, 0.9));
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.95), rgba(16, 185, 129, 0.95));
     border-color: #34d399;
+    transform: scale(1.12) rotate(-2deg);
 }
 
 .skill-cell.locked {
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(31, 41, 55, 0.9));
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.95));
     border-color: #374151;
     cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.skill-cell.locked:hover {
-    opacity: 0.9;
-    transform: none;
-    box-shadow: none;
+    opacity: 0.8;
 }
 
 .skill-cell.requirements-not-met {
-    background: linear-gradient(135deg, rgba(124, 45, 18, 0.9), rgba(154, 52, 18, 0.9));
+    background: linear-gradient(135deg, rgba(124, 45, 18, 0.95), rgba(154, 52, 18, 0.95));
     border-color: #ea580c;
 }
 
 .skill-cell.selected {
     transform: scale(1.15);
     z-index: 20;
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
+    animation: pulse-selected 2s infinite;
 }
 
-.skill-cell.empty {
-    background: transparent;
-    border: 2px dashed #374151;
-    cursor: default;
-    box-shadow: none;
+@keyframes pulse-selected {
+    0% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
+    50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.9); }
+    100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
 }
 
-.skill-cell.empty:hover {
-    transform: none;
-    box-shadow: none;
-}
-
-/* Содержимое ячейки */
+/* Содержимое ячейки - увеличенное */
 .skill-cell-content {
     display: flex;
     flex-direction: column;
@@ -236,173 +284,126 @@
     width: 100%;
     height: 100%;
     position: relative;
-    padding: 5px;
+    padding: 8px;
 }
 
 .skill-cell-icon {
-    font-size: 2.2rem !important; /* Увеличили размер иконки */
-    margin-bottom: 5px;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+    font-size: 2.8rem !important; /* Увеличили размер иконки */
+    margin-bottom: 8px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
 .skill-cell-bonus {
-    font-size: 0.9rem !important; /* Увеличили размер текста */
+    font-size: 1.1rem !important; /* Увеличили размер текста */
     font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.6);
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Индикаторы */
+/* Индикаторы - увеличены */
 .choice-indicator {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 20px;
-    height: 20px;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    font-size: 1rem;
     color: white;
     background: linear-gradient(135deg, #f59e0b, #d97706);
     animation: pulse-choice 1.5s infinite;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #fbbf24;
 }
 
 .unlocked-indicator {
     position: absolute;
-    bottom: 6px;
-    right: 6px;
-    width: 24px;
-    height: 24px;
+    bottom: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: linear-gradient(135deg, #10b981, #059669);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    border: 2px solid #34d399;
 }
 
 .level-requirement {
     position: absolute;
-    bottom: 6px;
-    left: 6px;
+    bottom: 8px;
+    left: 8px;
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
-    font-size: 0.8rem;
-    padding: 3px 8px;
-    border-radius: 6px;
+    font-size: 1rem;
+    padding: 4px 10px;
+    border-radius: 8px;
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+    border: 2px solid #f87171;
 }
 
+/* Эффект выбора */
 .selection-effect {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 4px solid;
-    border-radius: 12px;
-    animation: pulse-selection 1s infinite;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 5px solid;
+    border-radius: 18px;
+    animation: pulse-selection 1.5s infinite;
     pointer-events: none;
+    z-index: -1;
 }
 
-/* ========== ПАНЕЛЬ ИНФОРМАЦИИ ========== */
-.skills-info-panel {
-    background: rgba(31, 41, 55, 0.9);
-    border-radius: 12px;
-    padding: 25px;
-    border: 2px solid #374151;
-    margin-bottom: 20px;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.selected-skill-info {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.selected-skill-header {
-    text-align: center;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #374151;
-}
-
-.selected-skill-icon {
-    font-size: 56px !important; /* Увеличили размер иконки */
-    margin-bottom: 15px;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-}
-
-.selected-skill-name {
-    font-size: 1.8rem; /* Увеличили размер названия */
-    font-weight: bold;
-    color: #f9fafb;
-    margin-bottom: 10px;
-}
-
-.selected-skill-type {
-    color: #3b82f6;
-    font-size: 1.1rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.selected-skill-position {
-    color: #9ca3af;
-    font-size: 1rem;
-}
-
-.selected-skill-description {
-    line-height: 1.6;
-    color: #d1d5db;
-    font-size: 1.1rem;
-    padding: 15px;
-    background: rgba(55, 65, 81, 0.5);
-    border-radius: 10px;
-}
-
-/* ========== АНИМАЦИИ ========== */
+/* Улучшенные анимации */
 @keyframes pulse-available {
     0% {
-        box-shadow: 0 0 10px rgba(156, 163, 175, 0.4);
+        box-shadow: 0 0 15px rgba(156, 163, 175, 0.4);
     }
     50% {
-        box-shadow: 0 0 25px rgba(156, 163, 175, 0.7);
+        box-shadow: 0 0 35px rgba(156, 163, 175, 0.7);
     }
     100% {
-        box-shadow: 0 0 10px rgba(156, 163, 175, 0.4);
+        box-shadow: 0 0 15px rgba(156, 163, 175, 0.4);
     }
 }
 
 @keyframes pulse-unlocked {
     0% {
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
     }
     50% {
-        box-shadow: 0 0 30px rgba(16, 185, 129, 0.7);
+        box-shadow: 0 0 40px rgba(16, 185, 129, 0.7);
     }
     100% {
-        box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
     }
 }
 
 @keyframes pulse-choice {
     0% {
-        transform: scale(1);
+        transform: scale(1) rotate(0deg);
         opacity: 1;
     }
     50% {
-        transform: scale(1.3);
+        transform: scale(1.4) rotate(180deg);
         opacity: 0.8;
     }
     100% {
-        transform: scale(1);
+        transform: scale(1) rotate(360deg);
         opacity: 1;
     }
 }
@@ -411,272 +412,153 @@
     0% {
         opacity: 0.5;
         transform: scale(1);
+        filter: blur(0px);
     }
     50% {
         opacity: 1;
-        transform: scale(1.05);
+        transform: scale(1.08);
+        filter: blur(2px);
     }
     100% {
         opacity: 0.5;
         transform: scale(1);
+        filter: blur(0px);
     }
 }
 
-/* ========== ЦВЕТА БОНУСОВ ========== */
-.skill-bonus-health {
-    color: #ef4444 !important;
+/* ========== ОСТАЛЬНЫЕ СТИЛИ ========== */
+
+/* Панель информации */
+.skills-info-panel {
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.95), rgba(55, 65, 81, 0.95));
+    border-radius: 16px;
+    padding: 30px;
+    border: 3px solid #4b5563;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-.skill-bonus-damage {
-    color: #f59e0b !important;
+.skills-info-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #10b981);
 }
 
-.skill-bonus-crit {
-    color: #ec4899 !important;
-}
-
-.skill-bonus-vampire {
-    color: #dc2626 !important;
-}
-
-.skill-bonus-armor {
-    color: #3b82f6 !important;
-}
-
-.skill-bonus-gold {
-    color: #fbbf24 !important;
-}
-
-.skill-bonus-regen {
-    color: #10b981 !important;
-}
-
-.skill-bonus-penetration {
-    color: #8b5cf6 !important;
-}
-
-/* ========== КНОПКИ ========== */
-.btn-learn-skill {
-    background: linear-gradient(135deg, #10b981, #059669) !important;
-    color: white !important;
-    border: none !important;
-    padding: 15px 25px !important;
-    border-radius: 10px !important;
-    font-weight: bold !important;
-    font-size: 1.1rem !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    width: 100% !important;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-}
-
-.btn-learn-skill:hover:not(:disabled) {
-    background: linear-gradient(135deg, #34d399, #10b981) !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5) !important;
-}
-
-.btn-learn-skill:disabled {
-    background: #4b5563 !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
-    transform: none !important;
-    box-shadow: none !important;
-}
-
-.btn-reset-skills {
-    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-    color: white !important;
-    border: none !important;
-    padding: 12px 24px !important;
-    border-radius: 10px !important;
-    font-weight: bold !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
-}
-
-.btn-reset-skills:hover {
-    background: linear-gradient(135deg, #f87171, #ef4444) !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.5) !important;
-}
-
-/* ========== АДАПТИВНОСТЬ ========== */
-@media (max-width: 1200px) {
-    .skills-overlay {
-        max-width: 95vw !important;
-    }
-    
-    .skills-grid-header,
-    .skills-grid-row {
-        grid-template-columns: 80px repeat(8, 70px) !important;
-        gap: 6px;
-    }
-    
-    .grid-column-header {
-        font-size: 1.2rem;
-        padding: 10px 6px;
-        min-height: 70px;
-    }
-    
-    .skill-cell {
-        width: 70px !important;
-        height: 70px !important;
-    }
-    
-    .skill-cell-icon {
-        font-size: 1.8rem !important;
-    }
-}
-
-@media (max-width: 900px) {
-    .skills-grid-header,
-    .skills-grid-row {
-        grid-template-columns: 70px repeat(8, 60px) !important;
-        gap: 5px;
-    }
-    
-    .grid-column-header {
-        font-size: 1.1rem;
-        padding: 8px 4px;
-        min-height: 60px;
-    }
-    
-    .column-name {
-        font-size: 0.7rem;
-    }
-    
-    .skill-cell {
-        width: 60px !important;
-        height: 60px !important;
-    }
-    
-    .skill-cell-icon {
-        font-size: 1.5rem !important;
-    }
-    
-    .skill-cell-bonus {
-        font-size: 0.7rem !important;
-    }
-    
-    .level-badge {
-        font-size: 1.4rem;
-    }
-    
-    .level-label {
-        font-size: 0.8rem;
-    }
-}
-
-/* Информационные блоки */
-.skill-path-info {
-    margin: 20px 0;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(30, 64, 175, 0.2), rgba(29, 78, 216, 0.2));
-    border-radius: 12px;
-    border-left: 6px solid #3b82f6;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.skill-path-title {
-    font-weight: bold;
-    color: #3b82f6;
-    margin-bottom: 15px;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.skill-path-description {
-    font-size: 1rem;
-    color: #d1d5db;
-    line-height: 1.6;
-}
-
-.skills-help {
-    margin-top: 25px;
-    padding: 20px;
-    background: rgba(31, 41, 55, 0.8);
-    border-radius: 12px;
-    border-left: 6px solid #10b981;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.skills-help h4 {
-    margin-bottom: 15px;
-    color: #10b981;
-    font-size: 1.3rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.skills-help ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-.skills-help li {
-    margin-bottom: 10px;
-    color: #d1d5db;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 1rem;
-    line-height: 1.5;
-}
-
-.skills-help li::before {
-    content: "•";
-    color: #3b82f6;
-    font-weight: bold;
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-/* Область итоговых бонусов */
+/* Бонусные сетки */
 .bonus-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-top: 15px;
+    gap: 20px;
+    margin-top: 20px;
 }
 
 .bonus-item {
-    background: rgba(31, 41, 55, 0.9);
-    padding: 15px;
-    border-radius: 10px;
-    border-left: 4px solid;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.95), rgba(55, 65, 81, 0.95));
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 6px solid;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
 }
 
-.bonus-name {
-    font-size: 0.9rem;
-    color: #9ca3af;
-    margin-bottom: 8px;
-    font-weight: bold;
+.bonus-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
 }
 
-.bonus-value {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: inherit;
+/* Адаптивность для больших экранов */
+@media (min-width: 1600px) {
+    .skills-grid-header,
+    .skills-grid-row {
+        grid-template-columns: 140px repeat(8, 120px) !important;
+        gap: 15px;
+    }
+    
+    .skill-cell {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .skill-cell-icon {
+        font-size: 3.2rem !important;
+    }
+    
+    .skill-cell-bonus {
+        font-size: 1.2rem !important;
+    }
 }
 
-/* Полоса прокрутки */
+/* Полоса прокрутки - стилизованная */
 .skills-matrix-container::-webkit-scrollbar {
-    height: 10px;
-    background: rgba(31, 41, 55, 0.5);
-    border-radius: 5px;
+    height: 14px;
+    background: rgba(31, 41, 55, 0.7);
+    border-radius: 8px;
+    border: 2px solid #374151;
 }
 
 .skills-matrix-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border-radius: 5px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 8px;
+    border: 2px solid #1e40af;
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
 }
 
 .skills-matrix-container::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
+
+.skills-matrix-container::-webkit-scrollbar-track {
+    background: rgba(17, 24, 39, 0.8);
+    border-radius: 8px;
+}
+
+/* Фон для четных строк */
+.skills-grid-row:nth-child(even) .skill-cell:not(.unlocked):not(.available) {
+    background: rgba(37, 47, 61, 0.95);
+}
+
+/* Эффект свечения при наведении на заголовки */
+.grid-column-header:hover,
+.grid-row-header:hover {
+    filter: brightness(1.2);
+    transform: translateY(-5px);
+}
+
+/* Тень под всей сеткой */
+.skills-matrix-container {
+    box-shadow: 
+        inset 0 6px 20px rgba(0, 0, 0, 0.4),
+        0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Градиентный фон для оверлея */
+.skills-overlay {
+    background: linear-gradient(135deg, 
+        rgba(17, 24, 39, 0.97) 0%,
+        rgba(31, 41, 55, 0.97) 50%,
+        rgba(17, 24, 39, 0.97) 100%);
+}
+
+/* Эффект параллакса для заголовков */
+.skills-header {
+    background: linear-gradient(135deg, 
+        #1e40af 0%,
+        #1d4ed8 25%,
+        #3b82f6 50%,
+        #1d4ed8 75%,
+        #1e40af 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
