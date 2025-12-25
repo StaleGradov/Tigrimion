@@ -61,7 +61,6 @@ class BonusSystem {
     }
 
     loadItemSetConfig() {
-        // ⭐ МЕСТО ДЛЯ ВСТАВКИ СЕТОВ - можно вставить сюда конфигурацию сетов
         this.itemSetConfig = {};
     }
 
@@ -139,7 +138,7 @@ class BonusSystem {
         return activeSetBonuses;
     }
 
-    // ⭐ УЛУЧШЕННЫЙ РАСЧЕТ СУММАРНЫХ БОНУСОВ
+    // ⭐ ОБНОВЛЕННЫЙ МЕТОД: Расчет суммарных бонусов с учетом навыков
     calculateTotalBonuses(hero, items = []) {
         const activeBonuses = this.getAllActiveBonuses(hero);
         const setBonuses = this.getActiveSetBonuses(hero, items);
@@ -186,6 +185,57 @@ class BonusSystem {
             });
         }
         
+        // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: БОНУСЫ ОТ НАВЫКОВ
+        if (window.game && window.game.systems && window.game.systems.skills) {
+            try {
+                const skillBonuses = window.game.systems.skills.calculateTotalBonuses();
+                console.log("📊 Бонусы от навыков:", skillBonuses);
+                
+                // Конвертируем проценты навыков в множители для системы бонусов
+                // Формат skillBonuses: {health: 10, damage: 5, crit: 2, ...} в процентах
+                // Формат totals: множители (0.1 = 10%)
+                
+                if (skillBonuses.health) {
+                    totals.health_mult += skillBonuses.health / 100;
+                }
+                if (skillBonuses.damage) {
+                    totals.damage_mult += skillBonuses.damage / 100;
+                }
+                if (skillBonuses.crit) {
+                    totals.crit_chance += skillBonuses.crit / 100;
+                }
+                if (skillBonuses.vampire) {
+                    totals.vampirism += skillBonuses.vampire / 100;
+                }
+                if (skillBonuses.armor) {
+                    totals.armor_mult += skillBonuses.armor / 100;
+                }
+                if (skillBonuses.gold) {
+                    totals.gold_mult += skillBonuses.gold / 100;
+                }
+                if (skillBonuses.regen) {
+                    totals.health_regen_mult += skillBonuses.regen / 100;
+                }
+                if (skillBonuses.penetration) {
+                    totals.armor_penetration += skillBonuses.penetration / 100;
+                }
+                
+                console.log("📊 Итоговые бонусы после навыков:", {
+                    health_mult: totals.health_mult,
+                    damage_mult: totals.damage_mult,
+                    crit_chance: totals.crit_chance,
+                    vampirism: totals.vampirism,
+                    armor_mult: totals.armor_mult,
+                    gold_mult: totals.gold_mult,
+                    health_regen_mult: totals.health_regen_mult,
+                    armor_penetration: totals.armor_penetration
+                });
+                
+            } catch (skillsError) {
+                console.error("❌ Ошибка получения бонусов от навыков:", skillsError);
+            }
+        }
+        
         // Применение бонуса "все характеристики" к отдельным статам
         if (totals.all_stats_mult > 0) {
             totals.health_mult += totals.all_stats_mult;
@@ -193,6 +243,16 @@ class BonusSystem {
             totals.armor_mult += totals.all_stats_mult;
             totals.health_regen_mult += totals.all_stats_mult;
         }
+        
+        // ⭐ ДЕБАГ: Логируем итоговые бонусы
+        console.log("🎯 Итоговые бонусы для героя:", {
+            name: hero.name,
+            health_mult: `${(totals.health_mult * 100).toFixed(1)}%`,
+            damage_mult: `${(totals.damage_mult * 100).toFixed(1)}%`,
+            armor_mult: `${(totals.armor_mult * 100).toFixed(1)}%`,
+            crit_chance: `${(totals.crit_chance * 100).toFixed(1)}%`,
+            vampirism: `${(totals.vampirism * 100).toFixed(1)}%`
+        });
         
         return totals;
     }
