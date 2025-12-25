@@ -15,7 +15,8 @@ class ModuleLoader {
             'action-system',
             'shop-system',
             'resources-system',
-            'crafting-system'
+            'crafting-system',
+            'skills-system' // ⭐ ДОБАВЛЯЕМ НОВЫЙ МОДУЛЬ
         ];
     }
 
@@ -184,8 +185,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
-
+            'crafting-system': 'CraftingSystem',
+            'skills-system': 'SkillsSystem' // ⭐ ДОБАВЛЯЕМ
         };
         return typeof window[classMap[moduleName]] !== 'undefined';
     }
@@ -201,8 +202,8 @@ class ModuleLoader {
             'action-system': 'ActionSystem',
             'shop-system': 'ShopSystem',
             'resources-system': 'ResourcesSystem',
-            'crafting-system': 'CraftingSystem'
-
+            'crafting-system': 'CraftingSystem',
+            'skills-system': 'SkillsSystem' // ⭐ ДОБАВЛЯЕМ
         };
         return classMap[moduleName] || moduleName;
     }
