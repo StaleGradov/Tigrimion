@@ -675,44 +675,42 @@ drawSkillConnections() {
         });
     });
 }
-  // ========== ОБНОВЛЕННЫЙ МЕТОД ДЛЯ ШАХМАТНОГО ПОЛЯ 8x8 ==========
 generateSkillsMatrix() {
     let matrixHTML = '';
     
-    // Создаем сетку 8x8
-    // Каждая строка представляет уровень (1-8)
-    // Каждая колонка представляет тип бонуса (здоровье, урон и т.д.)
-    
-    // Заголовок колонок (типы бонусов)
     const bonusTypes = ['health', 'damage', 'crit', 'vampire', 'armor', 'gold', 'regen', 'penetration'];
     const bonusIcons = ['❤️', '⚔️', '🎯', '🩸', '🛡️', '💰', '⚡', '💥'];
     const bonusNames = ['Здоровье', 'Урон', 'Крит', 'Вампир', 'Броня', 'Золото', 'Реген', 'Пробитие'];
     
+    // Заголовки колонок
     matrixHTML += `
-        <div class="skills-grid-header">
-            <div class="grid-header-spacer"></div>
-            ${bonusTypes.map((type, index) => `
-                <div class="grid-column-header" title="${bonusNames[index]}">
-                    ${bonusIcons[index]}
-                    <div class="column-name">${bonusNames[index]}</div>
-                </div>
-            `).join('')}
-        </div>
+        <div class="skills-matrix-container">
+            <div class="skills-grid-header">
+                <div class="grid-header-spacer"></div>
+                ${bonusTypes.map((type, index) => `
+                    <div class="grid-column-header skill-bonus-${type}">
+                        ${bonusIcons[index]}
+                        <div class="column-name">${bonusNames[index]}</div>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="skills-grid-rows">
     `;
     
-    // Генерируем 8 строк (уровней)
+    // Генерируем 8 строк
     for (let row = 1; row <= 8; row++) {
         matrixHTML += `<div class="skills-grid-row">`;
         
-        // Заголовок строки (уровень)
+        // Заголовок строки
         matrixHTML += `
-            <div class="grid-row-header" title="Уровень ${row}">
+            <div class="grid-row-header">
                 <div class="level-badge">${row}</div>
-                <div class="level-label">Ур. ${row}</div>
+                <div class="level-label">Уровень ${row}</div>
             </div>
         `;
         
-        // Генерируем 8 ячеек (по одной на каждый тип бонуса)
+        // Генерируем 8 ячеек
         for (let col = 1; col <= 8; col++) {
             const skill = this.getSkillByPosition(row, col);
             if (!skill) {
@@ -724,7 +722,6 @@ generateSkillsMatrix() {
             const canLearn = this.canLearnSkill(skill.id);
             const isSelected = this.selectedSkill?.id === skill.id;
             
-            // Определяем классы для ячейки
             let cellClass = 'skill-cell';
             if (isUnlocked) {
                 cellClass += ' unlocked';
@@ -733,7 +730,6 @@ generateSkillsMatrix() {
             } else {
                 cellClass += ' locked';
                 
-                // Проверяем, не выполнены ли требования
                 const hero = this.game.currentHero;
                 if (hero && hero.level < skill.requirements.heroLevel) {
                     cellClass += ' requirements-not-met';
@@ -744,45 +740,39 @@ generateSkillsMatrix() {
                 cellClass += ' selected';
             }
             
-            // Определяем стиль для ячейки в зависимости от типа бонуса
             const bonusColor = this.getBonusColor(skill.type);
-            
-            // Определяем, является ли это выборочной нодой
             const isChoiceNode = row === 1 || row === 2 || row === 4 || row === 8;
             
             matrixHTML += `
-                <div class="${cellClass}" 
+                <div class="${cellClass} skill-bonus-${skill.type}" 
                      data-skill-id="${skill.id}"
                      onclick="game.systems.skills.selectSkill(${skill.id})"
                      title="${skill.name}
 ${skill.description}
-Требуется: Уровень ${skill.requirements.heroLevel}, ${skill.requirements.skillPoints} очков навыков"
-                     style="border-color: ${bonusColor}; ${isChoiceNode ? 'box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);' : ''}">
+Требуется: Уровень ${skill.requirements.heroLevel}, ${skill.requirements.skillPoints} очков"
+                     style="border-color: ${bonusColor} !important;">
                     
                     <div class="skill-cell-content">
-                        <div class="skill-cell-icon" style="color: ${bonusColor};">
+                        <div class="skill-cell-icon">
                             ${skill.icon}
                         </div>
                         
-                        <div class="skill-cell-bonus" style="color: ${bonusColor};">
+                        <div class="skill-cell-bonus">
                             +${skill.bonusValue}%
                         </div>
                         
-                        <!-- Индикатор выборочной ноды -->
                         ${isChoiceNode ? `
-                            <div class="choice-indicator" style="background: ${bonusColor};">
+                            <div class="choice-indicator">
                                 ⚡
                             </div>
                         ` : ''}
                         
-                        <!-- Индикатор изученности -->
                         ${isUnlocked ? `
                             <div class="unlocked-indicator">
                                 ✓
                             </div>
                         ` : ''}
                         
-                        <!-- Требуемый уровень -->
                         ${!isUnlocked && !canLearn ? `
                             <div class="level-requirement">
                                 ${skill.requirements.heroLevel}
@@ -790,9 +780,8 @@ ${skill.description}
                         ` : ''}
                     </div>
                     
-                    <!-- Эффект выбора -->
                     ${isSelected ? `
-                        <div class="selection-effect" style="border-color: ${bonusColor};"></div>
+                        <div class="selection-effect" style="border-color: ${bonusColor} !important;"></div>
                     ` : ''}
                 </div>
             `;
@@ -801,8 +790,15 @@ ${skill.description}
         matrixHTML += `</div>`;
     }
     
+    matrixHTML += `
+            </div>
+        </div>
+    `;
+    
     return matrixHTML;
 }
+
+    
 
 // Также нужно добавить метод getSkillByPosition:
 getSkillByPosition(row, column) {
