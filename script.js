@@ -306,57 +306,78 @@ class SafeHeroGame {
         this.init();
     }
 
-    async init() {
-        try {
-            console.log("🎮 Инициализация игры...");
+   async init() {
+    try {
+        console.log("🎮 Инициализация игры...");
+        
+        this.showLoadingScreen("Загрузка игровых модулей...");
+        
+        await this.moduleLoader.loadAllModules();
+        
+        await this.initializeSystems();
+        
+        await this.loadGameData();
+        
+        console.log("📂 Пытаемся загрузить сохранение...");
+        const saveLoaded = this.loadSave();
+        
+        // ВАЖНОЕ ИЗМЕНЕНИЕ: Всегда начинаем с выбора героя при перезагрузке
+        // Даже если есть сохранение, сначала показываем выбор героя
+        
+        if (saveLoaded && this.currentHero) {
+            console.log("✅ Сохранение загружено, текущий герой:", this.currentHero ? this.currentHero.name : "нет");
+            this.isSaveLoaded = true;
             
-            this.showLoadingScreen("Загрузка игровых модулей...");
-            
-            await this.moduleLoader.loadAllModules();
-            
-            await this.initializeSystems();
-            
-            await this.loadGameData();
-            
-            console.log("📂 Пытаемся загрузить сохранение...");
-            const saveLoaded = this.loadSave();
-            if (saveLoaded) {
-                console.log("✅ Сохранение загружено");
-                this.isSaveLoaded = true;
+            // Проверяем, существует ли сохраненный герой в системе
+            if (this.currentHero) {
+                const heroExists = this.systems.hero.heroes.find(h => h.id === this.currentHero.id);
+                const isUnlocked = this.currentHero.unlocked !== false;
                 
-                if (this.currentHero) {
-                    console.log(`🎯 Восстановлен герой: ${this.currentHero.name}`);
+                if (heroExists && isUnlocked) {
+                    console.log(`🎯 Герой найден и разблокирован: ${this.currentHero.name}`);
+                    // Переходим сразу на экран героя
                     this.showHeroGameScreen();
+                    return; // Прерываем выполнение
                 } else {
-                    this.showHeroSelection();
+                    console.warn("⚠️ Сохраненный герой не найден или заблокирован");
                 }
-            } else {
-                console.log("🆕 Сохранение не найдено, начинаем новую игру");
-                this.showHeroSelection();
             }
-            
-            this.startAutosave();
-            
-            this.startHealthRegeneration();
-                  
-            this.setupBattleCrashProtection();
-            
-            setTimeout(() => {
-                if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
-                    this.systems.hero.currentHero = this.currentHero;
-                    console.log("✅ HeroSystem синхронизирован с текущим героем");
-                    
-                    if (this.currentScreen === 'hero-game') {
-                        this.systems.hero.showHeroGameScreen();
-                    }
-                }
-            }, 1000);
-            
-        } catch (error) {
-            console.error("💀 Критическая ошибка инициализации:", error);
-            this.panic(error);
         }
+        
+        // Если дошли сюда, значит:
+        // 1. Сохранение не загружено
+        // 2. Герой не найден
+        // 3. Герой заблокирован
+        // 4. Сохранение повреждено
+        
+        console.log("🆕 Показываем экран выбора героя...");
+        this.showHeroSelection();
+        
+        this.startAutosave();
+        
+        this.startHealthRegeneration();
+              
+        this.setupBattleCrashProtection();
+        
+        setTimeout(() => {
+            if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
+                this.systems.hero.currentHero = this.currentHero;
+                console.log("✅ HeroSystem синхронизирован с текущим героем");
+                
+                if (this.currentScreen === 'hero-game') {
+                    this.systems.hero.showHeroGameScreen();
+                }
+            }
+        }, 1000);
+        
+    } catch (error) {
+        console.error("💀 Критическая ошибка инициализации:", error);
+        this.panic(error);
     }
+}
+
+
+    
 
     async initializeSystems() {
         console.log("⚙️ Инициализация игровых систем...");
@@ -793,13 +814,17 @@ saveGame() {
 
 
     
-
-  loadSave() {
+loadSave() {
     try {
         const save = localStorage.getItem('tigrimionSave');
         if (save) {
             const data = JSON.parse(save);
-            console.log("📂 Загружаем сохранение:", data);
+            console.log("📂 Загружаем сохранение:", {
+                version: data.version,
+                timestamp: data.timestamp ? new Date(data.timestamp).toLocaleString() : 'нет',
+                currentHeroId: data.currentHeroId,
+                heroesCount: data.heroes ? data.heroes.length : 0
+            });
             
             if (data.sharedResources) {
                 this.sharedResources = {
@@ -809,6 +834,7 @@ saveGame() {
                     resources: data.sharedResources.resources || {}
                 };
                 console.log("✅ Общий инвентарь и ресурсы загружены:", {
+                    gold: this.sharedResources.gold,
                     inventory: this.sharedResources.inventory.length,
                     resources: Object.keys(this.sharedResources.resources).length
                 });
@@ -846,7 +872,7 @@ saveGame() {
                             existingHero.resources = {...savedHero.resources};
                         }
                         
-                        console.log(`🎯 Загружен герой: ${existingHero.name}`, {
+                        console.log(`🎯 Загружен прогресс героя: ${existingHero.name}`, {
                             level: existingHero.level,
                             experience: existingHero.experience,
                             health: existingHero.currentHealth,
@@ -859,7 +885,7 @@ saveGame() {
                 console.log("✅ Прогресс всех героев загружен");
             }
             
-            // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Загружаем данные навыков
+            // ВАЖНОЕ ДОБАВЛЕНИЕ: Загружаем данные навыков
             if (this.systems.skills && data.skillsData) {
                 try {
                     // Восстанавливаем очки навыков
@@ -887,9 +913,15 @@ saveGame() {
                 console.log("🆕 Навыки не найдены в сохранении, начинаем с нуля");
             }
             
+            // ВАЖНО: Проверка существования героя из сохранения
             if (data.currentHeroId && this.systems.hero) {
-                this.currentHero = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
-                if (this.currentHero) {
+                const heroFromSave = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
+                
+                if (heroFromSave) {
+                    this.currentHero = heroFromSave;
+                    console.log(`✅ Герой из сохранения найден: ${this.currentHero.name}`);
+                    
+                    // Синхронизируем данные героя
                     this.currentHero.inventory = [...this.sharedResources.inventory];
                     this.currentHero.gold = this.sharedResources.gold;
                     
@@ -897,6 +929,7 @@ saveGame() {
                         this.currentHero.resources = {...this.sharedResources.resources};
                     }
                     
+                    // Загружаем состояние фляги
                     if (this.systems.battle && this.systems.battle.flask) {
                         const savedHero = data.heroes?.find(h => h.id === this.currentHero.id);
                         if (savedHero?.flaskState) {
@@ -917,6 +950,7 @@ saveGame() {
                         }
                     }
                     
+                    // Устанавливаем текущего героя во все системы
                     if (this.systems.equipment) {
                         this.systems.equipment.setCurrentHero(this.currentHero);
                     }
@@ -927,7 +961,7 @@ saveGame() {
                         this.systems.resources.sharedResources = this.sharedResources;
                     }
                     
-                    // ⭐ ВАЖНО: Обновляем очки навыков на основе уровня героя
+                    // Обновляем очки навыков на основе уровня героя
                     if (this.systems.skills) {
                         this.systems.skills.updateSkillPointsFromHeroLevel();
                     }
@@ -938,10 +972,19 @@ saveGame() {
                         gold: this.currentHero.gold,
                         resources: Object.keys(this.currentHero.resources || {}).length
                     });
+                    
+                    return true; // Сохранение успешно загружено
+                } else {
+                    console.error(`❌ Герой с ID ${data.currentHeroId} не найден в системе`);
+                    this.currentHero = null; // Сбрасываем текущего героя
+                    return false; // Герой не найден
                 }
+            } else {
+                console.log("ℹ️ В сохранении нет текущего героя");
+                this.currentHero = null;
+                return false;
             }
             
-            return true;
         } else {
             console.log("🆕 Сохранение не найдено, начинаем новую игру");
             
@@ -974,18 +1017,26 @@ saveGame() {
                 this.systems.resources.sharedResources = this.sharedResources;
             }
             
-            // ⭐ НОВАЯ ИГРА: Инициализируем навыки с нуля
+            // НОВАЯ ИГРА: Инициализируем навыки с нуля
             if (this.systems.skills) {
                 this.systems.skills.unlockedSkills = new Set();
                 this.systems.skills.availableSkillPoints = 0;
                 console.log("🎮 Новая игра: система навыков инициализирована с нуля");
             }
+            
+            this.currentHero = null; // Гарантируем, что текущий герой не установлен
+            return false; // Нет сохранения
         }
+        
     } catch (error) {
         console.error("❌ Ошибка загрузки сохранения:", error);
+        console.error("Полный текст ошибки:", error.stack);
+        
+        // Удаляем поврежденное сохранение
         localStorage.removeItem('tigrimionSave');
         console.log("🗑️ Битое сохранение удалено");
         
+        // Сбрасываем все на значения по умолчанию
         this.sharedResources = {
             gold: 100,
             inventory: [],
@@ -1002,15 +1053,19 @@ saveGame() {
             this.systems.resources.sharedResources = this.sharedResources;
         }
         
-        // ⭐ ОШИБКА ЗАГРУЗКИ: Инициализируем навыки с нуля
+        // ОШИБКА ЗАГРУЗКИ: Инициализируем навыки с нуля
         if (this.systems.skills) {
             this.systems.skills.unlockedSkills = new Set();
             this.systems.skills.availableSkillPoints = 0;
             console.log("🔄 Ошибка загрузки: система навыков сброшена к начальным значениям");
         }
+        
+        this.currentHero = null; // Сбрасываем текущего героя
+        return false; // Ошибка загрузки
     }
-    return false;
 }
+
+    
 
     startAutosave() {
         setInterval(() => {
@@ -1219,84 +1274,116 @@ saveGame() {
         `;
     }
 
-    selectHero(heroId) {
-        const hero = this.systems.hero.heroes.find(h => h.id === heroId);
-        if (!hero) {
-            console.error(`❌ Герой с ID ${heroId} не найден`);
-            return;
-        }
-
-        const isUnlocked = hero.unlocked;
-        if (!isUnlocked) {
-            this.showNotification(`❌ Герой ${hero.name} заблокирован!`);
-            return;
-        }
-
-        if (this.sharedResources) {
-            hero.gold = this.sharedResources.gold;
-            hero.resources = {...this.sharedResources.resources};
-        }
-
-        this.currentHero = hero;
-        
-        if (this.systems.equipment) {
-            this.systems.equipment.setCurrentHero(hero);
-        }
-        
-        if (this.systems.battle && this.systems.battle.flask) {
-            let hasFlaskState = false;
-            const save = localStorage.getItem('tigrimionSave');
-            if (save) {
-                try {
-                    const data = JSON.parse(save);
-                    const savedHeroData = data.heroes?.find(h => h.id === heroId);
-                    if (savedHeroData?.flaskState) {
-                        this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
-                        this.systems.battle.flask.content = savedHeroData.flaskState.content;
-                        hasFlaskState = true;
-                        console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
-                    }
-                } catch (e) {
-                    console.error("❌ Ошибка чтения состояния фляги:", e);
-                }
-            }
-            
-            if (!hasFlaskState) {
-                this.systems.battle.flask.currentCharges = 10;
-                this.systems.battle.flask.content = 'water';
-                console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
-            }
-            
-            if (this.systems.battle.updateFlaskUI) {
-                this.systems.battle.updateFlaskUI();
-            }
-            if (this.systems.battle.updateFlaskChargesDisplay) {
-                this.systems.battle.updateFlaskChargesDisplay();
-            }
-        }
-        
-        if (this.systems.battle) {
-            this.systems.battle.currentHero = hero;
-        }
-        if (this.systems.shop) {
-            this.systems.shop.currentHero = hero;
-        }
-        if (this.systems.map) {
-            this.systems.map.setCurrentHero(hero);
-        }
-        if (this.systems.action) {
-            this.systems.action.mapSystem.setCurrentHero(hero);
-        }
-        if (this.systems.resources) {
-            this.systems.resources.sharedResources = this.sharedResources;
-        }
-        
-        this.saveGame();
-        
-        console.log(`🎯 Выбран герой: ${hero.name}, уровень: ${hero.level}, опыт: ${hero.experience}, золото: ${hero.gold}, ресурсов: ${Object.keys(hero.resources || {}).length}`);
-        this.showHeroGameScreen();
+  selectHero(heroId) {
+    // Поиск героя в системе
+    const hero = this.systems.hero.heroes.find(h => h.id === heroId);
+    
+    // Проверка существования героя
+    if (!hero) {
+        console.error(`❌ Герой с ID ${heroId} не найден в системе`);
+        this.showNotification(`❌ Герой не найден в игровой системе!`, 'error');
+        this.showHeroSelection(); // Возвращаем к выбору героя
+        return;
     }
 
+    // Проверка разблокированности героя
+    const isUnlocked = hero.unlocked || hero.id === 1;
+    if (!isUnlocked) {
+        console.warn(`⚠️ Герой ${hero.name} заблокирован`);
+        this.showNotification(`❌ Герой ${hero.name} заблокирован! Требуется уровень: ${hero.id * 5}`, 'warning');
+        return;
+    }
+
+    // Синхронизация ресурсов
+    if (this.sharedResources) {
+        hero.gold = this.sharedResources.gold;
+        hero.resources = {...this.sharedResources.resources};
+    }
+
+    // Установка текущего героя
+    this.currentHero = hero;
+    console.log(`🎯 Выбран герой: ${hero.name}`, {
+        level: hero.level,
+        experience: hero.experience,
+        gold: hero.gold,
+        inventory: hero.inventory ? hero.inventory.length : 0,
+        resources: Object.keys(hero.resources || {}).length
+    });
+
+    // Настройка систем под текущего героя
+    if (this.systems.equipment) {
+        this.systems.equipment.setCurrentHero(hero);
+    }
+    
+    if (this.systems.battle) {
+        this.systems.battle.currentHero = hero;
+    }
+    
+    if (this.systems.shop) {
+        this.systems.shop.currentHero = hero;
+    }
+    
+    if (this.systems.map) {
+        this.systems.map.setCurrentHero(hero);
+    }
+    
+    if (this.systems.action) {
+        this.systems.action.mapSystem.setCurrentHero(hero);
+    }
+    
+    if (this.systems.resources) {
+        this.systems.resources.sharedResources = this.sharedResources;
+    }
+    
+    if (this.systems.hero) {
+        this.systems.hero.currentHero = hero;
+    }
+
+    // Загрузка состояния фляги
+    if (this.systems.battle && this.systems.battle.flask) {
+        let hasFlaskState = false;
+        const save = localStorage.getItem('tigrimionSave');
+        if (save) {
+            try {
+                const data = JSON.parse(save);
+                const savedHeroData = data.heroes?.find(h => h.id === heroId);
+                if (savedHeroData?.flaskState) {
+                    this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
+                    this.systems.battle.flask.content = savedHeroData.flaskState.content;
+                    hasFlaskState = true;
+                    console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
+                }
+            } catch (e) {
+                console.error("❌ Ошибка чтения состояния фляги:", e);
+            }
+        }
+        
+        if (!hasFlaskState) {
+            this.systems.battle.flask.currentCharges = 10;
+            this.systems.battle.flask.content = 'water';
+            console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
+        }
+        
+        if (this.systems.battle.updateFlaskUI) {
+            this.systems.battle.updateFlaskUI();
+        }
+        if (this.systems.battle.updateFlaskChargesDisplay) {
+            this.systems.battle.updateFlaskChargesDisplay();
+        }
+    }
+
+    // Сохранение выбора героя
+    this.saveGame();
+    
+    // Показ экрана игры героя
+    this.showHeroGameScreen();
+    
+    // Показать уведомление о успешном выборе
+    this.showNotification(`✅ Герой ${hero.name} выбран! Добро пожаловать в игру!`, 'success');
+}
+
+
+    
     handleEquipmentSlotClick(slot) {
         console.log(`Клик по слоту: ${slot}`);
         const itemId = this.currentHero.equipment[slot];
