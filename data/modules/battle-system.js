@@ -2096,7 +2096,21 @@ endTacticalBattle(victory, escape = false) {
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
         this.currentHero.gold += totalReward;
-        window.game.systems.level.addExperience(this.currentHero, totalExperience);
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Добавляем опыт и сохраняем его
+        if (window.game.systems.level && totalExperience > 0) {
+            console.log(`🌟 Добавляем опыт: ${totalExperience} очков`);
+            window.game.systems.level.addExperience(this.currentHero, totalExperience);
+            
+            // ⭐ СОХРАНЯЕМ ИГРУ СРАЗУ ПОСЛЕ ДОБАВЛЕНИЯ ОПЫТА
+            if (window.game) {
+                window.game.saveGame();
+                console.log("💾 Игра сохранена с новым опытом");
+            }
+        } else {
+            console.error("❌ LevelSystem не доступна для добавления опыта");
+        }
+        
         this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
         
         // ========== ДОБАВЛЯЕМ РЕСУРСЫ ИЗ МОНСТРОВ ==========
@@ -2163,12 +2177,15 @@ endTacticalBattle(victory, escape = false) {
         }, 500);
     }
     
-    // Сохраняем игру
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Сохраняем игру еще раз для гарантии
     if (window.game) {
         window.game.saveGame();
-        console.log("💾 Состояние сохранено после боя");
+        console.log("💾 Состояние сохранено после боя (включая опыт)");
     }
 }
+
+
+    
 // В BattleSystem добавьте:
 handleHuntContext(victory, monster) {
     if (!this.currentHero) return;
