@@ -529,158 +529,113 @@ class HeroSystem {
         return result;
     }
 
-    // ========== ИНТЕРФЕЙСНЫЕ МЕТОДЫ ==========
-    showHeroSelection() {
-        const app = document.getElementById('app');
-        if (!app) return;
+  showHeroSelection() {
+    const app = document.getElementById('app');
+    if (!app) return;
 
-        // Сортируем героев по ID
-        const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
+    // Сортируем героев по ID
+    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
+    
+    const heroesHTML = sortedHeroes.map(hero => {
+        const stats = this.calculateHeroStats(hero);
+        const isSelectable = hero.unlocked;
         
-        const heroesHTML = sortedHeroes.map(hero => {
-            const stats = this.calculateHeroStats(hero);
-            const isSelectable = hero.unlocked;
-            const unlockStatus = this.getHeroUnlockStatus(hero.id);
-            
-            // Получаем информацию о предыдущем герое для отображения прогресса
-            let progressInfo = '';
-            let progressPercent = 0;
-            
-            if (hero.id > 1) {
-                const prevHero = this.heroes.find(h => h.id === hero.id - 1);
-                if (prevHero) {
-                    progressPercent = Math.min(100, (prevHero.level / 9) * 100);
-                    progressInfo = `
-                        <div class="unlock-progress-info">
-                            <div class="progress-label">
-                                <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
-                                <span>${progressPercent.toFixed(0)}%</span>
-                            </div>
-                            <div class="progress-bar-small">
-                                <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
-                            </div>
+        // Получаем информацию о предыдущем герое для отображения прогресса
+        let progressInfo = '';
+        let progressPercent = 0;
+        
+        if (hero.id > 1) {
+            const prevHero = this.heroes.find(h => h.id === hero.id - 1);
+            if (prevHero) {
+                progressPercent = Math.min(100, (prevHero.level / 9) * 100);
+                progressInfo = `
+                    <div class="unlock-progress-info">
+                        <div class="progress-label">
+                            <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
+                            <span>${progressPercent.toFixed(0)}%</span>
                         </div>
-                    `;
-                }
+                        <div class="progress-bar-small">
+                            <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
+                        </div>
+                    </div>
+                `;
             }
-            
-            return `
-                <div class="hero-card ${isSelectable ? '' : 'locked'}" 
-                     onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
-                    <div class="hero-image">
-                        <img src="${hero.image}" alt="${hero.name}" 
-                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                        ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
-                        <div class="hero-card-badge">
-                            <span class="badge-level">${hero.level}</span>
-                            ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
+        }
+        
+        return `
+            <div class="hero-card ${isSelectable ? '' : 'locked'}" 
+                 onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
+                <div class="hero-image">
+                    <img src="${hero.image}" alt="${hero.name}" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
+                    <div class="hero-card-badge">
+                        <span class="badge-level">${hero.level}</span>
+                        ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
+                    </div>
+                </div>
+                
+                <div class="hero-info-tooltip">
+                    <div class="hero-header">
+                        <strong>${hero.name}</strong>
+                        <span class="hero-id">ID: ${hero.id}</span>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                            <span>⚔️ ${stats.damage}</span>
+                            <span>🛡️ ${stats.armor}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                            <span>🌟 ${stats.power}</span>
                         </div>
                     </div>
                     
-                    <div class="hero-info-tooltip">
-                        <div class="hero-header">
-                            <strong>${hero.name}</strong>
-                            <span class="hero-id">ID: ${hero.id}</span>
-                        </div>
-                        
-                        <div class="hero-stats">
-                            <div class="stat-row">
-                                <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                <span>⚔️ ${stats.damage}</span>
-                                <span>🛡️ ${stats.armor}</span>
-                            </div>
-                            <div class="stat-row">
-                                <span>💰 ${hero.gold.toFixed(2)}</span>
-                                <span>🌟 ${stats.power}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="hero-details">
-                            <span>🧬 ${this.getRaceName(hero.race)}</span>
-                            <span>⚔️ ${this.getClassName(hero.class)}</span>
-                            <span>📖 ${this.getSagaName(hero.saga)}</span>
-                        </div>
-                        
-                        ${progressInfo}
-                        
-<div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
-    ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
-</div>
-                        
-                      ${!isSelectable ? 
-    (() => {
-        if (hero.id === 1) {
-            return `<div class="unlock-hint">
-                <small>✅ Первый герой доступен</small>
-            </div>`;
-        }
-        
-        const prevHero = this.heroes.find(h => h.id === hero.id - 1);
-        if (prevHero) {
-            return `<div class="unlock-hint">
-                <small>🎯 Требуется: ${prevHero.name} 9 ур. (сейчас ${prevHero.level})</small>
-            </div>`;
-        }
-        
-        return `<div class="unlock-hint">
-            <small>🔒 Заблокирован</small>
-        </div>`;
-    })() : 
-    `<div class="select-hint">
-        <small>👉 Нажмите для выбора</small>
-    </div>`
-}
+                    <div class="hero-details">
+                        <span>🧬 ${this.getRaceName(hero.race)}</span>
+                        <span>⚔️ ${this.getClassName(hero.class)}</span>
+                        <span>📖 ${this.getSagaName(hero.saga)}</span>
                     </div>
-                </div>
-            `;
-        }).join('');
-
-        const unlockedCount = this.heroes.filter(h => h.unlocked).length;
-        const totalCount = this.heroes.length;
-        
-        app.innerHTML = `
-            <div class="hero-selection-screen">
-                <header class="selection-header">
-                    <h1>🎯 Выберите героя</h1>
-                    <p class="selection-subtitle">Всего героев: ${totalCount} | Разблокировано: ${unlockedCount}</p>
                     
-                    <div class="selection-info">
-                        <div class="info-card">
-                            <h3>⚡ Система разблокировки</h3>
-                            <p>Каждый следующий герой открывается при достижении 9 уровня предыдущим героем.</p>
-                            <p><strong>Пример:</strong> Чтобы открыть героя #2, герой #1 должен достичь 9 уровня.</p>
-                        </div>
-                        
-                        <div class="info-card">
-                            <h3>🎮 Как играть</h3>
-                            <p>1. Начните с первого героя</p>
-                            <p>2. Повышайте его уровень до 9</p>
-                            <p>3. Откроется следующий герой</p>
-                            <p>4. Продолжайте в том же духе!</p>
-                        </div>
+                    ${progressInfo}
+                    
+                    <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
+                        ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
                     </div>
-                </header>
-                
-                <div class="heroes-grid">
-                    ${heroesHTML}
-                </div>
-                
-                <div class="selection-actions">
-                    <button class="btn-secondary" onclick="game.showMainMenu()">
-                        ← Назад в меню
-                    </button>
-                    <button class="btn-info" onclick="game.systems.hero.showUnlockProgress()">
-                        📊 Прогресс разблокировки
-                    </button>
-                    <button class="btn-refresh" onclick="game.systems.hero.refreshHeroList()">
-                        🔄 Обновить список
-                    </button>
+                    
+                    ${!isSelectable ? 
+                        `<div class="unlock-hint">
+                            <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
+                        </div>` : 
+                        `<div class="select-hint">
+                            <small>👉 Нажмите для выбора</small>
+                        </div>`
+                    }
                 </div>
             </div>
         `;
-        
-        console.log("✅ Экран выбора героя отображен");
-    }
+    }).join('');
+
+    app.innerHTML = `
+        <div class="hero-selection-screen">
+            <!-- УБРАН header с информацией -->
+            
+            <div class="heroes-grid">
+                ${heroesHTML}
+            </div>
+            
+            <div class="selection-actions">
+                <button class="btn-secondary" onclick="game.showMainMenu()">
+                    ← Назад в меню
+                </button>
+            </div>
+        </div>
+    `;
+    
+    console.log("✅ Экран выбора героя отображен");
+}
 
     showUnlockProgress() {
         const app = document.getElementById('app');
