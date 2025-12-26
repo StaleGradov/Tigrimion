@@ -306,7 +306,7 @@ class SafeHeroGame {
         this.init();
     }
 
-async init() {
+ async init() {
     try {
         console.log("🎮 Инициализация игры...");
         
@@ -321,20 +321,12 @@ async init() {
         console.log("📂 Пытаемся загрузить сохранение...");
         const saveLoaded = this.loadSave();
         
-        // ⭐ ВАЖНО: Инициализируем систему разблокировки героев
-        if (this.systems.hero) {
-            // Гарантируем, что первый герой разблокирован
-            const firstHero = this.systems.hero.heroes.find(h => h.id === 1);
-            if (firstHero && !firstHero.unlocked) {
-                firstHero.unlocked = true;
-                console.log("✅ Герой 1 автоматически разблокирован при инициализации");
-            }
-            
-            // Проверяем разблокировку остальных героев
-            this.systems.hero.checkHeroUnlocks();
-        }
-        
         // ВАЖНО: Всегда начинаем с выбора героя при перезагрузке игры
+        // Это решает проблему, когда игра загружает сохранение и сразу показывает героя
+        
+        // Вместо показа экрана героя, ВСЕГДА показываем выбор героя
+        // Только после выбора героя будет показан игровой экран
+        
         console.log("🔄 Показываем экран выбора героя...");
         this.showHeroSelection();
         
@@ -362,7 +354,9 @@ async init() {
         }
         
         this.startAutosave();
+        
         this.startHealthRegeneration();
+              
         this.setupBattleCrashProtection();
         
         // Отложенная инициализация HeroSystem
@@ -378,6 +372,7 @@ async init() {
         this.panic(error);
     }
 }
+
 
     
 
@@ -815,7 +810,8 @@ saveGame() {
 }
 
 
- loadSave() {
+    
+loadSave() {
     try {
         const save = localStorage.getItem('tigrimionSave');
         if (save) {
@@ -858,16 +854,12 @@ saveGame() {
                     const savedHero = savedHeroesMap.get(existingHero.id);
                     
                     if (savedHero) {
-                        // Восстанавливаем основные данные
                         existingHero.level = savedHero.level || existingHero.level;
                         existingHero.experience = savedHero.experience || existingHero.experience;
                         existingHero.currentHealth = savedHero.currentHealth || existingHero.baseHealth;
                         existingHero.monstersKilled = savedHero.monstersKilled || 0;
                         existingHero.deaths = savedHero.deaths || 0;
-                        
-                        // ⭐ ВАЖНО: Восстанавливаем статус разблокировки
-                        existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : 
-                                               (existingHero.id === 1); // Герой 1 всегда разблокирован
+                        existingHero.unlocked = savedHero.unlocked !== undefined ? savedHero.unlocked : existingHero.unlocked;
                         
                         if (savedHero.equipment) {
                             existingHero.equipment = {...savedHero.equipment};
@@ -880,74 +872,17 @@ saveGame() {
                         console.log(`🎯 Загружен прогресс героя: ${existingHero.name}`, {
                             level: existingHero.level,
                             experience: existingHero.experience,
-                            unlocked: existingHero.unlocked,
                             health: existingHero.currentHealth,
-                            equipment: existingHero.equipment ? Object.keys(existingHero.equipment).filter(k => existingHero.equipment[k]).length : 0,
+                            equipment: existingHero.equipment,
                             resourcesCount: Object.keys(existingHero.resources || {}).length
                         });
-                    } else {
-                        // Если героя нет в сохранении, но он есть в системе
-                        // Устанавливаем разблокировку по умолчанию
-                        if (existingHero.id === 1) {
-                            existingHero.unlocked = true;
-                        } else {
-                            // Проверяем предыдущего героя для определения разблокировки
-                            const prevHero = this.systems.hero.heroes.find(h => h.id === existingHero.id - 1);
-                            existingHero.unlocked = prevHero ? prevHero.level >= 9 : false;
-                        }
                     }
                 });
                 
                 console.log("✅ Прогресс всех героев загружен");
-                
-                // ⭐ ВАЖНО: Проверяем корректность разблокировки после загрузки
-                setTimeout(() => {
-                    if (this.systems.hero) {
-                        console.log("🔄 Проверка разблокировки героев после загрузки...");
-                        
-                        // 1. Гарантируем, что первый герой разблокирован
-                        const firstHero = this.systems.hero.heroes.find(h => h.id === 1);
-                        if (firstHero && !firstHero.unlocked) {
-                            firstHero.unlocked = true;
-                            console.log("✅ Герой 1 автоматически разблокирован");
-                        }
-                        
-                        // 2. Проверяем разблокировку остальных героев на основе уровня предыдущих
-                        for (let i = 1; i < this.systems.hero.heroes.length; i++) {
-                            const hero = this.systems.hero.heroes[i];
-                            const prevHero = this.systems.hero.heroes[i - 1];
-                            
-                            if (!hero.unlocked && prevHero && prevHero.level >= 9) {
-                                hero.unlocked = true;
-                                console.log(`✅ Автоматическая разблокировка героя ${hero.name} (ID: ${hero.id}) - ${prevHero.name} достиг ${prevHero.level} уровня`);
-                                
-                                // Добавляем в список разблокированных
-                                if (!this.sharedResources.unlockedHeroes.includes(hero.id)) {
-                                    this.sharedResources.unlockedHeroes.push(hero.id);
-                                }
-                            }
-                        }
-                        
-                        // 3. Обновляем список unlockedHeroes в sharedResources
-                        const unlockedIds = this.systems.hero.heroes
-                            .filter(h => h.unlocked)
-                            .map(h => h.id);
-                        
-                        this.sharedResources.unlockedHeroes = [...new Set([...this.sharedResources.unlockedHeroes, ...unlockedIds])].sort((a, b) => a - b);
-                        
-                        console.log("✅ Проверка разблокировки завершена", {
-                            разблокировано: this.systems.hero.heroes.filter(h => h.unlocked).length,
-                            всего: this.systems.hero.heroes.length,
-                            список: this.sharedResources.unlockedHeroes
-                        });
-                        
-                        // 4. Вызываем метод проверки разблокировки в HeroSystem
-                        this.systems.hero.checkHeroUnlocks();
-                    }
-                }, 100);
             }
             
-            // ⭐ ВАЖНОЕ ДОБАВЛЕНИЕ: Загружаем данные навыков
+            // ВАЖНОЕ ДОБАВЛЕНИЕ: Загружаем данные навыков
             if (this.systems.skills && data.skillsData) {
                 try {
                     // Восстанавливаем очки навыков
@@ -975,29 +910,13 @@ saveGame() {
                 console.log("🆕 Навыки не найдены в сохранении, начинаем с нуля");
             }
             
-            // ⭐ ВАЖНО: Проверка существования героя из сохранения
+            // ВАЖНО: Проверка существования героя из сохранения
             if (data.currentHeroId && this.systems.hero) {
                 const heroFromSave = this.systems.hero.heroes.find(h => h.id === data.currentHeroId);
                 
                 if (heroFromSave) {
-                    // ⭐ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убедимся что герой разблокирован
-                    if (!heroFromSave.unlocked && !this.systems.hero.canUnlockHero(heroFromSave.id)) {
-                        console.warn(`⚠️ Герой ${heroFromSave.name} (ID: ${heroFromSave.id}) не разблокирован в сохранении`);
-                        
-                        // Если герой не разблокирован, выбираем первого разблокированного
-                        const unlockedHero = this.systems.hero.heroes.find(h => this.systems.hero.canUnlockHero(h.id));
-                        if (unlockedHero) {
-                            console.log(`🔄 Вместо ${heroFromSave.name} выбираем ${unlockedHero.name} (разблокирован)`);
-                            this.currentHero = unlockedHero;
-                        } else {
-                            console.error("❌ Нет доступных разблокированных героев!");
-                            this.currentHero = null;
-                            return false;
-                        }
-                    } else {
-                        this.currentHero = heroFromSave;
-                        console.log(`✅ Герой из сохранения найден: ${this.currentHero.name} (разблокирован: ${this.currentHero.unlocked})`);
-                    }
+                    this.currentHero = heroFromSave;
+                    console.log(`✅ Герой из сохранения найден: ${this.currentHero.name}`);
                     
                     // Синхронизируем данные героя
                     this.currentHero.inventory = [...this.sharedResources.inventory];
@@ -1048,37 +967,17 @@ saveGame() {
                         name: this.currentHero.name,
                         inventory: this.currentHero.inventory.length,
                         gold: this.currentHero.gold,
-                        resources: Object.keys(this.currentHero.resources || {}).length,
-                        unlocked: this.currentHero.unlocked,
-                        level: this.currentHero.level
+                        resources: Object.keys(this.currentHero.resources || {}).length
                     });
                     
                     return true; // Сохранение успешно загружено
                 } else {
                     console.error(`❌ Герой с ID ${data.currentHeroId} не найден в системе`);
-                    
-                    // Пытаемся найти первого разблокированного героя
-                    const unlockedHero = this.systems.hero.heroes.find(h => h.unlocked);
-                    if (unlockedHero) {
-                        console.log(`🔄 Восстанавливаем первого разблокированного героя: ${unlockedHero.name}`);
-                        this.currentHero = unlockedHero;
-                        return true;
-                    }
-                    
                     this.currentHero = null; // Сбрасываем текущего героя
                     return false; // Герой не найден
                 }
             } else {
                 console.log("ℹ️ В сохранении нет текущего героя");
-                
-                // Пытаемся найти первого разблокированного героя
-                const unlockedHero = this.systems.hero.heroes.find(h => h.unlocked);
-                if (unlockedHero) {
-                    console.log(`🔄 Устанавливаем первого разблокированного героя: ${unlockedHero.name}`);
-                    this.currentHero = unlockedHero;
-                    return true;
-                }
-                
                 this.currentHero = null;
                 return false;
             }
@@ -1089,7 +988,7 @@ saveGame() {
             this.sharedResources = {
                 gold: 100,
                 inventory: [],
-                unlockedHeroes: [1], // Герой 1 разблокирован по умолчанию
+                unlockedHeroes: [1],
                 resources: {}
             };
             
@@ -1097,18 +996,9 @@ saveGame() {
                 const firstHero = this.systems.hero.heroes[0];
                 this.sharedResources.gold = firstHero.gold || 100;
                 
-                // Устанавливаем базовые значения для всех героев
-                this.systems.hero.heroes.forEach((hero, index) => {
+                this.systems.hero.heroes.forEach(hero => {
                     hero.gold = this.sharedResources.gold;
                     hero.resources = {};
-                    
-                    // ⭐ НОВАЯ ИГРА: Разблокируем только первого героя
-                    if (index === 0) {
-                        hero.unlocked = true;
-                        console.log(`✅ Герой 1 (${hero.name}) разблокирован для новой игры`);
-                    } else {
-                        hero.unlocked = false;
-                    }
                 });
                 
                 console.log(`💰 Начальное золото для новой игры: ${this.sharedResources.gold}`);
@@ -1124,26 +1014,14 @@ saveGame() {
                 this.systems.resources.sharedResources = this.sharedResources;
             }
             
-            // ⭐ НОВАЯ ИГРА: Инициализируем навыки с нуля
+            // НОВАЯ ИГРА: Инициализируем навыки с нуля
             if (this.systems.skills) {
                 this.systems.skills.unlockedSkills = new Set();
                 this.systems.skills.availableSkillPoints = 0;
                 console.log("🎮 Новая игра: система навыков инициализирована с нуля");
             }
             
-            // ⭐ НОВАЯ ИГРА: Устанавливаем первого героя как текущего
-            if (this.systems.hero && this.systems.hero.heroes.length > 0) {
-                const firstHero = this.systems.hero.heroes[0];
-                if (firstHero.unlocked) {
-                    this.currentHero = firstHero;
-                    console.log(`🎯 Установлен первый герой для новой игры: ${firstHero.name}`);
-                } else {
-                    this.currentHero = null;
-                }
-            } else {
-                this.currentHero = null;
-            }
-            
+            this.currentHero = null; // Гарантируем, что текущий герой не установлен
             return false; // Нет сохранения
         }
         
@@ -1159,16 +1037,9 @@ saveGame() {
         this.sharedResources = {
             gold: 100,
             inventory: [],
-            unlockedHeroes: [1], // Герой 1 всегда разблокирован
+            unlockedHeroes: [1],
             resources: {}
         };
-        
-        // ⭐ СБРОС: Разблокируем только первого героя
-        if (this.systems.hero) {
-            this.systems.hero.heroes.forEach((hero, index) => {
-                hero.unlocked = index === 0; // Только первый герой разблокирован
-            });
-        }
         
         if (this.systems.battle && this.systems.battle.flask) {
             this.systems.battle.flask.currentCharges = 10;
@@ -1179,29 +1050,18 @@ saveGame() {
             this.systems.resources.sharedResources = this.sharedResources;
         }
         
-        // ⭐ ОШИБКА ЗАГРУЗКИ: Инициализируем навыки с нуля
+        // ОШИБКА ЗАГРУЗКИ: Инициализируем навыки с нуля
         if (this.systems.skills) {
             this.systems.skills.unlockedSkills = new Set();
             this.systems.skills.availableSkillPoints = 0;
             console.log("🔄 Ошибка загрузки: система навыков сброшена к начальным значениям");
         }
         
-        // ⭐ Устанавливаем первого героя как текущего
-        if (this.systems.hero && this.systems.hero.heroes.length > 0) {
-            const firstHero = this.systems.hero.heroes[0];
-            if (firstHero.unlocked) {
-                this.currentHero = firstHero;
-                console.log(`🔄 Установлен первый герой после ошибки: ${firstHero.name}`);
-            } else {
-                this.currentHero = null;
-            }
-        } else {
-            this.currentHero = null;
-        }
-        
+        this.currentHero = null; // Сбрасываем текущего героя
         return false; // Ошибка загрузки
     }
 }
+
     
 
     startAutosave() {
@@ -1346,263 +1206,177 @@ saveGame() {
         if (status) status.textContent = message;
     }
 
-showHeroSelection() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    showHeroSelection() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    // Сортируем героев по ID
-    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
-    
-    const heroesHTML = sortedHeroes.map(hero => {
-        const stats = this.calculateHeroStats(hero);
-        const isSelectable = hero.unlocked;
+        const heroes = this.systems.hero.heroes;
         
-        // Получаем информацию о предыдущем герое для отображения прогресса
-        let progressInfo = '';
-        let progressPercent = 0;
-        
-        if (hero.id > 1) {
-            const prevHero = this.heroes.find(h => h.id === hero.id - 1);
-            if (prevHero) {
-                progressPercent = Math.min(100, (prevHero.level / 9) * 100);
-                progressInfo = `
-                    <div class="unlock-progress-info">
-                        <div class="progress-label">
-                            <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
-                            <span>${progressPercent.toFixed(0)}%</span>
-                        </div>
-                        <div class="progress-bar-small">
-                            <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        
-        return `
-            <div class="hero-card ${isSelectable ? '' : 'locked'}" 
-                 onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
-                <div class="hero-image">
-                    <img src="${hero.image}" alt="${hero.name}" 
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
-                    <div class="hero-card-badge">
-                        <span class="badge-level">${hero.level}</span>
-                        ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
-                    </div>
+        app.innerHTML = `
+            <div class="hero-selection-screen">
+                <header class="selection-header">
+                    <!-- Заголовок скрыт как просили -->
+                </header>
+                
+                <div class="heroes-grid">
+                    ${heroes.map(hero => {
+                        const isUnlocked = hero.unlocked || hero.id === 1;
+                        const stats = this.systems.hero.calculateHeroStats(hero);
+                        
+                        return `
+                            <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
+                                 onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
+                                <div class="hero-image">
+                                    <img src="${hero.image}" alt="${hero.name}" 
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                                </div>
+                                <div class="hero-info-tooltip">
+                                    <div class="hero-header">
+                                        <strong>${hero.name}</strong>
+                                        <span class="hero-level">Ур. ${hero.level}</span>
+                                    </div>
+                                    <div class="hero-stats">
+                                        <div class="stat-row">
+                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                            <span>⚔️ ${stats.damage}</span>
+                                            <span>🛡️ ${stats.armor}</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>💰 ${hero.gold.toFixed(2)}</span>
+                                            <span>🌟 ${stats.power}</span>
+                                        </div>
+                                    </div>
+                                    <div class="hero-details">
+                                        <span>🧬 ${this.getRaceName(hero.race)}</span>
+                                        <span>⚔️ ${this.getClassName(hero.class)}</span>
+                                        <span>📖 ${this.getSagaName(hero.saga)}</span>
+                                    </div>
+                                    ${!isUnlocked ? 
+                                        '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : 
+                                        '<small class="select-text">Кликните для выбора</small>'
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
                 
-                <div class="hero-info-tooltip">
-                    <div class="hero-header">
-                        <strong>${hero.name}</strong>
-                        <span class="hero-id">ID: ${hero.id}</span>
-                    </div>
-                    
-                    <div class="hero-stats">
-                        <div class="stat-row">
-                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                            <span>⚔️ ${stats.damage}</span>
-                            <span>🛡️ ${stats.armor}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span>💰 ${hero.gold.toFixed(2)}</span>
-                            <span>🌟 ${stats.power}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="hero-details">
-                        <span>🧬 ${this.getRaceName(hero.race)}</span>
-                        <span>⚔️ ${this.getClassName(hero.class)}</span>
-                        <span>📖 ${this.getSagaName(hero.saga)}</span>
-                    </div>
-                    
-                    ${progressInfo}
-                    
-                    <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
-                        ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
-                    </div>
-                    
-                    ${!isSelectable ? 
-                        `<div class="unlock-hint">
-                            <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
-                        </div>` : 
-                        `<div class="select-hint">
-                            <small>👉 Нажмите для выбора</small>
-                        </div>`
-                    }
+                <div class="selection-actions">
+                    <button class="btn-secondary" onclick="game.showMainMenu()">
+                        ← Назад в меню
+                    </button>
                 </div>
             </div>
         `;
-    }).join('');
-
-    app.innerHTML = `
-        <div class="hero-selection-screen">
-            <!-- УБРАН header с информацией -->
-            
-            <div class="heroes-grid">
-                ${heroesHTML}
-            </div>
-            
-            <div class="selection-actions">
-                <button class="btn-secondary" onclick="game.showMainMenu()">
-                    ← Назад в меню
-                </button>
-            </div>
-        </div>
-    `;
-    
-    console.log("✅ Экран выбора героя отображен");
-}
-
-selectHero(heroId) {
-    console.log(`🎮 game.selectHero(${heroId}) - делегируем HeroSystem`);
-    
-    if (this.systems && this.systems.hero) {
-        // Используем HeroSystem для выбора героя
-        this.systems.hero.selectHero(heroId);
-    } else {
-        console.error(`❌ HeroSystem не доступен, используем резервный код для selectHero(${heroId})`);
-        
-        // Резервный код если HeroSystem не загружен
-        const hero = this.systems?.hero?.heroes?.find(h => h.id === heroId);
-        
-        // Проверка существования героя
-        if (!hero) {
-            console.error(`❌ Герой с ID ${heroId} не найден в системе`);
-            this.showNotification(`❌ Герой не найден в игровой системе!`, 'error');
-            this.showHeroSelection();
-            return;
-        }
-
-        // ⭐ ИСПРАВЛЕНИЕ: Используем новую логику проверки разблокировки
-        let isUnlocked = hero.unlocked || hero.id === 1;
-        let unlockMessage = '';
-        
-        // Если герой не разблокирован, проверяем по нашей новой логике
-        if (!isUnlocked && hero.id > 1) {
-            const prevHero = this.systems?.hero?.heroes?.find(h => h.id === heroId - 1);
-            if (prevHero) {
-                // ⭐ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Герой разблокирован если предыдущий герой достиг 9 уровня
-                isUnlocked = prevHero.level >= 9;
-                
-                // ⭐ УБИРАЕМ СТАРУЮ ЛОГИКУ: hero.id * 5
-                // unlockMessage = `Требуется уровень: ${hero.id * 5}`;
-                
-                // ⭐ ДОБАВЛЯЕМ НОВУЮ ЛОГИКУ:
-                unlockMessage = `Требуется: ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
-            } else {
-                unlockMessage = `Требуется предыдущий герой 9 ур.`;
-            }
-        }
-
-        if (!isUnlocked) {
-            console.warn(`⚠️ Герой ${hero.name} заблокирован`);
-            this.showNotification(`❌ Герой ${hero.name} заблокирован!\n${unlockMessage}`, 'warning');
-            return;
-        }
-
-        // ⭐ ВАЖНО: Если герой технически может быть разблокирован, но еще не помечен
-        if (!hero.unlocked && isUnlocked) {
-            hero.unlocked = true;
-            console.log(`✅ Автоматическая разблокировка: ${hero.name}`);
-            
-            // Обновляем sharedResources
-            if (this.sharedResources && !this.sharedResources.unlockedHeroes.includes(heroId)) {
-                this.sharedResources.unlockedHeroes.push(heroId);
-            }
-        }
-
-        // ⭐ ИСПРАВЛЕНИЕ: Безопасная синхронизация ресурсов
-        if (this.sharedResources) {
-            // Только если у героя нет своего золота, берем из общих ресурсов
-            if (hero.gold === undefined) {
-                hero.gold = this.sharedResources.gold;
-            }
-            hero.resources = {...this.sharedResources.resources};
-        }
-
-        // Установка текущего героя
-        this.currentHero = hero;
-        console.log(`🎯 Выбран герой: ${hero.name}`, {
-            level: hero.level,
-            experience: hero.experience,
-            unlocked: hero.unlocked,
-            gold: hero.gold,
-            inventory: hero.inventory ? hero.inventory.length : 0,
-            resources: Object.keys(hero.resources || {}).length
-        });
-
-        // Настройка систем под текущего героя
-        if (this.systems.equipment) {
-            this.systems.equipment.setCurrentHero(hero);
-        }
-        
-        if (this.systems.battle) {
-            this.systems.battle.currentHero = hero;
-        }
-        
-        if (this.systems.shop) {
-            this.systems.shop.currentHero = hero;
-        }
-        
-        if (this.systems.map) {
-            this.systems.map.setCurrentHero(hero);
-        }
-        
-        if (this.systems.action && this.systems.action.mapSystem) {
-            this.systems.action.mapSystem.setCurrentHero(hero);
-        }
-        
-        if (this.systems.resources) {
-            this.systems.resources.sharedResources = this.sharedResources;
-        }
-        
-        if (this.systems.hero) {
-            this.systems.hero.currentHero = hero;
-        }
-
-        // Загрузка состояния фляги
-        if (this.systems.battle && this.systems.battle.flask) {
-            let hasFlaskState = false;
-            const save = localStorage.getItem('tigrimionSave');
-            if (save) {
-                try {
-                    const data = JSON.parse(save);
-                    const savedHeroData = data.heroes?.find(h => h.id === heroId);
-                    if (savedHeroData?.flaskState) {
-                        this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
-                        this.systems.battle.flask.content = savedHeroData.flaskState.content;
-                        hasFlaskState = true;
-                        console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
-                    }
-                } catch (e) {
-                    console.error("❌ Ошибка чтения состояния фляги:", e);
-                }
-            }
-            
-            if (!hasFlaskState) {
-                this.systems.battle.flask.currentCharges = 10;
-                this.systems.battle.flask.content = 'water';
-                console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
-            }
-            
-            if (this.systems.battle.updateFlaskUI) {
-                this.systems.battle.updateFlaskUI();
-            }
-            if (this.systems.battle.updateFlaskChargesDisplay) {
-                this.systems.battle.updateFlaskChargesDisplay();
-            }
-        }
-
-        // Сохранение выбора героя
-        this.saveGame();
-        
-        // Показ экрана игры героя
-        this.showHeroGameScreen();
-        
-        // Показать уведомление о успешном выборе
-        this.showNotification(`✅ Герой ${hero.name} выбран! Добро пожаловать в игру!`, 'success');
     }
+
+  selectHero(heroId) {
+    // Поиск героя в системе
+    const hero = this.systems.hero.heroes.find(h => h.id === heroId);
+    
+    // Проверка существования героя
+    if (!hero) {
+        console.error(`❌ Герой с ID ${heroId} не найден в системе`);
+        this.showNotification(`❌ Герой не найден в игровой системе!`, 'error');
+        this.showHeroSelection(); // Возвращаем к выбору героя
+        return;
+    }
+
+    // Проверка разблокированности героя
+    const isUnlocked = hero.unlocked || hero.id === 1;
+    if (!isUnlocked) {
+        console.warn(`⚠️ Герой ${hero.name} заблокирован`);
+        this.showNotification(`❌ Герой ${hero.name} заблокирован! Требуется уровень: ${hero.id * 5}`, 'warning');
+        return;
+    }
+
+    // Синхронизация ресурсов
+    if (this.sharedResources) {
+        hero.gold = this.sharedResources.gold;
+        hero.resources = {...this.sharedResources.resources};
+    }
+
+    // Установка текущего героя
+    this.currentHero = hero;
+    console.log(`🎯 Выбран герой: ${hero.name}`, {
+        level: hero.level,
+        experience: hero.experience,
+        gold: hero.gold,
+        inventory: hero.inventory ? hero.inventory.length : 0,
+        resources: Object.keys(hero.resources || {}).length
+    });
+
+    // Настройка систем под текущего героя
+    if (this.systems.equipment) {
+        this.systems.equipment.setCurrentHero(hero);
+    }
+    
+    if (this.systems.battle) {
+        this.systems.battle.currentHero = hero;
+    }
+    
+    if (this.systems.shop) {
+        this.systems.shop.currentHero = hero;
+    }
+    
+    if (this.systems.map) {
+        this.systems.map.setCurrentHero(hero);
+    }
+    
+    if (this.systems.action) {
+        this.systems.action.mapSystem.setCurrentHero(hero);
+    }
+    
+    if (this.systems.resources) {
+        this.systems.resources.sharedResources = this.sharedResources;
+    }
+    
+    if (this.systems.hero) {
+        this.systems.hero.currentHero = hero;
+    }
+
+    // Загрузка состояния фляги
+    if (this.systems.battle && this.systems.battle.flask) {
+        let hasFlaskState = false;
+        const save = localStorage.getItem('tigrimionSave');
+        if (save) {
+            try {
+                const data = JSON.parse(save);
+                const savedHeroData = data.heroes?.find(h => h.id === heroId);
+                if (savedHeroData?.flaskState) {
+                    this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
+                    this.systems.battle.flask.content = savedHeroData.flaskState.content;
+                    hasFlaskState = true;
+                    console.log(`💧 Восстановлено состояние фляги для ${hero.name}: ${savedHeroData.flaskState.currentCharges} зарядов (${savedHeroData.flaskState.content})`);
+                }
+            } catch (e) {
+                console.error("❌ Ошибка чтения состояния фляги:", e);
+            }
+        }
+        
+        if (!hasFlaskState) {
+            this.systems.battle.flask.currentCharges = 10;
+            this.systems.battle.flask.content = 'water';
+            console.log(`💧 Установлены значения по умолчанию для фляги ${hero.name}`);
+        }
+        
+        if (this.systems.battle.updateFlaskUI) {
+            this.systems.battle.updateFlaskUI();
+        }
+        if (this.systems.battle.updateFlaskChargesDisplay) {
+            this.systems.battle.updateFlaskChargesDisplay();
+        }
+    }
+
+    // Сохранение выбора героя
+    this.saveGame();
+    
+    // Показ экрана игры героя
+    this.showHeroGameScreen();
+    
+    // Показать уведомление о успешном выборе
+    this.showNotification(`✅ Герой ${hero.name} выбран! Добро пожаловать в игру!`, 'success');
 }
 
 
@@ -1758,13 +1532,10 @@ selectHero(heroId) {
                                         <span class="stat-label-v2">🛡️ Броня</span>
                                         <span class="stat-value-v2">${stats.armor}</span>
                                     </div>
-
-<div class="overlay-stat-row">
-    <span class="overlay-stat-label">💰 Золото</span>
-    <span class="overlay-stat-value">
-        ${currentHero.gold !== undefined ? currentHero.gold.toFixed(2) : window.game?.sharedResources?.gold?.toFixed(2) || '0.00'}
-    </span>
-</div>
+                                    <div class="compact-stat-v2">
+                                        <span class="stat-label-v2">💰 Золото</span>
+                                        <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
+                                    </div>
                                     <div class="compact-stat-v2">
                                         <span class="stat-label-v2">🌟 Сила</span>
                                         <span class="stat-value-v2">${stats.power}</span>
