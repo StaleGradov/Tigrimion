@@ -1039,3 +1039,86 @@
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
 }
+/* Убираем информационные блоки */
+.selection-info,
+.info-card,
+.summary-stats,
+.progress-tips,
+.progress-legend {
+    display: none !important;
+}
+
+/* Уменьшаем отступы */
+.hero-selection-screen {
+    padding: 10px !important;
+}
+
+.selection-header {
+    margin-bottom: 10px !important;
+    padding: 0 !important;
+}
+
+.selection-header h1 {
+    font-size: 24px !important;
+    margin-bottom: 5px !important;
+}
+
+.selection-subtitle {
+    font-size: 14px !important;
+    color: #94a3b8 !important;
+    margin-bottom: 10px !important;
+}
+
+/* Делаем карточки героев более компактными */
+.hero-card {
+    margin: 5px !important;
+    padding: 8px !important;
+}
+
+.hero-info-tooltip {
+    padding: 8px !important;
+}
+
+/* Убираем лишние элементы из карточек */
+.hero-card-badge,
+.hero-id {
+    display: none !important;
+}
+
+/* Делаем сетку более плотной */
+.heroes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: 10px !important;
+    margin: 10px 0 !important;
+}
+
+/* Уменьшаем размер изображений */
+.hero-image {
+    width: 150px !important;
+    height: 150px !important;
+}
+
+/* Упрощаем статус */
+.hero-status {
+    font-size: 10px !important;
+    padding: 2px 4px !important;
+    margin-top: 4px !important;
+}
+
+/* Уменьшаем текст подсказок */
+.unlock-hint small,
+.select-hint small {
+    font-size: 10px !important;
+}
+
+/* Убираем полоски прогресса */
+.unlock-progress-info {
+    display: none !important;
+}
+
+/* Кнопки действий */
+.selection-actions {
+    margin-top: 15px !important;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
