@@ -1346,109 +1346,123 @@ saveGame() {
         if (status) status.textContent = message;
     }
 
-  showHeroSelection() {
-    console.log("🎯 game.showHeroSelection() - делегируем HeroSystem");
-    
-    if (this.systems && this.systems.hero) {
-        // Используем HeroSystem для отображения выбора героя
-        this.systems.hero.showHeroSelection();
-    } else {
-        console.error("❌ HeroSystem не доступен для showHeroSelection");
-        
-        // Резервный код если HeroSystem не загружен
-        const app = document.getElementById('app');
-        if (!app) return;
+ showHeroSelection() {
+    const app = document.getElementById('app');
+    if (!app) return;
 
-        const heroes = this.systems?.hero?.heroes || [];
+    // Сортируем героев по ID
+    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
+    
+    const heroesHTML = sortedHeroes.map(hero => {
+        if (!hero) return '';
         
-        app.innerHTML = `
-            <div class="hero-selection-screen">
-                <header class="selection-header">
-                    <h1>🎯 Выберите героя</h1>
-                    <p>HeroSystem не полностью загружен. Доступно героев: ${heroes.length}</p>
-                </header>
-                
-                ${heroes.length > 0 ? `
-                    <div class="heroes-grid">
-                        ${heroes.map(hero => {
-                            const isUnlocked = hero.unlocked || hero.id === 1;
-                            const stats = this.systems.hero.calculateHeroStats(hero);
-                            
-                            // Получаем правильный текст разблокировки
-                            let unlockText = '';
-                            if (!isUnlocked) {
-                                if (hero.id === 1) {
-                                    unlockText = 'Доступен изначально';
-                                } else {
-                                    // Используем новую логику: предыдущий герой должен быть 9 уровня
-                                    const prevHeroId = hero.id - 1;
-                                    const prevHero = heroes.find(h => h.id === prevHeroId);
-                                    if (prevHero) {
-                                        unlockText = `Требуется: ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
-                                    } else {
-                                        unlockText = 'Требуется предыдущий герой 9 ур.';
-                                    }
-                                }
-                            }
-                            
-                            return `
-                                <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
-                                     onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
-                                    <div class="hero-image">
-                                        <img src="${hero.image}" alt="${hero.name}" 
-                                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                                        ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                                    </div>
-                                    <div class="hero-info-tooltip">
-                                        <div class="hero-header">
-                                            <strong>${hero.name}</strong>
-                                            <span class="hero-level">Ур. ${hero.level}</span>
-                                        </div>
-                                        <div class="hero-stats">
-                                            <div class="stat-row">
-                                                <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                                <span>⚔️ ${stats.damage}</span>
-                                                <span>🛡️ ${stats.armor}</span>
-                                            </div>
-                                            <div class="stat-row">
-                                                <span>💰 ${hero.gold.toFixed(2)}</span>
-                                                <span>🌟 ${stats.power}</span>
-                                            </div>
-                                        </div>
-                                        <div class="hero-details">
-                                            <span>🧬 ${this.getRaceName(hero.race)}</span>
-                                            <span>⚔️ ${this.getClassName(hero.class)}</span>
-                                            <span>📖 ${this.getSagaName(hero.saga)}</span>
-                                        </div>
-                                        ${!isUnlocked ? 
-                                            `<small class="locked-text">${unlockText}</small>` : 
-                                            '<small class="select-text">Кликните для выбора</small>'
-                                        }
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
+        const stats = this.calculateHeroStats(hero);
+        const isSelectable = hero.unlocked;
+        
+        // ⭐ ТОЛЬКО ПЕРВЫЙ ГЕРОЙ ПОКАЗЫВАЕТ ЗОЛОТО
+        let goldDisplay = '';
+        if (hero.id === 1 && hero.gold !== undefined) {
+            const heroGold = hero.gold || 0;
+            const goldText = typeof heroGold === 'number' ? heroGold.toFixed(2) : '0.00';
+            goldDisplay = `<span>💰 ${goldText}</span>`;
+        }
+        
+        // Получаем информацию о предыдущем герое для отображения прогресса
+        let progressInfo = '';
+        let progressPercent = 0;
+        
+        if (hero.id > 1) {
+            const prevHero = this.heroes.find(h => h.id === hero.id - 1);
+            if (prevHero) {
+                progressPercent = Math.min(100, (prevHero.level / 9) * 100);
+                progressInfo = `
+                    <div class="unlock-progress-info">
+                        <div class="progress-label">
+                            <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
+                            <span>${progressPercent.toFixed(0)}%</span>
+                        </div>
+                        <div class="progress-bar-small">
+                            <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
+                        </div>
                     </div>
-                ` : `
-                    <div class="error-message">
-                        <p>❌ Не удалось загрузить героев. Пожалуйста, перезагрузите игру.</p>
+                `;
+            }
+        }
+        
+        return `
+            <div class="hero-card ${isSelectable ? '' : 'locked'}" 
+                 onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
+                <div class="hero-image">
+                    <img src="${hero.image || ''}" alt="${hero.name || 'Герой'}" 
+                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                    ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
+                    <div class="hero-card-badge">
+                        <span class="badge-level">${hero.level || 1}</span>
+                        ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
                     </div>
-                `}
+                </div>
                 
-                <div class="selection-actions">
-                    <button class="btn-secondary" onclick="game.showMainMenu()">
-                        ← Назад в меню
-                    </button>
-                    <button class="btn-refresh" onclick="location.reload()">
-                        🔄 Перезагрузить игру
-                    </button>
+                <div class="hero-info-tooltip">
+                    <div class="hero-header">
+                        <strong>${hero.name || 'Неизвестный герой'}</strong>
+                        <span class="hero-level">Ур. ${hero.level || 1}</span>
+                    </div>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-row">
+                            <span>❤️ ${stats.currentHealth || 0}/${stats.maxHealth || 0}</span>
+                            <span>⚔️ ${stats.damage || 0}</span>
+                            <span>🛡️ ${stats.armor || 0}</span>
+                        </div>
+                        <div class="stat-row">
+                            ${goldDisplay || '<span></span>'}
+                            <span>🌟 ${stats.power || 0}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-details">
+                        <span>🧬 ${this.getRaceName(hero.race || 'human')}</span>
+                        <span>⚔️ ${this.getClassName(hero.class || 'warrior')}</span>
+                        <span>📖 ${this.getSagaName(hero.saga || 'unknown')}</span>
+                    </div>
+                    
+                    ${progressInfo}
+                    
+                    <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
+                        ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
+                    </div>
+                    
+                    ${!isSelectable ? 
+                        `<div class="unlock-hint">
+                            <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
+                        </div>` : 
+                        `<div class="select-hint">
+                            <small>👉 Нажмите для выбора</small>
+                        </div>`
+                    }
                 </div>
             </div>
         `;
-    }
+    }).join('');
+
+    app.innerHTML = `
+        <div class="hero-selection-screen">
+            <div class="heroes-grid">
+                ${heroesHTML}
+            </div>
+            
+            <div class="selection-actions">
+                <button class="btn-secondary" onclick="game.showMainMenu()">
+                    ← Назад в меню
+                </button>
+            </div>
+        </div>
+    `;
+    
+    console.log("✅ Экран выбора героя отображен");
 }
 
- selectHero(heroId) {
+selectHero(heroId) {
     console.log(`🎮 game.selectHero(${heroId}) - делегируем HeroSystem`);
     
     if (this.systems && this.systems.hero) {
@@ -1476,8 +1490,13 @@ saveGame() {
         if (!isUnlocked && hero.id > 1) {
             const prevHero = this.systems?.hero?.heroes?.find(h => h.id === heroId - 1);
             if (prevHero) {
-                // Герой разблокирован если предыдущий герой достиг 9 уровня
+                // ⭐ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Герой разблокирован если предыдущий герой достиг 9 уровня
                 isUnlocked = prevHero.level >= 9;
+                
+                // ⭐ УБИРАЕМ СТАРУЮ ЛОГИКУ: hero.id * 5
+                // unlockMessage = `Требуется уровень: ${hero.id * 5}`;
+                
+                // ⭐ ДОБАВЛЯЕМ НОВУЮ ЛОГИКУ:
                 unlockMessage = `Требуется: ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
             } else {
                 unlockMessage = `Требуется предыдущий герой 9 ур.`;
@@ -1501,9 +1520,12 @@ saveGame() {
             }
         }
 
-        // Синхронизация ресурсов
+        // ⭐ ИСПРАВЛЕНИЕ: Безопасная синхронизация ресурсов
         if (this.sharedResources) {
-            hero.gold = this.sharedResources.gold;
+            // Только если у героя нет своего золота, берем из общих ресурсов
+            if (hero.gold === undefined) {
+                hero.gold = this.sharedResources.gold;
+            }
             hero.resources = {...this.sharedResources.resources};
         }
 
@@ -1744,10 +1766,13 @@ saveGame() {
                                         <span class="stat-label-v2">🛡️ Броня</span>
                                         <span class="stat-value-v2">${stats.armor}</span>
                                     </div>
-                                    <div class="compact-stat-v2">
-                                        <span class="stat-label-v2">💰 Золото</span>
-                                        <span class="stat-value-v2">${this.currentHero.gold.toFixed(2)}</span>
-                                    </div>
+
+<div class="overlay-stat-row">
+    <span class="overlay-stat-label">💰 Золото</span>
+    <span class="overlay-stat-value">
+        ${currentHero.gold !== undefined ? currentHero.gold.toFixed(2) : window.game?.sharedResources?.gold?.toFixed(2) || '0.00'}
+    </span>
+</div>
                                     <div class="compact-stat-v2">
                                         <span class="stat-label-v2">🌟 Сила</span>
                                         <span class="stat-value-v2">${stats.power}</span>
