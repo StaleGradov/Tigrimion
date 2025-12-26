@@ -6,83 +6,48 @@ class LevelSystem {
     }
 
     async loadLevelData() {
-        try {
-            console.log("📊 Загружаем данные уровней...");
-            
-            // Загружаем пороги опыта для уровней
-            const response = await fetch('data/levels.json');
-            if (!response.ok) {
-                throw new Error(`Ошибка загрузки levels.json: ${response.status}`);
-            }
-            
-            this.levelThresholds = await response.json();
-            console.log(`✅ Данные уровней загружены: ${Object.keys(this.levelThresholds).length} уровней`);
-            return true;
-            
-        } catch (error) {
-            console.error("❌ Ошибка загрузки данных уровней:", error);
-            this.createFallbackLevels();
-            return true;
-        }
-    }
-
-    createFallbackLevels() {
-        // Резервные пороги опыта (уровень: требуемый опыт)
-        this.levelThresholds = {
-            1: 0,
-            2: 100,
-            3: 300,
-            4: 600,
-            5: 1000,
-            6: 1500,
-            7: 2100,
-            8: 2800,
-            9: 3600,
-            10: 4500,
-            11: 5500,
-            12: 6600,
-            13: 7800,
-            14: 9100,
-            15: 10500,
-            16: 12000,
-            17: 13600,
-            18: 15300,
-            19: 17100,
-            20: 19000,
-            21: 21000,
-            22: 23100,
-            23: 25300,
-            24: 27600,
-            25: 30000,
-            26: 32500,
-            27: 35100,
-            28: 37800,
-            29: 40600,
-            30: 43500,
-            31: 46500,
-            32: 49600,
-            33: 52800,
-            34: 56100,
-            35: 59500,
-            36: 63000,
-            37: 66600,
-            38: 70300,
-            39: 74100,
-            40: 78000,
-            41: 82000,
-            42: 86100,
-            43: 90300,
-            44: 94600,
-            45: 99000,
-            46: 103500,
-            47: 108100,
-            48: 112800,
-            49: 117600,
-            50: 122500
-        };
+    try {
+        console.log("📊 Загружаем данные уровней...");
         
-        console.log("🔄 Созданы резервные пороги уровней");
+        // Пробуем несколько путей
+        const paths = [
+            'data/levels.json',
+            'levels.json',
+            '../data/levels.json'
+        ];
+        
+        let success = false;
+        
+        for (const path of paths) {
+            try {
+                console.log(`   Пробуем путь: ${path}`);
+                const response = await fetch(path);
+                
+                if (response.ok) {
+                    this.levelThresholds = await response.json();
+                    console.log(`✅ Данные уровней загружены с ${path}: ${Object.keys(this.levelThresholds).length} уровней`);
+                    success = true;
+                    break;
+                }
+            } catch (e) {
+                console.log(`   ❌ Ошибка с ${path}: ${e.message}`);
+                continue;
+            }
+        }
+        
+        if (!success) {
+            console.warn("⚠️ Не удалось загрузить levels.json, создаем стандартные значения");
+            this.createFallbackLevels();
+        }
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Ошибка загрузки данных уровней:", error);
+        this.createFallbackLevels();
+        return true;
     }
+}
 
     getExperienceForNextLevel(level) {
         return this.levelThresholds[level + 1] || 'MAX';
