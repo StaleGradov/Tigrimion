@@ -1212,64 +1212,62 @@ loadSave() {
 
         const heroes = this.systems.hero.heroes;
         
-        app.innerHTML = `
-            <div class="hero-selection-screen">
-                <header class="selection-header">
-                    <!-- Заголовок скрыт как просили -->
-                </header>
+     app.innerHTML = `
+    <div class="hero-selection-screen">
+        <header class="selection-header">
+            <!-- Заголовок скрыт как просили -->
+        </header>
+        
+        <div class="heroes-grid">
+            ${heroes.map(hero => {
+                const isUnlocked = hero.unlocked || hero.id === 1;
+                const stats = this.systems.hero.calculateHeroStats(hero);
                 
-                <div class="heroes-grid">
-                    ${heroes.map(hero => {
-                        const isUnlocked = hero.unlocked || hero.id === 1;
-                        const stats = this.systems.hero.calculateHeroStats(hero);
-                        
-                        return `
-                            <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
-                                 onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
-                                <div class="hero-image">
-                                    <img src="${hero.image}" alt="${hero.name}" 
-                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                                    ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
-                                </div>
-                                <div class="hero-info-tooltip">
-                                    <div class="hero-header">
-                                        <strong>${hero.name}</strong>
-                                        <span class="hero-level">Ур. ${hero.level}</span>
-                                    </div>
-                                    <div class="hero-stats">
-                                        <div class="stat-row">
-                                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                                            <span>⚔️ ${stats.damage}</span>
-                                            <span>🛡️ ${stats.armor}</span>
-                                        </div>
-                                        <div class="stat-row">
-                                            <span>💰 ${hero.gold.toFixed(2)}</span>
-                                            <span>🌟 ${stats.power}</span>
-                                        </div>
-                                    </div>
-                                    <div class="hero-details">
-                                        <span>🧬 ${this.getRaceName(hero.race)}</span>
-                                        <span>⚔️ ${this.getClassName(hero.class)}</span>
-                                        <span>📖 ${this.getSagaName(hero.saga)}</span>
-                                    </div>
-                                    ${!isUnlocked ? 
-                                        '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : 
-                                        '<small class="select-text">Кликните для выбора</small>'
-                                    }
-                                </div>
+                return `
+                    <div class="hero-card ${isUnlocked ? '' : 'locked'}" 
+                         onclick="${isUnlocked ? `game.selectHero(${hero.id})` : ''}">
+                        <div class="hero-image">
+                            <img src="${hero.image}" alt="${hero.name}" 
+                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                            ${!isUnlocked ? '<div class="locked-overlay">🔒</div>' : ''}
+                        </div>
+                        <div class="hero-info-tooltip">
+                            <div class="hero-header">
+                                <strong>${hero.name}</strong>
+                                <span class="hero-level">Ур. ${hero.level}</span>
                             </div>
-                        `;
-                    }).join('')}
-                </div>
-                
-                <div class="selection-actions">
-                    <button class="btn-secondary" onclick="game.showMainMenu()">
-                        ← Назад в меню
-                    </button>
-                </div>
-            </div>
-        `;
-    }
+                            <div class="hero-stats">
+                                <div class="stat-row">
+                                    <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                    <span>⚔️ ${stats.damage}</span>
+                                    <span>🛡️ ${stats.armor}</span>
+                                </div>
+                                <div class="stat-row">
+                                    <span>🌟 ${stats.power}</span>
+                                </div>
+                            </div> <!-- Закрывающий тег для hero-stats -->
+                            <div class="hero-details">
+                                <span>🧬 ${this.getRaceName(hero.race)}</span>
+                                <span>⚔️ ${this.getClassName(hero.class)}</span>
+                                <span>📖 ${this.getSagaName(hero.saga)}</span>
+                            </div>
+                            ${!isUnlocked ? 
+                                '<small class="locked-text">Требуется уровень: ' + (hero.id * 5) + '</small>' : 
+                                '<small class="select-text">Кликните для выбора</small>'
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+        
+        <div class="selection-actions">
+            <button class="btn-secondary" onclick="game.showMainMenu()">
+                ← Назад в меню
+            </button>
+        </div>
+    </div>
+`;
 
   selectHero(heroId) {
     // Поиск героя в системе
