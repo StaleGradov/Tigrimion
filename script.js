@@ -1346,7 +1346,7 @@ saveGame() {
         if (status) status.textContent = message;
     }
 
- showHeroSelection() {
+showHeroSelection() {
     const app = document.getElementById('app');
     if (!app) return;
 
@@ -1354,17 +1354,13 @@ saveGame() {
     const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
     
     const heroesHTML = sortedHeroes.map(hero => {
-        if (!hero) return '';
-        
         const stats = this.calculateHeroStats(hero);
         const isSelectable = hero.unlocked;
         
-        // ⭐ ТОЛЬКО ПЕРВЫЙ ГЕРОЙ ПОКАЗЫВАЕТ ЗОЛОТО
+        // ⭐ ИЗМЕНЕНИЕ: Золото показываем только у первого героя
         let goldDisplay = '';
-        if (hero.id === 1 && hero.gold !== undefined) {
-            const heroGold = hero.gold || 0;
-            const goldText = typeof heroGold === 'number' ? heroGold.toFixed(2) : '0.00';
-            goldDisplay = `<span>💰 ${goldText}</span>`;
+        if (hero.id === 1) {
+            goldDisplay = `<span>💰 ${hero.gold.toFixed(2)}</span>`;
         }
         
         // Получаем информацию о предыдущем герое для отображения прогресса
@@ -1393,37 +1389,38 @@ saveGame() {
             <div class="hero-card ${isSelectable ? '' : 'locked'}" 
                  onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
                 <div class="hero-image">
-                    <img src="${hero.image || ''}" alt="${hero.name || 'Герой'}" 
+                    <img src="${hero.image}" alt="${hero.name}" 
                          onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
                     ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
                     <div class="hero-card-badge">
-                        <span class="badge-level">${hero.level || 1}</span>
+                        <span class="badge-level">${hero.level}</span>
                         ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
                     </div>
                 </div>
                 
                 <div class="hero-info-tooltip">
                     <div class="hero-header">
-                        <strong>${hero.name || 'Неизвестный герой'}</strong>
-                        <span class="hero-level">Ур. ${hero.level || 1}</span>
+                        <strong>${hero.name}</strong>
+                        <span class="hero-id">ID: ${hero.id}</span>
                     </div>
                     
                     <div class="hero-stats">
                         <div class="stat-row">
-                            <span>❤️ ${stats.currentHealth || 0}/${stats.maxHealth || 0}</span>
-                            <span>⚔️ ${stats.damage || 0}</span>
-                            <span>🛡️ ${stats.armor || 0}</span>
+                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                            <span>⚔️ ${stats.damage}</span>
+                            <span>🛡️ ${stats.armor}</span>
                         </div>
                         <div class="stat-row">
+                            <!-- ⭐ ИЗМЕНЕНИЕ: Только у первого героя показываем золото -->
                             ${goldDisplay || '<span></span>'}
-                            <span>🌟 ${stats.power || 0}</span>
+                            <span>🌟 ${stats.power}</span>
                         </div>
                     </div>
                     
                     <div class="hero-details">
-                        <span>🧬 ${this.getRaceName(hero.race || 'human')}</span>
-                        <span>⚔️ ${this.getClassName(hero.class || 'warrior')}</span>
-                        <span>📖 ${this.getSagaName(hero.saga || 'unknown')}</span>
+                        <span>🧬 ${this.getRaceName(hero.race)}</span>
+                        <span>⚔️ ${this.getClassName(hero.class)}</span>
+                        <span>📖 ${this.getSagaName(hero.saga)}</span>
                     </div>
                     
                     ${progressInfo}
@@ -1447,6 +1444,8 @@ saveGame() {
 
     app.innerHTML = `
         <div class="hero-selection-screen">
+            <!-- УБРАН header с информацией -->
+            
             <div class="heroes-grid">
                 ${heroesHTML}
             </div>
