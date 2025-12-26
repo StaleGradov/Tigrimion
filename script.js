@@ -306,7 +306,7 @@ class SafeHeroGame {
         this.init();
     }
 
-   async init() {
+ async init() {
     try {
         console.log("🎮 Инициализация игры...");
         
@@ -321,37 +321,37 @@ class SafeHeroGame {
         console.log("📂 Пытаемся загрузить сохранение...");
         const saveLoaded = this.loadSave();
         
-        // ВАЖНОЕ ИЗМЕНЕНИЕ: Всегда начинаем с выбора героя при перезагрузке
-        // Даже если есть сохранение, сначала показываем выбор героя
+        // ВАЖНО: Всегда начинаем с выбора героя при перезагрузке игры
+        // Это решает проблему, когда игра загружает сохранение и сразу показывает героя
         
+        // Вместо показа экрана героя, ВСЕГДА показываем выбор героя
+        // Только после выбора героя будет показан игровой экран
+        
+        console.log("🔄 Показываем экран выбора героя...");
+        this.showHeroSelection();
+        
+        // Но все равно сохраняем состояние, что сохранение загружено
         if (saveLoaded && this.currentHero) {
-            console.log("✅ Сохранение загружено, текущий герой:", this.currentHero ? this.currentHero.name : "нет");
+            console.log("✅ Сохранение загружено (будет использовано после выбора героя)");
             this.isSaveLoaded = true;
             
-            // Проверяем, существует ли сохраненный герой в системе
-            if (this.currentHero) {
-                const heroExists = this.systems.hero.heroes.find(h => h.id === this.currentHero.id);
-                const isUnlocked = this.currentHero.unlocked !== false;
-                
-                if (heroExists && isUnlocked) {
-                    console.log(`🎯 Герой найден и разблокирован: ${this.currentHero.name}`);
-                    // Переходим сразу на экран героя
-                    this.showHeroGameScreen();
-                    return; // Прерываем выполнение
-                } else {
-                    console.warn("⚠️ Сохраненный герой не найден или заблокирован");
+            // Восстанавливаем состояние фляги для первого героя
+            if (this.systems.battle && this.systems.battle.flask) {
+                const save = localStorage.getItem('tigrimionSave');
+                if (save) {
+                    try {
+                        const data = JSON.parse(save);
+                        const savedHeroData = data.heroes?.find(h => h.id === this.currentHero.id);
+                        if (savedHeroData?.flaskState) {
+                            this.systems.battle.flask.currentCharges = savedHeroData.flaskState.currentCharges;
+                            this.systems.battle.flask.content = savedHeroData.flaskState.content;
+                        }
+                    } catch (e) {
+                        console.error("❌ Ошибка чтения состояния фляги:", e);
+                    }
                 }
             }
         }
-        
-        // Если дошли сюда, значит:
-        // 1. Сохранение не загружено
-        // 2. Герой не найден
-        // 3. Герой заблокирован
-        // 4. Сохранение повреждено
-        
-        console.log("🆕 Показываем экран выбора героя...");
-        this.showHeroSelection();
         
         this.startAutosave();
         
@@ -359,14 +359,11 @@ class SafeHeroGame {
               
         this.setupBattleCrashProtection();
         
+        // Отложенная инициализация HeroSystem
         setTimeout(() => {
             if (this.systems.hero && this.currentHero && !this.systems.hero.currentHero) {
                 this.systems.hero.currentHero = this.currentHero;
                 console.log("✅ HeroSystem синхронизирован с текущим героем");
-                
-                if (this.currentScreen === 'hero-game') {
-                    this.systems.hero.showHeroGameScreen();
-                }
             }
         }, 1000);
         
