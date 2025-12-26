@@ -161,27 +161,27 @@ class HeroSystem {
         return canUnlock && prevUnlocked;
     }
 
-    getHeroUnlockStatus(heroId) {
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) return "❌ Герой не найден";
-        
-        if (hero.unlocked) return "✅ Разблокирован";
-        
-        if (heroId === 1) return "✅ Доступен изначально";
-        
-        const prevHero = this.heroes.find(h => h.id === heroId - 1);
-        if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
-        
-        if (!prevHero.unlocked) {
-            return `🔒 Требуется разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
-        }
-        
-        if (prevHero.level < 9) {
-            return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
-        }
-        
-        return "⚠️ Ошибка проверки";
+   getHeroUnlockStatus(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) return "❌ Герой не найден";
+    
+    if (hero.unlocked) return "✅ Разблокирован";
+    
+    if (heroId === 1) return "✅ Доступен изначально";
+    
+    const prevHero = this.heroes.find(h => h.id === heroId - 1);
+    if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
+    
+    if (!prevHero.unlocked) {
+        return `🔒 Требуется разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
     }
+    
+    if (prevHero.level < 9) {
+        return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
+    }
+    
+    return "⚠️ Ошибка проверки";
+}
 
     unlockHero(heroId, reason = "") {
         const hero = this.heroes.find(h => h.id === heroId);
@@ -603,18 +603,33 @@ class HeroSystem {
                         
                         ${progressInfo}
                         
-                        <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
-                            ${unlockStatus}
-                        </div>
+<div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
+    ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
+</div>
                         
-                        ${!isSelectable ? 
-                            `<div class="unlock-hint">
-                                <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
-                            </div>` : 
-                            `<div class="select-hint">
-                                <small>👉 Нажмите для выбора</small>
-                            </div>`
-                        }
+                      ${!isSelectable ? 
+    (() => {
+        if (hero.id === 1) {
+            return `<div class="unlock-hint">
+                <small>✅ Первый герой доступен</small>
+            </div>`;
+        }
+        
+        const prevHero = this.heroes.find(h => h.id === hero.id - 1);
+        if (prevHero) {
+            return `<div class="unlock-hint">
+                <small>🎯 Требуется: ${prevHero.name} 9 ур. (сейчас ${prevHero.level})</small>
+            </div>`;
+        }
+        
+        return `<div class="unlock-hint">
+            <small>🔒 Заблокирован</small>
+        </div>`;
+    })() : 
+    `<div class="select-hint">
+        <small>👉 Нажмите для выбора</small>
+    </div>`
+}
                     </div>
                 </div>
             `;
