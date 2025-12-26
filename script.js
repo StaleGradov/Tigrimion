@@ -1357,12 +1357,6 @@ showHeroSelection() {
         const stats = this.calculateHeroStats(hero);
         const isSelectable = hero.unlocked;
         
-        // ⭐ ИЗМЕНЕНИЕ: Золото показываем только у первого героя
-        let goldDisplay = '';
-        if (hero.id === 1) {
-            goldDisplay = `<span>💰 ${hero.gold.toFixed(2)}</span>`;
-        }
-        
         // Получаем информацию о предыдущем герое для отображения прогресса
         let progressInfo = '';
         let progressPercent = 0;
@@ -1411,8 +1405,7 @@ showHeroSelection() {
                             <span>🛡️ ${stats.armor}</span>
                         </div>
                         <div class="stat-row">
-                            <!-- ⭐ ИЗМЕНЕНИЕ: Только у первого героя показываем золото -->
-                            ${goldDisplay || '<span></span>'}
+                            <span>💰 ${hero.gold.toFixed(2)}</span>
                             <span>🌟 ${stats.power}</span>
                         </div>
                     </div>
