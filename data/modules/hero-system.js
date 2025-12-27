@@ -4,16 +4,40 @@ class HeroSystem {
         this.heroes = [];
         this.currentHero = null;
         console.log("✅ HeroSystem инициализирован");
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо своей версии
+        // Инициализация отложена, так как game может быть еще не создан
+        this._initializeShowHeroGameScreen();
     }
-     // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо своей версии
-        if (window.game && window.game.showHeroGameScreen) {
-            this.showHeroGameScreen = () => {
-                console.log("🎮 HeroSystem: Используем game.showHeroGameScreen");
-                if (this.currentHero) {
-                    window.game.currentHero = this.currentHero;
+    
+    _initializeShowHeroGameScreen() {
+        // Проверяем периодически, пока game не будет доступен
+        const checkGame = () => {
+            if (window.game && window.game.showHeroGameScreen) {
+                this.showHeroGameScreen = () => {
+                    console.log("🎮 HeroSystem: Используем game.showHeroGameScreen");
+                    if (this.currentHero) {
+                        window.game.currentHero = this.currentHero;
+                    }
+                    return window.game.showHeroGameScreen();
+                };
+                console.log("✅ HeroSystem.showHeroGameScreen привязан к game");
+                return true;
+            }
+            return false;
+        };
+        
+        // Пробуем сразу
+        if (!checkGame()) {
+            // Если game еще не создан, ждем
+            const interval = setInterval(() => {
+                if (checkGame()) {
+                    clearInterval(interval);
                 }
-                return window.game.showHeroGameScreen();
-            };
+            }, 100);
+            
+            // Максимум 5 секунд ожидания
+            setTimeout(() => clearInterval(interval), 5000);
         }
     }
 
