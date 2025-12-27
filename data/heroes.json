@@ -518,5 +518,266 @@
       "chest": null
     },
     "healthRegen": 3.0
+  },
+    {
+    "id": 27,
+    "name": "Вектар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vectar.jpg",
+    "race": "dragon",
+    "class": "antiquarian",
+    "saga": "golden_egg",
+    "baseHealth": 2120,
+    "baseDamage": 270,
+    "baseArmor": 135,
+                    "gold": 162,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.1
+  },
+    {
+    "id": 28,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 29,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 30,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 31,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 32,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 33,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 34,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 35,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 36,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 37,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 38,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 39,
+    "name": "Персиваль",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Persival.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "vulkanor",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
   }
+  
 ]
