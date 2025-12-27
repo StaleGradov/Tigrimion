@@ -2073,45 +2073,35 @@ endTacticalBattle(victory, escape = false) {
             // Передаем результат в MapSystem для обработки
             mapSystem.completeHuntAfterBattle(victory, escape, doubleLoot);
             
-            // ⭐ ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ
-            setTimeout(() => {
-                this.showBattleResult(victory, escape);
-            }, 500);
-            
+            // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Продолжаем выполнение для начисления опыта и золота
+            // НЕ ВЫХОДИМ РАНЬШЕ ВРЕМЕНИ!
         } else {
             console.error("❌ MapSystem не доступна для обработки охоты");
-            // ⭐ ИСПРАВЛЕНИЕ: Все равно показываем результат
-            setTimeout(() => {
-                this.showBattleResult(victory, escape);
-            }, 500);
         }
-        
-        return; // ⭐ ВАЖНО: Выходим из метода, так как охота обработана
     }
 
-    // ========== СТАНДАРТНАЯ ОБРАБОТКА БОЯ ==========
-    
-    if (victory) {
+    // ========== ОБРАБОТКА НАГРАД ДЛЯ ЛЮБОГО ТИПА БОЯ ==========
+    if (victory && !escape) {
         const totalReward = this.currentMonsters.reduce((sum, monster) => sum + (monster.reward || 10), 0);
         const totalExperience = this.currentMonsters.reduce((sum, monster) => sum + (monster.experience || 5), 0);
         
-        this.currentHero.gold += totalReward;
-        
-        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Добавляем опыт и сохраняем его
-        if (window.game.systems.level && totalExperience > 0) {
-            console.log(`🌟 Добавляем опыт: ${totalExperience} очков`);
-            window.game.systems.level.addExperience(this.currentHero, totalExperience);
-            
-            // ⭐ СОХРАНЯЕМ ИГРУ СРАЗУ ПОСЛЕ ДОБАВЛЕНИЯ ОПЫТА
-            if (window.game) {
-                window.game.saveGame();
-                console.log("💾 Игра сохранена с новым опытом");
-            }
-        } else {
-            console.error("❌ LevelSystem не доступна для добавления опыта");
+        // Добавляем золото
+        if (this.currentHero) {
+            this.currentHero.gold += totalReward;
+            console.log(`💰 Добавлено золото: ${totalReward}`);
         }
         
-        this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Добавляем опыт ВСЕГДА при победе
+        if (window.game.systems.level && totalExperience > 0 && this.currentHero) {
+            console.log(`🌟 Добавляем опыт: ${totalExperience} очков`);
+            window.game.systems.level.addExperience(this.currentHero, totalExperience);
+        } else {
+            console.error("❌ LevelSystem не доступна для добавления опыта или нет героя");
+        }
+        
+        if (this.currentHero) {
+            this.currentHero.monstersKilled = (this.currentHero.monstersKilled || 0) + this.currentMonsters.length;
+        }
         
         // ========== ДОБАВЛЯЕМ РЕСУРСЫ ИЗ МОНСТРОВ ==========
         const allLoot = [];
@@ -2122,7 +2112,7 @@ endTacticalBattle(victory, escape = false) {
         });
 
         // Добавляем лут в систему ресурсов
-        if (allLoot.length > 0) {
+        if (allLoot.length > 0 && this.currentHero) {
             this.addLootToResourcesSystem(allLoot);
         }
         // =====================================================
@@ -2134,11 +2124,11 @@ endTacticalBattle(victory, escape = false) {
             this.addBattleLog(`📦 Получено: ${lootMessage}`);
         }
     } else {
-        if (escape) {
+        if (escape && this.currentHero) {
             // Побег - здоровье уже отнято в tryToFlee(), герой остается на месте
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 0;
             this.addBattleLog("🏃 Побег успешен! Герой остался на своей позиции.");
-        } else {
+        } else if (!victory && !escape && this.currentHero) {
             // Смерть в бою - перемещаем на стартовую точку
             this.currentHero.currentHealth = 1;
             this.currentHero.deaths = (this.currentHero.deaths || 0) + 1;
@@ -2164,26 +2154,40 @@ endTacticalBattle(victory, escape = false) {
     if (this.battleContext === 'movement' && window.game.systems.map) {
         console.log(`🗺️ Уведомляем MapSystem о завершении боя: победа=${victory}, побег=${escape}`);
         window.game.systems.map.completeMovementAfterBattle(victory, escape);
-        
-        // ⭐ ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ ПОСЛЕ ОБРАБОТКИ
-        setTimeout(() => {
-            this.showBattleResult(victory, escape);
-        }, 500);
     }
-    else {
-        // ⭐ ИСПРАВЛЕНИЕ: ДЛЯ ДРУГИХ КОНТЕКСТОВ ТОЖЕ ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
-        setTimeout(() => {
-            this.showBattleResult(victory, escape);
-        }, 500);
-    }
+    // Для охоты обработка уже была выполнена выше
     
-    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Сохраняем игру еще раз для гарантии
-    if (window.game) {
+    // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Сохраняем игру для гарантии
+    if (window.game && this.currentHero) {
         window.game.saveGame();
         console.log("💾 Состояние сохранено после боя (включая опыт)");
     }
+    
+    // ⭐ ИСПРАВЛЕНИЕ: ПОКАЗЫВАЕМ РЕЗУЛЬТАТ БОЯ ПОСЛЕ ВСЕХ ОБРАБОТОК
+    setTimeout(() => {
+        this.showBattleResult(victory, escape);
+    }, 500);
 }
 
+
+calculateMonsterDamage(monster, monsterUnit) {
+    let baseDamage = monster.damage || 10;
+    
+    // Учитываем комбо
+    const comboMultiplier = this.getComboMultiplier(monster.currentAction, monster.combo.count);
+    let damage = Math.floor(baseDamage * comboMultiplier);
+    
+    // Добавляем случайную вариацию
+    const variation = 0.8 + Math.random() * 0.4; // от 80% до 120%
+    damage = Math.floor(damage * variation);
+    
+    // Минимальный урон 1
+    damage = Math.max(1, damage);
+    
+    console.log(`🎯 Урон монстра ${monster.name}: база=${baseDamage}, комбо=${comboMultiplier}x, вариация=${variation.toFixed(2)}, итого=${damage}`);
+    
+    return damage;
+}
 
     
 // В BattleSystem добавьте:
