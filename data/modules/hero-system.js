@@ -5,6 +5,17 @@ class HeroSystem {
         this.currentHero = null;
         console.log("✅ HeroSystem инициализирован");
     }
+     // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо своей версии
+        if (window.game && window.game.showHeroGameScreen) {
+            this.showHeroGameScreen = () => {
+                console.log("🎮 HeroSystem: Используем game.showHeroGameScreen");
+                if (this.currentHero) {
+                    window.game.currentHero = this.currentHero;
+                }
+                return window.game.showHeroGameScreen();
+            };
+        }
+    }
 
     async loadHeroData() {
         try {
