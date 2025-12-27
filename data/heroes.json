@@ -1001,8 +1001,8 @@
   },
       {
     "id": 51,
-    "name": "Мелисса",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Melissa.jpg",
+    "name": "Валларин",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vallarin.jpg",
     "race": "fairy",
     "class": "bounty_hunter",
     "saga": "following_sun",
@@ -1021,8 +1021,8 @@
   },
       {
     "id": 52,
-    "name": "Валларин",
-    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vallarin.jpg",
+    "name": "Гаргон",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Gargon.jpg",
     "race": "dragon",
     "class": "bounty_hunter",
     "saga": "following_sun",
