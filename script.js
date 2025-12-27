@@ -874,12 +874,16 @@ loadSave() {
                             experience: existingHero.experience,
                             health: existingHero.currentHealth,
                             equipment: existingHero.equipment,
-                            resourcesCount: Object.keys(existingHero.resources || {}).length
+                            resourcesCount: Object.keys(existingHero.resources || {}).length,
+                            unlocked: existingHero.unlocked
                         });
                     }
                 });
                 
                 console.log("✅ Прогресс всех героев загружен");
+                
+                // ⭐ ДОБАВЛЕНО: Корректируем разблокировку после загрузки
+                this.correctHeroUnlocksAfterLoad();
             }
             
             // ВАЖНОЕ ДОБАВЛЕНИЕ: Загружаем данные навыков
@@ -1061,6 +1065,60 @@ loadSave() {
         return false; // Ошибка загрузки
     }
 }
+
+
+// ⭐ НОВЫЙ МЕТОД: Корректировка разблокированных героев после загрузки
+correctHeroUnlocksAfterLoad() {
+    if (!this.systems.hero) return;
+    
+    console.log("🔄 Корректировка разблокировки героев после загрузки...");
+    
+    const heroes = this.systems.hero.heroes;
+    const sortedHeroes = [...heroes].sort((a, b) => a.id - b.id);
+    
+    // Проверяем всех героев начиная со второго
+    for (let i = 1; i < sortedHeroes.length; i++) {
+        const hero = sortedHeroes[i];
+        const prevHero = sortedHeroes.find(h => h.id === hero.id - 1);
+        
+        if (!prevHero) continue;
+        
+        // Герой должен быть разблокирован если:
+        // 1. Предыдущий герой разблокирован
+        // 2. Предыдущий герой достиг 9 уровня
+        const shouldBeUnlocked = prevHero.unlocked && prevHero.level >= 9;
+        
+        if (shouldBeUnlocked && !hero.unlocked) {
+            console.log(`🔄 Исправление: Герой ${hero.id} "${hero.name}" должен быть разблокирован (${prevHero.name} ${prevHero.level}/9 ур.)`);
+            hero.unlocked = true;
+            
+            // Добавляем в sharedResources если нужно
+            if (this.sharedResources && !this.sharedResources.unlockedHeroes.includes(hero.id)) {
+                this.sharedResources.unlockedHeroes.push(hero.id);
+            }
+        } else if (!shouldBeUnlocked && hero.unlocked) {
+            console.log(`🔄 Исправление: Герой ${hero.id} "${hero.name}" должен быть заблокирован (${prevHero.name} ${prevHero.level}/9 ур.)`);
+            hero.unlocked = false;
+            
+            // Убираем из sharedResources если нужно
+            if (this.sharedResources) {
+                const index = this.sharedResources.unlockedHeroes.indexOf(hero.id);
+                if (index !== -1) {
+                    this.sharedResources.unlockedHeroes.splice(index, 1);
+                }
+            }
+        }
+    }
+    
+    // Сортируем разблокированных героев
+    if (this.sharedResources) {
+        this.sharedResources.unlockedHeroes = [...new Set(this.sharedResources.unlockedHeroes)]
+            .sort((a, b) => a - b);
+    }
+    
+    console.log("✅ Корректировка разблокировки завершена");
+}
+
 
     
 
