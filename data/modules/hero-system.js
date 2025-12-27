@@ -55,7 +55,7 @@ class HeroSystem {
             // Инициализируем героев с нашими правилами разблокировки
             this.heroes = loadedHeroes.map(hero => ({
                 ...hero,
-                // ИГНОРИРУЕМ поле unlocked из JSON, будем вычислять сами
+                // ИГНОРИРУЕМ поле unlocked из JSON, будем вычисляем сами
                 unlocked: false, // Временно все заблокированы
                 
                 inventory: hero.inventory || [],
@@ -196,27 +196,27 @@ class HeroSystem {
         return canUnlock && prevUnlocked;
     }
 
-   getHeroUnlockStatus(heroId) {
-    const hero = this.heroes.find(h => h.id === heroId);
-    if (!hero) return "❌ Герой не найден";
-    
-    if (hero.unlocked) return "✅ Разблокирован";
-    
-    if (heroId === 1) return "✅ Доступен изначально";
-    
-    const prevHero = this.heroes.find(h => h.id === heroId - 1);
-    if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
-    
-    if (!prevHero.unlocked) {
-        return `🔒 Требуется разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
+    getHeroUnlockStatus(heroId) {
+        const hero = this.heroes.find(h => h.id === heroId);
+        if (!hero) return "❌ Герой не найден";
+        
+        if (hero.unlocked) return "✅ Разблокирован";
+        
+        if (heroId === 1) return "✅ Доступен изначально";
+        
+        const prevHero = this.heroes.find(h => h.id === heroId - 1);
+        if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
+        
+        if (!prevHero.unlocked) {
+            return `🔒 Требуется разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
+        }
+        
+        if (prevHero.level < 9) {
+            return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
+        }
+        
+        return "⚠️ Ошибка проверки";
     }
-    
-    if (prevHero.level < 9) {
-        return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
-    }
-    
-    return "⚠️ Ошибка проверки";
-}
 
     unlockHero(heroId, reason = "") {
         const hero = this.heroes.find(h => h.id === heroId);
@@ -368,8 +368,12 @@ class HeroSystem {
             window.game.saveGame();
         }
         
-        // Показываем экран героя
-        this.showHeroGameScreen();
+        // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        } else {
+            console.error("❌ game.showHeroGameScreen не доступен");
+        }
         
         this.showNotification(`✅ Выбран герой: ${hero.name}!`, 'success');
     }
@@ -564,113 +568,113 @@ class HeroSystem {
         return result;
     }
 
-  showHeroSelection() {
-    const app = document.getElementById('app');
-    if (!app) return;
+    showHeroSelection() {
+        const app = document.getElementById('app');
+        if (!app) return;
 
-    // Сортируем героев по ID
-    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
-    
-    const heroesHTML = sortedHeroes.map(hero => {
-        const stats = this.calculateHeroStats(hero);
-        const isSelectable = hero.unlocked;
+        // Сортируем героев по ID
+        const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
         
-        // Получаем информацию о предыдущем герое для отображения прогресса
-        let progressInfo = '';
-        let progressPercent = 0;
-        
-        if (hero.id > 1) {
-            const prevHero = this.heroes.find(h => h.id === hero.id - 1);
-            if (prevHero) {
-                progressPercent = Math.min(100, (prevHero.level / 9) * 100);
-                progressInfo = `
-                    <div class="unlock-progress-info">
-                        <div class="progress-label">
-                            <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
-                            <span>${progressPercent.toFixed(0)}%</span>
+        const heroesHTML = sortedHeroes.map(hero => {
+            const stats = this.calculateHeroStats(hero);
+            const isSelectable = hero.unlocked;
+            
+            // Получаем информацию о предыдущем герое для отображения прогресса
+            let progressInfo = '';
+            let progressPercent = 0;
+            
+            if (hero.id > 1) {
+                const prevHero = this.heroes.find(h => h.id === hero.id - 1);
+                if (prevHero) {
+                    progressPercent = Math.min(100, (prevHero.level / 9) * 100);
+                    progressInfo = `
+                        <div class="unlock-progress-info">
+                            <div class="progress-label">
+                                <span>${prevHero.name}: ${prevHero.level}/9 ур.</span>
+                                <span>${progressPercent.toFixed(0)}%</span>
+                            </div>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
+                            </div>
                         </div>
-                        <div class="progress-bar-small">
-                            <div class="progress-fill-small" style="width: ${progressPercent}%"></div>
+                    `;
+                }
+            }
+            
+            return `
+                <div class="hero-card ${isSelectable ? '' : 'locked'}" 
+                     onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
+                    <div class="hero-image">
+                        <img src="${hero.image}" alt="${hero.name}" 
+                             onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
+                        ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
+                        <div class="hero-card-badge">
+                            <span class="badge-level">${hero.level}</span>
+                            ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
                         </div>
                     </div>
-                `;
-            }
-        }
-        
-        return `
-            <div class="hero-card ${isSelectable ? '' : 'locked'}" 
-                 onclick="${isSelectable ? `game.systems.hero.selectHero(${hero.id})` : ''}">
-                <div class="hero-image">
-                    <img src="${hero.image}" alt="${hero.name}" 
-                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzMzIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiM4ODgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5ObyBJbWFnZTwvdGV4dD48L3N2Zz4='">
-                    ${!isSelectable ? '<div class="locked-overlay">🔒</div>' : ''}
-                    <div class="hero-card-badge">
-                        <span class="badge-level">${hero.level}</span>
-                        ${hero.unlocked ? '<span class="badge-unlocked">🔓</span>' : '<span class="badge-locked">🔒</span>'}
+                    
+                    <div class="hero-info-tooltip">
+                        <div class="hero-header">
+                            <strong>${hero.name}</strong>
+                            <span class="hero-id">ID: ${hero.id}</span>
+                        </div>
+                        
+                        <div class="hero-stats">
+                            <div class="stat-row">
+                                <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
+                                <span>⚔️ ${stats.damage}</span>
+                                <span>🛡️ ${stats.armor}</span>
+                            </div>
+                            <div class="stat-row">
+                                <span>💰 ${hero.gold.toFixed(2)}</span>
+                                <span>🌟 ${stats.power}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="hero-details">
+                            <span>🧬 ${this.getRaceName(hero.race)}</span>
+                            <span>⚔️ ${this.getClassName(hero.class)}</span>
+                            <span>📖 ${this.getSagaName(hero.saga)}</span>
+                        </div>
+                        
+                        ${progressInfo}
+                        
+                        <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
+                            ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
+                        </div>
+                        
+                        ${!isSelectable ? 
+                            `<div class="unlock-hint">
+                                <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
+                            </div>` : 
+                            `<div class="select-hint">
+                                <small>👉 Нажмите для выбора</small>
+                            </div>`
+                        }
                     </div>
                 </div>
+            `;
+        }).join('');
+
+        app.innerHTML = `
+            <div class="hero-selection-screen">
+                <!-- УБРАН header с информацией -->
                 
-                <div class="hero-info-tooltip">
-                    <div class="hero-header">
-                        <strong>${hero.name}</strong>
-                        <span class="hero-id">ID: ${hero.id}</span>
-                    </div>
-                    
-                    <div class="hero-stats">
-                        <div class="stat-row">
-                            <span>❤️ ${stats.currentHealth}/${stats.maxHealth}</span>
-                            <span>⚔️ ${stats.damage}</span>
-                            <span>🛡️ ${stats.armor}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span>💰 ${hero.gold.toFixed(2)}</span>
-                            <span>🌟 ${stats.power}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="hero-details">
-                        <span>🧬 ${this.getRaceName(hero.race)}</span>
-                        <span>⚔️ ${this.getClassName(hero.class)}</span>
-                        <span>📖 ${this.getSagaName(hero.saga)}</span>
-                    </div>
-                    
-                    ${progressInfo}
-                    
-                    <div class="hero-status ${hero.unlocked ? 'unlocked' : 'locked'}">
-                        ${hero.unlocked ? '✅ Разблокирован' : '🔒 Заблокирован'}
-                    </div>
-                    
-                    ${!isSelectable ? 
-                        `<div class="unlock-hint">
-                            <small>🎯 Прокачайте предыдущего героя до 9 уровня</small>
-                        </div>` : 
-                        `<div class="select-hint">
-                            <small>👉 Нажмите для выбора</small>
-                        </div>`
-                    }
+                <div class="heroes-grid">
+                    ${heroesHTML}
+                </div>
+                
+                <div class="selection-actions">
+                    <button class="btn-secondary" onclick="game.showMainMenu()">
+                        ← Назад в меню
+                    </button>
                 </div>
             </div>
         `;
-    }).join('');
-
-    app.innerHTML = `
-        <div class="hero-selection-screen">
-            <!-- УБРАН header с информацией -->
-            
-            <div class="heroes-grid">
-                ${heroesHTML}
-            </div>
-            
-            <div class="selection-actions">
-                <button class="btn-secondary" onclick="game.showMainMenu()">
-                    ← Назад в меню
-                </button>
-            </div>
-        </div>
-    `;
-    
-    console.log("✅ Экран выбора героя отображен");
-}
+        
+        console.log("✅ Экран выбора героя отображен");
+    }
 
     showUnlockProgress() {
         const app = document.getElementById('app');
@@ -843,273 +847,9 @@ class HeroSystem {
     }
 
     // ========== ОСНОВНЫЕ ИНТЕРФЕЙСНЫЕ МЕТОДЫ ==========
-    showHeroGameScreen() {
-        console.log("🎮 HeroSystem: Показываем экран героя...");
-        
-        // Синхронизируем currentHero
-        if (!this.currentHero && window.game?.currentHero) {
-            this.currentHero = window.game.currentHero;
-            console.log("✅ Герой синхронизирован из window.game");
-        }
-        
-        const currentHero = this.currentHero || window.game?.currentHero;
-        
-        if (!currentHero) {
-            console.error("❌ Не могу показать экран героя: currentHero не установлен");
-            this.showHeroSelection();
-            return;
-        }
-        
-        const app = document.getElementById('app');
-        if (!app) {
-            console.error("❌ Элемент app не найден");
-            return;
-        }
-        
-        const stats = this.calculateHeroStats(currentHero);
-        
-        app.innerHTML = `
-            <div class="hero-game-screen">
-                <!-- Верхняя панель кнопок -->
-                <div class="top-action-bar">
-                    <button class="btn-top" onclick="game.showOverlay('global-map')">
-                        🗺️ Глобальная карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('local-map')">
-                        📍 Локальная карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('tactical-map')">
-                        🎲 Тактическая карта
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('inventory')">
-                        🎒 Инвентарь
-                    </button>
-                    <button class="btn-top" onclick="game.showOverlay('shop')">
-                        🏪 Магазин
-                    </button>
-                    <button class="btn-top" onclick="game.systems.hero.showHeroStory()">
-                        📖 История Героя
-                    </button>
-                    <button class="btn-top" onclick="game.systems.hero.showHeroSelection()">
-                        🔁 Сменить героя
-                    </button>
-                    <button class="btn-top" onclick="game.systems.hero.resetCurrentHero()" 
-                            style="background: #ef4444;">
-                        🔄 Сбросить героя
-                    </button>
-                </div>
+    // ⭐ ВАЖНО: Метод showHeroGameScreen заменен в конструкторе через _initializeShowHeroGameScreen()
+    // Больше НЕ используем старую версию этого метода!
 
-                <!-- Основное окно героя -->
-                <div class="hero-main-window">
-                    <div class="hero-fullscreen">
-                        <!-- Фон - картинка героя -->
-                        <div class="hero-background">
-                            <img src="${currentHero.image}" alt="${currentHero.name}" 
-                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMzMzMiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzg4OCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5vIEltYWdlPC90ZXh0Pjwvc3ZnPg=='">
-                        </div>
-                        
-                        <!-- Панель параметров поверх картинки -->
-                        <div class="hero-overlay-panel">
-                            <!-- Верхняя строка - имя и уровень -->
-                            <div class="hero-overlay-header">
-                                <div class="hero-overlay-name">${currentHero.name}</div>
-                                <div class="hero-overlay-level">⚡ Ур. ${currentHero.level}</div>
-                                <div class="hero-overlay-id">ID: ${currentHero.id}</div>
-                            </div>
-                            
-                            <!-- Полоска здоровья -->
-                            <div class="health-display-section">
-                                <h4>❤️ Здоровье</h4>
-                                <div class="health-bar-container">
-                                    <div class="health-bar" id="heroHealthBar" 
-                                         style="width: ${(stats.currentHealth / stats.maxHealth) * 100}%; 
-                                                background: linear-gradient(90deg, #ef4444, #f59e0b);">
-                                        ${stats.currentHealth}/${stats.maxHealth}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Полоска опыта -->
-                            <div class="experience-display-section">
-                                <h4>🌟 Опыт</h4>
-                                <div class="experience-bar-container">
-                                    <div class="experience-bar" id="heroExperienceBar" 
-                                         style="width: ${this.getExperiencePercent(currentHero)}%; 
-                                                background: linear-gradient(90deg, #3b82f6, #8b5cf6);">
-                                        ${(() => {
-                                            const expProgress = this.getExperienceProgress(currentHero);
-                                            return expProgress.next === 'MAX' ? 
-                                                'MAX Уровень' : 
-                                                `${expProgress.current}/${expProgress.next}`;
-                                        })()}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Информация о происхождении -->
-                            <div class="hero-origins-section">
-                                <h4>🎭 Происхождение</h4>
-                                <div class="origin-item">
-                                    <span class="origin-type">🧬 Раса: ${this.getRaceName(currentHero.race)}</span>
-                                    <span class="origin-bonus">${this.getRaceBonusDescription(currentHero.race)}</span>
-                                </div>
-                                <div class="origin-item">
-                                    <span class="origin-type">⚔️ Профессия: ${this.getClassName(currentHero.class)}</span>
-                                    <span class="origin-bonus">${this.getClassBonusDescription(currentHero.class)}</span>
-                                </div>
-                                <div class="origin-item">
-                                    <span class="origin-type">📖 Сага: ${this.getSagaName(currentHero.saga)}</span>
-                                    <span class="origin-bonus">${this.getSagaBonusDescription(currentHero.saga)}</span>
-                                </div>
-                            </div>
-
-                            <!-- Основные параметры -->
-                            <div class="hero-overlay-stats">
-                                <div class="overlay-stat-group">
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">❤️ Здоровье</span>
-                                        <span class="overlay-stat-value">${stats.currentHealth}/${stats.maxHealth}</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">⚔️ Урон</span>
-                                        <span class="overlay-stat-value">${stats.damage}</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🛡️ Броня</span>
-                                        <span class="overlay-stat-value">${stats.armor}</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="overlay-stat-group">
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">💰 Золото</span>
-                                        <span class="overlay-stat-value">${currentHero.gold.toFixed(2)}</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🌟 Сила</span>
-                                        <span class="overlay-stat-value">${stats.power}</span>
-                                    </div>
-                                    <div class="overlay-stat-row">
-                                        <span class="overlay-stat-label">🎯 Убито</span>
-                                        <span class="overlay-stat-value">${currentHero.monstersKilled || 0}</span>
-                                    </div>
-                                </div>
-
-                                <!-- Активные бонусы -->
-                                <div class="overlay-stat-group">
-                                    ${stats.activeBonuses.length > 0 ? 
-                                        stats.activeBonuses.slice(0, 4).map(bonus => `
-                                            <div class="overlay-stat-row">
-                                                <span class="overlay-stat-label">${bonus.label}</span>
-                                                <span class="overlay-stat-value">${bonus.display}</span>
-                                            </div>
-                                        `).join('') : 
-                                        `<div class="overlay-stat-row">
-                                            <span class="overlay-stat-label">🎯 Бонусы</span>
-                                            <span class="overlay-stat-value">Нет активных</span>
-                                        </div>`
-                                    }
-                                    ${stats.activeBonuses.length > 4 ? 
-                                        `<div class="overlay-stat-row">
-                                            <span class="overlay-stat-label">✨ Ещё</span>
-                                            <span class="overlay-stat-value">+${stats.activeBonuses.length - 4}</span>
-                                        </div>` : ''
-                                    }
-                                </div>
-                            </div>
-                            
-                            <!-- Экипировка -->
-                            <div class="hero-overlay-equipment">
-                                <h4>🎒 Экипировка</h4>
-                                <div class="equipment-slots-mini">
-                                    ${['main_hand', 'off_hand', 'helmet', 'chest', 'gloves', 'legs', 'boots', 'relic'].map(slot => {
-                                        const itemId = currentHero.equipment[slot];
-                                        const item = itemId && window.game?.systems?.equipment ? 
-                                            window.game.systems.equipment.getItemById(itemId) : null;
-                                        return `
-                                            <div class="equipment-slot-mini ${slot} ${item ? 'equipped' : 'empty'}"
-                                                 onclick="game.handleEquipmentSlotClick('${slot}')"
-                                                 ${item ? `data-rarity="${item.rarity || 'common'}"` : ''}>
-                                                <div class="slot-icon-mini">
-                                                    ${item ? 
-                                                        `<img src="${item.image}" alt="${item.name}" 
-                                                              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-                                                         <div class="item-fallback" style="display: none;">
-                                                             <span>${this.getSlotIcon(slot)}</span>
-                                                         </div>` : 
-                                                        this.getSlotIcon(slot)
-                                                    }
-                                                </div>
-                                                <div class="slot-label-mini">${this.getSlotName(slot)}</div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            </div>
-                            
-                            <!-- Информация о разблокировке следующего героя -->
-                            ${currentHero.id < this.heroes.length ? `
-                                <div class="next-hero-info">
-                                    <h4>🔓 Следующий герой</h4>
-                                    <div class="next-hero-details">
-                                        ${(() => {
-                                            const nextHero = this.heroes.find(h => h.id === currentHero.id + 1);
-                                            if (!nextHero) return 'Нет следующего героя';
-                                            
-                                            const progressPercent = Math.min(100, (currentHero.level / 9) * 100);
-                                            const isUnlocked = nextHero.unlocked;
-                                            
-                                            return `
-                                                <div class="next-hero-card ${isUnlocked ? 'unlocked' : 'locked'}">
-                                                    <div class="next-hero-header">
-                                                        <span>${nextHero.name}</span>
-                                                        <span class="next-hero-status">${isUnlocked ? '🔓 Разблокирован' : '🔒 Заблокирован'}</span>
-                                                    </div>
-                                                    <div class="next-hero-progress">
-                                                        <div class="progress-text">
-                                                            ${currentHero.name}: ${currentHero.level}/9 ур.
-                                                            <span>(${progressPercent.toFixed(0)}%)</span>
-                                                        </div>
-                                                        <div class="progress-bar-next">
-                                                            <div class="progress-fill-next" style="width: ${progressPercent}%"></div>
-                                                        </div>
-                                                        ${!isUnlocked ? 
-                                                            `<div class="next-hero-hint">
-                                                                Прокачайте ${currentHero.name} до 9 уровня, чтобы открыть ${nextHero.name}!
-                                                            </div>` : 
-                                                            `<div class="next-hero-action">
-                                                                <button class="btn-small" onclick="game.systems.hero.selectHero(${nextHero.id})">
-                                                                    Выбрать ${nextHero.name}
-                                                                </button>
-                                                            </div>`
-                                                        }
-                                                    </div>
-                                                </div>
-                                            `;
-                                        })()}
-                                    </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Область для оверлеев -->
-                <div id="overlay-container" class="overlay-container"></div>
-            </div>
-        `;
-        
-        // Запускаем обновление полосок
-        this.startHealthBarUpdates();
-        
-        setTimeout(() => {
-            this.updateHealthAndExperienceBars();
-        }, 100);
-
-        console.log("✅ Экран героя успешно показан");
-    }
-
-    // ========== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ==========
     updateHeroDisplay(stats) {
         const currentHero = this.currentHero || window.game?.currentHero;
         if (!currentHero) return;
@@ -1243,8 +983,10 @@ class HeroSystem {
         
         this.showNotification(`🎉 ${targetHero.name} достиг ${targetHero.level} уровня!`);
         
-        // Обновляем интерфейс
-        this.showHeroGameScreen();
+        // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
         
         // Проверяем разблокировку новых героев
         this.checkHeroUnlocks();
@@ -1347,8 +1089,10 @@ class HeroSystem {
         
         this.showNotification(`🔄 ${currentHero.name} сброшен к начальным значениям`);
         
-        // Обновляем интерфейс
-        this.showHeroGameScreen();
+        // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
         
         // Сохраняем
         if (window.game) window.game.saveGame();
@@ -1490,7 +1234,11 @@ class HeroSystem {
         this.showNotification(`🎯 Надето: ${item.name}`);
         
         this.calculateHeroStats();
-        this.showHeroGameScreen();
+        
+        // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
         
         if (window.game) window.game.saveGame();
         
@@ -1513,7 +1261,11 @@ class HeroSystem {
         currentHero.inventory.push(itemId);
 
         this.calculateHeroStats();
-        this.showHeroGameScreen();
+        
+        // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+        if (window.game && window.game.showHeroGameScreen) {
+            window.game.showHeroGameScreen();
+        }
 
         if (window.game) window.game.saveGame();
         
@@ -1595,7 +1347,10 @@ class HeroSystem {
         
         if (backBtn) {
             backBtn.addEventListener('click', () => {
-                this.showHeroGameScreen();
+                // ⭐ ИСПРАВЛЕНИЕ: Используем game.showHeroGameScreen вместо this.showHeroGameScreen
+                if (window.game && window.game.showHeroGameScreen) {
+                    window.game.showHeroGameScreen();
+                }
             });
         }
         
@@ -1760,4 +1515,4 @@ class HeroSystem {
 
 // Регистрируем систему в глобальной области
 window.HeroSystem = HeroSystem;
-console.log("📦 HeroSystem модуль загружен");
+console.log("📦 HeroSystem модуль загружен (ИСПРАВЛЕННАЯ ВЕРСИЯ)");
