@@ -89,48 +89,56 @@ class HeroSystem {
             return true;
         }
     }
-
-    initializeUnlockSystem() {
-        console.log("🔄 Инициализация системы разблокировки героев...");
+initializeUnlockSystem() {
+    console.log("🔄 Инициализация системы разблокировки героев...");
+    
+    // Сортируем героев по ID для последовательной проверки
+    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
+    
+    for (let i = 0; i < sortedHeroes.length; i++) {
+        const hero = sortedHeroes[i];
         
-        // Сортируем героев по ID для последовательной проверки
-        const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
-        
-        for (let i = 0; i < sortedHeroes.length; i++) {
-            const hero = sortedHeroes[i];
-            
-            if (hero.id === 1) {
-                // Герой 1 всегда разблокирован
-                hero.unlocked = true;
-                console.log(`✅ Герой 1 "${hero.name}" разблокирован по умолчанию`);
-                continue;
-            }
-            
-            // Находим предыдущего героя
-            const prevHero = sortedHeroes.find(h => h.id === hero.id - 1);
-            if (!prevHero) {
-                console.warn(`⚠️ Не найден предыдущий герой для ID ${hero.id}`);
-                hero.unlocked = false;
-                continue;
-            }
-            
-            // Проверяем условие: предыдущий герой должен быть >= 9 уровня
-            const shouldBeUnlocked = prevHero.level >= 9;
-            hero.unlocked = shouldBeUnlocked;
-            
-            if (shouldBeUnlocked) {
-                console.log(`✅ Герой ${hero.id} "${hero.name}" разблокирован (${prevHero.name} ${prevHero.level}/9 ур.)`);
-            } else {
-                console.log(`🔒 Герой ${hero.id} "${hero.name}" заблокирован (${prevHero.name} ${prevHero.level}/9 ур.)`);
-            }
+        if (hero.id === 1) {
+            // Герой 1 всегда разблокирован
+            hero.unlocked = true;
+            console.log(`✅ Герой 1 "${hero.name}" разблокирован по умолчанию`);
+            continue;
         }
         
-        console.log("🎯 Система разблокировки инициализирована", {
-            всего: this.heroes.length,
-            разблокировано: this.heroes.filter(h => h.unlocked).length,
-            список: this.heroes.filter(h => h.unlocked).map(h => `${h.id}:${h.name}`)
-        });
+        // НАХОДИМ ПРЕДЫДУЩЕГО ГЕРОЯ ПО ИДЕНТИФИКАТОРУ (ID-1)
+        const prevHeroId = hero.id - 1;
+        const prevHero = sortedHeroes.find(h => h.id === prevHeroId);
+        
+        if (!prevHero) {
+            console.warn(`⚠️ Не найден предыдущий герой для ID ${hero.id}`);
+            hero.unlocked = false;
+            continue;
+        }
+        
+        // ⭐ ВАЖНОЕ ИСПРАВЛЕНИЕ: Проверяем РАЗБЛОКИРОВКУ предыдущего героя И его уровень
+        // Предыдущий герой должен быть РАЗБЛОКИРОВАН И достиг 9 уровня
+        const shouldBeUnlocked = prevHero.unlocked && prevHero.level >= 9;
+        hero.unlocked = shouldBeUnlocked;
+        
+        if (shouldBeUnlocked) {
+            console.log(`✅ Герой ${hero.id} "${hero.name}" разблокирован (${prevHero.name} ${prevHero.level}/9 ур. + разблокирован)`);
+        } else {
+            if (!prevHero.unlocked) {
+                console.log(`🔒 Герой ${hero.id} "${hero.name}" заблокирован (${prevHero.name} не разблокирован)`);
+            } else if (prevHero.level < 9) {
+                console.log(`🔒 Герой ${hero.id} "${hero.name}" заблокирован (${prevHero.name} ${prevHero.level}/9 ур.)`);
+            } else {
+                console.log(`🔒 Герой ${hero.id} "${hero.name}" заблокирован (неизвестная причина)`);
+            }
+        }
     }
+    
+    console.log("🎯 Система разблокировки инициализирована", {
+        всего: this.heroes.length,
+        разблокировано: this.heroes.filter(h => h.unlocked).length,
+        список: this.heroes.filter(h => h.unlocked).map(h => `${h.id}:${h.name}`)
+    });
+}
 
     createFallbackHero() {
         this.heroes = [{
@@ -169,55 +177,60 @@ class HeroSystem {
         console.log("🔄 Создан тестовый герой");
     }
 
-    // ========== МЕТОДЫ РАЗБЛОКИРОВКИ ==========
-    canUnlockHero(heroId) {
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) {
-            console.warn(`❌ Герой с ID ${heroId} не найден`);
-            return false;
-        }
-        
-        // Герой 1 всегда доступен
-        if (heroId === 1) return true;
-        
-        // Находим предыдущего героя
-        const prevHero = this.heroes.find(h => h.id === heroId - 1);
-        if (!prevHero) {
-            console.warn(`❌ Не найден предыдущий герой для ID ${heroId}`);
-            return false;
-        }
-        
-        // Проверяем уровень предыдущего героя
-        const canUnlock = prevHero.level >= 9;
-        
-        // Также проверяем, разблокирован ли предыдущий герой
-        const prevUnlocked = prevHero.unlocked;
-        
-        return canUnlock && prevUnlocked;
+ canUnlockHero(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) {
+        console.warn(`❌ Герой с ID ${heroId} не найден`);
+        return false;
     }
-
-    getHeroUnlockStatus(heroId) {
-        const hero = this.heroes.find(h => h.id === heroId);
-        if (!hero) return "❌ Герой не найден";
-        
-        if (hero.unlocked) return "✅ Разблокирован";
-        
-        if (heroId === 1) return "✅ Доступен изначально";
-        
-        const prevHero = this.heroes.find(h => h.id === heroId - 1);
-        if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
-        
-        if (!prevHero.unlocked) {
-            return `🔒 Требуется разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
-        }
-        
-        if (prevHero.level < 9) {
-            return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
-        }
-        
-        return "⚠️ Ошибка проверки";
+    
+    // Герой 1 всегда доступен
+    if (heroId === 1) return true;
+    
+    // Находим предыдущего героя
+    const prevHero = this.heroes.find(h => h.id === heroId - 1);
+    if (!prevHero) {
+        console.warn(`❌ Не найден предыдущий герой для ID ${heroId}`);
+        return false;
     }
+    
+    // ⭐ ИСПРАВЛЕНИЕ: Проверяем ДВА условия:
+    // 1. Предыдущий герой должен быть РАЗБЛОКИРОВАН
+    // 2. Предыдущий герой должен быть 9+ уровня
+    const prevHeroUnlocked = prevHero.unlocked;
+    const prevHeroLevelCondition = prevHero.level >= 9;
+    
+    console.log(`🔍 Проверка разблокировки героя ${heroId} "${hero.name}":`);
+    console.log(`   - Предыдущий герой: ${prevHero.name} (ID: ${prevHero.id})`);
+    console.log(`   - Разблокирован: ${prevHeroUnlocked}`);
+    console.log(`   - Уровень: ${prevHero.level}/9`);
+    console.log(`   - Условие уровня: ${prevHeroLevelCondition}`);
+    console.log(`   - Результат: ${prevHeroUnlocked && prevHeroLevelCondition}`);
+    
+    return prevHeroUnlocked && prevHeroLevelCondition;
+}
 
+ getHeroUnlockStatus(heroId) {
+    const hero = this.heroes.find(h => h.id === heroId);
+    if (!hero) return "❌ Герой не найден";
+    
+    if (hero.unlocked) return "✅ Разблокирован";
+    
+    if (heroId === 1) return "✅ Доступен изначально";
+    
+    const prevHero = this.heroes.find(h => h.id === heroId - 1);
+    if (!prevHero) return "❌ Ошибка: нет предыдущего героя";
+    
+    if (!prevHero.unlocked) {
+        return `🔒 Требуется сначала разблокировать ${prevHero.name} (ID: ${prevHero.id})`;
+    }
+    
+    if (prevHero.level < 9) {
+        return `🎯 Требуется ${prevHero.name} 9 ур. (сейчас ${prevHero.level})`;
+    }
+    
+    return "⚠️ Ошибка проверки";
+}
     unlockHero(heroId, reason = "") {
         const hero = this.heroes.find(h => h.id === heroId);
         if (!hero) {
@@ -264,65 +277,67 @@ class HeroSystem {
         return true;
     }
 
-    checkHeroUnlocks() {
-        console.log("🔍 Проверка разблокировки всех героев...");
+   checkHeroUnlocks() {
+    console.log("🔍 Проверка разблокировки всех героев...");
+    
+    const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
+    let unlockedCount = 0;
+    
+    for (let i = 0; i < sortedHeroes.length; i++) {
+        const hero = sortedHeroes[i];
         
-        const sortedHeroes = [...this.heroes].sort((a, b) => a.id - b.id);
-        let unlockedCount = 0;
-        
-        for (let i = 0; i < sortedHeroes.length; i++) {
-            const hero = sortedHeroes[i];
-            
-            if (hero.id === 1) {
-                // Герой 1 всегда должен быть разблокирован
-                if (!hero.unlocked) {
-                    hero.unlocked = true;
-                    console.log(`🔄 Исправление: Герой 1 "${hero.name}" разблокирован`);
-                }
-                continue;
-            }
-            
-            const prevHero = sortedHeroes.find(h => h.id === hero.id - 1);
-            if (!prevHero) continue;
-            
-            // Проверяем, должен ли герой быть разблокирован
-            const shouldBeUnlocked = prevHero.unlocked && prevHero.level >= 9;
-            
-            if (shouldBeUnlocked && !hero.unlocked) {
-                // Автоматически разблокируем
+        if (hero.id === 1) {
+            // Герой 1 всегда должен быть разблокирован
+            if (!hero.unlocked) {
                 hero.unlocked = true;
-                unlockedCount++;
-                
-                if (window.game?.sharedResources && !window.game.sharedResources.unlockedHeroes.includes(hero.id)) {
-                    window.game.sharedResources.unlockedHeroes.push(hero.id);
-                }
-                
-                console.log(`🔄 Автоматическая разблокировка: ${hero.name} (${prevHero.name} ${prevHero.level}/9 ур.)`);
-                
-                // Показываем уведомление
-                this.showNotification(`🎉 Открыт новый герой: ${hero.name}!`);
+                console.log(`🔄 Исправление: Герой 1 "${hero.name}" разблокирован`);
             }
+            continue;
         }
         
-        if (unlockedCount > 0) {
-            console.log(`✅ Автоматически разблокировано героев: ${unlockedCount}`);
-            
-            // Обновляем sharedResources
-            if (window.game?.sharedResources) {
-                window.game.sharedResources.unlockedHeroes = [...new Set(window.game.sharedResources.unlockedHeroes)]
-                    .sort((a, b) => a - b);
-            }
-            
-            // Сохраняем изменения
-            if (window.game) {
-                window.game.saveGame();
-            }
-        } else {
-            console.log("ℹ️ Новых героев для разблокировки не найдено");
-        }
+        const prevHero = sortedHeroes.find(h => h.id === hero.id - 1);
+        if (!prevHero) continue;
         
-        return unlockedCount;
+        // ⭐ ИСПРАВЛЕНИЕ: Проверяем ДВА условия:
+        // 1. Предыдущий герой РАЗБЛОКИРОВАН
+        // 2. Предыдущий герой 9+ уровня
+        const shouldBeUnlocked = prevHero.unlocked && prevHero.level >= 9;
+        
+        if (shouldBeUnlocked && !hero.unlocked) {
+            // Автоматически разблокируем
+            hero.unlocked = true;
+            unlockedCount++;
+            
+            if (window.game?.sharedResources && !window.game.sharedResources.unlockedHeroes.includes(hero.id)) {
+                window.game.sharedResources.unlockedHeroes.push(hero.id);
+            }
+            
+            console.log(`🔄 Автоматическая разблокировка: ${hero.name} (${prevHero.name} разблокирован + ${prevHero.level}/9 ур.)`);
+            
+            // Показываем уведомление
+            this.showNotification(`🎉 Открыт новый герой: ${hero.name}!`);
+        }
     }
+    
+    if (unlockedCount > 0) {
+        console.log(`✅ Автоматически разблокировано героев: ${unlockedCount}`);
+        
+        // Обновляем sharedResources
+        if (window.game?.sharedResources) {
+            window.game.sharedResources.unlockedHeroes = [...new Set(window.game.sharedResources.unlockedHeroes)]
+                .sort((a, b) => a - b);
+        }
+        
+        // Сохраняем изменения
+        if (window.game) {
+            window.game.saveGame();
+        }
+    } else {
+        console.log("ℹ️ Новых героев для разблокировки не найдено");
+    }
+    
+    return unlockedCount;
+}
 
     // ========== ВЫБОР ГЕРОЯ ==========
     selectHero(heroId) {
