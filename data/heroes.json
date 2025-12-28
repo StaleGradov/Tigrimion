@@ -1298,6 +1298,266 @@
       "chest": null
     },
     "healthRegen": 3.0
+  },
+         {
+    "id": 66,
+    "name": "Бёрнин Барди",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Bernin.jpg",
+    "race": "halfling",
+    "class": "antiquarian",
+    "saga": "following_sun",
+    "baseHealth": 2120,
+    "baseDamage": 270,
+    "baseArmor": 135,
+                    "gold": 162,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.1
+  },
+    {
+    "id": 67,
+    "name": "Боромир Железный",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Boromir.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2180,
+    "baseDamage": 280,
+    "baseArmor": 140,
+                    "gold": 168,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.2
+  },
+    {
+    "id": 68,
+    "name": "Могрим",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Mogrim.jpg",
+    "race": "ork",
+    "class": "archer",
+    "saga": "following_sun",
+    "baseHealth": 2240,
+    "baseDamage": 290,
+    "baseArmor": 145,
+                    "gold": 174,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.3
+  },
+    {
+    "id": 69,
+    "name": "Грудхак",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Grudhak.jpg",
+    "race": "human",
+    "class": "gladiator",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 70,
+    "name": "Джонатан Лонгботтом",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Djonatan.jpg",
+    "race": "human",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 71,
+    "name": "Луканар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lukanar.jpg",
+    "race": "laitar",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+    {
+    "id": 72,
+    "name": "Торн",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torn.jpg",
+    "race": "dwarf",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 73,
+    "name": "Тригнар",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Trignar.jpg",
+    "race": "dwarf",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 74,
+    "name": "Веспера",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vespera.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 75,
+    "name": "Иларион",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Illarion.jpg",
+    "race": "halfling",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 76,
+    "name": "Агромор",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Agromor.jpg",
+    "race": "fairy",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 77,
+    "name": "Тельхарин",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Telharin.jpg",
+    "race": "fairy",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
+  },
+      {
+    "id": 78,
+    "name": "Фаргон",
+    "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Fargon.jpg",
+    "race": "dragon",
+    "class": "bounty_hunter",
+    "saga": "following_sun",
+    "baseHealth": 2060,
+    "baseDamage": 260,
+    "baseArmor": 130,
+                    "gold": 156,
+    "level": 1,
+    "experience": 0,
+    "inventory": [],
+    "equipment": {
+      "main_hand": null,
+      "chest": null
+    },
+    "healthRegen": 3.0
   }
   
 ]
