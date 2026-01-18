@@ -17,7 +17,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 0.5
+    "healthRegen": 0.5,
+    "baseKarma": 40,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "healer": 25,
+      "sorcerer": 10,
+      "death_mage": -25,
+      "antiquarian": 5
+    }
   },
   {
     "id": 2,
@@ -29,7 +41,7 @@
     "baseHealth": 160,
     "baseDamage": 20,
     "baseArmor": 10,
-        "gold": 12,
+    "gold": 12,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -37,7 +49,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 0.6
+    "healthRegen": 0.6,
+    "baseKarma": 30,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "warrior": 20,
+      "archer": 15,
+      "bounty_hunter": 5,
+      "thief": -15
+    }
   },
   {
     "id": 3,
@@ -49,7 +73,7 @@
     "baseHealth": 240,
     "baseDamage": 30,
     "baseArmor": 15,
-            "gold": 18,
+    "gold": 18,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -57,7 +81,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 0.7
+    "healthRegen": 0.7,
+    "baseKarma": 10,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "fairy": -20,
+      "antiquarian": 20,
+      "hunter": 10,
+      "bounty_hunter": 5,
+      "warrior": -10
+    }
   },
   {
     "id": 4,
@@ -69,7 +105,7 @@
     "baseHealth": 320,
     "baseDamage": 40,
     "baseArmor": 20,
-            "gold": 24,
+    "gold": 24,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -77,7 +113,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 0.8
+    "healthRegen": 0.8,
+    "baseKarma": 20,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "thief": 25,
+      "bounty_hunter": 10,
+      "archer": -5,
+      "warrior": -10,
+      "guard": -30
+    }
   },
   {
     "id": 5,
@@ -89,7 +139,7 @@
     "baseHealth": 400,
     "baseDamage": 50,
     "baseArmor": 25,
-                "gold": 30,
+    "gold": 30,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -97,7 +147,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 0.9
+    "healthRegen": 0.9,
+    "baseKarma": 15,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "hunter": 25,
+      "bounty_hunter": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
   {
     "id": 6,
@@ -109,7 +171,7 @@
     "baseHealth": 480,
     "baseDamage": 60,
     "baseArmor": 30,
-                "gold": 36,
+    "gold": 36,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -117,7 +179,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1
+    "healthRegen": 1.0,
+    "baseKarma": 35,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -30
+    }
   },
   {
     "id": 7,
@@ -129,7 +203,7 @@
     "baseHealth": 540,
     "baseDamage": 70,
     "baseArmor": 35,
-                "gold": 42,
+    "gold": 42,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -137,9 +211,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.1
+    "healthRegen": 1.1,
+    "baseKarma": 30,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "archer": 20,
+      "hunter": 15,
+      "bandit": -10,
+      "warrior": 10
+    }
   },
-    {
+  {
     "id": 8,
     "name": "Рекс",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Reks.jpg",
@@ -149,7 +235,7 @@
     "baseHealth": 620,
     "baseDamage": 80,
     "baseArmor": 40,
-                  "gold": 48,
+    "gold": 48,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -157,9 +243,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.2
+    "healthRegen": 1.2,
+    "baseKarma": 25,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "bounty_hunter": 30,
+      "hunter": 20,
+      "bandit": -25,
+      "guard": 15,
+      "warrior": 10
+    }
   },
-    {
+  {
     "id": 9,
     "name": "Хаггард",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Haggard.jpg",
@@ -169,7 +267,7 @@
     "baseHealth": 700,
     "baseDamage": 90,
     "baseArmor": 45,
-                  "gold": 54,
+    "gold": 54,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -177,9 +275,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.3
+    "healthRegen": 1.3,
+    "baseKarma": -10,
+    "reputation": {
+      "human": 15,
+      "undead": 30,
+      "living": -40,
+      "dwarf": -15,
+      "elf": -25,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
-    {
+  {
     "id": 10,
     "name": "Хельякар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Heliakar.jpg",
@@ -189,7 +299,7 @@
     "baseHealth": 780,
     "baseDamage": 100,
     "baseArmor": 50,
-                  "gold": 60,
+    "gold": 60,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -197,9 +307,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.4
+    "healthRegen": 1.4,
+    "baseKarma": 40,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "dwarf": 15
+    }
   },
-    {
+  {
     "id": 11,
     "name": "Рафаэль",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Rafael.jpg",
@@ -209,7 +331,7 @@
     "baseHealth": 860,
     "baseDamage": 110,
     "baseArmor": 55,
-                  "gold": 66,
+    "gold": 66,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -217,9 +339,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.5
+    "healthRegen": 1.5,
+    "baseKarma": -15,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "merchant": 40,
+      "aristocrat": 20,
+      "bandit": -10,
+      "thief": -15
+    }
   },
-    {
+  {
     "id": 12,
     "name": "Карнок",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Karnoc.jpg",
@@ -229,7 +363,7 @@
     "baseHealth": 940,
     "baseDamage": 120,
     "baseArmor": 60,
-                  "gold": 72,
+    "gold": 72,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -237,9 +371,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.6
+    "healthRegen": 1.6,
+    "baseKarma": 30,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "archer": 20,
+      "hunter": 15,
+      "warrior": 10,
+      "bandit": -10
+    }
   },
-      {
+  {
     "id": 13,
     "name": "АрвенДил",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/ArvenDil.jpg",
@@ -249,7 +395,7 @@
     "baseHealth": 1020,
     "baseDamage": 130,
     "baseArmor": 65,
-                    "gold": 78,
+    "gold": 78,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -257,7 +403,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.7
+    "healthRegen": 1.7,
+    "baseKarma": 35,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "archer": 20,
+      "hunter": 15,
+      "warrior": 10,
+      "bandit": -10
+    }
   },
   {
     "id": 14,
@@ -269,7 +427,7 @@
     "baseHealth": 1100,
     "baseDamage": 140,
     "baseArmor": 70,
-                "gold": 84,
+    "gold": 84,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -277,7 +435,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.8
+    "healthRegen": 1.8,
+    "baseKarma": 15,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "gladiator": 35,
+      "fighter": 20,
+      "warrior": 15,
+      "aristocrat": -10
+    }
   },
   {
     "id": 15,
@@ -289,7 +459,7 @@
     "baseHealth": 1180,
     "baseDamage": 150,
     "baseArmor": 75,
-                "gold": 90,
+    "gold": 90,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -297,7 +467,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 1.9
+    "healthRegen": 1.9,
+    "baseKarma": 40,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "merchant": 15
+    }
   },
   {
     "id": 16,
@@ -309,7 +491,7 @@
     "baseHealth": 1260,
     "baseDamage": 160,
     "baseArmor": 80,
-                "gold": 96,
+    "gold": 96,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -317,7 +499,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.0
+    "healthRegen": 2.0,
+    "baseKarma": 45,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "healer": 40,
+      "druid": 25,
+      "mage": 15,
+      "death_mage": -35
+    }
   },
   {
     "id": 17,
@@ -329,7 +523,7 @@
     "baseHealth": 1340,
     "baseDamage": 170,
     "baseArmor": 85,
-                "gold": 102,
+    "gold": 102,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -337,7 +531,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.1
+    "healthRegen": 2.1,
+    "baseKarma": 35,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "warrior": 20,
+      "bandit": 10,
+      "archer": 15,
+      "hunter": 10
+    }
   },
   {
     "id": 18,
@@ -349,7 +555,7 @@
     "baseHealth": 1420,
     "baseDamage": 180,
     "baseArmor": 90,
-                    "gold": 108,
+    "gold": 108,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -357,7 +563,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.2
+    "healthRegen": 2.2,
+    "baseKarma": -5,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -20
+    }
   },
   {
     "id": 19,
@@ -369,7 +587,7 @@
     "baseHealth": 1500,
     "baseDamage": 190,
     "baseArmor": 95,
-                    "gold": 114,
+    "gold": 114,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -377,7 +595,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.3
+    "healthRegen": 2.3,
+    "baseKarma": 20,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "fighter": 20,
+      "warrior": 15,
+      "gladiator": 10,
+      "monk": 25,
+      "bandit": 5
+    }
   },
   {
     "id": 20,
@@ -389,7 +619,7 @@
     "baseHealth": 1580,
     "baseDamage": 200,
     "baseArmor": 100,
-                    "gold": 120,
+    "gold": 120,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -397,7 +627,18 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.4
+    "healthRegen": 2.4,
+    "baseKarma": 25,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "merchant": 40,
+      "aristocrat": 20,
+      "trader": 15,
+      "bandit": -10
+    }
   },
   {
     "id": 21,
@@ -409,7 +650,7 @@
     "baseHealth": 1660,
     "baseDamage": 210,
     "baseArmor": 105,
-                    "gold": 126,
+    "gold": 126,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -417,7 +658,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.5
+    "healthRegen": 2.5,
+    "baseKarma": 0,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "thief": 30,
+      "bandit": 20,
+      "guard": -30,
+      "bounty_hunter": -15
+    }
   },
   {
     "id": 22,
@@ -429,7 +682,7 @@
     "baseHealth": 1740,
     "baseDamage": 220,
     "baseArmor": 110,
-                    "gold": 132,
+    "gold": 132,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -437,7 +690,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.6
+    "healthRegen": 2.6,
+    "baseKarma": -20,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
   {
     "id": 23,
@@ -449,7 +714,7 @@
     "baseHealth": 1820,
     "baseDamage": 230,
     "baseArmor": 115,
-                    "gold": 138,
+    "gold": 138,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -457,7 +722,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.7
+    "healthRegen": 2.7,
+    "baseKarma": 35,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "antiquarian": 35,
+      "scholar": 20,
+      "mage": 20,
+      "looter": -15
+    }
   },
   {
     "id": 24,
@@ -469,7 +746,7 @@
     "baseHealth": 1900,
     "baseDamage": 240,
     "baseArmor": 120,
-                    "gold": 144,
+    "gold": 144,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -477,7 +754,19 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.8
+    "healthRegen": 2.8,
+    "baseKarma": 30,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "hunter": 30,
+      "druid": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
   {
     "id": 25,
@@ -489,7 +778,7 @@
     "baseHealth": 1980,
     "baseDamage": 250,
     "baseArmor": 125,
-                    "gold": 150,
+    "gold": 150,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -497,7 +786,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 2.9
+    "healthRegen": 2.9,
+    "baseKarma": 25,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "archer": 25,
+      "hunter": 15,
+      "bandit": -5,
+      "warrior": 10
+    }
   },
   {
     "id": 26,
@@ -509,7 +811,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -517,9 +819,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "bounty_hunter": 30,
+      "hunter": 15,
+      "bandit": -25,
+      "guard": 15
+    }
   },
-    {
+  {
     "id": 27,
     "name": "Вектар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vectar.jpg",
@@ -529,7 +843,7 @@
     "baseHealth": 2120,
     "baseDamage": 270,
     "baseArmor": 135,
-                    "gold": 162,
+    "gold": 162,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -537,9 +851,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.1
+    "healthRegen": 3.1,
+    "baseKarma": -10,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "antiquarian": 35,
+      "scholar": 20,
+      "mage": 20,
+      "treasure_hunter": 25
+    }
   },
-    {
+  {
     "id": 28,
     "name": "Далирон",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Daliron.jpg",
@@ -549,7 +875,7 @@
     "baseHealth": 2180,
     "baseDamage": 280,
     "baseArmor": 140,
-                    "gold": 168,
+    "gold": 168,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -557,9 +883,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.2
+    "healthRegen": 3.2,
+    "baseKarma": 20,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "bounty_hunter": 30,
+      "hunter": 15,
+      "bandit": -25,
+      "guard": 15
+    }
   },
-    {
+  {
     "id": 29,
     "name": "Грогар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Grogar.jpg",
@@ -569,7 +907,7 @@
     "baseHealth": 2240,
     "baseDamage": 290,
     "baseArmor": 145,
-                    "gold": 174,
+    "gold": 174,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -577,9 +915,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.3
+    "healthRegen": 3.3,
+    "baseKarma": 10,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "archer": 20,
+      "hunter": 15,
+      "warrior": 10,
+      "bandit": -10
+    }
   },
-    {
+  {
     "id": 30,
     "name": "Халдир",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Haldir.jpg",
@@ -589,7 +939,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -597,9 +947,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 15,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "gladiator": 35,
+      "fighter": 20,
+      "warrior": 15,
+      "aristocrat": -10
+    }
   },
-    {
+  {
     "id": 31,
     "name": "Балдор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Baldor.jpg",
@@ -609,7 +972,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -617,9 +980,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "dwarf": 15
+    }
   },
-    {
+  {
     "id": 32,
     "name": "Элмар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Elmar.jpg",
@@ -629,7 +1005,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -637,9 +1013,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -20
+    }
   },
-    {
+  {
     "id": 33,
     "name": "Гарольд",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Garold.jpg",
@@ -649,7 +1036,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -657,9 +1044,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 40,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "healer": 40,
+      "druid": 25,
+      "mage": 15,
+      "death_mage": -35
+    }
   },
-      {
+  {
     "id": 34,
     "name": "Варг",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Varg.jpg",
@@ -669,7 +1068,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -677,9 +1076,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 30,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "warrior": 20,
+      "bandit": 10,
+      "archer": 15,
+      "hunter": 10
+    }
   },
-      {
+  {
     "id": 35,
     "name": "Барли Хотпот",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Barli.jpg",
@@ -689,7 +1100,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -697,9 +1108,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "merchant": 40,
+      "aristocrat": 20,
+      "trader": 15,
+      "bandit": -10
+    }
   },
-      {
+  {
     "id": 36,
     "name": "Руперт Бульба",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Rypert.jpg",
@@ -709,7 +1132,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -717,9 +1140,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "fighter": 20,
+      "warrior": 15,
+      "gladiator": 10,
+      "monk": 25
+    }
   },
-      {
+  {
     "id": 37,
     "name": "Аврора",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Aurora.jpg",
@@ -729,7 +1164,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -737,9 +1172,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 15,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "thief": 30,
+      "bandit": 20,
+      "guard": -30,
+      "bounty_hunter": -15
+    }
   },
-      {
+  {
     "id": 38,
     "name": "Мелисса",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Melissa.jpg",
@@ -749,7 +1196,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -757,9 +1204,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": -5,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
-      {
+  {
     "id": 39,
     "name": "Азариус",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Azarius.jpg",
@@ -769,7 +1228,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -777,9 +1236,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": -10,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "hunter": 30,
+      "druid": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
-      {
+  {
     "id": 40,
     "name": "Генри Пилигрим",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Genri.jpg",
@@ -789,7 +1260,7 @@
     "baseHealth": 2120,
     "baseDamage": 270,
     "baseArmor": 135,
-                    "gold": 162,
+    "gold": 162,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -797,9 +1268,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.1
+    "healthRegen": 3.1,
+    "baseKarma": 20,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "thief": 30,
+      "bandit": 20,
+      "guard": -30,
+      "bounty_hunter": -15
+    }
   },
-    {
+  {
     "id": 41,
     "name": "Эдвард Боффин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Edvard.jpg",
@@ -809,7 +1292,7 @@
     "baseHealth": 2180,
     "baseDamage": 280,
     "baseArmor": 140,
-                    "gold": 168,
+    "gold": 168,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -817,9 +1300,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.2
+    "healthRegen": 3.2,
+    "baseKarma": 0,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
-    {
+  {
     "id": 42,
     "name": "Леонардо",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Leonardo.jpg",
@@ -829,7 +1324,7 @@
     "baseHealth": 2240,
     "baseDamage": 290,
     "baseArmor": 145,
-                    "gold": 174,
+    "gold": 174,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -837,9 +1332,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.3
+    "healthRegen": 3.3,
+    "baseKarma": 30,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "archer": 25,
+      "hunter": 15,
+      "bandit": -5,
+      "warrior": 10
+    }
   },
-    {
+  {
     "id": 43,
     "name": "Ургок",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Urgok.jpg",
@@ -849,7 +1355,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -857,9 +1363,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 15,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "bounty_hunter": 30,
+      "hunter": 15,
+      "bandit": -25,
+      "guard": 15
+    }
   },
-    {
+  {
     "id": 44,
     "name": "Вариг",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Varig.jpg",
@@ -869,7 +1387,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -877,9 +1395,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "merchant": 40,
+      "aristocrat": 20,
+      "trader": 15,
+      "bandit": -10
+    }
   },
-    {
+  {
     "id": 45,
     "name": "Грант",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Grant.jpg",
@@ -889,7 +1420,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -897,9 +1428,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "fighter": 20,
+      "warrior": 15,
+      "gladiator": 10,
+      "monk": 25
+    }
   },
-    {
+  {
     "id": 46,
     "name": "Ариэль",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Ariel.jpg",
@@ -909,7 +1453,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -917,9 +1461,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "warrior": 20,
+      "bandit": 10,
+      "archer": 15,
+      "hunter": 10
+    }
   },
-      {
+  {
     "id": 47,
     "name": "Флора",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Flora.jpg",
@@ -929,7 +1485,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -937,9 +1493,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 45,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "healer": 40,
+      "druid": 25,
+      "mage": 15,
+      "death_mage": -35
+    }
   },
-      {
+  {
     "id": 48,
     "name": "Хрогвар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Hrogvar.jpg",
@@ -949,7 +1517,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -957,9 +1525,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -20
+    }
   },
-      {
+  {
     "id": 49,
     "name": "Эларион",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Elarion.jpg",
@@ -969,7 +1549,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -977,9 +1557,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "hunter": 30,
+      "druid": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
-      {
+  {
     "id": 50,
     "name": "Нариэль",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Nariel.jpg",
@@ -989,7 +1581,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -997,9 +1589,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 40,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "antiquarian": 35,
+      "scholar": 20,
+      "mage": 20,
+      "looter": -15
+    }
   },
-      {
+  {
     "id": 51,
     "name": "Валларин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vallarin.jpg",
@@ -1009,7 +1613,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1017,9 +1621,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": -5,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "gladiator": 35,
+      "fighter": 20,
+      "warrior": 15,
+      "aristocrat": -10
+    }
   },
-      {
+  {
     "id": 52,
     "name": "Гаргон",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Gargon.jpg",
@@ -1029,7 +1645,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1037,9 +1653,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 0,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "dwarf": 15
+    }
   },
-       {
+  {
     "id": 53,
     "name": "Фаридун",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Faridun.jpg",
@@ -1049,7 +1677,7 @@
     "baseHealth": 2120,
     "baseDamage": 270,
     "baseArmor": 135,
-                    "gold": 162,
+    "gold": 162,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1057,9 +1685,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.1
+    "healthRegen": 3.1,
+    "baseKarma": 40,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -20
+    }
   },
-    {
+  {
     "id": 54,
     "name": "Гримм Алогор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Alogor.jpg",
@@ -1069,7 +1709,7 @@
     "baseHealth": 2180,
     "baseDamage": 280,
     "baseArmor": 140,
-                    "gold": 168,
+    "gold": 168,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1077,9 +1717,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.2
+    "healthRegen": 3.2,
+    "baseKarma": 35,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "merchant": 40,
+      "aristocrat": 20,
+      "trader": 15,
+      "bandit": -10
+    }
   },
-    {
+  {
     "id": 55,
     "name": "Брудер",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Bruder.jpg",
@@ -1089,7 +1741,7 @@
     "baseHealth": 2240,
     "baseDamage": 290,
     "baseArmor": 145,
-                    "gold": 174,
+    "gold": 174,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1097,9 +1749,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.3
+    "healthRegen": 3.3,
+    "baseKarma": 25,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "fighter": 20,
+      "warrior": 15,
+      "gladiator": 10,
+      "monk": 25
+    }
   },
-    {
+  {
     "id": 56,
     "name": "Валдис",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Valdis.jpg",
@@ -1109,7 +1773,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1117,9 +1781,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "bounty_hunter": 30,
+      "hunter": 15,
+      "bandit": -25,
+      "guard": 15
+    }
   },
-    {
+  {
     "id": 57,
     "name": "Горгаш",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Gorgash.jpg",
@@ -1129,7 +1806,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1137,9 +1814,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 10,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "warrior": 20,
+      "bandit": 10,
+      "archer": 15,
+      "hunter": 10
+    }
   },
-    {
+  {
     "id": 58,
     "name": "Грумб",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Grumb.jpg",
@@ -1149,7 +1838,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1157,9 +1846,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "healer": 40,
+      "druid": 25,
+      "mage": 15,
+      "death_mage": -35
+    }
   },
-    {
+  {
     "id": 59,
     "name": "Элин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Elin.jpg",
@@ -1169,7 +1870,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1177,9 +1878,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 40,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "dwarf": 15
+    }
   },
-      {
+  {
     "id": 60,
     "name": "Элия",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Elia.jpg",
@@ -1189,7 +1902,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1197,9 +1910,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 30,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "gladiator": 35,
+      "fighter": 20,
+      "warrior": 15,
+      "aristocrat": -10
+    }
   },
-      {
+  {
     "id": 61,
     "name": "Эльфарий",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Elfariy.jpg",
@@ -1209,7 +1934,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1217,9 +1942,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": -5,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "archer": 20,
+      "hunter": 15,
+      "warrior": 10,
+      "bandit": -10
+    }
   },
-      {
+  {
     "id": 62,
     "name": "Сильверклаус",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/SilverKlaus.jpg",
@@ -1229,7 +1966,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1237,9 +1974,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "thief": 30,
+      "bandit": 20,
+      "guard": -30,
+      "bounty_hunter": -15
+    }
   },
-      {
+  {
     "id": 63,
     "name": "Дина",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Dina.jpg",
@@ -1249,7 +1997,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1257,9 +2005,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 0,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
-      {
+  {
     "id": 64,
     "name": "Бартоломью Гамджи",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Bartolomiy.jpg",
@@ -1269,7 +2028,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1277,9 +2036,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 30,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "hunter": 30,
+      "druid": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
-      {
+  {
     "id": 65,
     "name": "Веррин Чабб",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Verin.jpg",
@@ -1289,7 +2060,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1297,9 +2068,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 35,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "antiquarian": 35,
+      "scholar": 20,
+      "mage": 20,
+      "looter": -15
+    }
   },
-         {
+  {
     "id": 66,
     "name": "Бёрнин Барди",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Bernin.jpg",
@@ -1309,7 +2092,7 @@
     "baseHealth": 2120,
     "baseDamage": 270,
     "baseArmor": 135,
-                    "gold": 162,
+    "gold": 162,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1317,9 +2100,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.1
+    "healthRegen": 3.1,
+    "baseKarma": 30,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "hunter": 30,
+      "druid": 15,
+      "archer": 10,
+      "animal": -20
+    }
   },
-    {
+  {
     "id": 67,
     "name": "Боромир Железный",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Boromir.jpg",
@@ -1329,7 +2124,7 @@
     "baseHealth": 2180,
     "baseDamage": 280,
     "baseArmor": 140,
-                    "gold": 168,
+    "gold": 168,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1337,9 +2132,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.2
+    "healthRegen": 3.2,
+    "baseKarma": 35,
+    "reputation": {
+      "dwarf": 35,
+      "human": 10,
+      "ork": -20,
+      "goblin": -15,
+      "troll": -25,
+      "antiquarian": 35,
+      "scholar": 20,
+      "mage": 20,
+      "looter": -15
+    }
   },
-    {
+  {
     "id": 68,
     "name": "Могрим",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Mogrim.jpg",
@@ -1349,7 +2156,7 @@
     "baseHealth": 2240,
     "baseDamage": 290,
     "baseArmor": 145,
-                    "gold": 174,
+    "gold": 174,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1357,9 +2164,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.3
+    "healthRegen": 3.3,
+    "baseKarma": 15,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "fighter": 20,
+      "warrior": 15,
+      "gladiator": 10,
+      "monk": 25
+    }
   },
-    {
+  {
     "id": 69,
     "name": "Грудхак",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Grudhak.jpg",
@@ -1369,7 +2188,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1377,9 +2196,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "ork": 20,
+      "goblin": 15,
+      "elf": -30,
+      "human": -15,
+      "dwarf": -20,
+      "merchant": 40,
+      "aristocrat": 20,
+      "trader": 15,
+      "bandit": -10
+    }
   },
-    {
+  {
     "id": 70,
     "name": "Джонатан Лонгботтом",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Djonatan.jpg",
@@ -1389,7 +2220,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1397,9 +2228,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "halfling": 20,
+      "human": 10,
+      "elf": 5,
+      "ogre": -20,
+      "troll": -20,
+      "archer": 20,
+      "hunter": 15,
+      "warrior": 10,
+      "bandit": -10
+    }
   },
-    {
+  {
     "id": 71,
     "name": "Луканар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Lukanar.jpg",
@@ -1409,7 +2252,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1417,9 +2260,22 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 30,
+    "reputation": {
+      "human": 20,
+      "halfling": 5,
+      "elf": 5,
+      "dwarf": 5,
+      "goblin": -20,
+      "ork": -15,
+      "sorcerer": 30,
+      "druid": 20,
+      "mage": 15,
+      "death_mage": -20
+    }
   },
-    {
+  {
     "id": 72,
     "name": "Торн",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Torn.jpg",
@@ -1429,7 +2285,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1437,9 +2293,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 30,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "blacksmith": 35,
+      "craftsman": 25,
+      "warrior": 20,
+      "dwarf": 15
+    }
   },
-      {
+  {
     "id": 73,
     "name": "Тригнар",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Trignar.jpg",
@@ -1449,7 +2316,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1457,9 +2324,20 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "laitar": 30,
+      "bird": -20,
+      "fairy": 10,
+      "dragon": 5,
+      "gladiator": 35,
+      "fighter": 20,
+      "warrior": 15,
+      "aristocrat": -10
+    }
   },
-      {
+  {
     "id": 74,
     "name": "Веспера",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Vespera.jpg",
@@ -1469,7 +2347,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1477,9 +2355,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 25,
+    "reputation": {
+      "fairy": 40,
+      "elf": 25,
+      "dragon": 10,
+      "ork": -25,
+      "gargoyle": -30,
+      "bounty_hunter": 30,
+      "hunter": 15,
+      "bandit": -25,
+      "guard": 15
+    }
   },
-      {
+  {
     "id": 75,
     "name": "Иларион",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Illarion.jpg",
@@ -1489,7 +2379,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1497,9 +2387,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 10,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "healer": 40,
+      "druid": 25,
+      "mage": 15,
+      "death_mage": -35
+    }
   },
-      {
+  {
     "id": 76,
     "name": "Агромор",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Agromor.jpg",
@@ -1509,7 +2411,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1517,9 +2419,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": -5,
+    "reputation": {
+      "dragon": 50,
+      "ork": -30,
+      "elf": -25,
+      "dwarf": -20,
+      "animal": -25,
+      "warrior": 20,
+      "bandit": 10,
+      "archer": 15,
+      "hunter": 10
+    }
   },
-      {
+  {
     "id": 77,
     "name": "Тельхарин",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Telharin.jpg",
@@ -1529,7 +2443,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1537,9 +2451,21 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 5,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "death_mage": 40,
+      "necromancer": 30,
+      "sorcerer": -20,
+      "healer": -35
+    }
   },
-      {
+  {
     "id": 78,
     "name": "Фаргон",
     "image": "https://raw.githubusercontent.com/StaleGradov/Tigrimion/main/Fargon.jpg",
@@ -1549,7 +2475,7 @@
     "baseHealth": 2060,
     "baseDamage": 260,
     "baseArmor": 130,
-                    "gold": 156,
+    "gold": 156,
     "level": 1,
     "experience": 0,
     "inventory": [],
@@ -1557,7 +2483,18 @@
       "main_hand": null,
       "chest": null
     },
-    "healthRegen": 3.0
+    "healthRegen": 3.0,
+    "baseKarma": 20,
+    "reputation": {
+      "elf": 30,
+      "fairy": 20,
+      "human": 10,
+      "ork": -30,
+      "goblin": -20,
+      "thief": 30,
+      "bandit": 20,
+      "guard": -30,
+      "bounty_hunter": -15
+    }
   }
-  
 ]
